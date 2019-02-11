@@ -650,4 +650,209 @@ describe('muting', () => {
         expect(updated.muted).toBeDefined();
       });
   });
+
+  it('should mute and unmute schedules', () => {
+    const settings = {
+      transitions: { muting: true },
+      muting: {
+        mute_forms: ['mute'],
+        unmute_forms: ['unmute']
+      },
+      registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+      forms: { sms_form_1: { public_form: true }, sms_form_2: { public_form: false } }
+    };
+
+    const notToday = 36 * 24 * 60 * 60 * 1000;
+
+    const reports = [
+      { // not a registration
+        _id: 'no_registration_config',
+        type: 'data_record',
+        content_type: 'xml',
+        form: 'test_form',
+        fields: {
+          patient_id: 'person'
+        },
+        scheduled_tasks: [
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+        ]
+      },
+      { // not a registration
+        _id: 'incorrect_content',
+        type: 'data_record',
+        form: 'xml_form',
+        fields: {
+          patient_id: 'person'
+        },
+        scheduled_tasks: [
+          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
+        ]
+      },
+      { // not a registration
+        _id: 'sms_without_contact',
+        type: 'data_record',
+        form: 'sms_form_2',
+        fields: {
+          patient_id: 'person'
+        },
+        scheduled_tasks: [
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+        ]
+      },
+      { // valid registration
+        _id: 'registration_1',
+        type: 'data_record',
+        content_type: 'xml',
+        form: 'xml_form',
+        fields: {
+          patient_id: 'person'
+        },
+        scheduled_tasks: [
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+        ]
+      },
+      { // valid registration
+        _id: 'registration_2',
+        type: 'data_record',
+        form: 'sms_form_1',
+        fields: {
+          patient_id: 'person'
+        },
+        scheduled_tasks: [
+          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
+        ]
+      },
+      { // valid registration
+        _id: 'registration_3',
+        type: 'data_record',
+        form: 'sms_form_2',
+        fields: {
+          place_id: 'clinic'
+        },
+        contact: { _id: 'person' },
+        scheduled_tasks: [
+          { group: 1, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+        ]
+      },
+      { // valid registration from other "branch"
+        _id: 'registration_4',
+        type: 'data_record',
+        form: 'sms_form_2',
+        fields: {
+          patient_id: 'person2'
+        },
+        contact: { _id: 'person2' },
+        scheduled_tasks: [
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+        ]
+      }
+    ];
+
+    const mute = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'mute',
+      fields: {
+        place_id: 'clinic'
+      },
+      reported_date: new Date().getTime()
+    };
+
+    const unmute = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'unmute',
+      fields: {
+        place_id: 'clinic'
+      },
+      reported_date: new Date().getTime()
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDocs(extraContacts))
+      .then(() => utils.saveDocs(reports))
+      .then(() => utils.saveDoc(mute))
+      .then(() => sentinelUtils.waitForSentinel(mute._id))
+      .then(() => utils.getDocs(['no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4']))
+      .then(reports => {
+        expect(reports[0].scheduled_tasks[0].state).toEqual('pending');
+        expect(reports[0].scheduled_tasks[1].state).toEqual('scheduled');
+        expect(reports[0].scheduled_tasks[2].state).toEqual('something_else');
+
+        expect(reports[1].scheduled_tasks[0].state).toEqual('scheduled');
+        expect(reports[1].scheduled_tasks[1].state).toEqual('something_else');
+        expect(reports[1].scheduled_tasks[2].state).toEqual('pending');
+
+        expect(reports[2].scheduled_tasks[0].state).toEqual('pending');
+        expect(reports[2].scheduled_tasks[1].state).toEqual('something_else');
+        expect(reports[2].scheduled_tasks[2].state).toEqual('scheduled');
+
+        expect(reports[3].scheduled_tasks[0].state).toEqual('pending');
+        expect(reports[3].scheduled_tasks[1].state).toEqual('scheduled');
+        expect(reports[3].scheduled_tasks[2].state).toEqual('something_else');
+      })
+      .then(() => utils.getDocs(['registration_1', 'registration_2', 'registration_3']))
+      .then(reports => {
+        expect(reports[0].scheduled_tasks[0].state).toEqual('muted');
+        expect(reports[0].scheduled_tasks[1].state).toEqual('muted');
+        expect(reports[0].scheduled_tasks[2].state).toEqual('something_else');
+
+        expect(reports[1].scheduled_tasks[0].state).toEqual('muted');
+        expect(reports[1].scheduled_tasks[1].state).toEqual('something_else');
+        expect(reports[1].scheduled_tasks[2].state).toEqual('muted');
+
+        expect(reports[2].scheduled_tasks[0].state).toEqual('something_else');
+        expect(reports[2].scheduled_tasks[1].state).toEqual('muted');
+        expect(reports[2].scheduled_tasks[2].state).toEqual('muted');
+      })
+      .then(() => utils.saveDoc(unmute))
+      .then(() => sentinelUtils.waitForSentinel(unmute._id))
+      .then(() => utils.getDocs(['no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4']))
+      .then(reports => {
+        expect(reports[0].scheduled_tasks[0].state).toEqual('pending');
+        expect(reports[0].scheduled_tasks[1].state).toEqual('scheduled');
+        expect(reports[0].scheduled_tasks[2].state).toEqual('something_else');
+
+        expect(reports[1].scheduled_tasks[0].state).toEqual('scheduled');
+        expect(reports[1].scheduled_tasks[1].state).toEqual('something_else');
+        expect(reports[1].scheduled_tasks[2].state).toEqual('pending');
+
+        expect(reports[2].scheduled_tasks[0].state).toEqual('pending');
+        expect(reports[2].scheduled_tasks[1].state).toEqual('something_else');
+        expect(reports[2].scheduled_tasks[2].state).toEqual('scheduled');
+
+        expect(reports[3].scheduled_tasks[0].state).toEqual('pending');
+        expect(reports[3].scheduled_tasks[1].state).toEqual('scheduled');
+        expect(reports[3].scheduled_tasks[2].state).toEqual('something_else');
+      })
+      .then(() => utils.getDocs(['registration_1', 'registration_2', 'registration_3']))
+      .then(reports => {
+        expect(reports[0].scheduled_tasks[0].state).toEqual('scheduled');
+        expect(reports[0].scheduled_tasks[1].state).toEqual('muted'); // due date in the past
+        expect(reports[0].scheduled_tasks[2].state).toEqual('something_else');
+
+        expect(reports[1].scheduled_tasks[0].state).toEqual('muted'); // due date in the past
+        expect(reports[1].scheduled_tasks[1].state).toEqual('something_else');
+        expect(reports[1].scheduled_tasks[2].state).toEqual('scheduled');
+
+        expect(reports[2].scheduled_tasks[0].state).toEqual('something_else');
+        expect(reports[2].scheduled_tasks[1].state).toEqual('scheduled');
+        expect(reports[2].scheduled_tasks[2].state).toEqual('muted'); // due date in the past
+      })
+  });
 });
