@@ -2,14 +2,14 @@ const utils = require('../../utils'),
       querystring = require('querystring'),
       constants = require('../../constants');
 
-const waitForSentinel = docId => {
+const waitForSentinel = docIds => {
   return requestOnSentinelTestDb('/_local/sentinel-meta-data')
     .then(metaData => metaData.processed_seq)
     .then(seq => {
       const changeOpts = {
         since: seq,
         filter: '_doc_ids',
-        doc_ids: JSON.stringify([docId])
+        doc_ids: JSON.stringify(Array.isArray(docIds) ? docIds : [docIds])
       };
       return utils.requestOnTestDb('/_changes?' + querystring.stringify(changeOpts));
     })
@@ -20,7 +20,7 @@ const waitForSentinel = docId => {
       }
 
       return new Promise(resolve => {
-        setTimeout(() => waitForSentinel(docId).then(resolve), 100);
+        setTimeout(() => waitForSentinel(docIds).then(resolve), 100);
       });
     });
 };
