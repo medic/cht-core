@@ -853,6 +853,6 @@ describe('muting', () => {
         expect(reports[2].scheduled_tasks[0].state).toEqual('something_else');
         expect(reports[2].scheduled_tasks[1].state).toEqual('scheduled');
         expect(reports[2].scheduled_tasks[2].state).toEqual('muted'); // due date in the past
-      })
+      });
   });
 });
