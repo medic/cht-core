@@ -72,7 +72,7 @@ define( function( require, exports, module ) {
     function applyLiveLinkHtml( $el ) {
         var html = $el.html();
 
-        html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*\>[^)]*)\)/gm,
+        html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
                 '<a class="live-link" href="#" target="_blank" rel="noopener noreferrer">$1<span class="href" style="display:none">$2</span></a>' );
 
         $el.text( '' ).append( html );

@@ -2,7 +2,7 @@ const _ = require('underscore'),
       properties = require('properties'),
       db = require('./db'),
       DDOC_ID = '_design/medic',
-      TRANSLATION_FILE_NAME_REGEX = /translations\/messages\-([a-z]*)\.properties/,
+      TRANSLATION_FILE_NAME_REGEX = /translations\/messages-([a-z]*)\.properties/,
       DOC_TYPE = 'translations';
 
 const LOCAL_NAME_MAP = {

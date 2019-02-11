@@ -221,7 +221,7 @@ const validateConfig = () => {
       logger.warn(
         `Bad config for ${TRANSITION_NAME}, alert "${
           alert.name
-        }". Expecting "forms" to be an array of form codes. Continuing without "forms", since it\'s optional.`
+        }". Expecting "forms" to be an array of form codes. Continuing without "forms", since it's optional.`
       );
     }
   });

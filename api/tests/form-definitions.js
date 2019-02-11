@@ -348,7 +348,7 @@ exports.forms = {
           is_numeric_year: true
         },
         flags: {
-          
+
         }
       },
       cref_month: {
@@ -369,7 +369,7 @@ exports.forms = {
           is_numeric_month: true
         },
         flags: {
-          
+
         },
         list: [
           [
@@ -464,7 +464,7 @@ exports.forms = {
           is_numeric_day: true
         },
         flags: {
-          
+
         }
       },
       cref_rc: {
@@ -482,7 +482,7 @@ exports.forms = {
           11
         ],
         validations: {
-          
+
         },
         flags: {
           input_digits_only: true
@@ -503,10 +503,10 @@ exports.forms = {
           2
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         },
         list: [
           [
@@ -556,10 +556,10 @@ exports.forms = {
           20
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         }
       },
       cref_age: {
@@ -577,10 +577,10 @@ exports.forms = {
           2
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         }
       },
       cref_mom: {
@@ -598,10 +598,10 @@ exports.forms = {
           20
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         }
       },
       cref_treated: {
@@ -619,10 +619,10 @@ exports.forms = {
           20
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         }
       },
       cref_rec: {
@@ -630,7 +630,7 @@ exports.forms = {
           long: null,
           description: null,
           short: {
-            fr: 'Recommandations\/Conseils'
+            fr: 'Recommandations/Conseils'
           }
         },
         position: 9,
@@ -640,10 +640,10 @@ exports.forms = {
           2
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         },
         list: [
           [
@@ -729,10 +729,10 @@ exports.forms = {
           35
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         }
       },
       cref_agent: {
@@ -750,10 +750,10 @@ exports.forms = {
           20
         ],
         validations: {
-          
+
         },
         flags: {
-          
+
         }
       }
     },

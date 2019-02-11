@@ -28,7 +28,7 @@ describe('CheckDate service', function() {
 
   it('does nothing when offline and roughly correct date', function(done) {
     $httpBackend
-      .expect('HEAD', /\/api\/info\?seed=[0-9\.]+/)
+      .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)
       .respond(404, 'Not found');
     service()
       .then(function() {
@@ -41,7 +41,7 @@ describe('CheckDate service', function() {
 
   it('shows the modal when offline but clock is very wrong', function(done) {
     $httpBackend
-      .expect('HEAD', /\/api\/info\?seed=[0-9\.]+/)
+      .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)
       .respond(404, 'Not found');
     clock = sinon.useFakeTimers();
     service()
@@ -59,7 +59,7 @@ describe('CheckDate service', function() {
 
   it('handles empty response', function(done) {
     $httpBackend
-      .expect('HEAD', /\/api\/info\?seed=[0-9\.]+/)
+      .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)
       .respond('', { Date: 'xxx' });
     service()
       .then(function() {
@@ -74,7 +74,7 @@ describe('CheckDate service', function() {
     var responseDate = new Date();
     responseDate.setMinutes(responseDate.getMinutes() - 5);
     $httpBackend
-      .expect('HEAD', /\/api\/info\?seed=[0-9\.]+/)
+      .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)
       .respond('', { Date: responseDate.toISOString() });
     service()
       .then(function() {
@@ -90,7 +90,7 @@ describe('CheckDate service', function() {
     var responseDate = new Date();
     responseDate.setHours(responseDate.getHours() - 1);
     $httpBackend
-      .expect('HEAD', /\/api\/info\?seed=[0-9\.]+/)
+      .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)
       .respond('', { Date: responseDate.toISOString() });
     service()
       .then(function() {
