@@ -129,7 +129,7 @@ var queryInBatches = function(queryFunc, processFunc) {
 var getContactsForPlace = function(db, placeId, skip, batchSize) {
   console.log('query with batchsize ' + batchSize + ' , skip ' + skip);
   return db.query(
-    'medic/contacts_by_place',
+    'medic-client/contacts_by_place',
     {key: [placeId], include_docs: true, limit: batchSize, skip: skip}
   ).then(function (result) {
     console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
