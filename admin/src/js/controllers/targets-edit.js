@@ -23,6 +23,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
     $scope.saving = false;
     $scope.editing = $stateParams.id;
     $scope.icons = [];
+    $scope.names = [];
 
     Settings()
       .then(function(settings) {
@@ -30,24 +31,26 @@ angular.module('controllers').controller('TargetsEditCtrl',
         if ($stateParams.id) {
           $scope.target = _.findWhere(settings.tasks.targets.items, { id: $stateParams.id });
           if (typeof $scope.target.name === 'undefined') {
-            $scope.target.name = [];
-            $scope.locales.map(locale => locale.code).forEach((code) => {
-              const translation = $translate.instant($scope.target.translation_key, null, 'no-interpolation', code, null);
+            $scope.names = $scope.locales.map(locale => {
+              const translation = $translate.instant($scope.target.translation_key, null, 'no-interpolation', locale.code, null);
               const content  = translation === $scope.target.translation_key ? '' : translation;
-
-              const nameObj = {
-                locale: code,
-                content: content
+              return {
+                locale,
+                content
               };
-              $scope.target.name.push(nameObj);
+            });
+          } else {
+            $scope.names = $scope.locales.map(locale => {
+              const name =
+                $scope.target.name
+                .find(item => item.locale === locale.code);
+              const content = name ? name.content : '';
+              return {
+                locale,
+                content
+              };
             });
           }
-          $scope.target.name.forEach(function(name) {
-            var locale = _.findWhere($scope.locales, { code: name.locale });
-            if (locale) {
-              locale.content = name.content;
-            }
-          });
         }
       })
       .catch(function(err) {
@@ -129,22 +132,6 @@ angular.module('controllers').controller('TargetsEditCtrl',
 
       $scope.saving = true;
       $scope.status = 'Submitting';
-
-      if (!$scope.target.name) {
-        $scope.target.name = [];
-      }
-
-      $scope.locales.forEach(function(locale) {
-        var translation = _.findWhere($scope.target.name, { locale: locale.code });
-        if (translation) {
-          translation.content = locale.content;
-        } else if (locale.content) {
-          $scope.target.name.push({
-            locale: locale.code,
-            content: locale.content
-          });
-        }
-      });
 
       Settings()
         .then(updateItem)
