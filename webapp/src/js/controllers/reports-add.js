@@ -1,10 +1,12 @@
 angular.module('inboxControllers').controller('ReportsAddCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
     $translate,
+    Actions,
     DB,
     Enketo,
     FileReader,
@@ -23,6 +25,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       preRender: Date.now()
     };
 
+    var ctrl = this;
+    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
     var geolocation;
 
     var getSelected = function() {
@@ -53,12 +57,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $scope.contentError = false;
     $scope.saving = false;
     if ($state.params.reportId || $state.params.formId) {
-      $scope.setCancelTarget(function() {
+      ctrl.setCancelCallback(function() {
         // Note : if no $state.params.reportId, goes to "No report selected".
         $state.go('reports.detail', { id: $state.params.reportId });
       });
     } else {
-      $scope.clearCancelTarget();
+      ctrl.clearCancelCallback();
     }
 
     var markFormEdited = function() {
@@ -168,6 +172,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     };
 
     $scope.$on('$destroy', function() {
+      unsubscribe();
       if (!$state.includes('reports.add') && !$state.includes('reports.edit')) {
         Enketo.unload($scope.form);
       }

@@ -25,7 +25,7 @@ const evaluateCondition = (doc, alert) => {
   })
     .then(rows => {
       rows = _.sortBy(rows, function(row) {
-        return row.reported_date;
+        return row.doc.reported_date;
       });
       context[alert.form] = function(i) {
         const row = rows[rows.length - 1 - i];

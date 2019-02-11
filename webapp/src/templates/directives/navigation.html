@@ -1,8 +1,8 @@
 <div class="right-pane navigation">
-  <a ng-show="cancelCallback" ng-click="navigationCancel()" class="filter-bar-back">
+  <a ng-show="$ctrl.cancelCallback" ng-click="navigationCancel()" class="filter-bar-back">
     <span class="fa fa-times" ng-class="{ 'mm-icon-disabled': enketoStatus.saving }" translate translate-attr-title="close"></span>
   </a>
-  <a ng-hide="cancelCallback" ng-click="clearSelected()" class="filter-bar-back">
+  <a ng-hide="$ctrl.cancelCallback" ng-click="clearSelected()" class="filter-bar-back">
     <span class="fa fa-chevron-left" translate translate-attr-title="Back"></span>
   </a>
   <h2>{{title}}</h2>

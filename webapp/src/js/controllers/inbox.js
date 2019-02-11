@@ -10,6 +10,7 @@ var feedback = require('../modules/feedback'),
 
   inboxControllers.controller('InboxCtrl', function(
     $log,
+    $ngRedux,
     $q,
     $rootScope,
     $scope,
@@ -72,6 +73,14 @@ var feedback = require('../modules/feedback'),
       'boot_time:3:to_angular_bootstrap',
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
+
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        cancelCallback: state.cancelCallback
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
     Session.init();
 
@@ -237,7 +246,7 @@ var feedback = require('../modules/feedback'),
 
     $scope.$on('HideContent', function() {
       $timeout(function() {
-        if ($scope.cancelCallback) {
+        if (ctrl.cancelCallback) {
           $scope.navigationCancel();
         } else {
           $scope.clearSelected();
@@ -259,7 +268,7 @@ var feedback = require('../modules/feedback'),
       if (!$scope.enketoStatus.edited){
         return;
       }
-      if ($scope.cancelCallback){
+      if (ctrl.cancelCallback){
         event.preventDefault();
         $scope.navigationCancel();
       }
@@ -288,8 +297,8 @@ var feedback = require('../modules/feedback'),
       }
       if (!$scope.enketoStatus.edited) {
         // form hasn't been modified - return immediately
-        if ($scope.cancelCallback) {
-          $scope.cancelCallback();
+        if (ctrl.cancelCallback) {
+          ctrl.cancelCallback();
         }
         return;
       }
@@ -300,8 +309,8 @@ var feedback = require('../modules/feedback'),
         singleton: true,
       }).then(function() {
         $scope.enketoStatus.edited = false;
-        if ($scope.cancelCallback) {
-          $scope.cancelCallback();
+        if (ctrl.cancelCallback) {
+          ctrl.cancelCallback();
         }
       });
     };
@@ -349,14 +358,6 @@ var feedback = require('../modules/feedback'),
         return;
       }
       $scope.showContent = showContent;
-    };
-
-    $scope.clearCancelTarget = function() {
-      delete $scope.cancelCallback;
-    };
-
-    $scope.setCancelTarget = function(callback) {
-      $scope.cancelCallback = callback;
     };
 
     $scope.setTitle = function(title) {
@@ -771,6 +772,7 @@ var feedback = require('../modules/feedback'),
 
     RecurringProcessManager.startUpdateRelativeDate();
     $scope.$on('$destroy', function() {
+      unsubscribe();
       RecurringProcessManager.stopUpdateRelativeDate();
     });
 

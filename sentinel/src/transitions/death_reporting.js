@@ -60,9 +60,9 @@ module.exports = {
     }
   },
   filter: (doc, info = {}) => {
-    return (
+    return Boolean(
       doc &&
-      doc.from &&
+      doc.form &&
       doc.type === 'data_record' &&
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.fields &&

@@ -202,7 +202,7 @@ cards = [
           if (report && report.fields && report.fields.vaccines_received) {
             addImmunizations(immunizations, report.fields.vaccines_received);
           }
-        } else if (report.form === 'IMM') {
+        } else if (report.form === 'C_IMM') {
           addImmunizations(immunizations, report.fields);
         }  else {
           addImmunizations(immunizations, report.form);
