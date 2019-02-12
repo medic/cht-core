@@ -352,10 +352,10 @@
     icon: 'child',
     title: 'task.treatment_enrollment.title',
     appliesTo: 'reports',
-    appliesToType: ['nutrition_screening', 'followup'],
+    appliesToType: ['nutrition_screening', 'nutrition_followup'],
     appliesIf: function(c, r, i){
       /* jshint unused:vars */
-      return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
+      return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
     },
     actions: [{form: 'treatment_enrollment'}],
     events: [{

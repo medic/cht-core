@@ -404,7 +404,7 @@
   {
     "_id": "178633fb-648a-4bd1-ae21-bef94497d3ab",
     "_rev": "2-16805f604e927460ad6fba9685e4c8c6",
-    "form": "followup",
+    "form": "nutrition_followup",
     "type": "data_record",
     "content_type": "xml",
     "reported_date": 1542552665808,
@@ -471,7 +471,7 @@
   {
     "_id": "af1ea1e4-a8ca-4886-8881-5f002ba5a5aa",
     "_rev": "2-4d98fbd194ab2c9fe8392385cbe53f91",
-    "form": "followup",
+    "form": "nutrition_followup",
     "type": "data_record",
     "content_type": "xml",
     "reported_date": 1542587675116,

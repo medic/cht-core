@@ -417,7 +417,7 @@ function getNutritionScreeningReport(){
 function countFollowups(){
   var count = 0;
   reports.forEach(function(r){
-    if (r.form === 'followup' && r.fields.task === 'visit'){
+    if (r.form === 'nutrition_followup' && r.fields.task === 'visit'){
       count = count + 1;
     }
   });
@@ -426,6 +426,6 @@ function countFollowups(){
 
 function getFollowupExitReport(){
   return reports.find(function(r){
-    return r.form === 'followup' && r.fields.task && r.fields.task === 'exit';
+    return r.form === 'nutrition_followup' && r.fields.task && r.fields.task === 'exit';
   });
 }

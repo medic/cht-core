@@ -743,7 +743,7 @@
       ]
     },
     {
-      "form": "followup",
+      "form": "nutrition_followup",
       "events": [
         {
           "name": "on_create",
@@ -755,7 +755,7 @@
       "validations": {},
       "messages": [
         {
-          "translation_key": "messages.followup.sc_exit",
+          "translation_key": "messages.nutrition_followup.sc_exit",
           "event_type": "report_accepted",
           "recipient": "clinic",
           "bool_expr": "/exit/.test(doc.fields.task) && /SC/.test(doc.fields.treatment_program)"
