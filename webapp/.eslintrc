@@ -4,14 +4,16 @@
     "jquery": true,
     "node": true
   },
-  "plugins": ["compat"],
+  "plugins": ["compat", "angular"],
   "globals": {
     "angular": true,
     "Tour": true
   },
   "rules": {
     "compat/compat": "error",
-    "no-console": "error"
+    "no-console": "error",
+    "angular/window-service": "error",
+    "angular/timeout-service": "error"
   },
   "overrides": [
     {
