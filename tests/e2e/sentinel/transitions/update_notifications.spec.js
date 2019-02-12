@@ -99,7 +99,7 @@ describe('update_notifications', () => {
       });
   });
 
-  it('should add error when contact not found', () => {
+  it('should add error when contact not found or validation fails', () => {
     const settings = {
       transitions: { update_notifications: true },
       notifications: {
@@ -112,11 +112,24 @@ describe('update_notifications', () => {
             locale: 'en',
             content: 'Patient not found'
           }],
-        }]
+        }],
+        validations: {
+          list: [
+            {
+              property: 'patient_id',
+              rule: 'lenMin(5) && lenMax(10)',
+              message: [{
+                locale: 'en',
+                content: 'Patient id incorrect'
+              }],
+            },
+          ],
+          join_responses: false
+        }
       }
     };
 
-    const doc = {
+    const doc1 = {
       _id: uuid(),
       type: 'data_record',
       form: 'off',
@@ -126,27 +139,52 @@ describe('update_notifications', () => {
       reported_date: new Date().getTime()
     };
 
+    const doc2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'off',
+      fields: {
+        patient_id: 'this will not match the validation rule'
+      },
+      reported_date: new Date().getTime()
+    };
+
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDoc(doc))
-      .then(() => sentinelUtils.waitForSentinel(doc._id))
-      .then(() => sentinelUtils.getInfoDoc(doc._id))
-      .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.update_notifications).toBeDefined();
-        expect(info.transitions.update_notifications.ok).toBe(true);
-      })
-      .then(() => utils.getDoc(doc._id))
-      .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].message).toEqual('Patient not found');
-        expect(updated.tasks[0].messages[0].to).toEqual('12345');
-        expect(updated.tasks[0].state).toEqual('pending');
+      .then(() => utils.saveDocs([doc1, doc2]))
+      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
+      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
+      .then(infos => {
+        expect(infos[0].transitions).toBeDefined();
+        expect(infos[0].transitions.update_notifications).toBeDefined();
+        expect(infos[0].transitions.update_notifications.ok).toBe(true);
 
-        expect(updated.errors).toBeDefined();
-        expect(updated.errors.length).toEqual(1);
-        expect(updated.errors[0].message).toEqual('Patient not found');
+        expect(infos[1].transitions).toBeDefined();
+        expect(infos[1].transitions.update_notifications).toBeDefined();
+        expect(infos[1].transitions.update_notifications.ok).toBe(true);
+      })
+      .then(() => utils.getDocs([doc1._id, doc2._id]))
+      .then(updated => {
+        expect(updated[0].tasks).toBeDefined();
+        expect(updated[0].tasks.length).toEqual(1);
+        expect(updated[0].tasks[0].messages[0].message).toEqual('Patient not found');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].state).toEqual('pending');
+
+        expect(updated[0].errors).toBeDefined();
+        expect(updated[0].errors.length).toEqual(1);
+        expect(updated[0].errors[0].message).toEqual('Patient not found');
+
+        expect(updated[1].tasks).toBeDefined();
+        expect(updated[1].tasks.length).toEqual(1);
+        expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
+        // possible bug/feature(?) - validation messages are always sent to `clinic`
+        expect(updated[1].tasks[0].messages[0].to).toEqual('clinic');
+        expect(updated[1].tasks[0].state).toEqual('pending');
+
+        expect(updated[1].errors).toBeDefined();
+        expect(updated[1].errors.length).toEqual(1);
+        expect(updated[1].errors[0].message).toEqual('Patient id incorrect');
       });
   });
 
