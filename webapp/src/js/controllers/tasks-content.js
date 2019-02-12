@@ -23,7 +23,12 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
 
     var ctrl = this;
-    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+    var mapStateToTarget = function(state) {
+      return {
+        enketoStatus: state.enketoStatus
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
 
     var geolocation;
     Geolocation()
@@ -47,7 +52,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
 
     var markFormEdited = function() {
-      $scope.enketoStatus.edited = true;
+      ctrl.setEnketoEditedStatus(true);
     };
 
     $scope.performAction = function(action, skipDetails) {
@@ -68,7 +73,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         $scope.formId = action.form;
         XmlForm(action.form, { include_docs: true })
           .then(function(formDoc) {
-            $scope.enketoStatus.edited = false;
+            ctrl.setEnketoEditedStatus(false);
             Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
               .then(function(formInstance) {
                 $scope.form = formInstance;
@@ -101,7 +106,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
 
     $scope.save = function() {
-      if ($scope.enketoStatus.saving) {
+      if (ctrl.enketoStatus.saving) {
         $log.debug('Attempted to call tasks-content:$scope.save more than once');
         return;
       }
@@ -112,17 +117,17 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         `enketo:tasks:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
         telemetryData.preSave - telemetryData.postRender);
 
-      $scope.enketoStatus.saving = true;
-      $scope.enketoStatus.error = null;
+      ctrl.setEnketoSavingStatus(true);
+      ctrl.setEnketoError(null);
       Enketo.save($scope.formId, $scope.form, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
-          $scope.enketoStatus.saving = false;
+          ctrl.setEnketoSavingStatus(false);
           Enketo.unload($scope.form);
           $scope.clearSelected();
           ctrl.clearCancelCallback();
-          $scope.enketoStatus.edited = false;
+          ctrl.setEnketoEditedStatus(false);
           $state.go('tasks.detail', { id: null });
         })
         .then(() => {
@@ -133,10 +138,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
             telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {
-          $scope.enketoStatus.saving = false;
+          ctrl.setEnketoSavingStatus(false);
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-          $scope.enketoStatus.error = msg;
+          ctrl.setEnketoError(msg);
           });
         });
     };

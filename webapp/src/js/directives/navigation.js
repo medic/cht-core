@@ -10,7 +10,8 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          cancelCallback: state.cancelCallback
+          cancelCallback: state.cancelCallback,
+          enketoStatus: state.enketoStatus
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
