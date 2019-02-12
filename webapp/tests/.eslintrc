@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "no-console": "off",
+    "angular/window-service": "off",
+    "angular/timeout-service": "off"
+  }
+}

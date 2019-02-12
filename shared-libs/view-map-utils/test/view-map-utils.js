@@ -40,7 +40,7 @@ describe('Replication Helper Views Lib', function() {
     it('returns the correct function', function() {
       var fnString = 'function(a, b, operator) {' +
                      '  // this is a comment! ' +
-                     '  \n \n \n \n\ ' +
+                     '  \n \n \n \n ' +
                      '  switch (operator) { '+
                      '    case \'+\': ' +
                      '      return emit(a + b);' +

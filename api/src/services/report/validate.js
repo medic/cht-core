@@ -19,7 +19,7 @@ exports.validate = (def, form_data) => {
 
     key = key[0];
 
-    if (!!field.required) {
+    if (field.required) {
       if (
         !data ||
         !_isDefined(data[key]) ||
