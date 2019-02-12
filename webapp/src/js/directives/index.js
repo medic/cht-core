@@ -7,19 +7,19 @@
   require('./actionbar');
   require('./auth');
   require('./content-row');
-  require('./date');
+  require('./date-filter');
   require('./enketo');
   require('./enter');
-  require('./facility');
-  require('./form-type');
-  require('./freetext');
+  require('./facility-filter');
+  require('./form-type-filter');
+  require('./freetext-filter');
   require('./modal');
   require('./navigation');
   require('./report-image');
   require('./reports-list');
-  require('./reset');
+  require('./reset-filter');
   require('./sender');
   require('./show-muted-modal');
-  require('./status');
+  require('./status-filter');
 
 }());
