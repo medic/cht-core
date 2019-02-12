@@ -13,8 +13,7 @@
     <link rel="manifest" href="/manifest.json">
     <title id="app"></title>
   </head>
-  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
-
+  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl as $ctrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': $ctrl.selectMode}">
     <div class="bootstrap-layer">
       <div>
         <div class="loader"></div>
