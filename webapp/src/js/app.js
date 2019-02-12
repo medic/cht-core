@@ -29,6 +29,7 @@ require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
 var uiRouter = require('@uirouter/angularjs').default;
 
+var redux = require('redux');
 require('ng-redux');
 var reducers = require('./reducers');
 
@@ -97,7 +98,8 @@ _.templateSettings = {
     );
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
-    $ngReduxProvider.createStoreWith(reducers, []);
+    var reducer = redux.combineReducers(reducers);
+    $ngReduxProvider.createStoreWith(reducer, []);
   });
 
   app.constant('APP_CONFIG', {
