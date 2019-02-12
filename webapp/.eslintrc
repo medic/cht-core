@@ -18,10 +18,14 @@
   "overrides": [
     {
       "files": [
-        "src/js/**/*.js"
+        "src/js/app.js",
+        "src/js/enketo/**",
+        "src/js/bootstrapper/**",
+        "src/js/bootstrap-multidropdown.js"
       ],
       "rules": {
-        "no-console": "error"
+        "angular/window-service": "off",
+        "angular/timeout-service": "off"
       }
     },
     {
