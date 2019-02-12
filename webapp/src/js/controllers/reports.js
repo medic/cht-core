@@ -367,35 +367,6 @@ angular
       });
     };
 
-    $scope.setupSearchFreetext = function() {
-      SearchFilters.freetext($scope.search);
-    };
-    $scope.setupSearchFormType = function() {
-      SearchFilters.formType(function(forms) {
-        $scope.filters.forms = forms;
-        $scope.search();
-      });
-    };
-    $scope.setupSearchStatus = function() {
-      SearchFilters.status(function(status) {
-        $scope.filters.valid = status.valid;
-        $scope.filters.verified = status.verified;
-        $scope.search();
-      });
-    };
-    $scope.setupSearchFacility = function() {
-      SearchFilters.facility(function(facilities) {
-        $scope.filters.facilities = facilities;
-        $scope.search();
-      });
-    };
-    $scope.setupSearchDate = function() {
-      SearchFilters.date(function(date) {
-        $scope.filters.date = date;
-        $scope.search();
-      });
-    };
-
     $scope.resetFilterModel = function() {
       if (ctrl.selectMode && $scope.selected && $scope.selected.length) {
         // can't filter when in select mode

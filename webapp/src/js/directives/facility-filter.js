@@ -1,5 +1,6 @@
-angular.module('inboxDirectives').directive('mmFacilityFilter', function() {
+angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchFilters) {
   'use strict';
+  'ngInject';
 
   return {
     restrict: 'E',
@@ -17,6 +18,12 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: '$ctrl',
+    link: function(scope) {
+      SearchFilters.facility(function(facilities) {
+        scope.filters.facilities = facilities;
+        scope.search();
+      });
+    }
   };
 });

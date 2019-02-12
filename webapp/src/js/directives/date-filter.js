@@ -1,5 +1,6 @@
-angular.module('inboxDirectives').directive('mmDateFilter', function() {
+angular.module('inboxDirectives').directive('mmDateFilter', function(SearchFilters) {
   'use strict';
+  'ngInject';
 
   return {
     restrict: 'E',
@@ -17,6 +18,12 @@ angular.module('inboxDirectives').directive('mmDateFilter', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: '$ctrl',
+    link: function(scope) {
+      SearchFilters.date(function(date) {
+        scope.filters.date = date;
+        scope.search();
+      });
+    }
   };
 });

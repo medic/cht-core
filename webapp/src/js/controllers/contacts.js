@@ -324,9 +324,6 @@ var _ = require('underscore'),
       _query();
     };
 
-    $scope.setupSearchFreetext = function() {
-      SearchFilters.freetext($scope.search);
-    };
     $scope.resetFilterModel = function() {
       $scope.filters = {};
       $scope.sortDirection = $scope.defaultSortDirection;

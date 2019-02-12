@@ -1,5 +1,6 @@
-angular.module('inboxDirectives').directive('mmFormTypeFilter', function() {
+angular.module('inboxDirectives').directive('mmFormTypeFilter', function(SearchFilters) {
   'use strict';
+  'ngInject';
 
   return {
     restrict: 'E',
@@ -18,10 +19,10 @@ angular.module('inboxDirectives').directive('mmFormTypeFilter', function() {
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: '$ctrl',
-    link: function(scope, element) {
-      element.on('load', function() {
-        console.log(scope);
-        console.log(scope.setupSearchFormType);
+    link: function(scope) {
+      SearchFilters.formType(function(forms) {
+        scope.filters.forms = forms;
+        scope.search();
       });
     }
   };

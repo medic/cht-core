@@ -1,5 +1,6 @@
-angular.module('inboxDirectives').directive('mmFreetextFilter', function() {
+angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchFilters) {
   'use strict';
+  'ngInject';
 
   return {
     restrict: 'E',
@@ -17,6 +18,9 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: '$ctrl',
+    link: function(scope) {
+      SearchFilters.freetext(scope.search);
+    }
   };
 });

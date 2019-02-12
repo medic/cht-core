@@ -1,5 +1,6 @@
-angular.module('inboxDirectives').directive('mmStatusFilter', function() {
-'use strict';
+angular.module('inboxDirectives').directive('mmStatusFilter', function(SearchFilters) {
+  'use strict';
+  'ngInject';
 
   return {
     restrict: 'E',
@@ -17,6 +18,13 @@ angular.module('inboxDirectives').directive('mmStatusFilter', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: '$ctrl',
+    link: function(scope) {
+      SearchFilters.status(function(status) {
+        scope.filters.valid = status.valid;
+        scope.filters.verified = status.verified;
+        scope.search();
+      });
+    }
   };
 });
