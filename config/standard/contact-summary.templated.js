@@ -4,7 +4,10 @@ context = {
     anc: isCoveredByUseCaseInLineage(lineage, 'anc'),
     pnc: isCoveredByUseCaseInLineage(lineage, 'pnc'),
     imm: isCoveredByUseCaseInLineage(lineage, 'imm'),
+    gmp: isCoveredByUseCaseInLineage(lineage, 'gmp'),
   },
+  treatment_program: getTreatmentProgram(),
+  enrollment_date: getTreatmentEnrollmentDate(),
 };
 
 fields = [
@@ -235,6 +238,183 @@ cards = [
           value: countReportsSubmittedInWindow(immunizationForms, now),
           width: 12,
         });
+      }
+      return fields;
+    },
+  },
+
+  {
+    label: 'contact.profile.growth_monitoring',
+    appliesToType: 'person',
+    appliesIf: function() {
+      return context.use_cases.gmp && getAgeInMonths() < 60 && getNutritionScreeningReport();
+    },
+    fields: function() {
+
+      var fields = [];
+      var screening_report = getNutritionScreeningReport();
+
+      fields.push({
+        label: 'contact.profile.weight',
+        translate: true,
+        width: 6,
+        value: screening_report.fields.zscore.weight
+      });
+
+      fields.push({
+        label: 'contact.profile.height',
+        translate: true,
+        width: 6,
+        value: screening_report.fields.zscore.height
+      });
+
+      fields.push({
+        label: 'contact.profile.wfa',
+        translate: true,
+        width: 4,
+        value: screening_report.fields.zscore.zscore_wfa,
+        icon: screening_report.fields.zscore.zscore_wfa < -3? 'risk':'',
+
+      });
+
+      fields.push({
+        label: 'contact.profile.hfa',
+        translate: true,
+        width: 4,
+        value: screening_report.fields.zscore.zscore_hfa,
+        icon: screening_report.fields.zscore.zscore_hfa < -3? 'risk':'',
+
+      });
+
+      fields.push({
+        label: 'contact.profile.wfh',
+        translate: true,
+        width: 4,
+        value: screening_report.fields.zscore.zscore_wfh,
+        icon: screening_report.fields.zscore.zscore_wfh? 'risk':'',
+      });
+
+      return fields;
+    }
+  },
+
+  {
+    label: 'contact.profile.imam',
+    appliesToType: 'person',
+    appliesIf: function() {
+      return Boolean(getTreatmentProgram());
+    },
+    fields: function() {
+
+      var fields = [];
+
+      var enrollment_report = reports.find(function(r){
+        return r.form === 'treatment_enrollment';
+      });
+
+      if (enrollment_report){
+        fields.push({
+          label: 'contact.profile.weight',
+          translate: true,
+          width: 6,
+          value: enrollment_report.fields.zscore.weight
+        });
+
+        fields.push({
+          label: 'contact.profile.height',
+          translate: true,
+          width: 6,
+          value: enrollment_report.fields.zscore.height
+        });
+
+        fields.push({
+          label: 'contact.profile.wfh',
+          translate: true,
+          width: 12,
+          value: enrollment_report.fields.zscore.zscore_wfh,
+          icon: enrollment_report.fields.zscore.zscore_wfh < -2? 'risk':'',
+        });
+
+        fields.push({
+          label: 'contact.profile.nutrition_program',
+          translate: true,
+          width: 6,
+          value: enrollment_report.fields.enrollment.program
+        });
+
+        fields.push({
+          label: 'contact.profile.sessions',
+          value: 'contact.profile.visits.of',
+          translate: true,
+          width: 6,
+          context: {
+            count: countFollowups(),
+            total: 8,
+          },
+        });
+      }
+      return fields;
+    }
+  },
+
+  {
+    label: 'contact.profile.imam_history',
+    appliesToType: 'person',
+    appliesIf: function() {
+      return Boolean(getFollowupExitReport());
+    },
+    fields: function() {
+
+      var fields = [];
+      var enrollment_report =  reports.find(function(r){
+        return r.form === 'treatment_enrollment';
+      });
+
+      // var last_followup_visit = getLastFollowupVisitReport();
+
+      var exit_report = getFollowupExitReport();
+      // var date = '';
+
+      var d = new Date(0);
+      if (exit_report) d.setUTCSeconds(exit_report.reported_date/1000);
+
+      if (enrollment_report){
+
+        fields.push({
+          label: 'contact.profile.last_treatment',
+          translate: true,
+          width: 6,
+          value: enrollment_report.fields.enrollment? enrollment_report.fields.enrollment.program: ''
+        });
+
+        fields.push({
+          label: 'contact.profile.exit_date',
+          translate: true,
+          width: 6,
+          value: exit_report? d.toISOString().slice(0, 10): ''
+        });
+
+        fields.push({
+          label: 'contact.profile.weight_at_exit',
+          translate: true,
+          width: 6,
+          value: exit_report? exit_report.fields.zscore.weight: ''
+        });
+
+        fields.push({
+          label: 'contact.profile.height_at_exit',
+          translate: true,
+          width: 6,
+          value: exit_report? exit_report.fields.zscore.height: ''
+        });
+
+        fields.push({
+          label: 'contact.profile.wfh',
+          translate: true,
+          width: 12,
+          value: exit_report? exit_report.fields.zscore.zscore_wfh: ''
+        });
+
       }
       return fields;
     },

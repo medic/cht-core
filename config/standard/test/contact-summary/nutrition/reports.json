@@ -1,0 +1,548 @@
+[
+  {
+    "_id": "b120159f-bfe6-4ad0-85ac-a1cb7908c8e3",
+    "_rev": "2-d7e0c6bf4f19bd490338da691ba6b22f",
+    "form": "nutrition_screening",
+    "type": "data_record",
+    "content_type": "xml",
+    "reported_date": 1542545299873,
+    "contact": {
+      "_id": "a229c23d-9fe1-4429-8ea1-8eb355781ecd",
+      "parent": {
+        "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+        "parent": {
+          "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+        }
+      }
+    },
+    "from": "+1234567890",
+    "hidden_fields": [],
+    "fields": {
+      "child_name": "Test Child2",
+      "patient_id": "63538",
+      "datetime_of_birth": "2018-08-05T00:00:00.000Z",
+      "dob": "2018-08-05",
+      "age_in_days": "105",
+      "zscore": {
+        "gender": "male",
+        "zscore_age": "105",
+        "weight": "6",
+        "height": "47",
+        "muac": "13",
+        "zscore_wfa": "-0.9",
+        "zscore_hfa": "-4",
+        "zscore_wfh": "4",
+        "nn": "",
+        "nn2": "",
+        "nn3": "",
+        "nn4": "",
+        "wfa_message": "-2SD to 2SD [Normal]",
+        "hfa_message": "< -3SD [Severely Stunted]",
+        "wfh_message": ">2SD [Overweight]",
+        "zscore_wfa_note": "",
+        "zscore_hfa_note": "",
+        "zscore_wfh_note": "",
+        "treatment": "yes",
+        "additional_notes": ""
+      },
+      "summary": {
+        "n_2": "",
+        "n_3": "",
+        "n_4": "",
+        "n_5": "",
+        "n_6": "",
+        "n_7": "",
+        "n_8": "",
+        "n_9": "",
+        "n_10": "",
+        "n_11": "",
+        "n_12": "",
+        "n_13": "",
+        "n_14": "",
+        "n_15": "",
+        "n_16": "",
+        "n_17": "",
+        "n_18": "",
+        "n_19": "",
+        "n_20": "",
+        "n_21": ""
+      },
+      "meta": {
+        "instanceID": "uuid:87bb7077-877b-4116-84bf-f0e9231d3955"
+      }
+    },
+    "tasks": [
+      {
+        "messages": [
+          {
+            "uuid": "137a3c1c-8a8d-4313-87ac-42f237d300bf",
+            "to": "+254715150274",
+            "message": "Test Child2 63538 was seen in the clinic and is WFA: -2SD to 2SD [Normal] HFA: < -3SD [Severely Stunted] WFH: >2SD [Overweight]. You will receive their monthly clinic reminders ."
+          }
+        ],
+        "state_history": [
+          {
+            "state": "pending",
+            "timestamp": "2018-11-18T12:48:25.065Z"
+          }
+        ],
+        "state": "pending"
+      }
+    ],
+    "registration_id": "fa18b57666f8fac7c0b2599f714c8eb7",
+    "transitions": {
+      "accept_patient_reports": {
+        "last_rev": 2,
+        "seq": 33981,
+        "ok": true
+      },
+      "default_responses": {
+        "last_rev": 2,
+        "seq": 33981,
+        "ok": true
+      }
+    },
+    "_attachments": {
+      "content": {
+        "content_type": "application/xml",
+        "revpos": 1,
+        "digest": "md5-+NxEP6XHk/7EQ58jA1+9Zg==",
+        "length": 1788,
+        "stub": true
+      }
+    }
+  },
+  {
+    "_id": "a52c04aa-82c4-49d4-98a6-2aa327b35763",
+    "_rev": "2-677a4d9320b6f0e24c05bca7f0dfd54c",
+    "form": "treatment_enrollment",
+    "type": "data_record",
+    "content_type": "xml",
+    "reported_date": 1542584044671,
+    "contact": {
+      "_id": "a229c23d-9fe1-4429-8ea1-8eb355781ecd",
+      "parent": {
+        "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+        "parent": {
+          "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+        }
+      }
+    },
+    "from": "+1234567890",
+    "hidden_fields": [],
+    "fields": {
+      "child_name": "Test Child2",
+      "patient_id": "63538",
+      "dob": "2018-08-05",
+      "age_in_days": "106",
+      "referral": {
+        "visit": "yes"
+      },
+      "zscore": {
+        "gender": "male",
+        "admission_type": "new_case",
+        "weight": "4",
+        "height": "45",
+        "muac": "12",
+        "zscore_wfh": "4",
+        "nn": ""
+      },
+      "enrollment": {
+        "enroll": "yes",
+        "facility": "clinic",
+        "program": "OTP",
+        "target_weight": "5",
+        "target_muac": "12.5"
+      },
+      "additional_notes": "",
+      "summary": {
+        "n_1": "",
+        "n_2": "",
+        "n_4": "",
+        "n_5": "",
+        "n_6": "",
+        "n_7": "",
+        "n_8": "",
+        "n_9": "",
+        "n_10": "",
+        "n_11": "",
+        "n_12": "",
+        "n_13": "",
+        "n_14": "",
+        "n_15": "",
+        "n_16": "",
+        "n_17": "",
+        "n_20": "",
+        "n_21": ""
+      },
+      "meta": {
+        "instanceID": "uuid:4af87a4f-7fa7-4e10-bf47-65b340b473f5"
+      }
+    },
+    "scheduled_tasks": [
+      {
+        "due": "2018-11-25T23:34:04.671Z",
+        "group": 1,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.948Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2018-12-02T23:34:04.671Z",
+        "group": 2,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.957Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2018-12-09T23:34:04.671Z",
+        "group": 3,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.958Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2018-12-16T23:34:04.671Z",
+        "group": 4,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.958Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2018-12-23T23:34:04.671Z",
+        "group": 5,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.958Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2018-12-30T23:34:04.671Z",
+        "group": 6,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.961Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2019-01-06T23:34:04.671Z",
+        "group": 7,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.961Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2019-01-13T23:34:04.671Z",
+        "group": 8,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.961Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2019-01-20T23:34:04.671Z",
+        "group": 9,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.962Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2019-01-27T23:34:04.671Z",
+        "group": 10,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.962Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2019-02-03T23:34:04.671Z",
+        "group": 11,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.962Z"
+          }
+        ],
+        "state": "scheduled"
+      },
+      {
+        "due": "2019-02-10T23:34:04.671Z",
+        "group": 12,
+        "type": "OTP",
+        "translation_key": "OTP Schedule",
+        "message_key": "messages.schedule.otp",
+        "recipient": "clinic",
+        "state_history": [
+          {
+            "state": "scheduled",
+            "timestamp": "2018-11-18T23:34:36.963Z"
+          }
+        ],
+        "state": "scheduled"
+      }
+    ],
+    "tasks": [
+      {
+        "messages": [
+          {
+            "uuid": "0aab75e2-3159-49dd-8139-319bb3381d8c",
+            "to": "+254715150274",
+            "message": "Test Child2 (63538) was admitted to OTP at the clinic. You will receive their clinic reminders as per the date of admission."
+          }
+        ],
+        "state_history": [
+          {
+            "state": "pending",
+            "timestamp": "2018-11-18T23:34:37.206Z"
+          }
+        ],
+        "state": "pending"
+      }
+    ],
+    "transitions": {
+      "registration": {
+        "last_rev": 2,
+        "seq": 33995,
+        "ok": true
+      },
+      "default_responses": {
+        "last_rev": 2,
+        "seq": 33995,
+        "ok": true
+      }
+    },
+    "_attachments": {
+      "content": {
+        "content_type": "application/xml",
+        "revpos": 1,
+        "digest": "md5-lglpMSSTUMzcgZ/Z+E9p9w==",
+        "length": 1653,
+        "stub": true
+      }
+    }
+  },
+  {
+    "_id": "178633fb-648a-4bd1-ae21-bef94497d3ab",
+    "_rev": "2-16805f604e927460ad6fba9685e4c8c6",
+    "form": "nutrition_followup",
+    "type": "data_record",
+    "content_type": "xml",
+    "reported_date": 1542552665808,
+    "contact": {
+      "_id": "a229c23d-9fe1-4429-8ea1-8eb355781ecd",
+      "parent": {
+        "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+        "parent": {
+          "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+        }
+      }
+    },
+    "from": "+1234567890",
+    "hidden_fields": [],
+    "fields": {
+      "patient_name": "Test Child2",
+      "patient_id": "63538",
+      "age_in_days": "77",
+      "enrollment_date": "2018-11-18",
+      "treatment_program": "",
+      "context_gender": "",
+      "nn1": "",
+      "unenrolled_note": "",
+      "zscore": {
+        "gender": "male",
+        "nn2": "",
+        "weight": "4",
+        "height": "45",
+        "date_of_birth": "2018-09-02",
+        "zscore_age": "77",
+        "zscore_wfh": "4",
+        "nn": "",
+        "muac": ""
+      },
+      "summary": {
+        "n_2": ""
+      },
+      "meta": {
+        "instanceID": "uuid:fc933876-92f5-4e5b-abc0-a0a1efa8ee1f"
+      }
+    },
+    "transitions": {
+      "registration": {
+        "last_rev": 2,
+        "seq": 33989,
+        "ok": true
+      },
+      "default_responses": {
+        "last_rev": 2,
+        "seq": 33989,
+        "ok": true
+      }
+    },
+    "_attachments": {
+      "content": {
+        "content_type": "application/xml",
+        "revpos": 1,
+        "digest": "md5-Nsu0811U6/I3OUIVA+Oqbw==",
+        "length": 1129,
+        "stub": true
+      }
+    }
+  },
+  {
+    "_id": "af1ea1e4-a8ca-4886-8881-5f002ba5a5aa",
+    "_rev": "2-4d98fbd194ab2c9fe8392385cbe53f91",
+    "form": "nutrition_followup",
+    "type": "data_record",
+    "content_type": "xml",
+    "reported_date": 1542587675116,
+    "contact": {
+      "_id": "a229c23d-9fe1-4429-8ea1-8eb355781ecd",
+      "parent": {
+        "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+        "parent": {
+          "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+        }
+      }
+    },
+    "from": "+1234567890",
+    "hidden_fields": [],
+    "fields": {
+      "patient_name": "Test Child2",
+      "patient_id": "63538",
+      "age_in_days": "47",
+      "enrollment_date": "2018-11-18",
+      "treatment_program": "OTP",
+      "context_gender": "",
+      "nn1": "",
+      "task": "exit",
+      "zscore": {
+        "gender": "male",
+        "nn2": "",
+        "weight": "7",
+        "height": "45",
+        "date_of_birth": "2018-10-03",
+        "zscore_age": "47",
+        "zscore_wfh": "4",
+        "nn": "",
+        "muac": "12"
+      },
+      "exit": {
+        "outcome": "cured",
+        "enrollment": "",
+        "length_stay": "1",
+        "stay": "",
+        "enroll": "no"
+      },
+      "summary": {
+        "n_2": "",
+        "n_10": "",
+        "n_11": "",
+        "n_12": ""
+      },
+      "meta": {
+        "instanceID": "uuid:4c76ed14-c057-43bb-953d-12e3ca573e0b"
+      }
+    },
+    "transitions": {
+      "registration": {
+        "last_rev": 2,
+        "seq": 33999,
+        "ok": true
+      },
+      "default_responses": {
+        "last_rev": 2,
+        "seq": 33999,
+        "ok": true
+      }
+    },
+    "_attachments": {
+      "content": {
+        "content_type": "application/xml",
+        "revpos": 1,
+        "digest": "md5-cT34drZlpVRgUSsvuUv03Q==",
+        "length": 1359,
+        "stub": true
+      }
+    }
+  }
+]

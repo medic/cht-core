@@ -321,4 +321,79 @@
       );
     },
   },
+
+  // create nutrition screening task if degree of severity is moderate/severe
+  {
+    icon: 'child',
+    title: 'task.nutrition_screening.title',
+    appliesTo: 'reports',
+    appliesToType: ['G'],
+    appliesIf: function(c, r, i){
+      /* jshint unused:vars */
+      return r.fields.severity === "2" || r.fields.severity === "3";
+    },
+    actions: [{form: 'nutrition_screening'}],
+    events: [{
+      id: 'nutrition_screening',
+      days: 2,
+      start: 2,
+      end: 7
+    }],
+    resolvedIf: function(c, r, event, dueDate){
+      /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_screening';
+      });
+    }
+  },
+
+  // create treatment enrollment task. enroll = 'yes' in ms & followup
+  {
+    icon: 'child',
+    title: 'task.treatment_enrollment.title',
+    appliesTo: 'reports',
+    appliesToType: ['nutrition_screening', 'nutrition_followup'],
+    appliesIf: function(c, r, i){
+      /* jshint unused:vars */
+      return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
+    },
+    actions: [{form: 'treatment_enrollment'}],
+    events: [{
+      id: 'treatment-enrollment',
+      days: 2,
+      start: 2,
+      end: 7
+    }],
+    resolvedIf: function(c, r, event, dueDate){
+      /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.enroll === 'yes';
+      });
+    }
+  },
+
+  // Create death confirmation task
+  {
+    icon: 'risk',
+    title: 'task.death_confirmation.title',
+    appliesTo: 'reports',
+    appliesToType: ['DR', 'death_confirmation'],
+    appliesIf: function(c, r, i){
+      /* jshint unused:vars */
+      return r.form === 'DR';
+    },
+    actions: [{form: 'death_confirmation'}],
+    events: [{
+      id: 'death-confirmation',
+      days: 2,
+      start: 2,
+      end: 7
+    }],
+    resolvedIf: function(c, r, event, dueDate){
+      /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'death_confirmation' && r.fields.death_report.death === 'yes';
+      });
+    }
+  },
 ]

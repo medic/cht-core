@@ -384,3 +384,48 @@ function getSubsequentVisits(r) {
   });
   return subsequentVisits;
 }
+
+function getTreatmentEnrollmentDate(){
+  var date = '';
+  reports.forEach(function(r){
+    if (r.form === 'treatment_enrollment'){
+      var d = new Date(0);
+      d.setUTCSeconds(r.reported_date/1000);
+      date = d.toISOString().slice(0, 10);
+    }
+  });
+  return date;
+}
+
+function getTreatmentProgram(){
+  var treatment_program = '';
+  reports.forEach(function(r){
+    if (r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.program){
+      treatment_program = r.fields.enrollment.program;
+    }
+  });
+  return treatment_program;
+}
+
+function getNutritionScreeningReport(){
+  var screening_report = reports.find(function(r){
+    return r.form === 'nutrition_screening';
+  });
+  return screening_report;
+}
+
+function countFollowups(){
+  var count = 0;
+  reports.forEach(function(r){
+    if (r.form === 'nutrition_followup' && r.fields.task === 'visit'){
+      count = count + 1;
+    }
+  });
+  return count;
+}
+
+function getFollowupExitReport(){
+  return reports.find(function(r){
+    return r.form === 'nutrition_followup' && r.fields.task && r.fields.task === 'exit';
+  });
+}

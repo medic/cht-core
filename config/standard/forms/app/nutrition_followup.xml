@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>child nutrition followup</h:title>
+    <model>
+      <instance>
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-02-12 10-57">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <patient_id/>
+            </contact>
+          </inputs>
+          <patient_name/>
+          <patient_id/>
+          <age_in_days/>
+          <enrollment_date/>
+          <treatment_program/>
+          <context_gender/>
+          <task/>
+          <unenrolled_note/>
+          <zscore>
+            <gender/>
+            <weight/>
+            <height/>
+            <date_of_birth/>
+            <zscore_age/>
+            <zscore_wfh/>
+            <nn/>
+            <muac/>
+          </zscore>
+          <exit>
+            <outcome/>
+            <enrollment/>
+            <length_stay/>
+            <stay/>
+            <enroll/>
+          </exit>
+          <summary>
+            <n_2/>
+            <n_4/>
+            <n_5/>
+            <n_6/>
+            <n_7/>
+            <n_8/>
+            <n_9/>
+            <n_10/>
+            <n_11/>
+            <n_12/>
+          </summary>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </nutrition_followup>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/nutrition_followup/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/nutrition_followup/inputs/source" type="string"/>
+      <bind nodeset="/nutrition_followup/inputs/source_id" type="string"/>
+      <bind nodeset="/nutrition_followup/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/nutrition_followup/inputs/contact/name" type="string"/>
+      <bind nodeset="/nutrition_followup/inputs/contact/patient_id" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/nutrition_followup/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_followup/patient_id" type="string"/>
+      <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /nutrition_followup/zscore/date_of_birth )))" nodeset="/nutrition_followup/age_in_days" type="string"/>
+      <bind calculate="instance('contact-summary')/context/enrollment_date" nodeset="/nutrition_followup/enrollment_date" type="string"/>
+      <bind calculate="instance('contact-summary')/context/treatment_program" nodeset="/nutrition_followup/treatment_program" type="string"/>
+      <bind calculate="instance('contact-summary')/context/gender" nodeset="/nutrition_followup/context_gender" type="string"/>
+      <bind nodeset="/nutrition_followup/task" relevant=" /nutrition_followup/treatment_program  != ''" required="true()" type="select1"/>
+      <bind nodeset="/nutrition_followup/unenrolled_note" readonly="true()" relevant=" /nutrition_followup/treatment_program  = ''" type="string"/>
+      <bind nodeset="/nutrition_followup/zscore/gender" required="true()" type="select1"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_followup/zscore/weight" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_followup/zscore/height" required="true()" type="decimal"/>
+      <bind constraint=". &lt;= today() and ((decimal-date-time(.)+1770) &gt;= decimal-date-time(today()))" nodeset="/nutrition_followup/zscore/date_of_birth" required="true()" type="date"/>
+      <bind calculate=" /nutrition_followup/age_in_days " nodeset="/nutrition_followup/zscore/zscore_age" type="string"/>
+      <bind nodeset="/nutrition_followup/zscore/zscore_wfh" required="true()" type="decimal"/>
+      <bind nodeset="/nutrition_followup/zscore/nn" readonly="true()" type="string"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_followup/zscore/muac" type="decimal"/>
+      <bind nodeset="/nutrition_followup/exit" relevant=" /nutrition_followup/task  = 'exit'"/>
+      <bind nodeset="/nutrition_followup/exit/outcome" type="select1"/>
+      <bind nodeset="/nutrition_followup/exit/enrollment" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
+      <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /nutrition_followup/enrollment_date )))" nodeset="/nutrition_followup/exit/length_stay" type="string"/>
+      <bind nodeset="/nutrition_followup/exit/stay" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
+      <bind nodeset="/nutrition_followup/exit/enroll" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="select1"/>
+      <bind nodeset="/nutrition_followup/summary/n_2" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_4" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_5" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_6" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_7" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_8" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_9" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_10" readonly="true()" relevant=" /nutrition_followup/task  = 'exit'" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_11" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
+      <bind nodeset="/nutrition_followup/summary/n_12" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/nutrition_followup/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/nutrition_followup/inputs">
+      <label>Patient</label>
+      <input appearance="hidden" ref="/nutrition_followup/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/nutrition_followup/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/nutrition_followup/inputs/contact">
+        <label>Contact</label>
+        <input appearance="db-object" ref="/nutrition_followup/inputs/contact/_id">
+          <label>What is the child's name?</label>
+          <hint>Select a person from list</hint>
+        </input>
+      </group>
+    </group>
+    <select1 ref="/nutrition_followup/task">
+      <label>What task would you like to perform?</label>
+      <item>
+        <label>Record <output value=" /nutrition_followup/treatment_program "/> follow up visit</label>
+        <value>visit</value>
+      </item>
+      <item>
+        <label>Exit from <output value=" /nutrition_followup/treatment_program "/></label>
+        <value>exit</value>
+      </item>
+    </select1>
+    <input ref="/nutrition_followup/unenrolled_note">
+      <label>This patient is not enrolled in any treatment program. Fill out their visit details below:</label>
+    </input>
+    <group appearance="zscore field-list" ref="/nutrition_followup/zscore">
+      <label></label>
+      <select1 appearance="zscore-sex" ref="/nutrition_followup/zscore/gender">
+        <label>Child gender</label>
+        <item>
+          <label>Male</label>
+          <value>male</value>
+        </item>
+        <item>
+          <label>Female</label>
+          <value>female</value>
+        </item>
+      </select1>
+      <input appearance="zscore-weight" ref="/nutrition_followup/zscore/weight">
+        <label>Weight (kg)</label>
+      </input>
+      <input appearance="zscore-height" ref="/nutrition_followup/zscore/height">
+        <label>Height/Length (cm)</label>
+      </input>
+      <input ref="/nutrition_followup/zscore/date_of_birth">
+        <label>Date of birth</label>
+      </input>
+      <input appearance="zscore-weight-for-height hidden" ref="/nutrition_followup/zscore/zscore_wfh">
+        <label>WFH</label>
+      </input>
+      <input ref="/nutrition_followup/zscore/nn">
+        <label>WFH: <output value=" /nutrition_followup/zscore/zscore_wfh "/></label>
+      </input>
+      <input ref="/nutrition_followup/zscore/muac">
+        <label>MUAC Measurement</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/nutrition_followup/exit">
+      <label></label>
+      <select1 ref="/nutrition_followup/exit/outcome">
+        <label>Exit outcome</label>
+        <item>
+          <label>Cured</label>
+          <value>cured</value>
+        </item>
+        <item>
+          <label>Transfer to OTP</label>
+          <value>otp</value>
+        </item>
+        <item>
+          <label>Transfer to SFP</label>
+          <value>sfp</value>
+        </item>
+        <item>
+          <label>Transfer to SC</label>
+          <value>sc</value>
+        </item>
+        <item>
+          <label>Transfer to a different site for the same program</label>
+          <value>different_site</value>
+        </item>
+        <item>
+          <label>Non-responsive (non-recovered)</label>
+          <value>nonresponsive</value>
+        </item>
+      </select1>
+      <input ref="/nutrition_followup/exit/enrollment">
+        <label>Enrollment date: <output value=" /nutrition_followup/enrollment_date "/></label>
+      </input>
+      <input ref="/nutrition_followup/exit/stay">
+        <label>Length of stay in days: <output value=" /nutrition_followup/exit/length_stay "/></label>
+      </input>
+      <select1 ref="/nutrition_followup/exit/enroll">
+        <label>Do you need to enroll <output value=" /nutrition_followup/patient_name "/> in another treatment enrollment program</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list summary" ref="/nutrition_followup/summary">
+      <label></label>
+      <input ref="/nutrition_followup/summary/n_2">
+        <label>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_4">
+        <label>Gender: <output value=" /nutrition_followup/zscore/gender "/></label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_5">
+        <label>Date of birth: <output value=" /nutrition_followup/zscore/date_of_birth "/></label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_6">
+        <label>Weight: <output value=" /nutrition_followup/zscore/weight "/> kg</label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_7">
+        <label>Height: <output value=" /nutrition_followup/zscore/height "/> cm</label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_8">
+        <label>MUAC: <output value=" /nutrition_followup/zscore/muac "/> cm</label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_9">
+        <label>Weight for height z-score: <output value=" /nutrition_followup/zscore/zscore_wfh "/></label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_10">
+        <label>Exit outcome: <output value=" /nutrition_followup/exit/outcome "/></label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_11">
+        <label>Length of stay in days: <output value=" /nutrition_followup/exit/length_stay "/></label>
+      </input>
+      <input ref="/nutrition_followup/summary/n_12">
+        <label>Enroll in another program: <output value=" /nutrition_followup/exit/enroll "/></label>
+      </input>
+    </group>
+  </h:body>
+</h:html>
