@@ -307,12 +307,7 @@ angular
     };
 
     var isEmailValid = function(email){
-      if (email.match(/([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)\S+/)){
-        return true;
-      }
-      else { 
-        return false;
-      }
+      return email.match(/([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)\S+/);
     };
 
     // #edit-user-profile is the admin view, which has additional fields.
