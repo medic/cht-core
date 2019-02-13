@@ -34,17 +34,10 @@ const contacts = [
   }
 ];
 
-const DOCS_TO_KEEP = [
-  'district_hospital',
-  'health_center',
-  'clinic',
-  'person'
-];
-
 describe('conditional_alerts', () => {
   beforeAll(done => utils.saveDocs(contacts).then(done));
   afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {

@@ -133,6 +133,7 @@ describe('update_notifications', () => {
       _id: uuid(),
       type: 'data_record',
       form: 'off',
+      from: '12345',
       fields: {
         patient_id: 'unknown'
       },
@@ -143,6 +144,7 @@ describe('update_notifications', () => {
       _id: uuid(),
       type: 'data_record',
       form: 'off',
+      from: '12345',
       fields: {
         patient_id: 'this will not match the validation rule'
       },
@@ -178,8 +180,7 @@ describe('update_notifications', () => {
         expect(updated[1].tasks).toBeDefined();
         expect(updated[1].tasks.length).toEqual(1);
         expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
-        // possible bug/feature(?) - validation messages are always sent to `clinic`
-        expect(updated[1].tasks[0].messages[0].to).toEqual('clinic');
+        expect(updated[1].tasks[0].messages[0].to).toEqual('12345');
         expect(updated[1].tasks[0].state).toEqual('pending');
 
         expect(updated[1].errors).toBeDefined();
