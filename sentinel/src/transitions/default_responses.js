@@ -35,7 +35,7 @@ module.exports = {
       start_date;
 
     function isEmpty() {
-      return !Boolean(config && config.start_date && config.start_date.trim());
+      return !(config && config.start_date && config.start_date.trim());
     }
 
     if (!isEmpty()) {

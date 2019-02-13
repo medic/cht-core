@@ -20,6 +20,7 @@ var feedback = require('../modules/feedback'),
     $transitions,
     $translate,
     $window,
+    Actions,
     APP_CONFIG,
     Auth,
     Changes,
@@ -77,10 +78,11 @@ var feedback = require('../modules/feedback'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        cancelCallback: state.cancelCallback
+        cancelCallback: state.cancelCallback,
+        enketoStatus: state.enketoStatus
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
 
     Session.init();
 
@@ -206,7 +208,6 @@ var feedback = require('../modules/feedback'),
     $scope.tours = [];
     $scope.baseUrl = Location.path;
     $scope.adminUrl = Location.adminPath;
-    $scope.enketoStatus = { saving: false };
     $scope.isAdmin = Session.isAdmin();
 
     if (
@@ -265,7 +266,7 @@ var feedback = require('../modules/feedback'),
       if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
         $scope.clearSelection();
       }
-      if (!$scope.enketoStatus.edited){
+      if (!ctrl.enketoStatus.edited){
         return;
       }
       if (ctrl.cancelCallback){
@@ -291,11 +292,11 @@ var feedback = require('../modules/feedback'),
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
-      if ($scope.enketoStatus.saving) {
+      if (ctrl.enketoStatus.saving) {
         // wait for save to finish
         return;
       }
-      if (!$scope.enketoStatus.edited) {
+      if (!ctrl.enketoStatus.edited) {
         // form hasn't been modified - return immediately
         if (ctrl.cancelCallback) {
           ctrl.cancelCallback();
@@ -308,7 +309,7 @@ var feedback = require('../modules/feedback'),
         controller: 'NavigationConfirmCtrl',
         singleton: true,
       }).then(function() {
-        $scope.enketoStatus.edited = false;
+        ctrl.setEnketoEditedStatus(false);
         if (ctrl.cancelCallback) {
           ctrl.cancelCallback();
         }

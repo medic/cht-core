@@ -440,7 +440,7 @@ module.exports = function(grunt) {
         cmd: `echo "Checking for dangerous _blank links..." &&
                ! (git grep -E  'target\\\\?="_blank"' -- webapp/src |
                       grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
-                      grep -Ev '^\s*//' &&
+                      grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
       'setup-admin': {
@@ -822,77 +822,7 @@ module.exports = function(grunt) {
           // in Jasmine, fdescribe() and fit() are used
           pattern: /(\.only\()|(fdescribe\()|(fit\()/g,
         },
-      },
-      'console-in-angular': {
-        files: [
-          {
-            src: [
-              'webapp/src/js/**/*.js',
-              'admin/src/js/**/*.js',
-
-              // ignored because they don't have access to angular
-              '!webapp/src/js/app.js',
-              '!webapp/src/js/bootstrapper/*.js',
-
-              // ignored because its job is to log to console
-              '!webapp/src/js/modules/feedback.js',
-            ],
-          },
-        ],
-        options: {
-          pattern: /console\./g,
-        },
-      },
-      'console-in-node': {
-        files: [
-          {
-            src: [
-              'api/**/*.js',
-              'sentinel/**/*.js',
-
-              // ignore because they are sent to the client side/frontend
-              '!api/src/public/**/*.js',
-
-              // ignore build dirs
-              '!**/node_modules/**',
-            ],
-          },
-        ],
-        options: {
-          pattern: /console\./g,
-        },
-      },
-      'timeouts-in-angular': {
-        // $timeout() sould be used in place of setTimeout()
-        // $timeout.cancel() should be used in place of clearTimeout()
-        // see: https://docs.angularjs.org/api/ng/service/$timeout
-        files: [
-          {
-            src: [
-              'webapp/src/js/services/**/*.js',
-              'webapp/src/js/controllers/**/*.js',
-            ],
-          },
-        ],
-        options: {
-          pattern: /(set|clear)Timeout/g,
-        },
-      },
-      'window-in-angular': {
-        // $window should be used in preference to window in angular code
-        // see: https://docs.angularjs.org/api/ng/service/$window
-        files: [
-          {
-            src: [
-              'webapp/src/js/services/**/*.js',
-              'webapp/src/js/controllers/**/*.js',
-            ],
-          },
-        ],
-        options: {
-          pattern: /[^$]window\./g,
-        },
-      },
+      }
     },
     xmlmin: {
       'enketo-xslt': {

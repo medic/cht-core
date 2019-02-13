@@ -23,7 +23,12 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     };
 
     var ctrl = this;
-    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+    var mapStateToTarget = function(state) {
+      return {
+        enketoStatus: state.enketoStatus
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
 
     var geolocation;
     Geolocation()
@@ -33,7 +38,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       .catch($log.warn);
 
     var markFormEdited = function() {
-      $scope.enketoStatus.edited = true;
+      ctrl.setEnketoEditedStatus(true);
     };
 
     var setCancelCallback = function() {
@@ -51,7 +56,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
             source: 'contact',
             contact: contact.doc,
           };
-          $scope.enketoStatus.edited = false;
+          ctrl.setEnketoEditedStatus(false);
           return Enketo
             .render('#contact-report', form.id, instanceData, markFormEdited)
             .then(function(formInstance) {
@@ -71,7 +76,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     };
 
     $scope.save = function() {
-      if ($scope.enketoStatus.saving) {
+      if (ctrl.enketoStatus.saving) {
         $log.debug('Attempted to call contacts-report:$scope.save more than once');
         return;
       }
@@ -81,14 +86,14 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         `enketo:contacts:${telemetryData.form}:add:user_edit_time`,
         telemetryData.preSave - telemetryData.postRender);
 
-      $scope.enketoStatus.saving = true;
-      $scope.enketoStatus.error = null;
+      ctrl.setEnketoSavingStatus(true);
+      ctrl.setEnketoError(null);
       Enketo.save($state.params.formId, $scope.form, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
-          $scope.enketoStatus.saving = false;
+          ctrl.setEnketoSavingStatus(false);
           $translate('report.created').then(Snackbar);
-          $scope.enketoStatus.edited = false;
+          ctrl.setEnketoEditedStatus(false);
           $state.go('contacts.detail', { id: $state.params.id });
         })
         .then(() => {
@@ -99,10 +104,10 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
             telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {
-          $scope.enketoStatus.saving = false;
+          ctrl.setEnketoSavingStatus(false);
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-          $scope.enketoStatus.error = msg;
+          ctrl.setEnketoError(msg);
           });
         });
     };

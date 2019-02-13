@@ -76,8 +76,8 @@ Connection: close\r
         assert.equal(
           res.body,
           `108\r
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
+<?xml version="1.0" encoding="UTF-8"?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
     <downloadUrl>http://${host}:${port}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
@@ -128,8 +128,8 @@ Connection: close\r
         assert.equal(
           res.body,
           `108\r
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
+<?xml version="1.0" encoding="UTF-8"?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
     <downloadUrl>http://${host}:${port}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
