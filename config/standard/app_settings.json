@@ -1539,6 +1539,111 @@
           "recipient": "reporting_unit"
         }
       ]
+    },
+    {
+      "form": "HB",
+      "name": "HB Hepatitis B",
+      "format": "HB <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FIPV1",
+      "name": "FIPV1 Fractional IPV",
+      "format": "FIPV1 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FIPV2",
+      "name": "FIPV2 Fractional IPV",
+      "format": "FIPV2 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "DPT4",
+      "name": "DPT4 DPT Booster",
+      "format": "DPT4 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "DPT5",
+      "name": "DPT5 DPT Booster",
+      "format": "DPT5 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
     }
   ],
   "schedules": [
