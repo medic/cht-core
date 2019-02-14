@@ -83,7 +83,14 @@ var feedback = require('../modules/feedback'),
         selectMode: state.selectMode
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        setEnketoEditedStatus: actions.setEnketoEditedStatus,
+        setSelectMode: actions.setSelectMode
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     Session.init();
 

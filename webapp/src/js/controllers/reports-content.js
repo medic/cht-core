@@ -26,7 +26,13 @@ var _ = require('underscore');
           selectMode: state.selectMode
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
+      var mapDispatchToTarget = function(dispatch) {
+        var actions = Actions(dispatch);
+        return {
+          clearCancelCallback: actions.clearCancelCallback
+        };
+      };
+      var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.selectReport($stateParams.id);
       ctrl.clearCancelCallback();
