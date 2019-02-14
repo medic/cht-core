@@ -46,7 +46,7 @@ const getContact = (doc, callback) => {
   if (doc.refid) {
     // use reference id to find clinic if defined
     let params = {
-      key: ['external', doc.refid],
+      key: ['external', String(doc.refid).toUpperCase()],
       include_docs: true,
       limit: 1,
     };

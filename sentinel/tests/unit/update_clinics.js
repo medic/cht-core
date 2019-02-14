@@ -241,6 +241,22 @@ describe('update clinic', () => {
     });
   });
 
+  it('refid field is cast to a uppercase string in view query', () => {
+    var change = {
+      doc: {
+        refid: 'my_refid',
+        type: 'data_record',
+      },
+    };
+    const view = sinon
+      .stub(dbPouch.medic, 'query')
+      .callsArgWith(2, null, { rows: [] });
+    return transition.onMatch(change).then(() => {
+      assert.equal(view.args[0][1].key[0], 'external');
+      assert.equal(view.args[0][1].key[1], 'MY_REFID');
+    });
+  });
+
   it('from field is cast to string in view query', () => {
     var change = {
       doc: {
