@@ -52,7 +52,7 @@ const findToClear = (registration, reported_date, config) => {
   // Both scheduled and pending have not yet been either seen by a gateway or
   // delivered, so they are both clearable.
   // Also clear `muted` schedules, as they could be `unmuted` later
-  const typesToClear = ['pending', 'scheduled', 'muted'];
+  const statesToClear = ['pending', 'scheduled', 'muted'];
 
   const reportedDateMoment = moment(reported_date);
   const taskTypes = config.silence_type.split(',').map(type => type.trim());
@@ -61,7 +61,7 @@ const findToClear = (registration, reported_date, config) => {
 
   if (!config.silence_for) {
     // No range, all clearable tasks should be cleared
-    return tasksUnderReview.filter(task => typesToClear.includes(task.state));
+    return tasksUnderReview.filter(task => statesToClear.includes(task.state));
   } else {
     // Clear all tasks that are members of a group that "exists" before the
     // silenceUntil date. e.g., they have at least one task in their group
@@ -76,8 +76,10 @@ const findToClear = (registration, reported_date, config) => {
       allTasksBeforeSilenceUntil
     );
 
-    return tasksUnderReview.filter(({ group, type }) =>
-      hasGroupAndType(groupTypeCombosToClear, [group, type])
+    return tasksUnderReview.filter(({ group, type, state }) =>
+      hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
+      // only clear tasks that are in a clearable state!
+      statesToClear.includes(state)
     );
   }
 };
@@ -125,9 +127,9 @@ const findValidRegistration = (doc, config, registrations) => {
       if (registration.scheduled_tasks) {
         var scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
         // if the visit was reported prior to the the most recent scheduled task
-        // we move to the next registration because the visit does not get 
+        // we move to the next registration because the visit does not get
         // associated to anything: no reminder messages have been sent yet OR
-        // visit is not responding to a reminder (in this case, existing functionality 
+        // visit is not responding to a reminder (in this case, existing functionality
         // will set the cleared_by)
         if (visitReportedDate < moment(scheduledTasks[0].due)) {
           continue;
@@ -141,12 +143,12 @@ const findValidRegistration = (doc, config, registrations) => {
           var silenceStart = moment(task.due);
           silenceStart.subtract(silenceFor);
           // If the visit falls within the silence_for range of a reminder that
-          // has been cleared, we move to the next registration because we assume 
-          // that this visit is not responding to the reminder. This happens only when 
-          // we are transtioning from one group to another one. Note that existing 
+          // has been cleared, we move to the next registration because we assume
+          // that this visit is not responding to the reminder. This happens only when
+          // we are transtioning from one group to another one. Note that existing
           // functionality will set the cleared_by on the reminders of the task group
           if (silenceStart < visitReportedDate &&
-            task.state === 'cleared' && 
+            task.state === 'cleared' &&
             prevTask &&
             prevTask.group !== task.group) {
             break;
@@ -154,11 +156,11 @@ const findValidRegistration = (doc, config, registrations) => {
 
           // We loop through until we find a task that has been "deliverd" or "sent" and
           // that is older than the visit reported date
-          if (moment(task.due) < visitReportedDate && 
+          if (moment(task.due) < visitReportedDate &&
               ['delivered', 'sent'].includes(task.state)) {
-            if (!task.responded_to_by) { 
-              task.responded_to_by = []; 
-            } 
+            if (!task.responded_to_by) {
+              task.responded_to_by = [];
+            }
             task.responded_to_by.push(doc._id);
 
             return registration;
