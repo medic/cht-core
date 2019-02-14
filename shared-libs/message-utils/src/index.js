@@ -5,6 +5,7 @@ var _ = require('underscore'),
     objectPath = require('object-path'),
     moment = require('moment'),
     toBikramSambatLetters = require('bikram-sambat').toBik_text,
+    phoneNumber = require('@medic/phone-number'),
     SMS_TRUNCATION_SUFFIX = '...';
 
 var getParent = function(doc, type) {
@@ -101,6 +102,9 @@ var getRecipient = function(context, recipient) {
   } else if (recipient.indexOf('.') > -1) {
     // Or multiple layers by executing it as a statement
     phone = objectPath.get(context, recipient);
+  } else if (phoneNumber.validate({}, recipient)) {
+    // or a specific phone number
+    phone = recipient;
   }
   return phone || from || recipient;
 };
