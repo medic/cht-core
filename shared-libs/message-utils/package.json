@@ -1,6 +1,6 @@
 {
   "name": "@medic/message-utils",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test"
@@ -8,6 +8,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@medic/phone-number": "1.0.0",
     "bikram-sambat-bootstrap": "^1.4.2",
     "chai": "^4.2.0",
     "gsm": "^0.1.4",

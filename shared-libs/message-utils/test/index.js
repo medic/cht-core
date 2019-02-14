@@ -118,6 +118,12 @@ describe('messageUtils', () => {
       utils._getRecipient({foo: {bar: {smang: 'baz'}}}, 'foo.bar.smang')
         .should.equal('baz');
     });
+    it('should return the recipient if it is a valid phone number', () => {
+      utils._getRecipient({ from: 'martha' }, '+40211565656').should.equal('+40211565656');
+      utils._getRecipient({ from: 'martha' }, '+10789212558').should.equal('+10789212558');
+      utils._getRecipient({ from: 'martha' }, '123').should.equal('martha');
+      utils._getRecipient({ from: 'martha' }, '99999').should.equal('martha');
+    });
     it('returns doc.from if the recipient cannot be resolved', () => {
       utils._getRecipient({from: 'foo'}, 'a-recipient')
         .should.equal('foo');
