@@ -102,7 +102,7 @@ var getRecipient = function(context, recipient) {
   } else if (recipient.indexOf('.') > -1) {
     // Or multiple layers by executing it as a statement
     phone = objectPath.get(context, recipient);
-  } else if (phoneNumber.validate({ phone_validation: 'partial' }, recipient)) {
+  } else if (phoneNumber.validate({}, recipient)) {
     // or a specific phone number
     phone = recipient;
   }
