@@ -171,7 +171,6 @@ describe('update_notifications', () => {
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Patient not found');
         expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
-        expect(updated[0].tasks[0].state).toEqual('pending');
 
         expect(updated[0].errors).toBeDefined();
         expect(updated[0].errors.length).toEqual(1);
@@ -181,7 +180,6 @@ describe('update_notifications', () => {
         expect(updated[1].tasks.length).toEqual(1);
         expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
         expect(updated[1].tasks[0].messages[0].to).toEqual('12345');
-        expect(updated[1].tasks[0].state).toEqual('pending');
 
         expect(updated[1].errors).toBeDefined();
         expect(updated[1].errors.length).toEqual(1);
