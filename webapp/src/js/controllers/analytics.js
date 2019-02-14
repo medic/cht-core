@@ -15,7 +15,13 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     'ngInject';
 
     var ctrl = this;
-    var unsubscribe = $ngRedux.connect(null, AnalyticsActions)(ctrl);
+    var mapDispatchToTarget = function(dispatch) {
+      var analyticsActions = AnalyticsActions(dispatch);
+      return {
+        setSelectedAnalytics: analyticsActions.setSelectedAnalytics
+      };
+    };
+    var unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
 
     $scope.analyticsModules = [];
 
