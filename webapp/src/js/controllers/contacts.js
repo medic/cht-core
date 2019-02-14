@@ -14,13 +14,13 @@ var _ = require('underscore'),
     $state,
     $stateParams,
     $translate,
-    Actions,
     Auth,
     Changes,
     ContactSchema,
     ContactSummary,
     Export,
     GetDataRecords,
+    GlobalActions,
     LiveList,
     Search,
     SearchFilters,
@@ -36,7 +36,7 @@ var _ = require('underscore'),
 
     var ctrl = this;
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var actions = GlobalActions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback
       };

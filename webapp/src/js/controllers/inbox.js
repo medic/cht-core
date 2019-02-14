@@ -20,7 +20,6 @@ var feedback = require('../modules/feedback'),
     $transitions,
     $translate,
     $window,
-    Actions,
     APP_CONFIG,
     Auth,
     Changes,
@@ -31,6 +30,7 @@ var feedback = require('../modules/feedback'),
     DBSync,
     Debug,
     Enketo,
+    GlobalActions,
     PlaceHierarchy,
     JsonForms,
     Language,
@@ -84,7 +84,7 @@ var feedback = require('../modules/feedback'),
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var actions = GlobalActions(dispatch);
       return {
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setSelectMode: actions.setSelectMode

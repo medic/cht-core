@@ -6,12 +6,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $scope,
     $state,
     $translate,
-    Actions,
     DB,
     Enketo,
     FileReader,
     Geolocation,
     GetReportContent,
+    GlobalActions,
     LineageModelGenerator,
     Snackbar,
     Telemetry,
@@ -32,7 +32,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var actions = GlobalActions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback,
         setCancelCallback: actions.setCancelCallback,

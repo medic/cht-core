@@ -5,10 +5,10 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope,
     $state,
     $translate,
-    Actions,
     ContactViewModelGenerator,
     Enketo,
     Geolocation,
+    GlobalActions,
     Snackbar,
     Telemetry,
     TranslateFrom,
@@ -29,7 +29,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var actions = GlobalActions(dispatch);
       return {
         setCancelCallback: actions.setCancelCallback,
         setEnketoEditedStatus: actions.setEnketoEditedStatus,

@@ -13,8 +13,8 @@ var _ = require('underscore');
       $scope,
       $stateParams,
       $timeout,
-      Actions,
       Changes,
+      GlobalActions,
       MessageState
     ) {
 
@@ -27,7 +27,7 @@ var _ = require('underscore');
         };
       };
       var mapDispatchToTarget = function(dispatch) {
-        var actions = Actions(dispatch);
+        var actions = GlobalActions(dispatch);
         return {
           clearCancelCallback: actions.clearCancelCallback
         };
