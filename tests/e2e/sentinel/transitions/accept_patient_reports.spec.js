@@ -557,11 +557,12 @@ describe('accept_patient_reports', () => {
       .then(() => utils.getDocs(registrations.map(r => r._id)))
       .then(updated => {
         console.log(require('util').inspect(updated[0], { depth: 100 }));
-
         expect(updated[0].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
         expect(updated[0].scheduled_tasks.find(task => task.id === 2).state).toEqual('cleared');
-        expect(updated[0].scheduled_tasks.find(task => task.id === 3).state).toEqual('pending');
-        expect(updated[0].scheduled_tasks.find(task => task.id === 4).state).toEqual('sent');
+        // this task was scheduled in the future, is getting cleared because of the sent task from below
+        expect(updated[0].scheduled_tasks.find(task => task.id === 3).state).toEqual('cleared');
+        // this task is sent and has a due date in the past, but it still clears all other tasks of the same type
+        expect(updated[0].scheduled_tasks.find(task => task.id === 4).state).toEqual('cleared');
         expect(updated[0].scheduled_tasks.find(task => task.id === 5).state).toEqual('muted');
 
         expect(updated[1].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state).toEqual('scheduled');
