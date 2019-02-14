@@ -15,12 +15,10 @@ angular.module('inboxServices').factory('Actions',
 
       function createSetCancelCallbackAction(value) {
         return createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback', value);
-
       }
 
       function createSetEnketoStatusAction(value) {
         return createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus', value);
-
       }
 
       function createSetSelectModeAction(value) {
