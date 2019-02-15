@@ -58,7 +58,9 @@
     "underscore": "^1.9.1",
     "uuid": "^3.3.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "redux-logger": "^3.0.6"
+  },
   "resolutions": {
     "**/jquery": "3.2.x",
     "**/pouchdb-browser": "^7.0.0",
