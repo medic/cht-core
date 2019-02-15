@@ -10,7 +10,7 @@
   };
 
   module.exports = function(state, action) {
-    if (typeof state === 'object' && Object.keys(state).length === 0) {
+    if (typeof state === 'undefined') {
       state = initialState;
     }
 

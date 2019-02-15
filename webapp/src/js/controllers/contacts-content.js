@@ -4,6 +4,7 @@ var _ = require('underscore'),
 angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
@@ -11,7 +12,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $translate,
     Auth,
     Changes,
+    ContactsActions,
     ContactViewModelGenerator,
+    Selectors,
     Snackbar,
     TasksForContact,
     TranslateFrom,
@@ -22,6 +25,20 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
     'use strict';
     'ngInject';
+
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        selected: Selectors.getSelectedContact(state)
+      };
+    };
+    var mapDispatchToTarget = function(dispatch) {
+      var contactsActions = ContactsActions(dispatch);
+      return {
+        setSelectedContactTasks: contactsActions.setSelectedContactTasks
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var taskEndDate,
         reportStartDate,
@@ -69,7 +86,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var getTasks = function() {
       return Auth('can_view_tasks')
         .then(function() {
-          $scope.selected.tasks = [];
+          ctrl.setSelectedContactTasks([]);
           var children = $scope.selected.children.persons || [];
           TasksForContact(
             $scope.selected.doc._id,
@@ -83,7 +100,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
                   task.priorityLabel = translate(task.priorityLabel, task);
                 });
                 $scope.selected.areTasksEnabled = areTasksEnabled;
-                $scope.selected.tasks = tasks;
+                ctrl.setSelectedContactTasks(tasks);
                 children.forEach(function(child) {
                   child.taskCount = tasks.filter(function(task) {
                     return task.doc &&
@@ -165,6 +182,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     });
 
     $scope.$on('$destroy', function() {
+      unsubscribe();
       changeListener.unsubscribe();
       debouncedReloadContact.cancel();
     });
