@@ -99,8 +99,14 @@ _.templateSettings = {
     );
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
+
+    var middlewares = [];
+    if (isDevelopment) {
+      var reduxLogger = require('redux-logger');
+      middlewares.push(reduxLogger.createLogger({ collapsed: true }));
+    }
     var reducer = redux.combineReducers(reducers);
-    $ngReduxProvider.createStoreWith(reducer, []);
+    $ngReduxProvider.createStoreWith(reducer, middlewares);
   });
 
   app.constant('APP_CONFIG', {
