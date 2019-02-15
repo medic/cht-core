@@ -28,19 +28,19 @@ angular.module('controllers').controller('EditTranslationCtrl',
     var getUpdatedLocales = function() {
       return _.filter($scope.model.locales, function(locale) {
         const newValue = $scope.model.values[locale.code];
-        const custom = locale.custom || {};
+        const custom = locale.custom && locale.custom[$scope.model.key];
+        const generic = locale.generic && locale.generic[$scope.model.key];
+
         if (
-          !$scope.editing ||
-          (
-            $scope.editing &&                          // editing
-            (newValue || custom[$scope.model.key]) &&  // assigning or removing a value
-            custom[$scope.model.key] !== newValue      // different from current
-          )
+          (!$scope.editing) || // adding a new translation key
+          (custom && !newValue) || // deleting a custom term
+          (custom && custom !== newValue) || // updating a custom term
+          (!custom && newValue && newValue !== generic) // adding a custom term
         ) {
           if (!locale.custom) {
             locale.custom = {};
           }
-          locale.custom[$scope.model.key] = newValue;
+          locale.custom[$scope.model.key] = newValue || undefined;
           return true;
         }
         return false;
