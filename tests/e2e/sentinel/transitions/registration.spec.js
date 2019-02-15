@@ -112,7 +112,7 @@ describe('registration', () => {
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
         expect(updated.tasks).not.toBeDefined();
-      })
+      });
   });
 
   it('should error if invalid or if patient not found', () => {
@@ -588,7 +588,7 @@ describe('registration', () => {
         expect(updated[1].scheduled_tasks[2].group).toEqual(1);
         expect(updated[1].scheduled_tasks[2].state).toEqual('scheduled');
         expect(updated[1].scheduled_tasks[2].messages[0].message).toEqual('message4');
-      })
+      });
   });
 
   it('should add messages', () => {
