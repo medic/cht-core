@@ -21,6 +21,7 @@ angular
     ReportViewModelGenerator,
     Search,
     SearchFilters,
+    Selectors,
     Tour
   ) {
     'use strict';
@@ -29,7 +30,7 @@ angular
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selectMode: state.selectMode
+        selectMode: Selectors.getSelectMode(state)
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

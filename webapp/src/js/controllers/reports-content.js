@@ -15,7 +15,8 @@ var _ = require('underscore');
       $timeout,
       Changes,
       GlobalActions,
-      MessageState
+      MessageState,
+      Selectors
     ) {
 
       'ngInject';
@@ -23,7 +24,7 @@ var _ = require('underscore');
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: state.selectMode
+          selectMode: Selectors.getSelectMode(state)
         };
       };
       var mapDispatchToTarget = function(dispatch) {

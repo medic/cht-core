@@ -4,13 +4,13 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/actionbar.html',
-    controller: function($ngRedux, $scope) {
+    controller: function($ngRedux, $scope, Selectors) {
       'ngInject';
 
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: state.selectMode
+          selectMode: Selectors.getSelectMode(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

@@ -44,6 +44,7 @@ require('moment/locale/sw');
 
 require('./services');
 require('./actions');
+require('./selectors');
 require('./controllers');
 require('./filters');
 require('./directives');

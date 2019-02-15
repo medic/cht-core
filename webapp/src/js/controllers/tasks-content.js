@@ -9,9 +9,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     Enketo,
     Geolocation,
     GlobalActions,
+    Selectors,
+    Snackbar,
     Telemetry,
     TranslateFrom,
-    Snackbar,
     XmlForm
   ) {
 
@@ -25,7 +26,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        enketoStatus: state.enketoStatus
+        enketoStatus: Selectors.getEnketoStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -116,7 +118,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
 
     $scope.save = function() {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         $log.debug('Attempted to call tasks-content:$scope.save more than once');
         return;
       }

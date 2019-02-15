@@ -40,6 +40,7 @@ var feedback = require('../modules/feedback'),
     Modal,
     RulesEngine,
     Select2Search,
+    Selectors,
     SendMessage,
     Session,
     SetLanguage,
@@ -78,9 +79,10 @@ var feedback = require('../modules/feedback'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        cancelCallback: state.cancelCallback,
-        enketoStatus: state.enketoStatus,
-        selectMode: state.selectMode
+        cancelCallback: Selectors.getCancelCallback(state),
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selectMode: Selectors.getSelectMode(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -274,7 +276,7 @@ var feedback = require('../modules/feedback'),
       if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
         $scope.clearSelection();
       }
-      if (!ctrl.enketoStatus.edited){
+      if (!ctrl.enketoEdited){
         return;
       }
       if (ctrl.cancelCallback){
@@ -300,11 +302,11 @@ var feedback = require('../modules/feedback'),
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         // wait for save to finish
         return;
       }
-      if (!ctrl.enketoStatus.edited) {
+      if (!ctrl.enketoEdited) {
         // form hasn't been modified - return immediately
         if (ctrl.cancelCallback) {
           ctrl.cancelCallback();
