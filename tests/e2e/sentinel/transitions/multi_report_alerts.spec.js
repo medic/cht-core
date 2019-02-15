@@ -128,7 +128,7 @@ describe('multi_report_alerts', () => {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '0123456789',
+      from: '+251 11 551 1211',
       reported_date: new Date().getTime() - 100
     };
 
@@ -136,7 +136,7 @@ describe('multi_report_alerts', () => {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '987654321',
+      from: '+256 41 9867538',
       reported_date: new Date().getTime() + 100
     };
 
@@ -166,16 +166,12 @@ describe('multi_report_alerts', () => {
         expect(updated.tasks.length).toEqual(2);
 
         expect(updated.tasks[0].messages[0].message).toEqual('multi_report_message');
-        expect(updated.tasks[0].messages[0].to).toEqual('987654321');
+        expect(updated.tasks[0].messages[0].to).toEqual('+256 41 9867538');
         expect(updated.tasks[0].state).toEqual('pending');
 
         expect(updated.tasks[1].messages[0].message).toEqual('multi_report_message');
-        // this is a bug https://github.com/medic/medic/issues/5369
-        expect(updated.tasks[1].messages[0].to).toEqual('987654321');
-        expect(updated.tasks[1].state).toEqual('duplicate');
-        // these should be the correct values!
-        //expect(updated.tasks[1].messages[0].to).toEqual('0123456789');
-        //expect(updated.tasks[1].state).toEqual('pending');
+        expect(updated.tasks[1].messages[0].to).toEqual('+251 11 551 1211');
+        expect(updated.tasks[1].state).toEqual('pending');
 
       });
   });

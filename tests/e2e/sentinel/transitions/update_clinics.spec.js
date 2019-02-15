@@ -147,7 +147,6 @@ describe('resolve_pending', () => {
     const refidPerson = {
       _id: uuid(),
       type: 'data_record',
-      //refid: 'sms_person',
       refid: 'SMS_PERSON', // view indexes with uppercase only
       reported_date: new Date().getTime()
     };
@@ -155,7 +154,6 @@ describe('resolve_pending', () => {
     const refidClinic = {
       _id: uuid(),
       type: 'data_record',
-      //refid: 'sms_clinic',
       refid: 'SMS_CLINIC', // view indexes with uppercase only
       reported_date: new Date().getTime()
     };
