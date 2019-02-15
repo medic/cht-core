@@ -319,7 +319,7 @@ describe('registration', () => {
         patient_id: 'patient',
         last_menstrual_period: 2
       },
-      reported_date: moment().subtract('2 weeks').valueOf()
+      reported_date: moment().subtract(2, 'weeks').valueOf()
     };
 
     return utils
@@ -338,12 +338,330 @@ describe('registration', () => {
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        console.log(require('util').inspect(updated, { depth: 100 }));
+        const lmpDate = moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString();
+        const expectedDate = moment().utc(false).startOf('day').add(38, 'weeks').toISOString();
+
         expect(updated[0].lmp_date).toBeDefined();
-        expect(updated[0].lmp_date).toEqual(moment().startOf('day').subtract('2 weeks').toISOString());
-
-
-        expect(updated[1].patient_id).not.toBeDefined();
+        expect(updated[0].lmp_date).toEqual(lmpDate);
+        expect(updated[0].expected_date).toEqual(expectedDate);
+        // even if the doc was "reported" 2 weeks ago, the LMP is calculated relative to current date
+        expect(updated[1].lmp_date).toBeDefined();
+        expect(updated[1].lmp_date).toEqual(lmpDate);
+        expect(updated[1].expected_date).toEqual(expectedDate);
       });
+  });
+
+  it('should add birth date', () => {
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_birth_date',
+          params: '',
+          bool_expr: ''
+        }],
+        messages: [],
+      }],
+      forms: { FORM: { public_form: true }}
+    };
+
+    const doc1 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        patient_id: 'patient',
+        months_since_birth: 2,
+      },
+      reported_date: moment().valueOf()
+    };
+
+    const doc2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        patient_id: 'patient',
+        weeks_since_birth: 2
+      },
+      reported_date: moment().subtract(2, 'weeks').valueOf()
+    };
+
+    const doc3 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        patient_id: 'patient',
+        age_in_years: 2
+      },
+      reported_date: moment().valueOf()
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDocs([ doc1, doc2, doc3 ]))
+      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
+      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
+      .then(infos => {
+        expect(infos[0].transitions).toBeDefined();
+        expect(infos[0].transitions.registration).toBeDefined();
+        expect(infos[0].transitions.registration.ok).toEqual(true);
+
+        expect(infos[1].transitions).toBeDefined();
+        expect(infos[1].transitions.registration).toBeDefined();
+        expect(infos[1].transitions.registration.ok).toEqual(true);
+
+        expect(infos[2].transitions).toBeDefined();
+        expect(infos[2].transitions.registration).toBeDefined();
+        expect(infos[2].transitions.registration.ok).toEqual(true);
+      })
+      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
+      .then(updated => {
+        expect(updated[0].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
+        // report submitted 2 weeks ago, but dob is calculated relative to current date
+        expect(updated[1].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString());
+        expect(updated[2].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'years').toISOString());
+      });
+  });
+
+  it('should assign and clear schedules', () => {
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM',
+        events: [{
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: ['sch1', 'sch2'],
+          bool_expr: ''
+        }, {
+          name: 'on_create',
+          trigger: 'clear_schedule',
+          params: ['sch1', 'sch2'],
+          bool_expr: ''
+        }],
+        messages: [],
+      }],
+      forms: { FORM: { public_form: true }},
+      schedules: [{
+        name: 'sch1',
+        start_from: 'some_date_field',
+        messages: [{
+          // this is in the past
+          group: 1,
+          offset: '5 days',
+          send_day: 'monday',
+          send_time: '09:00',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message1'
+          }],
+        }, {
+          group: 2,
+          offset: '12 weeks',
+          send_day: '',
+          send_time: '',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message2'
+          }],
+        }]
+      }, {
+        name: 'sch2',
+        start_from: 'reported_date',
+        messages: [{
+          group: 1,
+          offset: '2 weeks',
+          send_day: 'friday',
+          send_time: '09:00',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message3'
+          }],
+        }, {
+          group: 1,
+          offset: '5 years',
+          send_day: '',
+          send_time: '',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message4'
+          }],
+        }]
+      }]
+    };
+
+    const doc1 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        patient_id: 'patient',
+      },
+      some_date_field: moment().subtract(3, 'week').valueOf(),
+      reported_date: moment().valueOf()
+    };
+
+    const doc2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        patient_id: 'patient',
+      },
+      some_date_field: moment().subtract(2, 'week').valueOf(),
+      reported_date: moment().valueOf()
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDoc(doc1))
+      .then(() => sentinelUtils.waitForSentinel(doc1._id))
+      .then(() => sentinelUtils.getInfoDoc(doc1._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.registration).toBeDefined();
+        expect(info.transitions.registration.ok).toEqual(true);
+      })
+      .then(() => utils.getDoc(doc1._id))
+      .then(updated => {
+        expect(updated.scheduled_tasks).toBeDefined();
+        expect(updated.scheduled_tasks.length).toEqual(3);
+
+        expect(updated.scheduled_tasks[0].type).toEqual('sch1');
+        expect(updated.scheduled_tasks[0].group).toEqual(2);
+        expect(updated.scheduled_tasks[0].state).toEqual('scheduled');
+        expect(updated.scheduled_tasks[0].messages[0].message).toEqual('message2');
+
+        expect(updated.scheduled_tasks[1].type).toEqual('sch2');
+        expect(updated.scheduled_tasks[1].group).toEqual(1);
+        expect(updated.scheduled_tasks[1].state).toEqual('scheduled');
+        expect(updated.scheduled_tasks[1].messages[0].message).toEqual('message3');
+
+        expect(updated.scheduled_tasks[2].type).toEqual('sch2');
+        expect(updated.scheduled_tasks[2].group).toEqual(1);
+        expect(updated.scheduled_tasks[2].state).toEqual('scheduled');
+        expect(updated.scheduled_tasks[2].messages[0].message).toEqual('message4');
+      })
+      .then(() => utils.saveDoc(doc2))
+      .then(() => sentinelUtils.waitForSentinel(doc2._id))
+      .then(() => sentinelUtils.getInfoDoc(doc2._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.registration).toBeDefined();
+        expect(info.transitions.registration.ok).toEqual(true);
+      })
+      .then(() => utils.getDocs([doc1._id, doc2._id ]))
+      .then(updated => {
+        //1st doc has cleared schedules
+        expect(updated[0].scheduled_tasks).toBeDefined();
+        expect(updated[0].scheduled_tasks.length).toEqual(3);
+        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared'));
+
+        //2nd doc has schedules
+        expect(updated[1].scheduled_tasks).toBeDefined();
+        expect(updated[1].scheduled_tasks.length).toEqual(3);
+
+        expect(updated[1].scheduled_tasks[0].type).toEqual('sch1');
+        expect(updated[1].scheduled_tasks[0].group).toEqual(2);
+        expect(updated[1].scheduled_tasks[0].state).toEqual('scheduled');
+        expect(updated[1].scheduled_tasks[0].messages[0].message).toEqual('message2');
+
+        expect(updated[1].scheduled_tasks[1].type).toEqual('sch2');
+        expect(updated[1].scheduled_tasks[1].group).toEqual(1);
+        expect(updated[1].scheduled_tasks[1].state).toEqual('scheduled');
+        expect(updated[1].scheduled_tasks[1].messages[0].message).toEqual('message3');
+
+        expect(updated[1].scheduled_tasks[2].type).toEqual('sch2');
+        expect(updated[1].scheduled_tasks[2].group).toEqual(1);
+        expect(updated[1].scheduled_tasks[2].state).toEqual('scheduled');
+        expect(updated[1].scheduled_tasks[2].messages[0].message).toEqual('message4');
+      })
+  });
+
+  it('should add messages', () => {
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM',
+        events: [],
+        messages: [{
+          recipient: 'reporting_unit',
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'Report accepted'
+          }],
+        }, {
+          recipient: 'clinic',
+          bool_expr: '',
+          message: [{
+            locale: 'en',
+            content: 'alpha'
+          }],
+        }, {
+          recipient: 'clinic',
+          bool_expr: 'doc.random_field > 0',
+          message: [{
+            locale: 'en',
+            content: 'beta'
+          }],
+        }, {
+          recipient: 'clinic',
+          bool_expr: 'doc.random_field > 100',
+          message: [{
+            locale: 'en',
+            content: 'gamma'
+          }],
+        }],
+      }],
+      forms: { FORM: { public_form: true }},
+    };
+
+    const doc = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      random_field: 20,
+      fields: {
+        patient_id: 'patient',
+      },
+      some_date_field: moment().subtract(3, 'week').valueOf(),
+      reported_date: moment().valueOf()
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.registration).toBeDefined();
+        expect(info.transitions.registration.ok).toEqual(true);
+      })
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        expect(updated.tasks).toBeDefined();
+        expect(updated.tasks.length).toEqual(3);
+
+        expect(updated.tasks[0].messages[0].message).toEqual('Report accepted');
+        expect(updated.tasks[1].messages[0].message).toEqual('alpha');
+        expect(updated.tasks[2].messages[0].message).toEqual('beta');
+      });
+
   });
 });
