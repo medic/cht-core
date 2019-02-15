@@ -559,26 +559,21 @@ describe('accept_patient_reports', () => {
       .then(updated => {
         expect(updated[0].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
         expect(updated[0].scheduled_tasks.find(task => task.id === 2).state).toEqual('cleared');
-        // this task was scheduled in the future, is getting cleared because of the sent task from below
         expect(updated[0].scheduled_tasks.find(task => task.id === 3).state).toEqual('cleared');
-        // this task is sent and has a due date in the past, but it still clears all other tasks of the same type
-        expect(updated[0].scheduled_tasks.find(task => task.id === 4).state).toEqual('cleared');
+        expect(updated[0].scheduled_tasks.find(task => task.id === 4).state).toEqual('sent');
         expect(updated[0].scheduled_tasks.find(task => task.id === 5).state).toEqual('muted');
 
         expect(updated[1].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state).toEqual('scheduled');
         expect(updated[1].scheduled_tasks.find(task => task.id === 2 && task.group === 'a').state).toEqual('cleared');
         expect(updated[1].scheduled_tasks.find(task => task.id === 3 && task.group === 'a').state).toEqual('cleared');
-        // all these tasks get cleared because of the delivered one with the due date in the past
-        // none of these should be cleared theoretically?
         expect(updated[1].scheduled_tasks.find(task => task.id === 4 && task.group === 'a').state).toEqual('cleared');
         expect(updated[1].scheduled_tasks.find(task => task.id === 5 && task.group === 'a').state).toEqual('cleared');
-        expect(updated[1].scheduled_tasks.find(task => task.id === 6 && task.group === 'a').state).toEqual('cleared');
+        expect(updated[1].scheduled_tasks.find(task => task.id === 6 && task.group === 'a').state).toEqual('delivered');
 
         expect(updated[1].scheduled_tasks.find(task => task.id === 1 && task.group === 'b').state).toEqual('pending');
         expect(updated[1].scheduled_tasks.find(task => task.id === 2 && task.group === 'b').state).toEqual('cleared');
         expect(updated[1].scheduled_tasks.find(task => task.id === 3 && task.group === 'b').state).toEqual('cleared');
-        // this task should retain it's sent state
-        expect(updated[1].scheduled_tasks.find(task => task.id === 4 && task.group === 'b').state).toEqual('cleared');
+        expect(updated[1].scheduled_tasks.find(task => task.id === 4 && task.group === 'b').state).toEqual('sent');
         expect(updated[1].scheduled_tasks.find(task => task.id === 5 && task.group === 'b').state).toEqual('muted');
 
         expect(updated[2].scheduled_tasks).toEqual(registrations[2].scheduled_tasks);
