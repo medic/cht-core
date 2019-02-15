@@ -172,7 +172,6 @@ describe('multi_report_alerts', () => {
         expect(updated.tasks[1].messages[0].message).toEqual('multi_report_message');
         expect(updated.tasks[1].messages[0].to).toEqual('+251 11 551 1211');
         expect(updated.tasks[1].state).toEqual('pending');
-
       });
   });
 

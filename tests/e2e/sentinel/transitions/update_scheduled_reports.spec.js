@@ -132,7 +132,7 @@ describe('update_scheduled_reports', () => {
       });
   });
 
-  it('should be do nothing when no duplicates', () => {
+  it('should do nothing when no duplicates', () => {
     const settings = {
       transitions: { update_scheduled_reports: true }
     };
