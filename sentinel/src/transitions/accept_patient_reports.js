@@ -70,7 +70,7 @@ const findToClear = (registration, reported_date, config) => {
     silenceUntil.add(date.getDuration(config.silence_for));
 
     const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-      task => moment(task.due) <= silenceUntil
+      task => moment(task.due) <= silenceUntil && statesToClear.includes(task.state)
     );
     const groupTypeCombosToClear = uniqueGroupTypeCombos(
       allTasksBeforeSilenceUntil
@@ -173,10 +173,27 @@ const findValidRegistration = (doc, config, registrations) => {
 const addReportUUIDToRegistration = (doc, config, registrations, callback) => {
     const validRegistration = registrations.length && findValidRegistration(doc, config, registrations);
     if (validRegistration) {
-      return db.medic.put(validRegistration, callback);
+      return db.medic.put(validRegistration, (err) => {
+              if (err) {
+                if (err.name === 'conflict') {
+                  db.get(validRegistration._id, function(err, doc) {
+                    if (err) { 
+                      callback(err);
+                    }
+                    
+                    validRegistration._rev = doc._rev;
+                    db.medic.put(validRegistration, callback);
+                  });
+                } else {
+                  callback(err);
+                }
+              }
+
+              callback(null, true);
+            });
     }
 
-    callback();
+    callback(null, true);
 };
 
 const silenceRegistrations = (config, doc, registrations, callback) => {
@@ -233,12 +250,12 @@ const handleReport = (doc, config, callback) => {
     .then(registrations => {
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      addReportUUIDToRegistration(doc, config, registrations, err => {
+      module.exports.silenceRegistrations(config, doc, registrations, err => {
         if (err) {
           return callback(err);
         }
 
-        module.exports.silenceRegistrations(config, doc, registrations, callback);
+        addReportUUIDToRegistration(doc, config, registrations, callback);
       });
     })
     .catch(callback);
