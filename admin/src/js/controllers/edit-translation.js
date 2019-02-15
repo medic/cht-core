@@ -4,7 +4,8 @@ angular.module('controllers').controller('EditTranslationCtrl',
   function (
     $scope,
     $uibModalInstance,
-    DB
+    DB,
+    Translate
   ) {
 
     'use strict';
@@ -13,6 +14,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
     $scope.editing = !!$scope.model.key;
     $scope.model.locales = _.pluck($scope.model.locales, 'doc');
     $scope.model.values = {};
+    $scope.errors = {};
     $scope.isCustom = false;
 
     $scope.model.locales.forEach(function(locale) {
@@ -25,18 +27,19 @@ angular.module('controllers').controller('EditTranslationCtrl',
 
     var getUpdatedLocales = function() {
       return _.filter($scope.model.locales, function(locale) {
-        var newValue = $scope.model.values[locale.code];
+        const newValue = $scope.model.values[locale.code];
         const custom = locale.custom || {};
-        const generic = locale.generic || {};
         if (
           !$scope.editing ||
-          ($scope.editing && custom[$scope.model.key] && custom[$scope.model.key] !== newValue) ||
-          ($scope.editing && !custom[$scope.model.key] && generic[$scope.model.key] && generic[$scope.model.key] !== newValue)
+          (
+            $scope.editing &&                          // editing
+            (newValue || custom[$scope.model.key]) &&  // assigning or removing a value
+            custom[$scope.model.key] !== newValue      // different from current
+          )
         ) {
           if (!locale.custom) {
             locale.custom = {};
           }
-
           locale.custom[$scope.model.key] = newValue;
           return true;
         }
@@ -59,6 +62,13 @@ angular.module('controllers').controller('EditTranslationCtrl',
     };
 
     $scope.submit = function() {
+      if (!$scope.model.key) {
+        Translate.fieldIsRequired('translation.key').then(value => {
+          $scope.errors.key = value;
+          $scope.setError();
+        });
+        return;
+      }
       $scope.setProcessing();
       var updated = getUpdatedLocales();
       if (!updated.length) {
