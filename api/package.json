@@ -17,7 +17,7 @@
   "dependencies": {
     "@medic/bulk-docs-utils": "^1.0.0",
     "@medic/lineage": "^1.0.0",
-    "@medic/message-utils": "^1.0.1",
+    "@medic/message-utils": "^1.0.2",
     "@medic/phone-number": "^1.0.0",
     "@medic/registration-utils": "^1.1.0",
     "@medic/search": "^1.1.0",
