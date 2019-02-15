@@ -9,7 +9,7 @@
     }
 
     switch (action.type) {
-      case 'ANALYTICS_SET_SELECTED':
+      case 'SET_SELECTED_ANALYTICS':
         return Object.assign({}, state, { selected: action.payload.selected });
       default:
         return state;

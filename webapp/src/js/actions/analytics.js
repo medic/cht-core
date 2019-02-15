@@ -14,7 +14,7 @@ angular.module('inboxServices').factory('AnalyticsActions',
     return function(dispatch) {
 
       function createSetSelectedAnalyticsAction(value) {
-        return createSingleValueAction('ANALYTICS_SET_SELECTED', 'selected', value);
+        return createSingleValueAction('SET_SELECTED_ANALYTICS', 'selected', value);
       }
 
       return {
