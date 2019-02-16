@@ -5,10 +5,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope,
     $state,
     $translate,
+    Actions,
     DB,
     Enketo,
     Geolocation,
-    GlobalActions,
     Selectors,
     Snackbar,
     Telemetry,
@@ -31,7 +31,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = GlobalActions(dispatch);
+      var actions = Actions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback,
         setCancelCallback: actions.setCancelCallback,

@@ -7,7 +7,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     $state,
     $stateParams,
     $timeout,
-    AnalyticsActions,
+    Actions,
     AnalyticsModules,
     Tour
   ) {
@@ -16,9 +16,9 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
 
     var ctrl = this;
     var mapDispatchToTarget = function(dispatch) {
-      var analyticsActions = AnalyticsActions(dispatch);
+      var actions = Actions(dispatch);
       return {
-        setSelectedAnalytics: analyticsActions.setSelectedAnalytics
+        setSelected: actions.setSelected
       };
     };
     var unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
@@ -27,7 +27,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
 
     $scope.loading = true;
 
-    ctrl.setSelectedAnalytics(null);
+    ctrl.setSelected(null);
     $scope.clearSelected();
 
     AnalyticsModules().then(function(modules) {
@@ -40,7 +40,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
           return;
         }
       } else {
-        ctrl.setSelectedAnalytics(_.findWhere(modules, {
+        ctrl.setSelected(_.findWhere(modules, {
           state: $state.current.name
         }));
       }

@@ -7,11 +7,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $state,
     $timeout,
     $translate,
+    Actions,
     ContactForm,
     ContactSave,
     ContactSchema,
     Enketo,
-    GlobalActions,
     LineageModelGenerator,
     Selectors,
     Snackbar
@@ -28,7 +28,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = GlobalActions(dispatch);
+      var actions = Actions(dispatch);
       return {
         setCancelCallback: actions.setCancelCallback,
         setEnketoEditedStatus: actions.setEnketoEditedStatus,

@@ -14,14 +14,13 @@ var _ = require('underscore'),
     $state,
     $stateParams,
     $translate,
+    Actions,
     Auth,
     Changes,
     ContactSchema,
     ContactSummary,
-    ContactsActions,
     Export,
     GetDataRecords,
-    GlobalActions,
     LiveList,
     Search,
     SearchFilters,
@@ -39,18 +38,16 @@ var _ = require('underscore'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selectedContact: Selectors.getSelectedContact(state),
+        selected: Selectors.getSelected(state),
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = GlobalActions(dispatch);
-      var contactsActions = ContactsActions(dispatch);
+      var actions = Actions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback,
-        clearSelectedContact: contactsActions.clearSelectedContact,
-        setSelectedContact: contactsActions.setSelectedContact,
-        setSelectedContactSummary: contactsActions.setSelectedContactSummary,
-        setSelectedContactError: contactsActions.setSelectedContactError
+        setSelected: actions.setSelected,
+        setSelectedSummary: actions.setSelectedSummary,
+        setSelectedError: actions.setSelectedError
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -60,7 +57,7 @@ var _ = require('underscore'),
     LiveList.$init($scope, 'contacts', 'contact-search');
 
     $scope.loading = true;
-    ctrl.clearSelectedContact();
+    ctrl.setSelected(null);
     $scope.filters = {};
     var defaultTypeFilter = {};
     var usersHomePlace;
@@ -229,7 +226,7 @@ var _ = require('underscore'),
 
     $scope.setSelected = function(selected) {
       liveList.setSelected(selected.doc._id);
-      ctrl.setSelectedContact(selected);
+      ctrl.setSelected(selected);
       ctrl.clearCancelCallback();
       var selectedDoc = selected.doc;
       var title = '';
@@ -268,15 +265,15 @@ var _ = require('underscore'),
             .then(function(results) {
               $scope.loadingSummary = false;
               var summary = results[0];
-              ctrl.setSelectedContactSummary(summary);
+              ctrl.setSelectedSummary(summary);
               var options = { doc: selectedDoc, contactSummary: summary.context };
               XmlForms('ContactsCtrl', options, function(err, forms) {
                 if (err) {
                   $log.error('Error fetching relevant forms', err);
                 }
                 var showUnmuteModal = function(formId) {
-                  return ctrl.selectedContact.doc &&
-                         ctrl.selectedContact.doc.muted &&
+                  return ctrl.selected.doc &&
+                         ctrl.selected.doc.muted &&
                          !isUnmuteForm(results[1], formId);
                 };
                 var formSummaries =
@@ -309,7 +306,7 @@ var _ = require('underscore'),
         .catch(function(e) {
           $log.error('Error setting selected contact');
           $log.error(e);
-          ctrl.setSelectedContactError(true);
+          ctrl.setSelectedError(true);
           $scope.setRightActionBar();
         });
     };
