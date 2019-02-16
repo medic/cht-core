@@ -29,10 +29,7 @@ angular
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
-        setSelected: actions.setSelected,
-        removeSelectedMessage: actions.removeSelectedMessage,
-        setSelectedContact: actions.setSelectedContact,
-        setSelectedMessages: actions.setSelectedMessages
+        setSelected: actions.setSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
