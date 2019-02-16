@@ -85,6 +85,26 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('REMOVE_SELECTED_MESSAGE', 'id', id));
       }
 
+      function createSetFirstSelectedFormattedPropertyAction(value) {
+        return createSingleValueAction('SET_FIRST_SELECTED_FORMATTED_PROPERTY', 'formatted', value);
+      }
+
+      function setFirstSelectedVerified(verified) {
+        dispatch(createSetFirstSelectedFormattedPropertyAction({ verified: verified }));
+      }
+
+      function setFirstSelectedOldVerified(oldVerified) {
+        dispatch(createSetFirstSelectedFormattedPropertyAction({ oldVerified: oldVerified }));
+      }
+
+      function addSelected(selected) {
+        dispatch(createSingleValueAction('ADD_SELECTED', 'selected', selected));
+      }
+
+      function removeSelected(selected) {
+        dispatch(createSingleValueAction('REMOVE_SELECTED', 'selected', selected));
+      }
+
       return {
         clearCancelCallback: clearCancelCallback,
         setCancelCallback: setCancelCallback,
@@ -103,7 +123,12 @@ angular.module('inboxServices').factory('Actions',
         setSelectedContact: setSelectedContact,
         setSelectedMessages: setSelectedMessages,
         addSelectedMessage: addSelectedMessage,
-        removeSelectedMessage: removeSelectedMessage
+        removeSelectedMessage: removeSelectedMessage,
+        // Reports-specific selected actions
+        setFirstSelectedVerified: setFirstSelectedVerified,
+        setFirstSelectedOldVerified: setFirstSelectedOldVerified,
+        addSelected: addSelected,
+        removeSelected: removeSelected
       };
     };
   }

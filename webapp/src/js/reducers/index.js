@@ -45,6 +45,21 @@ var _ = require('underscore');
         return Object.assign({}, state, {
           selected: Object.assign({}, state.selected, { messages: filteredMessages })
         });
+      case 'SET_FIRST_SELECTED_FORMATTED_PROPERTY':
+        var newSelected = state.selected.slice(0);
+        newSelected[0] = Object.assign({}, newSelected[0], {
+          formatted: Object.assign({}, newSelected[0].formatted, action.payload.formatted)
+        });
+        return Object.assign({}, state, { selected: newSelected });
+      case 'ADD_SELECTED':
+        return Object.assign({}, state, {
+          selected: state.selected.concat(action.payload.selected)
+        });
+      case 'REMOVE_SELECTED':
+        var filteredSelected = _.filter(state.selected, function(selected) {
+          return selected._id !== action.payload.id;
+        });
+        return Object.assign({}, state, { selected: filteredSelected });
       default:
         return state;
     }

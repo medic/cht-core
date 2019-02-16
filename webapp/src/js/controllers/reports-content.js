@@ -24,13 +24,17 @@ var _ = require('underscore');
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state)
+          selectMode: Selectors.getSelectMode(state),
+          selected: Selectors.getSelected(state)
         };
       };
       var mapDispatchToTarget = function(dispatch) {
         var actions = Actions(dispatch);
         return {
-          clearCancelCallback: actions.clearCancelCallback
+          clearCancelCallback: actions.clearCancelCallback,
+          setSelected: actions.setSelected,
+          setFirstSelectedVerified: actions.setFirstSelectedVerified,
+          setFirstSelectedOldVerified: actions.setFirstSelectedOldVerified
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -99,9 +103,9 @@ var _ = require('underscore');
       var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
-          return $scope.selected &&
-            $scope.selected.length &&
-            _.some($scope.selected, function(item) {
+          return ctrl.selected &&
+            ctrl.selected.length &&
+            _.some(ctrl.selected, function(item) {
               return item._id === change.id;
             });
         },
@@ -111,15 +115,15 @@ var _ = require('underscore');
               $scope.deselectReport(change.doc);
             });
           } else {
-            var selected = $scope.selected;
+            var selected = ctrl.selected;
             $scope.refreshReportSilently(change.doc)
               .then(function() {
                 if(selected[0].formatted.verified !== change.doc.verified ||
                    ('oldVerified' in selected[0].formatted &&
                     selected[0].formatted.oldVerified !== change.doc.verified)) {
-                  $scope.selected = selected;
+                  ctrl.setSelected(selected);
                   $timeout(function() {
-                    $scope.selected[0].formatted.verified = change.doc.verified;
+                    ctrl.setFirstSelectedVerified(change.doc.verified);
                   });
                 }
               });
@@ -133,11 +137,11 @@ var _ = require('underscore');
       });
 
       $scope.$on('VerifiedReport', function(e, valid) {
-        var oldVerified = $scope.selected[0].formatted.verified;
+        var oldVerified = ctrl.selected[0].formatted.verified;
         var newVerified = oldVerified === valid ? undefined : valid;
 
-        $scope.selected[0].formatted.verified = newVerified;
-        $scope.selected[0].formatted.oldVerified = oldVerified;
+        ctrl.setFirstSelectedVerified(newVerified);
+        ctrl.setFirstSelectedOldVerified(oldVerified);
 
         $scope.setSubActionBarStatus(newVerified);
       });

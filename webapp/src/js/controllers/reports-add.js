@@ -30,7 +30,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     var mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state)
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -159,7 +160,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
-      var model = $scope.selected[0];
+      var model = ctrl.selected[0];
       var reportId = model.doc && model.doc._id;
       var formInternalId = model.formInternalId;
 
