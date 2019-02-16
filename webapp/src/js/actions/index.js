@@ -33,6 +33,20 @@ angular.module('inboxServices').factory('Actions',
         return createSingleValueAction('SET_SELECTED_PROPERTY', 'selected', value);
       }
 
+      function createAddSelectedMessageAction(message) {
+        return {
+          type: 'ADD_SELECTED_MESSAGE',
+          payload: { message: message }
+        };
+      }
+
+      function createRemoveSelectedMessageAction(id) {
+        return {
+          type: 'REMOVE_SELECTED_MESSAGE',
+          payload: { id: id }
+        };
+      }
+
       return {
         clearCancelCallback: function() {
           dispatch(createSetCancelCallbackAction(null));
@@ -58,10 +72,12 @@ angular.module('inboxServices').factory('Actions',
           dispatch(createSetSelectModeAction(selectMode));
         },
 
+        // Global selected actions
         setSelected: function(selected) {
           dispatch(createSetSelectedAction(selected));
         },
 
+        // Contacts-specific selected actions
         setSelectedAreTasksEnabled: function(enabled) {
           dispatch(createSetSelectedPropertyAction({ areTasksEnabled: enabled }));
         },
@@ -76,6 +92,23 @@ angular.module('inboxServices').factory('Actions',
 
         setSelectedError: function(error) {
           dispatch(createSetSelectedPropertyAction({ error: error }));
+        },
+
+        // Messages-specific selected actions
+        setSelectedContact: function(contact) {
+          dispatch(createSetSelectedPropertyAction({ contact: contact }));
+        },
+
+        setSelectedMessages: function(messages) {
+          dispatch(createSetSelectedPropertyAction({ messages: messages }));
+        },
+
+        addSelectedMessage: function(message) {
+          dispatch(createAddSelectedMessageAction(message));
+        },
+
+        removeSelectedMessage: function(id) {
+          dispatch(createRemoveSelectedMessageAction(id));
         }
       };
     };

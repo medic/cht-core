@@ -89,7 +89,8 @@ var feedback = require('../modules/feedback'),
       var actions = Actions(dispatch);
       return {
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setSelectMode: actions.setSelectMode
+        setSelectMode: actions.setSelectMode,
+        setSelected: actions.setSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -287,12 +288,12 @@ var feedback = require('../modules/feedback'),
 
     $scope.clearSelection = function() {
       if ($state.current.name.split('.')[0] === 'contacts'){
-        $scope.selected = null;
+        ctrl.setSelected(null);
         LiveList.contacts.clearSelected();
         LiveList['contact-search'].clearSelected();
       }
       else if ($state.current.name.split('.')[0] === 'reports'){
-        $scope.selected = {};
+        ctrl.setSelected({});
         LiveList.reports.clearSelected();
         LiveList['report-search'].clearSelected();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
