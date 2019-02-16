@@ -27,7 +27,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     };
 
     var renderTemplate = function(scope) {
-      var template = $templateCache.get('templates/partials/content_row_list_item.html');
+      var template = $templateCache.get('templates/directives/content_row_list_item.html');
       return template
         .replace(HTML_BIND_REGEX, function(match, expr, extras) {
           return extras + parse(expr, scope);
@@ -343,11 +343,11 @@ angular.module('inboxServices').factory('LiveList',
       return idx.list && idx.list.length;
     }
 
-    /* 
-    reuseExistingDom is a performance optimization wherein live-list can rely on the changes feed to 
-    specifically update dom elements (via update/remove interfaces) making it safe to re-use existing dom 
+    /*
+    reuseExistingDom is a performance optimization wherein live-list can rely on the changes feed to
+    specifically update dom elements (via update/remove interfaces) making it safe to re-use existing dom
     elements for certain scenarios
-    */ 
+    */
     function _set(listName, items, reuseExistingDom) {
       const idx = indexes[listName];
       if (!idx) {
@@ -364,7 +364,7 @@ angular.module('inboxServices').factory('LiveList',
         newDom[item._id] = li;
       }
       idx.dom = newDom;
-      
+
       _refresh(listName);
     }
 

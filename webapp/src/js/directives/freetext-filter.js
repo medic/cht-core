@@ -11,7 +11,8 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state)
+          selectMode: Selectors.getSelectMode(state),
+          selected: Selectors.getSelected(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

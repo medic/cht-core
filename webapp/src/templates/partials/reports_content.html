@@ -6,18 +6,18 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !selected.length">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !$ctrl.selected.length">
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content" ng-show="$ctrl.selectMode || (!loadingContent && selected.length && selected[0].doc.form !== undefined)">
+  <div id="reports-content" class="col-sm-8 item-content" ng-show="$ctrl.selectMode || (!loadingContent && $ctrl.selected.length && $ctrl.selected[0].doc.form !== undefined)">
 
-    <div class="selection-count" ng-show="$ctrl.selectMode && selected.length">
-      <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
-      <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
+    <div class="selection-count" ng-show="$ctrl.selectMode && $ctrl.selected.length">
+      <span ng-show="$ctrl.selected.length === 1" translate>select.mode.count.singular</span>
+      <span ng-show="$ctrl.selected.length !== 1" translate translate-values="{ number: {{$ctrl.selected.length}} }">select.mode.count.plural</span>
     </div>
 
-    <div ng-repeat="selection in selected track by selection._id" ng-init="summary = selection.formatted || selection.summary; valid = selection.summary.valid || (selection.formatted && !selection.formatted.errors.length)" class="body report-body">
+    <div ng-repeat="selection in $ctrl.selected track by selection._id" ng-init="summary = selection.formatted || selection.summary; valid = selection.summary.valid || (selection.formatted && !selection.formatted.errors.length)" class="body report-body">
 
       <div class="item-summary" ng-click="toggleExpand(selection)">
         <span class="icon" ng-bind-html="summary | formIcon:forms"></span>

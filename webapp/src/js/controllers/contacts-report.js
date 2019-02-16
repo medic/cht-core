@@ -27,7 +27,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     var mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state)
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {

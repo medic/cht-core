@@ -1,16 +1,15 @@
-angular.module('inboxDirectives').directive('mmReportsList', function() {
+angular.module('inboxDirectives').directive('mmMessagesList', function() {
   'use strict';
 
     return {
       restrict: 'E',
-      templateUrl: 'templates/directives/reports_list.html',
+      templateUrl: 'templates/directives/messages_list.html',
       controller: function($ngRedux, $scope, Selectors) {
         'ngInject';
 
         var ctrl = this;
         var mapStateToTarget = function(state) {
           return {
-            selectMode: Selectors.getSelectMode(state),
             selected: Selectors.getSelected(state)
           };
         };
