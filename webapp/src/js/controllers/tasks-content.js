@@ -27,7 +27,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     var mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state)
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -161,8 +162,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     // Wait for `selected` to be set during tasks generation and load the
     // form if we have no other description or instructions in the task.
     $scope.$watch('selected', function() {
-      if (hasOneFormAndNoFields($scope.selected)) {
-        $scope.performAction($scope.selected.actions[0], true);
+      if (hasOneFormAndNoFields(ctrl.selected)) {
+        $scope.performAction(ctrl.selected.actions[0], true);
       }
     });
 
