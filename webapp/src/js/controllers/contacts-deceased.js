@@ -1,22 +1,32 @@
 angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
   function(
     $log,
+    $ngRedux,
     $scope,
     $stateParams,
     $translate,
     Changes,
     ContactViewModelGenerator,
+    Selectors,
     Snackbar
   ) {
 
     'use strict';
     'ngInject';
 
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        selectedContact: Selectors.getSelectedContact(state),
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+
     var selectContact = function(id, silent) {
       $scope.setLoadingContent(id);
       ContactViewModelGenerator(id)
         .then(function(model) {
-          var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
+          var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.settingSelected(refreshing);
           return $scope.setSelected(model);
         })
@@ -43,14 +53,14 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     var changeListener = Changes({
       key: 'contacts-deceased',
       filter: function(change) {
-        return $scope.selected && $scope.selected.doc._id === change.id;
+        return ctrl.selectedContact && ctrl.selectedContact.doc._id === change.id;
       },
       callback: function(change) {
         if (change.deleted) {
-          var parentId = $scope.selected &&
-                         $scope.selected.doc &&
-                         $scope.selected.doc.parent &&
-                         $scope.selected.doc.parent._id;
+          var parentId = ctrl.selectedContact &&
+                         ctrl.selectedContact.doc &&
+                         ctrl.selectedContact.doc.parent &&
+                         ctrl.selectedContact.doc.parent._id;
           if (parentId) {
             // select the parent
             selectContact(parentId, true);
@@ -65,7 +75,10 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
       }
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      unsubscribe();
+      changeListener.unsubscribe();
+    });
 
   }
 );

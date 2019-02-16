@@ -29,13 +29,14 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelectedContact(state)
+        selectedContact: Selectors.getSelectedContact(state),
       };
     };
     var mapDispatchToTarget = function(dispatch) {
       var contactsActions = ContactsActions(dispatch);
       return {
-        setSelectedContactTasks: contactsActions.setSelectedContactTasks
+        setSelectedContactTasks: contactsActions.setSelectedContactTasks,
+        setSelectedContactAreTasksEnabled: contactsActions.setSelectedContactAreTasksEnabled
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -87,19 +88,19 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       return Auth('can_view_tasks')
         .then(function() {
           ctrl.setSelectedContactTasks([]);
-          var children = $scope.selected.children.persons || [];
+          var children = ctrl.selectedContact.children.persons || [];
           TasksForContact(
-            $scope.selected.doc._id,
-            $scope.selected.doc.type,
+            ctrl.selectedContact.doc._id,
+            ctrl.selectedContact.doc.type,
             _.pluck(children, 'id'),
             'ContactsContentCtrl',
             function(areTasksEnabled, tasks) {
-              if ($scope.selected) {
+              if (ctrl.selectedContact) {
                 tasks.forEach(function(task) {
                   task.title = translate(task.title, task);
                   task.priorityLabel = translate(task.priorityLabel, task);
                 });
-                $scope.selected.areTasksEnabled = areTasksEnabled;
+                ctrl.setSelectedContactAreTasksEnabled(areTasksEnabled);
                 ctrl.setSelectedContactTasks(tasks);
                 children.forEach(function(child) {
                   child.taskCount = tasks.filter(function(task) {
@@ -126,7 +127,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
       return ContactViewModelGenerator(id, { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id })
         .then(function(model) {
-          var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
+          var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.setSelected(model);
           $scope.settingSelected(refreshing);
           return getTasks();
@@ -161,14 +162,14 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
-        return ContactChangeFilter.matchContact(change, $scope.selected) ||
-               ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
-               ContactChangeFilter.isRelevantReport(change, $scope.selected);
+        return ContactChangeFilter.matchContact(change, ctrl.selectedContact) ||
+               ContactChangeFilter.isRelevantContact(change, ctrl.selectedContact) ||
+               ContactChangeFilter.isRelevantReport(change, ctrl.selectedContact);
       },
       callback: function(change) {
-        if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
+        if (ContactChangeFilter.matchContact(change, ctrl.selectedContact) && ContactChangeFilter.isDeleted(change)) {
           debouncedReloadContact.cancel();
-          var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
+          var parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
           if (parentId) {
             // redirect to the parent
             return $state.go($state.current.name, {id: parentId});
@@ -177,7 +178,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             return $scope.clearSelected();
           }
         }
-        return debouncedReloadContact($scope.selected.doc._id, true);
+        return debouncedReloadContact(ctrl.selectedContact.doc._id, true);
       }
     });
 

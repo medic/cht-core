@@ -30,6 +30,10 @@ angular.module('inboxServices').factory('ContactsActions',
           dispatch(createSetSelectedContactAction(null));
         },
 
+        setSelectedContactAreTasksEnabled: function(enabled) {
+          dispatch(createSetSelectedContactPropertyAction({ areTasksEnabled: enabled }));
+        },
+
         setSelectedContactTasks: function(tasks) {
           dispatch(createSetSelectedContactPropertyAction({ tasks: tasks }));
         },
