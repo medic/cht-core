@@ -41,6 +41,7 @@ const _ = require('underscore'),
   uuid = require('uuid'),
   compression = require('compression'),
   BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
+  STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),
   app = express();
 
 // requires content-type application/json header
@@ -151,24 +152,36 @@ app.use(compression());
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
 
-app.get('/', function(req, res) {
-  if (req.headers.accept === 'application/json') {
+const root = (req, res) => {
+  if (('deviceID' in req.query) || req.is('application/json')) {
     // couchdb request - let it go
     proxy.web(req, res);
   } else {
-    // redirect to the app path - redirect to _rewrite
-    res.redirect(appPrefix);
+    let redirectUrl = '/';
+    const startPosition = req.url.indexOf('#');
+    if (startPosition !== -1) {
+      redirectUrl = redirectUrl.concat(req.url.slice(startPosition));
+    }
+    res.redirect(redirectUrl);
   }
-});
+};
 
-/*
-To facilitate service worker prefetch on Chrome <66, serve a version of the app which does not require authentication
-*/
-app.get(appPrefix, (req, res, next) => {
-  if ('_sw-precache' in req.query) {
-    return res.sendFile(path.join(__dirname, 'extracted-resources/templates/inbox.html'));
+// Redicting to root '/'
+app.get(`${appPrefix.slice(0, -1)}*`, root);
+
+app.get('/', function(req, res) {
+  if (req.is('application/json')) {
+    // couchdb request - let it go
+    return proxy.web(req, res);
   }
-  next();
+  /*
+    To facilitate service worker prefetch on Chrome <66, serve a version of the app which does not require authentication
+  */
+  if ('_sw-precache' in req.query) {
+    return res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
+  }
+  // send the extracted file
+  res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
 });
 
 app.get('/favicon.ico', (req, res) => {

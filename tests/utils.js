@@ -526,6 +526,9 @@ module.exports = {
       constants.DB_NAME
     }/_design/medic/_rewrite/#/`,
 
+  getNewBaseUrl: () =>
+    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
+
   getAdminBaseUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${
       constants.DB_NAME

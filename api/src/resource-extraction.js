@@ -42,7 +42,7 @@ const extractAttachment = attachmentName => db.medic
     This means, some paths (eg. inbox.html) are unknown until the app starts.
     In this approach, I'm hydrating a token used in the build with environment values once they are known.
     */
-    const hydrated = attachmentName === 'js/service-worker.js' ? raw.toString().replace(APP_PREFIX_TOKEN, `/${environment.db}/_design/${environment.ddoc}/_rewrite/`) : raw;
+    const hydrated = attachmentName === 'js/service-worker.js' ? raw.toString().replace(APP_PREFIX_TOKEN, `/`) : raw;
     fs.writeFile(outputPath, hydrated, err => {
       logger.debug(`Extracted attachment ${outputPath}`);
       if (err) {

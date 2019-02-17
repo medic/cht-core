@@ -46,7 +46,10 @@ describe('bootstrapper', () => {
     document = { cookie: '' };
     window = {
       location: {
-        href: 'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
+        protocol: 'http:',
+        hostname: 'localhost',
+        port: '5988',
+        href: 'http://localhost:5988/'
       },
       navigator: {
         serviceWorker: {
@@ -102,7 +105,7 @@ describe('bootstrapper', () => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
       assert.equal(localClose.callCount, 1);
-      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
+      assert.equal(pouchDb.args[0][0], '@@APP_CONFIG.dbName-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(localGet.callCount, 2);
       assert.equal(localGet.args[0][0], '_design/medic-client');
@@ -124,9 +127,9 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
-      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
+      assert.equal(pouchDb.args[0][0], '@@APP_CONFIG.dbName-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
-      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
+      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/@@APP_CONFIG.dbName');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
       assert.equal(localGet.callCount, 3);
       assert.equal(localGet.args[0][0], '_design/medic-client');
@@ -154,7 +157,7 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+      assert.equal(err.redirect, '/@@APP_CONFIG.dbName/login?redirect=http%3A%2F%2Flocalhost%3A5988%2F');
       done();
     });
   });
@@ -170,7 +173,7 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+      assert.equal(err.redirect, '/@@APP_CONFIG.dbName/login?redirect=http%3A%2F%2Flocalhost%3A5988%2F');
       done();
     });
   });

@@ -661,7 +661,7 @@ describe('routing', () => {
         ),
       ]).then(results => {
         expect(results[0].includes('Found. Redirecting to')).toBe(true);
-        expect(results[1].includes('DOCTYPE html')).toBe(true);
+        expect(results[1].includes('Found. Redirecting to')).toBe(true);
       });
     });
 

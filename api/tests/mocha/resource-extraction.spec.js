@@ -91,7 +91,7 @@ describe('Resource Extraction', () => {
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
         expect(actualOutputPath).to.include('src/extracted-resources/js/service-worker.js');
-        expect(actualContent).to.include('/_design/medic/_rewrite');
+        expect(actualContent).to.include('/');
         done();
       });
   });
