@@ -14,7 +14,7 @@
 
     <div class="selection-count" ng-show="$ctrl.selectMode && $ctrl.selected.length">
       <span ng-show="$ctrl.selected.length === 1" translate>select.mode.count.singular</span>
-      <span ng-show="$ctrl.selected.length !== 1" translate translate-values="{ number: {{$ctrl.selected.length}} }">select.mode.count.plural</span>
+      <span ng-show="$ctrl.selected.length !== 1" translate translate-values="{ number: {{$ctrl.selected.length || 0}} }">select.mode.count.plural</span>
     </div>
 
     <div ng-repeat="selection in $ctrl.selected track by selection._id" ng-init="summary = selection.formatted || selection.summary; valid = selection.summary.valid || (selection.formatted && !selection.formatted.errors.length)" class="body report-body">

@@ -38,6 +38,8 @@ angular
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
+        addSelected: actions.addSelected,
+        removeSelected: actions.removeSelected,
         setSelected: actions.setSelected
       };
     };

@@ -101,8 +101,8 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('ADD_SELECTED', 'selected', selected));
       }
 
-      function removeSelected(selected) {
-        dispatch(createSingleValueAction('REMOVE_SELECTED', 'selected', selected));
+      function removeSelected(id) {
+        dispatch(createSingleValueAction('REMOVE_SELECTED', 'id', id));
       }
 
       return {
