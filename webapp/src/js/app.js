@@ -55,6 +55,27 @@ var _ = require('underscore');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
 };
+var reduxLoggerConfig = {
+  actionTransformer: function(action) {
+    var updatedAction = {};
+    try {
+      JSON.stringify(action);
+    } catch(error) {
+      updatedAction.payload = 'Payload is not serializable';
+    }
+    return Object.assign({}, action, updatedAction);
+  },
+  stateTransformer: function(state) {
+    var updatedState = {};
+    try {
+      JSON.stringify(state.selected);
+    } catch(error) {
+      updatedState.selected = 'Selected is not serializable';
+    }
+    return Object.assign({}, state, updatedState);
+  },
+  collapsed: true
+};
 
 (function() {
   'use strict';
@@ -102,7 +123,7 @@ _.templateSettings = {
     var middlewares = [];
     if (isDevelopment) {
       var reduxLogger = require('redux-logger');
-      middlewares.push(reduxLogger.createLogger({ collapsed: true }));
+      middlewares.push(reduxLogger.createLogger(reduxLoggerConfig));
     }
     $ngReduxProvider.createStoreWith(reducers, middlewares);
   });
