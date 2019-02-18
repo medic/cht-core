@@ -101,15 +101,16 @@ const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATE
       }
 
       if (update.direction === 'to') {
+        $scope.replicationStatus.current = update.status;
+        $scope.replicationStatus.textKey = 'sync.status.' + update.status;
+        $scope.replicationStatus.icon = SYNC_ICON[update.status];
+
         if (update.status === 'not_required') {
           $scope.replicationStatus.lastCompleted = now;
           return DB().info().then(dbInfo => {
             $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, dbInfo.update_seq);
           });
         }
-        $scope.replicationStatus.current = update.status;
-        $scope.replicationStatus.textKey = 'sync.status.' + update.status;
-        $scope.replicationStatus.icon = SYNC_ICON[update.status];
       }
     });
 
