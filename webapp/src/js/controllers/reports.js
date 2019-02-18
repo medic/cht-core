@@ -292,8 +292,16 @@ angular
       setRightActionBar();
     });
 
+    var clearSelection = function() {
+      $scope.selected = [];
+      LiveList.reports.clearSelected();
+      LiveList['report-search'].clearSelected();
+      $('#reports-list input[type="checkbox"]').prop('checked', false);
+      $scope.verifyingReport = false;
+    };
+
     $scope.$on('ClearSelected', function() {
-      $scope.clearSelection();
+      clearSelection();
     });
 
     $scope.$on('VerifyReport', function(e, valid) {

@@ -267,9 +267,15 @@ var _ = require('underscore'),
     };
 
     $scope.$on('ClearSelected', function() {
-      $scope.clearSelection();
+      clearSelection();
     });
-    
+
+    var clearSelection = function() {
+      $scope.selected = null;
+      LiveList.contacts.clearSelected();
+      LiveList['contact-search'].clearSelected();
+    };
+
     $scope.search = function() {
       if($scope.filters.search) {
         $state.go('contacts.detail', { id: null }, { notify: false });
