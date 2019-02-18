@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Child Nutrition Followup (CF)</h:title>
+    <model>
+      <itext>
+        <translation default="true()" lang="English (en)">
+          <text id="/cf/id:label">
+            <value>Child ID</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <cf delimiter="#" id="cf" prefix="J1!cf!" version="2019-02-06 16-00">
+          <id/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </cf>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/cf/id" required="true()" type="int"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/cf/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/cf/id">
+      <label ref="jr:itext('/cf/id:label')"/>
+    </input>
+  </h:body>
+</h:html>
