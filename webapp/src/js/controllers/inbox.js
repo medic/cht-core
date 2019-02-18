@@ -252,8 +252,8 @@ var feedback = require('../modules/feedback'),
         Enketo.unload($scope.form);
         $scope.unsetSelected();
       }
-      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
-        $scope.clearSelection();
+      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]) {
+        $scope.$broadcast('ClearSelected');
       }
       if (!$scope.enketoStatus.edited){
         return;
@@ -263,21 +263,6 @@ var feedback = require('../modules/feedback'),
         $scope.navigationCancel();
       }
     });
-
-    $scope.clearSelection = function() {
-      if ($state.current.name.split('.')[0] === 'contacts'){
-        $scope.selected = null;
-        LiveList.contacts.clearSelected();
-        LiveList['contact-search'].clearSelected();
-      }
-      else if ($state.current.name.split('.')[0] === 'reports'){
-        $scope.selected = {};
-        LiveList.reports.clearSelected();
-        LiveList['report-search'].clearSelected();
-        $('#reports-list input[type="checkbox"]').prop('checked', false);
-        $scope.verifyingReport = false;
-      }
-    };
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {

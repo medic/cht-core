@@ -261,7 +261,7 @@ angular
       // clears report selection for any text search or filter selection
       if($scope.filters.search || Object.keys($scope.filters).length > 1) {
         $state.go('reports.detail', { id: null }, { notify: false });
-        $scope.clearSelection();
+        clearSelection();
       }
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
@@ -295,8 +295,16 @@ angular
       setRightActionBar();
     });
 
+    const clearSelection = () => {
+      $scope.selected = [];
+      LiveList.reports.clearSelected();
+      LiveList['report-search'].clearSelected();
+      $('#reports-list input[type="checkbox"]').prop('checked', false);
+      $scope.verifyingReport = false;
+    };
+
     $scope.$on('ClearSelected', function() {
-      $scope.clearSelection();
+      clearSelection();
     });
 
     $scope.$on('EditReport', function() {
