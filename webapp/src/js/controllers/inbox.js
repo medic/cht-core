@@ -207,7 +207,7 @@ const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATE
         $scope.unsetSelected();
       }
       if (toState.name.split('.')[0] !== fromState.name.split('.')[0]){
-        $scope.clearSelection();
+        $scope.$broadcast('ClearSelected');
       }
       if (!$scope.enketoStatus.edited){
         return;
@@ -217,21 +217,6 @@ const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATE
         $scope.navigationCancel();
       }
     });
-
-    $scope.clearSelection = function() {
-      if ($state.current.name.split('.')[0] === 'contacts'){
-        $scope.selected = null;
-        LiveList.contacts.clearSelected();
-        LiveList['contact-search'].clearSelected();
-      }
-      else if ($state.current.name.split('.')[0] === 'reports'){
-        $scope.selected = {};
-        LiveList.reports.clearSelected();
-        LiveList['report-search'].clearSelected();
-        $('#reports-list input[type="checkbox"]').prop('checked', false);
-        $scope.verifyingReport = false;
-      }
-    };
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
