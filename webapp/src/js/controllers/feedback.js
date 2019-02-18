@@ -21,7 +21,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
         $scope.error.message = false;
         return $q.resolve();
       } else {
-        return Translate.fieldIsRequired('Bug\ description')
+        return Translate.fieldIsRequired('Bug description')
           .then(function(error) {
             $scope.error.message = error;
           });

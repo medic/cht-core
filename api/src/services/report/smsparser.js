@@ -44,7 +44,7 @@ const regexEscape = s => {
   if (typeof s !== 'string') {
     return s;
   }
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
 /*

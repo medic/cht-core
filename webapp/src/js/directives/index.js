@@ -8,6 +8,7 @@
   require('./content-row');
   require('./enketo');
   require('./modal');
+  require('./navigation');
   require('./report-image');
   require('./sender');
   require('./enter');

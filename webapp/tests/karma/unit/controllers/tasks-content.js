@@ -2,6 +2,7 @@ describe('TasksContentCtrl', function() {
   beforeEach(module('inboxApp'));
 
   var $scope,
+      actions,
       task,
       watchCallback,
       createController,
@@ -11,16 +12,18 @@ describe('TasksContentCtrl', function() {
   beforeEach(function() {
     render = sinon.stub();
     XmlForm = sinon.stub();
+    actions = {
+      setCancelCallback: sinon.stub(),
+      setEnketoEditedStatus: sinon.stub()
+    };
     $scope = {
       $on: function() {},
       $watch: function(prop, cb) {
         watchCallback = cb;
       },
-      setCancelTarget: function() {},
       setSelected: function() {
         $scope.selected = task;
-      },
-      enketoStatus: { edited: true }
+      }
     };
     render.returns(Promise.resolve());
     inject(function($controller) {
@@ -28,6 +31,7 @@ describe('TasksContentCtrl', function() {
         $controller('TasksContentCtrl', {
           $scope: $scope,
           $q: Q,
+          Actions: () => actions,
           Enketo: { render: render },
           DB: sinon.stub(),
           XmlForm: XmlForm,
@@ -59,7 +63,8 @@ describe('TasksContentCtrl', function() {
       chai.expect(render.getCall(0).args[0]).to.equal('#task-report');
       chai.expect(render.getCall(0).args[1]).to.equal('myform');
       chai.expect(render.getCall(0).args[2]).to.equal('nothing');
-      chai.expect($scope.enketoStatus.edited).to.equal(false);
+      chai.expect(actions.setEnketoEditedStatus.callCount).to.equal(1);
+      chai.expect(actions.setEnketoEditedStatus.getCall(0).args[0]).to.equal(false);
       done();
     });
   });

@@ -51,7 +51,7 @@ const addError = (record, error) => {
     };
   }
 
-  if (!!_.findWhere(record.errors, { code: error.code })) {
+  if (_.findWhere(record.errors, { code: error.code })) {
     return;
   }
 

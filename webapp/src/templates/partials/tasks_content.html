@@ -47,7 +47,7 @@
 
   <div class="col-sm-8 item-content" ng-show="selected && form && !loadingContent && !loadingForm">
     <div class="body">
-      <mm-enketo id="'task-report'" status="enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
+      <mm-enketo id="'task-report'" status="$ctrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>
   </div>
 </div>

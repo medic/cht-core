@@ -2,7 +2,8 @@ describe('Contacts Edit controller', () => {
 
   'use strict';
 
-  let contactSchema,
+  let actions,
+      contactSchema,
       createController,
       scope,
       $rootScope,
@@ -13,12 +14,12 @@ describe('Contacts Edit controller', () => {
 
   beforeEach(inject((_$rootScope_, $controller) => {
     contactForm = { forEdit: sinon.stub(), forCreate: sinon.stub() };
+    actions = { setCancelCallback: sinon.stub() };
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
     scope.setShowContent = sinon.stub();
-    scope.setCancelTarget = sinon.stub();
     contactSchema = { get: sinon.stub().returns({ fields: { parent: '' }}) };
     var $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
@@ -38,6 +39,7 @@ describe('Contacts Edit controller', () => {
         '$state': spyState,
         '$timeout': work => work(),
         '$translate': $translate,
+        'Actions': () => actions,
         'ContactForm': contactForm,
         'ContactSave': sinon.stub(),
         'ContactSchema': contactSchema,
@@ -50,44 +52,44 @@ describe('Contacts Edit controller', () => {
   }));
 
   it('cancelling redirects to contacts list when query has `from` param equal to `list`', () => {
-    let cancelTarget;
+    let cancelCallback;
     spyState.params.from = 'list';
-    scope.setCancelTarget.callsFake(func => cancelTarget = func);
+    actions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
-    cancelTarget();
+    cancelCallback();
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { id: null } ]);
   });
 
   it('cancelling falls back to parent contact if new contact and query `from` param is not equal to `list`', () => {
-    let cancelTarget;
+    let cancelCallback;
     spyState.params.from = 'something';
-    scope.setCancelTarget.callsFake(func => cancelTarget = func);
+    actions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
-    cancelTarget();
+    cancelCallback();
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'parent_id' } ]);
   });
 
   it('cancelling falls back to parent contact if new contact and query does not have `from` param', () => {
-    let cancelTarget;
-    scope.setCancelTarget.callsFake(func => cancelTarget = func);
+    let cancelCallback;
+    actions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
-    cancelTarget();
+    cancelCallback();
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'parent_id' } ]);
   });
 
   it('cancelling falls back to contact if edit contact', () => {
-    let cancelTarget;
+    let cancelCallback;
     spyState.params.id = 'id';
-    scope.setCancelTarget.callsFake(func => cancelTarget = func);
+    actions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
-    cancelTarget();
+    cancelCallback();
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'id' } ]);
   });

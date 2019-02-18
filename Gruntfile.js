@@ -440,7 +440,7 @@ module.exports = function(grunt) {
         cmd: `echo "Checking for dangerous _blank links..." &&
                ! (git grep -E  'target\\\\?="_blank"' -- webapp/src |
                       grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
-                      grep -Ev '^\s*//' &&
+                      grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
       'setup-admin': {
@@ -582,6 +582,8 @@ module.exports = function(grunt) {
           return patches.join(' && ');
         },
       },
+      audit: { cmd: 'node ./scripts/audit-all.js' },
+      'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
     },
     watch: {
       options: {
@@ -820,77 +822,7 @@ module.exports = function(grunt) {
           // in Jasmine, fdescribe() and fit() are used
           pattern: /(\.only\()|(fdescribe\()|(fit\()/g,
         },
-      },
-      'console-in-angular': {
-        files: [
-          {
-            src: [
-              'webapp/src/js/**/*.js',
-              'admin/src/js/**/*.js',
-
-              // ignored because they don't have access to angular
-              '!webapp/src/js/app.js',
-              '!webapp/src/js/bootstrapper/*.js',
-
-              // ignored because its job is to log to console
-              '!webapp/src/js/modules/feedback.js',
-            ],
-          },
-        ],
-        options: {
-          pattern: /console\./g,
-        },
-      },
-      'console-in-node': {
-        files: [
-          {
-            src: [
-              'api/**/*.js',
-              'sentinel/**/*.js',
-
-              // ignore because they are sent to the client side/frontend
-              '!api/src/public/**/*.js',
-
-              // ignore build dirs
-              '!**/node_modules/**',
-            ],
-          },
-        ],
-        options: {
-          pattern: /console\./g,
-        },
-      },
-      'timeouts-in-angular': {
-        // $timeout() sould be used in place of setTimeout()
-        // $timeout.cancel() should be used in place of clearTimeout()
-        // see: https://docs.angularjs.org/api/ng/service/$timeout
-        files: [
-          {
-            src: [
-              'webapp/src/js/services/**/*.js',
-              'webapp/src/js/controllers/**/*.js',
-            ],
-          },
-        ],
-        options: {
-          pattern: /(set|clear)Timeout/g,
-        },
-      },
-      'window-in-angular': {
-        // $window should be used in preference to window in angular code
-        // see: https://docs.angularjs.org/api/ng/service/$window
-        files: [
-          {
-            src: [
-              'webapp/src/js/services/**/*.js',
-              'webapp/src/js/controllers/**/*.js',
-            ],
-          },
-        ],
-        options: {
-          pattern: /[^$]window\./g,
-        },
-      },
+      }
     },
     xmlmin: {
       'enketo-xslt': {
@@ -1035,8 +967,7 @@ module.exports = function(grunt) {
     ]
   );
 
-  grunt.registerTask('unit', 'Lint and unit tests', [
-    'exec:eslint',
+  grunt.registerTask('unit', 'Unit tests', [
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1065,13 +996,8 @@ module.exports = function(grunt) {
     'build-admin',
     'static-analysis',
     'install-dependencies',
-    'karma:unit',
-    'karma:admin',
-    'exec:shared-lib-unit',
     'mochaTest:api-integration',
-    'env:unit-test',
-    'mochaTest:unit',
-    'env:general',
+    'unit',
     'exec:test-standard'
   ]);
 
@@ -1095,6 +1021,7 @@ module.exports = function(grunt) {
     'regex-check',
     'exec:blank-link-check',
     'exec:eslint',
+    'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);

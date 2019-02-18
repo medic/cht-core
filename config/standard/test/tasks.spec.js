@@ -44,6 +44,36 @@ const fixtures = {
       form: 'delivery',
       reported_date: now,
     }),
+    nutrition_screening: freshCloneOf({
+      _id: 'ms-report-1',
+      fields:{
+        zscore: { treatment: 'yes'}
+      },
+      form: 'nutrition_screening',
+      reported_date: now,
+    }),
+    g_with_severity_2: freshCloneOf({
+      _id: 'g-report-1',
+      fields:{
+        severity: '2'
+      },
+      form: 'G',
+      reported_date: now,
+    }),
+    g_with_severity_3: freshCloneOf({
+      _id: 'g-report-2',
+      fields:{
+        severity: '3'
+      },
+      form: 'G',
+      reported_date: now,
+    }),
+    dr: freshCloneOf({
+      _id: 'dr-report-1',
+      fields: {},
+      form: 'DR',
+      reported_date: now,
+    }),
   },
 };
 
@@ -166,9 +196,9 @@ describe('Standard Configuration Tasks', function() {
 
     describe('Postnatal visit schedule', function() {
       const postnatalTaskDays = [ 5, 6, 7, 8, 9, 10, 11, 12, 44, 45, 46, 47 ];
-      // Tasks are associated to the last scheduled message of each group. 
+      // Tasks are associated to the last scheduled message of each group.
       // We won't have scheduled messages before receiving the report, so only
-      // check for tasks between age in days when registered and ten days 
+      // check for tasks between age in days when registered and ten days
       // beyond end of PNC period.
       const ageInDaysWhenRegistered = 1;
 
@@ -395,6 +425,7 @@ describe('Standard Configuration Tasks', function() {
       });
     });
   });
+
   describe('Childhood Immunizations', function() {
 
     var weekdayOffset = 0;
@@ -409,15 +440,15 @@ describe('Standard Configuration Tasks', function() {
         184,
         240,
         366,
-        485, 
+        485,
         730,
       ]
     };
     var immunizationTaskDays = getRangeFromTask(immunizationTasks, weekdayOffset);
     const cwReport = fixtures.reports.cw();
-    // Tasks are associated to the last scheduled message of each group. 
+    // Tasks are associated to the last scheduled message of each group.
     // We won't have scheduled messages before receiving the report, so only
-    // check for tasks between age in days when registered and ten days 
+    // check for tasks between age in days when registered and ten days
     // beyond end of PNC period.
     var ageInDaysWhenRegistered = Math.floor((cwReport.reported_date - (new Date(cwReport.birth_date).getTime()))/MS_IN_DAY);
 
@@ -491,6 +522,75 @@ describe('Standard Configuration Tasks', function() {
         }
       });
     });
+  });
+
+  describe('Child Nutrition', function(){
+
+    it('should raise nutrition screening task for G form with severity 2', function(){
+
+      session.assert(contactWith(fixtures.reports.g_with_severity_2()));
+
+      return session.emitTasks()
+        .then(tasks => {
+
+          const task = tasks[0];
+
+          assertTitle(task, 'task.nutrition_screening.title');
+          assertIcon(task, 'child');
+          assertNotResolved(task);
+          assert.include(task.actions[0], {form: 'nutrition_screening'});
+        });
+    });
+
+    it('should raise nutrition screening task for G form with severity 3', function(){
+
+      session.assert(contactWith(fixtures.reports.g_with_severity_3()));
+
+      return session.emitTasks()
+        .then(tasks => {
+
+          const task = tasks[0];
+
+          assertTitle(task, 'task.nutrition_screening.title');
+          assertIcon(task, 'child');
+          assertNotResolved(task);
+          assert.include(task.actions[0], {form: 'nutrition_screening'});
+        });
+    });
+
+    it('should raise treatment enrollment task', function(){
+
+      session.assert(contactWith(fixtures.reports.nutrition_screening()));
+
+      return session.emitTasks()
+        .then(tasks => {
+
+          const task = tasks[0];
+
+          assertTitle(task, 'task.treatment_enrollment.title');
+          assertIcon(task, 'child');
+          assertNotResolved(task);
+          assert.include(task.actions[0], {form: 'treatment_enrollment'});
+        });
+    });
+
+
+    it('should raise death confirmation task', function(){
+
+      session.assert(contactWith(fixtures.reports.dr()));
+
+      return session.emitTasks()
+        .then(tasks => {
+
+          const task = tasks[0];
+
+          assertTitle(task, 'task.death_confirmation.title');
+          assertIcon(task, 'risk');
+          assertNotResolved(task);
+          assert.include(task.actions[0], {form: 'death_confirmation'});
+        });
+    });
+
   });
 
   function contactWith(...reports) {

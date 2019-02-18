@@ -72,7 +72,8 @@ module.exports = {
             start,
             now = moment(date.getDate()),
             muted = patient && (patient.muted || mutingUtils.isMutedInLineage(patient)),
-            allowedState = muted ? 'muted' : 'scheduled';
+            allowedState = muted ? 'muted' : 'scheduled',
+            skipGroups = [];
 
         // if we  can't find the schedule in config, we're done also if forms
         // mismatch or already run.
@@ -103,6 +104,10 @@ module.exports = {
                 send_time = module.exports.getSendTime(msg.send_time),
                 message = messages.getMessage(msg, locale);
 
+            if (skipGroups.includes(msg.group)) {
+                return;
+            }
+
             if (offset) {
                 due = start.clone().add(offset);
                 if (send_time.length >= 2) {
@@ -122,6 +127,9 @@ module.exports = {
                 }
                 // don't schedule messages in the past or empty messages
                 if (due < now || !message) {
+                    if (!schedule.start_mid_group) {
+                        skipGroups.push(msg.group);
+                    }
                     return;
                 }
 

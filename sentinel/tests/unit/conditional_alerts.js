@@ -176,8 +176,11 @@ describe('conditional alerts', () => {
     });
 
     sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
-      reported_date: 1390427075750,
-      s1_avail: 0
+      key: 'somekey',
+      doc: {
+        reported_date: 1390427075750,
+        s1_avail_bis: 0
+      }
     }]);
 
     var doc = {
@@ -202,22 +205,25 @@ describe('conditional alerts', () => {
     });
 
     sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
-      reported_date: 1,
+      key: 'somekey',
       doc: {
         s1_avail: 9,
-        s1_used: 2
+        s1_used: 2,
+        reported_date: 1,
       }
     }, {
-      reported_date: 2,
+      key: 'somekey',
       doc: {
         s1_avail: 7,
-        s1_used: 4
+        s1_used: 4,
+        reported_date: 2,
       }
     }, {
-      reported_date: 3,
+      key: 'somekey',
       doc: {
         s1_avail: 3,
-        s1_used: 5
+        s1_used: 5,
+        reported_date: 3,
       }
     }]);
 
@@ -247,22 +253,25 @@ describe('conditional alerts', () => {
     });
 
     sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
-      reported_date: 3,
+      key: 'something',
       doc: {
         s1_avail: 3,
-        s1_used: 5
+        s1_used: 5,
+        reported_date: 3,
       }
     }, {
-      reported_date: 1,
+      key: 'something',
       doc: {
         s1_avail: 9,
-        s1_used: 2
+        s1_used: 2,
+        reported_date: 1,
       }
     }, {
-      reported_date: 2,
+      key: 'aaa',
       doc: {
         s1_avail: 7,
-        s1_used: 4
+        s1_used: 4,
+        reported_date: 2,
       }
     }]);
 
