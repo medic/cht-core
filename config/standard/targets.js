@@ -78,9 +78,8 @@ var targets = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(
+      var visits = countANCVisits(
         c.reports,
-        antenatalForms,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
       );
@@ -102,9 +101,8 @@ var targets = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(
+      var visits = countANCVisits(
         c.reports,
-        antenatalForms,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
       );

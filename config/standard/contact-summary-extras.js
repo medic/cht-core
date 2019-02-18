@@ -380,7 +380,7 @@ function getNewestPncPeriod() {
 
 function getSubsequentVisits(r) {
   var subsequentVisits = reports.filter(function(v) {
-    return (v.form === 'pregnancy_visit' || v.form === 'V') && v.reported_date > r.reported_date;
+    return ((v.form === 'pregnancy_visit' && v.fields.visit_confirmed && v.fields.visit_confirmed === 'yes') || v.form === 'V') && v.reported_date > r.reported_date;
   });
   return subsequentVisits;
 }

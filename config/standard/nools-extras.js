@@ -230,6 +230,20 @@ function countReportsSubmittedInWindow(reports, form, start, end) {
   return reportsFound;
 }
 
+function countANCVisits(reports, start, end){
+  var reportsFound = 0;
+  reports.forEach(function(r) {
+    if (antenatalForms.indexOf(r.form) >= 0) {
+      if (r.reported_date >= start && r.reported_date <= end) {
+        if ((r.form === 'pregnancy_visit' && r.fields.visit_confirmed === 'yes') || r.form === 'V'){
+          reportsFound++;
+        }
+      }
+    }
+  });
+  return reportsFound;
+}
+
 // From medic-sentinel/lib/utils.js
 function isFormCodeSame(formCode, test) {
   return formCode &&
