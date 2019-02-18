@@ -150,7 +150,7 @@ const deleteReadDocs = (change, callback) => {
 
     const userDbs = dbs.filter(db => db.indexOf('medic-user-') === 0);
 
-    async.each(
+    async.eachSeries(
       userDbs,
       (userDb, callback) => {
         const metaDb = db.use(userDb);
