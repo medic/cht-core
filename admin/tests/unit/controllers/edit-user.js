@@ -44,7 +44,7 @@ describe('EditUserCtrl controller', () => {
       _id: 'user.id',
       name: 'user.name',
       fullname: 'user.fullname',
-      email: 'user.email',
+      email: 'user@email.com',
       phone: 'user.phone',
       facility_id: 'abc',
       contact_id: 'xyz',
@@ -392,7 +392,7 @@ describe('EditUserCtrl controller', () => {
 
       setTimeout(() => {
         scope.editUserModel.fullname = 'fullname';
-        scope.editUserModel.email = 'email';
+        scope.editUserModel.email = 'email@email.com';
         scope.editUserModel.phone = 'phone';
         scope.editUserModel.facilitySelect = 'facility_id';
         scope.editUserModel.contactSelect = 'contact_id';
