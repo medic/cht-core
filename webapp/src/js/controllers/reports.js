@@ -292,7 +292,7 @@ angular
       setRightActionBar();
     });
 
-    var clearSelection = function() {
+    const clearSelection = () => {
       $scope.selected = [];
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
