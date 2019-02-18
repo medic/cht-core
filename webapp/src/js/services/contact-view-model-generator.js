@@ -176,7 +176,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(response => response.rows);
     };
 
-    var loadChildren = function(model, options) {
+    var loadChildren = function(options, model) {
       model.children = {};
       if (model.doc.type === 'person') {
         return $q.resolve({});
@@ -272,18 +272,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           setSchemaFields(model);
           setMutedState(model);
 
-          model.loadingChildren = true;
-          model.loadingReports = true;
-          model.reportLoader = loadChildren(model, options)
-            .then(children => {
-              model.children = children;
-              model.loadingChildren = false;
-              return loadReports(model);
-            })
-            .then(reports => {
-              model.reports = reports;
-              model.loadingReports = false;
-            });
+          model.loadChildren = loadChildren.bind(null, options);
+          model.loadReports = loadReports;
 
           return model;
         });

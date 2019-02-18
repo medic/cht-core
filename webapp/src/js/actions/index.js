@@ -41,6 +41,14 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSetEnketoStatusAction({ saving: saving }));
       }
 
+      function setLoadingSelectedChildren(loading) {
+        dispatch(createSingleValueAction('SET_LOADING_SELECTED_CHILDREN', 'loadingSelectedChildren', loading));
+      }
+
+      function setLoadingSelectedReports(loading) {
+        dispatch(createSingleValueAction('SET_LOADING_SELECTED_REPORTS', 'loadingSelectedReports', loading));
+      }
+
       function setSelectMode(selectMode) {
         dispatch(createSingleValueAction('SET_SELECT_MODE', 'selectMode', selectMode));
       }
@@ -65,6 +73,14 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSetSelectedPropertyAction({ summary: summary }));
       }
 
+      function setSelectedChildren(children) {
+        dispatch(createSetSelectedPropertyAction({ children: children }));
+      }
+
+      function setSelectedReports(reports) {
+        dispatch(createSetSelectedPropertyAction({ reports: reports }));
+      }
+
       function setSelectedError(error) {
         dispatch(createSetSelectedPropertyAction({ error: error }));
       }
@@ -75,6 +91,10 @@ angular.module('inboxServices').factory('Actions',
 
       function setSelectedMessages(messages) {
         dispatch(createSetSelectedPropertyAction({ messages: messages }));
+      }
+
+      function setSelectedDocChild(child) {
+        dispatch(createSingleValueAction('SET_SELECTED_DOC_CHILD', 'doc', { child: child }));
       }
 
       function addSelectedMessage(message) {
@@ -115,10 +135,15 @@ angular.module('inboxServices').factory('Actions',
         // Global selected actions
         setSelected: setSelected,
         // Contacts-specific selected actions
+        setLoadingSelectedChildren: setLoadingSelectedChildren,
+        setLoadingSelectedReports: setLoadingSelectedReports,
         setSelectedAreTasksEnabled: setSelectedAreTasksEnabled,
         setSelectedTasks: setSelectedTasks,
         setSelectedSummary: setSelectedSummary,
+        setSelectedChildren: setSelectedChildren,
+        setSelectedReports: setSelectedReports,
         setSelectedError: setSelectedError,
+        setSelectedDocChild: setSelectedDocChild,
         // Messages-specific selected actions
         setSelectedContact: setSelectedContact,
         setSelectedMessages: setSelectedMessages,

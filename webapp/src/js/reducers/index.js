@@ -8,6 +8,8 @@ var _ = require('underscore');
       saving: false,
       error: null
     },
+    loadingSelectedChildren: false,
+    loadingSelectedReports: false,
     selectMode: false,
     selected: null
   };
@@ -31,6 +33,12 @@ var _ = require('underscore');
       case 'SET_SELECTED_PROPERTY':
         return Object.assign({}, state, {
           selected: Object.assign({}, state.selected, action.payload.selected)
+        });
+      case 'SET_SELECTED_DOC_CHILD':
+        return Object.assign({}, state, {
+          selected: Object.assign({}, state.selected, {
+            doc: Object.assign({}, state.selected.doc, action.payload.doc)
+          })
         });
       case 'ADD_SELECTED_MESSAGE':
         return Object.assign({}, state, {
@@ -60,6 +68,10 @@ var _ = require('underscore');
           return selected._id !== action.payload.id;
         });
         return Object.assign({}, state, { selected: filteredSelected });
+      case 'SET_LOADING_SELECTED_CHILDREN':
+        return Object.assign({}, state, { loadingSelectedChildren: action.payload.loadingSelectedChildren });
+      case 'SET_LOADING_SELECTED_REPORTS':
+        return Object.assign({}, state, { loadingSelectedReports: action.payload.loadingSelectedReports });
       default:
         return state;
     }

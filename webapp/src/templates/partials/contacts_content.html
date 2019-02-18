@@ -81,8 +81,8 @@
           <div ng-show="$ctrl.selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
         </div>
 
-        <div class="loader" ng-if="$ctrl.selected.loadingChildren"></div>
-        <div ng-if="!$ctrl.selected.loadingChildren">
+        <div class="loader" ng-if="$ctrl.loadingSelectedChildren"></div>
+        <div ng-if="!$ctrl.loadingSelectedChildren">
           <div ng-if="!$ctrl.selected.children.persons.length && !$ctrl.selected.children.deceased.length" translate class="cell col">
             contact.no.children
           </div>
@@ -181,8 +181,8 @@
               <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
             </span>
           </div>
-          <div class="loader" ng-if="$ctrl.selected.loadingReports"></div>
-          <div ng-if="!$ctrl.selected.loadingReports">
+          <div class="loader" ng-if="$ctrl.loadingSelectedReports"></div>
+          <div ng-if="!$ctrl.loadingSelectedReports">
             <ul>
               <mm-content-row ng-repeat="report in $ctrl.selected.reports | filter:filterReports as filteredReports track by report._id"
                 id="report._id"

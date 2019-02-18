@@ -30,6 +30,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var mapStateToTarget = function(state) {
       return {
         selected: Selectors.getSelected(state),
+        loadingSelectedChildren: Selectors.getLoadingSelectedChildren(state),
+        loadingSelectedReports: Selectors.getLoadingSelectedReports(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {

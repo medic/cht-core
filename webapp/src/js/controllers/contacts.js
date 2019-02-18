@@ -45,9 +45,14 @@ var _ = require('underscore'),
       var actions = Actions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback,
+        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
+        setLoadingSelectedReports: actions.setLoadingSelectedReports,
         setSelected: actions.setSelected,
         setSelectedSummary: actions.setSelectedSummary,
-        setSelectedError: actions.setSelectedError
+        setSelectedChildren: actions.setSelectedChildren,
+        setSelectedReports: actions.setSelectedReports,
+        setSelectedError: actions.setSelectedError,
+        setSelectedDocChild: actions.setSelectedDocChild
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -226,14 +231,16 @@ var _ = require('underscore'),
 
     $scope.setSelected = function(selected) {
       liveList.setSelected(selected.doc._id);
+      ctrl.setLoadingSelectedChildren(true);
+      ctrl.setLoadingSelectedReports(true);
       ctrl.setSelected(selected);
       ctrl.clearCancelCallback();
-      var selectedDoc = selected.doc;
+      var selectedDoc = ctrl.selected.doc;
       var title = '';
-      if (selected.doc.type === 'person') {
+      if (ctrl.selected.doc.type === 'person') {
         title = 'contact.profile';
       } else {
-        title = ContactSchema.get(selected.doc.type).label;
+        title = ContactSchema.get(ctrl.selected.doc.type).label;
       }
       $scope.loadingSummary = true;
       return $q
@@ -245,7 +252,7 @@ var _ = require('underscore'),
         .then(function(results) {
           $scope.setTitle(results[0]);
           if (results[1]) {
-            selectedDoc.child = results[1];
+            ctrl.setSelectedDocChild(results[1]);
           }
           var canEdit = results[2];
 
@@ -257,50 +264,61 @@ var _ = require('underscore'),
             canEdit: canEdit,
           });
 
-          return selected.reportLoader.then(function() {
-            return $q.all([
-              ContactSummary(selected.doc, selected.reports, selected.lineage),
-              Settings()
-            ])
-            .then(function(results) {
-              $scope.loadingSummary = false;
-              var summary = results[0];
-              ctrl.setSelectedSummary(summary);
-              var options = { doc: selectedDoc, contactSummary: summary.context };
-              XmlForms('ContactsCtrl', options, function(err, forms) {
-                if (err) {
-                  $log.error('Error fetching relevant forms', err);
-                }
-                var showUnmuteModal = function(formId) {
-                  return ctrl.selected.doc &&
-                         ctrl.selected.doc.muted &&
-                         !isUnmuteForm(results[1], formId);
-                };
-                var formSummaries =
-                  forms &&
-                  forms.map(function(xForm) {
-                    return {
-                      code: xForm.internalId,
-                      title: translateTitle(xForm.translation_key, xForm.title),
-                      icon: xForm.icon,
-                      showUnmuteModal: showUnmuteModal(xForm.internalId)
-                    };
+          return ctrl.selected
+            .loadChildren(ctrl.selected)
+            .then(function(children) {
+              ctrl.setSelectedChildren(children);
+              ctrl.setLoadingSelectedChildren(false);
+              return ctrl.selected.loadReports(ctrl.selected);
+            })
+            .then(function(reports) {
+              ctrl.setSelectedReports(reports);
+              ctrl.setLoadingSelectedReports(false);
+            })
+            .then(function() {
+              return $q.all([
+                ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
+                Settings()
+              ])
+              .then(function(results) {
+                $scope.loadingSummary = false;
+                var summary = results[0];
+                ctrl.setSelectedSummary(summary);
+                var options = { doc: selectedDoc, contactSummary: summary.context };
+                XmlForms('ContactsCtrl', options, function(err, forms) {
+                  if (err) {
+                    $log.error('Error fetching relevant forms', err);
+                  }
+                  var showUnmuteModal = function(formId) {
+                    return ctrl.selected.doc &&
+                          ctrl.selected.doc.muted &&
+                          !isUnmuteForm(results[1], formId);
+                  };
+                  var formSummaries =
+                    forms &&
+                    forms.map(function(xForm) {
+                      return {
+                        code: xForm.internalId,
+                        title: translateTitle(xForm.translation_key, xForm.title),
+                        icon: xForm.icon,
+                        showUnmuteModal: showUnmuteModal(xForm.internalId)
+                      };
+                    });
+                  var canDelete =
+                    !ctrl.selected.children ||
+                    ((!ctrl.selected.children.places ||
+                      ctrl.selected.children.places.length === 0) &&
+                      (!ctrl.selected.children.persons ||
+                        ctrl.selected.children.persons.length === 0));
+                  $scope.setRightActionBar({
+                    selected: [selectedDoc],
+                    relevantForms: formSummaries,
+                    sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+                    canEdit: canEdit,
+                    canDelete: canDelete,
                   });
-                var canDelete =
-                  !selected.children ||
-                  ((!selected.children.places ||
-                    selected.children.places.length === 0) &&
-                    (!selected.children.persons ||
-                      selected.children.persons.length === 0));
-                $scope.setRightActionBar({
-                  selected: [selectedDoc],
-                  relevantForms: formSummaries,
-                  sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-                  canEdit: canEdit,
-                  canDelete: canDelete,
                 });
               });
-            });
           });
         })
         .catch(function(e) {
