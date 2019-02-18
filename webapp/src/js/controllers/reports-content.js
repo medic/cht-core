@@ -21,7 +21,18 @@ var _ = require('underscore');
       'ngInject';
 
       var ctrl = this;
-      var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+      var mapStateToTarget = function(state) {
+        return {
+          selectMode: state.selectMode
+        };
+      };
+      var mapDispatchToTarget = function(dispatch) {
+        var actions = Actions(dispatch);
+        return {
+          clearCancelCallback: actions.clearCancelCallback
+        };
+      };
+      var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.selectReport($stateParams.id);
       ctrl.clearCancelCallback();
@@ -54,7 +65,7 @@ var _ = require('underscore');
       };
 
       $scope.toggleExpand = function(selection) {
-        if (!$scope.selectMode) {
+        if (!ctrl.selectMode) {
           return;
         }
         if (selection.report || selection.expanded) {
@@ -74,7 +85,7 @@ var _ = require('underscore');
       };
 
       $scope.deselect = function(report, $event) {
-        if ($scope.selectMode) {
+        if (ctrl.selectMode) {
           $event.stopPropagation();
           $scope.deselectReport(report);
         }

@@ -35,7 +35,13 @@ var _ = require('underscore'),
     'ngInject';
 
     var ctrl = this;
-    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        clearCancelCallback: actions.clearCancelCallback
+      };
+    };
+    var unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
 
     var liveList = LiveList.contacts;
 
@@ -324,9 +330,6 @@ var _ = require('underscore'),
       _query();
     };
 
-    $scope.setupSearchFreetext = function() {
-      SearchFilters.freetext($scope.search);
-    };
     $scope.resetFilterModel = function() {
       $scope.filters = {};
       $scope.sortDirection = $scope.defaultSortDirection;

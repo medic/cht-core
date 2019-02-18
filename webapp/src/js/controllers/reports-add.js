@@ -31,7 +31,17 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         enketoStatus: state.enketoStatus
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        clearCancelCallback: actions.clearCancelCallback,
+        setCancelCallback: actions.setCancelCallback,
+        setEnketoEditedStatus: actions.setEnketoEditedStatus,
+        setEnketoSavingStatus: actions.setEnketoSavingStatus,
+        setEnketoError: actions.setEnketoError
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
     var geolocation;
 
     var getSelected = function() {

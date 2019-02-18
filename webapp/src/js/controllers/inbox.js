@@ -79,10 +79,18 @@ var feedback = require('../modules/feedback'),
     var mapStateToTarget = function(state) {
       return {
         cancelCallback: state.cancelCallback,
-        enketoStatus: state.enketoStatus
+        enketoStatus: state.enketoStatus,
+        selectMode: state.selectMode
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        setEnketoEditedStatus: actions.setEnketoEditedStatus,
+        setSelectMode: actions.setSelectMode
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     Session.init();
 
@@ -354,7 +362,7 @@ var feedback = require('../modules/feedback'),
     };
 
     $scope.setShowContent = function(showContent) {
-      if (showContent && $scope.selectMode) {
+      if (showContent && ctrl.selectMode) {
         // when in select mode we never show the RHS on mobile
         return;
       }
@@ -377,7 +385,7 @@ var feedback = require('../modules/feedback'),
     $transitions.onSuccess({}, function(trans) {
       $scope.currentTab = trans.to().name.split('.')[0];
       if (!$state.includes('reports')) {
-        $scope.selectMode = false;
+        ctrl.setSelectMode(false);
       }
     });
 
@@ -629,7 +637,7 @@ var feedback = require('../modules/feedback'),
         model: { doc: doc },
       }).then(function() {
         if (
-          !$scope.selectMode &&
+          !ctrl.selectMode &&
           ($state.includes('contacts') || $state.includes('reports'))
         ) {
           $state.go($state.current.name, { id: null });
@@ -654,7 +662,7 @@ var feedback = require('../modules/feedback'),
     };
 
     $scope.setSelectMode = function(value) {
-      $scope.selectMode = value;
+      ctrl.setSelectMode(value);
       $scope.clearSelected();
       $state.go('reports.detail', { id: null });
     };

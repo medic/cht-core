@@ -1,23 +1,26 @@
-angular.module('inboxDirectives').directive('mmNavigation', function() {
+angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchFilters) {
   'use strict';
+  'ngInject';
 
   return {
     restrict: 'E',
-    templateUrl: 'templates/directives/filters/navigation.html',
+    templateUrl: 'templates/directives/filters/freetext.html',
     controller: function($ngRedux, $scope) {
       'ngInject';
 
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          cancelCallback: state.cancelCallback,
-          enketoStatus: state.enketoStatus
+          selectMode: state.selectMode
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: '$ctrl',
+    link: function(scope) {
+      SearchFilters.freetext(scope.search);
+    }
   };
 });

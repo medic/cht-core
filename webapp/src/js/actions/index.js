@@ -2,42 +2,27 @@ angular.module('inboxServices').factory('Actions',
   function() {
     'use strict';
 
+    function createSingleValueAction(type, valueName, value) {
+      var action = {
+        type: type,
+        payload: {}
+      };
+      action.payload[valueName] = value;
+      return action;
+    }
+
     return function(dispatch) {
 
-      function createSetCancelCallbackAction(cancelCallback) {
-        return {
-          type: 'SET_CANCEL_CALLBACK',
-          payload: {
-            cancelCallback: cancelCallback
-          }
-        };
+      function createSetCancelCallbackAction(value) {
+        return createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback', value);
       }
 
-      function createSetEnketoErrorAction(error) {
-        return {
-          type: 'SET_ENKETO_ERROR',
-          payload: {
-            error: error
-          }
-        };
+      function createSetEnketoStatusAction(value) {
+        return createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus', value);
       }
 
-      function createSetEnketoEditedStatusAction(edited) {
-        return {
-          type: 'SET_ENKETO_EDITED_STATUS',
-          payload: {
-            edited: edited
-          }
-        };
-      }
-
-      function createSetEnketoSavingStatusAction(saving) {
-        return {
-          type: 'SET_ENKETO_SAVING_STATUS',
-          payload: {
-            saving: saving
-          }
-        };
+      function createSetSelectModeAction(value) {
+        return createSingleValueAction('SET_SELECT_MODE', 'selectMode', value);
       }
 
       return {
@@ -50,15 +35,19 @@ angular.module('inboxServices').factory('Actions',
         },
 
         setEnketoError: function(error) {
-          dispatch(createSetEnketoErrorAction(error));
+          dispatch(createSetEnketoStatusAction({ error: error }));
         },
 
         setEnketoEditedStatus: function(edited) {
-          dispatch(createSetEnketoEditedStatusAction(edited));
+          dispatch(createSetEnketoStatusAction({ edited: edited }));
         },
 
         setEnketoSavingStatus: function(saving) {
-          dispatch(createSetEnketoSavingStatusAction(saving));
+          dispatch(createSetEnketoStatusAction({ saving: saving }));
+        },
+
+        setSelectMode: function(selectMode) {
+          dispatch(createSetSelectModeAction(selectMode));
         }
       };
     };

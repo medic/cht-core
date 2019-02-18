@@ -6,6 +6,7 @@ angular
   .module('inboxControllers')
   .controller('ReportsCtrl', function(
     $log,
+    $ngRedux,
     $scope,
     $state,
     $stateParams,
@@ -24,6 +25,14 @@ angular
   ) {
     'use strict';
     'ngInject';
+
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        selectMode: state.selectMode
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
     var lineage = lineageFactory();
 
@@ -58,7 +67,7 @@ angular
 
     var setSelected = function(model) {
       $scope.setSelected(model);
-      if ($scope.selectMode) {
+      if (ctrl.selectMode) {
         return;
       }
       var listModel = _.findWhere(liveList.getList(), { _id: model._id });
@@ -88,7 +97,7 @@ angular
         return s.doc || s.summary;
       });
       var doc =
-        !$scope.selectMode &&
+        !ctrl.selectMode &&
         model.selected &&
         model.selected.length === 1 &&
         model.selected[0];
@@ -116,7 +125,7 @@ angular
 
     $scope.setSelected = function(model) {
       var refreshing = true;
-      if ($scope.selectMode) {
+      if (ctrl.selectMode) {
         var existing = _.findWhere($scope.selected, { _id: model.doc._id });
         if (existing) {
           _.extend(existing, model);
@@ -229,7 +238,7 @@ angular
             !$state.params.id &&
             !$scope.isMobile() &&
             !$scope.selected &&
-            !$scope.selectMode &&
+            !ctrl.selectMode &&
             $state.is('reports.detail')
           ) {
             $timeout(function() {
@@ -358,37 +367,8 @@ angular
       });
     };
 
-    $scope.setupSearchFreetext = function() {
-      SearchFilters.freetext($scope.search);
-    };
-    $scope.setupSearchFormType = function() {
-      SearchFilters.formType(function(forms) {
-        $scope.filters.forms = forms;
-        $scope.search();
-      });
-    };
-    $scope.setupSearchStatus = function() {
-      SearchFilters.status(function(status) {
-        $scope.filters.valid = status.valid;
-        $scope.filters.verified = status.verified;
-        $scope.search();
-      });
-    };
-    $scope.setupSearchFacility = function() {
-      SearchFilters.facility(function(facilities) {
-        $scope.filters.facilities = facilities;
-        $scope.search();
-      });
-    };
-    $scope.setupSearchDate = function() {
-      SearchFilters.date(function(date) {
-        $scope.filters.date = date;
-        $scope.search();
-      });
-    };
-
     $scope.resetFilterModel = function() {
-      if ($scope.selectMode && $scope.selected && $scope.selected.length) {
+      if (ctrl.selectMode && $scope.selected && $scope.selected.length) {
         // can't filter when in select mode
         return;
       }
@@ -414,7 +394,7 @@ angular
     }
 
     $('.inbox').on('click', '#reports-list .content-row', function(e) {
-      if ($scope.selectMode) {
+      if (ctrl.selectMode) {
         e.preventDefault();
         e.stopPropagation();
         var target = $(e.target).closest('li[data-record-id]');
@@ -515,6 +495,7 @@ angular
     });
 
     $scope.$on('$destroy', function() {
+      unsubscribe();
       changeListener.unsubscribe();
       if (!$state.includes('reports')) {
         SearchFilters.destroy();
