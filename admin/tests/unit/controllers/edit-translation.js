@@ -78,6 +78,7 @@ describe('EditTranslationCtrl controller', function() {
     createController();
     scope.model.values.en = 'Hello';
     scope.model.values.fr = 'Bienvenue';
+    scope.model.values.es = 'Hola';
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
@@ -87,6 +88,35 @@ describe('EditTranslationCtrl controller', function() {
       chai.expect(updated[0].custom['title.key']).to.equal('Hello');
       chai.expect(updated[1].code).to.equal('fr');
       chai.expect(updated[1].custom['title.key']).to.equal('Bienvenue');
+      done();
+    });
+  });
+
+  it('save custom', function(done) {
+    model = {
+      key: 'title.key',
+      locales: [
+        { doc: { code: 'en', custom: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', custom: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } },
+        { doc: { code: 'es', custom: { 'title.key': '', 'bye': 'Hasta luego' } } }
+      ]
+    };
+    bulkDocs.returns(Promise.resolve());
+    createController();
+    scope.model.values.en = 'Hello';
+    scope.model.values.fr = 'Bienvenue';
+    scope.model.values.es = 'Hola';
+    scope.submit();
+    setTimeout(function() {
+      rootScope.$digest();
+      var updated = bulkDocs.args[0][0];
+      chai.expect(updated.length).to.equal(3);
+      chai.expect(updated[0].code).to.equal('en');
+      chai.expect(updated[0].custom['title.key']).to.equal('Hello');
+      chai.expect(updated[1].code).to.equal('fr');
+      chai.expect(updated[1].custom['title.key']).to.equal('Bienvenue');
+      chai.expect(updated[2].code).to.equal('es');
+      chai.expect(updated[2].custom['title.key']).to.equal('Hola');
       done();
     });
   });

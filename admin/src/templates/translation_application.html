@@ -4,7 +4,7 @@
     <span translate>translation.add</span>
   </a>
 </div>
-<div class="section">
+<div class="section translations">
   <div class="container-fluid">
     <div class="row selection-heading">
       <div class="col-xs-6">
@@ -18,10 +18,12 @@
   <div class="container-fluid">
     <div class="row translation selection" ng-repeat="translation in translationModels track by translation.key" ng-click="editTranslation(translation.key)">
       <div class="col-xs-6">
-        {{translation.lhs}}
+        <span ng-if="translation.lhs">{{translation.lhs}}</span>
+        <span ng-if="!translation.lhs" class="missing-term">{{translation.key}}</span>
       </div>
       <div class="col-xs-6">
-        {{translation.rhs}}
+        <span ng-if="translation.rhs">{{translation.rhs}}</span>
+        <span ng-if="!translation.rhs" class="missing-term">{{translation.key}}</span>
       </div>
     </div>
   </div>

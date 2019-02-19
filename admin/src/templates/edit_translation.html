@@ -10,9 +10,10 @@
   show-delete="isCustom"
 >
   <form action="" method="POST">
-    <div class="form-group">
+    <div class="form-group" ng-class="{ required: !editing }">
       <label translate>translation.key</label>
       <input class="form-control" ng-model="model.key" ng-disabled="editing">
+      <span class="error" ng-if="errors.key">{{errors.key}}</span>
     </div>
     <div class="form-group" ng-repeat="locale in model.locales track by locale._id">
       <label>{{locale.name}}</label>
