@@ -26,23 +26,6 @@ var registerConsoleInterceptor = function() {
   });
 };
 
-var registerUnhandledErrorHandler = function() {
-  // listen for unhandled errors
-  options.window.onerror = function(message, file, line) {
-    var error = { message: message, file: file, line: line };
-    try {
-      module.exports.submit(error, false, function(err) {
-        if (err) {
-          options.console.error('Error saving feedback', err);
-        }
-      });
-    } catch(e) {
-      // stop infinite loop of exceptions
-      options.console.error('Error while trying to record error', JSON.stringify(error), e.toString(), e);
-    }
-  };
-};
-
 var create = function(info, isManual, callback) {
   options.getUserCtx(function(err, userCtx) {
     if (err) {
@@ -92,7 +75,6 @@ module.exports = {
     }
     if (!options.window._medicMobileTesting) {
       registerConsoleInterceptor();
-      registerUnhandledErrorHandler();
     }
     submitExisting();
   },
