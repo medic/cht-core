@@ -208,11 +208,11 @@ describe('registration', () => {
       });
   });
 
-  it('should create a patient with a random patient_id', () => {
+  it('should create a patient with a random patient_id or prefilled value', () => {
     const settings = {
       transitions: { registration: true },
       registrations: [{
-        form: 'FORM',
+        form: 'FORM-A',
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
@@ -220,14 +220,23 @@ describe('registration', () => {
           bool_expr: ''
         }],
         messages: [],
+      }, {
+        form: 'FORM-B',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: { patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name' },
+          bool_expr: ''
+        }],
+        messages: [],
       }],
-      forms: { FORM: { public_form: true }}
+      forms: { 'FORM-A': { public_form: true }, 'FORM-B': { public_form: true }}
     };
 
     const doc1 = {
       _id: uuid(),
       type: 'data_record',
-      form: 'FORM',
+      form: 'FORM-A',
       from: '+444999',
       fields: {
         patient_name: 'Minerva',
@@ -238,7 +247,7 @@ describe('registration', () => {
     const doc2 = {
       _id: uuid(),
       type: 'data_record',
-      form: 'FORM',
+      form: 'FORM-A',
       from: '+444999',
       fields: {
         patient_id: 'person',
@@ -247,13 +256,37 @@ describe('registration', () => {
       reported_date: moment().valueOf()
     };
 
+    const doc3 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-B',
+      from: '+444999',
+      fields: {
+        our_patient_name: 'Venus',
+        our_patient_id: 'venus'
+      },
+      reported_date: moment().valueOf()
+    };
+
+    const doc4 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-B',
+      from: '+444999',
+      fields: {
+        patient_name: 'Ceres',
+        our_patient_id: 'patient'
+      },
+      reported_date: moment().valueOf()
+    };
+
     let newPatientId;
 
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs([ doc1, doc2 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
+      .then(() => utils.saveDocs([ doc1, doc2, doc3, doc4 ]))
+      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id, doc4._id]))
+      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
       .then(infos => {
         expect(infos[0].transitions).toBeDefined();
         expect(infos[0].transitions.registration).toBeDefined();
@@ -262,23 +295,54 @@ describe('registration', () => {
         expect(infos[1].transitions).toBeDefined();
         expect(infos[1].transitions.registration).toBeDefined();
         expect(infos[1].transitions.registration.ok).toEqual(true);
+
+        expect(infos[2].transitions).toBeDefined();
+        expect(infos[2].transitions.registration).toBeDefined();
+        expect(infos[2].transitions.registration.ok).toEqual(true);
+
+        expect(infos[3].transitions).toBeDefined();
+        expect(infos[3].transitions.registration).toBeDefined();
+        expect(infos[3].transitions.registration.ok).toEqual(true);
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id]))
+      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
       .then(updated => {
         expect(updated[0].patient_id).toBeDefined();
         newPatientId = updated[0].patient_id;
+
         expect(updated[1].patient_id).not.toBeDefined();
         expect(updated[1].fields.patient_id).toEqual('person');
+        expect(updated[1].errors).toBeDefined();
+        expect(updated[1].errors.length).toEqual(1);
+        expect(updated[1].errors[0].code).toEqual('registration_not_found');
+
+        expect(updated[2].patient_id).toEqual('venus');
+
+        expect(updated[3].patient_id).not.toBeDefined();
+        expect(updated[3].errors).toBeDefined();
+        expect(updated[3].errors.length).toEqual(1);
+        expect(updated[3].errors[0].code).toEqual('provided_patient_id_not_unique');
+
+        const keys = [
+          ['shortcode', newPatientId],
+          ['shortcode', 'venus']
+        ];
 
         return utils.requestOnTestDb(
-          `/_design/medic-client/_view/contacts_by_reference?key=["shortcode","${updated[0].patient_id}"]&include_docs=true`
+          `/_design/medic-client/_view/contacts_by_reference?keys=${JSON.stringify(keys)}&include_docs=true`
         );
       })
-      .then(response => {
-        expect(response.rows.length).toEqual(1);
-        expect(response.rows[0].doc.patient_id).toEqual(newPatientId);
-        expect(response.rows[0].doc.parent._id).toEqual('clinic');
-        expect(response.rows[0].doc.name).toEqual('Minerva');
+      .then(patients => {
+        expect(patients.rows.length).toEqual(2);
+
+        expect(patients.rows[0].doc.patient_id).toEqual(newPatientId);
+        expect(patients.rows[0].doc.parent._id).toEqual('clinic');
+        expect(patients.rows[0].doc.name).toEqual('Minerva');
+        expect(patients.rows[0].doc.type).toEqual('person');
+
+        expect(patients.rows[1].doc.patient_id).toEqual('venus');
+        expect(patients.rows[1].doc.parent._id).toEqual('clinic');
+        expect(patients.rows[1].doc.name).toEqual('Venus');
+        expect(patients.rows[1].doc.type).toEqual('person');
       });
   });
 
@@ -425,6 +489,7 @@ describe('registration', () => {
       .then(updated => {
         expect(updated[0].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
         // report submitted 2 weeks ago, but dob is calculated relative to current date
+        // bug reported as https://github.com/medic/medic/issues/5410
         expect(updated[1].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString());
         expect(updated[2].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'years').toISOString());
       });
