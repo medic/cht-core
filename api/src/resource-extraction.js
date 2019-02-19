@@ -8,7 +8,6 @@ const
   fs = require('fs'),
   path = require('path'),
   db = require('./db'),
-  environment = require('./environment'),
   logger = require('./logger'),
   APP_PREFIX_TOKEN = 'APP_PREFIX',
   STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),

@@ -115,6 +115,10 @@ _.templateSettings = {
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
+        // Hack to stop service worker intefere with CouchDB replication
+        if (!url.split('/')[3]) {
+          url = `${url}${bootstrapper.metaDataPath()}`;
+        }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);
@@ -155,7 +159,7 @@ _.templateSettings = {
     });
   });
 
-  bootstrapper(POUCHDB_OPTIONS, function(err) {
+  bootstrapper.pouch(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {
         window.location.href = err.redirect;

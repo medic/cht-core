@@ -49,7 +49,8 @@ describe('bootstrapper', () => {
         protocol: 'http:',
         hostname: 'localhost',
         port: '5988',
-        href: 'http://localhost:5988/'
+        pathname: '/medic/_design/medic/_rewrite/#/messages',
+        href: 'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
       },
       navigator: {
         serviceWorker: {
@@ -89,7 +90,7 @@ describe('bootstrapper', () => {
 
   it('does nothing for admins', done => {
     setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 0);
       done();
@@ -101,11 +102,11 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').returns(Promise.resolve({_id: '_design/medic-client'}));
     localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
 
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
       assert.equal(localClose.callCount, 1);
-      assert.equal(pouchDb.args[0][0], '@@APP_CONFIG.dbName-user-jim');
+      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(localGet.callCount, 2);
       assert.equal(localGet.args[0][0], '_design/medic-client');
@@ -124,12 +125,12 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
-      assert.equal(pouchDb.args[0][0], '@@APP_CONFIG.dbName-user-jim');
+      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
-      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/@@APP_CONFIG.dbName');
+      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
       assert.equal(localGet.callCount, 3);
       assert.equal(localGet.args[0][0], '_design/medic-client');
@@ -155,9 +156,9 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/@@APP_CONFIG.dbName/login?redirect=http%3A%2F%2Flocalhost%3A5988%2F');
+      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
       done();
     });
   });
@@ -171,9 +172,9 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/@@APP_CONFIG.dbName/login?redirect=http%3A%2F%2Flocalhost%3A5988%2F');
+      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
       done();
     });
   });
@@ -186,7 +187,7 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
       done();
@@ -204,7 +205,7 @@ describe('bootstrapper', () => {
 
     localGet.withArgs('_design/medic-client').onCall(1).rejects();
 
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       assert.equal(err.message, 'Initial replication failed');
       assert.equal(localGet.callCount, 2);
       assert.equal(localClose.callCount, 1);
@@ -223,7 +224,7 @@ describe('bootstrapper', () => {
 
     const failingRegister = sinon.stub().rejects('error');
     window.navigator.serviceWorker.register = failingRegister;
-    bootstrapper(pouchDbOptions, err => {
+    bootstrapper.pouch(pouchDbOptions, err => {
       expect(failingRegister.callCount).to.eq(1);
       expect(err).to.include({ name: 'error' });
       done();

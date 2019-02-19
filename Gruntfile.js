@@ -57,10 +57,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     replace: {
       'update-app-constants': {
-        src: [
-          'build/ddocs/medic/_attachments/js/inbox.js',
-          'build/ddocs/medic-admin/_attachments/js/main.js',
-        ],
+        src: ['build/ddocs/medic/_attachments/js/inbox.js'],
         overwrite: true,
         replacements: [
           {
@@ -70,10 +67,6 @@ module.exports = function(grunt) {
           {
             from: /@@APP_CONFIG.name/g,
             to: packageJson.name,
-          },
-          {
-            from: /@@APP_CONFIG.dbName/g,
-            to: couchConfig.dbName,
           },
         ],
       },
@@ -591,7 +584,6 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*'],
         tasks: [
           'browserify:admin',
-          'replace:update-app-constants',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -895,7 +887,6 @@ module.exports = function(grunt) {
     'copy:admin-resources',
     'ngtemplates:adminApp',
     'browserify:admin',
-    'replace:update-app-constants',
     'less:admin',
   ]);
 
