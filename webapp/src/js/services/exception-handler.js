@@ -4,7 +4,7 @@ var feedback = require('../modules/feedback');
  * Override AngularJS exption handler
  */
  angular.module('inboxServices').factory('$exceptionHandler',
-  function($log, $window) {
+  function($log) {
     function errorHandler(exception, cause) {
       var error = { message: exception.message, stack: exception.stack, cause: cause };
       try {
