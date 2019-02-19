@@ -167,6 +167,17 @@ describe('patient registration', () => {
       assert.equal(doc.expected_date, start.clone().add(30, 'weeks').toISOString());
   });
 
+    it('setExpectedBirthDate sets lmp_date and expected_date correctly when doc has reported_date', () => {
+        const reported_date = moment().subtract(1, 'week');
+        const doc = { fields: { lmp: '5', type: 'data_record' }, reported_date: reported_date.valueOf() };
+
+        transition.setExpectedBirthDate(doc);
+
+        assert(doc.lmp_date);
+        assert.equal(doc.lmp_date, reported_date.clone().startOf('day').subtract(5, 'weeks').toISOString());
+        assert.equal(doc.expected_date, reported_date.clone().startOf('day').add(35, 'weeks').toISOString());
+    });
+
   it('valid adds lmp_date and patient_id', () => {
       var start = moment().startOf('day').subtract(5, 'weeks');
 
