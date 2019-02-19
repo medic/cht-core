@@ -70,14 +70,16 @@ const findToClear = (registration, reported_date, config) => {
     silenceUntil.add(date.getDuration(config.silence_for));
 
     const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-      task => moment(task.due) <= silenceUntil && statesToClear.includes(task.state)
+      task => moment(task.due) <= silenceUntil
     );
     const groupTypeCombosToClear = uniqueGroupTypeCombos(
       allTasksBeforeSilenceUntil
     );
 
-    return tasksUnderReview.filter(({ group, type }) =>
-      hasGroupAndType(groupTypeCombosToClear, [group, type])
+    return tasksUnderReview.filter(({ group, type, state }) =>
+      hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
+      // only clear tasks that are in a clearable state!
+      statesToClear.includes(state)
     );
   }
 };
@@ -101,7 +103,14 @@ const _silenceReminders = (registration, report, config, callback) => {
     utils.setTaskState(task, 'cleared');
     task.cleared_by = report._id;
   });
-  db.medic.post(registration, callback);
+  return db.medic.post(registration, function(err, response) {
+    if (err) { 
+      return callback(err);
+    }
+    
+    registration._rev = response._rev;
+    callback();
+  });
 };
 
 const addRegistrationToDoc = (doc, registrations) => {
@@ -173,24 +182,7 @@ const findValidRegistration = (doc, config, registrations) => {
 const addReportUUIDToRegistration = (doc, config, registrations, callback) => {
     const validRegistration = registrations.length && findValidRegistration(doc, config, registrations);
     if (validRegistration) {
-      return db.medic.put(validRegistration, (err) => {
-              if (err) {
-                if (err.name === 'conflict') {
-                  db.get(validRegistration._id, function(err, doc) {
-                    if (err) { 
-                      callback(err);
-                    }
-                    
-                    validRegistration._rev = doc._rev;
-                    db.medic.put(validRegistration, callback);
-                  });
-                } else {
-                  callback(err);
-                }
-              }
-
-              callback(null, true);
-            });
+      return db.medic.put(validRegistration, callback);
     }
 
     callback(null, true);
