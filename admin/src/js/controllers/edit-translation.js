@@ -40,7 +40,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
           if (!locale.custom) {
             locale.custom = {};
           }
-          locale.custom[$scope.model.key] = newValue || undefined;
+          locale.custom[$scope.model.key] = newValue || null;
           return true;
         }
         return false;
