@@ -1,5 +1,6 @@
 const url = require('url');
 const packageJson = require('./package.json');
+const fs = require('fs');
 
 const {
   TRAVIS_TAG,
@@ -31,6 +32,12 @@ const couchConfig = (() => {
     withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
   };
 })();
+
+const getSharedLibDirs = () => {
+  return fs
+    .readdirSync('shared-libs')
+    .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
+};
 
 module.exports = function(grunt) {
   'use strict';
@@ -149,21 +156,15 @@ module.exports = function(grunt) {
           transform: ['browserify-ngannotate'],
           alias: {
             'enketo-config': './webapp/src/js/enketo/config.json',
-            widgets: './webapp/src/js/enketo/widgets',
-            './xpath-evaluator-binding':
-              './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
-            'extended-xpath':
-              './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-            'openrosa-xpath-extensions':
-              './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            translator: './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
-            '../../js/dropdown.jquery':
-              './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
-            'angular-translate-interpolation-messageformat':
-              './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'angular-translate-handler-log':
-              './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            moment: './webapp/node_modules/moment/moment',
+            'widgets': './webapp/src/js/enketo/widgets',
+            './xpath-evaluator-binding': './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
+            'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
+            'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+            'translator': './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
+            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
+            'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+            'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
+            'moment': './webapp/node_modules/moment/moment',
           },
         },
       },
@@ -173,8 +174,7 @@ module.exports = function(grunt) {
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
-            'angular-translate-interpolation-messageformat':
-              './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
           },
         },
       },
@@ -186,14 +186,10 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'build/ddocs/medic/_attachments/js/templates.js':
-            'build/ddocs/medic/_attachments/js/templates.js',
-          'build/ddocs/medic/_attachments/js/inbox.js':
-            'build/ddocs/medic/_attachments/js/inbox.js',
-          'build/ddocs/medic-admin/_attachments/js/main.js':
-            'build/ddocs/medic-admin/_attachments/js/main.js',
-          'build/ddocs/medic-admin/_attachments/js/templates.js':
-            'build/ddocs/medic-admin/_attachments/js/templates.js',
+          'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
+          'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
+          'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
+          'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
         },
       },
     },
@@ -473,15 +469,11 @@ module.exports = function(grunt) {
       },
       'npm-ci-shared-libs': {
         cmd: () => {
-          const fs = require('fs');
-          return fs
-            .readdirSync('shared-libs')
-            .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
+          return getSharedLibDirs()
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} &&
-                  [ "$(jq .scripts.test package.json)" = "null" ] || npm ci)`
+                  (cd shared-libs/${lib} && npm ci)`
             )
             .join(' && ');
         }
@@ -510,29 +502,17 @@ module.exports = function(grunt) {
             'font-awesome',
             'moment',
           ];
-          return modulesToPatch
-            .map(function(module) {
-              var backupPath = 'webapp/node_modules_backup/' + module;
-              var modulePath = 'webapp/node_modules/' + module;
-              return (
-                '[ -d ' +
-                backupPath +
-                ' ]' +
-                ' && rm -rf ' +
-                modulePath +
-                ' && mv ' +
-                backupPath +
-                ' ' +
-                modulePath +
-                ' && echo "Module restored: ' +
-                module +
-                '"' +
-                ' || echo "No restore required for: ' +
-                module +
-                '"'
-              );
-            })
-            .join(' && ');
+          return modulesToPatch.map(module => {
+            const backupPath = 'webapp/node_modules_backup/' + module;
+            const modulePath = 'webapp/node_modules/' + module;
+            return `
+              [ -d ${backupPath} ] &&
+              rm -rf ${modulePath} &&
+              mv ${backupPath} ${modulePath} &&
+              echo "Module restored: ${module}" ||
+              echo "No restore required for: ${module}"
+            `;
+          }).join(' && ');
         },
       },
       'test-standard': {
@@ -544,15 +524,11 @@ module.exports = function(grunt) {
       },
       'shared-lib-unit': {
         cmd: () => {
-          const fs = require('fs');
-          return fs
-            .readdirSync('shared-libs')
-            .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
+          return getSharedLibDirs()
             .map(
               lib =>
                 `echo Testing shared library: ${lib} &&
-                  (cd shared-libs/${lib} &&
-                  [ "$(jq .scripts.test package.json)" = "null" ] || (npm ci && npm test))`
+                 (cd shared-libs/${lib} && npm ci && npm test)`
             )
             .join(' && ');
         },
