@@ -1373,6 +1373,72 @@ describe('Standard Configuration Targets', function() {
           });
       });
     });
+
+    describe('pregnancy visit with xform', function(){
+      it('should not count pregnancy visit if specified as not attended', function(){
+
+        session.assert(adultWithReports(
+          {
+            form: 'pregnancy_visit',
+            fields: {visit_confirmed: 'no'},
+            reported_date: today,
+          },
+          {
+            form: 'delivery',
+            fields: {pregnancy_outcome: 'healthy'},
+            reported_date: today,
+          }
+        ));
+
+        return session.emitTargets()
+          .then(targets => {
+
+            const expectedTargets = [
+              { _id: 'adult-1-births-this-month',
+                deleted: false,
+                type: 'births-this-month',
+                pass: true,
+                date: 1469358731456 },
+              { _id: 'undefined-delivery-with-min-1-visit',
+                deleted: false,
+                type: 'delivery-with-min-1-visit',
+                pass: false,
+                date: 1469358731456 },
+              { _id: 'undefined-delivery-with-min-4-visits',
+                deleted: false,
+                type: 'delivery-with-min-4-visits',
+                pass: false,
+                date: 1469358731456 },
+              { _id: 'undefined-delivery-at-facility-total',
+                deleted: false,
+                type: 'delivery-at-facility-total',
+                pass: false,
+                date: 1469358731456 },
+              { _id: 'adult-1-pnc-active',
+                deleted: false,
+                type: 'pnc-active',
+                pass: true,
+                date: 1469358731456 },
+              { _id: 'undefined-pnc-registered-this-month',
+                deleted: false,
+                type: 'pnc-registered-this-month',
+                pass: true,
+                date: 1469358731456 },
+              { _id: 'adult-1-pnc-homebirth-0-visits',
+                deleted: false,
+                type: 'pnc-homebirth-0-visits',
+                pass: true,
+                date: 1469358731456 },
+              { _id: 'adult-1-pnc-3-visits',
+                deleted: false,
+                type: 'pnc-3-visits',
+                pass: false,
+                date: 1469358731456 } ];
+
+            assertTargetsEqual(targets, expectedTargets, 'date');
+          });
+      });
+    });
   });
 
   describe('per-contact immunisation targets', function() {
