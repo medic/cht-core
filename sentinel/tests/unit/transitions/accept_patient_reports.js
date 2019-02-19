@@ -320,7 +320,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 1', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null);
+      putRegistration.callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', _rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -344,8 +345,8 @@ describe('accept_patient_reports', () => {
               group: 1
             },
             {
-              due: '2018-09-28T20:45:00.000Z',
-              state: 'sent',
+              due: '2018-10-28T20:45:00.000Z',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k',
@@ -381,7 +382,8 @@ describe('accept_patient_reports', () => {
 
     it('stores visit UUIDs in an array, since there can be multiple', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null);
+      putRegistration.callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', _rev: 'k' });
       const doc1 = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -456,7 +458,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 2.', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null);
+      putRegistration.callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', _rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -517,7 +520,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 3', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null);
+      putRegistration.callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', _rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -589,8 +593,8 @@ describe('accept_patient_reports', () => {
     });
 
     it('does not associate visit to anything since it is within the silence_for range', done => {
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j' });
-      sinon.stub(db.medic, 'put').callsArgWith(1, null);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', _rev: 'k' });
+      sinon.stub(db.medic, 'put').callsArgWith(1, null, true);
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -695,7 +699,7 @@ describe('accept_patient_reports', () => {
         .stub(transition, '_findToClear')
         .returns(registration.scheduled_tasks);
       const setTaskState = sinon.stub(utils, 'setTaskState');
-      sinon.stub(db.medic, 'post').callsArg(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'test-registration', _rev: 'k' });
 
       transition._silenceReminders(registration, report, null, () => {
         registration._id.should.equal('test-registration');
@@ -890,14 +894,14 @@ describe('accept_patient_reports', () => {
           silence_type: 'x',
           silence_for: silence_for,
         });
-        ids(results).should.deep.equal([3, 4, 31, 41]);
+        ids(results).should.deep.equal([2, 3, 4, 31, 41]);
       });
       it('also with multiple types', () => {
         const results = transition._findToClear(registration, now.valueOf(), {
           silence_type: 'x,y',
           silence_for: silence_for,
         });
-        ids(results).should.deep.equal([3, 4, 31, 41, 6, 7]);
+        ids(results).should.deep.equal([2, 3, 4, 31, 41, 6, 7]);
       });
     });
   });
