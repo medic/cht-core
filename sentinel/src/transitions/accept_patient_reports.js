@@ -108,7 +108,7 @@ const _silenceReminders = (registration, report, config, callback) => {
       return callback(err);
     }
     
-    registration._rev = response._rev;
+    registration._rev = response.rev;
     callback();
   });
 };
