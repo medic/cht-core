@@ -144,7 +144,7 @@ describe('EditTranslationCtrl controller', function() {
       chai.expect(updated[1].code).to.equal('fr');
       chai.expect(updated[1].custom.somethingelse).to.equal('b');
       chai.expect(updated[2].code).to.equal('es');
-      chai.expect(updated[2].custom.somethingelse).to.equal(undefined);
+      chai.expect(updated[2].custom.somethingelse).to.equal(null);
       done();
     });
   });
