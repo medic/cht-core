@@ -1,0 +1,539 @@
+[
+  {
+ "_id": "5f8bcedcbb7cdab700900d443efe8994",
+ "_rev": "12-4d9ef5e64277df185b0b652b9544d5a5",
+ "type": "data_record",
+ "from": "+254715150274",
+ "form": "P",
+ "errors": [
+ ],
+ "tasks": [
+     {
+         "messages": [
+             {
+                 "uuid": "20ccb224-e91f-4296-9a67-37e5971d4418",
+                 "to": "+254715150274",
+                 "message": "Thank you for registering the pregnancy for Everlyn Musyoka (70725). Their EDD is Thu, Feb 7th, 2019"
+             }
+         ],
+         "state_history": [
+             {
+                 "state": "pending",
+                 "timestamp": "2018-10-25T08:42:15.250Z"
+             },
+             {
+                 "state": "forwarded-to-gateway",
+                 "timestamp": "2018-11-07T15:11:21.346Z"
+             },
+             {
+                 "state": "received-by-gateway",
+                 "timestamp": "2018-11-07T15:20:10.586Z"
+             },
+             {
+                 "state": "forwarded-by-gateway",
+                 "timestamp": "2018-11-07T16:03:08.577Z"
+             },
+             {
+                 "state": "failed",
+                 "state_details": {
+                     "reason": "generic; no errorCode supplied"
+                 },
+                 "timestamp": "2018-11-07T16:19:02.333Z"
+             }
+         ],
+         "state": "failed",
+         "state_details": {
+             "reason": "generic; no errorCode supplied"
+         }
+     }
+ ],
+ "fields": {
+     "patient_id": "70725",
+     "last_menstrual_period": "25"
+ },
+ "reported_date": 1540456928822,
+ "sms_message": {
+     "message_id": "40613",
+     "sent_timestamp": "1540456928822",
+     "message": "P 70725 25",
+     "from": "+254715150274",
+     "type": "sms_message",
+     "form": "P",
+     "locale": "en"
+ },
+ "contact": {
+     "_id": "3252b66f-0f96-439f-922d-07ca34d76692",
+     "parent": {
+         "_id": "a0b2cf9b-90de-4c61-befa-601ae9394ca1",
+         "parent": {
+             "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+             "parent": {
+                 "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+             }
+         }
+     }
+ },
+ "transitions": {
+     "update_clinics": {
+         "last_rev": 2,
+         "seq": 21553,
+         "ok": true
+     },
+     "registration": {
+         "last_rev": 2,
+         "seq": 21553,
+         "ok": true
+     },
+     "default_responses": {
+         "last_rev": 2,
+         "seq": 21553,
+         "ok": true
+     }
+ },
+ "lmp_date": "2018-05-03T00:00:00.000Z",
+ "expected_date": "2019-02-07T00:00:00.000Z",
+ "scheduled_tasks": [
+     {
+         "due": "2018-12-10T09:00:00.000Z",
+         "group": 3,
+         "type": "ANC Reminders LMP",
+         "translation_key": "schedule.anc_lmp",
+         "message_key": "messages.schedule.anc.reminder",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.645Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2018-12-06T08:42:18.021Z"
+             }
+         ],
+         "state": "cleared",
+         "cleared_by": "dbd4f5d1-62d9-43f9-bf5f-790d233ec09e"
+     },
+     {
+         "due": "2018-12-17T10:00:00.000Z",
+         "group": 3,
+         "type": "ANC Reminders LMP",
+         "translation_key": "schedule.anc_lmp",
+         "message_key": "messages.schedule.anc.followup",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.646Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2018-12-06T08:42:18.021Z"
+             }
+         ],
+         "state": "cleared",
+         "cleared_by": "dbd4f5d1-62d9-43f9-bf5f-790d233ec09e"
+     },
+     {
+         "due": "2019-01-07T09:00:00.000Z",
+         "group": 4,
+         "type": "ANC Reminders LMP",
+         "translation_key": "schedule.anc_lmp",
+         "message_key": "messages.schedule.anc.reminder",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.646Z"
+             },
+             {
+                 "state": "pending",
+                 "timestamp": "2019-01-07T09:03:23.273Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2019-02-15T08:31:54.222Z"
+             }
+         ],
+         "state": "cleared",
+         "messages": [
+             {
+                 "uuid": "e7548a70-81f2-4fa9-a5f5-20be56ba42c0",
+                 "to": "+254715150274",
+                 "message": "Please remind Everlyn Musyoka (70725) to visit the health facility for ANC visit this week. When she does let us know with 'V 70725'. Thanks!"
+             }
+         ],
+         "cleared_by": "121ceae7-3c7c-4bcb-8d8d-330eedc8e54d"
+     },
+     {
+         "due": "2019-01-14T10:00:00.000Z",
+         "group": 4,
+         "type": "ANC Reminders LMP",
+         "translation_key": "schedule.anc_lmp",
+         "message_key": "messages.schedule.anc.followup",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.647Z"
+             },
+             {
+                 "state": "pending",
+                 "timestamp": "2019-01-14T10:03:05.737Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2019-02-15T08:31:54.222Z"
+             }
+         ],
+         "state": "cleared",
+         "messages": [
+             {
+                 "uuid": "8458cf92-5091-4acc-8cde-59c520add243",
+                 "to": "+254715150274",
+                 "message": "Did Everlyn Musyoka attend her ANC visit? When she does, respond with 'V 70725'. Thank you!"
+             }
+         ],
+         "cleared_by": "121ceae7-3c7c-4bcb-8d8d-330eedc8e54d"
+     },
+     {
+         "due": "2019-01-21T09:00:00.000Z",
+         "group": 1,
+         "type": "Delivery Reminders LMP",
+         "translation_key": "schedule.delivery_lmp",
+         "message_key": "messages.schedule.anc.week_38",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.838Z"
+             },
+             {
+                 "state": "pending",
+                 "timestamp": "2019-01-21T09:02:40.924Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2019-02-15T08:31:54.222Z"
+             }
+         ],
+         "state": "cleared",
+         "messages": [
+             {
+                 "uuid": "19091922-a127-42e6-be0d-b25f6a489650",
+                 "to": "+254715150274",
+                 "message": "Everlyn Musyoka (70725) is 38 weeks pregnant and will deliver soon. Please refer her to the health facility."
+             }
+         ],
+         "cleared_by": "121ceae7-3c7c-4bcb-8d8d-330eedc8e54d"
+     },
+     {
+         "due": "2019-02-04T10:00:00.000Z",
+         "group": 1,
+         "type": "Delivery Reminders LMP",
+         "translation_key": "schedule.delivery_lmp",
+         "message_key": "messages.schedule.anc.week_40",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.838Z"
+             },
+             {
+                 "state": "pending",
+                 "timestamp": "2019-02-04T10:03:03.706Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2019-02-15T08:31:54.222Z"
+             }
+         ],
+         "state": "cleared",
+         "messages": [
+             {
+                 "uuid": "e6ec13e6-4dad-479a-a044-730a5979c45d",
+                 "to": "+254715150274",
+                 "message": "Everlyn Musyoka (70725) is 40 weeks pregnant and will deliver soon. Please refer her to the health facility."
+             }
+         ],
+         "cleared_by": "121ceae7-3c7c-4bcb-8d8d-330eedc8e54d"
+     },
+     {
+         "due": "2019-02-18T11:00:00.000Z",
+         "group": 1,
+         "type": "Delivery Reminders LMP",
+         "translation_key": "schedule.delivery_lmp",
+         "message_key": "messages.schedule.anc.checkin",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.854Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2019-02-15T08:31:54.222Z"
+             }
+         ],
+         "state": "cleared",
+         "cleared_by": "121ceae7-3c7c-4bcb-8d8d-330eedc8e54d"
+     },
+     {
+         "due": "2019-03-04T11:00:00.000Z",
+         "group": 1,
+         "type": "Delivery Reminders LMP",
+         "translation_key": "schedule.delivery_lmp",
+         "message_key": "messages.schedule.anc.checkin",
+         "recipient": "clinic",
+         "state_history": [
+             {
+                 "state": "scheduled",
+                 "timestamp": "2018-10-25T08:42:13.865Z"
+             },
+             {
+                 "state": "cleared",
+                 "timestamp": "2019-02-15T08:31:54.222Z"
+             }
+         ],
+         "state": "cleared",
+         "cleared_by": "121ceae7-3c7c-4bcb-8d8d-330eedc8e54d"
+     }
+ ]
+},
+{
+   "_id": "3aac5e66-9c37-4213-9535-b8ac5b494881",
+   "_rev": "4-26dcfad1a540b2c056da80c105c533cb",
+   "form": "pregnancy_visit",
+   "type": "data_record",
+   "content_type": "xml",
+   "reported_date": 1540458209855,
+   "contact": {
+       "_id": "a229c23d-9fe1-4429-8ea1-8eb355781ecd",
+       "parent": {
+           "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+           "parent": {
+               "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+           }
+       }
+   },
+   "from": "+1234567890",
+   "hidden_fields": [
+   ],
+   "fields": {
+       "patient_age_in_years": "",
+       "patient_phone": "",
+       "patient_uuid": "5f8bcedcbb7cdab700900d443efe7a97",
+       "patient_id": "70725",
+       "patient_name": "Everlyn Musyoka",
+       "chw_name": "Test CHW",
+       "chw_phone": "+254715150274",
+       "danger_signs": "",
+       "referral_follow_up_needed": "false",
+       "chw_sms": "Nice work, Test CHW! Everlyn Musyoka (70725) has attended ANC at the health facility. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!",
+       "visit_confirmed": "yes",
+       "group_chw_info": {
+           "chw_information": "",
+           "call_button": "",
+           "attended_anc": "yes"
+       },
+       "group_danger_signs": {
+           "g_danger_signs": ""
+       },
+       "group_note": {
+           "default_chw_sms": "default",
+           "default_chw_sms_text": "Nice work, Test CHW! Everlyn Musyoka (70725) has attended ANC at the health facility. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!",
+           "default_chw_sms_note": "",
+           "is_sms_edited": "yes",
+           "g_chw_sms": ""
+       },
+       "group_review": {
+           "submit": "",
+           "r_summary": "",
+           "r_patient_id": "70725",
+           "r_pregnancy_details": "",
+           "r_visit": "",
+           "r_visit_yes": "",
+           "r_followup": "",
+           "r_followup_note1": "",
+           "r_followup_note2": ""
+       },
+       "meta": {
+           "instanceID": "uuid:9a4be6ab-e3ae-4450-880e-d539fc88a3df"
+       }
+   },
+   "tasks": [
+       {
+           "messages": [
+               {
+                   "uuid": "fb9a2576-775d-4170-9e37-2a6a106aded2",
+                   "to": "+254715150274",
+                   "message": "Nice work, Test CHW! Everlyn Musyoka (70725) has attended ANC at the health facility. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!"
+               }
+           ],
+           "state_history": [
+               {
+                   "state": "pending",
+                   "timestamp": "2018-10-25T09:03:35.376Z"
+               },
+               {
+                   "state": "forwarded-to-gateway",
+                   "timestamp": "2018-11-07T15:06:15.943Z"
+               },
+               {
+                   "state": "forwarded-by-gateway",
+                   "timestamp": "2018-11-07T15:10:07.070Z"
+               },
+               {
+                   "state": "failed",
+                   "state_details": {
+                       "reason": "generic; no errorCode supplied"
+                   },
+                   "timestamp": "2018-11-07T15:10:07.102Z"
+               }
+           ],
+           "state": "failed",
+           "state_details": {
+               "reason": "generic; no errorCode supplied"
+           }
+       }
+   ],
+   "registration_id": "5f8bcedcbb7cdab700900d443efe8994",
+   "transitions": {
+       "accept_patient_reports": {
+           "last_rev": 2,
+           "seq": 21611,
+           "ok": true
+       },
+       "default_responses": {
+           "last_rev": 2,
+           "seq": 21611,
+           "ok": true
+       }
+   },
+   "_attachments": {
+       "content": {
+           "content_type": "application/xml",
+           "revpos": 1,
+           "digest": "md5-ltPqnbfONFZQ29RrPKa8Qw==",
+           "length": 2266,
+           "stub": true
+       }
+   }
+},
+{
+   "_id": "047d773a-fb14-4d95-af1c-8dd7073675eb",
+   "_rev": "4-7b211887d80dff16bbbf8190cddab5b2",
+   "form": "pregnancy_visit",
+   "type": "data_record",
+   "content_type": "xml",
+   "reported_date": 1540458247632,
+   "contact": {
+       "_id": "a229c23d-9fe1-4429-8ea1-8eb355781ecd",
+       "parent": {
+           "_id": "6ac75941-3eb3-430a-ba47-6f0d4224bf6f",
+           "parent": {
+               "_id": "608e9b55-b933-4819-93ac-10b353aeedcd"
+           }
+       }
+   },
+   "from": "+1234567890",
+   "hidden_fields": [
+   ],
+   "fields": {
+       "patient_age_in_years": "",
+       "patient_phone": "",
+       "patient_uuid": "5f8bcedcbb7cdab700900d443efe7a97",
+       "patient_id": "70725",
+       "patient_name": "Everlyn Musyoka",
+       "chw_name": "Test CHW",
+       "chw_phone": "+254715150274",
+       "danger_signs": "",
+       "referral_follow_up_needed": "false",
+       "chw_sms": "Hi Test CHW, Everlyn Musyoka (70725) did not attend ANC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!",
+       "visit_confirmed": "no",
+       "group_chw_info": {
+           "chw_information": "",
+           "call_button": "",
+           "attended_anc": "no"
+       },
+       "group_note": {
+           "default_chw_sms": "did_not_attend",
+           "default_chw_sms_text": "Hi Test CHW, Everlyn Musyoka (70725) did not attend ANC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!",
+           "default_chw_sms_note": "",
+           "is_sms_edited": "yes",
+           "g_chw_sms": ""
+       },
+       "group_review": {
+           "submit": "",
+           "r_summary": "",
+           "r_patient_id": "70725",
+           "r_pregnancy_details": "",
+           "r_visit": "",
+           "r_visit_no": "",
+           "r_followup": "",
+           "r_followup_note1": "",
+           "r_followup_note2": ""
+       },
+       "meta": {
+           "instanceID": "uuid:b241f1af-fab2-4797-81c1-c91deb3bd4e1"
+       }
+   },
+   "tasks": [
+       {
+           "messages": [
+               {
+                   "uuid": "b14909d0-af62-4faa-9533-9c204ec80d3a",
+                   "to": "+254715150274",
+                   "message": "Hi Test CHW, Everlyn Musyoka (70725) did not attend ANC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!"
+               }
+           ],
+           "state_history": [
+               {
+                   "state": "pending",
+                   "timestamp": "2018-10-25T09:04:11.620Z"
+               },
+               {
+                   "state": "forwarded-to-gateway",
+                   "timestamp": "2018-11-07T15:05:01.806Z"
+               },
+               {
+                   "state": "forwarded-by-gateway",
+                   "timestamp": "2018-11-07T15:07:17.315Z"
+               },
+               {
+                   "state": "failed",
+                   "state_details": {
+                       "reason": "generic; no errorCode supplied"
+                   },
+                   "timestamp": "2018-11-07T15:07:17.340Z"
+               }
+           ],
+           "state": "failed",
+           "state_details": {
+               "reason": "generic; no errorCode supplied"
+           }
+       }
+   ],
+   "registration_id": "5f8bcedcbb7cdab700900d443efe8994",
+   "transitions": {
+       "accept_patient_reports": {
+           "last_rev": 2,
+           "seq": 21615,
+           "ok": true
+       },
+       "default_responses": {
+           "last_rev": 2,
+           "seq": 21615,
+           "ok": true
+       }
+   },
+   "_attachments": {
+       "content": {
+           "content_type": "application/xml",
+           "revpos": 1,
+           "digest": "md5-nERGjvfWS7xMeSgatPuB9A==",
+           "length": 2130,
+           "stub": true
+       }
+   }
+}
+]

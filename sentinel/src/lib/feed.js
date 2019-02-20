@@ -1,21 +1,20 @@
-const logger = require('./logger'),
-  db = require('../db');
+const logger = require('./logger');
+const db = require('../db');
 
-const followFeed = (seq, queue) => {
-  return db.medic
-    .changes({ live: true, since: seq })
-    .on('change', change => {
-      // skip uninteresting documents
-      if (change.id.match(/^_design\/|-info$/)) {
-        return;
-      }
-      queue.push(change);
-    })
-    .on('error', err => {
-      logger.error('transitions: error from changes feed: %o', err);
-    });
-};
+// we don't run transitions on ddocs or info docs
+const IDS_TO_IGNORE = /^_design\/|-info$/;
 
 module.exports = {
-  followFeed: (seq, queue) => followFeed(seq, queue),
+  followFeed: (seq, queue) => {
+    return db.medic
+      .changes({ live: true, since: seq })
+      .on('change', change => {
+        if (!change.id.match(IDS_TO_IGNORE)) {
+          queue.push(change);
+        }
+      })
+      .on('error', err => {
+        logger.error('transitions: error from changes feed: %o', err);
+      });
+  }
 };

@@ -35,14 +35,11 @@ const hash = str => {
  * purge(DB)
  *  .on('start', ...)
  *  .on('progress, ...)
- *  .on('optimise', ...)
  *  .on('done', ...);
  *
- * start: fired once we've worked out what to purge, callback is passed 'totalContacts'
+ * start: fired once we've decided that we are going to purge this session
  * progress: fired after every contact has had purge run over it, callback is passed
  *   an object containing progress information and current purge count
- * optimise: fired just before compaction is run. We cannot introspect this effort
- *   and it may take some time to complete
  * done: fired once everything is complete, callback is passed the total purge count
 */
 module.exports = function(DB, userCtx, initialReplication) {
@@ -238,7 +235,6 @@ module.exports = function(DB, userCtx, initialReplication) {
         const total = sets.length;
         let processed = 0;
 
-        publish('start', {totalContacts: total});
         return sets.reduce(
           (p, set) => p
             .then(purgeCount => purgeContact(fn, userCtx, set, purgeCount))
@@ -266,6 +262,8 @@ module.exports = function(DB, userCtx, initialReplication) {
         return urgeToPurge(config)
           .then(shouldPurge => {
             if (shouldPurge) {
+              publish('start');
+
               return purge(config.fn, userCtx)
                 .then(purgeCount => {
                   console.log(`Purge complete, purged ${purgeCount} documents`);
@@ -293,14 +291,6 @@ module.exports = function(DB, userCtx, initialReplication) {
 
   const p = Promise.resolve()
     .then(() => begin(userCtx))
-    .then(count => {
-      if (count) {
-        publish('optimise');
-        return DB.compact().then(() => count);
-      } else {
-        return count;
-      }
-    })
     .then(count => publish('done', {totalPurged: count}));
 
   p.on = (type, callback) => {

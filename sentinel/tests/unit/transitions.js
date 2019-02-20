@@ -538,7 +538,7 @@ describe('transitions', () => {
       });
   });
 
-  it('deleteReadDocs deletes read doc for all admins', () => {
+  it('deleteReadDocs deletes read doc for all users', () => {
     const given = { id: 'abc' };
     const metaDb = {
       allDocs: sinon.stub().resolves({

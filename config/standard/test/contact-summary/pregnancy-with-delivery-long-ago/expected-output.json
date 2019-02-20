@@ -49,7 +49,10 @@
 		"use_cases": {
 			"anc": false,
 			"pnc": false,
-			"imm": false
-		}
+			"imm": false,
+			"gmp": false
+		},
+		"treatment_program": "",
+    "enrollment_date": ""
 	}
 }

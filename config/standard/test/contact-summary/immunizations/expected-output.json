@@ -216,7 +216,10 @@
     "use_cases": {
       "anc": true,
       "pnc": true,
-      "imm": true
-    }
+      "imm": true,
+      "gmp": false
+    },
+    "treatment_program": "",
+    "enrollment_date": ""
   }
 }

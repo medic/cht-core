@@ -89,8 +89,7 @@ var feedback = require('../modules/feedback'),
       var actions = Actions(dispatch);
       return {
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setSelectMode: actions.setSelectMode,
-        setSelected: actions.setSelected
+        setSelectMode: actions.setSelectMode
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -274,8 +273,8 @@ var feedback = require('../modules/feedback'),
         Enketo.unload($scope.form);
         $scope.unsetSelected();
       }
-      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
-        $scope.clearSelection();
+      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]) {
+        $scope.$broadcast('ClearSelected');
       }
       if (!ctrl.enketoEdited){
         return;
@@ -285,21 +284,6 @@ var feedback = require('../modules/feedback'),
         $scope.navigationCancel();
       }
     });
-
-    $scope.clearSelection = function() {
-      if ($state.current.name.split('.')[0] === 'contacts'){
-        ctrl.setSelected(null);
-        LiveList.contacts.clearSelected();
-        LiveList['contact-search'].clearSelected();
-      }
-      else if ($state.current.name.split('.')[0] === 'reports'){
-        ctrl.setSelected({});
-        LiveList.reports.clearSelected();
-        LiveList['report-search'].clearSelected();
-        $('#reports-list input[type="checkbox"]').prop('checked', false);
-        $scope.verifyingReport = false;
-      }
-    };
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {

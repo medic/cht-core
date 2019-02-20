@@ -792,7 +792,7 @@ describe('accept_patient_reports', () => {
       const silence_for = '5 days';
       const registration = {
         scheduled_tasks: [
-          // A group with a task before, and after, but not within range
+          // A group with a sent task before, and after, but not within range
           {
             _id: 1,
             due: now.clone().subtract(1, 'days'),
@@ -867,14 +867,14 @@ describe('accept_patient_reports', () => {
           silence_type: 'x',
           silence_for: silence_for,
         });
-        ids(results).should.deep.equal([1, 2, 3, 4, 31, 41]);
+        ids(results).should.deep.equal([2, 3, 4, 31, 41]);
       });
       it('also with multiple types', () => {
         const results = transition._findToClear(registration, now.valueOf(), {
           silence_type: 'x,y',
           silence_for: silence_for,
         });
-        ids(results).should.deep.equal([1, 2, 3, 4, 31, 41, 6, 7]);
+        ids(results).should.deep.equal([2, 3, 4, 31, 41, 6, 7]);
       });
     });
   });
