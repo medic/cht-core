@@ -168,6 +168,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope.formId = null;
     $scope.setSelected($state.params.id);
 
+    $scope.$on('ClearSelected', () => {
+      Enketo.unload($scope.form);
+    });
+
     $scope.$on('$destroy', unsubscribe);
   }
 );
