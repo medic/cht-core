@@ -200,7 +200,7 @@ describe('accept_patient_reports', () => {
     // Helpful diagram for the next 5 tests:
     // https://github.com/medic/medic/issues/4694#issuecomment-459460521
     it('does not associate visit to anything since no reminder messages have been sent yet', done => {
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -259,8 +259,7 @@ describe('accept_patient_reports', () => {
     });
 
     it('does not associate visit to anything since it is not responding to a reminder', done => {
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j' });
-      sinon.stub(db.medic, 'get').callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -320,8 +319,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 1', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null, true);
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', rev: 'k' });
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -371,7 +370,7 @@ describe('accept_patient_reports', () => {
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         registrations[0].scheduled_tasks[0].responded_to_by.should.deep.equal([doc._id]);
         should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
@@ -382,8 +381,8 @@ describe('accept_patient_reports', () => {
 
     it('stores visit UUIDs in an array, since there can be multiple', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null, true);
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', rev: 'k' });
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc1 = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -439,14 +438,14 @@ describe('accept_patient_reports', () => {
       sinon.stub(db.medic, 'get').callsArgWith(1, null, registrations);
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc1, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id]);
         should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
 
         transition._handleReport(doc2, config, (err, complete) => {
-          complete.should.equal(true);
+          complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
           putRegistration.callCount.should.equal(2);
           should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
           registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id, doc2._id]);
@@ -458,8 +457,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 2.', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null, true);
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', rev: 'k' });
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -509,7 +508,7 @@ describe('accept_patient_reports', () => {
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc._id]);
@@ -520,8 +519,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 3', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArgWith(1, null, true);
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', rev: 'k' });
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -582,7 +581,7 @@ describe('accept_patient_reports', () => {
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
@@ -593,8 +592,7 @@ describe('accept_patient_reports', () => {
     });
 
     it('does not associate visit to anything since it is within the silence_for range', done => {
-      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'j', rev: 'k' });
-      sinon.stub(db.medic, 'put').callsArgWith(1, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
