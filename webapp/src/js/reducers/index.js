@@ -61,6 +61,20 @@ var merge = require('lodash/merge');
         return Object.assign({}, state, { loadingSelectedChildren: action.payload.loadingSelectedChildren });
       case 'SET_LOADING_SELECTED_REPORTS':
         return Object.assign({}, state, { loadingSelectedReports: action.payload.loadingSelectedReports });
+      case 'REQUEST_SELECTED_CHILDREN':
+        return Object.assign({}, state, { loadingSelectedChildren: true });
+      case 'RECEIVE_SELECTED_CHILDREN':
+        return Object.assign({}, state, {
+          selected: Object.assign({}, state.selected, { children: action.payload.children }),
+          loadingSelectedChildren: false
+        });
+      case 'REQUEST_SELECTED_REPORTS':
+        return Object.assign({}, state, { loadingSelectedReports: true });
+      case 'RECEIVE_SELECTED_REPORTS':
+        return Object.assign({}, state, {
+          selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
+          loadingSelectedReports: false
+        });
       default:
         return state;
     }

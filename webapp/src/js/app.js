@@ -30,6 +30,7 @@ require('angular-ui-bootstrap');
 var uiRouter = require('@uirouter/angularjs').default;
 
 require('ng-redux');
+var reduxThunk = require('redux-thunk').default;
 var reducers = require('./reducers');
 
 require('moment');
@@ -120,7 +121,7 @@ var reduxLoggerConfig = {
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
 
-    var middlewares = [];
+    var middlewares = [reduxThunk];
     if (isDevelopment) {
       var reduxLogger = require('redux-logger');
       middlewares.push(reduxLogger.createLogger(reduxLoggerConfig));

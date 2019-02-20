@@ -59,8 +59,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       });
     };
 
-    var render = function(contact) {
-      $scope.setSelected(contact);
+    var render = function(contact, options) {
+      $scope.setSelected(contact, options);
       setCancelCallback();
       return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
@@ -129,8 +129,11 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope.setRightActionBar();
     $scope.setShowContent(true);
     setCancelCallback();
-    ContactViewModelGenerator($state.params.id, { merge: true })
-      .then(render)
+    var options = { merge: true };
+    ContactViewModelGenerator.getContact($state.params.id, options)
+      .then(function(contact) {
+        return render(contact, options);
+      })
       .catch(function(err) {
         $log.error('Error loading form', err);
         $scope.errorTranslationKey = err.translationKey || 'error.loading.form';

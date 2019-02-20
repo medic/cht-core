@@ -176,7 +176,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(response => response.rows);
     };
 
-    var loadChildren = function(options, model) {
+    var loadChildren = function(model, options) {
       model.children = {};
       if (model.doc.type === 'person') {
         return $q.resolve({});
@@ -265,18 +265,19 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    return function(id, options) {
-      return LineageModelGenerator.contact(id, options)
-        .then(function(model) {
-          setPrimaryContact(model);
-          setSchemaFields(model);
-          setMutedState(model);
+    return {
+      getContact: function(id, options) {
+        return LineageModelGenerator.contact(id, options)
+          .then(function(model) {
+            setPrimaryContact(model);
+            setSchemaFields(model);
+            setMutedState(model);
 
-          model.loadChildren = loadChildren.bind(null, options);
-          model.loadReports = loadReports;
-
-          return model;
-        });
+            return model;
+          });
+      },
+      loadChildren: loadChildren,
+      loadReports: loadReports
     };
   }
 );

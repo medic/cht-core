@@ -1,6 +1,7 @@
 angular.module('inboxServices').factory('Actions',
-  function() {
+  function(ContactViewModelGenerator) {
     'use strict';
+    'ngInject';
 
     function createSingleValueAction(type, valueName, value) {
       var action = {
@@ -41,14 +42,6 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSetEnketoStatusAction({ saving: saving }));
       }
 
-      function setLoadingSelectedChildren(loading) {
-        dispatch(createSingleValueAction('SET_LOADING_SELECTED_CHILDREN', 'loadingSelectedChildren', loading));
-      }
-
-      function setLoadingSelectedReports(loading) {
-        dispatch(createSingleValueAction('SET_LOADING_SELECTED_REPORTS', 'loadingSelectedReports', loading));
-      }
-
       function setSelectMode(selectMode) {
         dispatch(createSingleValueAction('SET_SELECT_MODE', 'selectMode', selectMode));
       }
@@ -77,6 +70,34 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('REMOVE_SELECTED', 'id', id));
       }
 
+      function setLoadingSelectedChildren(loading) {
+        dispatch(createSingleValueAction('SET_LOADING_SELECTED_CHILDREN', 'loadingSelectedChildren', loading));
+      }
+
+      function setLoadingSelectedReports(loading) {
+        dispatch(createSingleValueAction('SET_LOADING_SELECTED_REPORTS', 'loadingSelectedReports', loading));
+      }
+
+      function loadSelectedChildren() {
+        return dispatch(function(dispatch, getState) {
+          dispatch({ type: 'REQUEST_SELECTED_CHILDREN' });
+          var selected = getState().selected;
+          return ContactViewModelGenerator.loadChildren(selected).then(function(children) {
+            dispatch(createSingleValueAction('RECEIVE_SELECTED_CHILDREN', 'children', children));
+          });
+        });
+      }
+
+      function loadSelectedReports() {
+        return dispatch(function(dispatch, getState) {
+          dispatch({ type: 'REQUEST_SELECTED_REPORTS' });
+          var selected = getState().selected;
+          return ContactViewModelGenerator.loadReports(selected).then(function(reports) {
+            dispatch(createSingleValueAction('RECEIVE_SELECTED_REPORTS', 'reports', reports));
+          });
+        });
+      }
+
       return {
         clearCancelCallback: clearCancelCallback,
         setCancelCallback: setCancelCallback,
@@ -90,6 +111,8 @@ angular.module('inboxServices').factory('Actions',
         // Contacts-specific selected actions
         setLoadingSelectedChildren: setLoadingSelectedChildren,
         setLoadingSelectedReports: setLoadingSelectedReports,
+        loadSelectedChildren: loadSelectedChildren,
+        loadSelectedReports: loadSelectedReports,
         // Messages-specific selected actions
         addSelectedMessage: addSelectedMessage,
         removeSelectedMessage: removeSelectedMessage,

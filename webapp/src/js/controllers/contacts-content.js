@@ -125,10 +125,11 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         $scope.setLoadingContent(id);
       }
 
-      return ContactViewModelGenerator(id, { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id })
+      var options = { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id };
+      return ContactViewModelGenerator.getContact(id, options)
         .then(function(model) {
           var refreshing = (ctrl.selected && ctrl.selected.doc._id) === id;
-          $scope.setSelected(model);
+          $scope.setSelected(model, options);
           $scope.settingSelected(refreshing);
           return getTasks();
         })

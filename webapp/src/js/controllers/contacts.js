@@ -45,10 +45,12 @@ var _ = require('underscore'),
       var actions = Actions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback,
-        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
-        setLoadingSelectedReports: actions.setLoadingSelectedReports,
         setSelected: actions.setSelected,
-        updateSelected: actions.updateSelected
+        updateSelected: actions.updateSelected,
+        loadSelectedChildren: actions.loadSelectedChildren,
+        loadSelectedReports: actions.loadSelectedReports,
+        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
+        setLoadingSelectedReports: actions.setLoadingSelectedReports
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -225,7 +227,7 @@ var _ = require('underscore'),
                      settings.muting.unmute_forms.includes(formId));
     };
 
-    $scope.setSelected = function(selected) {
+    $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedChildren(true);
       ctrl.setLoadingSelectedReports(true);
@@ -260,17 +262,8 @@ var _ = require('underscore'),
             canEdit: canEdit,
           });
 
-          return ctrl.selected
-            .loadChildren(ctrl.selected)
-            .then(function(children) {
-              ctrl.updateSelected({ children: children });
-              ctrl.setLoadingSelectedChildren(false);
-              return ctrl.selected.loadReports(ctrl.selected);
-            })
-            .then(function(reports) {
-              ctrl.updateSelected({ reports: reports });
-              ctrl.setLoadingSelectedReports(false);
-            })
+          return ctrl.loadSelectedChildren(options)
+            .then(ctrl.loadSelectedReports)
             .then(function() {
               return $q.all([
                 ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),

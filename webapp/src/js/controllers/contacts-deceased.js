@@ -24,7 +24,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
 
     var selectContact = function(id, silent) {
       $scope.setLoadingContent(id);
-      ContactViewModelGenerator(id)
+      ContactViewModelGenerator.getContact(id)
         .then(function(model) {
           var refreshing = (ctrl.selected && ctrl.selected.doc._id) === id;
           $scope.settingSelected(refreshing);
