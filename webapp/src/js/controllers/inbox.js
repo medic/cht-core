@@ -199,17 +199,18 @@ const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATE
     });
 
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
-      if (toState.name.indexOf('reports') === -1 || toState.name.indexOf('contacts') === -1 || toState.name.indexOf('tasks') === -1 || toState.name.indexOf('messages.detail') === -1) {
-        $scope.unsetSelected();
-      }
-      if (toState.name.indexOf('tasks.detail') === -1) {
-        Enketo.unload($scope.form);
-        $scope.unsetSelected();
-      }
-      if (toState.name.split('.')[0] !== fromState.name.split('.')[0]){
-        $scope.$broadcast('ClearSelected');
-      }
       if (!$scope.enketoStatus.edited){
+        if (toState.name.indexOf('reports') === -1 || toState.name.indexOf('contacts') === -1 || toState.name.indexOf('tasks') === -1 || toState.name.indexOf('messages.detail') === -1) {
+          $scope.unsetSelected();
+        }
+        if (toState.name.indexOf('tasks.detail') === -1) {
+          Enketo.unload($scope.form);
+          $scope.unsetSelected();
+        }
+        if (toState.name.split('.')[0] !== fromState.name.split('.')[0]){
+          $scope.$broadcast('ClearSelected');
+        }
+
         return;
       }
       if ($scope.cancelCallback){
