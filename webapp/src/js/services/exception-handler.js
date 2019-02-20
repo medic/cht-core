@@ -1,14 +1,15 @@
-var feedback = require('../modules/feedback');
-
 /**
  * Override AngularJS exption handler
  */
  angular.module('inboxServices').factory('$exceptionHandler',
-  function($log) {
+  function(
+    $log, 
+    Feedback
+  ) {
     function errorHandler(exception, cause) {
       var error = { message: exception.message, stack: exception.stack, cause: cause };
       try {
-        feedback.submit(error, false, function(err) {
+        Feedback.submit(error, false, function(err) {
           if (err) {
             $log.error('Error saving feedback', err);
           }

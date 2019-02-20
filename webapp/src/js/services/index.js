@@ -4,6 +4,7 @@
   angular.module('inboxServices', ['ngResource']);
 
   require('./exception-handler');
+  require('./feedback');
   require('./add-attachment');
   require('./add-read-status');
   require('./analytics-modules');

@@ -1,5 +1,4 @@
-var feedback = require('../modules/feedback'),
-  _ = require('underscore'),
+var _ = require('underscore'),
   bootstrapTranslator = require('./../bootstrapper/translator'),
   moment = require('moment');
 
@@ -57,7 +56,8 @@ var feedback = require('../modules/feedback'),
     XmlForms,
     RecurringProcessManager,
     DatabaseConnectionMonitor,
-    ResourceIcons
+    ResourceIcons,
+    Feedback
   ) {
     'ngInject';
 
@@ -177,7 +177,7 @@ var feedback = require('../modules/feedback'),
       delete $window.startupTimes;
     });
 
-    feedback.init({
+    Feedback.init({
       saveDoc: function(doc, callback) {
         DB()
           .post(doc)
