@@ -134,10 +134,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
           ctrl.setEnketoSavingStatus(false);
+          ctrl.setEnketoEditedStatus(false);
           Enketo.unload($scope.form);
           $scope.clearSelected();
           ctrl.clearCancelCallback();
-          ctrl.setEnketoEditedStatus(false);
           $state.go('tasks.detail', { id: null });
         })
         .then(() => {
