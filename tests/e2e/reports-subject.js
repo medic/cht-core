@@ -250,7 +250,7 @@ describe('Reports Summary', () => {
     return browser
       .wait(() => element(
         by.cssContainingText('#reports-content .item-summary .sender .phone', CAROL.phone)).isPresent(),
-        10000
+        20000
       )
       .catch(loadReport);
   };
@@ -260,7 +260,7 @@ describe('Reports Summary', () => {
   const getElementText = (css, attempt) => {
     attempt = attempt || 0;
 
-    return helper.getTextFromElement(element(by.css(css))) 
+    return helper.getTextFromElement(element(by.css(css)))
       .then((text) => {
         return text;
       }, (err) => {
