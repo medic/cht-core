@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var merge = require('lodash/merge');
 
 (function() {
   var initialState = {
@@ -30,15 +31,9 @@ var _ = require('underscore');
         return Object.assign({}, state, { selectMode: action.payload.selectMode });
       case 'SET_SELECTED':
         return Object.assign({}, state, { selected: action.payload.selected });
-      case 'SET_SELECTED_PROPERTY':
+      case 'UPDATE_SELECTED':
         return Object.assign({}, state, {
-          selected: Object.assign({}, state.selected, action.payload.selected)
-        });
-      case 'SET_SELECTED_DOC_CHILD':
-        return Object.assign({}, state, {
-          selected: Object.assign({}, state.selected, {
-            doc: Object.assign({}, state.selected.doc, action.payload.doc)
-          })
+          selected: merge({}, state.selected, action.payload.selected)
         });
       case 'ADD_SELECTED_MESSAGE':
         return Object.assign({}, state, {
@@ -53,12 +48,6 @@ var _ = require('underscore');
         return Object.assign({}, state, {
           selected: Object.assign({}, state.selected, { messages: filteredMessages })
         });
-      case 'SET_FIRST_SELECTED_FORMATTED_PROPERTY':
-        var newSelected = state.selected.slice(0);
-        newSelected[0] = Object.assign({}, newSelected[0], {
-          formatted: Object.assign({}, newSelected[0].formatted, action.payload.formatted)
-        });
-        return Object.assign({}, state, { selected: newSelected });
       case 'ADD_SELECTED':
         return Object.assign({}, state, {
           selected: state.selected.concat(action.payload.selected)

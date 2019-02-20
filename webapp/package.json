@@ -39,6 +39,7 @@
     "font-awesome": "^4.7.0",
     "gsm": "^0.1.4",
     "jquery": "3.2.x",
+    "lodash": "^4.17.11",
     "medic-enketo-xslt": "^1.5.0",
     "medic-nootils": "^1.7.0",
     "messageformat": "^2.0.4",

@@ -40,8 +40,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       return {
         addSelectedMessage: actions.addSelectedMessage,
         removeSelectedMessage: actions.removeSelectedMessage,
-        setSelectedContact: actions.setSelectedContact,
-        setSelectedMessages: actions.setSelectedMessages
+        updateSelected: actions.updateSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -125,8 +124,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           $scope.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;
           });
-          ctrl.setSelectedContact(contactModel);
-          ctrl.setSelectedMessages(conversation);
+          ctrl.updateSelected({ contact: contactModel, messages: conversation });
           $scope.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markAllRead();
           $timeout(scrollToUnread);

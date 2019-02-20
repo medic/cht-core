@@ -57,44 +57,8 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('SET_SELECTED', 'selected', selected));
       }
 
-      function createSetSelectedPropertyAction(value) {
-        return createSingleValueAction('SET_SELECTED_PROPERTY', 'selected', value);
-      }
-
-      function setSelectedAreTasksEnabled(enabled) {
-        dispatch(createSetSelectedPropertyAction({ areTasksEnabled: enabled }));
-      }
-
-      function setSelectedTasks(tasks) {
-        dispatch(createSetSelectedPropertyAction({ tasks: tasks }));
-      }
-
-      function setSelectedSummary(summary) {
-        dispatch(createSetSelectedPropertyAction({ summary: summary }));
-      }
-
-      function setSelectedChildren(children) {
-        dispatch(createSetSelectedPropertyAction({ children: children }));
-      }
-
-      function setSelectedReports(reports) {
-        dispatch(createSetSelectedPropertyAction({ reports: reports }));
-      }
-
-      function setSelectedError(error) {
-        dispatch(createSetSelectedPropertyAction({ error: error }));
-      }
-
-      function setSelectedContact(contact) {
-        dispatch(createSetSelectedPropertyAction({ contact: contact }));
-      }
-
-      function setSelectedMessages(messages) {
-        dispatch(createSetSelectedPropertyAction({ messages: messages }));
-      }
-
-      function setSelectedDocChild(child) {
-        dispatch(createSingleValueAction('SET_SELECTED_DOC_CHILD', 'doc', { child: child }));
+      function updateSelected(selected) {
+        dispatch(createSingleValueAction('UPDATE_SELECTED', 'selected', selected));
       }
 
       function addSelectedMessage(message) {
@@ -103,18 +67,6 @@ angular.module('inboxServices').factory('Actions',
 
       function removeSelectedMessage(id) {
         dispatch(createSingleValueAction('REMOVE_SELECTED_MESSAGE', 'id', id));
-      }
-
-      function createSetFirstSelectedFormattedPropertyAction(value) {
-        return createSingleValueAction('SET_FIRST_SELECTED_FORMATTED_PROPERTY', 'formatted', value);
-      }
-
-      function setFirstSelectedVerified(verified) {
-        dispatch(createSetFirstSelectedFormattedPropertyAction({ verified: verified }));
-      }
-
-      function setFirstSelectedOldVerified(oldVerified) {
-        dispatch(createSetFirstSelectedFormattedPropertyAction({ oldVerified: oldVerified }));
       }
 
       function addSelected(selected) {
@@ -134,24 +86,14 @@ angular.module('inboxServices').factory('Actions',
         setSelectMode: setSelectMode,
         // Global selected actions
         setSelected: setSelected,
+        updateSelected: updateSelected,
         // Contacts-specific selected actions
         setLoadingSelectedChildren: setLoadingSelectedChildren,
         setLoadingSelectedReports: setLoadingSelectedReports,
-        setSelectedAreTasksEnabled: setSelectedAreTasksEnabled,
-        setSelectedTasks: setSelectedTasks,
-        setSelectedSummary: setSelectedSummary,
-        setSelectedChildren: setSelectedChildren,
-        setSelectedReports: setSelectedReports,
-        setSelectedError: setSelectedError,
-        setSelectedDocChild: setSelectedDocChild,
         // Messages-specific selected actions
-        setSelectedContact: setSelectedContact,
-        setSelectedMessages: setSelectedMessages,
         addSelectedMessage: addSelectedMessage,
         removeSelectedMessage: removeSelectedMessage,
         // Reports-specific selected actions
-        setFirstSelectedVerified: setFirstSelectedVerified,
-        setFirstSelectedOldVerified: setFirstSelectedOldVerified,
         addSelected: addSelected,
         removeSelected: removeSelected
       };

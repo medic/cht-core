@@ -37,8 +37,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
-        setSelectedTasks: actions.setSelectedTasks,
-        setSelectedAreTasksEnabled: actions.setSelectedAreTasksEnabled
+        updateSelected: actions.updateSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -89,7 +88,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var getTasks = function() {
       return Auth('can_view_tasks')
         .then(function() {
-          ctrl.setSelectedTasks([]);
+          ctrl.updateSelected({ tasks: [] });
           var children = ctrl.selected.children.persons || [];
           TasksForContact(
             ctrl.selected.doc._id,
@@ -102,8 +101,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
                   task.title = translate(task.title, task);
                   task.priorityLabel = translate(task.priorityLabel, task);
                 });
-                ctrl.setSelectedAreTasksEnabled(areTasksEnabled);
-                ctrl.setSelectedTasks(tasks);
+                ctrl.updateSelected({ areTasksEnabled: areTasksEnabled, tasks: tasks });
                 children.forEach(function(child) {
                   child.taskCount = tasks.filter(function(task) {
                     return task.doc &&

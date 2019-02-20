@@ -48,11 +48,7 @@ var _ = require('underscore'),
         setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
         setLoadingSelectedReports: actions.setLoadingSelectedReports,
         setSelected: actions.setSelected,
-        setSelectedSummary: actions.setSelectedSummary,
-        setSelectedChildren: actions.setSelectedChildren,
-        setSelectedReports: actions.setSelectedReports,
-        setSelectedError: actions.setSelectedError,
-        setSelectedDocChild: actions.setSelectedDocChild
+        updateSelected: actions.updateSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -252,7 +248,7 @@ var _ = require('underscore'),
         .then(function(results) {
           $scope.setTitle(results[0]);
           if (results[1]) {
-            ctrl.setSelectedDocChild(results[1]);
+            ctrl.updateSelected({ doc: { child: results[1] }});
           }
           var canEdit = results[2];
 
@@ -267,12 +263,12 @@ var _ = require('underscore'),
           return ctrl.selected
             .loadChildren(ctrl.selected)
             .then(function(children) {
-              ctrl.setSelectedChildren(children);
+              ctrl.updateSelected({ children: children });
               ctrl.setLoadingSelectedChildren(false);
               return ctrl.selected.loadReports(ctrl.selected);
             })
             .then(function(reports) {
-              ctrl.setSelectedReports(reports);
+              ctrl.updateSelected({ reports: reports });
               ctrl.setLoadingSelectedReports(false);
             })
             .then(function() {
@@ -283,7 +279,7 @@ var _ = require('underscore'),
               .then(function(results) {
                 $scope.loadingSummary = false;
                 var summary = results[0];
-                ctrl.setSelectedSummary(summary);
+                ctrl.updateSelected({ summary: summary });
                 var options = { doc: selectedDoc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
                   if (err) {
@@ -324,7 +320,7 @@ var _ = require('underscore'),
         .catch(function(e) {
           $log.error('Error setting selected contact');
           $log.error(e);
-          ctrl.setSelectedError(true);
+          ctrl.updateSelected({ error: true });
           $scope.setRightActionBar();
         });
     };
