@@ -171,7 +171,7 @@ _.templateSettings = {
     });
   });
 
-  bootstrapper.pouch(POUCHDB_OPTIONS, function(err) {
+  bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {
         window.location.href = err.redirect;
