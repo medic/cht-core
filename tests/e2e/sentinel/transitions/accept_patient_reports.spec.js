@@ -597,5 +597,4 @@ describe('accept_patient_reports', () => {
         expect(updated[3].scheduled_tasks.find(task => task.id === 3 && task.group === 'b').state).toEqual('sent');
       });
   });
-
 });
