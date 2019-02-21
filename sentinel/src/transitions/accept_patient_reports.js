@@ -52,7 +52,7 @@ const findToClear = (registration, reported_date, config) => {
   // Both scheduled and pending have not yet been either seen by a gateway or
   // delivered, so they are both clearable.
   // Also clear `muted` schedules, as they could be `unmuted` later
-  const typesToClear = ['pending', 'scheduled', 'muted'];
+  const statesToClear = ['pending', 'scheduled', 'muted'];
 
   const reportedDateMoment = moment(reported_date);
   const taskTypes = config.silence_type.split(',').map(type => type.trim());
@@ -61,7 +61,7 @@ const findToClear = (registration, reported_date, config) => {
 
   if (!config.silence_for) {
     // No range, all clearable tasks should be cleared
-    return tasksUnderReview.filter(task => typesToClear.includes(task.state));
+    return tasksUnderReview.filter(task => statesToClear.includes(task.state));
   } else {
     // Clear all tasks that are members of a group that "exists" before the
     // silenceUntil date. e.g., they have at least one task in their group
