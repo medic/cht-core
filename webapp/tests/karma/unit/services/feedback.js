@@ -3,16 +3,14 @@ describe('Feedback service', function() {
   'use strict';
 
   let clock,
-      getUserCtx,
-      saveDoc,
+      post,
       mockConsole,
       mockWindow,
       mockDocument,
       service;
 
   beforeEach(function() {
-    getUserCtx = sinon.stub();
-    saveDoc = sinon.stub();
+    post = sinon.stub();
     mockDocument = {};
     mockConsole = {
       error: sinon.stub(),
@@ -24,6 +22,16 @@ describe('Feedback service', function() {
     clock = sinon.useFakeTimers();
 
     module('inboxApp');
+    module(function ($provide) {
+      $provide.factory('DB', KarmaUtils.mockDB({
+        post: post
+      }));
+      $provide.value('Session', { 
+        userCtx: function() {
+          return { name: 'fred' };
+        } 
+      });
+    });
     inject(function($injector) {
       service = $injector.get('Feedback');
     });
@@ -35,12 +43,9 @@ describe('Feedback service', function() {
   });
 
   it('unhandled error submits feedback', done => {
-    getUserCtx.callsArgWith(0, null, { name: 'fred' });
-    saveDoc.callsArgWith(1);
+    post.callsArgWith(1);
 
     service.init({
-      saveDoc: saveDoc,
-      getUserCtx: getUserCtx,
       console: mockConsole,
       window: mockWindow,
       appConfig: { name: 'medic', version: '0.5.0' }
@@ -52,10 +57,8 @@ describe('Feedback service', function() {
     mockConsole.error('Failed to save', '404');
 
     service.submit({ message: 'hello world' }, true, () => {
-
-      chai.expect(getUserCtx.callCount).to.equal(1);
-      chai.expect(saveDoc.callCount).to.equal(1);
-      const submittedDoc = saveDoc.args[0][0];
+      chai.expect(post.callCount).to.equal(1);
+      const submittedDoc = post.args[0][0];
 
       chai.expect(submittedDoc.type).to.equal('feedback');
       chai.expect(submittedDoc.info.message).to.equal('hello world');
@@ -79,11 +82,9 @@ describe('Feedback service', function() {
   });
 
   it('log history restricted to 20 lines', done => {
-    getUserCtx.callsArgWith(0, null, { name: 'fred' });
-    saveDoc.callsArgWith(1);
+    post.callsArgWith(1);
+
     service.init({
-      saveDoc: saveDoc,
-      getUserCtx: getUserCtx,
       console: mockConsole,
       window: mockWindow,
       appConfig: { name: 'medic', version: '0.5.0' }
@@ -94,10 +95,9 @@ describe('Feedback service', function() {
     }
 
     service.submit({ message: 'hello world' }, true, () => {
-      chai.expect(getUserCtx.callCount).to.equal(1);
-      chai.expect(saveDoc.callCount).to.equal( 1);
+      chai.expect(post.callCount).to.equal(1);
 
-      const submittedDoc = saveDoc.args[0][0];
+      const submittedDoc = post.args[0][0];
       chai.expect(submittedDoc.log.length).to.equal(20);
       chai.expect(submittedDoc.log[0].arguments).to.equal('{"0":"item 24"}');
       chai.expect(submittedDoc.log[19].arguments).to.equal('{"0":"item 5"}');
@@ -107,12 +107,9 @@ describe('Feedback service', function() {
   });
 
   it('password in URL is blanked out', done => {
-    getUserCtx.callsArgWith(0, null, { name: 'fred' });
-    saveDoc.callsArgWith(1);
+    post.callsArgWith(1);
 
     service.init({
-      saveDoc: saveDoc,
-      getUserCtx: getUserCtx,
       console: mockConsole,
       window: mockWindow,
       document: mockDocument,
@@ -122,10 +119,8 @@ describe('Feedback service', function() {
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
 
     service.submit({ message: 'hello world' }, { name: 'medic', version: '0.5.0' }, () => {
-
-      chai.expect(getUserCtx.callCount).to.equal(1);
-      chai.expect(saveDoc.callCount).to.equal(1);
-      const submittedDoc = saveDoc.args[0][0];
+      chai.expect(post.callCount).to.equal(1);
+      const submittedDoc = post.args[0][0];
 
       chai.expect(submittedDoc.meta.url).to.equal('http://gareth:********@somewhere.com');
       chai.expect(submittedDoc.meta.app).to.equal('medic');
