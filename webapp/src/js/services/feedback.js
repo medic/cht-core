@@ -2,7 +2,10 @@
   Feedback service
  */
 angular.module('inboxServices').factory('Feedback',
-  function() {
+  function(
+    DB,
+    Session
+  ) {
 
     'ngInject';
     'use strict';
@@ -36,23 +39,19 @@ angular.module('inboxServices').factory('Feedback',
     };
 
     var create = function(info, isManual, callback) {
-      options.getUserCtx(function(err, userCtx) {
-        if (err) {
-          return callback(err);
-        }
-        callback(null, {
-          meta: {
-            time: new Date().toISOString(),
-            user: userCtx,
-            url: getUrl(),
-            app: options.appConfig.name,
-            version: options.appConfig.version,
-            source: isManual ? 'manual' : 'automatic'
-          },
-          info: info,
-          log: log,
-          type: 'feedback'
-        });
+      var userCtx = Session.userCtx();
+      callback(null, {
+        meta: {
+          time: new Date().toISOString(),
+          user: userCtx,
+          url: getUrl(),
+          app: options.appConfig.name,
+          version: options.appConfig.version,
+          source: isManual ? 'manual' : 'automatic'
+        },
+        info: info,
+        log: log,
+        type: 'feedback'
       });
     };
 
@@ -64,7 +63,7 @@ angular.module('inboxServices').factory('Feedback',
           if (!err) {
             // Intentionally not threading callbacks, we'll just fire and forget
             // these for simplicity
-            options.saveDoc(doc, () => undefined);
+            DB().post(doc);
           }
         });
       });
@@ -92,7 +91,8 @@ angular.module('inboxServices').factory('Feedback',
           if (err) {
             return callback(err);
           }
-          options.saveDoc(doc, callback);
+
+          DB().post(doc, callback);
         });
       }
     };

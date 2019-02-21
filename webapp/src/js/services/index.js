@@ -3,8 +3,6 @@
 
   angular.module('inboxServices', ['ngResource']);
 
-  require('./exception-handler');
-  require('./feedback');
   require('./add-attachment');
   require('./add-read-status');
   require('./analytics-modules');
@@ -34,8 +32,10 @@
   require('./enketo');
   require('./enketo-prepopulation-data');
   require('./enketo-translation');
+  require('./exception-handler');
   require('./export');
   require('./extract-lineage');
+  require('./feedback');
   require('./file-reader');
   require('./form2sms');
   require('./format-data-record');
