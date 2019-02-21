@@ -103,7 +103,14 @@ const _silenceReminders = (registration, report, config, callback) => {
     utils.setTaskState(task, 'cleared');
     task.cleared_by = report._id;
   });
-  db.medic.post(registration, callback);
+  return db.medic.post(registration, function(err, response) {
+    if (err) { 
+      return callback(err);
+    }
+    
+    registration._rev = response.rev;
+    callback();
+  });
 };
 
 const addRegistrationToDoc = (doc, registrations) => {
@@ -178,7 +185,7 @@ const addReportUUIDToRegistration = (doc, config, registrations, callback) => {
       return db.medic.put(validRegistration, callback);
     }
 
-    callback();
+    callback(null, true);
 };
 
 const silenceRegistrations = (config, doc, registrations, callback) => {
@@ -235,12 +242,12 @@ const handleReport = (doc, config, callback) => {
     .then(registrations => {
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      addReportUUIDToRegistration(doc, config, registrations, err => {
+      module.exports.silenceRegistrations(config, doc, registrations, err => {
         if (err) {
           return callback(err);
         }
 
-        module.exports.silenceRegistrations(config, doc, registrations, callback);
+        addReportUUIDToRegistration(doc, config, registrations, callback);
       });
     })
     .catch(callback);
