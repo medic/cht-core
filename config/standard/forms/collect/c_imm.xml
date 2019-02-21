@@ -60,13 +60,13 @@
             <value>Tak satupun</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
-            <value>-</value>
+            <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:label">
-            <value>-</value>
+            <value>Apa dosis DPT Booster melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_dpt:label">
-            <value>-</value>
+            <value>DPT Booster</value>
           </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>Tidak</value>
@@ -97,6 +97,18 @@
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hepatitis A</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>Tidak</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>Iya</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value>Apakah <output value=" /c_imm/id "/> menerima vaksin Hepatitis B?</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
@@ -320,6 +332,9 @@
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
             <value>HPV 1</value>
           </text>
@@ -458,6 +473,9 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
@@ -580,6 +598,9 @@
           </text>
           <text id="/c_imm/received/ha2:label">
             <value>Mendapatkan Hepatitis A 2</value>
+          </text>
+          <text id="/c_imm/received/hb:label">
+            <value>Mendapatkan Hepatitis B</value>
           </text>
           <text id="/c_imm/received/hpv1:label">
             <value>Mendapatkan HPV 1</value>
@@ -777,6 +798,18 @@
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hepatitis A</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>No</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value>Did <output value=" /c_imm/id "/> receive Hepatitis B vaccine?</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
@@ -1000,6 +1033,9 @@
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
             <value>HPV 1</value>
           </text>
@@ -1138,6 +1174,9 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
@@ -1260,6 +1299,9 @@
           </text>
           <text id="/c_imm/received/ha2:label">
             <value>Received Hepatitis A 2</value>
+          </text>
+          <text id="/c_imm/received/hb:label">
+            <value>Received Hepatitis B</value>
           </text>
           <text id="/c_imm/received/hpv1:label">
             <value>Received HPV 1</value>
@@ -1420,13 +1462,13 @@
             <value>-</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:label">
-            <value>-</value>
+            <value>Quel vaccin DPT Booster a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_dpt:label">
-            <value>-</value>
+            <value>DPT Booster</value>
           </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>Non</value>
@@ -1457,6 +1499,18 @@
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hépatite A</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>Non</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value>Est-ce que <output value=" /c_imm/id "/> a reçu le vaccin Hepatitis B?</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>Hépatite B</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
@@ -1680,6 +1734,9 @@
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
             <value>Hépatite A 2</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>Hépatite B</value>
+          </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
             <value>HPV 1</value>
           </text>
@@ -1816,6 +1873,9 @@
             <value>Grippe</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
+            <value>Hépatite B</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
             <value>Hépatite A</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
@@ -1941,6 +2001,9 @@
           <text id="/c_imm/received/ha2:label">
             <value>Hépatite A 2 reçu</value>
           </text>
+          <text id="/c_imm/received/hb:label">
+            <value>Hépatite B reçu</value>
+          </text>
           <text id="/c_imm/received/hpv1:label">
             <value>HPV 1 reçu</value>
           </text>
@@ -2044,6 +2107,707 @@
             <value>Vaccins reçus</value>
           </text>
         </translation>
+        <translation lang="kannada">
+          <text id="/c_imm/group_bcg/g_bcg/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_chw_info:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt/DPT4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt/DPT5:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/HA1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/HA2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/MMR1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/MMR2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/MMRV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
+            <value>ಇನ್ನೊಂದು ಪ್ರಮಾಣವನ್ನು ಆಯ್ಕೆಮಾಡಿದರೆ ಯಾವುದನ್ನೂ ಆಯ್ಕೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg">
+            <value>ಇನ್ನೊಂದು ಪ್ರಮಾಣವನ್ನು ಆಯ್ಕೆಮಾಡಿದರೆ ಯಾವುದನ್ನೂ ಆಯ್ಕೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV0:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio:jr:constraintMsg">
+            <value>ಇನ್ನೊಂದು ಪ್ರಮಾಣವನ್ನು ಆಯ್ಕೆಮಾಡಿದರೆ ಯಾವುದನ್ನೂ ಆಯ್ಕೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_end:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_fipv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_0:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_typhoid_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_typhoid_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
+            <value>ಇನ್ನೊಂದು ಪ್ರಮಾಣವನ್ನು ಆಯ್ಕೆಮಾಡಿದರೆ ಯಾವುದನ್ನೂ ಆಯ್ಕೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/penta:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/polio:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/TY1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/TY2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid:jr:constraintMsg">
+            <value>ಇನ್ನೊಂದು ಪ್ರಮಾಣವನ್ನು ಆಯ್ಕೆಮಾಡಿದರೆ ಯಾವುದನ್ನೂ ಆಯ್ಕೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever/no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/id:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ch1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ch2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ch3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/dpt4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/dpt5:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/fipv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/fipv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ha1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ha2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hb:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hpv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hpv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hpv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ipv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ipv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/je:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmr1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmr2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmrv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmrv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv0:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ty1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ty2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/vita:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/yf:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received:label">
+            <value>-</value>
+          </text>
+        </translation>
         <translation lang="हिन्दी (hi)">
           <text id="/c_imm/group_bcg/g_bcg/no:label">
             <value>नहीं</value>
@@ -2100,13 +2864,13 @@
             <value>कोई नहीं</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
-            <value>-</value>
+            <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:label">
-            <value>-</value>
+            <value><output value=" /c_imm/id "/> को DPT Booster का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/c_imm/group_dpt:label">
-            <value>-</value>
+            <value>DPT Booster</value>
           </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>नहीं</value>
@@ -2137,6 +2901,18 @@
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hepatitis A</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>नहीं</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value>क्या <output value=" /c_imm/id "/> को Hepatitis B टीकाकरण मिला ?</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
@@ -2360,6 +3136,9 @@
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>Hepatatis B</value>
+          </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
             <value>HPV 1</value>
           </text>
@@ -2498,6 +3277,9 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
@@ -2621,6 +3403,9 @@
           <text id="/c_imm/received/ha2:label">
             <value>Hepatitis A 2 मिला</value>
           </text>
+          <text id="/c_imm/received/hb:label">
+            <value>Hepatitis B मिला</value>
+          </text>
           <text id="/c_imm/received/hpv1:label">
             <value>HPV 1 मिला</value>
           </text>
@@ -2724,6 +3509,707 @@
             <value>प्राप्त किये गए टीके</value>
           </text>
         </translation>
+        <translation lang="কন্নড (kd)">
+          <text id="/c_imm/group_bcg/g_bcg/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH1:label">
+            <value>ಕಾಲರಾ 1</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH2:label">
+            <value>ಕಾಲರಾ 2</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH3:label">
+            <value>ಕಾಲರಾ 3</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_chw_info:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt/DPT4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt/DPT5:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt/g_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/HA1:label">
+            <value>ಹೆಪಟೈಟಿಸ್ ಎ 1</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/HA2:label">
+            <value>ಹೆಪಟೈಟಿಸ್ ಎ 2</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
+            <value>HPV 1</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV2:label">
+            <value>HPV 2</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV3:label">
+            <value>HPV 3</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN1:label">
+            <value>ಮೆನಿಂಗೊಕೊಕಲ್ 1</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN2:label">
+            <value>ಮೆನಿಂಗೊಕೊಕಲ್ 2</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN3:label">
+            <value>ಮೆನಿಂಗೊಕೊಕಲ್ 3</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
+            <value>ಮೆನಿಂಗೊಕೊಕಲ್ 4</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/MMR1:label">
+            <value>MMR 1</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/MMR2:label">
+            <value>MMR 2</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
+            <value>MMRV 1</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/MMRV2:label">
+            <value>MMRV 2</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT1:label">
+            <value>ಪೆಂಟಾವಲೆಂಟ್ 1</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT2:label">
+            <value>ಪೆಂಟಾವಲೆಂಟ್ 2</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT3:label">
+            <value>ಪೆಂಟಾವಲೆಂಟ್ 3</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
+            <value>ನ್ಯುಮೋಕೊಕಲ್ 1</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV2:label">
+            <value>ನ್ಯುಮೋಕೊಕಲ್ 2</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV3:label">
+            <value>ನ್ಯುಮೋಕೊಕಲ್ 3</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV4:label">
+            <value>ನ್ಯುಮೋಕೊಕಲ್ 4</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>FIPV 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>FIPV 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>IPV 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>IPV 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>IPV 3</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV0:label">
+            <value>ಜನನ ಸಮಯದ ಪೋಲಿಯೊ</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV1:label">
+            <value>ಬಾಯಿಯ ಮೂಲಕ ನೀಡುವ ಪೋಲಿಯೊ 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV2:label">
+            <value>ಬಾಯಿಯ ಮೂಲಕ ನೀಡುವ ಪೋಲಿಯೊ 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV3:label">
+            <value>ಬಾಯಿಯ ಮೂಲಕ ನೀಡುವ ಪೋಲಿಯೊ 3</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_no:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_yes:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_end:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_fipv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_0:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_typhoid_1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_typhoid_2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV1:label">
+            <value>ರೊಟವೈರಸ್ 1</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV2:label">
+            <value>ರೊಟವೈರಸ್ 2</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
+            <value>ರೊಟವೈರಸ್ 3</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
+            <value>ಕಾಲರಾ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
+            <value>ಇನ್ಫ್ಲುಯೆನ್ಜಾ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
+            <value>ಹೆಪಟೈಟಿಸ್ ಎ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>ಹೆಪಟೈಟಿಸ್ ಬಿ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
+            <value>HPV (ಹ್ಯೂಮನ್ ಪ್ಯಾಪಿಲೋಮಾ ವೈರಸ್)</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
+            <value>ಜಪಾನೀಸ್ ಎನ್ಸೆಫಲೈಟಿಸ್</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/meningococcal:label">
+            <value>ಮೆನಿಂಗೊಕೊಕಲ್</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/mmr:label">
+            <value>MMR (ಮೀಸಲ್ಸ್, ಮೊಂಪ್ಸ್, ರುಬೆಲ್ಲಾ)</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/mmrv:label">
+            <value>MMRV (ಮೀಸಲ್ಸ್, ಮೊಂಪ್ಸ್, ರುಬೆಲ್ಲಾ, ವರಿಸೆಲ್ಲ)</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/penta:label">
+            <value>ಪೆಂಟಾವಲೆಂಟ್</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/pneumococcal:label">
+            <value>ನ್ಯುಮೋಕೊಕಲ್ ನ್ಯುಮೋನಿಯಾ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/polio:label">
+            <value>ಪೋಲಿಯೊ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/rotavirus:label">
+            <value>ರೋಟಾವೈರಸ್</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/typhoid:label">
+            <value>ಟೈಫಾಯಿಡ್</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/vitamin_a:label">
+            <value>ವಿಟಮಿನ್ ಎ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
+            <value>ಹಳದಿ ಜ್ವರ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/TY1:label">
+            <value>ಟೈಫಾಯಿಡ್ 1</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/TY2:label">
+            <value>ಟೈಫಾಯಿಡ್ 2</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/none:label">
+            <value>ಯಾವುದೂ ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever/no:label">
+            <value>ಇಲ್ಲ</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever/yes:label">
+            <value>ಹೌದು</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/id:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ch1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ch2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ch3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/dpt4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/dpt5:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/fipv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/fipv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/flu:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ha1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ha2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hb:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hpv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hpv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/hpv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ipv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ipv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/je:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmr1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmr2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmrv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mmrv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/mn4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv0:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/opv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/pcv4:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv3:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ty1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/ty2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/vita:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/yf:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received:label">
+            <value>-</value>
+          </text>
+        </translation>
         <translation lang="বাংলা (bn)">
           <text id="/c_imm/group_bcg/g_bcg/no:label">
             <value>না</value>
@@ -2780,13 +4266,13 @@
             <value>-</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
-            <value>-</value>
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টারের কোন ডোজ <output value=" /c_imm/id "/> পেয়েছে?</value>
           </text>
           <text id="/c_imm/group_dpt:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টার</value>
           </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>না</value>
@@ -2817,6 +4303,18 @@
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>হেপাটাইটিস A</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/group_hep_b/g_hep_b:label">
+            <value><output value=" /c_imm/id "/> হেপাটাইটিস B টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_hep_b:label">
+            <value>হেপাটাইটিস B</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV (হিউম্যান পাপিলোমাইরাস) 1</value>
@@ -2963,13 +4461,13 @@
             <value>fIPV 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV1:label">
-            <value>আইপিভি 1</value>
+            <value>IPV 1</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV2:label">
-            <value>আইপিভি 2</value>
+            <value>IPV 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV3:label">
-            <value>আইপিভি 3</value>
+            <value>IPV 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>পোলিও 0</value>
@@ -3039,6 +4537,9 @@
           </text>
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
             <value>হেপাটাইটিস A 2</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_b:label">
+            <value>হেপাটাইটিস B</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
             <value>HPV (হিউম্যান পাপিলোমাইরাস) 1</value>
@@ -3176,7 +4677,10 @@
             <value>ইনফ্লুয়েঞ্জা</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
-            <value>হেপাটাইটিস A</value>
+            <value>হেপাটাইটিস B</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>হেপাটাইটিস B</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (হিউম্যান পাপিলোমাইরাস)</value>
@@ -3301,6 +4805,9 @@
           <text id="/c_imm/received/ha2:label">
             <value>হেপাটাইটিস A 2 প্রাপ্তি</value>
           </text>
+          <text id="/c_imm/received/hb:label">
+            <value>হেপাটাইটিস B প্রাপ্তি</value>
+          </text>
           <text id="/c_imm/received/hpv1:label">
             <value>HPV 1 প্রাপ্তি</value>
           </text>
@@ -3406,7 +4913,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-29_03-15">
+        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-02-21_04-12">
           <id/>
           <c/>
           <received>
@@ -3416,6 +4923,7 @@
             <ch3/>
             <ha1/>
             <ha2/>
+            <hb/>
             <hpv1/>
             <hpv2/>
             <hpv3/>
@@ -3470,6 +4978,9 @@
           <group_hep_a>
             <g_hep_a/>
           </group_hep_a>
+          <group_hep_b>
+            <g_hep_b/>
+          </group_hep_b>
           <group_hpv>
             <g_hpv/>
           </group_hpv>
@@ -3523,6 +5034,7 @@
             <r_cholera_3/>
             <r_hep_a_1/>
             <r_hep_a_2/>
+            <r_hep_b/>
             <r_hpv_1/>
             <r_hpv_2/>
             <r_hpv_3/>
@@ -3576,6 +5088,7 @@
       <bind calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH3'),'yes','no')" nodeset="/c_imm/received/ch3" type="string"/>
       <bind calculate="if(selected( /c_imm/group_hep_a/g_hep_a ,'HA1'),'yes','no')" nodeset="/c_imm/received/ha1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_hep_a/g_hep_a ,'HA2'),'yes','no')" nodeset="/c_imm/received/ha2" type="string"/>
+      <bind calculate="if( /c_imm/group_hep_b/g_hep_b  = 'yes','yes','no')" nodeset="/c_imm/received/hb" type="string"/>
       <bind calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV1'),'yes','no')" nodeset="/c_imm/received/hpv1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV2'),'yes','no')" nodeset="/c_imm/received/hpv2" type="string"/>
       <bind calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV3'),'yes','no')" nodeset="/c_imm/received/hpv3" type="string"/>
@@ -3623,6 +5136,7 @@
       <bind constraint="(not(selected( /c_imm/group_cholera/g_cholera ,'none')) and (selected( /c_imm/group_cholera/g_cholera ,'CH1') or selected( /c_imm/group_cholera/g_cholera ,'CH2') or selected( /c_imm/group_cholera/g_cholera ,'CH3'))) or (selected( /c_imm/group_cholera/g_cholera ,'none') and not(selected( /c_imm/group_cholera/g_cholera ,'CH1') or selected( /c_imm/group_cholera/g_cholera ,'CH2') or selected( /c_imm/group_cholera/g_cholera ,'CH3')))" jr:constraintMsg="jr:itext('/c_imm/group_cholera/g_cholera:jr:constraintMsg')" nodeset="/c_imm/group_cholera/g_cholera" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_hep_a" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hep_a')"/>
       <bind constraint="(not(selected( /c_imm/group_hep_a/g_hep_a ,'none')) and (selected( /c_imm/group_hep_a/g_hep_a ,'HA1') or selected( /c_imm/group_hep_a/g_hep_a ,'HA2'))) or (selected( /c_imm/group_hep_a/g_hep_a ,'none') and not(selected( /c_imm/group_hep_a/g_hep_a ,'HA1') or selected( /c_imm/group_hep_a/g_hep_a ,'HA2')))" jr:constraintMsg="jr:itext('/c_imm/group_hep_a/g_hep_a:jr:constraintMsg')" nodeset="/c_imm/group_hep_a/g_hep_a" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_hep_b/g_hep_b" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hep_b')" required="true()" type="select1"/>
       <bind nodeset="/c_imm/group_hpv" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hpv')"/>
       <bind constraint="(not(selected( /c_imm/group_hpv/g_hpv ,'none')) and (selected( /c_imm/group_hpv/g_hpv ,'HPV1') or selected( /c_imm/group_hpv/g_hpv ,'HPV2') or selected( /c_imm/group_hpv/g_hpv ,'HPV3'))) or selected( /c_imm/group_hpv/g_hpv ,'none') and not(selected( /c_imm/group_hpv/g_hpv ,'HPV1') or selected( /c_imm/group_hpv/g_hpv ,'HPV2') or selected( /c_imm/group_hpv/g_hpv ,'HPV3'))" jr:constraintMsg="jr:itext('/c_imm/group_hpv/g_hpv:jr:constraintMsg')" nodeset="/c_imm/group_hpv/g_hpv" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_flu" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'flu')"/>
@@ -3640,7 +5154,7 @@
       <bind nodeset="/c_imm/group_pentavalent" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'penta')"/>
       <bind constraint="(not(selected( /c_imm/group_pentavalent/g_pentavalent ,'none')) and (selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))) or selected( /c_imm/group_pentavalent/g_pentavalent ,'none') and not(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))" jr:constraintMsg="jr:itext('/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg')" nodeset="/c_imm/group_pentavalent/g_pentavalent" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_dpt" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'dpt')"/>
-      <bind constraint="(not(selected( /c_imm/group_dpt/g_dpt , 'none')) and (selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt , 'DPT5'))) or selected( /c_imm/group_dpt/g_dpt , 'none') and not(selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt ,'DPT5'))" jr:constraintMsg="jr:itext('/c_imm/group_dpt/g_dpt:jr:constraintMsg')" nodeset="/c_imm/group_dpt/g_dpt" relevant="true()" type="select"/>
+      <bind constraint="(not(selected( /c_imm/group_dpt/g_dpt , 'none')) and (selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt , 'DPT5'))) or selected( /c_imm/group_dpt/g_dpt , 'none') and not(selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt ,'DPT5'))" jr:constraintMsg="jr:itext('/c_imm/group_dpt/g_dpt:jr:constraintMsg')" nodeset="/c_imm/group_dpt/g_dpt" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_pneumococcal" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'pneumococcal')"/>
       <bind constraint="(not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none')) and (selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))) or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none') and not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))" jr:constraintMsg="jr:itext('/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg')" nodeset="/c_imm/group_pneumococcal/g_pneumococcal" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_rotavirus" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'rotavirus')"/>
@@ -3660,6 +5174,7 @@
       <bind nodeset="/c_imm/group_review_vaccines/r_cholera_3" readonly="true()" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH3')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_hep_a_1" readonly="true()" relevant="selected( /c_imm/group_hep_a/g_hep_a ,'HA1')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_hep_a_2" readonly="true()" relevant="selected( /c_imm/group_hep_a/g_hep_a ,'HA2')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hep_b" readonly="true()" relevant=" /c_imm/group_hep_b/g_hep_b  = 'yes'" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_hpv_1" readonly="true()" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV1')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_hpv_2" readonly="true()" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV2')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_hpv_3" readonly="true()" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV3')" type="string"/>
@@ -3739,6 +5254,10 @@
         <item>
           <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/hep_a:label')"/>
           <value>hep_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/hep_b:label')"/>
+          <value>hep_b</value>
         </item>
         <item>
           <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/hpv:label')"/>
@@ -3851,6 +5370,20 @@
           <value>none</value>
         </item>
       </select>
+    </group>
+    <group ref="/c_imm/group_hep_b">
+      <label ref="jr:itext('/c_imm/group_hep_b:label')"/>
+      <select1 appearance="quick" ref="/c_imm/group_hep_b/g_hep_b">
+        <label ref="jr:itext('/c_imm/group_hep_b/g_hep_b:label')"/>
+        <item>
+          <label ref="jr:itext('/c_imm/group_hep_b/g_hep_b/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/c_imm/group_hep_b/g_hep_b/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
     </group>
     <group ref="/c_imm/group_hpv">
       <label ref="jr:itext('/c_imm/group_hpv:label')"/>
@@ -4172,6 +5705,9 @@
       </input>
       <input appearance="li" ref="/c_imm/group_review_vaccines/r_hep_a_2">
         <label ref="jr:itext('/c_imm/group_review_vaccines/r_hep_a_2:label')"/>
+      </input>
+      <input appearance="li" ref="/c_imm/group_review_vaccines/r_hep_b">
+        <label ref="jr:itext('/c_imm/group_review_vaccines/r_hep_b:label')"/>
       </input>
       <input appearance="li" ref="/c_imm/group_review_vaccines/r_hpv_1">
         <label ref="jr:itext('/c_imm/group_review_vaccines/r_hpv_1:label')"/>
