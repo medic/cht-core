@@ -402,16 +402,13 @@ describe('registration', () => {
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        const lmpDate = moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString();
-        const expectedDate = moment().utc(false).startOf('day').add(38, 'weeks').toISOString();
-
         expect(updated[0].lmp_date).toBeDefined();
-        expect(updated[0].lmp_date).toEqual(lmpDate);
-        expect(updated[0].expected_date).toEqual(expectedDate);
-        // even if the doc was "reported" 2 weeks ago, the LMP is calculated relative to current date
+        expect(updated[0].lmp_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString());
+        expect(updated[0].expected_date).toEqual(moment().utc(false).startOf('day').add(38, 'weeks').toISOString());
+
         expect(updated[1].lmp_date).toBeDefined();
-        expect(updated[1].lmp_date).toEqual(lmpDate);
-        expect(updated[1].expected_date).toEqual(expectedDate);
+        expect(updated[1].lmp_date).toEqual(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
+        expect(updated[1].expected_date).toEqual(moment().utc(false).startOf('day').add(36, 'weeks').toISOString());
       });
   });
 
@@ -488,9 +485,7 @@ describe('registration', () => {
       .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
       .then(updated => {
         expect(updated[0].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
-        // report submitted 2 weeks ago, but dob is calculated relative to current date
-        // bug reported as https://github.com/medic/medic/issues/5410
-        expect(updated[1].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString());
+        expect(updated[1].birth_date).toEqual(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
         expect(updated[2].birth_date).toEqual(moment().utc(false).startOf('day').subtract(2, 'years').toISOString());
       });
   });

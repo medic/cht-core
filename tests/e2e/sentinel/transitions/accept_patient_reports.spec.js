@@ -412,8 +412,7 @@ describe('accept_patient_reports', () => {
       });
   });
 
-  // these tests fail cause of write conflicts when trying to silence registrations
-  xit('should silence registrations', () => {
+  it('should silence registrations', () => {
     const settings = {
       transitions: { accept_patient_reports: true },
       patient_reports: [
