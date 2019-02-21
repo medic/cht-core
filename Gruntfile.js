@@ -452,7 +452,7 @@ module.exports = function(grunt) {
       },
       'reset-test-databases': {
         stderr: false,
-        cmd: ['medic-test', 'medic-test-audit', 'medic-test-user-admin-meta']
+        cmd: ['medic-test', 'medic-test-audit', 'medic-test-user-admin-meta', 'medic-test-sentinel']
           .map(
             name => `curl -X DELETE ${couchConfig.withPath(name)}`
           )

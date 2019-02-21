@@ -381,6 +381,17 @@ module.exports = {
     });
   },
 
+  getDocs: ids => {
+    return module.exports
+      .requestOnTestDb({
+        path: `/_all_docs?include_docs=true`,
+        method: 'POST',
+        body: { keys: ids || []},
+        headers: { 'content-type': 'application/json' },
+      })
+      .then(response => response.rows.map(row => row.doc));
+  },
+
   deleteDoc: id => {
     return module.exports.getDoc(id).then(doc => {
       doc._deleted = true;
