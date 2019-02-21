@@ -2,7 +2,7 @@ require('chai').should();
 const sinon = require('sinon'),
   should = require('chai').should(),
   moment = require('moment'),
-  db = require('../../../src/db'),
+  db = require('../../../src/db-pouch'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
   transition = require('../../../src/transitions/accept_patient_reports'),
