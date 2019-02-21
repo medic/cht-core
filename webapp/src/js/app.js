@@ -117,7 +117,7 @@ _.templateSettings = {
       fetch: function(url, opts) {
         // Hack to stop service worker intefere with CouchDB replication
         if (!url.split('/')[3]) {
-          url = `${url}${bootstrapper.metaDataPath()}`;
+          url = `${url}api/info`;
         }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
@@ -126,6 +126,18 @@ _.templateSettings = {
     },
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
+
+  const dbName = () => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/db', false);
+    xhr.send(null);
+    if (xhr.status === 200) {
+      const res = JSON.parse(xhr.responseText);
+      return res.name;
+    }
+  };
+
+  app.constant('DB_NAME', dbName());
 
   if (window.location.href === 'http://localhost:9876/context.html') {
     // karma unit testing - do not bootstrap
@@ -146,7 +158,7 @@ _.templateSettings = {
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, $state, $transitions, Auth) {
+  app.run(function($rootScope, $state, $transitions, $http, Auth) {
     $transitions.onStart({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);

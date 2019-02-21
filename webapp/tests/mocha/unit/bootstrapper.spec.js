@@ -20,6 +20,14 @@ describe('bootstrapper', () => {
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
   beforeEach(done => {
+    global.XMLHttpRequest = sinon.stub();
+    global.XMLHttpRequest.onCall(0).returns({
+        open: sinon.stub(),
+        setRequestHeader: sinon.stub(),
+        send: sinon.stub(),
+        status: 200,
+        responseText: '{ "name":"medic" }'
+    });
     pouchDb = sinon.stub();
     localGet = sinon.stub();
     localReplicate = sinon.stub();
@@ -90,7 +98,7 @@ describe('bootstrapper', () => {
 
   it('does nothing for admins', done => {
     setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 0);
       done();
@@ -102,7 +110,7 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').returns(Promise.resolve({_id: '_design/medic-client'}));
     localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
 
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
       assert.equal(localClose.callCount, 1);
@@ -125,7 +133,7 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
       assert.equal(pouchDb.args[0][0], 'medic-user-jim');
@@ -156,7 +164,7 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
       assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
       done();
@@ -172,7 +180,7 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
       assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
       done();
@@ -187,7 +195,7 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
       done();
@@ -205,7 +213,7 @@ describe('bootstrapper', () => {
 
     localGet.withArgs('_design/medic-client').onCall(1).rejects();
 
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       assert.equal(err.message, 'Initial replication failed');
       assert.equal(localGet.callCount, 2);
       assert.equal(localClose.callCount, 1);
@@ -224,7 +232,7 @@ describe('bootstrapper', () => {
 
     const failingRegister = sinon.stub().rejects('error');
     window.navigator.serviceWorker.register = failingRegister;
-    bootstrapper.pouch(pouchDbOptions, err => {
+    bootstrapper(pouchDbOptions, err => {
       expect(failingRegister.callCount).to.eq(1);
       expect(err).to.include({ name: 'error' });
       done();

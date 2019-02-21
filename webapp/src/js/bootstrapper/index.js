@@ -31,10 +31,21 @@
     }
   };
 
+  const getDBName = () => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/db', false);
+    xhr.send(null);
+
+    if (xhr.status === 200) {
+      const res = JSON.parse(xhr.responseText);
+      return res.name;
+    }
+  };
+
   var getDbInfo = function() {
     // parse the URL to determine the remote and local database names
     var location = window.location;
-    var dbName = location.pathname.split('/')[1] || 'medic';
+    var dbName = getDBName();
     var port = location.port ? ':' + location.port : '';
     var remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
     return {
@@ -124,79 +135,72 @@
     return localDb.get('_design/medic-client');
   };
 
-  module.exports = {
-    pouch:  (POUCHDB_OPTIONS, callback) => {
-      var dbInfo = getDbInfo();
-      var userCtx = getUserCtx();
-      if (!userCtx) {
-        var err = new Error('User must reauthenticate');
-        err.status = 401;
-        return redirectToLogin(dbInfo, err, callback);
-      }
-  
-      if (hasFullDataAccess(userCtx)) {
-        return callback();
-      }
-  
-      translator.setLocale(userCtx.locale);
-  
-      const onServiceWorkerInstalling = () => setUiStatus('DOWNLOAD_APP');
-      const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
-  
-      const localDbName = getLocalDbName(dbInfo, userCtx.name);
-      const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
-      const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
-  
-      const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
-  
-      let isInitialReplicationNeeded;
-      Promise.all([swRegistration, testReplicationNeeded()])
-        .then(function(resolved) {
-          isInitialReplicationNeeded = !!resolved[1];
-  
-          if (isInitialReplicationNeeded) {
-            return initialReplication(localDb, remoteDb)
-              .then(testReplicationNeeded)
-              .then(isReplicationStillNeeded => {
-                if (isReplicationStillNeeded) {
-                  throw new Error('Initial replication failed');
-                }
-              });
-          }
-        })
-        .then(() => purger(localDb, userCtx, isInitialReplicationNeeded)
-          .on('start', () => setUiStatus('PURGE_INIT'))
-          .on('progress', function(progress) {
-            setUiStatus('PURGE_INFO', {
-              count: progress.purged,
-              percent: Math.floor((progress.processed / progress.total) * 100)
-            });
-          })
-          .on('optimise', () => setUiStatus('PURGE_AFTER'))
-          .catch(console.error)
-        )
-        .then(() => setUiStatus('STARTING_APP'))
-        .catch(err => err)
-        .then(function(err) {
-          localDb.close();
-          remoteDb.close();
-          if (err) {
-            if (err.status === 401) {
-              return redirectToLogin(dbInfo, err, callback);
-            }
-  
-            setUiError();
-          }
-  
-          callback(err);
-        });
-  
-    },
-    metaDataPath: () => {
-      var dbInfo = getDbInfo();
-      var userCtx = getUserCtx();
-      return `${getLocalDbName(dbInfo, userCtx.name)}-meta/`;
+  module.exports = function(POUCHDB_OPTIONS, callback) {
+    var dbInfo = getDbInfo();
+    var userCtx = getUserCtx();
+    if (!userCtx) {
+      var err = new Error('User must reauthenticate');
+      err.status = 401;
+      return redirectToLogin(dbInfo, err, callback);
     }
+
+    if (hasFullDataAccess(userCtx)) {
+      return callback();
+    }
+
+    translator.setLocale(userCtx.locale);
+
+    const onServiceWorkerInstalling = () => setUiStatus('DOWNLOAD_APP');
+    const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
+
+    const localDbName = getLocalDbName(dbInfo, userCtx.name);
+    const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
+    const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+
+    const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
+
+    let isInitialReplicationNeeded;
+    Promise.all([swRegistration, testReplicationNeeded()])
+      .then(function(resolved) {
+        isInitialReplicationNeeded = !!resolved[1];
+
+        if (isInitialReplicationNeeded) {
+          return initialReplication(localDb, remoteDb)
+            .then(testReplicationNeeded)
+            .then(isReplicationStillNeeded => {
+              if (isReplicationStillNeeded) {
+                throw new Error('Initial replication failed');
+              }
+            });
+        }
+      })
+      .then(() => purger(localDb, userCtx, isInitialReplicationNeeded)
+        .on('start', () => setUiStatus('PURGE_INIT'))
+        .on('progress', function(progress) {
+          setUiStatus('PURGE_INFO', {
+            count: progress.purged,
+            percent: Math.floor((progress.processed / progress.total) * 100)
+          });
+        })
+        .on('optimise', () => setUiStatus('PURGE_AFTER'))
+        .catch(console.error)
+      )
+      .then(() => setUiStatus('STARTING_APP'))
+      .catch(err => err)
+      .then(function(err) {
+        localDb.close();
+        remoteDb.close();
+        if (err) {
+          if (err.status === 401) {
+            return redirectToLogin(dbInfo, err, callback);
+          }
+
+          setUiError();
+        }
+
+        callback(err);
+      });
+
   };
 
 }());

@@ -132,6 +132,15 @@ app.constant('POUCHDB_OPTIONS', {
   }
 });
 
+var request = new XMLHttpRequest();
+request.open('GET', '/api/db', false);
+request.send(null);
+
+if (request.status === 200) {
+  const jsonResp = JSON.parse(request.responseText);
+  app.constant('DB_NAME', jsonResp.name);
+}
+
 app.config(function(
   $compileProvider,
   $locationProvider,

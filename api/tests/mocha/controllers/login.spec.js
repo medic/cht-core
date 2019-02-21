@@ -64,7 +64,7 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite_gone_bad',
     ].forEach(requested => {
       it(`Bad URL "${requested}" should redirect to root`, () => {
-        chai.expect('/lg/_design/medic/_rewrite').to.equal(controller.safePath(requested));
+        chai.expect('/').to.equal(controller.safePath(requested));
       });
     });
 
@@ -76,26 +76,30 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite/long/path',
     ].forEach(requested => {
       it(`Good URL "${requested}" should redirect unchanged`, () => {
-        chai.expect(requested).to.equal(controller.safePath(requested));
+        if (requested.includes('#')) {
+          chai.expect(`/#${requested.split('#')[1]}`).to.equal(controller.safePath(requested));
+        } else {
+          chai.expect('/').to.equal(controller.safePath(requested));
+        }
       });
     });
 
     [
       {
         given: 'http://test.com:1234/lg/_design/medic/_rewrite',
-        expected: '/lg/_design/medic/_rewrite'
+        expected: '/'
       },
       {
         given: 'http://test.com:1234/lg/_design/medic/_rewrite#fragment',
-        expected: '/lg/_design/medic/_rewrite#fragment'
+        expected: '/#fragment'
       },
       {
         given: 'http://wrong.com:666/lg/_design/medic/_rewrite#path/fragment',
-        expected: '/lg/_design/medic/_rewrite#path/fragment'
+        expected: '/#path/fragment'
       },
       {
         given: 'http://wrong.com:666/lg/_design/medic/_rewrite/long/path',
-        expected: '/lg/_design/medic/_rewrite/long/path'
+        expected: '/'
       },
     ].forEach(({ given, expected }) => {
       it(`Absolute URL "${given}" should redirect as a relative url`, () => {
@@ -118,7 +122,7 @@ describe('login controller', () => {
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
         chai.expect(redirect.callCount).to.equal(1);
-        chai.expect(redirect.args[0][0]).to.equal('/lg/_design/medic/_rewrite');
+        chai.expect(redirect.args[0][0]).to.equal('/');
       });
     });
 
@@ -246,7 +250,7 @@ describe('login controller', () => {
         chai.expect(hasAllPermissions.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
-        chai.expect(send.args[0][0]).to.deep.equal('/lg/_design/medic/_rewrite');
+        chai.expect(send.args[0][0]).to.deep.equal('/');
         chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[0][1]).to.equal('abc');
@@ -280,7 +284,7 @@ describe('login controller', () => {
         chai.expect(hasAllPermissions.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
-        chai.expect(send.args[0][0]).to.deep.equal('/lg/_design/medic-admin/_rewrite');
+        chai.expect(send.args[0][0]).to.deep.equal('/admin/');
       });
     });
   });

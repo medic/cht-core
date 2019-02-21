@@ -37,6 +37,7 @@ const _ = require('underscore'),
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
   appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
+  adminApprefix = pathPrefix + '_design/medic-admin/_rewrite/',
   serverUtils = require('./server-utils'),
   uuid = require('uuid'),
   compression = require('compression'),
@@ -151,7 +152,6 @@ app.use(compression());
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
-
 const root = (req, res) => {
   if (('deviceID' in req.query) || req.is('application/json')) {
     // couchdb request - let it go
@@ -182,6 +182,22 @@ app.get('/', function(req, res) {
   }
   // send the extracted file
   res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
+});
+
+app.get(/^\/admin\/?$/, (req, res) => {
+  const originalUrl = req.url;
+  req.url = `${adminApprefix}${originalUrl.slice(7)}`;
+  proxy.web(req, res);
+});
+
+app.get(/^\/admin\/fonts/, (req, res) => {
+  res.redirect(req.url.slice(6));
+});
+
+app.get(/^\/admin((.*)\.js|(.*)\.css)$/, (req, res) => {
+  const originalUrl = req.url;
+  req.url = `${adminApprefix}${originalUrl.slice(7)}`;
+  proxy.web(req, res);
 });
 
 app.get('/favicon.ico', (req, res) => {
@@ -282,6 +298,12 @@ app.all('/setup/finish', function(req, res) {
 app.get('/api/info', function(req, res) {
   var p = require('../package.json');
   res.json({ version: p.version });
+});
+
+app.get('/api/db', function(req, res) {
+  res.json({
+    name: environment.db
+   });
 });
 
 app.get('/api/auth/:path', function(req, res) {
