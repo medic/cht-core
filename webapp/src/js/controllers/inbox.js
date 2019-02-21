@@ -271,7 +271,7 @@ var feedback = require('../modules/feedback'),
     });
 
     $transitions.onStart({}, function(trans) {
-      const statesToUnsetSelected = ['reports', 'contacts', 'tasks', 'messages.detail'];
+      const statesToUnsetSelected = ['contacts', 'messages', 'reports', 'tasks'];
       const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
       // unset selected when states have different base state and only when source state has selected property
       if (parentState && !trans.to().name.startsWith(parentState)) {
