@@ -1189,6 +1189,69 @@
       ]
     },
     {
+      "form": "IPV1",
+      "name": " IPV1 Inactivated polio",
+      "format": "IPV1 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "IPV2",
+      "name": " IPV2 Inactivated polio",
+      "format": "IPV2 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "IPV3",
+      "name": " IPV3 Inactivated polio",
+      "format": "IPV3 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
       "form": "PCV1",
       "name": " PCV1 Pneumococcal pneumonia",
       "format": "PCV1 <patientid>",
@@ -1780,6 +1843,111 @@
       "form": "CH3",
       "name": " CH3 Cholera",
       "format": "CH3 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HB",
+      "name": "HB Hepatitis B",
+      "format": "HB <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FIPV1",
+      "name": "FIPV1 Fractional IPV",
+      "format": "FIPV1 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FIPV2",
+      "name": "FIPV2 Fractional IPV",
+      "format": "FIPV2 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "DPT4",
+      "name": "DPT4 DPT Booster",
+      "format": "DPT4 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "DPT5",
+      "name": "DPT5 DPT Booster",
+      "format": "DPT5 <patientid>",
       "silence_type": "",
       "silence_for": "",
       "fields": [],
@@ -6227,6 +6395,201 @@
         "code": "CH3",
         "icon": "immunization",
         "translation_key": "CH3 Cholera"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HB": {
+      "meta": {
+        "code": "HB",
+        "icon": "immunization",
+        "translation_key": "HB Hepatitis B"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "DPT4": {
+      "meta": {
+        "code": "DPT4",
+        "icon": "immunization",
+        "translation_key": "DPT4 DPT Booster 1"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "DPT5": {
+      "meta": {
+        "code": "DPT5",
+        "icon": "immunization",
+        "translation_key": "DPT5 DPT Booster 2"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FIPV1": {
+      "meta": {
+        "code": "FIPV1",
+        "icon": "immunization",
+        "translation_key": "fIPV1 Fractional IPV 1"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FIPV2": {
+      "meta": {
+        "code": "FIPV2",
+        "icon": "immunization",
+        "translation_key": "fIPV2 Fractional IPV 2"
       },
       "fields": {
         "patient_id": {
