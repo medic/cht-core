@@ -57,7 +57,7 @@ const loadTransitions = (synchronous = false) => {
     }
 
     try {
-      transition.push(self._loadTransition(transition));
+      transitions.push(self._loadTransition(transition));
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
