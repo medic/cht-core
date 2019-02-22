@@ -1,6 +1,6 @@
 const async = require('async'),
   moment = require('moment'),
-  date = require('../date'),
+  date = require('@medic/sentinel').date,
   config = require('../config'),
   logger = require('../lib/logger');
 

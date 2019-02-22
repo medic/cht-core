@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     config = require('../config'),
-    messages = require('../lib/messages'),
+    messages = require('@medic/sentinel').messages,
     later = require('later'),
     moment = require('moment'),
     db = require('../db');

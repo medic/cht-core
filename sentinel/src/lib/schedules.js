@@ -1,12 +1,13 @@
 const _ = require('underscore'),
     config = require('../config'),
-    date = require('../date'),
+    sentinelLib = require('@medic/sentinel'),
+    date = sentinelLib.date,
     moment = require('moment'),
-    utils = require('../lib/utils'),
+    utils = sentinelLib.utils,
     logger = require('../lib/logger'),
-    messages = require('../lib/messages'),
+    messages = sentinelLib.messages,
     messageUtils = require('@medic/message-utils'),
-    mutingUtils = require('../lib/muting_utils');
+    mutingUtils = sentinelLib.mutingUtils;
 
 module.exports = {
     // return [hour, minute, timezone]
@@ -170,7 +171,7 @@ module.exports = {
             } else {
                 // bad offset, skip this msg
                 logger.error(
-                    `${msg.offset} cannot be parsed as a valid offset. Skipping this msg of ${schedule.name} schedule.`  
+                    `${msg.offset} cannot be parsed as a valid offset. Skipping this msg of ${schedule.name} schedule.`
                 );
             }
         });
