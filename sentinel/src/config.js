@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
 };
 
 let config = DEFAULT_CONFIG,
-    sentinelLib = require('@medic/sentinel');
+    transitionsLib;
 
 const loadTranslations = () => {
   const options = {
@@ -67,7 +67,7 @@ const initConfig = () => {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
       );
-      sentinelLib.init(db, config, translations, logger);
+      transitionsLib = require('@medic/transitions')(db, config, translations, logger);
       require('./transitions').loadTransitions();
     })
     .catch(err => {
@@ -90,4 +90,5 @@ module.exports = {
     initFeed();
     return loadTranslations().then(initConfig);
   },
+  getTransitionsLib: () => getTransitionsLib
 };

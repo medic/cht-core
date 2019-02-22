@@ -6,8 +6,8 @@ const _ = require('underscore'),
       logger = require('./lib/logger'),
       metadata = require('./lib/metadata'),
       tombstoneUtils = require('@medic/tombstone-utils'),
-      sentinelLib = require('@medic/sentinel'),
-      infodoc = sentinelLib.infodoc,
+      transitionsLib = require('./config').getTransitionsLib(),
+      infodoc = transitionsLib.infodoc,
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500; // items
 
@@ -16,7 +16,7 @@ let changesFeed,
     processed = 0;
 
 const loadTransitions = () => {
-  transitions = sentinelLib.transitions.loadTransitions();
+  transitions = transitionsLib.transitions.loadTransitions();
 
   if (!transitions) {
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
@@ -115,7 +115,7 @@ const processChange = (change, callback) => {
 };
 
 const applyTransitions = (change, transitions, callback) => {
-  sentinelLib.transitions.applyTransitions(
+  transitionsLib.transitions.applyTransitions(
     change,
     transitions,
     (err, results) => finalize({ change, results }, callback)
