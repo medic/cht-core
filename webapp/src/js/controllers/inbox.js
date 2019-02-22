@@ -263,28 +263,24 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $transitions.onBefore({}, (trans) => {
+      if (ctrl.enketoStatus.edited && ctrl.cancelCallback) {
+        $scope.navigationCancel({ to: trans.to(), params: trans.params() });
+        return false;
+      }
+    });
+
     $transitions.onStart({}, function(trans) {
-      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || trans.to().name.indexOf('messages.detail') === -1) {
+      const statesToUnsetSelected = ['contacts', 'messages', 'reports', 'tasks'];
+      const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
+      // unset selected when states have different base state and only when source state has selected property
+      if (parentState && !trans.to().name.startsWith(parentState)) {
         $scope.unsetSelected();
-      }
-      if (trans.to().name.indexOf('tasks.detail') === -1) {
-        Enketo.unload($scope.form);
-        $scope.unsetSelected();
-      }
-      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]) {
-        $scope.$broadcast('ClearSelected');
-      }
-      if (!ctrl.enketoStatus.edited){
-        return;
-      }
-      if (ctrl.cancelCallback){
-        event.preventDefault();
-        $scope.navigationCancel();
       }
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
-    $scope.navigationCancel = function() {
+    $scope.navigationCancel = function(trans) {
       if (ctrl.enketoStatus.saving) {
         // wait for save to finish
         return;
@@ -303,6 +299,9 @@ var feedback = require('../modules/feedback'),
         singleton: true,
       }).then(function() {
         ctrl.setEnketoEditedStatus(false);
+        if (trans) {
+          return $state.go(trans.to, trans.params);
+        }
         if (ctrl.cancelCallback) {
           ctrl.cancelCallback();
         }

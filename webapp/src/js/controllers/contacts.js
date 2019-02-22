@@ -35,13 +35,18 @@ var _ = require('underscore'),
     'ngInject';
 
     var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        enketoStatus: state.enketoStatus
+      };
+    };
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
         clearCancelCallback: actions.clearCancelCallback
       };
     };
-    var unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var liveList = LiveList.contacts;
 
@@ -313,7 +318,7 @@ var _ = require('underscore'),
     };
 
     $scope.search = function() {
-      if($scope.filters.search) {
+      if($scope.filters.search && !ctrl.enketoStatus.edited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }
