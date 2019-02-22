@@ -97,7 +97,7 @@ const processChange = (change, callback) => {
         if (change.doc.transitions) {
           delete change.doc.transitions;
         }
-        sentinelLib.transitions.applyTransitions(change, transitions, () => {
+        applyTransitions(change, transitions, () => {
           processed++;
           metadata
             .update(change.seq)
@@ -112,6 +112,14 @@ const processChange = (change, callback) => {
       logger.error('transitions: fetch failed for %s : %o', change.id, err);
       return callback();
     });
+};
+
+const applyTransitions = (change, transitions, callback) => {
+  sentinelLib.transitions.applyTransitions(
+    change,
+    transitions,
+    (err, results) => finalize({ change, results }, callback)
+  );
 };
 
 const deleteReadDocs = change => {
