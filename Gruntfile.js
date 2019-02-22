@@ -365,6 +365,7 @@ module.exports = function(grunt) {
             'api/src/extracted-resources/**/*',
             '**/node_modules/**',
             'sentinel/src/lib/pupil/**',
+            'shared-libs/sentinel/src/lib/pupil/**',
             'build/**',
             'config/**'
           ];
@@ -946,8 +947,8 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Unit tests', [
     'karma:unit',
     'karma:admin',
-    'exec:shared-lib-unit',
     'env:unit-test',
+    'exec:shared-lib-unit',
     'mochaTest:unit',
     'env:general',
   ]);
