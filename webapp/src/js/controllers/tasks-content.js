@@ -114,10 +114,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
           $scope.enketoStatus.saving = false;
+          $scope.enketoStatus.edited = false;
           Enketo.unload($scope.form);
           $scope.clearSelected();
           $scope.clearCancelTarget();
-          $scope.enketoStatus.edited = false;
           $state.go('tasks.detail', { id: null });
         })
         .then(() => {
@@ -147,5 +147,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope.form = null;
     $scope.formId = null;
     $scope.setSelected($state.params.id);
+
+    $scope.$on('ClearSelected', () => {
+      Enketo.unload($scope.form);
+    });
   }
 );

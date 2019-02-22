@@ -302,7 +302,7 @@ var _ = require('underscore'),
     };
 
     $scope.search = function() {
-      if($scope.filters.search) {
+      if($scope.filters.search && !$scope.enketoStatus.edited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }

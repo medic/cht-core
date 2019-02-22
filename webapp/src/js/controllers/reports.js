@@ -259,7 +259,8 @@ angular
 
     $scope.search = function() {
       // clears report selection for any text search or filter selection
-      if($scope.filters.search || Object.keys($scope.filters).length > 1) {
+      // does not clear selection when someone is editing a form
+      if(($scope.filters.search || Object.keys($scope.filters).length > 1) && !$scope.enketoStatus.edited) {
         $state.go('reports.detail', { id: null }, { notify: false });
         clearSelection();
       }

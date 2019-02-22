@@ -84,6 +84,7 @@ describe('Contacts controller', () => {
     scope.clearCancelTarget = sinon.stub();
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
+    scope.enketoStatus = {};
     contactSchema = {
       get: sinon.stub(),
       getChildPlaceType: sinon.stub(),
@@ -576,7 +577,7 @@ describe('Contacts controller', () => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 50);
           scrollLoaderCallback();
-          assert.deepEqual(searchService.args[1][2], { 
+          assert.deepEqual(searchService.args[1][2], {
             reuseExistingDom: true,
             paginating: true,
             limit: 50,
