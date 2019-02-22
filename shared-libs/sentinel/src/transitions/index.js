@@ -107,9 +107,7 @@ const canRun = ({ key, change, transition }) => {
       return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
     }
     logger.debug(
-      `isRevSame tested true on transition ${key} for seq ${change.seq} doc ${
-        change.id
-      }`
+      `isRevSame tested true on transition ${key} for doc ${change.id} seq ${change.seq}`
     );
     return false;
   };
@@ -140,9 +138,7 @@ const canRun = ({ key, change, transition }) => {
  */
 const applyTransition = ({ key, change, transition }, callback) => {
   logger.debug(
-    `calling transition.onMatch for doc ${change.id} seq ${
-      change.seq
-    } and transition ${key}`
+    `calling transition.onMatch for doc ${change.id} and transition ${key} seq ${change.seq}`
   );
 
   /*
@@ -154,9 +150,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
     .onMatch(change)
     .then(changed => {
       logger.debug(
-        `finished transition ${key} for seq ${change.seq} doc ${
-          change.id
-        } is ` + changed ? 'changed' : 'unchanged'
+        `finished transition ${key} doc ${change.id} is ${changed ? 'changed' : 'unchanged'} seq ${change.seq}`
       );
       if (!changed) {
         return changed;
@@ -173,11 +167,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
         code: `${key}_error'`,
         message: `Transition error on ${key}: ${message}`,
       });
-      logger.error(
-        `transition ${key} errored on doc ${change.id} seq ${
-          change.seq
-        }: ${JSON.stringify(err)}`
-      );
+      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
       if (!err.changed) {
         return false;
       }
@@ -198,9 +188,7 @@ const applyTransitions = (change, transitions, callback) => {
       };
       if (!canRun(opts)) {
         logger.debug(
-          `canRun test failed on transition ${transition.key} for seq ${
-            change.seq
-          } doc ${change.id}`
+          `canRun test failed on transition ${transition.key} for doc ${change.id} seq ${change.seq}`
         );
         return;
       }
