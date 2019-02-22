@@ -5,8 +5,7 @@ const _ = require('underscore'),
   transition = require('../../src/transitions/registration'),
   db = require('../../src/db'),
   utils = require('../../src/lib/utils'),
-  transitionUtils = require('../../src/transitions/utils'),
-  date = require('../../src/date');
+  transitionUtils = require('../../src/transitions/utils');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
@@ -196,36 +195,40 @@ describe('patient registration', () => {
   });
 
   it('getDOB uses weeks since dob if available', () => {
-    const today = 1474942416907,
-      expected = moment(today)
+    const reported_date = 1474942416907,
+      expected = moment(reported_date)
         .startOf('day')
         .subtract(5, 'weeks')
         .valueOf();
-    sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
-    assert.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
+    assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
   it('getDOB uses days since dob if available', () => {
-    const today = 1474942416907,
-      expected = moment(today)
+    const reported_date = 1474942416907,
+      expected = moment(reported_date)
         .startOf('day')
         .subtract(5, 'days')
         .valueOf();
-    sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns('5');
-    assert.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
+    assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
-  it('getDOB falls back to today if necessary', () => {
-    const today = 1474942416907,
-      expected = moment(today)
+  it('getDOB falls back to reported_date if necessary', () => {
+    const reported_date = 1474942416907,
+      expected = moment(reported_date)
         .startOf('day')
         .valueOf();
-    sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
+    assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
+  });
+
+  it('getDOB falls back to be relative to today if no reported date', () => {
+    const expected = moment().startOf('day').subtract(4, 'days').valueOf();
+    sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
+    sinon.stub(transition, 'getDaysSinceDOB').returns('4');
     assert.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
   });
 

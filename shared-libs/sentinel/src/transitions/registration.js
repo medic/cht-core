@@ -152,25 +152,25 @@ module.exports = {
     if (!doc || !doc.fields) {
       return '';
     }
-    const today = moment(date.getDate()).startOf('day');
+    const reportedDate = moment(doc.reported_date).startOf('day');
     const years = parseInt(module.exports.getYearsSinceDOB(doc), 10);
     if (!isNaN(years)) {
-      return today.subtract(years, 'years');
+      return reportedDate.subtract(years, 'years');
     }
     const months = parseInt(module.exports.getMonthsSinceDOB(doc), 10);
     if (!isNaN(months)) {
-      return today.subtract(months, 'months');
+      return reportedDate.subtract(months, 'months');
     }
     const weeks = parseInt(module.exports.getWeeksSinceDOB(doc), 10);
     if (!isNaN(weeks)) {
-      return today.subtract(weeks, 'weeks');
+      return reportedDate.subtract(weeks, 'weeks');
     }
     const days = parseInt(module.exports.getDaysSinceDOB(doc), 10);
     if (!isNaN(days)) {
-      return today.subtract(days, 'days');
+      return reportedDate.subtract(days, 'days');
     }
-    // no given date of birth - return today as it's the best we can do
-    return today;
+    // no given date of birth - return reportedDate as it's the best we can do
+    return reportedDate;
   },
   getYearsSinceDOB: doc => {
     const fields = ['years_since_dob', 'years_since_birth', 'age_in_years'];
@@ -218,7 +218,7 @@ module.exports = {
   },
   setExpectedBirthDate: doc => {
     const lmp = Number(module.exports.getWeeksSinceLMP(doc)),
-      start = moment(date.getDate()).startOf('day');
+      start = moment(doc.reported_date).startOf('day');
     if (lmp === 0) {
       // means baby was already born, chw just wants a registration.
       doc.lmp_date = null;

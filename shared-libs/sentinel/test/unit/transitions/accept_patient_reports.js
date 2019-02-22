@@ -200,7 +200,7 @@ describe('accept_patient_reports', () => {
     // Helpful diagram for the next 5 tests:
     // https://github.com/medic/medic/issues/4694#issuecomment-459460521
     it('does not associate visit to anything since no reminder messages have been sent yet', done => {
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -220,6 +220,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k5',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -230,6 +231,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -240,6 +242,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'j',
                 },
               ],
+              type: 'x',
               group: 1
             },
           ],
@@ -256,7 +259,7 @@ describe('accept_patient_reports', () => {
     });
 
     it('does not associate visit to anything since it is not responding to a reminder', done => {
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -270,32 +273,35 @@ describe('accept_patient_reports', () => {
           scheduled_tasks: [
             {
               due: '2018-09-28T19:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k5',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
               due: '2018-10-28T20:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
               due: '2018-11-28T21:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'j',
                 },
               ],
+              type: 'x',
               group: 1
             },
           ],
@@ -313,8 +319,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 1', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArg(1);
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -327,33 +333,36 @@ describe('accept_patient_reports', () => {
           reported_date: '2017-02-05T09:23:07.853Z',
           scheduled_tasks: [
             {
-              due: '2018-09-28T18:45:00.000Z',
+              due: '2018-09-18T18:45:00.000Z',
               state: 'sent',
               messages: [
                 {
                   uuid: 'k5',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
-              due: '2018-09-28T20:45:00.000Z',
-              state: 'cleared',
+              due: '2018-10-28T20:45:00.000Z',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
               due: '2018-11-28T21:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'j',
                 },
               ],
+              type: 'x',
               group: 1
             },
           ],
@@ -361,7 +370,7 @@ describe('accept_patient_reports', () => {
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         registrations[0].scheduled_tasks[0].responded_to_by.should.deep.equal([doc._id]);
         should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
@@ -372,8 +381,8 @@ describe('accept_patient_reports', () => {
 
     it('stores visit UUIDs in an array, since there can be multiple', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArg(1);
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc1 = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -398,6 +407,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k5',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -408,31 +418,34 @@ describe('accept_patient_reports', () => {
                   uuid: 'k',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
               due: '2018-11-28T21:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'j',
                 },
               ],
+              type: 'x',
               group: 1
             },
           ],
         },
       ];
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, registrations);
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc1, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id]);
         should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
 
         transition._handleReport(doc2, config, (err, complete) => {
-          complete.should.equal(true);
+          complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
           putRegistration.callCount.should.equal(2);
           should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
           registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id, doc2._id]);
@@ -444,8 +457,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 2.', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArg(1);
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -465,6 +478,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k5',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -475,16 +489,18 @@ describe('accept_patient_reports', () => {
                   uuid: 'k',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
               due: '2018-11-28T21:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'j',
                 },
               ],
+              type: 'x',
               group: 1
             },
           ],
@@ -492,7 +508,7 @@ describe('accept_patient_reports', () => {
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc._id]);
@@ -503,8 +519,8 @@ describe('accept_patient_reports', () => {
 
     it('associates visit to Group 1 Message 3', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArg(1);
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      putRegistration.callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -524,6 +540,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k1',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -534,6 +551,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k2',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -544,6 +562,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k3',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -554,6 +573,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k4',
                 },
               ],
+              type: 'x',
               group: 2
             },
           ],
@@ -561,7 +581,7 @@ describe('accept_patient_reports', () => {
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
-        complete.should.equal(true);
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
         putRegistration.callCount.should.equal(1);
         should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
@@ -572,7 +592,7 @@ describe('accept_patient_reports', () => {
     });
 
     it('does not associate visit to anything since it is within the silence_for range', done => {
-      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
@@ -592,6 +612,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k1',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -602,6 +623,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k2',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
@@ -612,21 +634,24 @@ describe('accept_patient_reports', () => {
                   uuid: 'k3',
                 },
               ],
+              type: 'x',
               group: 1
             },
             {
               due: '2019-01-26T18:45:00.000Z',
-              state: 'cleared',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k4',
                 },
               ],
+              type: 'x',
               group: 2
             },
           ],
         },
       ];
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, registrations);
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
@@ -672,7 +697,7 @@ describe('accept_patient_reports', () => {
         .stub(transition, '_findToClear')
         .returns(registration.scheduled_tasks);
       const setTaskState = sinon.stub(utils, 'setTaskState');
-      sinon.stub(db.medic, 'post').callsArg(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { _id: 'test-registration', rev: 'k' });
 
       transition._silenceReminders(registration, report, null, () => {
         registration._id.should.equal('test-registration');
