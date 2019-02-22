@@ -4,7 +4,7 @@ const config = require('./config'),
 
 module.exports = {
   init: (sourceDb, settings, translations, sourceLogger) => {
-    logger.set(sourceLogger);
+    logger.init(sourceLogger);
     db.init(sourceDb);
     config.init(settings, translations);
   }
