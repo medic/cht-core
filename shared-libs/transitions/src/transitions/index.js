@@ -160,6 +160,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
       });
     })
     .catch(err => {
+      console.log(err);
       // adds an error to the doc but it will only get saved if there are
       // other changes too.
       const message = err.message || JSON.stringify(err);
