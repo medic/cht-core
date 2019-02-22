@@ -9,7 +9,6 @@ const
   path = require('path'),
   db = require('./db'),
   logger = require('./logger'),
-  APP_PREFIX_TOKEN = 'APP_PREFIX',
   STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),
   isAttachmentCacheable = name => name === 'manifest.json' || !!name.match(/(?:audio|css|fonts|templates|img|js|xslt)\/.*/);
 
@@ -36,13 +35,7 @@ const extractAttachment = attachmentName => db.medic
     const outputPath = path.join(STATIC_RESOURCE_DESTINATION, attachmentName);
     createFolderIfDne(path.dirname(outputPath));
 
-    /*
-    At build time, we can't know what the COUCH_URL will be when API starts.
-    This means, some paths (eg. inbox.html) are unknown until the app starts.
-    In this approach, I'm hydrating a token used in the build with environment values once they are known.
-    */
-    const hydrated = attachmentName === 'js/service-worker.js' ? raw.toString().replace(APP_PREFIX_TOKEN, `/`) : raw;
-    fs.writeFile(outputPath, hydrated, err => {
+    fs.writeFile(outputPath, raw, err => {
       logger.debug(`Extracted attachment ${outputPath}`);
       if (err) {
         return reject(err);

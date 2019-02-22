@@ -37,7 +37,7 @@ const _ = require('underscore'),
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
   appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
-  adminApprefix = pathPrefix + '_design/medic-admin/_rewrite/',
+  adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/',
   serverUtils = require('./server-utils'),
   uuid = require('uuid'),
   compression = require('compression'),
@@ -184,20 +184,24 @@ app.get('/', function(req, res) {
   res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
 });
 
-app.get(/^\/admin\/?$/, (req, res) => {
+app.all(/^\/(medic)\/(.?)/, (req, res) => {
   const originalUrl = req.url;
-  req.url = `${adminApprefix}${originalUrl.slice(7)}`;
-  proxy.web(req, res);
-});
+  req.url = `/${environment.db}${originalUrl.slice(6)}`;
+  if (originalUrl.includes('login')) {
+    res.redirect(req.url);
+  } else {
+    proxy.web(req, res);
+  }
+}); 
 
-app.get(/^\/admin\/fonts/, (req, res) => {
-  res.redirect(req.url.slice(6));
-});
-
-app.get(/^\/admin((.*)\.js|(.*)\.css)$/, (req, res) => {
+app.all('/admin*', (req, res) => {
   const originalUrl = req.url;
-  req.url = `${adminApprefix}${originalUrl.slice(7)}`;
-  proxy.web(req, res);
+  if (originalUrl.split('/')[2] === 'fonts') {
+    res.redirect(req.url.slice(6));
+  } else {
+    req.url = `${adminAppPrefix}${originalUrl.slice(7)}`;
+    proxy.web(req, res);
+  }
 });
 
 app.get('/favicon.ico', (req, res) => {

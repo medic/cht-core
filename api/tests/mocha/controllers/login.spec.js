@@ -54,17 +54,37 @@ describe('login controller', () => {
   describe('safePath', () => {
 
     [
-      '',
-      null,
-      'http://example.com',
-      '%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E',
-      'https://app.medicmobile.org/wrong/path',
-      'http://app.medicmobile.org/lg/_design/medic/_rewrite', // wrong protocol
-      '/lg/_design/medic/_rewrite/../../../../../.htpasswd',
-      '/lg/_design/medic/_rewrite_gone_bad',
-    ].forEach(requested => {
-      it(`Bad URL "${requested}" should redirect to root`, () => {
-        chai.expect('/').to.equal(controller.safePath(requested));
+      {
+        given: '',
+        expected: '/'
+      },
+      {
+        given: null,
+        expected: '/'
+      },
+      {
+        given: 'http://example.com',
+        expected: '/'
+      },
+      {
+        given: '%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E',
+        expected: '/%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E'
+      },
+      {
+        given: 'https://app.medicmobile.org/right/path',
+        expected: '/right/path'
+      },
+      {
+        given: 'http://app.medicmobile.org/lg/_design/medic/_rewrite',
+        expected: '/lg/_design/medic/_rewrite'
+      },
+      {
+        given: '/lg/_design/medic/_rewrite/../../../../../.htpasswd',
+        expected: '/.htpasswd'
+      },
+    ].forEach(({given, expected}) => {
+      it(`Bad URL "${given}" should redirect to root`, () => {
+        chai.expect(expected).to.equal(controller.safePath(given));
       });
     });
 
@@ -76,30 +96,26 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite/long/path',
     ].forEach(requested => {
       it(`Good URL "${requested}" should redirect unchanged`, () => {
-        if (requested.includes('#')) {
-          chai.expect(`/#${requested.split('#')[1]}`).to.equal(controller.safePath(requested));
-        } else {
-          chai.expect('/').to.equal(controller.safePath(requested));
-        }
+        chai.expect(requested).to.equal(controller.safePath(requested));
       });
     });
 
     [
       {
         given: 'http://test.com:1234/lg/_design/medic/_rewrite',
-        expected: '/'
+        expected: '/lg/_design/medic/_rewrite'
       },
       {
         given: 'http://test.com:1234/lg/_design/medic/_rewrite#fragment',
-        expected: '/#fragment'
+        expected: '/lg/_design/medic/_rewrite#fragment'
       },
       {
         given: 'http://wrong.com:666/lg/_design/medic/_rewrite#path/fragment',
-        expected: '/#path/fragment'
+        expected: '/lg/_design/medic/_rewrite#path/fragment'
       },
       {
         given: 'http://wrong.com:666/lg/_design/medic/_rewrite/long/path',
-        expected: '/'
+        expected: '/lg/_design/medic/_rewrite/long/path'
       },
     ].forEach(({ given, expected }) => {
       it(`Absolute URL "${given}" should redirect as a relative url`, () => {

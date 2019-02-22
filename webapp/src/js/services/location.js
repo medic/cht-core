@@ -1,14 +1,11 @@
 angular.module('inboxServices').factory('Location',
-  function(
-    $window,
-    DB_NAME
-  ) {
+  function($window) {
 
     'use strict';
     'ngInject';
 
     var location = $window.location;
-    var dbName = DB_NAME;
+    var dbName = 'medic';
     var path = '/';
     var adminPath = '/admin/';
     var port = location.port ? ':' + location.port : '';

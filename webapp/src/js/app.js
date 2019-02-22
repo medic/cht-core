@@ -127,18 +127,6 @@ _.templateSettings = {
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
-  const dbName = () => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/db', false);
-    xhr.send(null);
-    if (xhr.status === 200) {
-      const res = JSON.parse(xhr.responseText);
-      return res.name;
-    }
-  };
-
-  app.constant('DB_NAME', dbName());
-
   if (window.location.href === 'http://localhost:9876/context.html') {
     // karma unit testing - do not bootstrap
     return;

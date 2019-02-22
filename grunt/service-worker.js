@@ -4,18 +4,18 @@ const path = require('path');
 function registerServiceWorkerTasks(grunt) {
   grunt.registerMultiTask('generate-service-worker', function() {
     const done = this.async();
-    const { staticDirectoryPath, rootUrl, scriptOutputPath } = this.data;
-    writeServiceWorkerFile(staticDirectoryPath, rootUrl, scriptOutputPath)
+    const { staticDirectoryPath, scriptOutputPath } = this.data;
+    writeServiceWorkerFile(staticDirectoryPath, scriptOutputPath)
       .then(done)
       .catch(error => {
         grunt.fail.warn(error);
         done();
       });
   });
-};
+}
 
 // Use the swPrecache library to generate a service-worker script
-function writeServiceWorkerFile(staticDirectoryPath, rootUrl, outputPath) {
+function writeServiceWorkerFile(staticDirectoryPath, outputPath) {
   const config = {
     cacheId: 'cache',
     claimsClient: true,
@@ -27,7 +27,7 @@ function writeServiceWorkerFile(staticDirectoryPath, rootUrl, outputPath) {
       path.join(staticDirectoryPath, 'manfiest.json'),
     ],
     dynamicUrlToDependencies: {
-      [rootUrl]: [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      ['/']: [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
     },
     stripPrefixMulti: { [staticDirectoryPath]: '' },
     maximumFileSizeToCacheInBytes: 1048576 * 20,

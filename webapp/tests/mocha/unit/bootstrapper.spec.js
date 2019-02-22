@@ -20,14 +20,6 @@ describe('bootstrapper', () => {
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
   beforeEach(done => {
-    global.XMLHttpRequest = sinon.stub();
-    global.XMLHttpRequest.onCall(0).returns({
-        open: sinon.stub(),
-        setRequestHeader: sinon.stub(),
-        send: sinon.stub(),
-        status: 200,
-        responseText: '{ "name":"medic" }'
-    });
     pouchDb = sinon.stub();
     localGet = sinon.stub();
     localReplicate = sinon.stub();

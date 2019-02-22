@@ -31,21 +31,10 @@
     }
   };
 
-  const getDBName = () => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/db', false);
-    xhr.send(null);
-
-    if (xhr.status === 200) {
-      const res = JSON.parse(xhr.responseText);
-      return res.name;
-    }
-  };
-
   var getDbInfo = function() {
     // parse the URL to determine the remote and local database names
     var location = window.location;
-    var dbName = getDBName();
+    var dbName = 'medic';
     var port = location.port ? ':' + location.port : '';
     var remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
     return {

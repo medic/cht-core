@@ -62,7 +62,7 @@
       }
     },
     {
-      "files": [ "Gruntfile.js" ],
+      "files": [ "Gruntfile.js", "grunt/service-worker.js" ],
       "env": {
         "node": true
       }
