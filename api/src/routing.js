@@ -184,7 +184,18 @@ app.get('/', function(req, res) {
   res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
 });
 
-app.all(/^\/(medic)\/(.?)/, (req, res) => {
+app.all(/^\/medic$/, (req, res, next) => {
+  if (environment.db === 'medic') {
+    return next();
+  }
+  req.url = `/${environment.db}`;
+  proxy.web(req, res);
+});
+
+app.all(/^\/(medic)\/(.?)/, (req, res, next) => {
+  if (environment.db === 'medic') {
+    return next();
+  }
   const originalUrl = req.url;
   req.url = `/${environment.db}${originalUrl.slice(6)}`;
   if (originalUrl.includes('login')) {

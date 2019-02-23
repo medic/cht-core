@@ -115,7 +115,6 @@ _.templateSettings = {
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
-        // Hack to stop service worker intefere with CouchDB replication
         if (!url.split('/')[3]) {
           url = `${url}api/info`;
         }
