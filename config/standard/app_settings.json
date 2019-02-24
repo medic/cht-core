@@ -61,249 +61,157 @@
   "schedule_evening_minutes": 0,
   "synthetic_date": "",
   "contact_display_short": "clinic.name",
-  "permissions": [
-    {
-      "name": "can_export_messages",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "analytics"
-      ]
-    },
-    {
-      "name": "can_export_forms",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "analytics"
-      ]
-    },
-    {
-      "name": "can_export_contacts",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_export_audit",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_export_feedback",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_export_server_logs",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_access_directly",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_view_data_records",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "analytics",
-        "gateway"
-      ]
-    },
-    {
-      "name": "can_view_unallocated_data_records",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "gateway"
-      ]
-    },
-    {
-      "name": "can_view_users",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_edit",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "gateway"
-      ]
-    },
-    {
-      "name": "can_update_messages",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "gateway"
-      ]
-    },
-    {
-      "name": "can_update_users",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_update_people",
-      "roles": []
-    },
-    {
-      "name": "can_update_places",
-      "roles": []
-    },
-    {
-      "name": "can_create_records",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "data_entry",
-        "gateway"
-      ]
-    },
-    {
-      "name": "can_access_gateway_api",
-      "roles": [
-        "gateway"
-      ]
-    },
-    {
-      "name": "can_create_users",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_create_people",
-      "roles": []
-    },
-    {
-      "name": "can_create_places",
-      "roles": []
-    },
-    {
-      "name": "can_view_tasks",
-      "roles": []
-    },
-    {
-      "name": "can_view_tasks_tab",
-      "roles": []
-    },
-    {
-      "name": "can_configure",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
-      "name": "can_view_messages",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_view_messages_tab",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_view_reports",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_view_reports_tab",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_view_analytics",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "analytics"
-      ]
-    },
-    {
-      "name": "can_view_analytics_tab",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_view_contacts",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_view_contacts_tab",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_edit_profile",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_delete_reports",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_bulk_delete_reports",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_delete_contacts",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_delete_messages",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
-    },
-    {
-      "name": "can_delete_users",
-      "roles": [
-        "national_admin"
-      ]
-    }
-  ],
+  "permissions": {
+    "can_export_messages": [
+      "national_admin",
+      "district_admin",
+      "analytics"
+    ],
+    "can_export_forms": [
+      "national_admin",
+      "district_admin",
+      "analytics"
+    ],
+    "can_export_contacts": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_export_audit": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_export_feedback": [
+      "national_admin"
+    ],
+    "can_export_server_logs": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_analytics": [
+      "national_admin",
+      "district_admin",
+      "analytics"
+    ],
+    "can_view_data_records": [
+      "national_admin",
+      "district_admin",
+      "analytics",
+      "gateway"
+    ],
+    "can_view_unallocated_data_records": [
+      "national_admin",
+      "district_admin",
+      "gateway"
+    ],
+    "can_view_users": [
+      "national_admin"
+    ],
+    "can_edit": [
+      "national_admin",
+      "district_admin",
+      "gateway"
+    ],
+    "can_log_out_on_android": [
+      "district_admin",
+      "national_admin"
+    ],
+    "can_update_messages": [
+      "national_admin",
+      "district_admin",
+      "gateway"
+    ],
+    "can_update_users": [
+      "national_admin"
+    ],
+    "can_update_people": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_update_places": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_create_records": [
+      "national_admin",
+      "district_admin",
+      "data_entry",
+      "gateway"
+    ],
+    "can_access_gateway_api": [
+      "gateway"
+    ],
+    "can_create_users": [
+      "national_admin"
+    ],
+    "can_create_people": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_create_places": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_tasks": [
+      "district_admin"
+    ],
+    "can_view_tasks_tab": [
+      "district_admin"
+    ],
+    "can_configure": [
+      "national_admin"
+    ],
+    "can_view_messages": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_messages_tab": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_reports": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_reports_tab": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_analytics_tab": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_contacts": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_view_contacts_tab": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_edit_profile": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_delete_reports": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_bulk_delete_reports": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_delete_contacts": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_delete_messages": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_delete_users": [
+      "national_admin"
+    ]
+  },
   "setup_complete": true,
   "outgoing_phone_replace": {
     "match": "",
@@ -1189,6 +1097,69 @@
       ]
     },
     {
+      "form": "IPV1",
+      "name": " IPV1 Inactivated polio",
+      "format": "IPV1 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "IPV2",
+      "name": " IPV2 Inactivated polio",
+      "format": "IPV2 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "IPV3",
+      "name": " IPV3 Inactivated polio",
+      "format": "IPV3 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
       "form": "PCV1",
       "name": " PCV1 Pneumococcal pneumonia",
       "format": "PCV1 <patientid>",
@@ -1780,6 +1751,111 @@
       "form": "CH3",
       "name": " CH3 Cholera",
       "format": "CH3 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HB",
+      "name": "HB Hepatitis B",
+      "format": "HB <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FIPV1",
+      "name": "FIPV1 Fractional IPV",
+      "format": "FIPV1 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FIPV2",
+      "name": "FIPV2 Fractional IPV",
+      "format": "FIPV2 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "DPT4",
+      "name": "DPT4 DPT Booster",
+      "format": "DPT4 <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "DPT5",
+      "name": "DPT5 DPT Booster",
+      "format": "DPT5 <patientid>",
       "silence_type": "",
       "silence_for": "",
       "fields": [],
@@ -3688,6 +3764,23 @@
           ],
           "required": false
         },
+        "received_hep_b": {
+          "labels": {
+            "tiny": {
+              "en": "hb"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_hep_b"
+            }
+          },
+          "position": 9,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
         "received_hpv_1": {
           "labels": {
             "tiny": {
@@ -3697,7 +3790,7 @@
               "translation_key": "report.c_imm.received_hpv_1"
             }
           },
-          "position": 9,
+          "position": 10,
           "type": "string",
           "length": [
             1,
@@ -3714,7 +3807,7 @@
               "translation_key": "report.c_imm.received_hpv_2"
             }
           },
-          "position": 10,
+          "position": 11,
           "type": "string",
           "length": [
             1,
@@ -3731,7 +3824,7 @@
               "translation_key": "report.c_imm.received_hpv_3"
             }
           },
-          "position": 11,
+          "position": 12,
           "type": "string",
           "length": [
             1,
@@ -3748,7 +3841,7 @@
               "translation_key": "report.c_imm.received_flu"
             }
           },
-          "position": 12,
+          "position": 13,
           "type": "string",
           "length": [
             1,
@@ -3765,7 +3858,7 @@
               "translation_key": "report.c_imm.received_jap_enc"
             }
           },
-          "position": 13,
+          "position": 14,
           "type": "string",
           "length": [
             1,
@@ -3782,7 +3875,7 @@
               "translation_key": "report.c_imm.received_meningococcal_1"
             }
           },
-          "position": 14,
+          "position": 15,
           "type": "string",
           "length": [
             1,
@@ -3799,7 +3892,7 @@
               "translation_key": "report.c_imm.received_meningococcal_2"
             }
           },
-          "position": 15,
+          "position": 16,
           "type": "string",
           "length": [
             1,
@@ -3816,7 +3909,7 @@
               "translation_key": "report.c_imm.received_meningococcal_3"
             }
           },
-          "position": 16,
+          "position": 17,
           "type": "string",
           "length": [
             1,
@@ -3833,7 +3926,7 @@
               "translation_key": "report.c_imm.received_meningococcal_4"
             }
           },
-          "position": 17,
+          "position": 18,
           "type": "string",
           "length": [
             1,
@@ -3850,7 +3943,7 @@
               "translation_key": "report.c_imm.received_mmr_1"
             }
           },
-          "position": 18,
+          "position": 19,
           "type": "string",
           "length": [
             1,
@@ -3867,7 +3960,7 @@
               "translation_key": "report.c_imm.received_mmr_2"
             }
           },
-          "position": 19,
+          "position": 20,
           "type": "string",
           "length": [
             1,
@@ -3884,7 +3977,7 @@
               "translation_key": "report.c_imm.received_mmrv_1"
             }
           },
-          "position": 20,
+          "position": 21,
           "type": "string",
           "length": [
             1,
@@ -3901,7 +3994,7 @@
               "translation_key": "report.c_imm.received_mmrv_2"
             }
           },
-          "position": 21,
+          "position": 22,
           "type": "string",
           "length": [
             1,
@@ -3918,7 +4011,7 @@
               "translation_key": "report.c_imm.received_polio_0"
             }
           },
-          "position": 22,
+          "position": 23,
           "type": "string",
           "length": [
             1,
@@ -3935,7 +4028,7 @@
               "translation_key": "report.c_imm.received_polio_1"
             }
           },
-          "position": 23,
+          "position": 24,
           "type": "string",
           "length": [
             1,
@@ -3952,7 +4045,7 @@
               "translation_key": "report.c_imm.received_polio_2"
             }
           },
-          "position": 24,
+          "position": 25,
           "type": "string",
           "length": [
             1,
@@ -3969,7 +4062,7 @@
               "translation_key": "report.c_imm.received_polio_3"
             }
           },
-          "position": 25,
+          "position": 26,
           "type": "string",
           "length": [
             1,
@@ -3986,7 +4079,7 @@
               "translation_key": "report.c_imm.received_ipv_1"
             }
           },
-          "position": 26,
+          "position": 27,
           "type": "string",
           "length": [
             1,
@@ -4003,7 +4096,7 @@
               "translation_key": "report.c_imm.received_ipv_2"
             }
           },
-          "position": 27,
+          "position": 28,
           "type": "string",
           "length": [
             1,
@@ -4020,7 +4113,41 @@
               "translation_key": "report.c_imm.received_ipv_3"
             }
           },
-          "position": 28,
+          "position": 29,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_fipv_1": {
+          "labels": {
+            "tiny": {
+              "en": "fipv1"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_fipv_1"
+            }
+          },
+          "position": 30,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_fipv_2": {
+          "labels": {
+            "tiny": {
+              "en": "fipv2"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_fipv_2"
+            }
+          },
+          "position": 31,
           "type": "string",
           "length": [
             1,
@@ -4037,7 +4164,7 @@
               "translation_key": "report.c_imm.received_penta_1"
             }
           },
-          "position": 29,
+          "position": 32,
           "type": "string",
           "length": [
             1,
@@ -4054,7 +4181,7 @@
               "translation_key": "report.c_imm.received_penta_2"
             }
           },
-          "position": 30,
+          "position": 33,
           "type": "string",
           "length": [
             1,
@@ -4071,7 +4198,41 @@
               "translation_key": "report.c_imm.received_penta_3"
             }
           },
-          "position": 31,
+          "position": 34,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_dpt_4": {
+          "labels": {
+            "tiny": {
+              "en": "dpt4"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_dpt_4"
+            }
+          },
+          "position": 35,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_dpt_5": {
+          "labels": {
+            "tiny": {
+              "en": "dpt5"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_dpt_5"
+            }
+          },
+          "position": 36,
           "type": "string",
           "length": [
             1,
@@ -4088,7 +4249,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_1"
             }
           },
-          "position": 32,
+          "position": 37,
           "type": "string",
           "length": [
             1,
@@ -4105,7 +4266,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_2"
             }
           },
-          "position": 33,
+          "position": 38,
           "type": "string",
           "length": [
             1,
@@ -4122,7 +4283,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_3"
             }
           },
-          "position": 34,
+          "position": 39,
           "type": "string",
           "length": [
             1,
@@ -4139,7 +4300,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_4"
             }
           },
-          "position": 35,
+          "position": 40,
           "type": "string",
           "length": [
             1,
@@ -4156,7 +4317,7 @@
               "translation_key": "report.c_imm.received_rotavirus_1"
             }
           },
-          "position": 36,
+          "position": 41,
           "type": "string",
           "length": [
             1,
@@ -4173,7 +4334,7 @@
               "translation_key": "report.c_imm.received_rotavirus_2"
             }
           },
-          "position": 37,
+          "position": 42,
           "type": "string",
           "length": [
             1,
@@ -4190,7 +4351,7 @@
               "translation_key": "report.c_imm.received_rotavirus_3"
             }
           },
-          "position": 38,
+          "position": 43,
           "type": "string",
           "length": [
             1,
@@ -4207,7 +4368,7 @@
               "translation_key": "report.c_imm.received_typhoid_1"
             }
           },
-          "position": 39,
+          "position": 44,
           "type": "string",
           "length": [
             1,
@@ -4224,7 +4385,7 @@
               "translation_key": "report.c_imm.received_typhoid_2"
             }
           },
-          "position": 40,
+          "position": 45,
           "type": "string",
           "length": [
             1,
@@ -4241,7 +4402,7 @@
               "translation_key": "report.c_imm.received_vitamin_a"
             }
           },
-          "position": 41,
+          "position": 46,
           "type": "string",
           "length": [
             1,
@@ -4258,7 +4419,7 @@
               "translation_key": "report.c_imm.received_yellow_fever"
             }
           },
-          "position": 42,
+          "position": 47,
           "type": "string",
           "length": [
             1,
@@ -6227,6 +6388,201 @@
         "code": "CH3",
         "icon": "immunization",
         "translation_key": "CH3 Cholera"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HB": {
+      "meta": {
+        "code": "HB",
+        "icon": "immunization",
+        "translation_key": "HB Hepatitis B"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "DPT4": {
+      "meta": {
+        "code": "DPT4",
+        "icon": "immunization",
+        "translation_key": "DPT4 DPT Booster 1"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "DPT5": {
+      "meta": {
+        "code": "DPT5",
+        "icon": "immunization",
+        "translation_key": "DPT5 DPT Booster 2"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FIPV1": {
+      "meta": {
+        "code": "FIPV1",
+        "icon": "immunization",
+        "translation_key": "fIPV1 Fractional IPV 1"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FIPV2": {
+      "meta": {
+        "code": "FIPV2",
+        "icon": "immunization",
+        "translation_key": "fIPV2 Fractional IPV 2"
       },
       "fields": {
         "patient_id": {
