@@ -118,8 +118,7 @@ _.templateSettings = {
         var parsedUrl = new URL(url);
         if (parsedUrl.pathname === '/') {
           // The URL has been cached using Service worker
-          // request the original doc
-          url = url + 'medic/_design/medic/_rewrite/templates/inbox.html';
+          url = url + 'api/info';
         }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
