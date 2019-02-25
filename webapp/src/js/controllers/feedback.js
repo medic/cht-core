@@ -1,5 +1,3 @@
-var feedback = require('../modules/feedback');
-
 angular.module('inboxControllers').controller('FeedbackCtrl',
   function (
     $q,
@@ -7,7 +5,8 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     $translate,
     $uibModalInstance,
     Translate,
-    Snackbar
+    Snackbar,
+    Feedback
   ) {
 
     'use strict';
@@ -41,7 +40,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
           const p = $q.defer();
 
           if (!$scope.error.message) {
-            feedback.submit(message, true, function(err) {
+            Feedback.submit(message, true, function(err) {
               if (err) {
                 $scope.setError(err, 'Error saving feedback');
                 p.reject();
