@@ -1,9 +1,12 @@
 const _ = require('underscore'),
-  async = require('async'),
-  utils = require('../lib/utils'),
-  logger = require('../lib/logger'),
-  config = require('../config'),
-  infodoc = require('../lib/infodoc');
+      async = require('async'),
+      db = require('../db'),
+      lineage = require('@medic/lineage')(Promise, db.medic),
+      utils = require('../lib/utils'),
+      logger = require('../lib/logger'),
+      config = require('../config'),
+      infodoc = require('../lib/infodoc');
+
 
 /*
  * Add new transitions here to make them available for configuration and execution.
@@ -74,7 +77,7 @@ const loadTransitions = (synchronous = false) => {
   });
 
   if (loadError) {
-    logger.error('Transitions are disabled until the above configuration errors are fixed.');
+    throw new Error('Transitions are disabled until the above configuration errors are fixed.');
   } else {
     return transitions;
   }
@@ -179,6 +182,27 @@ const applyTransition = ({ key, change, transition }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
+const processChange = (change, transitions, callback) => {
+  lineage
+    .fetchHydratedDoc(change.id)
+    .then(doc => {
+      change.doc = doc;
+      return infodoc.get(change).then(infoDoc => {
+        change.info = infoDoc;
+        // Remove transitions from doc since those
+        // will be handled by the info doc(sentinel db) after this
+        if (change.doc.transitions) {
+          delete change.doc.transitions;
+        }
+        applyTransitions(change, transitions, callback);
+      });
+    })
+    .catch(err => {
+      logger.error('transitions: fetch failed for %s : %o', change.id, err);
+      return callback(err);
+    });
+};
+
 const applyTransitions = (change, transitions, callback) => {
   const operations = transitions
     .map(transition => {
@@ -203,7 +227,42 @@ const applyTransitions = (change, transitions, callback) => {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, callback);
+  async.series(operations, (err, results) => finalize({ change, results }, callback));
+};
+
+
+/*
+ * Save the doc if we have changes from transitions, otherwise transitions
+ * did nothing and saving is unnecessary.  If results has a true value in
+ * it then a change was made.
+ */
+const finalize = ({ change, results }, callback) => {
+  logger.debug(`transition results: ${JSON.stringify(results)}`);
+
+  const changed = _.some(results, i => Boolean(i));
+  if (!changed) {
+    logger.debug(
+      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
+    );
+    return callback();
+  }
+  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
+
+  lineage.minify(change.doc);
+  db.medic.put(change.doc, err => {
+    // todo: how to handle a failed save? for now just
+    // waiting until next change and try again.
+    if (err) {
+      logger.error(
+        `error saving changes on doc ${change.id} seq ${
+          change.seq
+          }: ${JSON.stringify(err)}`
+      );
+    } else {
+      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    }
+    return callback();
+  });
 };
 
 const availableTransitions = () => {
@@ -217,4 +276,6 @@ module.exports = {
   canRun: canRun,
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
+  finalize: finalize,
+  processChange: processChange
 };

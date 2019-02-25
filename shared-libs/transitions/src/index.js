@@ -13,6 +13,9 @@ module.exports = (sourceDb, settings, translations, sourceLogger) => {
     utils: require('./lib/utils'),
     mutingUtils: require('./lib/muting_utils'),
     date: require('./date'),
-    infodoc: require('./lib/infodoc')
+    infodoc: require('./lib/infodoc'),
+    schedules: require('./lib/schedules'),
+    getTransition: name => require(`./transitions/${name}`),
+    dueTasks: require('./schedule/due_tasks')
   };
 };

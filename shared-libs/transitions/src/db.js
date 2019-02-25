@@ -31,9 +31,8 @@ if (UNIT_TEST_ENV) {
     get: stubMe('get'),
     changes: stubMe('changes'),
   };
-
-} else {
-  module.exports.init = db => {
-    module.exports = Object.assign(module.exports, db);
-  };
 }
+
+module.exports.init = db => {
+  module.exports = Object.assign(module.exports, db);
+};
