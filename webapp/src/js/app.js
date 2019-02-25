@@ -115,8 +115,11 @@ _.templateSettings = {
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
-        if (!url.split('/')[3]) {
-          url = `${url}api/info`;
+        var parsedUrl = new URL(url);
+        if (parsedUrl.pathname === '/') {
+          // The URL has been cached using Service worker
+          // request the original doc
+          url = url + 'medic/_design/medic/_rewrite/templates/inbox.html';
         }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';

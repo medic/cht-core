@@ -155,34 +155,25 @@ app.use(compression());
 const root = (req, res) => {
   if (('deviceID' in req.query) || req.is('application/json')) {
     // couchdb request - let it go
-    proxy.web(req, res);
-  } else {
-    let redirectUrl = '/';
-    const startPosition = req.url.indexOf('#');
-    if (startPosition !== -1) {
-      redirectUrl = redirectUrl.concat(req.url.slice(startPosition));
-    }
-    res.redirect(redirectUrl);
-  }
-};
-
-// Redicting to root '/'
-app.get(`${appPrefix.slice(0, -1)}*`, root);
-
-app.get('/', function(req, res) {
-  if (req.is('application/json')) {
-    // couchdb request - let it go
     return proxy.web(req, res);
   }
-  /*
-    To facilitate service worker prefetch on Chrome <66, serve a version of the app which does not require authentication
-  */
-  if ('_sw-precache' in req.query) {
-    return res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
+  let redirectUrl = '/';
+  const startPosition = req.url.indexOf('#');
+  if (startPosition !== -1) {
+    redirectUrl = redirectUrl.concat(req.url.slice(startPosition));
   }
-  // send the extracted file
-  res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
+  res.redirect(redirectUrl);
+};
+
+app.get('/', function(req, res) {
+  if (req.headers.accept === 'application/json') {
+    // couchdb request - let it go
+    return proxy.web(req, res);
+  } else {
+    res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
+  }
 });
+app.get(appPrefix, root);
 
 app.all(/^\/medic$/, (req, res, next) => {
   if (environment.db === 'medic') {
