@@ -2,7 +2,6 @@ const _ = require('underscore'),
       async = require('async'),
       feed = require('./lib/feed'),
       db = require('./db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
       logger = require('./lib/logger'),
       metadata = require('./lib/metadata'),
       tombstoneUtils = require('@medic/tombstone-utils'),
@@ -16,16 +15,15 @@ let changesFeed,
     processed = 0;
 
 const loadTransitions = () => {
-  transitions = transitionsLib.transitions.loadTransitions();
-
-  if (!transitions) {
+  try {
+    transitions = transitionsLib.transitions.loadTransitions();
+    module.exports._attach();
+  } catch (e) {
+    transitions = [];
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
     module.exports._detach();
-  } else {
-    module.exports._attach();
   }
 };
-
 
 const detach = () => {
   if (changesFeed) {
@@ -86,40 +84,17 @@ const processChange = (change, callback) => {
       .catch(callback);
   }
 
-  lineage
-    .fetchHydratedDoc(change.id)
-    .then(doc => {
-      change.doc = doc;
-      return infodoc.get(change).then(infoDoc => {
-        change.info = infoDoc;
-        // Remove transitions from doc since those
-        // will be handled by the info doc(sentinel db) after this
-        if (change.doc.transitions) {
-          delete change.doc.transitions;
-        }
-        applyTransitions(change, transitions, () => {
-          processed++;
-          metadata
-            .update(change.seq)
-            .then(() => callback())
-            .catch(err => {
-              callback(err);
-            });
-        });
-      });
-    })
-    .catch(err => {
-      logger.error('transitions: fetch failed for %s : %o', change.id, err);
-      return callback();
-    });
-};
+  transitionsLib.transitions.processChange(change, transitions, err => {
+    if (err) {
+      return callback(err);
+    }
 
-const applyTransitions = (change, transitions, callback) => {
-  transitionsLib.transitions.applyTransitions(
-    change,
-    transitions,
-    (err, results) => finalize({ change, results }, callback)
-  );
+    processed++;
+    metadata
+      .update(change.seq)
+      .then(() => callback())
+      .catch(callback);
+  });
 };
 
 const deleteReadDocs = change => {
@@ -153,46 +128,10 @@ const deleteReadDocs = change => {
   });
 };
 
-/*
- * Save the doc if we have changes from transitions, otherwise transitions
- * did nothing and saving is unnecessary.  If results has a true value in
- * it then a change was made.
- */
-const finalize = ({ change, results }, callback) => {
-  logger.debug(`transition results: ${JSON.stringify(results)}`);
-
-  const changed = _.some(results, i => Boolean(i));
-  if (!changed) {
-    logger.debug(
-      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
-    );
-    return callback();
-  }
-  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
-
-  lineage.minify(change.doc);
-  db.medic.put(change.doc, err => {
-    // todo: how to handle a failed save? for now just
-    // waiting until next change and try again.
-    if (err) {
-      logger.error(
-        `error saving changes on doc ${change.id} seq ${
-          change.seq
-          }: ${JSON.stringify(err)}`
-      );
-    } else {
-      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    }
-    return callback();
-  });
-};
-
 module.exports = {
   _changeQueue: changeQueue,
   _attach: attach,
   _detach: detach,
   _deleteReadDocs: deleteReadDocs,
-  _lineage: lineage,
-  loadTransitions: loadTransitions,
-  finalize: finalize
+  loadTransitions: loadTransitions
 };

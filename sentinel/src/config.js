@@ -67,13 +67,17 @@ const initConfig = () => {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
       );
-      transitionsLib = require('@medic/transitions')(db, config, translations, logger);
+      initTransitionLib();
       require('./transitions').loadTransitions();
     })
     .catch(err => {
       logger.error('%o', err);
       throw new Error('Error loading configuration');
     });
+};
+
+const initTransitionLib = () => {
+  transitionsLib = require('@medic/transitions')(db, config, translations, logger);
 };
 
 module.exports = {
@@ -90,5 +94,6 @@ module.exports = {
     initFeed();
     return loadTranslations().then(initConfig);
   },
-  getTransitionsLib: () => getTransitionsLib
+  initTransitionLib: initTransitionLib,
+  getTransitionsLib: () => transitionsLib
 };
