@@ -95,6 +95,18 @@ angular.module('controllers').controller('TargetsEditCtrl',
         });
     };
 
+    const isTargetUnique = (settings) => {
+      if ($scope.editing) {
+        // Here we are editing a target, assume it is unique 
+        return $q.resolve({ unique: true });
+      }
+      const  items = (settings.tasks && settings.tasks.targets &&
+        settings.tasks.targets.items) || [];
+      const filteredItems = items.filter(item => item.id === $scope.target.id);
+      const unique = filteredItems.length === 0 ? true : false;
+      return $q.resolve({ unique: unique });
+    };
+
     var updateItem = function(settings) {
       var items = (settings.tasks && settings.tasks.targets &&
                    settings.tasks.targets.items) || [];
@@ -134,16 +146,27 @@ angular.module('controllers').controller('TargetsEditCtrl',
       $scope.status = 'Submitting';
 
       Settings()
-        .then(updateItem)
-        .then(UpdateSettings)
-        .then(function() {
-          $scope.saving = false;
-          $scope.status = 'Saved';
-        })
-        .catch(function(err) {
-          $log.error('Error updating settings', err);
-          $scope.saving = false;
-          $scope.status = 'Save failed';
+        .then(isTargetUnique)
+        .then(function(result) {
+          if (!result.unique) {
+            $scope.errors.id = 'analytics.targets.unique.id';
+            $scope.status = 'Failed validation';
+            $scope.saving = false;
+            return;
+          } else {
+            Settings()
+              .then(updateItem)
+              .then(UpdateSettings)
+              .then(function() {
+                $scope.saving = false;
+                $scope.status = 'Saved';
+              })
+              .catch(function(err) {
+                $log.error('Error updating settings', err);
+                $scope.saving = false;
+                $scope.status = 'Save failed';
+              });
+          }
         });
     };
 
