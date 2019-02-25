@@ -121,12 +121,17 @@ const sort = issues => {
   return TYPES;
 };
 
+const getRepo = issue => {
+  const parts = issue.data.repository_url.split('/');
+  return parts[parts.length - 1];
+};
+
 const output = groups => {
   groups.forEach(group => {
     if (group.issues.length) {
       console.log(`### ${group.title}`);
       console.log('');
-      group.issues.forEach(issue => console.log(`- [#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
+      group.issues.forEach(issue => console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
       console.log('');
     }
   });
