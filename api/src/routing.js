@@ -175,14 +175,6 @@ app.get('/', function(req, res) {
 });
 app.get(appPrefix, root);
 
-app.all(/^\/medic$/, (req, res, next) => {
-  if (environment.db === 'medic') {
-    return next();
-  }
-  req.url = `/${environment.db}`;
-  proxy.web(req, res);
-});
-
 app.all(/^\/(medic)\/(.?)/, (req, res, next) => {
   if (environment.db === 'medic') {
     return next();
