@@ -4,7 +4,8 @@
 angular.module('inboxServices').factory('Feedback',
   function(
     DB,
-    Session
+    Session,
+    APP_CONFIG
   ) {
 
     'ngInject';
@@ -45,8 +46,8 @@ angular.module('inboxServices').factory('Feedback',
           time: new Date().toISOString(),
           user: userCtx,
           url: getUrl(),
-          app: options.appConfig.name,
-          version: options.appConfig.version,
+          app: APP_CONFIG.name,
+          version: APP_CONFIG.version,
           source: isManual ? 'manual' : 'automatic'
         },
         info: info,
@@ -71,7 +72,7 @@ angular.module('inboxServices').factory('Feedback',
 
     return {
       init: function(_options) {
-        options = _options;
+        options = _options || {};
         if (!options.window && typeof window !== 'undefined') {
           options.window = window;
         }

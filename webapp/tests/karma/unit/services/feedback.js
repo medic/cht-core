@@ -31,6 +31,7 @@ describe('Feedback service', function() {
           return { name: 'fred' };
         } 
       });
+      $provide.constant('APP_CONFIG', { name: 'medic', version: '0.5.0' });
     });
     inject(function($injector) {
       service = $injector.get('Feedback');
@@ -47,8 +48,7 @@ describe('Feedback service', function() {
 
     service.init({
       console: mockConsole,
-      window: mockWindow,
-      appConfig: { name: 'medic', version: '0.5.0' }
+      window: mockWindow
     });
 
     mockConsole.log('Trying to save');
@@ -86,8 +86,7 @@ describe('Feedback service', function() {
 
     service.init({
       console: mockConsole,
-      window: mockWindow,
-      appConfig: { name: 'medic', version: '0.5.0' }
+      window: mockWindow
     });
 
     for (let i = 0; i < 25; i++) {
@@ -112,13 +111,12 @@ describe('Feedback service', function() {
     service.init({
       console: mockConsole,
       window: mockWindow,
-      document: mockDocument,
-      appConfig: { name: 'medic', version: '0.5.0' }
+      document: mockDocument
     });
 
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
 
-    service.submit({ message: 'hello world' }, { name: 'medic', version: '0.5.0' }, () => {
+    service.submit({ message: 'hello world' }, true, () => {
       chai.expect(post.callCount).to.equal(1);
       const submittedDoc = post.args[0][0];
 

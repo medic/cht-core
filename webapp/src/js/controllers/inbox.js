@@ -177,20 +177,7 @@ var _ = require('underscore'),
       delete $window.startupTimes;
     });
 
-    Feedback.init({
-      saveDoc: function(doc, callback) {
-        DB()
-          .post(doc)
-          .then(function() {
-            callback();
-          })
-          .catch(callback);
-      },
-      getUserCtx: function(callback) {
-        callback(null, Session.userCtx());
-      },
-      appConfig: APP_CONFIG
-    });
+    Feedback.init();
 
     LiveListConfig($scope);
     CheckDate();
