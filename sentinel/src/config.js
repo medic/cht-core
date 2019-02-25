@@ -45,7 +45,7 @@ const initFeed = () => {
         initConfig();
       } else if (change.id.startsWith('messages-')) {
         logger.info('Detected translations change - reloading');
-        loadTranslations();
+        loadTranslations().then(() => initTransitionLib());
       }
     })
     .on('error', err => {
@@ -87,9 +87,6 @@ module.exports = {
     return config[key];
   },
   getAll: () => config,
-  getTranslations: () => {
-    return translations;
-  },
   init: () => {
     initFeed();
     return loadTranslations().then(initConfig);
