@@ -365,7 +365,7 @@ module.exports = function(grunt) {
             'api/src/extracted-resources/**/*',
             '**/node_modules/**',
             'sentinel/src/lib/pupil/**',
-            'shared-libs/sentinel/src/lib/pupil/**',
+            'shared-libs/transitions/src/lib/pupil/**',
             'build/**',
             'config/**'
           ];
