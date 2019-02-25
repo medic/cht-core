@@ -1,18 +1,16 @@
-describe('TargetsEditCtrl controllers', () => {
+describe('TargetsEditCtrl controller', () => {
   'use strict';
 
-  let scope,
-    translate,
+  let dbGet,
+    mockTargetsUnique,
+    scope,
     Settings,
-    UpdateSettings,
-    dbGet,
-    mockTargetUnique;
+    translate,
+    UpdateSettings;
 
   beforeEach(() => {
     module('adminApp');
 
-    UpdateSettings = sinon.stub();
-    translate = sinon.stub();
     dbGet = sinon.stub().returns(
       Promise.resolve(
         ['medic-clinic','medic-chw']
@@ -33,6 +31,8 @@ describe('TargetsEditCtrl controllers', () => {
         }
       })
     );
+    translate = sinon.stub();
+    UpdateSettings = sinon.stub();
 
     module($provide => {
       $provide.factory(
@@ -41,21 +41,21 @@ describe('TargetsEditCtrl controllers', () => {
           get: dbGet,
         })
       );
-      $provide.value('UpdateSettings', UpdateSettings);
       $provide.value('Settings', Settings);
       $provide.value('translate', translate);
+      $provide.value('UpdateSettings', UpdateSettings);
     });
 
     inject((translate, $controller) => {
       const createController = () => {
         scope = {};
         return $controller('TargetsEditCtrl', {
-          $scope: scope,
           $q: Q,
+          $scope: scope,
           $translate: translate
         }); 
       };
-      mockTargetUnique = () => {
+      mockTargetsUnique = () => {
         createController();
       };
     });
@@ -63,20 +63,21 @@ describe('TargetsEditCtrl controllers', () => {
 
   afterEach(() => {
     KarmaUtils.restore(
-      UpdateSettings,
+      dbGet,
       Settings,
-      dbGet
+      UpdateSettings
     );
   });
 
-  describe('target edit', () => {
-    it ('failed validation when target id is not nuique', done => {
-      mockTargetUnique();
+  describe('targets edit', () => {
+    it ('validation failure, target id not unique', done => {
+      mockTargetsUnique();
       setTimeout(() => {
         scope.target = {type: 'count', id: 'TaskId', icon: 'medic-clinic', goal: 'goal'};
         scope.submit();
         setTimeout(() => {
           chai.expect(scope.errors.id).to.equal('analytics.targets.unique.id');
+          chai.expect(scope.status).to.equal('Failed validation');
           done();
         });
       });
