@@ -3,6 +3,7 @@ describe('MessagesCtrl controller', () => {
   'use strict';
 
   let createController,
+      actions,
       scope;
 
   beforeEach(module('inboxApp'));
@@ -16,9 +17,11 @@ describe('MessagesCtrl controller', () => {
     scope.setSelected = obj => scope.selected = obj;
     scope.setLoadingContent = () => {};
     scope.setLeftActionBar = sinon.stub();
+    actions = { setSelected: sinon.stub() };
     createController = () => {
       return $controller('MessagesCtrl', {
         '$scope': scope,
+        'Actions': () => actions,
         'Changes': () => {
           return { unsubscribe: () => {} };
         },

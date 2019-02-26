@@ -1,7 +1,6 @@
-var _ = require('underscore');
-var merge = require('lodash/merge');
-
 (function() {
+  var _ = require('underscore');
+  var merge = require('lodash/merge');
   var initialState = {
     cancelCallback: null,
     enketoStatus: {
@@ -15,7 +14,7 @@ var merge = require('lodash/merge');
     selected: null
   };
 
-  module.exports = function(state, action) {
+  angular.module('inboxServices').constant('Reducers', function(state, action) {
     if (typeof state === 'object' && Object.keys(state).length === 0) {
       state = initialState;
     }
@@ -78,5 +77,5 @@ var merge = require('lodash/merge');
       default:
         return state;
     }
-  };
+  });
 }());

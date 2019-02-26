@@ -31,7 +31,6 @@ var uiRouter = require('@uirouter/angularjs').default;
 
 require('ng-redux');
 var reduxThunk = require('redux-thunk').default;
-var reducers = require('./reducers');
 
 require('moment');
 require('moment/locale/bm');
@@ -44,6 +43,7 @@ require('moment/locale/sw');
 
 require('./services');
 require('./actions');
+require('./reducers');
 require('./selectors');
 require('./controllers');
 require('./filters');
@@ -102,7 +102,8 @@ var reduxLoggerConfig = {
     $ngReduxProvider,
     $stateProvider,
     $translateProvider,
-    $urlRouterProvider
+    $urlRouterProvider,
+    Reducers
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
@@ -126,7 +127,7 @@ var reduxLoggerConfig = {
       var reduxLogger = require('redux-logger');
       middlewares.push(reduxLogger.createLogger(reduxLoggerConfig));
     }
-    $ngReduxProvider.createStoreWith(reducers, middlewares);
+    $ngReduxProvider.createStoreWith(Reducers, middlewares);
   });
 
   app.constant('APP_CONFIG', {

@@ -233,7 +233,6 @@ var _ = require('underscore'),
       ctrl.setLoadingSelectedReports(true);
       ctrl.setSelected(selected);
       ctrl.clearCancelCallback();
-      var selectedDoc = ctrl.selected.doc;
       var title = '';
       if (ctrl.selected.doc.type === 'person') {
         title = 'contact.profile';
@@ -244,8 +243,8 @@ var _ = require('underscore'),
       return $q
         .all([
           $translate(title),
-          getActionBarDataForChild(selectedDoc.type),
-          getCanEdit(selectedDoc),
+          getActionBarDataForChild(ctrl.selected.doc.type),
+          getCanEdit(ctrl.selected.doc),
         ])
         .then(function(results) {
           $scope.setTitle(results[0]);
@@ -256,8 +255,8 @@ var _ = require('underscore'),
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [selectedDoc],
-            sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+            selected: [ctrl.selected.doc],
+            sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
           });
@@ -273,7 +272,7 @@ var _ = require('underscore'),
                 $scope.loadingSummary = false;
                 var summary = results[0];
                 ctrl.updateSelected({ summary: summary });
-                var options = { doc: selectedDoc, contactSummary: summary.context };
+                var options = { doc: ctrl.selected.doc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
@@ -300,9 +299,9 @@ var _ = require('underscore'),
                       (!ctrl.selected.children.persons ||
                         ctrl.selected.children.persons.length === 0));
                   $scope.setRightActionBar({
-                    selected: [selectedDoc],
+                    selected: [ctrl.selected.doc],
                     relevantForms: formSummaries,
-                    sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+                    sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
                     canEdit: canEdit,
                     canDelete: canDelete,
                   });

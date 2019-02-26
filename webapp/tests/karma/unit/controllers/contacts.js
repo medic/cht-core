@@ -1,8 +1,7 @@
 describe('Contacts controller', () => {
   'use strict';
 
-  let actions,
-    assert = chai.assert,
+  let assert = chai.assert,
     buttonLabel,
     contactsLiveList,
     childType,
@@ -35,11 +34,16 @@ describe('Contacts controller', () => {
     contactSummary,
     isDbAdmin,
     liveListInit,
-    liveListReset;
+    liveListReset,
+    actions,
+    getSelected;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject((_$rootScope_, $controller) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions, Selectors) => {
     deadListFind = sinon.stub();
     deadListContains = sinon.stub();
     deadList = () => {
@@ -78,7 +82,6 @@ describe('Contacts controller', () => {
     icon = 'fa-la-la-la-la';
     buttonLabel = 'ClICK ME!!';
     typeLabel = 'District';
-    actions = { clearCancelCallback: sinon.stub() };
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
@@ -137,6 +140,15 @@ describe('Contacts controller', () => {
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
 
+    actions = Actions($ngRedux.dispatch);
+    const stubbedActions = {
+      loadSelectedChildren: sinon.stub().returns(Promise.resolve()),
+      loadSelectedReports: sinon.stub().returns(Promise.resolve())
+    };
+    getSelected = () => {
+      return Selectors.getSelected($ngRedux.getState());
+    };
+
     createController = () => {
       searchService = sinon.stub();
       searchService.returns(Promise.resolve(searchResults));
@@ -149,7 +161,7 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
-        Actions: () => actions,
+        Actions: () => Object.assign({}, actions, stubbedActions),
         Auth: auth,
         Changes: changes,
         ContactSchema: contactSchema,
@@ -208,7 +220,7 @@ describe('Contacts controller', () => {
 
     it('set selected contact', () => {
       return testContactSelection({ doc: district }).then(() => {
-        assert.deepEqual(scope.selected.doc, district);
+        assert.checkDeepProperties(getSelected().doc, district);
         assert(scope.setRightActionBar.called);
         assert(scope.setRightActionBar.args[0][0].selected);
       });
@@ -221,7 +233,7 @@ describe('Contacts controller', () => {
           throw new Error('Expected error to be thrown');
         })
         .catch(() => {
-          assert.deepEqual(scope.selected, { doc: district, error: true });
+          assert.checkDeepProperties(getSelected(), { doc: district, error: true });
           assert.equal(scope.setRightActionBar.callCount, 2);
           assert.deepEqual(scope.setRightActionBar.args[1], []);
         });
@@ -230,7 +242,6 @@ describe('Contacts controller', () => {
 
   describe('sets right actionBar', () => {
     const testRightActionBar = (selected, assertions) => {
-      selected.reportLoader = Promise.resolve();
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
@@ -248,7 +259,7 @@ describe('Contacts controller', () => {
 
     it('with the selected doc', () => {
       return testRightActionBar({ doc: district }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.selected[0], district);
+        assert.checkDeepProperties(actionBarArgs.selected[0], district);
       });
     });
 
@@ -277,7 +288,7 @@ describe('Contacts controller', () => {
 
     it('for the Message and Call buttons', () => {
       return testRightActionBar({ doc: person }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.sendTo, person);
+        assert.checkDeepProperties(actionBarArgs.sendTo, person);
       });
     });
 
@@ -298,7 +309,7 @@ describe('Contacts controller', () => {
       xmlForms.callsArgWith(2, { error: 'no forms brew' }); // call the callback
       return testRightActionBar({ doc: person }, actionBarArgs => {
         assert.equal(actionBarArgs.relevantForms, undefined);
-        assert.deepEqual(actionBarArgs.sendTo, person);
+        assert.checkDeepProperties(actionBarArgs.sendTo, person);
         assert.equal(actionBarArgs.selected[0]._id, person._id);
         assert.equal(actionBarArgs.selected[0].child.type, childType);
         assert.equal(actionBarArgs.selected[0].child.icon, icon);
