@@ -98,13 +98,13 @@ angular.module('controllers').controller('TargetsEditCtrl',
     const isTargetUnique = (settings) => {
       if ($scope.editing) {
         // Here we are editing a target, assume it is unique 
-        return $q.resolve({ unique: true });
+        return $q.resolve({ settings: settings, unique: true });
       }
       const  items = (settings.tasks && settings.tasks.targets &&
         settings.tasks.targets.items) || [];
       const filteredItems = items.filter(item => item.id === $scope.target.id);
       const unique = filteredItems.length === 0 ? true : false;
-      return $q.resolve({ unique: unique });
+      return $q.resolve({ settings: settings, unique: unique });
     };
 
     var updateItem = function(settings) {
@@ -147,15 +147,14 @@ angular.module('controllers').controller('TargetsEditCtrl',
 
       Settings()
         .then(isTargetUnique)
-        .then(function(result) {
-          if (!result.unique) {
+        .then(results => {
+          if (!results.unique) {
             $scope.errors.id = 'analytics.targets.unique.id';
             $scope.status = 'Failed validation';
             $scope.saving = false;
             return;
           } else {
-            Settings()
-              .then(updateItem)
+            updateItem(results.settings)
               .then(UpdateSettings)
               .then(function() {
                 $scope.saving = false;
