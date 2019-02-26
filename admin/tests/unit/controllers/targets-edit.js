@@ -11,26 +11,20 @@ describe('TargetsEditCtrl controller', () => {
   beforeEach(() => {
     module('adminApp');
 
-    dbGet = sinon.stub().returns(
-      Promise.resolve(
-        ['medic-clinic','medic-person']
-      )
-    );
-    Settings = sinon.stub().returns(
-      Promise.resolve({
-        locales: [
-          {code: 'en', name: 'English'}
-        ],
-        tasks: {
-          targets: {
-            items: [
-              {type: 'count', id: 'TargetId', icon: 'medic-clinic', goal: 'goal', name: { content: 'content' }},
-              {type: 'count', id: 'TargetId2', icon: 'medic-person', goal: 'goal', name: { content: 'content' }}
-            ]
-          }
+    dbGet = sinon.stub().resolves(['medic-clinic','medic-person']);
+    Settings = sinon.stub().resolves({
+      locales: [
+        {code: 'en', name: 'English'}
+      ],
+      tasks: {
+        targets: {
+          items: [
+            {type: 'count', id: 'TargetId', icon: 'medic-clinic', goal: 'goal', name: { content: 'content' }},
+            {type: 'count', id: 'TargetId2', icon: 'medic-person', goal: 'goal', name: { content: 'content' }}
+          ]
         }
-      })
-    );
+      }
+    });
     translate = sinon.stub();
     UpdateSettings = sinon.stub();
 
@@ -70,16 +64,12 @@ describe('TargetsEditCtrl controller', () => {
   });
 
   describe('targets edit', () => {
-    it ('validation failure, target id not unique', done => {
+    it('validation failure, target id not unique', () => {
       mockTargetsUnique();
-      setTimeout(() => {
-        scope.target = {type: 'count', id: 'TargetId', icon: 'medic-clinic', goal: 'goal'};
-        scope.submit();
-        setTimeout(() => {
-          chai.expect(scope.errors.id).to.equal('analytics.targets.unique.id');
-          chai.expect(scope.status).to.equal('Failed validation');
-          done();
-        });
+      scope.target = {type: 'count', id: 'TargetId', icon: 'medic-clinic', goal: 'goal'};
+      return scope.submit().then(() => {
+        chai.expect(scope.errors.id).to.equal('analytics.targets.unique.id');
+        chai.expect(scope.status).to.equal('Failed validation');
       });
     });
   });

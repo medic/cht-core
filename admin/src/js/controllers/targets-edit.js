@@ -144,7 +144,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
       $scope.saving = true;
       $scope.status = 'Submitting';
 
-      Settings()
+      return Settings()
         .then(settings => {
           if (targetExists(settings)) {
             $scope.errors.id = 'analytics.targets.unique.id';
@@ -153,16 +153,16 @@ angular.module('controllers').controller('TargetsEditCtrl',
             return;
           }
           return updateItem(settings)
-          .then(UpdateSettings)
-          .then(function() {
-            $scope.saving = false;
-            $scope.status = 'Saved';
-          })
-          .catch(function(err) {
-            $log.error('Error updating settings', err);
-            $scope.saving = false;
-            $scope.status = 'Save failed';
-          });
+            .then(UpdateSettings)
+            .then(function() {
+              $scope.saving = false;
+              $scope.status = 'Saved';
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.saving = false;
+              $scope.status = 'Save failed';
+            });
         });
     };
 
