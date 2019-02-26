@@ -6,7 +6,6 @@ const _ = require('underscore'),
       metadata = require('./lib/metadata'),
       tombstoneUtils = require('@medic/tombstone-utils'),
       transitionsLib = require('./config').getTransitionsLib(),
-      infodoc = transitionsLib.infodoc,
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500; // items
 
@@ -68,7 +67,7 @@ const processChange = (change, callback) => {
     // don't run transitions on deleted docs, but do clean up
     return Promise
       .all([
-        infodoc.delete(change),
+        transitionsLib.infodoc.delete(change),
         deleteReadDocs(change)
       ])
       .catch(err => {

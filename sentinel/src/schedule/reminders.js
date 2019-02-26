@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     config = require('../config'),
-    messages = config.getTransitionsLib().messages,
+    transitionsLib = config.getTransitionsLib(),
     later = require('later'),
     moment = require('moment'),
     db = require('../db');
@@ -142,7 +142,7 @@ module.exports = {
             };
 
         // add a message to the tasks property with the form/ts markers
-        const task = messages.addMessage(clinic, reminder, 'clinic', context);
+        const task = transitionsLib.messages.addMessage(clinic, reminder, 'clinic', context);
         if (task) {
             task.form = reminder.form;
             task.ts = moment.toISOString();
