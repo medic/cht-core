@@ -95,16 +95,15 @@ angular.module('controllers').controller('TargetsEditCtrl',
         });
     };
 
-    const isTargetUnique = (settings) => {
+    const targetExists = (settings) => {
       if ($scope.editing) {
-        // Here we are editing a target, assume it is unique 
-        return $q.resolve({ settings: settings, unique: true });
+        // The ID has been set to read-only
+        return false;
       }
       const  items = (settings.tasks && settings.tasks.targets &&
         settings.tasks.targets.items) || [];
-      const filteredItems = items.filter(item => item.id === $scope.target.id);
-      const unique = filteredItems.length === 0 ? true : false;
-      return $q.resolve({ settings: settings, unique: unique });
+      const exists = items.some(item => item.id === $scope.target.id);
+      return exists;
     };
 
     var updateItem = function(settings) {
@@ -146,26 +145,24 @@ angular.module('controllers').controller('TargetsEditCtrl',
       $scope.status = 'Submitting';
 
       Settings()
-        .then(isTargetUnique)
-        .then(results => {
-          if (!results.unique) {
+        .then(settings => {
+          if (targetExists(settings)) {
             $scope.errors.id = 'analytics.targets.unique.id';
             $scope.status = 'Failed validation';
             $scope.saving = false;
             return;
-          } else {
-            updateItem(results.settings)
-              .then(UpdateSettings)
-              .then(function() {
-                $scope.saving = false;
-                $scope.status = 'Saved';
-              })
-              .catch(function(err) {
-                $log.error('Error updating settings', err);
-                $scope.saving = false;
-                $scope.status = 'Save failed';
-              });
           }
+          return updateItem(settings)
+          .then(UpdateSettings)
+          .then(function() {
+            $scope.saving = false;
+            $scope.status = 'Saved';
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+            $scope.saving = false;
+            $scope.status = 'Save failed';
+          });
         });
     };
 

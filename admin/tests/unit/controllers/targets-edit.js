@@ -13,7 +13,7 @@ describe('TargetsEditCtrl controller', () => {
 
     dbGet = sinon.stub().returns(
       Promise.resolve(
-        ['medic-clinic','medic-chw']
+        ['medic-clinic','medic-person']
       )
     );
     Settings = sinon.stub().returns(
@@ -24,8 +24,8 @@ describe('TargetsEditCtrl controller', () => {
         tasks: {
           targets: {
             items: [
-              {type: 'count', id: 'TaskId', icon: 'medic-clinic', goal: 'goal', name: { content: 'content' }},
-              {type: 'count', id: 'TaskId2', icon: 'medic-chw', goal: 'goal', name: { content: 'content' }}
+              {type: 'count', id: 'TargetId', icon: 'medic-clinic', goal: 'goal', name: { content: 'content' }},
+              {type: 'count', id: 'TargetId2', icon: 'medic-person', goal: 'goal', name: { content: 'content' }}
             ]
           }
         }
@@ -73,7 +73,7 @@ describe('TargetsEditCtrl controller', () => {
     it ('validation failure, target id not unique', done => {
       mockTargetsUnique();
       setTimeout(() => {
-        scope.target = {type: 'count', id: 'TaskId', icon: 'medic-clinic', goal: 'goal'};
+        scope.target = {type: 'count', id: 'TargetId', icon: 'medic-clinic', goal: 'goal'};
         scope.submit();
         setTimeout(() => {
           chai.expect(scope.errors.id).to.equal('analytics.targets.unique.id');
