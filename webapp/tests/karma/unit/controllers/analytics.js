@@ -1,4 +1,4 @@
-describe.only('AnalyticsCtrl controller', function() {
+describe('AnalyticsCtrl controller', function() {
 
   'use strict';
 
