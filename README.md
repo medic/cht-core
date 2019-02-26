@@ -36,11 +36,9 @@ With the setup instructions below the tools will run directly on your machine, r
 
 You will need to install the following:
 
-[Node.js](https://nodejs.org) 8.11.x and above
-
-[npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
-
-[CouchDB](https://couchdb.apache.org) v2.x
+- [Node.js](https://nodejs.org) 8.11.x and above
+- [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
+- [CouchDB](https://couchdb.apache.org) v2.x
 
 ### Setup CouchDB on a single node
 
