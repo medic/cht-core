@@ -264,5 +264,7 @@ describe('transitions', () => {
     transitions.loadTransitions();
     assert.equal(stub.callCount, 0);
   });
+
+  //TODO add test for synchronous only transitions!
 });
 

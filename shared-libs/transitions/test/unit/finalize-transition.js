@@ -6,16 +6,16 @@ const sinon = require('sinon'),
 describe('finalize transition', () => {
   afterEach(() => sinon.restore());
 
-  it('save not called if transition results are null', done => {
+  it('returns false when transition results are null', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put');
     transitions.finalize(
       {
         change: { doc: doc },
         results: null,
       },
-      () => {
-        assert.equal(saveDoc.callCount, 0);
+      (err, changed) => {
+        assert.equal(err, undefined);
+        assert.equal(changed, undefined);
         done();
       }
     );
@@ -23,15 +23,14 @@ describe('finalize transition', () => {
 
   it('save is called if transition results have changes', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
     transitions.finalize(
       {
         change: { doc: doc },
         results: [null, null, true],
       },
-      () => {
-        assert.equal(saveDoc.callCount, 1);
-        assert(saveDoc.args[0][0]._rev);
+      (err, changed) => {
+        assert.equal(err, undefined);
+        assert.equal(changed, true);
         done();
       }
     );
@@ -42,7 +41,6 @@ describe('finalize transition', () => {
     const info = {};
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
-    sinon.stub(db.medic, 'put').resolves({});
     sinon.stub(db.sentinel, 'put').resolves({});
     const transition = {
       onMatch: change => {

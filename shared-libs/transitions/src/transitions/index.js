@@ -5,7 +5,8 @@ const _ = require('underscore'),
       utils = require('../lib/utils'),
       logger = require('../lib/logger'),
       config = require('../config'),
-      infodoc = require('../lib/infodoc');
+      infodoc = require('../lib/infodoc'),
+      uuid = require('uuid');
 
 
 /*
@@ -37,6 +38,8 @@ const AVAILABLE_TRANSITIONS = [
   'muting'
 ];
 
+const transitions = [];
+
 /*
  * Load transitions using `require` based on what is in AVAILABLE_TRANSITIONS
  * constant and what is enabled in the `transitions` property in the settings
@@ -45,7 +48,7 @@ const AVAILABLE_TRANSITIONS = [
 const loadTransitions = (synchronous = false) => {
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
-  const transitions = [];
+  transitions.splice(0, transitions.length);
   let loadError = false;
 
   // Load all configured transitions
@@ -182,7 +185,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const processChange = (change, transitions, callback) => {
+const processChange = (change, callback) => {
   lineage
     .fetchHydratedDoc(change.id)
     .then(doc => {
@@ -194,7 +197,7 @@ const processChange = (change, transitions, callback) => {
         if (change.doc.transitions) {
           delete change.doc.transitions;
         }
-        applyTransitions(change, transitions, callback);
+        applyTransitions(change, callback);
       });
     })
     .catch(err => {
@@ -203,7 +206,39 @@ const processChange = (change, transitions, callback) => {
     });
 };
 
-const applyTransitions = (change, transitions, callback) => {
+const processDocs = docs => {
+  let changes;
+  if (!transitions.length) {
+    return Promise.resolve(docs);
+  }
+
+  return lineage
+    .hydrateDocs(docs)
+    .then(hydratedDocs => {
+      changes = hydratedDocs.map(doc => {
+        doc._id = doc._id || uuid();
+        return { id: doc._id, doc: doc, seq: null };
+      });
+      return infodoc.bulkGet(changes);
+    })
+    .then(infoDocs => {
+      changes.forEach(change => {
+        change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
+      });
+      return new Promise((resolve, reject) => {
+        const operations = changes.map(change => _.partial(applyTransitions(change, _)));
+        async.series(operations, (err, results) => {
+          return err ? reject(err) : resolve(results);
+        });
+      });
+    })
+    .catch(err => {
+      logger.error('Error when running transitions over docs', err);
+      return docs;
+    });
+};
+
+const applyTransitions = (change, callback) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -246,23 +281,9 @@ const finalize = ({ change, results }, callback) => {
     );
     return callback();
   }
-  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
   lineage.minify(change.doc);
-  db.medic.put(change.doc, err => {
-    // todo: how to handle a failed save? for now just
-    // waiting until next change and try again.
-    if (err) {
-      logger.error(
-        `error saving changes on doc ${change.id} seq ${
-          change.seq
-          }: ${JSON.stringify(err)}`
-      );
-    } else {
-      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    }
-    return callback();
-  });
+  callback(null, true);
 };
 
 const availableTransitions = () => {
@@ -277,5 +298,7 @@ module.exports = {
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
   finalize: finalize,
-  processChange: processChange
+  processChange: processChange,
+  processDocs: processDocs,
+  _lineage: lineage
 };

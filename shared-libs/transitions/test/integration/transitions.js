@@ -29,10 +29,9 @@ describe('functional transitions', () => {
     });
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
-    var saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
-    var infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
+    const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
-    const transitionsList = transitions.loadTransitions();
+    transitions.loadTransitions();
     var change1 = {
       id: 'abc',
       seq: '44',
@@ -43,23 +42,24 @@ describe('functional transitions', () => {
       info: {},
     };
 
-    transitions.applyTransitions(change1, transitionsList, function() {
-      assert.equal(saveDoc.callCount, 1);
+    transitions.applyTransitions(change1, (err, changed) => {
       assert.equal(infoDoc.callCount, 1);
-      var saved = saveDoc.args[0][0];
-      var info = infoDoc.args[0][0];
+      const info = infoDoc.args[0][0];
       assert.equal(info.transitions.conditional_alerts.seq, '44');
       assert.equal(info.transitions.conditional_alerts.ok, true);
-      assert.equal(saved.tasks[0].messages[0].message, 'alert!');
-      var change2 = {
+      assert.equal(err, null);
+      assert.equal(changed, true);
+      assert.equal(change1.doc.tasks[0].messages[0].message, 'alert!');
+      const change2 = {
         id: 'abc',
         seq: '45',
-        doc: saved,
+        doc: change1.doc,
         info: info,
       };
-      transitions.applyTransitions(change2, transitionsList, function() {
-        // not updated
-        assert.equal(saveDoc.callCount, 1);
+      transitions.applyTransitions(change2, (err, changed) => {
+        // not to be updated
+        assert.equal(err, undefined);
+        assert.equal(changed, undefined);
         done();
       });
     });
@@ -78,11 +78,10 @@ describe('functional transitions', () => {
 
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
-    var saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
-    var infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
+    const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
-    const transitionsList = transitions.loadTransitions();
-    var change1 = {
+    transitions.loadTransitions();
+    const change1 = {
       id: 'abc',
       seq: '44',
       doc: {
@@ -91,11 +90,12 @@ describe('functional transitions', () => {
       },
       info: {},
     };
-    transitions.applyTransitions(change1, transitionsList, function() {
+    transitions.applyTransitions(change1, (err, changed) => {
       // first run fails so no save
-      assert.equal(saveDoc.callCount, 0);
+      assert.equal(err, undefined);
+      assert.equal(changed, undefined);
       assert.equal(infoDoc.callCount, 0);
-      var change2 = {
+      const change2 = {
         id: 'abc',
         seq: '45',
         doc: {
@@ -105,10 +105,12 @@ describe('functional transitions', () => {
         },
         info: {},
       };
-      transitions.applyTransitions(change2, transitionsList, function() {
-        assert.equal(saveDoc.callCount, 1);
+      transitions.applyTransitions(change2, (err, changed) => {
+        assert.isNull(err);
+        assert.equal(changed, true);
+        assert.equal(change2.doc.tasks.length, 1);
         assert.equal(infoDoc.callCount, 1);
-        var transitions = infoDoc.args[0][0].transitions;
+        const transitions = infoDoc.args[0][0].transitions;
         assert.equal(transitions.conditional_alerts.seq, '45');
         assert.equal(transitions.conditional_alerts.ok, true);
         done();
@@ -135,46 +137,154 @@ describe('functional transitions', () => {
 
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
-    var saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
-    var infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
+    const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
-    const transitionsList = transitions.loadTransitions();
-    var change1 = {
+    transitions.loadTransitions();
+    const change1 = {
       id: 'abc',
       seq: '44',
       doc: {
         type: 'data_record',
         form: 'V',
         from: '123456798',
+        fields: {},
         reported_date: new Date(),
       },
       info: {},
     };
-    transitions.applyTransitions(change1, transitionsList, function() {
-      assert.equal(saveDoc.callCount, 1);
+    transitions.applyTransitions(change1, (err, changed) => {
       assert.equal(infoDoc.callCount, 1);
-      var doc = saveDoc.args[0][0];
-      var info = infoDoc.args[0][0];
+      assert.equal(changed, true);
+      const info = infoDoc.args[0][0];
       assert.equal(info.transitions.default_responses.seq, '44');
       assert.equal(info.transitions.default_responses.ok, true);
 
-      doc.fields = { last_menstrual_period: 15 };
-      var change2 = {
+      change1.doc.fields = { last_menstrual_period: 15 };
+      const change2 = {
         id: 'abc',
         seq: '45',
-        doc: doc,
+        doc: change1.doc,
         info: info,
       };
-      transitions.applyTransitions(change2, transitionsList, function() {
-        assert.equal(saveDoc.callCount, 2);
+      transitions.applyTransitions(change2, (err, changed) => {
         assert.equal(infoDoc.callCount, 2);
-        var info = infoDoc.args[1][0].transitions;
+        const info = infoDoc.args[1][0].transitions;
         assert.equal(info.conditional_alerts.seq, '45');
         assert.equal(info.conditional_alerts.ok, true);
         assert.equal(info.default_responses.seq, '44');
         assert.equal(info.default_responses.ok, true);
+        assert.isNull(err);
+        assert.equal(changed, true);
         done();
       });
+    });
+  });
+
+  describe('processChange', () => {
+    it('should throw lineage errors', done => {
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').rejects({ some: 'err' });
+      transitions.processChange({ id: 'my_id' }, (err, result) => {
+        assert.deepEqual(err, { some: 'err' });
+        assert.isUndefined(result);
+        done();
+      });
+    });
+
+    it('should throw infodoc errors', done => {
+      const doc = { _id: 'my_id', type: 'data_record', form: 'v' };
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').rejects({ some: 'err' });
+
+      transitions.processChange({ id: 'my_id' }, (err, result) => {
+        assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
+        assert.deepEqual(transitions._lineage.fetchHydratedDoc.args[0], ['my_id']);
+        assert.deepEqual(err, { some: 'err' });
+        assert.isUndefined(result);
+        done();
+      });
+    });
+
+    it('should not update infodocs and not return the updated doc when no changes', done => {
+      configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
+      configGet.withArgs('alerts').returns({
+        V: {
+          form: 'V',
+          recipient: 'reporting_unit',
+          message: 'alert!',
+          condition: 'true',
+        },
+      });
+      configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      const doc = {
+        _id: 'my_id',
+        reported_date: new Date().valueOf()
+      };
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+
+      transitions.processChange({ id: doc._id}, (err, result) => {
+        assert.isUndefined(err);
+        assert.isUndefined(result);
+        assert.equal(db.sentinel.get.callCount, 1);
+        assert.equal(db.sentinel.put.callCount, 1); // initial creation
+        assert.isUndefined(db.sentinel.put.args[0][0].transitions);
+        done();
+      });
+    });
+
+    it('should update infodocs and return updated minified doc when at least one change', done => {
+      configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
+      configGet.withArgs('alerts').returns({
+        V: {
+          form: 'V',
+          recipient: 'reporting_unit',
+          message: 'alert!',
+          condition: 'true',
+        },
+      });
+      configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      const doc = {
+        _id: 'my_id',
+        form: 'V',
+        from: '123456',
+        type: 'data_record',
+        reported_date: new Date('2018-01-01').valueOf()
+      };
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+      sinon.stub(transitions._lineage, 'minify').callsFake(r => r);
+
+      transitions.processChange({ id: doc._id }, (err, changed) => {
+        assert.isNull(err);
+        assert(changed);
+        assert.equal(doc.tasks[0].messages[0].message, 'alert!');
+        assert.equal(db.sentinel.get.callCount, 2);
+        assert.equal(db.sentinel.put.callCount, 2);
+
+        assert.equal(Object.keys(db.sentinel.put.args[1][0].transitions).length, 1);
+        assert.equal(db.sentinel.put.args[1][0].transitions.conditional_alerts.ok, true);
+
+        assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
+        assert.equal(transitions._lineage.minify.callCount, 1);
+        assert.deepEqual(transitions._lineage.minify.args[0], [doc]);
+        done();
+      });
+    });
+  });
+
+  describe('processDocs', () => {
+    it('should return same docs if no transitions are loaded', () => {
+
     });
   });
 });
