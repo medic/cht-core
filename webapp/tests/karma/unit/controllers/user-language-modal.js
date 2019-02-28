@@ -64,11 +64,14 @@ describe('UserLanguageModalCtrl controller', function() {
     chai.assert(spyUibModalInstance.dismiss.called, 'Should dismiss modal');
   });
 
-  it('resets the language on user cancel', function(done) {
+  it('set the language to english on user cancel', function(done) {
     createController();
     setTimeout(function() {
+      var defaultLang = 'en';
+      scope.changeLanguage(defaultLang);
       scope.cancel();
-      chai.assert(stubSetLanguage.called, 'Should reset language');
+      chai.assert(stubSetLanguage.called, 'Should set language to english');
+      chai.expect(scope.selectedLanguage).to.equal(defaultLang);
       done();
     });
   });
@@ -127,19 +130,12 @@ describe('UserLanguageModalCtrl controller', function() {
     });
   });
 
-  it('does nothing when no language selected', function(done) {
-    stubUpdateUser.reset();
-    stubLanguage.returns(Promise.resolve());
+  it('english set when no language selected', function() {
     createController();
-    setTimeout(function() {
-      scope.submit()
-        .then(function() {
-          done('submit should reject');
-        })
-        .catch(function() {
-          chai.assert(!stubUpdateUser.called, 'Should not update user when no lang selected');
-          done();
-        });
-    });
+    var selectedLang;
+    scope.changeLanguage(selectedLang);
+    scope.submit();
+    chai.assert(stubUpdateUser.called, 'Should return english when no language selected');
+    chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal('en');
   });
 });

@@ -44,7 +44,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     };
 
     $scope.submit = function() {
-      if ($scope.selectedLanguage.toString() === 'undefined') {
+      if (typeof $scope.selectedLanguage === 'undefined') {
         $scope.changeLanguage('en');
       }
       $scope.setProcessing();
