@@ -44,10 +44,8 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     };
 
     $scope.submit = function() {
-      if (!$scope.selectedLanguage) {
-        var err = new Error('No language selected');
-        $log.error(err);
-        return $q.reject(err);
+      if ($scope.selectedLanguage.toString() === 'undefined') {
+        $scope.changeLanguage('en');
       }
       $scope.setProcessing();
       return UpdateUser(Session.userCtx().name, { language: $scope.selectedLanguage })
@@ -64,8 +62,13 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
 
     $scope.cancel = function() {
       // Reset to initial language.
-      $scope.changeLanguage(initialLanguageCode);
       $uibModalInstance.dismiss();
     };
+
+    $scope.$on('modal.closing', function() {
+      if ($scope.selectedLanguage.toString() === 'undefined') {
+        $scope.changeLanguage('en');
+      }
+    });
   }
 );
