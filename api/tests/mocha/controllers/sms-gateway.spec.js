@@ -3,7 +3,14 @@ const chai = require('chai'),
       messageUtils = require('../../../src/message-utils'),
       recordUtils = require('../../../src/controllers/record-utils'),
       db = require('../../../src/db'),
+      config = require('../../../src/config'),
       sinon = require('sinon');
+
+const transitionsLib = {
+  transitions: {
+    processDocs: sinon.stub()
+  }
+};
 
 describe('sms-gateway controller', () => {
 
@@ -13,10 +20,12 @@ describe('sms-gateway controller', () => {
 
   it('get() should report sms-gateway compatibility', () => {
     const results = controller.get();
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.transitions.processDocs.resolves([]);
     chai.expect(results['medic-gateway']).to.equal(true);
   });
 
-  it('post() should save WT messages to DB', done => {
+  it('post() should save WT messages to DB', () => {
     // given
     const createRecord = sinon.stub(recordUtils, 'createByForm')
       .onCall(0).returns({ message: 'one' })
@@ -38,25 +47,28 @@ describe('sms-gateway controller', () => {
       ]
     } };
 
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.transitions.processDocs.callsFake(docs => Promise.resolve(docs));
+
     // when
-    controller.post(req).then(() => {
+    return controller.post(req).then(() => {
       // then
       chai.expect(getMessages.callCount).to.equal(1);
       chai.expect(createRecord.callCount).to.equal(3);
       chai.expect(createRecord.args[0][0]).to.deep.equal({ gateway_ref: '1', from: '+1', message: 'one'   });
       chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
       chai.expect(createRecord.args[2][0]).to.deep.equal({ gateway_ref: '3', from: '+3', message: 'three' });
+      chai.expect(transitionsLib.transitions.processDocs.callCount).to.equal(1);
       chai.expect(bulkDocs.callCount).to.equal(1);
       chai.expect(bulkDocs.args[0][0]).to.deep.equal([
         { message: 'one' },
         { message: 'two' },
         { message: 'three' }
       ]);
-      done();
     });
   });
 
-  it('post() should update statuses supplied in request', done => {
+  it('post() should update statuses supplied in request', () => {
     // given
     const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
     updateMessageTaskStates.callsArgWith(1, null, {});
@@ -72,8 +84,12 @@ describe('sms-gateway controller', () => {
         { id:'5', status:'FAILED', reason:'bad' },
       ],
     } };
+
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.transitions.processDocs.resolves([]);
+
     // when
-    controller.post(req).then(() => {
+    return controller.post(req).then(() => {
       // then
       chai.expect(updateMessageTaskStates.args[0][0]).to.deep.equal([
         { messageId: '1', state:'received-by-gateway' },
@@ -82,11 +98,10 @@ describe('sms-gateway controller', () => {
         { messageId: '4', state:'delivered' },
         { messageId: '5', state:'failed', details:{ reason:'bad' } },
       ]);
-      done();
     });
   });
 
-  it('post() should persist unknown statuses', done => {
+  it('post() should persist unknown statuses', () => {
     // given
     const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
     updateMessageTaskStates.callsArgWith(1, null, {});
@@ -101,17 +116,16 @@ describe('sms-gateway controller', () => {
     } };
 
     // when
-    controller.post(req).then(() => {
+    return controller.post(req).then(() => {
       // then
       chai.expect(updateMessageTaskStates.args[0][0]).to.deep.equal([
         { messageId: '1', state:'unrecognised', details:{ gateway_status:'INVENTED-1' }},
         { messageId: '2', state:'unrecognised', details:{ gateway_status:'INVENTED-2' }},
       ]);
-      done();
     });
   });
 
-  it('post() should provide WO messages in response', done => {
+  it('post() should provide WO messages in response', () => {
     // given
     sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, [
       { id:'1', to:'+1', message:'one' },
@@ -124,7 +138,7 @@ describe('sms-gateway controller', () => {
     const req = { body: {} };
 
     // when
-    controller.post(req).then(res => {
+    return controller.post(req).then(res => {
       // then
       chai.expect(res).to.deep.equal({
         messages: [
@@ -139,11 +153,10 @@ describe('sms-gateway controller', () => {
         { messageId: '2', state:'forwarded-to-gateway' },
         { messageId: '3', state:'forwarded-to-gateway' },
       ]);
-      done();
     });
   });
 
-  it('post() returns err if something goes wrong', done => {
+  it('post() returns err if something goes wrong', () => {
     sinon.stub(recordUtils, 'createByForm')
       .onCall(0).returns({ message: 'one' });
     sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
@@ -158,11 +171,14 @@ describe('sms-gateway controller', () => {
         { id:'1', from:'+1', content:'one'   },
       ]
     } };
+
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.transitions.processDocs.resolves([]);
+
     // when
-    controller.post(req).catch(err => {
+    return controller.post(req).catch(err => {
       // then
       chai.expect(err.message).to.equal('oh no!');
-      done();
     });
   });
 

@@ -10,15 +10,13 @@ const _ = require('underscore'),
       PROGRESS_REPORT_INTERVAL = 500; // items
 
 let changesFeed,
-    transitions,
     processed = 0;
 
 const loadTransitions = () => {
   try {
-    transitions = transitionsLib.transitions.loadTransitions();
+    transitionsLib.transitions.loadTransitions();
     module.exports._attach();
   } catch (e) {
-    transitions = [];
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
     module.exports._detach();
   }
@@ -83,17 +81,40 @@ const processChange = (change, callback) => {
       .catch(callback);
   }
 
-  transitionsLib.transitions.processChange(change, transitions, err => {
+  transitionsLib.transitions.processChange(change, (err, changed) => {
     if (err) {
       return callback(err);
     }
 
-    processed++;
-    metadata
-      .update(change.seq)
-      .then(() => callback())
-      .catch(callback);
+    if (!changed) {
+      return updateMetadata(change, callback);
+    }
+
+    logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
+    db.medic.put(change.doc, (err) => {
+      // todo: how to handle a failed save? for now just
+      // waiting until next change and try again.
+      if (err) {
+        logger.error(
+          `error saving changes on doc ${change.id} seq ${
+            change.seq
+            }: ${JSON.stringify(err)}`
+        );
+      } else {
+        logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+      }
+
+      updateMetadata(change, callback);
+    });
   });
+};
+
+const updateMetadata = (change, callback) => {
+  processed++;
+  metadata
+    .update(change.seq)
+    .then(() => callback())
+    .catch(callback);
 };
 
 const deleteReadDocs = change => {

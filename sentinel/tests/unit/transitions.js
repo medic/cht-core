@@ -36,7 +36,7 @@ describe('transitions', () => {
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
 
-    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(2);
+    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(processChange.callCount, 1);
@@ -74,7 +74,7 @@ describe('transitions', () => {
     const sentinelPut = sinon.stub(db.sentinel, 'put').resolves({});
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
-    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(2);
+    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(sentinelGet.callCount, 2);
@@ -112,7 +112,7 @@ describe('transitions', () => {
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
-    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(2);
+    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(get.callCount, 2);
@@ -288,4 +288,6 @@ describe('transitions', () => {
       assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
     });
   });
+
+
 });
