@@ -12,7 +12,8 @@ angular.module('inboxServices').factory('AndroidApi',
     $window,
     MRDT,
     Session,
-    Simprints
+    Simprints,
+    Feedback
   ) {
 
     'use strict';
@@ -138,8 +139,21 @@ angular.module('inboxServices').factory('AndroidApi',
           // If we're viewing a tab, but not the primary tab, go to primary tab
           var primaryTab = $('.header .tabs').find('> a:visible:first');
           if (!primaryTab.is('.selected')) {
-            $state.go(primaryTab.attr('ui-sref'));
-            return true;
+            var uiSref = primaryTab.attr('ui-sref');
+            if (uiSref) {
+              $state.go(primaryTab.attr('ui-sref'));
+              return true;
+            } else {
+              var message = 'Attempt to back to an undefined state';  
+              return Feedback.submit(message, false, function(err) {
+                if (err) {
+                  $log.error('Error saving feedback', err);
+                  return false;
+                }
+
+                return true;
+              });             
+            }
           }
 
           return false;

@@ -7,9 +7,11 @@ angular.module('inboxServices').service('Tour',
     $state,
     $timeout,
     $translate,
+    $log,
     AnalyticsModules,
     Auth,
-    Session
+    Session,
+    Feedback
   ) {
 
     'use strict';
@@ -588,7 +590,16 @@ angular.module('inboxServices').service('Tour',
             });
           } else {
             // navigate to the correct page
-            $state.go(route, { tour: name });
+            if (route) {
+              $state.go(route, { tour: name });
+            } else {
+              var message = 'Attempt to navigate to an undefined state';  
+              Feedback.submit(message, false, function(err) {
+                if (err) {
+                  $log.error('Error saving feedback', err);
+                }
+              }); 
+            }
           }
         });
       }
