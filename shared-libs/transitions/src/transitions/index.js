@@ -56,9 +56,9 @@ const loadTransitions = (synchronous = false) => {
     const conf = transitionsConfig[transition];
 
     const disabled = conf && conf.disable;
-    const asyncOnly = conf && !conf.async;
+    const allowSync = conf && !conf.async;
 
-    if (!conf || disabled || (asyncOnly && synchronous)) {
+    if (!conf || disabled || (!allowSync && synchronous)) {
       return logger.warn(`Disabled transition "${transition}"`);
     }
 
@@ -166,7 +166,6 @@ const applyTransition = ({ key, change, transition }, callback) => {
       });
     })
     .catch(err => {
-      console.log(err);
       // adds an error to the doc but it will only get saved if there are
       // other changes too.
       const message = err.message || JSON.stringify(err);
@@ -206,27 +205,53 @@ const processChange = (change, callback) => {
     });
 };
 
+// given a collection of docs this function will:
+// - deep clone the docs, to keep the original version of them safe
+// - add _id properties to the docs that are missing them
+// - hydrate the docs and generate info docs
+// - run loaded transitions over all docs
+// - returns docs, either updated or their original version
 const processDocs = docs => {
-  let changes;
   if (!transitions.length) {
     return Promise.resolve(docs);
   }
 
+  let changes;
+  const clonedDocs = JSON.parse(JSON.stringify(docs)),
+        idsByIdx = [];
+  // keep a way to link the changed doc to the original doc
+  // there may be no reliable way to uniquely identify any of these docs
+  clonedDocs.forEach((doc, idx) => {
+    doc._id = doc._id || uuid();
+    idsByIdx[idx] = doc._id;
+  });
+
   return lineage
-    .hydrateDocs(docs)
+    .hydrateDocs(clonedDocs)
     .then(hydratedDocs => {
-      changes = hydratedDocs.map(doc => {
-        doc._id = doc._id || uuid();
-        return { id: doc._id, doc: doc, seq: null };
-      });
+      changes = hydratedDocs.map(doc => ({ id: doc._id, doc: doc, seq: null }));
       return infodoc.bulkGet(changes);
     })
     .then(infoDocs => {
       changes.forEach(change => {
         change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
       });
+      return infodoc.bulkUpdate(infoDocs);
+    })
+    .then(() => {
       return new Promise((resolve, reject) => {
-        const operations = changes.map(change => _.partial(applyTransitions(change, _)));
+        const operations = changes.map(change => callback => {
+          module.exports.applyTransitions(change, (err, changed) => {
+            if (!err && changed) {
+              return callback(null, change.doc);
+            }
+
+            // doc was not changed by any transition, so we return the original doc
+            // some transitions add errors to the doc but return false, so we can't assume that change.doc is clean
+            const idx = idsByIdx.findIndex(id => id === change.id);
+            return err ? callback(err) : callback(null, docs[idx]);
+          });
+        });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
         });
@@ -267,13 +292,15 @@ const applyTransitions = (change, callback) => {
 
 
 /*
- * Save the doc if we have changes from transitions, otherwise transitions
+ * Returns true if we have changes from transitions, otherwise transitions
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
+ * Minifies lineage before calling back.
  */
 const finalize = ({ change, results }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
+  lineage.minify(change.doc);
   const changed = _.some(results, i => Boolean(i));
   if (!changed) {
     logger.debug(
@@ -282,7 +309,6 @@ const finalize = ({ change, results }, callback) => {
     return callback();
   }
 
-  lineage.minify(change.doc);
   callback(null, true);
 };
 

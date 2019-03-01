@@ -265,6 +265,33 @@ describe('transitions', () => {
     assert.equal(stub.callCount, 0);
   });
 
-  //TODO add test for synchronous only transitions!
+  it('loadTransitions loads synchronous transitions only', () => {
+    sinon.stub(config, 'get').returns({
+      death_reporting: { disable: true, async: false },
+      update_clinics: true,
+      default_responses: true,
+      muting: { async: true }
+    });
+    sinon.stub(transitions, '_loadTransition');
+    transitions.loadTransitions(true);
+    assert.equal(transitions._loadTransition.callCount, 2);
+    assert.equal(transitions._loadTransition.calledWith('update_clinics'), true);
+    assert.equal(transitions._loadTransition.calledWith('default_responses'), true);
+  });
+
+  it('loads all enabled transitions when async', () => {
+    sinon.stub(config, 'get').returns({
+      death_reporting: { disable: true, async: false },
+      update_clinics: true,
+      default_responses: true,
+      muting: { async: true }
+    });
+    sinon.stub(transitions, '_loadTransition');
+    transitions.loadTransitions(false);
+    assert.equal(transitions._loadTransition.callCount, 3);
+    assert.equal(transitions._loadTransition.calledWith('update_clinics'), true);
+    assert.equal(transitions._loadTransition.calledWith('default_responses'), true);
+    assert.equal(transitions._loadTransition.calledWith('muting'), true);
+  });
 });
 

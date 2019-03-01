@@ -14,14 +14,14 @@ describe('finalize transition', () => {
         results: null,
       },
       (err, changed) => {
-        assert.equal(err, undefined);
-        assert.equal(changed, undefined);
+        assert(!err);
+        assert(!changed);
         done();
       }
     );
   });
 
-  it('save is called if transition results have changes', done => {
+  it('returns true if transition results have changes', done => {
     const doc = { _rev: '1' };
     transitions.finalize(
       {
@@ -29,8 +29,8 @@ describe('finalize transition', () => {
         results: [null, null, true],
       },
       (err, changed) => {
-        assert.equal(err, undefined);
-        assert.equal(changed, true);
+        assert(!err);
+        assert(changed);
         done();
       }
     );

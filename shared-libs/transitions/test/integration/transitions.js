@@ -1,18 +1,19 @@
-var transitions,
-  sinon = require('sinon'),
-  assert = require('chai').assert,
-  db = require('../../src/db'),
-  config = require('../../src/config'),
-  configGet;
+const sinon = require('sinon'),
+      chai = require('chai'),
+      assert = chai.assert,
+      chaiExclude = require('chai-exclude'),
+      db = require('../../src/db'),
+      config = require('../../src/config'),
+      updateClinics = require('../../src/transitions/update_clinics');
+
+chai.use(chaiExclude);
+
+let transitions,
+    configGet;
 
 describe('functional transitions', () => {
   beforeEach(() => {
     configGet = sinon.stub(config, 'get');
-    sinon.stub(db.medic, 'changes').returns({
-      on: () => {
-        return { on: () => {} };
-      },
-    });
     transitions = require('../../src/transitions/index');
   });
   afterEach(() => sinon.restore());
@@ -47,8 +48,8 @@ describe('functional transitions', () => {
       const info = infoDoc.args[0][0];
       assert.equal(info.transitions.conditional_alerts.seq, '44');
       assert.equal(info.transitions.conditional_alerts.ok, true);
-      assert.equal(err, null);
-      assert.equal(changed, true);
+      assert(!err);
+      assert(changed);
       assert.equal(change1.doc.tasks[0].messages[0].message, 'alert!');
       const change2 = {
         id: 'abc',
@@ -58,8 +59,8 @@ describe('functional transitions', () => {
       };
       transitions.applyTransitions(change2, (err, changed) => {
         // not to be updated
-        assert.equal(err, undefined);
-        assert.equal(changed, undefined);
+        assert(!err);
+        assert(!changed);
         done();
       });
     });
@@ -92,8 +93,8 @@ describe('functional transitions', () => {
     };
     transitions.applyTransitions(change1, (err, changed) => {
       // first run fails so no save
-      assert.equal(err, undefined);
-      assert.equal(changed, undefined);
+      assert(!err);
+      assert(!changed);
       assert.equal(infoDoc.callCount, 0);
       const change2 = {
         id: 'abc',
@@ -106,8 +107,8 @@ describe('functional transitions', () => {
         info: {},
       };
       transitions.applyTransitions(change2, (err, changed) => {
-        assert.isNull(err);
-        assert.equal(changed, true);
+        assert(!err);
+        assert(changed);
         assert.equal(change2.doc.tasks.length, 1);
         assert.equal(infoDoc.callCount, 1);
         const transitions = infoDoc.args[0][0].transitions;
@@ -154,7 +155,7 @@ describe('functional transitions', () => {
     };
     transitions.applyTransitions(change1, (err, changed) => {
       assert.equal(infoDoc.callCount, 1);
-      assert.equal(changed, true);
+      assert(changed);
       const info = infoDoc.args[0][0];
       assert.equal(info.transitions.default_responses.seq, '44');
       assert.equal(info.transitions.default_responses.ok, true);
@@ -174,7 +175,7 @@ describe('functional transitions', () => {
         assert.equal(info.default_responses.seq, '44');
         assert.equal(info.default_responses.ok, true);
         assert.isNull(err);
-        assert.equal(changed, true);
+        assert(changed);
         done();
       });
     });
@@ -283,8 +284,201 @@ describe('functional transitions', () => {
   });
 
   describe('processDocs', () => {
-    it('should return same docs if no transitions are loaded', () => {
+    it('should run all async transitions over docs and return updated docs', () => {
+      configGet.withArgs('transitions').returns({
+        conditional_alerts: { disabled: true },
+        default_responses: {},
+        update_clinics: {},
+        muting: { async: true },
+        update_sent_by: true,
+        accept_patient_reports: { async: false }
+      });
+      configGet.withArgs('alerts').returns({
+        V: {
+          form: 'V',
+          recipient: 'reporting_unit',
+          message: 'alert!',
+          condition: 'true',
+        },
+        P: {
+          form: 'P',
+          recipient: 'reporting_unit',
+          message: 'too much randomness',
+          condition: 'doc.fields.random_field > 200',
+        }
+      });
+      configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+      configGet.withArgs('patient_reports').returns([{
+        form: 'P',
+        validations: {
+          list: [
+            {
+              property: 'random_field',
+              rule: 'min(5) && max(10)',
+              message: [{
+                locale: 'en',
+                content: 'Random field is incorrect'
+              }],
+            },
+          ],
+          join_responses: false
+        }
+      }]);
 
+      const docs = [
+        {
+          id: 'has alert', //intentionally not _id
+          form: 'V',
+          from: 'phone1',
+          type: 'data_record',
+          reported_date: new Date('2018-01-01').valueOf()
+        },
+        {
+          id: 'has default response',
+          from: 'phone2',
+          type: 'data_record',
+          message: 'I just sent an SMS',
+          reported_date: new Date().valueOf()
+        },
+        {
+          id: 'random form that no transition runs on',
+          form: 'F',
+          type: 'data_record',
+          reported_date: new Date().valueOf()
+        },
+        {
+          _id: 'some_id',
+          id: 'random form with contact',
+          form: 'C',
+          type: 'data_record',
+          contact: { _id: 'contact3' },
+          from: 'phone3',
+          reported_date: new Date().valueOf()
+        },
+        {
+          id: 'will have errors',
+          form: 'P',
+          type: 'data_record',
+          contact: { _id: 'contact3' },
+          from: 'phone3',
+          fields: { random_field: 225 },
+          reported_date: new Date().valueOf()
+        }
+      ];
+      const originalDocs = JSON.parse(JSON.stringify(docs));
+
+      const contact1 = {
+        _id: 'contact1',
+        phone: 'phone1',
+        name: 'Merkel',
+        type: 'person',
+        parent: { _id: 'clinic', type: 'clinic', name: 'Clinic' },
+        reported_date: new Date().valueOf()
+      };
+      const contact3 = {
+        _id: 'contact3',
+        phone: 'phone3',
+        name: 'Angela',
+        type: 'person',
+        parent: { _id: 'clinic' },
+        reported_date: new Date().valueOf()
+      };
+
+      const bulkGetInfoDocs = ({ keys }) => {
+        const rows = keys.map(key => ({ key }));
+        return Promise.resolve({ rows });
+      };
+
+      sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => Promise.resolve(docs));
+      sinon.stub(db.sentinel, 'allDocs').callsFake(bulkGetInfoDocs);
+      sinon.stub(db.medic, 'allDocs').callsFake(bulkGetInfoDocs);
+      sinon.stub(db.sentinel, 'bulkDocs').resolves();
+
+      //update transitions
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      sinon.stub(db.medic, 'query')
+        // update_clinics
+        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
+        .callsArgWith(2, null, { rows: [{ id: 'contact1', key: 'phone1' }] })
+        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: false, limit: 1 })
+        .callsArgWith(2, null, ({ rows: [{ key: 'phone2' }] }))
+        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: false, limit: 1 })
+        .callsArgWith(2, null, ({ rows: [{ id: 'contact3', key: 'phone3' }] }))
+        //update_sent_by
+        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: true })
+        .resolves({ rows: [{ id: 'contact1', doc: contact1 }] })
+        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: true })
+        .resolves({ rows: [{ key: 'phone2' }] })
+        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: true })
+        .resolves({ rows: [{ id: 'contact3', doc: contact3 }] });
+
+      sinon.stub(updateClinics._lineage, 'fetchHydratedDoc').withArgs('contact1').resolves(contact1);
+
+      sinon.stub(config, 'getTranslations').returns({
+        en: {
+          sms_received: 'SMS received'
+        }
+      });
+
+      transitions.loadTransitions(true);
+      let infodocSaves;
+
+      return transitions.processDocs(docs).then(result => {
+        assert.equal(result.length, 5);
+
+        assert.equal(result[0].id, 'has alert');
+        assert.equal(result[0]._id.length, 36);
+        assert.equal(result[0].errors.length, 0);
+        assert.deepEqual(result[0].contact, { _id: 'contact1', parent: { _id: 'clinic' } });
+        assert.equal(result[0].sent_by, 'Merkel');
+        assert.equal(result[0].tasks.length, 1);
+        assert.equal(result[0].tasks[0].messages[0].message, 'alert!');
+        assert.deepEqualExcluding(result[0], originalDocs[0], ['_id', 'errors', 'contact', 'sent_by', 'tasks']);
+        // first doc is updated by 3 transitions
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[0]._id);
+        assert.equal(infodocSaves.length, 3);
+        assert.equal(infodocSaves[2][0].transitions.update_clinics.ok, true);
+        assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
+
+        assert.equal(result[1].id, 'has default response');
+        assert.equal(result[1]._id.length, 36);
+        assert.equal(result[1].tasks.length, 1);
+        assert.equal(result[1].tasks[0].messages[0].message, 'SMS received');
+        assert.deepEqualExcluding(result[1], originalDocs[1], ['_id', 'tasks']);
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[1]._id);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+
+        assert.deepEqual(result[2], originalDocs[2]);
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[2]._id);
+        assert.equal(infodocSaves.length, 0);
+
+        assert.equal(result[3].id, 'random form with contact');
+        assert.equal(result[3].sent_by, 'Angela');
+        assert.deepEqualExcluding(result[3], originalDocs[3], 'sent_by');
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[3]._id);
+        assert.equal(infodocSaves.length, 2);
+        assert.equal(infodocSaves[1][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[1][0].transitions.update_sent_by.ok, true);
+
+        assert.equal(result[4].id, 'will have errors');
+        assert.equal(result[4].sent_by, 'Angela');
+        assert.equal(result[4].errors.length, 1);
+        assert.deepEqual(result[4].errors[0], { code: 'invalid_random_field', message: 'Random field is incorrect' });
+        assert.equal(result[4].tasks.length, 2);
+        assert.equal(result[4].tasks[0].messages[0].message, 'Random field is incorrect');
+        assert.equal(result[4].tasks[1].messages[0].message, 'too much randomness');
+        assert.deepEqualExcluding(result[4], originalDocs[4], ['_id', 'sent_by', 'errors', 'tasks']);
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[4]._id);
+        assert.equal(infodocSaves.length, 4);
+        assert.equal(infodocSaves[2][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves[2][0].transitions.accept_patient_reports.ok, true);
+        assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
+      });
     });
   });
 });
