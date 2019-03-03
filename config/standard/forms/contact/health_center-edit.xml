@@ -54,7 +54,7 @@
             <value>Cholera</value>
           </text>
           <text id="/data/health_center/vaccines/dpt:label">
-            <value>Diptheria, Pertussis, and Tetanus</value>
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
           </text>
           <text id="/data/health_center/vaccines/fipv:label">
             <value>Fractional inactivated polio</value>
@@ -310,7 +310,7 @@
             <value>Cholera</value>
           </text>
           <text id="/data/health_center/vaccines/dpt:label">
-            <value>Diptheria, Pertussis, and Tetanus</value>
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
           </text>
           <text id="/data/health_center/vaccines/fipv:label">
             <value>Fractional inactivated polio</value>
@@ -438,7 +438,7 @@
             <value>Kolera</value>
           </text>
           <text id="/data/health_center/vaccines/dpt:label">
-            <value>Diptheria, Pertussis, and Tetanus</value>
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
           </text>
           <text id="/data/health_center/vaccines/fipv:label">
             <value>Fractional inactivated polio</value>
@@ -774,7 +774,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2019-02-26_04-25">
+        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2019-03-03_08-22">
           <inputs>
             <meta>
               <location>
@@ -849,9 +849,9 @@
       <bind calculate="../../../inputs/user/name" nodeset="/data/health_center/meta/last_edited_by" type="string"/>
       <bind calculate="../../../inputs/user/contact_id" nodeset="/data/health_center/meta/last_edited_by_person_uuid" type="string"/>
       <bind calculate="../../../inputs/user/facility_id" nodeset="/data/health_center/meta/last_edited_by_place_uuid" type="string"/>
-      <bind calculate="&quot;PLACE_TYPE&quot;" nodeset="/data/init/place_type" type="select1"/>
+      <bind calculate="&quot;health_center&quot;" nodeset="/data/init/place_type" type="select1"/>
       <bind calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')" nodeset="/data/init/place_type_translation" type="string"/>
-      <bind calculate="&quot;PLACE_TYPE&quot;" nodeset="/data/init/select_generated_name" type="select1"/>
+      <bind calculate="&quot;health_center&quot;" nodeset="/data/init/select_generated_name" type="select1"/>
       <bind calculate="if (boolean( /data/health_center/contact/_id ), jr:choice-name( /data/init/select_generated_name ,' /data/init/select_generated_name '), '')" nodeset="/data/init/generated_name_translation" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>

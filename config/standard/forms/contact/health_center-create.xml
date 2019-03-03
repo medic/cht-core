@@ -90,7 +90,7 @@
             <value>Cholera</value>
           </text>
           <text id="/data/health_center/vaccines/dpt:label">
-            <value>Diptheria, Pertussis, and Tetanus</value>
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
           </text>
           <text id="/data/health_center/vaccines/fipv:label">
             <value>Fractional inactivated polio</value>
@@ -466,7 +466,7 @@
             <value>Cholera</value>
           </text>
           <text id="/data/health_center/vaccines/dpt:label">
-            <value>Diptheria, Pertussis, and Tetanus</value>
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
           </text>
           <text id="/data/health_center/vaccines/fipv:label">
             <value>Fractional inactivated polio</value>
@@ -654,7 +654,7 @@
             <value>Kolera</value>
           </text>
           <text id="/data/health_center/vaccines/dpt:label">
-            <value>Diptheria, Pertussis, and Tetanus</value>
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
           </text>
           <text id="/data/health_center/vaccines/fipv:label">
             <value>Fractional inactivated polio</value>
@@ -1131,7 +1131,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2019-02-26_04-27">
+        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2019-03-03_08-22">
           <inputs>
             <meta>
               <location>
@@ -1170,9 +1170,9 @@
             <name/>
             <contact_name/>
             <custom_place_name/>
-            <place_type>PLACE_TYPE</place_type>
+            <place_type>health_center</place_type>
             <place_type_translation/>
-            <generated_name>PLACE_TYPE</generated_name>
+            <generated_name>health_center</generated_name>
             <generated_name_translation/>
           </init>
           <contact>
