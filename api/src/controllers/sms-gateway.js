@@ -65,7 +65,7 @@ const getOutgoing = () => {
 };
 
 const runTransitions = docs => {
-  return config.getTransitionsLib().transitions.processDocs(docs);
+  return config.getTransitionsLib().processDocs(docs);
 };
 
 // Process webapp-terminating messages

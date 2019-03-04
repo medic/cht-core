@@ -1,14 +1,13 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
-  config = require('../../src/config'),
   db = require('../../src/db'),
   transitions = require('../../src/transitions'),
+  config = require('../../src/config'),
   metadata = require('../../src/lib/metadata'),
   tombstoneUtils = require('@medic/tombstone-utils');
 
 config.initTransitionLib();
-const infodoc = config.getTransitionsLib().infodoc,
-      transitionsLib = config.getTransitionsLib().transitions;
+const infodoc = config.getTransitionsLib().infodoc;
 
 describe('transitions', () => {
   afterEach(() => {
@@ -18,7 +17,7 @@ describe('transitions', () => {
   });
 
   it('loadTransitions load throws detach is called', () => {
-    const load = sinon.stub(transitionsLib, 'loadTransitions').throws();
+    const load = sinon.stub(transitions._transitionsLib, 'loadTransitions').throws();
     const attach = sinon.stub(transitions, '_attach');
     const detach = sinon.stub(transitions, '_detach');
     transitions.loadTransitions();
@@ -36,7 +35,7 @@ describe('transitions', () => {
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
 
-    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(1);
+    const processChange = sinon.stub(transitions._transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(processChange.callCount, 1);
@@ -74,7 +73,7 @@ describe('transitions', () => {
     const sentinelPut = sinon.stub(db.sentinel, 'put').resolves({});
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
-    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(1);
+    const processChange = sinon.stub(transitions._transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(sentinelGet.callCount, 2);
@@ -112,7 +111,7 @@ describe('transitions', () => {
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
-    const processChange = sinon.stub(transitionsLib, 'processChange').callsArg(1);
+    const processChange = sinon.stub(transitions._transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(get.callCount, 2);

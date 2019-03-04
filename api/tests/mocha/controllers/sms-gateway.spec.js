@@ -7,9 +7,7 @@ const chai = require('chai'),
       sinon = require('sinon');
 
 const transitionsLib = {
-  transitions: {
-    processDocs: sinon.stub()
-  }
+  processDocs: sinon.stub()
 };
 
 describe('sms-gateway controller', () => {
@@ -21,7 +19,7 @@ describe('sms-gateway controller', () => {
   it('get() should report sms-gateway compatibility', () => {
     const results = controller.get();
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.transitions.processDocs.resolves([]);
+    transitionsLib.processDocs.resolves([]);
     chai.expect(results['medic-gateway']).to.equal(true);
   });
 
@@ -48,7 +46,7 @@ describe('sms-gateway controller', () => {
     } };
 
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.transitions.processDocs.callsFake(docs => Promise.resolve(docs));
+    transitionsLib.processDocs.callsFake(docs => Promise.resolve(docs));
 
     // when
     return controller.post(req).then(() => {
@@ -58,7 +56,7 @@ describe('sms-gateway controller', () => {
       chai.expect(createRecord.args[0][0]).to.deep.equal({ gateway_ref: '1', from: '+1', message: 'one'   });
       chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
       chai.expect(createRecord.args[2][0]).to.deep.equal({ gateway_ref: '3', from: '+3', message: 'three' });
-      chai.expect(transitionsLib.transitions.processDocs.callCount).to.equal(1);
+      chai.expect(transitionsLib.processDocs.callCount).to.equal(1);
       chai.expect(bulkDocs.callCount).to.equal(1);
       chai.expect(bulkDocs.args[0][0]).to.deep.equal([
         { message: 'one' },
@@ -86,7 +84,7 @@ describe('sms-gateway controller', () => {
     } };
 
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.transitions.processDocs.resolves([]);
+    transitionsLib.processDocs.resolves([]);
 
     // when
     return controller.post(req).then(() => {
@@ -173,7 +171,7 @@ describe('sms-gateway controller', () => {
     } };
 
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.transitions.processDocs.resolves([]);
+    transitionsLib.processDocs.resolves([]);
 
     // when
     return controller.post(req).catch(err => {

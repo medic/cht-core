@@ -74,12 +74,10 @@ const loadSettings = function() {
   });
 };
 
-
 const initTransitionLib = () => {
   transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
-  transitionsLib.transitions.loadTransitions(true);
+  transitionsLib.loadTransitions(true);
 };
-
 
 const loadTranslations = () => {
   const options = { key: ['translations', true], include_docs: true };

@@ -14,7 +14,7 @@ let changesFeed,
 
 const loadTransitions = () => {
   try {
-    transitionsLib.transitions.loadTransitions();
+    transitionsLib.loadTransitions();
     module.exports._attach();
   } catch (e) {
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
@@ -81,7 +81,7 @@ const processChange = (change, callback) => {
       .catch(callback);
   }
 
-  transitionsLib.transitions.processChange(change, (err, changed) => {
+  transitionsLib.processChange(change, (err, changed) => {
     if (err) {
       return callback(err);
     }
@@ -153,5 +153,6 @@ module.exports = {
   _attach: attach,
   _detach: detach,
   _deleteReadDocs: deleteReadDocs,
-  loadTransitions: loadTransitions
+  loadTransitions: loadTransitions,
+  _transitionsLib: transitionsLib
 };

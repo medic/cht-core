@@ -3,7 +3,12 @@ const controller = require('../../../src/controllers/records'),
       db = require('../../../src/db'),
       auth = require('../../../src/auth'),
       recordUtils = require('../../../src/controllers/record-utils'),
-      sinon = require('sinon');
+      sinon = require('sinon'),
+      config = require('../../../src/config');
+
+const transitionsLib = {
+  processDocs: sinon.stub()
+};
 
 describe('records controller', () => {
 
@@ -27,6 +32,9 @@ describe('records controller', () => {
       is: reqIs
     };
     const res = { json: json };
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.processDocs.callsFake(docs => docs);
+
     controller.v2(req, res).then(() => {
       chai.expect(json.callCount).to.equal(1);
       chai.expect(json.args[0][0]).to.deep.equal({ success: true, id: 'xyz' });
@@ -55,6 +63,9 @@ describe('records controller', () => {
       is: reqIs
     };
     const res = { json: json };
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.processDocs.callsFake(docs => docs);
+
     controller.v2(req, res).then(() => {
       chai.expect(json.callCount).to.equal(1);
       chai.expect(json.args[0][0]).to.deep.equal({ success: true, id: 'zyx' });
