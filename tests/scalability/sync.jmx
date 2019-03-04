@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="2.6" jmeter="2.11.20151206">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.1 r1853635">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -9,12 +9,12 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="working_dir" elementType="Argument">
             <stringProp name="Argument.name">working_dir</stringProp>
-            <stringProp name="Argument.value">/home/gareth/src/medic/medic-webapp/tests/scalability</stringProp>
+            <stringProp name="Argument.value">${__P(working_dir)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="node_binary" elementType="Argument">
             <stringProp name="Argument.name">node_binary</stringProp>
-            <stringProp name="Argument.value">/home/gareth/.nvm/versions/v8.11.1/bin/node</stringProp>
+            <stringProp name="Argument.value">${__P(node_binary)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -115,7 +115,7 @@
             <responseData>false</responseData>
             <samplerData>false</samplerData>
             <xml>false</xml>
-            <fieldNames>false</fieldNames>
+            <fieldNames>true</fieldNames>
             <responseHeaders>false</responseHeaders>
             <requestHeaders>false</requestHeaders>
             <responseDataOnError>false</responseDataOnError>
@@ -124,7 +124,8 @@
             <bytes>true</bytes>
           </value>
         </objProp>
-        <stringProp name="filename"></stringProp>
+        <stringProp name="filename">./initial-replication.jtl</stringProp>
+        <boolProp name="ResultCollector.success_only_logging">true</boolProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
