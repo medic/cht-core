@@ -7,8 +7,11 @@ module.exports = (sourceDb, settings, translations, sourceLogger) => {
   db.init(sourceDb);
   config.init(settings, translations);
 
+  const transitions = require('./transitions');
   return {
-    transitions: require('./transitions'),
+    loadTransitions: transitions.loadTransitions,
+    processChange: transitions.processChange,
+    processDocs: transitions.processDocs,
     messages: require('./lib/messages'),
     date: require('./date'),
     infodoc: require('./lib/infodoc'),
