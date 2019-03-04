@@ -258,22 +258,22 @@ cards = [
         label: 'contact.profile.weight',
         translate: true,
         width: 6,
-        value: screening_report.fields.zscore.weight
+        value: screening_report.fields.measurements.weight
       });
 
       fields.push({
         label: 'contact.profile.height',
         translate: true,
         width: 6,
-        value: screening_report.fields.zscore.height
+        value: screening_report.fields.measurements.height
       });
 
       fields.push({
         label: 'contact.profile.wfa',
         translate: true,
         width: 4,
-        value: screening_report.fields.zscore.zscore_wfa,
-        icon: screening_report.fields.zscore.zscore_wfa < -3? 'risk':'',
+        value: screening_report.fields.measurements.wfa,
+        icon: screening_report.fields.measurements.wfa < -3? 'risk':'',
 
       });
 
@@ -281,8 +281,8 @@ cards = [
         label: 'contact.profile.hfa',
         translate: true,
         width: 4,
-        value: screening_report.fields.zscore.zscore_hfa,
-        icon: screening_report.fields.zscore.zscore_hfa < -3? 'risk':'',
+        value: screening_report.fields.measurements.hfa,
+        icon: screening_report.fields.measurements.hfa < -3? 'risk':'',
 
       });
 
@@ -290,8 +290,8 @@ cards = [
         label: 'contact.profile.wfh',
         translate: true,
         width: 4,
-        value: screening_report.fields.zscore.zscore_wfh,
-        icon: screening_report.fields.zscore.zscore_wfh? 'risk':'',
+        value: screening_report.fields.measurements.wfh,
+        icon: screening_report.fields.measurements.wfh? 'risk':'',
       });
 
       return fields;
@@ -331,8 +331,8 @@ cards = [
           label: 'contact.profile.wfh',
           translate: true,
           width: 12,
-          value: enrollment_report.fields.zscore.zscore_wfh,
-          icon: enrollment_report.fields.zscore.zscore_wfh < -2? 'risk':'',
+          value: enrollment_report.fields.zscore.wfh,
+          icon: enrollment_report.fields.zscore.wfh < -2? 'risk':'',
         });
 
         fields.push({
@@ -412,7 +412,7 @@ cards = [
           label: 'contact.profile.wfh',
           translate: true,
           width: 12,
-          value: exit_report? exit_report.fields.zscore.zscore_wfh: ''
+          value: exit_report? exit_report.fields.zscore.wfh: ''
         });
 
       }

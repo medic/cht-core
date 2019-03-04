@@ -348,29 +348,29 @@
   },
 
   // create treatment enrollment task. enroll = 'yes' in ms & followup
-  {
-    icon: 'child',
-    title: 'task.treatment_enrollment.title',
-    appliesTo: 'reports',
-    appliesToType: ['nutrition_screening', 'nutrition_followup'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
-    },
-    actions: [{form: 'treatment_enrollment'}],
-    events: [{
-      id: 'treatment-enrollment',
-      days: 2,
-      start: 2,
-      end: 7
-    }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
-      return c.reports.some(function(r){
-        return r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.enroll === 'yes';
-      });
-    }
-  },
+  // {
+  //   icon: 'child',
+  //   title: 'task.treatment_enrollment.title',
+  //   appliesTo: 'reports',
+  //   appliesToType: ['nutrition_screening', 'nutrition_followup'],
+  //   appliesIf: function(c, r, i){
+  //     /* jshint unused:vars */
+  //     return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
+  //   },
+  //   actions: [{form: 'treatment_enrollment'}],
+  //   events: [{
+  //     id: 'treatment-enrollment',
+  //     days: 2,
+  //     start: 2,
+  //     end: 7
+  //   }],
+  //   resolvedIf: function(c, r, event, dueDate){
+  //     /* jshint unused:vars */
+  //     return c.reports.some(function(r){
+  //       return r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.enroll === 'yes';
+  //     });
+  //   }
+  // },
 
   // Create death confirmation task
   {
