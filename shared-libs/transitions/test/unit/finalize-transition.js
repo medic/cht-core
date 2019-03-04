@@ -47,6 +47,7 @@ describe('finalize transition', () => {
         change.doc.foo = 'bar';
         return Promise.resolve(true);
       },
+      filter: () => true
     };
     transitions.applyTransition(
       {
@@ -76,12 +77,14 @@ describe('finalize transition', () => {
     const doc = { _rev: '1' };
     var transition = {
       onMatch: () => Promise.reject({ changed: false, message: 'oops' }),
+      filter: () => true
     };
     transitions.applyTransition(
       {
         key: 'x',
         change: {
           doc: doc,
+          info: {}
         },
         transition: transition,
       },
