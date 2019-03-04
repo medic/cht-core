@@ -141,17 +141,17 @@ angular.module('inboxServices').factory('AndroidApi',
           if (!primaryTab.is('.selected')) {
             var uiSref = primaryTab.attr('ui-sref');
             if (uiSref) {
-              $state.go(primaryTab.attr('ui-sref'));
+              $state.go(uiSref);
               return true;
             } else {
-              var message = 'Attempt to back to an undefined state';  
+              var message = 'Attempt to back to an undefined state [AndroidApi.back()]';  
               return Feedback.submit(message, false, function(err) {
                 if (err) {
                   $log.error('Error saving feedback', err);
                   return false;
                 }
 
-                return true;
+                return false;
               });             
             }
           }
