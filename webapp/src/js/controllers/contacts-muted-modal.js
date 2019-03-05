@@ -1,7 +1,6 @@
 angular.module('inboxControllers').controller('ContactsMutedModalCtrl',
   function(
     $scope,
-    $translate,
     $uibModalInstance
   ) {
     'use strict';

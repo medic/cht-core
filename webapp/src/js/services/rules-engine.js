@@ -10,11 +10,8 @@ var nools = require('nools'),
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('RulesEngine',
+  angular.module('inboxServices').factory('RulesEngine',
     function(
-      $log,
       $q,
       Changes,
       ContactSchema,
@@ -36,6 +33,7 @@ var nools = require('nools'),
         };
       }
 
+      /* eslint-disable-next-line angular/deferred */
       var complete = $q.defer();
       var callbacks = {};
       callbacks[FIRST_RUN_COMPLETE_TYPE] = {

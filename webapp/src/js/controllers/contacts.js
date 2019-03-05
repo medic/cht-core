@@ -4,9 +4,7 @@ var _ = require('underscore'),
 (function() {
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('ContactsCtrl', function(
+  angular.module('inboxControllers').controller('ContactsCtrl', function(
     $log,
     $ngRedux,
     $q,

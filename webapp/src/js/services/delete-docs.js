@@ -6,9 +6,7 @@ var utilsFactory = require('@medic/bulk-docs-utils');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('DeleteDocs',
+  angular.module('inboxServices').factory('DeleteDocs',
     function(
       $log,
       $q,
@@ -69,38 +67,39 @@ var utilsFactory = require('@medic/bulk-docs-utils');
         // https://github.com/medic/medic/issues/4327
         Changes.killWatchers();
 
-        var deferred = $q.defer();
-        var xhr = new XMLHttpRequest();
-        xhr.onprogress = function() {
-          if (xhr.responseText) {
-            var currentResponse = partialParse(xhr.responseText);
-            var successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
-              return !doc.error;
-            });
-            var totalDocsDeleted = successfulDeletions.length;
-            if (eventListeners.progress && Array.isArray(currentResponse)) {
-              eventListeners.progress(totalDocsDeleted);
+        return $q((resolve, reject) => {
+          var xhr = new XMLHttpRequest();
+          xhr.onprogress = function() {
+            if (xhr.responseText) {
+              var currentResponse = partialParse(xhr.responseText);
+              var successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
+                return !doc.error;
+              });
+              var totalDocsDeleted = successfulDeletions.length;
+              if (eventListeners.progress && Array.isArray(currentResponse)) {
+                eventListeners.progress(totalDocsDeleted);
+              }
             }
-          }
-        };
-        xhr.onload = function() {
-          if (this.status >= 200 && this.status < 300) {
-            try {
-              deferred.resolve(_.flatten(JSON.parse(xhr.response)));
-            } catch (err) {
-              deferred.reject(err);
+          };
+          xhr.onload = function() {
+            if (this.status >= 200 && this.status < 300) {
+              try {
+                resolve(_.flatten(JSON.parse(xhr.response)));
+              } catch (err) {
+                reject(err);
+              }
+            } else {
+              reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
             }
-          } else {
-            deferred.reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
-          }
-        };
-        xhr.onerror = function() {
-          deferred.reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
-        };
-        xhr.open('POST', '/api/v1/bulk-delete', true);
-        xhr.setRequestHeader('Content-type', 'application/json');
-        xhr.send(JSON.stringify({ docs: docs }));
-        return deferred.promise;
+          };
+          xhr.onerror = function() {
+            reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
+          };
+          xhr.open('POST', '/api/v1/bulk-delete', true);
+          xhr.setRequestHeader('Content-type', 'application/json');
+          xhr.send(JSON.stringify({ docs: docs }));
+        });
+
       };
 
       /**

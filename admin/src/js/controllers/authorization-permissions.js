@@ -1,7 +1,7 @@
 angular.module('controllers').controller('AuthorizationPermissionsCtrl',
   function (
-    $scope,
     $log,
+    $scope,
     Settings,
     UpdateSettings
   ) {

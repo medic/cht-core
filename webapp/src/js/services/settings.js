@@ -2,10 +2,9 @@
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
   var SETTINGS_ID = 'settings';
 
-  inboxServices.factory('Settings',
+  angular.module('inboxServices').factory('Settings',
     function(
       $log,
       $q,

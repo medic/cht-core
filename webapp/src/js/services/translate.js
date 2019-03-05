@@ -3,7 +3,6 @@
  */
 angular.module('inboxServices').service('Translate',
   function(
-    $log,
     $translate
   ) {
 

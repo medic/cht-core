@@ -7,8 +7,8 @@ angular.module('controllers').controller('SettingsBasicCtrl',
     $scope,
     $timeout,
     $translate,
-    Settings,
     Languages,
+    Settings,
     UpdateSettings
   ) {
 

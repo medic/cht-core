@@ -3,15 +3,15 @@ var _ = require('underscore'),
 
 angular.module('inboxServices').service('Tour',
   function(
+    $log,
     $q,
     $state,
     $timeout,
     $translate,
-    $log,
     AnalyticsModules,
     Auth,
-    Session,
-    Feedback
+    Feedback,
+    Session
   ) {
 
     'use strict';
@@ -550,6 +550,7 @@ angular.module('inboxServices').service('Tour',
           if (results.length) {
             return {
               order: 4,
+    
               id: 'analytics',
               icon: 'fa-bar-chart-o',
               name: 'Analytics'

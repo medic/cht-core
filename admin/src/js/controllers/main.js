@@ -1,11 +1,11 @@
 angular.module('controllers').controller('MainCtrl',
   function (
     $log,
+    $scope,
+    $state,
     $translate,
     $window,
-    $state,
     Auth,
-    $scope,
     Location,
     Session
   ) {

@@ -1,5 +1,8 @@
 angular.module('inboxDirectives').directive('reportImage',
-  function($window, DB) {
+  function(
+    $window,
+    DB
+  ) {
     'use strict';
     'ngInject';
 

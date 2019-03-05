@@ -6,10 +6,8 @@ var _ = require('underscore'),
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
   // To make it easier to mock out
-  inboxServices.factory('SearchFactory',
+  angular.module('inboxServices').factory('SearchFactory',
     function(
       $q,
       DB
@@ -23,14 +21,14 @@ var _ = require('underscore'),
     }
   );
 
-  inboxServices.factory('Search',
+  angular.module('inboxServices').factory('Search',
     function(
       $log,
       $q,
+      CalendarInterval,
       DB,
       GetDataRecords,
       SearchFactory,
-      CalendarInterval,
       Session
     ) {
 
