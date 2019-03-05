@@ -81,7 +81,8 @@ const loadTransitions = (synchronous = false) => {
 
   if (loadError) {
     // empty transitions list
-    // Sentinel does crash when transitions are misconfigured, but API continues and should not run partial transitions
+    // Sentinel detaches from the changes feed when transitions are misconfigured,
+    // but API continues and should not run partial transitions
     transitions.splice(0, transitions.length);
     throw new Error('Transitions are disabled until the above configuration errors are fixed.');
   }
