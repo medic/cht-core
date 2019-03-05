@@ -364,7 +364,6 @@ module.exports = function(grunt) {
             'webapp/src/js/modules/xpath-element-path.js',
             'api/src/extracted-resources/**/*',
             '**/node_modules/**',
-            'sentinel/src/lib/pupil/**',
             'build/**',
             'config/**'
           ];
