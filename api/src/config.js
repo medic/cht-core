@@ -76,7 +76,12 @@ const loadSettings = function() {
 
 const initTransitionLib = () => {
   transitionsLib = require('medic-transitions-beta')(db, settings, translationCache, logger);
-  transitionsLib.loadTransitions(true);
+  // loadTransitions could throw errors when some transitions are misconfigured
+  try {
+    transitionsLib.loadTransitions(true);
+  } catch(err) {
+    logger.error(err);
+  }
 };
 
 const loadTranslations = () => {
@@ -158,11 +163,11 @@ module.exports = {
         } else if (change.id === 'settings') {
           logger.info('Detected settings change - reloading');
           loadSettings()
-            .then(() => initTransitionLib())
             .catch(err => {
               logger.error('Failed to reload settings: %o', err);
               process.exit(1);
-            });
+            })
+            .then(() => initTransitionLib());
         } else if (change.id.indexOf('messages-') === 0) {
           logger.info('Detected translations change - reloading');
           loadTranslations().then(() => initTransitionLib());

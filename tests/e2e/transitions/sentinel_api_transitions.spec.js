@@ -301,6 +301,16 @@ const expectTransitions = (infodoc, ...transitions) => {
   });
 };
 
+const isUntransitionedDoc = doc => {
+  return doc._rev.startsWith('1-') &&
+         doc.errors.length === 1 &&
+         doc.errors[0].code === 'sys.facility_not_found' &&
+         !doc.tasks.length &&
+         !doc.scheduled_tasks &&
+         !doc.contact &&
+         !doc.patient_id;
+};
+
 describe('transitions', () => {
   beforeAll(done => utils.saveDocs(contacts).then(done));
   afterAll(done => utils.revertDb().then(done));
@@ -322,16 +332,6 @@ describe('transitions', () => {
     let docs,
         ids;
 
-    const isUntransitionedMessage = change => {
-      return change.changes[0].rev.startsWith('1-') &&
-             change.doc.errors.length === 1 &&
-             change.doc.errors[0].code === 'sys.facility_not_found' &&
-             !change.doc.tasks.length &&
-             !change.doc.scheduled_tasks &&
-             !change.doc.contact &&
-             !change.doc.patient_id;
-    };
-
     return utils
       .updateSettings(settings, true)
       .then(() => Promise.all([
@@ -340,7 +340,7 @@ describe('transitions', () => {
       ]))
       .then(([ changes, messages ]) => {
         expect(messages.messages.length).toEqual(0);
-        expect(changes.every(isUntransitionedMessage)).toEqual(true);
+        expect(changes.every(change => isUntransitionedDoc(change.doc))).toEqual(true);
         docs = changes.map(change => change.doc);
         ids = changes.map(change => change.id);
       })
@@ -770,6 +770,67 @@ describe('transitions', () => {
         expectTransitions(infodoc, 'default_responses', 'update_clinics', 'death_reporting');
 
         expect(person3.date_of_death).toBeDefined();
+      });
+  });
+
+  it('should not crash services when transitions are misconfigured', () => {
+    const settings = {
+      transitions: {
+        accept_patient_reports: { async: false },
+        conditional_alerts: { async: false },
+        death_reporting: { async: false },
+        default_responses: { async: false },
+        registration: { async: false },
+        update_clinics: { async: false }
+      },
+      forms: formsConfig
+    };
+
+    delete transitionsConfig.death_reporting.mark_deceased_forms;
+    Object.assign(settings, transitionsConfig);
+
+    const contact = {
+      _id: 'person5',
+      name: 'Person',
+      type: 'person',
+      patient_id: 'patient5',
+      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+      reported_date: new Date().getTime()
+    };
+    // we already killed patient 3 and 4 in the test above
+    messages.find(message => message.id === 'dead').content = 'DEATH patient5';
+
+    let ids;
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDoc(contact))
+      .then(() => Promise.all([
+        waitForChanges(),
+        utils.request(getPostOpts('/api/sms', { messages: messages })),
+      ]))
+      .then(([changes, messages]) => {
+        expect(messages.messages.length).toEqual(0);
+        expect(changes.every(change => isUntransitionedDoc(change.doc))).toEqual(true);
+        ids = changes.map(change => change.id);
+      })
+      // Sentinel won't process these, so we can't wait for a metadata update, but let's give it 5 seconds just in case
+      .then(() => new Promise(resolve => setTimeout(() => resolve(), 5000)))
+      .then(() => Promise.all([
+        sentinelUtils.getInfoDocs(ids),
+        utils.getDocs(ids)
+      ]))
+      .then(([infos, updatedDocs]) => {
+        infos.forEach(info => expect(!info));
+        expect(updatedDocs.every(isUntransitionedDoc)).toEqual(true);
+      })
+      .then(() => getDocByPatientId('child1'))
+      .then(rows => {
+        expect(rows.length).toEqual(0);
+      })
+      .then(() => utils.getDoc('person5'))
+      .then(person => {
+        expect(person.date_of_death).not.toBeDefined();
       });
   });
 });
