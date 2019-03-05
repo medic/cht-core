@@ -4,7 +4,7 @@
     <h:title>Nutrition Screening</h:title>
     <model>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-05 15-47">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-05 16-21">
           <inputs>
             <meta>
               <location>
@@ -344,15 +344,15 @@
         <label>Admission treatment program</label>
         <item>
           <label>Outpatient Therapeutic Program</label>
-          <value>otp</value>
+          <value>OTP</value>
         </item>
         <item>
           <label>Supplementary Feeding Program</label>
-          <value>sfp</value>
+          <value>SFP</value>
         </item>
         <item>
           <label>Stabilization Center</label>
-          <value>sc</value>
+          <value>SC</value>
         </item>
         <item>
           <label>Others</label>

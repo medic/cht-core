@@ -677,10 +677,16 @@
       "validations": {},
       "messages": [
         {
-          "translation_key": "messages.nutrition_followup.sc_exit",
+          "translation_key": "messages.nutrition_followup.exit",
           "event_type": "report_accepted",
           "recipient": "clinic",
-          "bool_expr": "/exit/.test(doc.fields.task) && /SC/.test(doc.fields.treatment_program)"
+          "bool_expr": "doc.fields.task === 'exit'"
+        },
+        {
+          "translation_key": "messages.nutrition_followup.visit",
+          "event_type": "report_accepted",
+          "recipient": "clinic",
+          "bool_expr": "doc.fields.task === 'visit'"
         }
       ]
     },
@@ -692,19 +698,19 @@
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "OTP",
-          "bool_expr": "doc.fields.treatment.program && /otp/.test(doc.fields.treatment.program)"
+          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'OTP'"
         },
         {
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "SFP",
-          "bool_expr": "doc.fields.treatment.program && /sfp/.test(doc.fields.treatment.program)"
+          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'SFP'"
         },
         {
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "SC",
-          "bool_expr": "doc.fields.treatment.program && /sc/.test(doc.fields.treatment.program)"
+          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'SC'"
         }
       ],
       "validations": {},
@@ -731,19 +737,19 @@
           "translation_key": "messages.nutrition_screening.report_accepted.otp",
           "event_type": "report_accepted",
           "recipient": "clinic",
-          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'otp' "
+          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'OTP' "
         },
         {
           "translation_key": "messages.nutrition_screening.report_accepted.sfp",
           "event_type": "report_accepted",
           "recipient": "clinic",
-          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'sfp' "
+          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'SFP' "
         },
         {
           "translation_key": "messages.nutrition_screening.report_accepted.sc",
           "event_type": "report_accepted",
           "recipient": "clinic",
-          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'sc' "
+          "bool_expr": "doc.fields.treatment.program && doc.fields.treatment.program === 'SC' "
         }
       ]
     }
