@@ -87,6 +87,9 @@ module.exports = {
     return config[key];
   },
   getAll: () => config,
+  getTranslations: () => {
+    return translations;
+  },
   init: () => {
     initFeed();
     return loadTranslations().then(initConfig);
