@@ -4,7 +4,7 @@
     <h:title>child nutrition followup</h:title>
     <model>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-02-12 10-57">
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-05 15-57">
           <inputs>
             <meta>
               <location>
@@ -24,22 +24,19 @@
           </inputs>
           <patient_name/>
           <patient_id/>
-          <age_in_days/>
           <enrollment_date/>
           <treatment_program/>
-          <context_gender/>
           <task/>
-          <unenrolled_note/>
-          <zscore>
+          <measurements>
             <gender/>
             <weight/>
             <height/>
-            <date_of_birth/>
-            <zscore_age/>
-            <zscore_wfh/>
-            <nn/>
-            <muac/>
-          </zscore>
+            <wfh/>
+            <nn3/>
+            <wfh_message/>
+            <zscore_wfh_note/>
+            <next_appointment/>
+          </measurements>
           <exit>
             <outcome/>
             <enrollment/>
@@ -50,10 +47,8 @@
           <summary>
             <n_2/>
             <n_4/>
-            <n_5/>
             <n_6/>
             <n_7/>
-            <n_8/>
             <n_9/>
             <n_10/>
             <n_11/>
@@ -73,20 +68,17 @@
       <bind nodeset="/nutrition_followup/inputs/contact/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/nutrition_followup/patient_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_followup/patient_id" type="string"/>
-      <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /nutrition_followup/zscore/date_of_birth )))" nodeset="/nutrition_followup/age_in_days" type="string"/>
       <bind calculate="instance('contact-summary')/context/enrollment_date" nodeset="/nutrition_followup/enrollment_date" type="string"/>
       <bind calculate="instance('contact-summary')/context/treatment_program" nodeset="/nutrition_followup/treatment_program" type="string"/>
-      <bind calculate="instance('contact-summary')/context/gender" nodeset="/nutrition_followup/context_gender" type="string"/>
-      <bind nodeset="/nutrition_followup/task" relevant=" /nutrition_followup/treatment_program  != ''" required="true()" type="select1"/>
-      <bind nodeset="/nutrition_followup/unenrolled_note" readonly="true()" relevant=" /nutrition_followup/treatment_program  = ''" type="string"/>
-      <bind nodeset="/nutrition_followup/zscore/gender" required="true()" type="select1"/>
-      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_followup/zscore/weight" required="true()" type="decimal"/>
-      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_followup/zscore/height" required="true()" type="decimal"/>
-      <bind constraint=". &lt;= today() and ((decimal-date-time(.)+1770) &gt;= decimal-date-time(today()))" nodeset="/nutrition_followup/zscore/date_of_birth" required="true()" type="date"/>
-      <bind calculate=" /nutrition_followup/age_in_days " nodeset="/nutrition_followup/zscore/zscore_age" type="string"/>
-      <bind nodeset="/nutrition_followup/zscore/zscore_wfh" required="true()" type="decimal"/>
-      <bind nodeset="/nutrition_followup/zscore/nn" readonly="true()" type="string"/>
-      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_followup/zscore/muac" type="decimal"/>
+      <bind nodeset="/nutrition_followup/task" required="true()" type="select1"/>
+      <bind nodeset="/nutrition_followup/measurements/gender" required="true()" type="select1"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_followup/measurements/weight" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_followup/measurements/height" required="true()" type="decimal"/>
+      <bind calculate="z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight )" nodeset="/nutrition_followup/measurements/wfh" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" type="string"/>
+      <bind calculate="if( /nutrition_followup/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -2 and  /nutrition_followup/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt;= 2 and  /nutrition_followup/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_followup/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_followup/measurements/wfh_message" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/zscore_wfh_note" readonly="true()" relevant=" /nutrition_followup/measurements/wfh  != ''" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/next_appointment" required="true()" type="date"/>
       <bind nodeset="/nutrition_followup/exit" relevant=" /nutrition_followup/task  = 'exit'"/>
       <bind nodeset="/nutrition_followup/exit/outcome" type="select1"/>
       <bind nodeset="/nutrition_followup/exit/enrollment" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
@@ -95,10 +87,8 @@
       <bind nodeset="/nutrition_followup/exit/enroll" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="select1"/>
       <bind nodeset="/nutrition_followup/summary/n_2" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_4" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_followup/summary/n_5" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_6" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_7" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_followup/summary/n_8" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_9" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_10" readonly="true()" relevant=" /nutrition_followup/task  = 'exit'" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_11" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
@@ -124,7 +114,7 @@
       </group>
     </group>
     <select1 ref="/nutrition_followup/task">
-      <label>What task would you like to perform?</label>
+      <label>What task would you like to perform? (<output value=" /nutrition_followup/treatment_program "/>)</label>
       <item>
         <label>Record <output value=" /nutrition_followup/treatment_program "/> follow up visit</label>
         <value>visit</value>
@@ -134,13 +124,10 @@
         <value>exit</value>
       </item>
     </select1>
-    <input ref="/nutrition_followup/unenrolled_note">
-      <label>This patient is not enrolled in any treatment program. Fill out their visit details below:</label>
-    </input>
-    <group appearance="zscore field-list" ref="/nutrition_followup/zscore">
-      <label></label>
-      <select1 appearance="zscore-sex" ref="/nutrition_followup/zscore/gender">
-        <label>Child gender</label>
+    <group appearance="field-list" ref="/nutrition_followup/measurements">
+      <label>Measurements</label>
+      <select1 ref="/nutrition_followup/measurements/gender">
+        <label>Gender</label>
         <item>
           <label>Male</label>
           <value>male</value>
@@ -150,23 +137,20 @@
           <value>female</value>
         </item>
       </select1>
-      <input appearance="zscore-weight" ref="/nutrition_followup/zscore/weight">
-        <label>Weight (kg)</label>
+      <input ref="/nutrition_followup/measurements/weight">
+        <label>Weight (kgs)</label>
       </input>
-      <input appearance="zscore-height" ref="/nutrition_followup/zscore/height">
-        <label>Height/Length (cm)</label>
+      <input ref="/nutrition_followup/measurements/height">
+        <label>Height (cms)</label>
       </input>
-      <input ref="/nutrition_followup/zscore/date_of_birth">
-        <label>Date of birth</label>
+      <input ref="/nutrition_followup/measurements/nn3">
+        <label>WFH: <output value=" /nutrition_followup/measurements/wfh "/></label>
       </input>
-      <input appearance="zscore-weight-for-height hidden" ref="/nutrition_followup/zscore/zscore_wfh">
-        <label>WFH</label>
+      <input ref="/nutrition_followup/measurements/zscore_wfh_note">
+        <label>weight for height: <output value=" /nutrition_followup/measurements/wfh_message "/></label>
       </input>
-      <input ref="/nutrition_followup/zscore/nn">
-        <label>WFH: <output value=" /nutrition_followup/zscore/zscore_wfh "/></label>
-      </input>
-      <input ref="/nutrition_followup/zscore/muac">
-        <label>MUAC Measurement</label>
+      <input ref="/nutrition_followup/measurements/next_appointment">
+        <label>Next appointment date</label>
       </input>
     </group>
     <group appearance="field-list" ref="/nutrition_followup/exit">
@@ -176,6 +160,14 @@
         <item>
           <label>Cured</label>
           <value>cured</value>
+        </item>
+        <item>
+          <label>Cured - Transfer to OTP</label>
+          <value>cured_otp</value>
+        </item>
+        <item>
+          <label>Cured - Transfer to SFP</label>
+          <value>cured_sfp</value>
         </item>
         <item>
           <label>Transfer to OTP</label>
@@ -196,6 +188,14 @@
         <item>
           <label>Non-responsive (non-recovered)</label>
           <value>nonresponsive</value>
+        </item>
+        <item>
+          <label>Dead</label>
+          <value>dead</value>
+        </item>
+        <item>
+          <label>Defaulter</label>
+          <value>defaulter</value>
         </item>
       </select1>
       <input ref="/nutrition_followup/exit/enrollment">
@@ -222,22 +222,16 @@
         <label>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</label>
       </input>
       <input ref="/nutrition_followup/summary/n_4">
-        <label>Gender: <output value=" /nutrition_followup/zscore/gender "/></label>
-      </input>
-      <input ref="/nutrition_followup/summary/n_5">
-        <label>Date of birth: <output value=" /nutrition_followup/zscore/date_of_birth "/></label>
+        <label>Gender: <output value=" /nutrition_followup/measurements/gender "/></label>
       </input>
       <input ref="/nutrition_followup/summary/n_6">
-        <label>Weight: <output value=" /nutrition_followup/zscore/weight "/> kg</label>
+        <label>Weight: <output value=" /nutrition_followup/measurements/weight "/> kg</label>
       </input>
       <input ref="/nutrition_followup/summary/n_7">
-        <label>Height: <output value=" /nutrition_followup/zscore/height "/> cm</label>
-      </input>
-      <input ref="/nutrition_followup/summary/n_8">
-        <label>MUAC: <output value=" /nutrition_followup/zscore/muac "/> cm</label>
+        <label>Height: <output value=" /nutrition_followup/measurements/height "/> cm</label>
       </input>
       <input ref="/nutrition_followup/summary/n_9">
-        <label>Weight for height z-score: <output value=" /nutrition_followup/zscore/zscore_wfh "/></label>
+        <label>Weight for height z-score: <output value=" /nutrition_followup/measurements/wfh "/></label>
       </input>
       <input ref="/nutrition_followup/summary/n_10">
         <label>Exit outcome: <output value=" /nutrition_followup/exit/outcome "/></label>

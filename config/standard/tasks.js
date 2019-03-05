@@ -322,7 +322,7 @@
     },
   },
 
-  // create nutrition screening task if degree of severity is moderate/severe
+  // create nutrition screening task if degree of severity is severe
   {
     icon: 'child',
     title: 'task.nutrition_screening.title',
@@ -330,14 +330,14 @@
     appliesToType: ['G'],
     appliesIf: function(c, r, i){
       /* jshint unused:vars */
-      return r.fields.severity === "2" || r.fields.severity === "3";
+      return r.fields.severity === "3";
     },
     actions: [{form: 'nutrition_screening'}],
     events: [{
       id: 'nutrition_screening',
       days: 2,
       start: 2,
-      end: 7
+      end: 0
     }],
     resolvedIf: function(c, r, event, dueDate){
       /* jshint unused:vars */
@@ -347,30 +347,30 @@
     }
   },
 
-  // create treatment enrollment task. enroll = 'yes' in ms & followup
-  // {
-  //   icon: 'child',
-  //   title: 'task.treatment_enrollment.title',
-  //   appliesTo: 'reports',
-  //   appliesToType: ['nutrition_screening', 'nutrition_followup'],
-  //   appliesIf: function(c, r, i){
-  //     /* jshint unused:vars */
-  //     return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
-  //   },
-  //   actions: [{form: 'treatment_enrollment'}],
-  //   events: [{
-  //     id: 'treatment-enrollment',
-  //     days: 2,
-  //     start: 2,
-  //     end: 7
-  //   }],
-  //   resolvedIf: function(c, r, event, dueDate){
-  //     /* jshint unused:vars */
-  //     return c.reports.some(function(r){
-  //       return r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.enroll === 'yes';
-  //     });
-  //   }
-  // },
+  // create nutrition screening task if degree of severity is moderate
+  {
+    icon: 'child',
+    title: 'task.nutrition_screening.title',
+    appliesTo: 'reports',
+    appliesToType: ['G'],
+    appliesIf: function(c, r, i){
+      /* jshint unused:vars */
+      return r.fields.severity === "2";
+    },
+    actions: [{form: 'nutrition_screening'}],
+    events: [{
+      id: 'nutrition_screening',
+      days: 21,
+      start: 14,
+      end: 0
+    }],
+    resolvedIf: function(c, r, event, dueDate){
+      /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_screening';
+      });
+    }
+  },
 
   // Create death confirmation task
   {

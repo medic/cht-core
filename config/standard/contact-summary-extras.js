@@ -385,25 +385,27 @@ function getSubsequentVisits(r) {
   return subsequentVisits;
 }
 
+function getEnrollmentReport(){
+  return reports.find(function(r){
+    return r.form === 'nutrition_screening' && r.fields.treatment.enroll === 'yes';
+  });
+}
+
 function getTreatmentEnrollmentDate(){
   var date = '';
-  reports.forEach(function(r){
-    if (r.form === 'treatment_enrollment'){
-      var d = new Date(0);
-      d.setUTCSeconds(r.reported_date/1000);
-      date = d.toISOString().slice(0, 10);
-    }
-  });
+  var enrollment_report = getEnrollmentReport();
+  if (enrollment_report){
+    var d = new Date(0);
+    d.setUTCSeconds(enrollment_report.reported_date/1000);
+    date = d.toISOString().slice(0, 10);
+  }
   return date;
 }
 
 function getTreatmentProgram(){
   var treatment_program = '';
-  reports.forEach(function(r){
-    if (r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.program){
-      treatment_program = r.fields.enrollment.program;
-    }
-  });
+  var enrollment_report = getEnrollmentReport();
+  if (enrollment_report) treatment_program = enrollment_report.fields.treatment.program;
   return treatment_program;
 }
 

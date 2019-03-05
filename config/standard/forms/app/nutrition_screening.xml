@@ -4,7 +4,7 @@
     <h:title>Nutrition Screening</h:title>
     <model>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-04 09-56">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-05 15-47">
           <inputs>
             <meta>
               <location>
@@ -27,7 +27,7 @@
           <patient_id/>
           <dob/>
           <age_in_days/>
-          <zscores>
+          <measurements>
             <gender/>
             <weight/>
             <height/>
@@ -44,7 +44,7 @@
             <zscore_wfa_note/>
             <zscore_hfa_note/>
             <zscore_wfh_note/>
-          </zscores>
+          </measurements>
           <treatment>
             <enroll/>
             <reason/>
@@ -106,22 +106,22 @@
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_screening/patient_id" type="string"/>
       <bind calculate="substr(../inputs/contact/date_of_birth, 0, 10)" nodeset="/nutrition_screening/dob" type="string"/>
       <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /nutrition_screening/dob )))" nodeset="/nutrition_screening/age_in_days" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/gender" required="true()" type="select1"/>
-      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_screening/zscores/weight" required="true()" type="decimal"/>
-      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_screening/zscores/height" required="true()" type="decimal"/>
-      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_screening/zscores/muac" required="false()" type="decimal"/>
-      <bind calculate="z-score('weight-for-age',  /nutrition_screening/zscores/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/zscores/weight )" nodeset="/nutrition_screening/zscores/wfa" type="string"/>
-      <bind calculate="z-score('height-for-age',  /nutrition_screening/zscores/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/zscores/height )" nodeset="/nutrition_screening/zscores/hfa" type="string"/>
-      <bind calculate="z-score('weight-for-height',  /nutrition_screening/zscores/gender ,  /nutrition_screening/zscores/height ,  /nutrition_screening/zscores/weight )" nodeset="/nutrition_screening/zscores/wfh" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/nn1" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/nn2" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/nn3" readonly="true()" type="string"/>
-      <bind calculate="if( /nutrition_screening/zscores/wfa  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/zscores/wfa  &lt; -3), &quot;&lt; -3SD [Severely Malnourished]&quot;, if( ( /nutrition_screening/zscores/wfa  &lt; -2 and  /nutrition_screening/zscores/wfa  &gt;= -3), &quot;-3SD to &lt; -2SD [Moderately Malnourished]&quot;, if( ( /nutrition_screening/zscores/wfa  &lt;= 2 and  /nutrition_screening/zscores/wfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/zscores/wfa  &gt; 2 and  /nutrition_screening/zscores/wfa  &lt;= 3), &quot;&gt;2SD [Overweight]&quot;, if( ( /nutrition_screening/zscores/wfa  &gt; 3 ), &quot;&gt;3SD [Obese]&quot;, &quot;&quot; ) ) ) ) ) )" nodeset="/nutrition_screening/zscores/wfa_message" type="string"/>
-      <bind calculate="if( /nutrition_screening/zscores/hfa  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/zscores/hfa  &lt; -3), &quot;&lt; -3SD [Severely Stunted]&quot;, if( ( /nutrition_screening/zscores/hfa  &lt; -2 and  /nutrition_screening/zscores/hfa  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Stunted]&quot;, if( ( /nutrition_screening/zscores/hfa  &lt;= 2 and  /nutrition_screening/zscores/hfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/zscores/hfa  &gt; 2), &quot;&gt;2SD [High]&quot;, &quot;&quot; ) ) ) ) )" nodeset="/nutrition_screening/zscores/hfa_message" type="string"/>
-      <bind calculate="if( /nutrition_screening/zscores/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/zscores/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_screening/zscores/wfh  &lt; -2 and  /nutrition_screening/zscores/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_screening/zscores/wfh  &lt;= 2 and  /nutrition_screening/zscores/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/zscores/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_screening/zscores/wfh_message" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/zscore_wfa_note" readonly="true()" relevant=" /nutrition_screening/zscores/wfa  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/zscore_hfa_note" readonly="true()" relevant=" /nutrition_screening/zscores/hfa  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/zscores/zscore_wfh_note" readonly="true()" relevant=" /nutrition_screening/zscores/wfh  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/gender" required="true()" type="select1"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_screening/measurements/weight" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_screening/measurements/height" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_screening/measurements/muac" required="false()" type="decimal"/>
+      <bind calculate="z-score('weight-for-age',  /nutrition_screening/measurements/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/measurements/weight )" nodeset="/nutrition_screening/measurements/wfa" type="string"/>
+      <bind calculate="z-score('height-for-age',  /nutrition_screening/measurements/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/measurements/height )" nodeset="/nutrition_screening/measurements/hfa" type="string"/>
+      <bind calculate="z-score('weight-for-height',  /nutrition_screening/measurements/gender ,  /nutrition_screening/measurements/height ,  /nutrition_screening/measurements/weight )" nodeset="/nutrition_screening/measurements/wfh" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/nn1" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/nn2" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/nn3" readonly="true()" type="string"/>
+      <bind calculate="if( /nutrition_screening/measurements/wfa  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/measurements/wfa  &lt; -3), &quot;&lt; -3SD [Severely Malnourished]&quot;, if( ( /nutrition_screening/measurements/wfa  &lt; -2 and  /nutrition_screening/measurements/wfa  &gt;= -3), &quot;-3SD to &lt; -2SD [Moderately Malnourished]&quot;, if( ( /nutrition_screening/measurements/wfa  &lt;= 2 and  /nutrition_screening/measurements/wfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/measurements/wfa  &gt; 2 and  /nutrition_screening/measurements/wfa  &lt;= 3), &quot;&gt;2SD [Overweight]&quot;, if( ( /nutrition_screening/measurements/wfa  &gt; 3 ), &quot;&gt;3SD [Obese]&quot;, &quot;&quot; ) ) ) ) ) )" nodeset="/nutrition_screening/measurements/wfa_message" type="string"/>
+      <bind calculate="if( /nutrition_screening/measurements/hfa  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/measurements/hfa  &lt; -3), &quot;&lt; -3SD [Severely Stunted]&quot;, if( ( /nutrition_screening/measurements/hfa  &lt; -2 and  /nutrition_screening/measurements/hfa  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Stunted]&quot;, if( ( /nutrition_screening/measurements/hfa  &lt;= 2 and  /nutrition_screening/measurements/hfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/measurements/hfa  &gt; 2), &quot;&gt;2SD [High]&quot;, &quot;&quot; ) ) ) ) )" nodeset="/nutrition_screening/measurements/hfa_message" type="string"/>
+      <bind calculate="if( /nutrition_screening/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_screening/measurements/wfh  &lt; -2 and  /nutrition_screening/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_screening/measurements/wfh  &lt;= 2 and  /nutrition_screening/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_screening/measurements/wfh_message" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/zscore_wfa_note" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/zscore_hfa_note" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/measurements/zscore_wfh_note" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  != ''" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/enroll" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/reason" relevant=" /nutrition_screening/treatment/enroll  = 'no'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/false_positive_confirmation" relevant=" /nutrition_screening/treatment/reason  = 'false_positive'" required="true()" type="select1"/>
@@ -191,9 +191,9 @@
         </input>
       </group>
     </group>
-    <group appearance="field-list" ref="/nutrition_screening/zscores">
+    <group appearance="field-list" ref="/nutrition_screening/measurements">
       <label>Measurements</label>
-      <select1 ref="/nutrition_screening/zscores/gender">
+      <select1 ref="/nutrition_screening/measurements/gender">
         <label>Gender</label>
         <item>
           <label>Male</label>
@@ -204,32 +204,32 @@
           <value>female</value>
         </item>
       </select1>
-      <input ref="/nutrition_screening/zscores/weight">
+      <input ref="/nutrition_screening/measurements/weight">
         <label>Weight (kgs)</label>
       </input>
-      <input ref="/nutrition_screening/zscores/height">
+      <input ref="/nutrition_screening/measurements/height">
         <label>Height (cms)</label>
       </input>
-      <input ref="/nutrition_screening/zscores/muac">
+      <input ref="/nutrition_screening/measurements/muac">
         <label>MUAC Measurement</label>
       </input>
-      <input ref="/nutrition_screening/zscores/nn1">
-        <label>WFA: <output value=" /nutrition_screening/zscores/wfa "/></label>
+      <input ref="/nutrition_screening/measurements/nn1">
+        <label>WFA: <output value=" /nutrition_screening/measurements/wfa "/></label>
       </input>
-      <input ref="/nutrition_screening/zscores/nn2">
-        <label>HFA: <output value=" /nutrition_screening/zscores/hfa "/></label>
+      <input ref="/nutrition_screening/measurements/nn2">
+        <label>HFA: <output value=" /nutrition_screening/measurements/hfa "/></label>
       </input>
-      <input ref="/nutrition_screening/zscores/nn3">
-        <label>WFH: <output value=" /nutrition_screening/zscores/wfh "/></label>
+      <input ref="/nutrition_screening/measurements/nn3">
+        <label>WFH: <output value=" /nutrition_screening/measurements/wfh "/></label>
       </input>
-      <input ref="/nutrition_screening/zscores/zscore_wfa_note">
-        <label>Weight for Age: <output value=" /nutrition_screening/zscores/wfa_message "/></label>
+      <input ref="/nutrition_screening/measurements/zscore_wfa_note">
+        <label>weight for age: <output value=" /nutrition_screening/measurements/wfa_message "/></label>
       </input>
-      <input ref="/nutrition_screening/zscores/zscore_hfa_note">
-        <label>Height for Age: <output value=" /nutrition_screening/zscores/hfa_message "/></label>
+      <input ref="/nutrition_screening/measurements/zscore_hfa_note">
+        <label>height for age: <output value=" /nutrition_screening/measurements/hfa_message "/></label>
       </input>
-      <input ref="/nutrition_screening/zscores/zscore_wfh_note">
-        <label>Weight for Height: <output value=" /nutrition_screening/zscores/wfh_message "/></label>
+      <input ref="/nutrition_screening/measurements/zscore_wfh_note">
+        <label>weight for height: <output value=" /nutrition_screening/measurements/wfh_message "/></label>
       </input>
     </group>
     <group appearance="field-list" ref="/nutrition_screening/treatment">
@@ -337,7 +337,7 @@
         </item>
         <item>
           <label>Referral to another clinic</label>
-          <value>another_clinic</value>
+          <value>other_clinic</value>
         </item>
       </select1>
       <select1 ref="/nutrition_screening/treatment/program">
@@ -353,6 +353,10 @@
         <item>
           <label>Stabilization Center</label>
           <value>sc</value>
+        </item>
+        <item>
+          <label>Others</label>
+          <value>other</value>
         </item>
       </select1>
       <input ref="/nutrition_screening/treatment/n1">
@@ -386,46 +390,46 @@
         <label>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</label>
       </input>
       <input ref="/nutrition_screening/summary/n_4">
-        <label>Gender: <output value=" /nutrition_screening/zscores/gender "/></label>
+        <label>Gender: <output value=" /nutrition_screening/measurements/gender "/></label>
       </input>
       <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_5">
         <label>Measurements&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</label>
       </input>
       <input ref="/nutrition_screening/summary/n_6">
-        <label>Weight: <output value=" /nutrition_screening/zscores/weight "/> kg</label>
+        <label>Weight: <output value=" /nutrition_screening/measurements/weight "/> kg</label>
       </input>
       <input ref="/nutrition_screening/summary/n_7">
-        <label>Height: <output value=" /nutrition_screening/zscores/height "/> cm</label>
+        <label>Height: <output value=" /nutrition_screening/measurements/height "/> cm</label>
       </input>
       <input ref="/nutrition_screening/summary/n_8">
-        <label>MUAC: <output value=" /nutrition_screening/zscores/muac "/> cm</label>
+        <label>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</label>
       </input>
       <input appearance="h2 blue" ref="/nutrition_screening/summary/n_9">
         <label>Weight for age</label>
       </input>
       <input ref="/nutrition_screening/summary/n_10">
-        <label>z-score: <output value=" /nutrition_screening/zscores/wfa "/></label>
+        <label>z-score: <output value=" /nutrition_screening/measurements/wfa "/></label>
       </input>
       <input ref="/nutrition_screening/summary/n_11">
-        <label>interpretation: <output value=" /nutrition_screening/zscores/wfa_message "/></label>
+        <label>interpretation: <output value=" /nutrition_screening/measurements/wfa_message "/></label>
       </input>
       <input appearance="h2 blue" ref="/nutrition_screening/summary/n_12">
         <label>Height for age</label>
       </input>
       <input ref="/nutrition_screening/summary/n_13">
-        <label>z-score: <output value=" /nutrition_screening/zscores/hfa "/></label>
+        <label>z-score: <output value=" /nutrition_screening/measurements/hfa "/></label>
       </input>
       <input ref="/nutrition_screening/summary/n_14">
-        <label>interpretation: <output value=" /nutrition_screening/zscores/hfa_message "/></label>
+        <label>interpretation: <output value=" /nutrition_screening/measurements/hfa_message "/></label>
       </input>
       <input appearance="h2 blue" ref="/nutrition_screening/summary/n_15">
         <label>Weight for height</label>
       </input>
       <input ref="/nutrition_screening/summary/n_16">
-        <label>z-score: <output value=" /nutrition_screening/zscores/wfh "/></label>
+        <label>z-score: <output value=" /nutrition_screening/measurements/wfh "/></label>
       </input>
       <input ref="/nutrition_screening/summary/n_17">
-        <label>interpretation: <output value=" /nutrition_screening/zscores/wfh_message "/></label>
+        <label>interpretation: <output value=" /nutrition_screening/measurements/wfh_message "/></label>
       </input>
       <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_19">
         <label>Treatment enrollment</label>
