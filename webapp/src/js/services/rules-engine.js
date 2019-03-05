@@ -33,7 +33,6 @@ var nools = require('nools'),
         };
       }
 
-      /* eslint-disable-next-line angular/deferred */
       var complete = $q.defer();
       var callbacks = {};
       callbacks[FIRST_RUN_COMPLETE_TYPE] = {

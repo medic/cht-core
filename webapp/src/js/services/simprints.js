@@ -22,7 +22,6 @@ angular.module('inboxServices').service('Simprints',
       var requestId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
       currentRequest = {
         id: requestId,
-      /* eslint-disable-next-line angular/deferred */
         deferred: $q.defer()
       };
       // `call` needed to specify context: #3511

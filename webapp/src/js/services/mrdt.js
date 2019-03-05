@@ -23,7 +23,6 @@ angular.module('inboxServices').service('MRDT',
         }
       },
       verify: function() {
-        /* eslint-disable-next-line angular/deferred */
         current = $q.defer();
         $window.medicmobile_android.mrdt_verify();
         return current.promise;

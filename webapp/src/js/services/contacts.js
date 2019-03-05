@@ -34,21 +34,21 @@ angular.module('inboxServices').factory('Contacts',
      * @param: types (array), eg: ['district_hospital', 'clinic']
      */
     return function(types) {
-      return $q((resolve, reject) => {
-        if (!types || types.indexOf('person') !== -1) {
-          // For admins this involves downloading a _huge_ amount of data.
-          return reject(new Error('Call made to Contacts requesting Person data'));
-        }
-        var relevantCaches = types.map(function(type) {
-          return cacheByType[type];
-        });
-        parallel(relevantCaches, function(err, results) {
-          if (err) {
-            return reject(err);
-          }
-          resolve(_.flatten(results));
-        });
+      var deferred = $q.defer();
+      if (!types || types.indexOf('person') !== -1) {
+        // For admins this involves downloading a _huge_ amount of data.
+        return deferred.reject(new Error('Call made to Contacts requesting Person data'));
+      }
+      var relevantCaches = types.map(function(type) {
+        return cacheByType[type];
       });
+      parallel(relevantCaches, function(err, results) {
+        if (err) {
+          return deferred.reject(err);
+        }
+        deferred.resolve(_.flatten(results));
+      });
+      return deferred.promise;
     };
   }
 );

@@ -17,7 +17,6 @@
     "angular/module-getter": "error",
     "angular/module-setter": "error",
     "angular/no-private-call": "error",
-    "angular/deferred": "error",
     "angular/di-unused": "error",
     "angular/on-watch": "error",
     "angular/no-cookiestore": "error",
