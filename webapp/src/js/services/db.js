@@ -8,11 +8,10 @@ const META_DB_SUFFIX = 'meta';
 angular.module('inboxServices').factory('DB',
   function(
     $timeout,
-    $window,
     Location,
-    pouchDB,
     POUCHDB_OPTIONS,
-    Session
+    Session,
+    pouchDB
   ) {
 
     'use strict';

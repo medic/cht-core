@@ -4,20 +4,20 @@ var _ = require('underscore'),
 angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
     $log,
-    $q,
     $scope,
     $state,
     $stateParams,
+    $timeout,
     $translate,
     Auth,
     Changes,
+    ContactChangeFilter,
     ContactViewModelGenerator,
+    Debounce,
     Snackbar,
     TasksForContact,
     TranslateFrom,
-    UserSettings,
-    ContactChangeFilter,
-    Debounce
+    UserSettings
   ) {
 
     'use strict';
@@ -78,22 +78,21 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             'ContactsContentCtrl',
             function(areTasksEnabled, tasks) {
               if ($scope.selected) {
-                tasks.forEach(function(task) {
-                  task.title = translate(task.title, task);
-                  task.priorityLabel = translate(task.priorityLabel, task);
+                $timeout(() => {
+                  tasks.forEach(function(task) {
+                    task.title = translate(task.title, task);
+                    task.priorityLabel = translate(task.priorityLabel, task);
+                  });
+                  $scope.selected.areTasksEnabled = areTasksEnabled;
+                  $scope.selected.tasks = tasks;
+                  children.forEach(function(child) {
+                    child.taskCount = tasks.filter(function(task) {
+                      return task.doc &&
+                             task.doc.contact &&
+                             task.doc.contact._id === child.doc._id;
+                    }).length;
+                  });
                 });
-                $scope.selected.areTasksEnabled = areTasksEnabled;
-                $scope.selected.tasks = tasks;
-                children.forEach(function(child) {
-                  child.taskCount = tasks.filter(function(task) {
-                    return task.doc &&
-                           task.doc.contact &&
-                           task.doc.contact._id === child.doc._id;
-                  }).length;
-                });
-                if (!$scope.$$phase) {
-                  $scope.$apply();
-                }
               }
             });
         })

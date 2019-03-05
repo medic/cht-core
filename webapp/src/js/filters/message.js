@@ -5,8 +5,6 @@ var format = require('../modules/format'),
 
   'use strict';
 
-  var module = angular.module('inboxFilters');
-
   var getFormName = function(record, forms) {
     var form = _.findWhere(forms, { code: record.form });
     if (form) {
@@ -15,7 +13,7 @@ var format = require('../modules/format'),
     return record.form;
   };
 
-  module.filter('summary', function(
+  angular.module('inboxFilters').filter('summary', function(
     $translate
   ) {
     'ngInject';
@@ -39,7 +37,7 @@ var format = require('../modules/format'),
     };
   });
 
-  module.filter('title', function(
+  angular.module('inboxFilters').filter('title', function(
     $translate
   ) {
     'ngInject';
@@ -57,7 +55,7 @@ var format = require('../modules/format'),
     };
   });
 
-  module.filter('clinic', function(
+  angular.module('inboxFilters').filter('clinic', function(
     $log,
     $state
   ) {
@@ -68,7 +66,7 @@ var format = require('../modules/format'),
     };
   });
 
-  module.filter('lineage', function(
+  angular.module('inboxFilters').filter('lineage', function(
     $state
   ) {
     'ngInject';

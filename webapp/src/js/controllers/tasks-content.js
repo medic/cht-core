@@ -6,12 +6,11 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $state,
     $translate,
     Actions,
-    DB,
     Enketo,
     Geolocation,
+    Snackbar,
     Telemetry,
     TranslateFrom,
-    Snackbar,
     XmlForm
   ) {
 

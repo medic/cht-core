@@ -2,8 +2,6 @@
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
   var getWithRemoteFallback = function(DB, id) {
     return DB()
       .get(id)
@@ -13,7 +11,7 @@
       });
   };
 
-  inboxServices.factory('UserSettings',
+  angular.module('inboxServices').factory('UserSettings',
     function(
       $q,
       DB,

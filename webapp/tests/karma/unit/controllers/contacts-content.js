@@ -12,7 +12,8 @@ describe('ContactsContentCtrl', () => {
       changesCallback,
       changesFilter,
       contactChangeFilter = sinon.stub(),
-      debounce;
+      debounce,
+      timeout;
 
   const childPerson = {
     _id: 'peach',
@@ -66,7 +67,7 @@ describe('ContactsContentCtrl', () => {
 
   beforeEach(module('inboxApp'));
 
-  beforeEach(inject((_$rootScope_, $controller) => {
+  beforeEach(inject((_$rootScope_, $controller, _$timeout_) => {
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
     scope.setSelected = selected => scope.selected = selected;
@@ -79,6 +80,7 @@ describe('ContactsContentCtrl', () => {
       go: sinon.stub()
     };
 
+    timeout = _$timeout_;
     controller = $controller;
 
     contactViewModelGenerator = sinon.stub();
@@ -101,6 +103,7 @@ describe('ContactsContentCtrl', () => {
       stateParams = { id: doc._id };
       stubContactViewModelGenerator(doc, childrenArray);
       return createController().setupPromise.then(() => {
+        timeout.flush();
         assert(scope.selected, 'selected should be set on the scope');
         return scope.selected;
       });

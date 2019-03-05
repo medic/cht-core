@@ -2,9 +2,8 @@ angular.module('inboxControllers').controller('BulkDeleteConfirm',
   function(
     $scope,
     $timeout,
-    $window,
-    $translate,
     $uibModalInstance,
+    $window,
     DeleteDocs
   ) {
     'use strict';

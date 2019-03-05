@@ -6,8 +6,8 @@ var DEFAULT_LOCALE = 'en',
 angular.module('inboxServices').factory('TranslationLoader',
   function(
     $q,
-    Settings,
-    DB
+    DB,
+    Settings
   ) {
     'use strict';
     'ngInject';

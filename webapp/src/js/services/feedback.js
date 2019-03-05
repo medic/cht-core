@@ -3,9 +3,9 @@
  */
 angular.module('inboxServices').factory('Feedback',
   function(
+    APP_CONFIG,
     DB,
-    Session,
-    APP_CONFIG
+    Session
   ) {
 
     'ngInject';

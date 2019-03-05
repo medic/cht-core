@@ -1,9 +1,10 @@
-angular.module('services').factory('Blob', function() {
+angular.module('services').factory('Blob', function($window) {
   'use strict';
+  'ngInject';
 
   var blobify = function(str, mime) {
     var blob = new Blob([ str ], { type: mime });
-    return (window.URL || window.webkitURL).createObjectURL(blob);
+    return ($window.URL || $window.webkitURL).createObjectURL(blob);
   };
 
   return {

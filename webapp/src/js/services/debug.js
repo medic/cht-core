@@ -8,12 +8,23 @@
  *   - display $log.debug() output throughout the app
  *
  */
-angular.module('inboxServices').config([
-  '$provide', '$logProvider', function($provide, $logProvider) {
+angular.module('inboxServices').config(
+  function(
+    $logProvider,
+    $provide
+  ) {
     'use strict';
+    'ngInject';
 
     $provide.service('Debug', [
-      '$window', 'ipCookie', 'pouchDB', function($window, ipCookie, pouchDB) {
+      '$window',
+      'ipCookie',
+      'pouchDB',
+      function(
+        $window,
+        ipCookie,
+        pouchDB
+      ) {
         var cookieName = 'medic-webapp-debug';
         var get = function() {
           return Boolean(ipCookie(cookieName));
@@ -38,4 +49,4 @@ angular.module('inboxServices').config([
       }
     ]);
   }
-]);
+);

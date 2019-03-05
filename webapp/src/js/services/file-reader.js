@@ -1,7 +1,7 @@
-angular.module('inboxServices').service('FileReader', [
-  '$q',
+angular.module('inboxServices').service('FileReader',
   function($q) {
     'use strict';
+    'ngInject';
 
     return {
       base64: readerThat('readAsDataURL'),
@@ -26,4 +26,4 @@ angular.module('inboxServices').service('FileReader', [
       };
     }
   }
-]);
+);

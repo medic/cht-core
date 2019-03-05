@@ -22,8 +22,6 @@ var _ = require('underscore');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
   var getLabel = function(labels, locale) {
     locale = locale || 'en';
 
@@ -48,8 +46,9 @@ var _ = require('underscore');
     return labels;
   };
 
-  inboxServices.factory('TranslateFrom', ['$translate',
+  angular.module('inboxServices').factory('TranslateFrom',
     function($translate) {
+      'ngInject';
       return function(labels, scope) {
         if (!labels) {
           return;
@@ -61,6 +60,6 @@ var _ = require('underscore');
         return _.template(label)(scope);
       };
     }
-  ]);
+  );
 
 }());

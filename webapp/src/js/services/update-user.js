@@ -2,12 +2,9 @@
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('UpdateUser',
+  angular.module('inboxServices').factory('UpdateUser',
     function(
       $http,
-      $location,
       $log,
       $window
     ) {

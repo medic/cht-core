@@ -10,10 +10,10 @@ angular.module('inboxServices').factory('AndroidApi',
     $rootScope,
     $state,
     $window,
+    Feedback,
     MRDT,
     Session,
-    Simprints,
-    Feedback
+    Simprints
   ) {
 
     'use strict';
