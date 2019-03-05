@@ -137,6 +137,8 @@ const PAGE_SIZE = 50;
         });
       }
 
+      console.log('SEARCHING', actualFilter, options, extensions, docIds);
+
       return Search('contacts', actualFilter, options, extensions, docIds)
         .then(function(contacts) {
           // If you have a home place make sure its at the top

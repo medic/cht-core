@@ -163,7 +163,9 @@ angular.module('inboxServices').service('ContactSchema',
     return {
       get: function(type) {
         if(type) {
-          return getSchema()[type];
+          // TODO replace with settings lookup
+          const s = getSchema()[type];
+          return s || getSchema()['clinic'];
         } else {
           return getSchema();
         }

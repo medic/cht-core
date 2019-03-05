@@ -1,5 +1,5 @@
 function(doc) {
-  var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+  var types = [ 'contact', 'district_hospital', 'health_center', 'clinic', 'person' ];
   var idx = types.indexOf(doc.type);
   if (idx !== -1) {
     var place = doc.parent;

@@ -14,6 +14,7 @@ angular.module('inboxServices').factory('GetSummaries',
     // this workaround is no longer needed.
     // https://github.com/medic/medic/issues/4666
     var summarise = function(doc) {
+      console.log('summarising', doc);
       if (!doc) {
         return;
       }
@@ -88,7 +89,8 @@ angular.module('inboxServices').factory('GetSummaries',
           lineage: getLineage(doc.contact && doc.contact.parent),
           subject: getSubject(doc)
         };
-      } else if (doc.type === 'clinic' ||
+      } else if (doc.type === 'contact' ||
+          doc.type === 'clinic' ||
           doc.type === 'district_hospital' ||
           doc.type === 'health_center' ||
           doc.type === 'person') { // contact
@@ -121,6 +123,7 @@ angular.module('inboxServices').factory('GetSummaries',
         var summaries = _.map(response.rows, function(row) {
           return summarise(row.doc);
         });
+        console.log('got summaries', summaries);
         return summaries.filter(function(summary) {
           return summary;
         });

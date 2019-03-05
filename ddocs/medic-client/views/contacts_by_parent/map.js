@@ -1,5 +1,6 @@
 function(doc) {
-  if (doc.type === 'clinic' ||
+  if (doc.type === 'contact' ||
+      doc.type === 'clinic' ||
       doc.type === 'health_center' ||
       doc.type === 'district_hospital' ||
       doc.type === 'person') {

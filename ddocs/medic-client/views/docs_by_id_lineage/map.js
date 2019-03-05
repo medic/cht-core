@@ -7,7 +7,7 @@ function(doc) {
     }
   };
 
-  var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+  var types = [ 'contact', 'district_hospital', 'health_center', 'clinic', 'person' ];
 
   if (types.indexOf(doc.type) !== -1) {
     // contact
