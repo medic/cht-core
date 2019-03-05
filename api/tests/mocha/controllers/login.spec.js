@@ -21,14 +21,16 @@ describe('login controller', () => {
     req = {
       query: {},
       body: {},
-      hostname: 'xx.app.medicmobile.org'
+      hostname: 'xx.app.medicmobile.org',
+      headers: {cookie: ''}
     };
     res = {
       redirect: () => {},
       send: () => {},
       status: () => {},
       json: () => {},
-      cookie: () => {}
+      cookie: () => {},
+      clearCookie: () => {}
     };
     originalEnvironment = Object.assign(environment);
 
@@ -250,6 +252,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');     
       const status = sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
+      const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(false);
@@ -277,6 +280,8 @@ describe('login controller', () => {
         chai.expect(cookie.args[2][0]).to.equal('locale');
         chai.expect(cookie.args[2][1]).to.equal('es');
         chai.expect(cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(clearCookie.callCount).to.equal(1);
+        chai.expect(clearCookie.args[0][0]).to.equal('login');
       });
     });
 
