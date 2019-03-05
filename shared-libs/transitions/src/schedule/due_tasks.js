@@ -2,9 +2,9 @@
 //       gateway queries, it's not slow or complicated.
 const async = require('async'),
   moment = require('moment'),
-  config = require('../config'),
   utils = require('../lib/utils'),
   date = require('../date'),
+  config = require('../config'),
   db = require('../db'),
   lineage = require('@medic/lineage')(Promise, db.medic),
   messageUtils = require('@medic/message-utils');
