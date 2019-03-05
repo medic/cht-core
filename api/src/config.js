@@ -75,7 +75,7 @@ const loadSettings = function() {
 };
 
 const initTransitionLib = () => {
-  transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
+  transitionsLib = require('medic-transitions-beta')(db, settings, translationCache, logger);
   transitionsLib.loadTransitions(true);
 };
 
