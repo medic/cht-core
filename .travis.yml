@@ -44,7 +44,6 @@ before_script:
   - |
     if [[ -z "$UPLOAD_URL" ]]; then
       export EXTERNAL_CONTRIBUTOR=true
-      export BUILDS_SERVER=$EXTERNAL_SERVER
     fi
   - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/${BUILDS_SERVER}"
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
