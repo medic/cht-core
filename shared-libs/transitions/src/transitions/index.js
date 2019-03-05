@@ -8,7 +8,6 @@ const _ = require('underscore'),
       infodoc = require('../lib/infodoc'),
       uuid = require('uuid');
 
-
 /*
  * Add new transitions here to make them available for configuration and execution.
  * Transitions are executed in the order they appear in this array.
@@ -44,6 +43,7 @@ const transitions = [];
  * Load transitions using `require` based on what is in AVAILABLE_TRANSITIONS
  * constant and what is enabled in the `transitions` property in the settings
  * data.  Log warnings on failure.
+ * Using synchronous param, only loads transitions that are NOT marked to only be executed asynchronously.
  */
 const loadTransitions = (synchronous = false) => {
   const self = module.exports;
@@ -191,6 +191,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
+// applies all loaded transitions over a change
 const processChange = (change, callback) => {
   lineage
     .fetchHydratedDoc(change.id)
