@@ -293,5 +293,19 @@ describe('transitions', () => {
     assert.equal(transitions._loadTransition.calledWith('default_responses'), true);
     assert.equal(transitions._loadTransition.calledWith('muting'), true);
   });
+
+  it('should empty transitions list when one fails', () => {
+    sinon.stub(config, 'get').returns({
+      death_reporting: { disable: true, async: false },
+      update_clinics: true,
+      default_responses: true,
+      muting: { async: true }
+    });
+
+    sinon.stub(transitions, '_loadTransition');
+    transitions._loadTransition.withArgs('muting').throws({ some: 'err' });
+    assert.throws(transitions.loadTransitions);
+    assert.deepEqual(transitions._transitions(), []);
+  });
 });
 
