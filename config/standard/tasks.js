@@ -291,8 +291,9 @@
     icon: 'immunization',
     title: 'task.immunization_missing_visit.title',
     appliesTo: 'scheduled_tasks',
-    appliesToType: ['CW', 'child_health_registration'],
+    appliesToType: ['C', 'CW', 'child_health_registration'],
     appliesIf: function(c, r, i) {
+      console.log("imm applies: ", isCoveredByUseCase(c.contact, 'imm') && immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1);
       return (
         isCoveredByUseCase(c.contact, 'imm') &&
         immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1
@@ -310,11 +311,66 @@
     resolvedIf: function(c, r, event, dueDate, i) {
       // Resolved if the scheduled SMS that generated the task is cleared,
       //          if an immunization report has been received in time window starting at SMS send date
+      console.log("^^^^^^^^^^^^^^^^ imm missing visit ^^^^^^^^^^^^^^^^^^^");
       return (
         r.scheduled_tasks[i].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
           immunizationForms,
+          Utils.addDate(dueDate, -event.days).getTime(),
+          Utils.addDate(dueDate, event.end + 1).getTime()
+        )
+      );
+    },
+  },
+
+  // followup tasks as per schedule
+  {
+    icon: 'child',
+    title: 'task.nutrition_followup.title',
+    appliesTo: 'scheduled_tasks',
+    appliesToType: ['nutrition_screening'],
+    appliesIf: function(c, r, i) {
+      // if OTP: 1 - 12
+      // if SFP: 1 -7##
+      // if SC: 1
+      console.log("########## task.nutrition_followup.title ######################");
+      console.log(c);
+      console.log(r);
+      console.log(i);
+      console.log("isCoveredByUseCase(c.contact, 'gmp'): ", isCoveredByUseCase(c.contact, 'gmp'));
+      // return isCoveredByUseCase(c.contact, 'gmp');
+      // if (i === 4){
+      //
+      // }
+      console.log("applies if: ", isCoveredByUseCase(c.contact, 'gmp') && [2,3].indexOf(r.scheduled_tasks[i].group) !== -1);
+      return (
+        isCoveredByUseCase(c.contact, 'gmp') &&
+        [2,3].indexOf(r.scheduled_tasks[i].group) !== -1
+      );
+      // return true;
+    },
+    actions: [{ form: 'nutrition_followup' }],
+    events: [
+      {
+        id: 'nutrition-followup-missing-visit',
+        days: 0,
+        start: 0,
+        end: 3,
+      },
+    ],
+    resolvedIf: function(c, r, event, dueDate, i) {
+      console.log("************resolvedIf*************************");
+      console.log("i: ", i);
+      console.log(c);
+      console.log(r);
+      console.log(event);
+      console.log(dueDate);
+      return (
+        r.scheduled_tasks[i].state === 'cleared' ||
+        isFormFromArraySubmittedInWindow(
+          c.reports,
+          ['nutrition_followup', 'CF'],
           Utils.addDate(dueDate, -event.days).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )

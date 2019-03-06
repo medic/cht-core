@@ -4,7 +4,7 @@
     <h:title>Nutrition Screening</h:title>
     <model>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-05 16-21">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-06 12-45">
           <inputs>
             <meta>
               <location>
@@ -129,9 +129,9 @@
       <bind nodeset="/nutrition_screening/treatment/admission_criteria" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select"/>
       <bind nodeset="/nutrition_screening/treatment/facility" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/program" relevant=" /nutrition_screening/treatment/facility  = 'clinic'" required="true()" type="select1"/>
-      <bind nodeset="/nutrition_screening/treatment/n1" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'otp'" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n2" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'sfp'" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n3" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'sc'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n1" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'OTP'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n2" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SFP'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n3" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SC'" type="string"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_screening/treatment/target_weight" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
       <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_screening/treatment/target_muac" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
       <bind nodeset="/nutrition_screening/treatment/additional_notes" type="string"/>
