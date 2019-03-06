@@ -364,9 +364,9 @@ module.exports = function(grunt) {
             'webapp/src/js/modules/xpath-element-path.js',
             'api/src/extracted-resources/**/*',
             '**/node_modules/**',
-            'sentinel/src/lib/pupil/**',
             'build/**',
-            'config/**'
+            'config/**',
+            'shared-libs/transitions/src/lib/pupil/**',
           ];
 
           return [cmd]
@@ -946,8 +946,8 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Unit tests', [
     'karma:unit',
     'karma:admin',
-    'exec:shared-lib-unit',
     'env:unit-test',
+    'exec:shared-lib-unit',
     'mochaTest:unit',
     'env:general',
   ]);

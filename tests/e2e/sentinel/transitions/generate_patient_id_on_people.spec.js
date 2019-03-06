@@ -2,7 +2,7 @@ const utils = require('../../../utils'),
       sentinelUtils = require('../utils'),
       uuid = require('uuid');
 
-describe('death_reporting', () => {
+describe('generate_patient_id_on_people', () => {
   afterAll(done => utils.revertDb().then(done));
   afterEach(done => utils.revertDb([], true).then(done));
 

@@ -3,7 +3,8 @@ const controller = require('../../../src/controllers/records'),
       db = require('../../../src/db'),
       auth = require('../../../src/auth'),
       recordUtils = require('../../../src/controllers/record-utils'),
-      sinon = require('sinon');
+      sinon = require('sinon'),
+      config = require('../../../src/config');
 
 describe('records controller', () => {
 
@@ -11,7 +12,7 @@ describe('records controller', () => {
     sinon.restore();
   });
 
-  it('create calls createRecordByJSON if json type', done => {
+  it('create calls createRecordByJSON if json type', () => {
     sinon.stub(auth, 'check').resolves();
     const reqIs = sinon.stub().returns(false);
     reqIs.withArgs('json').returns('json'); // yes, it actually returns 'json'
@@ -27,19 +28,29 @@ describe('records controller', () => {
       is: reqIs
     };
     const res = { json: json };
-    controller.v2(req, res).then(() => {
+
+    const transitionsLib = { processDocs: sinon.stub()};
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.processDocs.callsFake(docs => {
+      const copy = JSON.parse(JSON.stringify(docs));
+      copy.forEach(doc => doc.transitioned = true);
+      return Promise.resolve(copy);
+    });
+
+    return controller.v2(req, res).then(() => {
       chai.expect(json.callCount).to.equal(1);
       chai.expect(json.args[0][0]).to.deep.equal({ success: true, id: 'xyz' });
       chai.expect(createRecordByJSON.callCount).to.equal(1);
       chai.expect(createRecordByJSON.args[0][0]).to.deep.equal(req.body);
       chai.expect(createByForm.callCount).to.equal(0);
       chai.expect(post.callCount).to.equal(1);
-      chai.expect(post.args[0][0]).to.deep.equal({ message: 'one' });
-      done();
+      chai.expect(post.args[0][0]).to.deep.equal({ message: 'one', transitioned: true });
+      chai.expect(transitionsLib.processDocs.callCount).to.equal(1);
+      chai.expect(transitionsLib.processDocs.args[0]).to.deep.equal([[{ message: 'one' }]]);
     });
   });
 
-  it('create calls createByForm if urlencoded type', done => {
+  it('create calls createByForm if urlencoded type', () => {
     sinon.stub(auth, 'check').resolves();
     const reqIs = sinon.stub().returns(false);
     reqIs.withArgs('urlencoded').returns('urlencoded');
@@ -55,15 +66,24 @@ describe('records controller', () => {
       is: reqIs
     };
     const res = { json: json };
-    controller.v2(req, res).then(() => {
+    const transitionsLib = { processDocs: sinon.stub()};
+    sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+    transitionsLib.processDocs.callsFake(docs => {
+      const copy = JSON.parse(JSON.stringify(docs));
+      copy.forEach(doc => doc.transitioned = true);
+      return Promise.resolve(copy);
+    });
+
+    return controller.v2(req, res).then(() => {
       chai.expect(json.callCount).to.equal(1);
       chai.expect(json.args[0][0]).to.deep.equal({ success: true, id: 'zyx' });
       chai.expect(createRecordByJSON.callCount).to.equal(0);
       chai.expect(createByForm.callCount).to.equal(1);
       chai.expect(createByForm.args[0][0]).to.deep.equal(req.body);
       chai.expect(post.callCount).to.equal(1);
-      chai.expect(post.args[0][0]).to.deep.equal({ message: 'one' });
-      done();
+      chai.expect(post.args[0][0]).to.deep.equal({ message: 'one', transitioned: true });
+      chai.expect(transitionsLib.processDocs.callCount).to.equal(1);
+      chai.expect(transitionsLib.processDocs.args[0]).to.deep.equal([[{ message: 'one' }]]);
     });
   });
 
