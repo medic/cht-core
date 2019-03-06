@@ -93,7 +93,7 @@ angular.module('inboxServices').factory('Feedback',
             return callback(err);
           }
 
-          DB().post(doc, callback);
+          DB({meta: true}).post(doc, callback);
         });
       }
     };
