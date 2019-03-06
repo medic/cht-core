@@ -6,8 +6,8 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $window,
     DB,
     Debug,
-    Session,
-    ResourceIcons
+    ResourceIcons,
+    Session
   ) {
     'use strict';
     'ngInject';

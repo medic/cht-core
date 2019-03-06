@@ -8,8 +8,8 @@ angular.module('inboxServices').service('Enketo',
   function(
     $log,
     $q,
-    $translate,
     $timeout,
+    $translate,
     $window,
     AddAttachment,
     ContactSummary,
@@ -25,8 +25,8 @@ angular.module('inboxServices').service('Enketo',
     SubmitFormBySms,
     TranslateFrom,
     UserContact,
-    XmlForm,
     XSLT,
+    XmlForm,
     ZScore
   ) {
     'use strict';

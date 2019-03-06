@@ -1,12 +1,10 @@
-var inboxServices = angular.module('inboxServices');
-
 /**
  * Supports a small subset of MarkDown and converts this to HTML: _, __, *, **, []()
  * Also converts newline characters
  *
  * Not supported: escaping and other MarkDown syntax
  */
-inboxServices.factory('Markdown', [
+angular.module('inboxServices').factory('Markdown',
   function() {
     'use strict';
 
@@ -59,4 +57,4 @@ inboxServices.factory('Markdown', [
       element: translateElement,
     };
   }
-]);
+);

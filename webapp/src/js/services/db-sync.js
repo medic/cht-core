@@ -9,7 +9,15 @@ const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATE
 
 angular
   .module('inboxServices')
-  .factory('DBSync', function($interval, $log, $q, $window, Auth, DB, Session) {
+  .factory('DBSync', function(
+    $interval,
+    $log,
+    $q,
+    $window,
+    Auth,
+    DB,
+    Session
+  ) {
     'use strict';
     'ngInject';
 

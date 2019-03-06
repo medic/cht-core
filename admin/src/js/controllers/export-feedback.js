@@ -1,6 +1,11 @@
 angular
   .module('controllers')
-  .controller('ExportFeedbackCtrl', function($log, $scope, DB, Export) {
+  .controller('ExportFeedbackCtrl', function(
+    $log,
+    $scope,
+    DB,
+    Export
+  ) {
     'use strict';
     'ngInject';
 

@@ -2,7 +2,6 @@ angular.module('controllers').controller('DeleteUserCtrl',
   function (
     $rootScope,
     $scope,
-    $translate,
     $uibModalInstance,
     DeleteUser
   ) {

@@ -10,11 +10,8 @@ var nools = require('nools'),
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('RulesEngine',
+  angular.module('inboxServices').factory('RulesEngine',
     function(
-      $log,
       $q,
       Changes,
       ContactSchema,

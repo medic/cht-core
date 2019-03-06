@@ -15,12 +15,11 @@
 
   'use strict';
 
-  var module = angular.module('inboxFilters');
-
-  module.filter('translateFrom', ['TranslateFrom',
+  angular.module('inboxFilters').filter('translateFrom',
     function(TranslateFrom) {
+      'ngInject';
       return TranslateFrom;
     }
-  ]);
+  );
 
 }());

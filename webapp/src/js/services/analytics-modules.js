@@ -4,9 +4,7 @@ var _ = require('underscore');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('AnalyticsModules',
+  angular.module('inboxServices').factory('AnalyticsModules',
     function(
       $log,
       $q,
