@@ -13,7 +13,8 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     Languages,
     Session,
     SetLanguage,
-    UpdateUser
+    UpdateUser,
+    Settings
   ) {
 
     'ngInject';
@@ -23,6 +24,10 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
 
     Languages().then(function(languages) {
       $scope.enabledLocales = languages;
+    });
+
+    Settings().then(function(settings) {
+      $scope.selectedLanguage = settings.locale;
     });
 
     Language()
@@ -44,9 +49,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     };
 
     $scope.submit = function() {
-      if (typeof $scope.selectedLanguage === 'undefined') {
-        $scope.changeLanguage('en');
-      }
+      $scope.changeLanguage($scope.selectedLanguage);
       $scope.setProcessing();
       return UpdateUser(Session.userCtx().name, { language: $scope.selectedLanguage })
         .then(function() {
@@ -66,9 +69,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     };
 
     $scope.$on('modal.closing', function() {
-      if ($scope.selectedLanguage.toString() === 'undefined') {
-        $scope.changeLanguage('en');
-      }
+      $scope.changeLanguage($scope.selectedLanguage);
     });
   }
 );
