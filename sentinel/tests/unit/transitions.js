@@ -287,6 +287,4 @@ describe('transitions', () => {
       assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
     });
   });
-
-
 });

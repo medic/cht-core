@@ -48,8 +48,9 @@ const transitions = [];
 const loadTransitions = (synchronous = false) => {
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
-  transitions.splice(0, transitions.length);
   let loadError = false;
+
+  transitions.splice(0, transitions.length);
 
   // Load all configured transitions
   AVAILABLE_TRANSITIONS.forEach(transition => {
@@ -63,7 +64,7 @@ const loadTransitions = (synchronous = false) => {
     }
 
     try {
-      transitions.push(self._loadTransition(transition));
+      self._loadTransition(transition);
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
@@ -95,7 +96,7 @@ const loadTransition = key => {
     transition.init();
   }
 
-  return { key: key, module: transition };
+  transitions.push({ key: key, module: transition });
 };
 
 /*
@@ -134,6 +135,28 @@ const canRun = ({ key, change, transition }) => {
       !isRevSame(doc, info) &&
       transition.filter(doc, info)
   );
+};
+
+
+/*
+ * Returns true if we have changes from transitions, otherwise transitions
+ * did nothing and saving is unnecessary.  If results has a true value in
+ * it then a change was made.
+ * Minifies lineage before calling back.
+ */
+const finalize = ({ change, results }, callback) => {
+  logger.debug(`transition results: ${JSON.stringify(results)}`);
+
+  lineage.minify(change.doc);
+  const changed = _.some(results, i => Boolean(i));
+  if (!changed) {
+    logger.debug(
+      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
+    );
+    return callback();
+  }
+
+  callback(null, true);
 };
 
 /*
@@ -292,28 +315,6 @@ const applyTransitions = (change, callback) => {
    * save or not.
    */
   async.series(operations, (err, results) => finalize({ change, results }, callback));
-};
-
-
-/*
- * Returns true if we have changes from transitions, otherwise transitions
- * did nothing and saving is unnecessary.  If results has a true value in
- * it then a change was made.
- * Minifies lineage before calling back.
- */
-const finalize = ({ change, results }, callback) => {
-  logger.debug(`transition results: ${JSON.stringify(results)}`);
-
-  lineage.minify(change.doc);
-  const changed = _.some(results, i => Boolean(i));
-  if (!changed) {
-    logger.debug(
-      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
-    );
-    return callback();
-  }
-
-  callback(null, true);
 };
 
 const availableTransitions = () => {
