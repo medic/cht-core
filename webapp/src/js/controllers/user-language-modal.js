@@ -6,15 +6,14 @@
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
   function(
     $log,
-    $q,
     $scope,
     $uibModalInstance,
     Language,
     Languages,
     Session,
     SetLanguage,
-    UpdateUser,
-    Settings
+    Settings,
+    UpdateUser
   ) {
 
     'ngInject';

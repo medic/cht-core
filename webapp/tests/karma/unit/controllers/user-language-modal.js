@@ -7,6 +7,7 @@ describe('UserLanguageModalCtrl controller', function() {
       stubLanguage,
       stubLanguages,
       stubUpdateUser,
+      stubSettings,
       spyUibModalInstance;
 
 
@@ -26,6 +27,8 @@ describe('UserLanguageModalCtrl controller', function() {
       { code: 'en', name: 'English' },
       { code: 'sw', name: 'Swahili' }
     ]));
+    stubSettings = sinon.stub();
+    stubSettings.returns(Promise.resolve());
     spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
     stubUpdateUser = sinon.stub();
     stubUpdateUser.returns(Promise.resolve());
@@ -41,13 +44,14 @@ describe('UserLanguageModalCtrl controller', function() {
         'UpdateUser': stubUpdateUser,
         'Language': stubLanguage,
         'Languages': stubLanguages,
+        'Settings': stubSettings,
         '$q': Q
       });
     };
   }));
 
   afterEach(function() {
-    KarmaUtils.restore(stubSetLanguage, stubLanguage, stubLanguages, stubUpdateUser, spyUibModalInstance);
+    KarmaUtils.restore(stubSetLanguage, stubLanguage, stubLanguages, stubSettings, stubUpdateUser, spyUibModalInstance);
   });
 
   it('changes language on user selection', function() {
@@ -136,6 +140,6 @@ describe('UserLanguageModalCtrl controller', function() {
     scope.changeLanguage(selectedLang);
     scope.submit();
     chai.assert(stubUpdateUser.called, 'Should return english when no language selected');
-    chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal('en');
+    chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal(undefined);
   });
 });
