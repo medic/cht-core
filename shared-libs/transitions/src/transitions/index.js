@@ -147,7 +147,6 @@ const canRun = ({ key, change, transition }) => {
 const finalize = ({ change, results }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
-  lineage.minify(change.doc);
   const changed = _.some(results, i => Boolean(i));
   if (!changed) {
     logger.debug(
@@ -156,6 +155,7 @@ const finalize = ({ change, results }, callback) => {
     return callback();
   }
 
+  lineage.minify(change.doc);
   callback(null, true);
 };
 
@@ -280,7 +280,6 @@ const processDocs = docs => {
             }
 
             // doc was not changed by any transition, so we return the original doc
-            // some transitions add errors to the doc but return false, so we can't assume that change.doc is clean
             const idx = idsByIdx.findIndex(id => id === change.id);
             return err ? callback(err) : callback(null, docs[idx]);
           });
