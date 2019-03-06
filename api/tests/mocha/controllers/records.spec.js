@@ -33,7 +33,7 @@ describe('records controller', () => {
     };
     const res = { json: json };
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.processDocs.callsFake(docs => docs);
+    transitionsLib.processDocs.callsFake(docs => Promise.resolve(docs));
 
     controller.v2(req, res).then(() => {
       chai.expect(json.callCount).to.equal(1);
@@ -64,7 +64,7 @@ describe('records controller', () => {
     };
     const res = { json: json };
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.processDocs.callsFake(docs => docs);
+    transitionsLib.processDocs.callsFake(docs => Promise.resolve(docs));
 
     controller.v2(req, res).then(() => {
       chai.expect(json.callCount).to.equal(1);
