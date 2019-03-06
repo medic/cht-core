@@ -1,4 +1,5 @@
-const logger = require('./lib/logger');
+const logger = require('./lib/logger'),
+      _ = require('underscore');
 const { UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
@@ -34,5 +35,5 @@ if (UNIT_TEST_ENV) {
 }
 
 module.exports.init = db => {
-  module.exports = Object.assign(module.exports, db);
+  Object.assign(module.exports, _.omit(db, 'init'));
 };
