@@ -1,7 +1,14 @@
 const db = require('../db'),
       auth = require('../auth'),
       serverUtils = require('../server-utils'),
-      recordUtils = require('./record-utils');
+      recordUtils = require('./record-utils'),
+      config = require('../config');
+
+const runTransitions = doc => {
+  return config.getTransitionsLib()
+    .processDocs([doc])
+    .then(docs => docs[0]);
+};
 
 const generate = (req, options) => {
   if (req.is('urlencoded')) {
@@ -16,6 +23,7 @@ const generate = (req, options) => {
 const process = (req, res, options) => {
   return auth.check(req, 'can_create_records')
     .then(() => generate(req, options))
+    .then(doc => runTransitions(doc))
     .then(doc => db.medic.post(doc))
     .then(result => res.json({ success: true, id: result.id }))
     .catch(err => serverUtils.error(err, req, res));

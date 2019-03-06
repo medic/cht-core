@@ -2,7 +2,7 @@ const utils = require('../../../utils'),
       sentinelUtils = require('../utils'),
       uuid = require('uuid');
 
-describe('resolve_pending', () => {
+describe('update_clinics', () => {
   afterAll(done => utils.revertDb().then(done));
   afterEach(done => utils.revertDb([], true).then(done));
 

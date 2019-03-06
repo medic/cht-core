@@ -62,6 +62,7 @@ if (UNIT_TEST_ENV) {
   DB.setMaxListeners(0);
   module.exports.medic = DB;
   module.exports.medicUsersMeta = DBUsersMeta;
+  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`);
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name
