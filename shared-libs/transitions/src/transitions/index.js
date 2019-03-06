@@ -39,6 +39,85 @@ const AVAILABLE_TRANSITIONS = [
 
 const transitions = [];
 
+// applies all loaded transitions over a change
+const processChange = (change, callback) => {
+  lineage
+    .fetchHydratedDoc(change.id)
+    .then(doc => {
+      change.doc = doc;
+      return infodoc.get(change).then(infoDoc => {
+        change.info = infoDoc;
+        // Remove transitions from doc since those
+        // will be handled by the info doc(sentinel db) after this
+        if (change.doc.transitions) {
+          delete change.doc.transitions;
+        }
+        applyTransitions(change, callback);
+      });
+    })
+    .catch(err => {
+      logger.error('transitions: fetch failed for %s : %o', change.id, err);
+      return callback(err);
+    });
+};
+
+// given a collection of docs this function will:
+// - deep clone the docs, to keep the original version of them safe
+// - add _id properties to the docs that are missing them
+// - hydrate the docs and generate info docs
+// - run loaded transitions over all docs
+// - returns docs, either updated or their original version
+const processDocs = docs => {
+  if (!transitions.length) {
+    return Promise.resolve(docs);
+  }
+
+  let changes;
+  const clonedDocs = JSON.parse(JSON.stringify(docs)),
+        idsByIdx = [];
+  // keep a way to link the changed doc to the original doc
+  // there may be no reliable way to uniquely identify any of these docs
+  clonedDocs.forEach((doc, idx) => {
+    doc._id = doc._id || uuid();
+    idsByIdx[idx] = doc._id;
+  });
+
+  return lineage
+    .hydrateDocs(clonedDocs)
+    .then(hydratedDocs => {
+      changes = hydratedDocs.map(doc => ({ id: doc._id, doc: doc, seq: null }));
+      return infodoc.bulkGet(changes);
+    })
+    .then(infoDocs => {
+      changes.forEach(change => {
+        change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
+      });
+      return infodoc.bulkUpdate(infoDocs);
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        const operations = changes.map(change => callback => {
+          module.exports.applyTransitions(change, (err, changed) => {
+            if (!err && changed) {
+              return callback(null, change.doc);
+            }
+
+            // doc was not changed by any transition, so we return the original doc
+            const idx = idsByIdx.findIndex(id => id === change.id);
+            return err ? callback(err) : callback(null, docs[idx]);
+          });
+        });
+        async.series(operations, (err, results) => {
+          return err ? reject(err) : resolve(results);
+        });
+      });
+    })
+    .catch(err => {
+      logger.error('Error when running transitions over docs', err);
+      return docs;
+    });
+};
+
 /*
  * Load transitions using `require` based on what is in AVAILABLE_TRANSITIONS
  * constant and what is enabled in the `transitions` property in the settings
@@ -137,7 +216,6 @@ const canRun = ({ key, change, transition }) => {
   );
 };
 
-
 /*
  * Returns true if we have changes from transitions, otherwise transitions
  * did nothing and saving is unnecessary.  If results has a true value in
@@ -214,85 +292,6 @@ const applyTransition = ({ key, change, transition }, callback) => {
       });
     })
     .then(changed => callback(null, changed)); // return the promise instead
-};
-
-// applies all loaded transitions over a change
-const processChange = (change, callback) => {
-  lineage
-    .fetchHydratedDoc(change.id)
-    .then(doc => {
-      change.doc = doc;
-      return infodoc.get(change).then(infoDoc => {
-        change.info = infoDoc;
-        // Remove transitions from doc since those
-        // will be handled by the info doc(sentinel db) after this
-        if (change.doc.transitions) {
-          delete change.doc.transitions;
-        }
-        applyTransitions(change, callback);
-      });
-    })
-    .catch(err => {
-      logger.error('transitions: fetch failed for %s : %o', change.id, err);
-      return callback(err);
-    });
-};
-
-// given a collection of docs this function will:
-// - deep clone the docs, to keep the original version of them safe
-// - add _id properties to the docs that are missing them
-// - hydrate the docs and generate info docs
-// - run loaded transitions over all docs
-// - returns docs, either updated or their original version
-const processDocs = docs => {
-  if (!transitions.length) {
-    return Promise.resolve(docs);
-  }
-
-  let changes;
-  const clonedDocs = JSON.parse(JSON.stringify(docs)),
-        idsByIdx = [];
-  // keep a way to link the changed doc to the original doc
-  // there may be no reliable way to uniquely identify any of these docs
-  clonedDocs.forEach((doc, idx) => {
-    doc._id = doc._id || uuid();
-    idsByIdx[idx] = doc._id;
-  });
-
-  return lineage
-    .hydrateDocs(clonedDocs)
-    .then(hydratedDocs => {
-      changes = hydratedDocs.map(doc => ({ id: doc._id, doc: doc, seq: null }));
-      return infodoc.bulkGet(changes);
-    })
-    .then(infoDocs => {
-      changes.forEach(change => {
-        change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
-      });
-      return infodoc.bulkUpdate(infoDocs);
-    })
-    .then(() => {
-      return new Promise((resolve, reject) => {
-        const operations = changes.map(change => callback => {
-          module.exports.applyTransitions(change, (err, changed) => {
-            if (!err && changed) {
-              return callback(null, change.doc);
-            }
-
-            // doc was not changed by any transition, so we return the original doc
-            const idx = idsByIdx.findIndex(id => id === change.id);
-            return err ? callback(err) : callback(null, docs[idx]);
-          });
-        });
-        async.series(operations, (err, results) => {
-          return err ? reject(err) : resolve(results);
-        });
-      });
-    })
-    .catch(err => {
-      logger.error('Error when running transitions over docs', err);
-      return docs;
-    });
 };
 
 const applyTransitions = (change, callback) => {
