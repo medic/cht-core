@@ -261,15 +261,10 @@ const saveDoc = (change, callback) => {
  * change/write.
  */
 const applyTransition = ({ key, change, transition }, callback) => {
-  if (!canRun({ key, change, transition })) {
-    logger.debug(
-      `canRun test failed on transition ${transition.key} for doc ${change.id} seq ${change.seq}`
-    );
-    return callback();
-  }
-
   logger.debug(
-    `calling transition.onMatch for doc ${change.id} and transition ${key} seq ${change.seq}`
+    `calling transition.onMatch for doc ${change.id} seq ${
+      change.seq
+    } and transition ${key}`
   );
 
   /*
