@@ -6,10 +6,6 @@ const chai = require('chai'),
       config = require('../../../src/config'),
       sinon = require('sinon');
 
-const transitionsLib = {
-  processDocs: sinon.stub()
-};
-
 describe('sms-gateway controller', () => {
 
   afterEach(() => {
@@ -18,6 +14,7 @@ describe('sms-gateway controller', () => {
 
   it('get() should report sms-gateway compatibility', () => {
     const results = controller.get();
+    const transitionsLib = { processDocs: sinon.stub()};
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
     transitionsLib.processDocs.resolves([]);
     chai.expect(results['medic-gateway']).to.equal(true);
@@ -45,8 +42,13 @@ describe('sms-gateway controller', () => {
       ]
     } };
 
+    const transitionsLib = { processDocs: sinon.stub()};
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.processDocs.callsFake(docs => Promise.resolve(docs));
+    transitionsLib.processDocs.callsFake(docs => {
+      const copy = JSON.parse(JSON.stringify(docs));
+      copy.forEach(doc => doc.transitioned = true);
+      return Promise.resolve(copy);
+    });
 
     // when
     return controller.post(req).then(() => {
@@ -57,11 +59,16 @@ describe('sms-gateway controller', () => {
       chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
       chai.expect(createRecord.args[2][0]).to.deep.equal({ gateway_ref: '3', from: '+3', message: 'three' });
       chai.expect(transitionsLib.processDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0]).to.deep.equal([
+      chai.expect(transitionsLib.processDocs.args[0]).to.deep.equal([[
         { message: 'one' },
         { message: 'two' },
         { message: 'three' }
+      ]]);
+      chai.expect(bulkDocs.callCount).to.equal(1);
+      chai.expect(bulkDocs.args[0][0]).to.deep.equal([
+        { message: 'one', transitioned: true },
+        { message: 'two', transitioned: true },
+        { message: 'three', transitioned: true }
       ]);
     });
   });
@@ -83,6 +90,7 @@ describe('sms-gateway controller', () => {
       ],
     } };
 
+    const transitionsLib = { processDocs: sinon.stub()};
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
     transitionsLib.processDocs.resolves([]);
 
@@ -170,6 +178,7 @@ describe('sms-gateway controller', () => {
       ]
     } };
 
+    const transitionsLib = { processDocs: sinon.stub()};
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
     transitionsLib.processDocs.resolves([]);
 
