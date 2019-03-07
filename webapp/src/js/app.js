@@ -115,11 +115,6 @@ _.templateSettings = {
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
-        var parsedUrl = new URL(url);
-        if (parsedUrl.pathname === '/') {
-          // The URL has been cached using Service worker
-          url = url + 'api/info';
-        }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);

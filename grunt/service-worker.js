@@ -7,6 +7,7 @@ function registerServiceWorkerTasks(grunt) {
     const { staticDirectoryPath, scriptOutputPath } = this.data;
     writeServiceWorkerFile(staticDirectoryPath, scriptOutputPath)
       .then(done)
+      .then(grunt.task.run('exec:cat-generated-service-worker'))
       .catch(error => {
         grunt.fail.warn(error);
         done();
@@ -21,7 +22,7 @@ function writeServiceWorkerFile(staticDirectoryPath, outputPath) {
     claimsClient: true,
     skipWaiting: true,
     directoryIndex: false,
-    handleFetch: true,
+    handleFetch: false,
     staticFileGlobs: [
       path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
       path.join(staticDirectoryPath, 'manfiest.json'),
