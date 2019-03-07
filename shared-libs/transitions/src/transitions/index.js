@@ -74,7 +74,7 @@ const processDocs = docs => {
 
   let changes;
   const clonedDocs = JSON.parse(JSON.stringify(docs)),
-        idsByIdx = [];
+        idsByIdx = new Array(clonedDocs.length);
   // keep a way to link the changed doc to the original doc
   // there may be no reliable way to uniquely identify any of these docs
   clonedDocs.forEach((doc, idx) => {
@@ -136,14 +136,13 @@ const loadTransitions = (synchronous = false) => {
     const conf = transitionsConfig[transition];
 
     const disabled = conf && conf.disable;
-    const allowSync = conf && !conf.async;
 
-    if (!conf || disabled || (!allowSync && synchronous)) {
+    if (!conf || disabled) {
       return logger.warn(`Disabled transition "${transition}"`);
     }
 
     try {
-      self._loadTransition(transition);
+      self._loadTransition(transition, synchronous);
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
@@ -168,9 +167,15 @@ const loadTransitions = (synchronous = false) => {
   }
 };
 
-const loadTransition = key => {
+const loadTransition = (key, synchronous) => {
   logger.info(`Loading transition "${key}"`);
   const transition = require('./' + key);
+
+  if (synchronous && transition.asynchronousOnly) {
+    logger.info(`Skipping asynchronous transition "${key}"`);
+    return;
+  }
+
   if (transition.init) {
     transition.init();
   }

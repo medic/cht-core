@@ -2,9 +2,14 @@ const config = require('./config'),
       db = require('./db'),
       logger = require('./lib/logger');
 
+let inited = false;
+
 module.exports = (sourceDb, settings, translations, sourceLogger) => {
-  logger.init(sourceLogger);
-  db.init(sourceDb);
+  if (!inited) {
+    logger.init(sourceLogger);
+    db.init(sourceDb);
+    inited = true;
+  }
   config.init(settings, translations);
 
   const transitions = require('./transitions');

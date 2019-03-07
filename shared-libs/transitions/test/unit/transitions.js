@@ -9,6 +9,8 @@ const requiredFunctions = {
   filter: 1,
 };
 
+const asyncOnlyTransitions = ['muting', 'update_notifications', 'multi_report_alerts'];
+
 describe('transitions', () => {
   afterEach(() => sinon.restore());
 
@@ -248,6 +250,10 @@ describe('transitions', () => {
           'Function takes the wrong number of parameters'
         );
       });
+
+      it('Checking for asynchronousOnly flag', () => {
+        assert(asyncOnlyTransitions.includes(name) ? transition.asynchronousOnly : !transition.asynchronousOnly);
+      });
     });
   });
 
@@ -267,43 +273,50 @@ describe('transitions', () => {
 
   it('loadTransitions loads synchronous transitions only', () => {
     sinon.stub(config, 'get').returns({
-      death_reporting: { disable: true, async: false },
+      death_reporting: { disable: true },
       update_clinics: true,
       default_responses: true,
-      muting: { async: true }
+      muting: true
     });
-    sinon.stub(transitions, '_loadTransition');
+    sinon.spy(transitions, '_loadTransition');
     transitions.loadTransitions(true);
-    assert.equal(transitions._loadTransition.callCount, 2);
-    assert.equal(transitions._loadTransition.calledWith('update_clinics'), true);
-    assert.equal(transitions._loadTransition.calledWith('default_responses'), true);
+    assert.equal(transitions._loadTransition.callCount, 3);
+    assert.equal(transitions._loadTransition.calledWith('update_clinics', true), true);
+    assert.equal(transitions._loadTransition.calledWith('default_responses', true), true);
+    assert.equal(transitions._loadTransition.calledWith('muting', true), true);
+    assert.deepEqual(transitions._transitions().map(tr => tr.key), ['update_clinics', 'default_responses']);
   });
 
   it('loads all enabled transitions when async', () => {
     sinon.stub(config, 'get').returns({
-      death_reporting: { disable: true, async: false },
+      death_reporting: { disable: true },
       update_clinics: true,
       default_responses: true,
-      muting: { async: true }
+      muting: true
     });
-    sinon.stub(transitions, '_loadTransition');
+    sinon.spy(transitions, '_loadTransition');
+    const muting = require('../../src/transitions/muting');
+    sinon.stub(muting, 'init').returns();
+
     transitions.loadTransitions(false);
     assert.equal(transitions._loadTransition.callCount, 3);
-    assert.equal(transitions._loadTransition.calledWith('update_clinics'), true);
-    assert.equal(transitions._loadTransition.calledWith('default_responses'), true);
-    assert.equal(transitions._loadTransition.calledWith('muting'), true);
+    assert.equal(transitions._loadTransition.calledWith('update_clinics', false), true);
+    assert.equal(transitions._loadTransition.calledWith('default_responses', false), true);
+    assert.equal(transitions._loadTransition.calledWith('muting', false), true);
+    assert.deepEqual(transitions._transitions().map(tr => tr.key), ['update_clinics', 'default_responses', 'muting']);
+    assert.equal(muting.init.callCount, 1);
   });
 
   it('should empty transitions list when one fails', () => {
     sinon.stub(config, 'get').returns({
-      death_reporting: { disable: true, async: false },
+      death_reporting: { disable: true },
       update_clinics: true,
       default_responses: true,
-      muting: { async: true }
+      muting: true
     });
 
     sinon.stub(transitions, '_loadTransition');
-    transitions._loadTransition.withArgs('muting').throws({ some: 'err' });
+    transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
   });
