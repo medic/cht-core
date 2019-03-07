@@ -6,7 +6,7 @@ const _ = require('underscore'),
       metadata = require('./lib/metadata'),
       tombstoneUtils = require('@medic/tombstone-utils'),
       transitionsLib = require('./config').getTransitionsLib(),
-      PROCESSING_DELAY = 50, // ms
+      PROCESSING_DELAY = 0, // ms
       PROGRESS_REPORT_INTERVAL = 500; // items
 
 let changesFeed,
