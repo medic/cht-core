@@ -131,5 +131,6 @@ module.exports = {
     } else {
       messages.addError(doc, `Failed to complete muting request, event type "${eventType}" misconfigured.`);
     }
-  }
+  },
+  asynchronousOnly: true
 };

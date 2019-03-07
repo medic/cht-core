@@ -23,11 +23,11 @@ describe('due tasks', () => {
   });
 
   it('set all due scheduled tasks to pending', done => {
-    const due = moment().toISOString(),
-          due1 = moment().subtract(2, 'day').toISOString(),
-          due2 = moment().subtract(3, 'day').toISOString(),
-          notDue = moment().add(7, 'days').toISOString();
-    const id = 'xyz';
+    var due = moment().toISOString();
+    var notDue = moment()
+      .add(7, 'days')
+      .toISOString();
+    var id = 'xyz';
 
     var doc = {
       scheduled_tasks: [
@@ -41,16 +41,6 @@ describe('due tasks', () => {
           state: 'scheduled',
           message: 'y'
         },
-        {
-          due: due1,
-          state: 'scheduled',
-          message: 'z'
-        },
-        {
-          due: due2,
-          state: 'scheduled',
-          message: 't'
-        },
       ],
     };
     var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
@@ -60,16 +50,6 @@ describe('due tasks', () => {
           key: due,
           doc: doc,
         },
-        {
-          id: id,
-          key: due1,
-          doc: doc,
-        },
-        {
-          id: id,
-          key: due2,
-          doc: doc,
-        }
       ],
     });
 
@@ -84,12 +64,14 @@ describe('due tasks', () => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       var saved = saveDoc.firstCall.args[0];
-      assert.equal(saved.scheduled_tasks.length, 4);
-      assert.equal(setTaskState.callCount, 3);
-
-      assert(setTaskState.calledWithMatch({ due: due, state: 'scheduled' }, 'pending'));
-      assert(setTaskState.calledWithMatch({ due: due1, state: 'scheduled' }, 'pending'));
-      assert(setTaskState.calledWithMatch({ due: due2, state: 'scheduled' }, 'pending'));
+      assert.equal(saved.scheduled_tasks.length, 2);
+      assert.equal(setTaskState.callCount, 1);
+      assert(
+        setTaskState.calledWithMatch(
+          { due: due, state: 'scheduled' },
+          'pending'
+        )
+      );
 
       assert.equal(hydrate.callCount, 1);
       assert.deepEqual(hydrate.args[0][0], [doc]);

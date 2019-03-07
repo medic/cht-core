@@ -1,6 +1,7 @@
 // TODO: this doesn't need to exist. We can just work this out dynamically when
 //       gateway queries, it's not slow or complicated.
 const async = require('async'),
+  _ = require('underscore'),
   moment = require('moment'),
   utils = require('../lib/utils'),
   date = require('../date'),
@@ -50,15 +51,9 @@ module.exports = {
           return callback(err);
         }
 
-        const objs = result.rows.reduce((objs, row) => {
-          if (!objs[row.id]) {
-            row.keys = [];
-            objs[row.id] = row;
-          }
-          objs[row.id].keys.push(row.key);
-
-          return objs;
-        }, {});
+        var objs = _.unique(result.rows, false, function(row) {
+          return row.id;
+        });
 
         async.forEachSeries(
           objs,
@@ -74,7 +69,7 @@ module.exports = {
                   var updatedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
-                    if (obj.keys.includes(task.due)) {
+                    if (task.due === obj.key) {
                       if (!task.messages) {
                         const content = {
                           translationKey: task.message_key,

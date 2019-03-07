@@ -2,9 +2,9 @@ let config = {},
     translations = {};
 
 module.exports = {
-  init: (c, t) => {
-    config = Object.assign({}, c);
-    translations = Object.assign({}, t);
+  init: (sourceConfig, sourceTranslations) => {
+    config = sourceConfig;
+    translations = sourceTranslations;
   },
 
   get: key => config[key],
