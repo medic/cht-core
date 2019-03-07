@@ -649,7 +649,8 @@ describe('transitions', () => {
 
     // we already killed patient 3 in the test above
     messages.find(message => message.id === 'dead').content = 'DEATH patient4';
-    messages.find(message => message.id === 'mute').content = 'DEATH patient3';
+    // we already muted patient4 in the test above
+    messages.find(message => message.id === 'mute').content = 'MUTE patient3';
 
     let ids;
 
