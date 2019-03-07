@@ -105,14 +105,14 @@ require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
 
-var app = angular.module('adminApp', [
+angular.module('adminApp', [
+  'ngRoute',
   'controllers',
   'directives',
   'filters',
   'inboxFilters',
   'inboxServices',
   'ipCookie',
-  'ngRoute',
   'pascalprecht.translate',
   'pouchdb',
   'services',
@@ -120,7 +120,7 @@ var app = angular.module('adminApp', [
   'ui.router',
 ]);
 
-app.constant('POUCHDB_OPTIONS', {
+angular.module('adminApp').constant('POUCHDB_OPTIONS', {
   local: { auto_compaction: true },
   remote: {
     skip_setup: true,
@@ -132,16 +132,7 @@ app.constant('POUCHDB_OPTIONS', {
   }
 });
 
-var request = new XMLHttpRequest();
-request.open('GET', '/api/db', false);
-request.send(null);
-
-if (request.status === 200) {
-  const jsonResp = JSON.parse(request.responseText);
-  app.constant('DB_NAME', jsonResp.name);
-}
-
-app.config(function(
+angular.module('adminApp').config(function(
   $compileProvider,
   $locationProvider,
   $stateProvider,
