@@ -89,7 +89,7 @@ describe('processDocs', () => {
 
     // first doc is updated by at least one transition
     transitions.applyTransition
-      .withArgs(sinon.match({ change: { id: '1' } }))
+      .withArgs(sinon.match({ change: sinon.match({ id: '1' }) }))
       .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
     // second doc is not touched by any transition
     transitions.applyTransition
@@ -117,69 +117,6 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '1', from: 1, contact: true })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '2', from: 2 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
-    });
-  });
-
-  it('should return errors as results when saving fails', () => {
-    const docs = [{ _id: '1', from: 1 }, { _id: '2', from: 2 }, { _id: '3', from: 3 }, { _id: '4', from: 4 }],
-          hydratedDocs = [
-            { _id: '1', from: 1, patient: 'a' },
-            { _id: '2', from: 2, patient: 'b' },
-            { _id: '3', from: 3, patient: 'c' },
-            { _id: '4', from: 4, patient: 'd' }],
-          infoDocs = [
-            { _id: '1-info', doc_id: '1' },
-            { _id: '2-info', doc_id: '2' },
-            { _id: '3-info', doc_id: '3' },
-            { _id: '4-info', doc_id: '4' }
-            ];
-
-    sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
-    sinon.stub(transitions._lineage, 'hydrateDocs').resolves(hydratedDocs);
-
-    sinon.stub(infodoc, 'bulkGet').resolves(infoDocs);
-    sinon.stub(infodoc, 'bulkUpdate').resolves();
-    sinon.stub(transitions, 'applyTransition');
-    sinon.stub(db.medic, 'put')
-      .withArgs(sinon.match({ _id: '1' })).callsArgWith(1, null, { ok: true })
-      .withArgs(sinon.match({ _id: '2' })).callsArgWith(1, { error: 'error' })
-      .withArgs(sinon.match({ _id: '3' })).callsArgWith(1, null, { ok: true })
-      .withArgs(sinon.match({ _id: '4' })).callsArgWith(1, { error: 'error' });
-
-    // first doc is updated by at least one transition
-    transitions.applyTransition
-      .withArgs(sinon.match({ change: ({ id: '1' }) }))
-      .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
-    transitions.applyTransition
-      .withArgs(sinon.match({ change: { id: '2' } }))
-      .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
-    transitions.applyTransition
-      .withArgs(sinon.match({ change: { id: '3' } }))
-      .callsFake((params, cb) => cb());
-    transitions.applyTransition
-      .withArgs(sinon.match({ change: { id: '4' } }))
-      .callsFake((params, cb) => cb());
-
-
-    transitions.loadTransitions();
-    return transitions.processDocs(docs).then(results => {
-      chai.expect(transitions._lineage.hydrateDocs.callCount).to.equal(1);
-      chai.expect(infodoc.bulkGet.callCount).to.equal(1);
-      chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
-      chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([infoDocs]);
-      chai.expect(transitions.applyTransition.callCount).to.equal(4);
-      console.log(require('util').inspect(transitions.applyTransition.args, { depth: 100 }));
-      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '1', doc: hydratedDocs[0], info: infoDocs[0] }})).to.equal(true);
-      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '2', doc: hydratedDocs[1], info: infoDocs[1] }})).to.equal(true);
-      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '3', doc: docs[2], info: infoDocs[2] }})).to.equal(true);
-      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '4', doc: docs[3], info: infoDocs[3] }})).to.equal(true);
-
-      chai.expect(results).to.deep.equal([{ ok: true }, { error: 'error' }, { ok: true }, { error: 'error' }]);
-      chai.expect(db.medic.put.callCount).to.equal(4);
-      chai.expect(db.medic.put.calledWith({ _id: '1', from: 1, contact: true })).to.equal(true);
-      chai.expect(db.medic.put.calledWith({ _id: '2', from: 2, contact: true })).to.equal(true);
-      chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
-      chai.expect(db.medic.put.calledWith({ _id: '4', from: 4 })).to.equal(true);
     });
   });
 });

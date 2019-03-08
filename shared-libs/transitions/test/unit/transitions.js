@@ -9,12 +9,7 @@ const requiredFunctions = {
   filter: 1,
 };
 
-const asyncOnlyTransitions = [
-  'muting',
-  'update_notifications',
-  'multi_report_alerts',
-  'generate_patient_id_on_people'
-];
+const asyncOnlyTransitions = ['muting', 'update_notifications', 'multi_report_alerts'];
 
 describe('transitions', () => {
   afterEach(() => sinon.restore());
