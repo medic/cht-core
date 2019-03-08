@@ -128,6 +128,7 @@ app.use(
           `'self'`,
           'data:' // unsafe
         ],
+        mediaSrc: [`'self'`],
         scriptSrc: [
           `'self'`,
           `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
