@@ -287,4 +287,36 @@ describe('transitions', () => {
       assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
     });
   });
+
+  it('runs transitions lib over changes', done => {
+    sinon.stub(metadata, 'update').resolves();
+    const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
+    const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
+
+    sinon.stub(transitions._transitionsLib, 'processChange').callsArgWith(1);
+    sinon
+      .stub(db.sentinel, 'get')
+      .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12 });
+
+    transitions._attach().then(() => {
+      assert.equal(feed.callCount, 1);
+      assert.equal(feed.args[0][0].since, 12);
+      assert.equal(on.callCount, 1);
+      assert.equal(on.args[0][0], 'change');
+      // invoke the change handler
+      on.args[0][1]({ id: 'somechange', seq: 55 });
+    });
+
+    transitions._changeQueue.drain = () => {
+      return Promise.resolve().then(() => {
+        assert.equal(transitions._transitionsLib.processChange.callCount, 1);
+        assert.deepEqual(transitions._transitionsLib.processChange.args[0][0], { id: 'somechange', seq: 55 });
+        return Promise.resolve().then(() => {
+          assert.equal(metadata.update.callCount, 1);
+          assert.equal(metadata.update.args[0][0], 55);
+          done();
+        });
+      });
+    };
+  });
 });

@@ -1,5 +1,6 @@
 const sinon = require('sinon'),
       config = require('../../src/config'),
+      db = require('../../src/db'),
       transitions = require('../../src/transitions/index'),
       infodoc = require('../../src/lib/infodoc'),
       chai = require('chai'),
@@ -10,34 +11,44 @@ chai.use(chaiExclude);
 describe('processDocs', () => {
   afterEach(() => sinon.restore());
 
-  it('should return original docs if no transitions are present', () => {
+  it('should save original docs if no transitions are present', () => {
+    const docs = [{ from: 1 }, { from: 2 }, { from: 3 }];
     sinon.stub(config, 'get').withArgs('transitions').returns({});
+    sinon.stub(db.medic, 'bulkDocs').resolves([{ ok: true }, { ok: true }, { ok: true }]);
     transitions.loadTransitions();
 
-    const docs = [{ from: 1 }, { from: 2 }, { from: 3 }];
     return transitions.processDocs(docs).then(result => {
-      chai.expect(result).to.deep.equal(docs);
+      chai.expect(result).to.deep.equal([{ ok: true }, { ok: true }, { ok: true }]);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0]).excludingEvery('_id').to.deep.equal([docs]);
+      chai.expect(db.medic.bulkDocs.args[0][0].every(doc => doc._id));
     });
   });
 
-  it('should return original docs when lineage throws errors', () => {
+  it('should save original docs when lineage throws errors', () => {
     const docs = [{ from: 1 }, { from: 2 }, { from: 3 }];
 
+    sinon.stub(db.medic, 'bulkDocs').resolves([{ ok: true }, { ok: true }, { ok: true }]);
     sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
     sinon.stub(transitions._lineage, 'hydrateDocs').rejects({ some: 'err' });
 
     transitions.loadTransitions();
     return transitions.processDocs(docs).then(result => {
-      chai.expect(result).to.deep.equal(docs);
       chai.expect(transitions._lineage.hydrateDocs.callCount).to.equal(1);
       chai.expect(transitions._lineage.hydrateDocs.args[0]).excludingEvery('_id').to.deep.equal([docs]);
+
+      chai.expect(result).to.deep.equal([{ ok: true }, { ok: true }, { ok: true }]);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0]).excludingEvery('_id').to.deep.equal([docs]);
+      chai.expect(db.medic.bulkDocs.args[0][0].every(doc => doc._id));
     });
   });
 
-  it('should return original docs when infodoc throws errors', () => {
+  it('should save original docs when infodoc throws errors', () => {
     const docs = [{ from: 1 }, { from: 2 }, { from: 3 }];
     let hydratedDocs;
 
+    sinon.stub(db.medic, 'bulkDocs').resolves([{ ok: true }, { ok: true }, { ok: true }]);
     sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
     sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => {
       docs.forEach(doc => doc.patient = `patient_${doc.from}`);
@@ -56,12 +67,14 @@ describe('processDocs', () => {
       chai.expect(changes[2]).to.deep.equal({ id: hydratedDocs[2]._id, doc: hydratedDocs[2], seq: null });
       chai.expect(changes.every(change => change.id && change.id.length === 36)).to.equal(true);
 
-      chai.expect(result).to.deep.equal(docs);
-      chai.expect(result.every(doc => !doc._id)).to.equal(true);
+      chai.expect(result).to.deep.equal([{ ok: true }, { ok: true }, { ok: true }]);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0]).excludingEvery('_id').to.deep.equal([docs]);
+      chai.expect(db.medic.bulkDocs.args[0][0].every(doc => doc._id));
     });
   });
 
-  it('should apply transitions over every doc and return correctly changed docs', () => {
+  it('should apply transitions over every doc and save correctly changed docs', () => {
     const docs = [{ _id: '1', from: 1 }, { _id: '2', from: 2 }, { _id: '3', from: 3 }],
           hydratedDocs = [{ _id: '1', from: 1, patient: 'a' }, {_id: '2', from: 2, patient: 'b' }, { _id: '3', from: 3, patient: 'c' }],
           infoDocs = [{ _id: '1-info', doc_id: '1' }, { _id: '2-info', doc_id: '2' }, { _id: '3-info', doc_id: '3' }];
@@ -71,21 +84,21 @@ describe('processDocs', () => {
 
     sinon.stub(infodoc, 'bulkGet').resolves(infoDocs);
     sinon.stub(infodoc, 'bulkUpdate').resolves();
-    sinon.stub(transitions, 'applyTransitions');
+    sinon.stub(transitions, 'applyTransition');
+    sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
 
-    // first doc is updated by at least one transition, also simulate
-    transitions.applyTransitions
-      .withArgs(sinon.match({ id: '1' }))
-      .callsFake((change, cb) => (change.doc.updated = true && delete change.doc.patient) && cb(null, true));
+    // first doc is updated by at least one transition
+    transitions.applyTransition
+      .withArgs(sinon.match({ change: sinon.match({ id: '1' }) }))
+      .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
     // second doc is not touched by any transition
-    transitions.applyTransitions
-      .withArgs(sinon.match({ id: '2' }))
-      .callsFake((change, cb) => cb());
-
+    transitions.applyTransition
+      .withArgs(sinon.match({ change: { id: '2' } }))
+      .callsFake((params, cb) => cb());
     // third doc just has errors, and no successful transitions
-    transitions.applyTransitions
-      .withArgs(sinon.match({ id: '3' }))
-      .callsFake((change, cb) => (change.doc.errors = true && delete change.doc.patient) && cb(null, false));
+    transitions.applyTransition
+      .withArgs(sinon.match({ change: { id: '3' } }))
+      .callsFake(({ change }, cb) => (change.doc.errors = true && delete change.doc.patient) && cb(null, false));
 
     transitions.loadTransitions();
     return transitions.processDocs(docs).then(results => {
@@ -93,16 +106,17 @@ describe('processDocs', () => {
       chai.expect(infodoc.bulkGet.callCount).to.equal(1);
       chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([infoDocs]);
-      chai.expect(transitions.applyTransitions.callCount).to.equal(3);
-      chai.expect(transitions.applyTransitions.calledWithMatch({ id: '1', doc: hydratedDocs[0], info: infoDocs[0] })).to.equal(true);
-      chai.expect(transitions.applyTransitions.calledWithMatch({ id: '2', doc: hydratedDocs[1], info: infoDocs[1] })).to.equal(true);
-      chai.expect(transitions.applyTransitions.calledWithMatch({ id: '3', doc: hydratedDocs[2], info: infoDocs[2] })).to.equal(true);
+      chai.expect(transitions.applyTransition.callCount).to.equal(3);
+      console.log(require('util').inspect(transitions.applyTransition.args, { depth: 100 }));
+      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '1', doc: hydratedDocs[0], info: infoDocs[0] }})).to.equal(true);
+      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '2', doc: docs[1], info: infoDocs[1] }})).to.equal(true);
+      chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '3', doc: docs[2], info: infoDocs[2] }})).to.equal(true);
 
-      chai.expect(results).to.deep.equal([
-        { _id: '1', from: 1, updated: true },
-        { _id: '2', from: 2 },
-        { _id: '3', from: 3 }
-      ]);
+      chai.expect(results).to.deep.equal([{ ok: true }, { ok: true }, { ok: true }]);
+      chai.expect(db.medic.put.callCount).to.equal(3);
+      chai.expect(db.medic.put.calledWith({ _id: '1', from: 1, contact: true })).to.equal(true);
+      chai.expect(db.medic.put.calledWith({ _id: '2', from: 2 })).to.equal(true);
+      chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
     });
   });
 });

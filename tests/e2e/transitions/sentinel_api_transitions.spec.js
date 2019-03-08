@@ -279,9 +279,10 @@ const messages = [{
   content: 'MUTE patient4'
 }];
 
-const waitForChanges = () => {
+const waitForChanges = (messages) => {
   const expectedMessages = messages.map(message => message.message);
-  const changes = [];
+  const changes = [],
+        ids = [];
   const listener = utils.db.changes({
     live: true,
     include_docs: true,
@@ -291,9 +292,13 @@ const waitForChanges = () => {
   return new Promise(resolve => {
     listener.on('change', change => {
       if (change.doc.sms_message) {
+        if (ids.includes(change.id)) {
+          return;
+        }
         const idx = expectedMessages.findIndex(message => message === change.doc.sms_message.message);
         changes.push(change);
         expectedMessages.splice(idx, 1);
+        ids.push(change.id);
         if (!expectedMessages.length) {
           listener.cancel();
           resolve(changes);
@@ -363,7 +368,7 @@ describe('transitions', () => {
     return utils
       .updateSettings(settings, true)
       .then(() => Promise.all([
-        waitForChanges(),
+        waitForChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
       ]))
       .then(([ changes, messages ]) => {
@@ -634,12 +639,12 @@ describe('transitions', () => {
   it('should not crash services when transitions are misconfigured', () => {
     const settings = {
       transitions: {
-        accept_patient_reports: { async: false },
-        conditional_alerts: { async: false },
-        death_reporting: { async: false },
-        default_responses: { async: false },
-        registration: { async: false },
-        update_clinics: { async: false }
+        accept_patient_reports: true,
+        conditional_alerts: true,
+        death_reporting: true,
+        default_responses: true,
+        registration: true,
+        update_clinics: true
       },
       forms: formsConfig
     };
@@ -657,7 +662,7 @@ describe('transitions', () => {
     return utils
       .updateSettings(settings, true)
       .then(() => Promise.all([
-        waitForChanges(),
+        waitForChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes, messages]) => {
@@ -683,6 +688,131 @@ describe('transitions', () => {
       .then(([ person4, person3 ]) => {
         expect(person4.date_of_death).not.toBeDefined();
         expect(person3.muted).not.toBeDefined();
+      });
+  });
+
+  it('should run transitions and save documents in series', () => {
+    const settings = {
+      transitions: {
+        update_clinics: true,
+        registration: true
+      },
+      registrations: [{
+        form: 'IMM',
+        events: [{
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'immunizations',
+          bool_expr: ''
+        }, {
+          name: 'on_create',
+          trigger: 'clear_schedule',
+          params: 'immunizations',
+          bool_expr: ''
+        }]
+      }],
+      schedules: [{
+        name: 'immunizations',
+        start_from: 'reported_date',
+        messages: [{
+          offset: '10 days',
+          message: [{
+            locale: 'en',
+            content: 'Immunize {{patient_id}} for disease A'
+          }],
+        }, {
+          offset: '30 days',
+          message: [{
+            locale: 'en',
+            content: 'Immunize {{patient_id}} for disease B'
+          }],
+        }]
+      }],
+      forms: {
+        IMM: {
+          meta: { label: { en: 'IMM' }, code: 'IMM'},
+          fields: {
+            patient_id: {
+              labels: { short: { translation_key: 'patient_id' }},
+              position: 1,
+              type: 'string',
+              length: [5, 13],
+              required: true
+            },
+            count: {
+              labels: { short: { translation_key: 'count' }},
+              position: 1,
+              type: 'string',
+              length: [1],
+              required: false
+            }
+          }
+        }
+      }
+    };
+
+    const messages = [{
+      id: 'imm1',
+      from: 'phone1',
+      content: 'IMM patient2 1'
+    }, {
+      id: 'imm2',
+      from: 'phone2',
+      content: 'IMM patient2 2'
+    }, {
+      id: 'imm3',
+      from: 'phone1',
+      content: 'IMM patient2 3'
+    }, {
+      id: 'imm4',
+      from: 'phone2',
+      content: 'IMM patient2 4'
+    }, {
+      id: 'imm5',
+      from: 'phone2',
+      content: 'IMM patient1 1'
+    }];
+
+    let ids;
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => Promise.all([
+        waitForChanges(messages),
+        utils.request(getPostOpts('/api/sms', { messages: messages })),
+      ]))
+      .then(([changes, messages]) => {
+        ids = changes.map(change => change.id);
+        expect(messages.messages).toEqual([]);
+      })
+      .then(() => Promise.all([
+        sentinelUtils.getInfoDocs(ids),
+        utils.getDocs(ids)
+      ]))
+      .then(([ infos, docs ]) => {
+        const immPatient2 = docs.filter(doc => doc.fields.patient_id === 'patient2');
+        immPatient2.forEach(doc => {
+          expect(doc.contact).toBeDefined();
+          expect(doc.scheduled_tasks.length).toEqual(2);
+          expect(doc.scheduled_tasks[0].messages[0].message).toEqual('Immunize patient2 for disease A');
+          expect(doc.scheduled_tasks[1].messages[0].message).toEqual('Immunize patient2 for disease B');
+        });
+        const scheduled = immPatient2.filter(doc => doc.scheduled_tasks.every(task => task.state === 'scheduled'));
+        const cleared = immPatient2.filter(doc => doc.scheduled_tasks.every(task => task.state === 'cleared'));
+        // only one doc has scheduled tasks!
+        expect(scheduled.length).toEqual(1);
+        expect(cleared.length).toEqual(3);
+
+        const imm5 = docs.find(doc => doc.fields.patient_id === 'patient1');
+        expect(imm5.scheduled_tasks.length).toEqual(2);
+        expect(imm5.scheduled_tasks[0].messages[0].message).toEqual('Immunize patient1 for disease A');
+        expect(imm5.scheduled_tasks[0].state).toEqual('scheduled');
+        expect(imm5.scheduled_tasks[1].messages[0].message).toEqual('Immunize patient1 for disease B');
+        expect(imm5.scheduled_tasks[1].state).toEqual('scheduled');
+
+        infos.forEach(info => {
+          expectTransitions(info, 'update_clinics', 'registration');
+        });
       });
   });
 });
