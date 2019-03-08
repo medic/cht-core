@@ -534,6 +534,7 @@ module.exports = function(grunt) {
       'shared-lib-unit': {
         cmd: () => {
           return getSharedLibDirs()
+            .filter(lib => lib === 'transitions')
             .map(
               lib =>
                 `echo Testing shared library: ${lib} &&
