@@ -99,7 +99,6 @@ const addNewMessages = req => {
       gateway_ref: message.id,
     })))
     .then(docs => runTransitions(docs))
-    .then(docs => db.medic.bulkDocs(docs))
     .then(results => {
       const allOk = results.every(result => result.ok);
       if (!allOk) {

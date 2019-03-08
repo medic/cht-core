@@ -30,6 +30,7 @@ describe('functional transitions', () => {
     });
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
@@ -44,23 +45,25 @@ describe('functional transitions', () => {
     };
 
     transitions.applyTransitions(change1, (err, changed) => {
+      assert.equal(saveDoc.callCount, 1);
       assert.equal(infoDoc.callCount, 1);
+      const saved = saveDoc.args[0][0];
       const info = infoDoc.args[0][0];
       assert.equal(info.transitions.conditional_alerts.seq, '44');
       assert.equal(info.transitions.conditional_alerts.ok, true);
       assert(!err);
-      assert(changed);
+      assert(changed.ok);
       assert.equal(change1.doc.tasks[0].messages[0].message, 'alert!');
       const change2 = {
         id: 'abc',
         seq: '45',
-        doc: change1.doc,
+        doc: saved,
         info: info,
       };
-      transitions.applyTransitions(change2, (err, changed) => {
+      transitions.applyTransitions(change2, err => {
         // not to be updated
+        assert.equal(saveDoc.callCount, 1);
         assert(!err);
-        assert(!changed);
         done();
       });
     });
@@ -79,6 +82,7 @@ describe('functional transitions', () => {
 
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
@@ -95,6 +99,7 @@ describe('functional transitions', () => {
       // first run fails so no save
       assert(!err);
       assert(!changed);
+      assert.equal(saveDoc.callCount, 0);
       assert.equal(infoDoc.callCount, 0);
       const change2 = {
         id: 'abc',
@@ -108,8 +113,9 @@ describe('functional transitions', () => {
       };
       transitions.applyTransitions(change2, (err, changed) => {
         assert(!err);
-        assert(changed);
+        assert(changed.ok);
         assert.equal(change2.doc.tasks.length, 1);
+        assert.equal(saveDoc.callCount, 1);
         assert.equal(infoDoc.callCount, 1);
         const transitions = infoDoc.args[0][0].transitions;
         assert.equal(transitions.conditional_alerts.seq, '45');
@@ -138,6 +144,7 @@ describe('functional transitions', () => {
 
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
@@ -154,8 +161,10 @@ describe('functional transitions', () => {
       info: {},
     };
     transitions.applyTransitions(change1, (err, changed) => {
+      assert.equal(saveDoc.callCount, 1);
       assert.equal(infoDoc.callCount, 1);
-      assert(changed);
+      assert(changed.ok);
+      const doc = saveDoc.args[0][0];
       const info = infoDoc.args[0][0];
       assert.equal(info.transitions.default_responses.seq, '44');
       assert.equal(info.transitions.default_responses.ok, true);
@@ -164,18 +173,19 @@ describe('functional transitions', () => {
       const change2 = {
         id: 'abc',
         seq: '45',
-        doc: change1.doc,
+        doc: doc,
         info: info,
       };
       transitions.applyTransitions(change2, (err, changed) => {
+        assert.equal(saveDoc.callCount, 2);
         assert.equal(infoDoc.callCount, 2);
         const info = infoDoc.args[1][0].transitions;
         assert.equal(info.conditional_alerts.seq, '45');
         assert.equal(info.conditional_alerts.ok, true);
         assert.equal(info.default_responses.seq, '44');
         assert.equal(info.default_responses.ok, true);
-        assert.isNull(err);
-        assert(changed);
+        assert(!err);
+        assert(changed.ok);
         done();
       });
     });
@@ -207,7 +217,7 @@ describe('functional transitions', () => {
       });
     });
 
-    it('should not update infodocs and not return the updated doc when no changes', done => {
+    it('should not update infodocs, not save the doc and not return true when no changes', done => {
       configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
       configGet.withArgs('alerts').returns({
         V: {
@@ -239,7 +249,7 @@ describe('functional transitions', () => {
       });
     });
 
-    it('should update infodocs and return updated minified doc when at least one change', done => {
+    it('should update infodocs and update minified doc and return true when at least one change', done => {
       configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
       configGet.withArgs('alerts').returns({
         V: {
@@ -254,6 +264,7 @@ describe('functional transitions', () => {
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').resolves();
+      sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
 
       const doc = {
         _id: 'my_id',
@@ -266,7 +277,7 @@ describe('functional transitions', () => {
       sinon.stub(transitions._lineage, 'minify').callsFake(r => r);
 
       transitions.processChange({ id: doc._id }, (err, changed) => {
-        assert.isNull(err);
+        assert(!err);
         assert(changed);
         assert.equal(doc.tasks[0].messages[0].message, 'alert!');
         assert.equal(db.sentinel.get.callCount, 2);
@@ -274,6 +285,51 @@ describe('functional transitions', () => {
 
         assert.equal(Object.keys(db.sentinel.put.args[1][0].transitions).length, 1);
         assert.equal(db.sentinel.put.args[1][0].transitions.conditional_alerts.ok, true);
+        assert.equal(db.medic.put.callCount, 1);
+
+        assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
+        assert.equal(transitions._lineage.minify.callCount, 1);
+        assert.deepEqual(transitions._lineage.minify.args[0], [doc]);
+        done();
+      });
+    });
+
+    it('should return error from db put call when saving fails', (done) => {
+      configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
+      configGet.withArgs('alerts').returns({
+        V: {
+          form: 'V',
+          recipient: 'reporting_unit',
+          message: 'alert!',
+          condition: 'true',
+        },
+      });
+      configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+      sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+
+      const doc = {
+        _id: 'my_id',
+        form: 'V',
+        from: '123456',
+        type: 'data_record',
+        reported_date: new Date('2018-01-01').valueOf()
+      };
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+      sinon.stub(transitions._lineage, 'minify').callsFake(r => r);
+
+      transitions.processChange({ id: doc._id }, (err) => {
+        assert.equal(err.error, 'something');
+        assert.equal(doc.tasks[0].messages[0].message, 'alert!');
+        assert.equal(db.sentinel.get.callCount, 2);
+        assert.equal(db.sentinel.put.callCount, 2);
+
+        assert.equal(Object.keys(db.sentinel.put.args[1][0].transitions).length, 1);
+        assert.equal(db.sentinel.put.args[1][0].transitions.conditional_alerts.ok, true);
+        assert.equal(db.medic.put.callCount, 1);
 
         assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
         assert.equal(transitions._lineage.minify.callCount, 1);
@@ -284,7 +340,7 @@ describe('functional transitions', () => {
   });
 
   describe('processDocs', () => {
-    it('should run all async transitions over docs and return updated docs', () => {
+    it('should run all async transitions over docs and save all docs', () => {
       configGet.withArgs('transitions').returns({
         conditional_alerts: { disabled: true },
         default_responses: {},
@@ -398,6 +454,8 @@ describe('functional transitions', () => {
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').resolves();
 
+      sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+
       sinon.stub(db.medic, 'query')
       // update_clinics
         .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
@@ -427,52 +485,56 @@ describe('functional transitions', () => {
 
       return transitions.processDocs(docs).then(result => {
         assert.equal(result.length, 5);
+        assert.deepEqual(result, [{ ok: true }, { ok: true }, { ok: true }, { ok: true }, { ok: true }]);
+        assert.equal(db.medic.put.callCount, 5);
 
-        assert.equal(result[0].id, 'has alert');
-        assert.equal(result[0]._id.length, 36);
-        assert.equal(result[0].errors.length, 0);
-        assert.deepEqual(result[0].contact, { _id: 'contact1', parent: { _id: 'clinic' } });
-        assert.equal(result[0].sent_by, 'Merkel');
-        assert.equal(result[0].tasks.length, 1);
-        assert.equal(result[0].tasks[0].messages[0].message, 'alert!');
-        assert.deepEqualExcluding(result[0], originalDocs[0], ['_id', 'errors', 'contact', 'sent_by', 'tasks']);
+        const savedDocs = db.medic.put.args.map(arg => arg[0]);
+
+        assert.equal(savedDocs[0].id, 'has alert');
+        assert.equal(savedDocs[0]._id.length, 36);
+        assert.equal(savedDocs[0].errors.length, 0);
+        assert.deepEqual(savedDocs[0].contact, { _id: 'contact1', parent: { _id: 'clinic' } });
+        assert.equal(savedDocs[0].sent_by, 'Merkel');
+        assert.equal(savedDocs[0].tasks.length, 1);
+        assert.equal(savedDocs[0].tasks[0].messages[0].message, 'alert!');
+        assert.deepEqualExcluding(savedDocs[0], originalDocs[0], ['_id', 'errors', 'contact', 'sent_by', 'tasks']);
         // first doc is updated by 3 transitions
-        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[0]._id);
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[0]._id);
         assert.equal(infodocSaves.length, 3);
         assert.equal(infodocSaves[2][0].transitions.update_clinics.ok, true);
         assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
         assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
 
-        assert.equal(result[1].id, 'has default response');
-        assert.equal(result[1]._id.length, 36);
-        assert.equal(result[1].tasks.length, 1);
-        assert.equal(result[1].tasks[0].messages[0].message, 'SMS received');
-        assert.deepEqualExcluding(result[1], originalDocs[1], ['_id', 'tasks']);
-        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[1]._id);
+        assert.equal(savedDocs[1].id, 'has default response');
+        assert.equal(savedDocs[1]._id.length, 36);
+        assert.equal(savedDocs[1].tasks.length, 1);
+        assert.equal(savedDocs[1].tasks[0].messages[0].message, 'SMS received');
+        assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks']);
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
         assert.equal(infodocSaves.length, 1);
         assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
 
-        assert.deepEqual(result[2], originalDocs[2]);
-        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[2]._id);
+        assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);
         assert.equal(infodocSaves.length, 0);
 
-        assert.equal(result[3].id, 'random form with contact');
-        assert.equal(result[3].sent_by, 'Angela');
-        assert.deepEqualExcluding(result[3], originalDocs[3], 'sent_by');
-        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[3]._id);
+        assert.equal(savedDocs[3].id, 'random form with contact');
+        assert.equal(savedDocs[3].sent_by, 'Angela');
+        assert.deepEqualExcluding(savedDocs[3], originalDocs[3], 'sent_by');
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[3]._id);
         assert.equal(infodocSaves.length, 2);
         assert.equal(infodocSaves[1][0].transitions.default_responses.ok, true);
         assert.equal(infodocSaves[1][0].transitions.update_sent_by.ok, true);
 
-        assert.equal(result[4].id, 'will have errors');
-        assert.equal(result[4].sent_by, 'Angela');
-        assert.equal(result[4].errors.length, 1);
-        assert.deepEqual(result[4].errors[0], { code: 'invalid_random_field', message: 'Random field is incorrect' });
-        assert.equal(result[4].tasks.length, 2);
-        assert.equal(result[4].tasks[0].messages[0].message, 'Random field is incorrect');
-        assert.equal(result[4].tasks[1].messages[0].message, 'too much randomness');
-        assert.deepEqualExcluding(result[4], originalDocs[4], ['_id', 'sent_by', 'errors', 'tasks']);
-        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === result[4]._id);
+        assert.equal(savedDocs[4].id, 'will have errors');
+        assert.equal(savedDocs[4].sent_by, 'Angela');
+        assert.equal(savedDocs[4].errors.length, 1);
+        assert.deepEqual(savedDocs[4].errors[0], { code: 'invalid_random_field', message: 'Random field is incorrect' });
+        assert.equal(savedDocs[4].tasks.length, 2);
+        assert.equal(savedDocs[4].tasks[0].messages[0].message, 'Random field is incorrect');
+        assert.equal(savedDocs[4].tasks[1].messages[0].message, 'too much randomness');
+        assert.deepEqualExcluding(savedDocs[4], originalDocs[4], ['_id', 'sent_by', 'errors', 'tasks']);
+        infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[4]._id);
         assert.equal(infodocSaves.length, 4);
         assert.equal(infodocSaves[2][0].transitions.default_responses.ok, true);
         assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);

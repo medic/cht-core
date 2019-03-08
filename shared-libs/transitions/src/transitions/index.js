@@ -69,18 +69,12 @@ const processChange = (change, callback) => {
 // - returns docs, either updated or their original version
 const processDocs = docs => {
   if (!transitions.length) {
-    return Promise.resolve(docs);
+    return db.medic.bulkDocs(docs);
   }
 
   let changes;
-  const clonedDocs = JSON.parse(JSON.stringify(docs)),
-        idsByIdx = new Array(clonedDocs.length);
-  // keep a way to link the changed doc to the original doc
-  // there may be no reliable way to uniquely identify any of these docs
-  clonedDocs.forEach((doc, idx) => {
-    doc._id = doc._id || uuid();
-    idsByIdx[idx] = doc._id;
-  });
+  docs.forEach(doc => doc._id = doc._id || uuid());
+  const clonedDocs = JSON.parse(JSON.stringify(docs));
 
   return lineage
     .hydrateDocs(clonedDocs)
@@ -97,14 +91,16 @@ const processDocs = docs => {
     .then(() => {
       return new Promise((resolve, reject) => {
         const operations = changes.map(change => callback => {
-          module.exports.applyTransitions(change, (err, changed) => {
-            if (!err && changed) {
-              return callback(null, change.doc);
+          applyTransitions(change, (err, result) => {
+            if (err || result) {
+              return callback(null, err || result);
             }
 
-            // doc was not changed by any transition, so we return the original doc
-            const idx = idsByIdx.findIndex(id => id === change.id);
-            return err ? callback(err) : callback(null, docs[idx]);
+            // doc was not changed by any transition, so we save the original doc
+            change.doc = docs.find(doc => doc._id === change.id);
+            saveDoc(change, (err, result) => {
+              callback(null, err || result);
+            });
           });
         });
         async.series(operations, (err, results) => {
@@ -114,7 +110,7 @@ const processDocs = docs => {
     })
     .catch(err => {
       logger.error('Error when running transitions over docs', err);
-      return docs;
+      return db.medic.bulkDocs(docs);
     });
 };
 
@@ -222,10 +218,9 @@ const canRun = ({ key, change, transition }) => {
 };
 
 /*
- * Returns true if we have changes from transitions, otherwise transitions
+ * Save the doc if we have changes from transitions, otherwise transitions
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
- * Minifies lineage before calling back.
  */
 const finalize = ({ change, results }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
@@ -237,9 +232,27 @@ const finalize = ({ change, results }, callback) => {
     );
     return callback();
   }
+  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
+  saveDoc(change, callback);
+};
+
+const saveDoc = (change, callback) => {
   lineage.minify(change.doc);
-  callback(null, true);
+  db.medic.put(change.doc, (err, result) => {
+    // todo: how to handle a failed save? for now just
+    // waiting until next change and try again.
+    if (err) {
+      logger.error(
+        `error saving changes on doc ${change.id} seq ${
+          change.seq
+          }: ${JSON.stringify(err)}`
+      );
+    } else {
+      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    }
+    return callback(err, result);
+  });
 };
 
 /*
@@ -307,7 +320,7 @@ const applyTransitions = (change, callback) => {
         change: change,
         transition: transition.module,
       };
-      return _.partial(applyTransition, opts, _);
+      return _.partial(module.exports.applyTransition, opts, _);
     })
     .filter(transition => !!transition);
 

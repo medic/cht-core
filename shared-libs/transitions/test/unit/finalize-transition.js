@@ -1,36 +1,37 @@
 const sinon = require('sinon'),
-  assert = require('chai').assert,
-  db = require('../../src/db'),
-  transitions = require('../../src/transitions/index');
+      assert = require('chai').assert,
+      db = require('../../src/db'),
+      transitions = require('../../src/transitions/index');
 
 describe('finalize transition', () => {
   afterEach(() => sinon.restore());
 
-  it('returns false when transition results are null', done => {
+  it('save not called if transition results are null', done => {
     const doc = { _rev: '1' };
+    const saveDoc = sinon.stub(db.medic, 'put');
     transitions.finalize(
       {
         change: { doc: doc },
         results: null,
       },
-      (err, changed) => {
-        assert(!err);
-        assert(!changed);
+      () => {
+        assert.equal(saveDoc.callCount, 0);
         done();
       }
     );
   });
 
-  it('returns true if transition results have changes', done => {
+  it('save is called if transition results have changes', done => {
     const doc = { _rev: '1' };
+    const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
     transitions.finalize(
       {
         change: { doc: doc },
         results: [null, null, true],
       },
-      (err, changed) => {
-        assert(!err);
-        assert(changed);
+      () => {
+        assert.equal(saveDoc.callCount, 1);
+        assert(saveDoc.args[0][0]._rev);
         done();
       }
     );
@@ -41,13 +42,14 @@ describe('finalize transition', () => {
     const info = {};
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'put').resolves({});
     sinon.stub(db.sentinel, 'put').resolves({});
     const transition = {
+      filter: () => true,
       onMatch: change => {
         change.doc.foo = 'bar';
         return Promise.resolve(true);
       },
-      filter: () => true
     };
     transitions.applyTransition(
       {

@@ -76,31 +76,12 @@ const processChange = (change, callback) => {
       .catch(callback);
   }
 
-  transitionsLib.processChange(change, (err, changed) => {
+  transitionsLib.processChange(change, err => {
     if (err) {
       return callback(err);
     }
 
-    if (!changed) {
-      return updateMetadata(change, callback);
-    }
-
-    logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
-    db.medic.put(change.doc, (err) => {
-      // todo: how to handle a failed save? for now just
-      // waiting until next change and try again.
-      if (err) {
-        logger.error(
-          `error saving changes on doc ${change.id} seq ${
-            change.seq
-            }: ${JSON.stringify(err)}`
-        );
-      } else {
-        logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-      }
-
-      updateMetadata(change, callback);
-    });
+    updateMetadata(change, callback);
   });
 };
 

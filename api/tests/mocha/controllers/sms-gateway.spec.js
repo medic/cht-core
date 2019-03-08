@@ -26,7 +26,6 @@ describe('sms-gateway controller', () => {
       .onCall(0).returns({ message: 'one' })
       .onCall(1).returns({ message: 'two' })
       .onCall(2).returns({ message: 'three' });
-    const bulkDocs = sinon.stub(db.medic, 'bulkDocs').returns(Promise.resolve([ { ok: true, id: 'some-id' } ]));
     const getMessages = sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
     const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
     updateMessageTaskStates.callsArgWith(1, null, {});
@@ -44,11 +43,7 @@ describe('sms-gateway controller', () => {
 
     const transitionsLib = { processDocs: sinon.stub()};
     sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-    transitionsLib.processDocs.callsFake(docs => {
-      const copy = JSON.parse(JSON.stringify(docs));
-      copy.forEach(doc => doc.transitioned = true);
-      return Promise.resolve(copy);
-    });
+    transitionsLib.processDocs.resolves([{ ok: true, id: 'id' }, { ok: true, id: 'id' }, { ok: true, id: 'id' }]);
 
     // when
     return controller.post(req).then(() => {
@@ -64,12 +59,6 @@ describe('sms-gateway controller', () => {
         { message: 'two' },
         { message: 'three' }
       ]]);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0]).to.deep.equal([
-        { message: 'one', transitioned: true },
-        { message: 'two', transitioned: true },
-        { message: 'three', transitioned: true }
-      ]);
     });
   });
 
