@@ -62,11 +62,12 @@ const processChange = (change, callback) => {
 };
 
 // given a collection of docs this function will:
-// - deep clone the docs, to keep the original version of them safe
 // - add _id properties to the docs that are missing them
+// - deep clone the docs, to keep the original version of them safe
 // - hydrate the docs and generate info docs
 // - run loaded transitions over all docs
-// - returns docs, either updated or their original version
+// - save docs, either updated or their original version
+// - returns db.save result like a bulkDocs call.
 const processDocs = docs => {
   if (!transitions.length) {
     return db.medic.bulkDocs(docs);
