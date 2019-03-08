@@ -1,5 +1,9 @@
 self.addEventListener('fetch', function(event) {
   if (event.request.method === 'GET') {
+    // The `if` condition below should be handled on the line above i.e.
+    // if (event.request.method === 'GET' && event.request.headers.get('accept').indexOf('application/json') === -1) {
+    // But it fails when running e2e test
+    // this has been attributed by the root url serving both json GET request and the cached HTML page
     if (event.request.headers.get('accept').indexOf('application/json') !== -1) {
       event.respondWith(async function() {
         return fetch(event.request);

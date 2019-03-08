@@ -80,10 +80,8 @@ describe('Settings API', () => {
             method: 'GET'
           });
         })
-        .catch(err => {
-          // This is as a result of redirect to '/' 
-          // we were not expecting a json doc for couchdb to handle
-          expect(err.message.includes('Redirecting to /')).toBe(true);
+        .then(response => {
+          expect(response.settings._test_sandbox).toEqual({ times: 'three', b: 'c' });
         });
     });
 

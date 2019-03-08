@@ -3,6 +3,7 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
+  url  = require('url'),
   environment = require('./environment'),
   db = require('./db'),
   path = require('path'),
@@ -152,30 +153,27 @@ app.use(compression());
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
-const root = (req, res) => {
-  if (('deviceID' in req.query) || req.is('application/json')) {
-    // couchdb request - let it go
-    return proxy.web(req, res);
-  }
-  let redirectUrl = '/';
-  const startPosition = req.url.indexOf('#');
-  if (startPosition !== -1) {
-    redirectUrl = redirectUrl.concat(req.url.slice(startPosition));
-  }
-  res.redirect(redirectUrl);
-};
 
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
     // couchdb request - let it go
-    return proxy.web(req, res);
+    proxy.web(req, res);
   } else {
     res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
   }
 });
-app.get(appPrefix, root);
 
-app.all(/^\/(medic)\/(.?)/, (req, res, next) => {
+app.get(appPrefix, (req, res) => {
+  if (('deviceID' in req.query) || req.is('application/json')) {
+    // couchdb request - let it go
+    return proxy.web(req, res);
+  }
+  const parsed = url.parse(req.url);
+  parsed.pathname = '/';
+  res.redirect(url.format(parsed));
+});
+
+app.all('/medic/*', (req, res, next) => {
   if (environment.db === 'medic') {
     return next();
   }
@@ -296,12 +294,6 @@ app.all('/setup/finish', function(req, res) {
 app.get('/api/info', function(req, res) {
   var p = require('../package.json');
   res.json({ version: p.version });
-});
-
-app.get('/api/db', function(req, res) {
-  res.json({
-    name: environment.db
-   });
 });
 
 app.get('/api/auth/:path', function(req, res) {

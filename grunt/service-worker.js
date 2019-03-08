@@ -22,7 +22,7 @@ function writeServiceWorkerFile(staticDirectoryPath, outputPath) {
     claimsClient: true,
     skipWaiting: true,
     directoryIndex: false,
-    handleFetch: false,
+    handleFetch: false, // See our custom fetch handler ./service-worker-fetch-listener.js
     staticFileGlobs: [
       path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
       path.join(staticDirectoryPath, 'manfiest.json'),
