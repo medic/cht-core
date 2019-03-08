@@ -1,12 +1,12 @@
 const _ = require('underscore'),
-      async = require('async'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
-      utils = require('../lib/utils'),
-      logger = require('../lib/logger'),
-      config = require('../config'),
-      infodoc = require('../lib/infodoc'),
-      uuid = require('uuid');
+  async = require('async'),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
+  utils = require('../lib/utils'),
+  logger = require('../lib/logger'),
+  config = require('../config'),
+  infodoc = require('../lib/infodoc'),
+  uuid = require('uuid');
 
 /*
  * Add new transitions here to make them available for configuration and execution.
@@ -176,7 +176,6 @@ const loadTransition = (key, synchronous) => {
   if (transition.init) {
     transition.init();
   }
-
   transitions.push({ key: key, module: transition });
 };
 
@@ -244,11 +243,7 @@ const saveDoc = (change, callback) => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
-      logger.error(
-        `error saving changes on doc ${change.id} seq ${
-          change.seq
-          }: ${JSON.stringify(err)}`
-      );
+      logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
     } else {
       logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
     }
@@ -340,14 +335,14 @@ const availableTransitions = () => {
 
 module.exports = {
   _loadTransition: loadTransition,
+  _lineage: lineage,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,
   canRun: canRun,
+  finalize: finalize,
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
-  finalize: finalize,
   processChange: processChange,
   processDocs: processDocs,
-  _lineage: lineage,
   _transitions: () => transitions
 };
