@@ -559,9 +559,6 @@ module.exports = function(grunt) {
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
-      'cat-generated-service-worker': {
-        cmd: 'cat grunt/service-worker-fetch-listener.js >> build/ddocs/medic/_attachments/js/service-worker.js'
-      },
     },
     watch: {
       options: {

@@ -7,7 +7,6 @@ function registerServiceWorkerTasks(grunt) {
     const { staticDirectoryPath, scriptOutputPath } = this.data;
     writeServiceWorkerFile(staticDirectoryPath, scriptOutputPath)
       .then(done)
-      .then(grunt.task.run('exec:cat-generated-service-worker'))
       .catch(error => {
         grunt.fail.warn(error);
         done();
@@ -22,14 +21,15 @@ function writeServiceWorkerFile(staticDirectoryPath, outputPath) {
     claimsClient: true,
     skipWaiting: true,
     directoryIndex: false,
-    handleFetch: false, // See our custom fetch handler ./service-worker-fetch-listener.js
+    handleFetch: true,
     staticFileGlobs: [
       path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
       path.join(staticDirectoryPath, 'manfiest.json'),
     ],
     dynamicUrlToDependencies: {
-      ['/']: [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
     },
+    templateFilePath: path.join(__dirname, 'service-worker.tmpl'),
     stripPrefixMulti: { [staticDirectoryPath]: '' },
     maximumFileSizeToCacheInBytes: 1048576 * 20,
     verbose: true,

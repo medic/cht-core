@@ -31,12 +31,12 @@
     }
   };
 
-  var getDbInfo = function() {
+  const getDbInfo = function() {
     // parse the URL to determine the remote and local database names
-    var location = window.location;
-    var dbName = 'medic';
-    var port = location.port ? ':' + location.port : '';
-    var remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
+    const location = window.location;
+    const dbName = 'medic';
+    const port = location.port ? ':' + location.port : '';
+    const remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
     return {
       name: dbName,
       remote: remoteDB

@@ -177,9 +177,13 @@ app.all('/medic/*', (req, res, next) => {
   if (environment.db === 'medic') {
     return next();
   }
-  const originalUrl = req.url;
-  req.url = `/${environment.db}${originalUrl.slice(6)}`;
-  if (originalUrl.includes('login')) {
+
+  const parsed = url.parse(req.url);
+  const pathNameTokens = parsed.pathname.split('/');
+  pathNameTokens[1] = environment.db;
+  parsed.pathname = pathNameTokens.join('/');
+  req.url = url.format(parsed);
+  if (parsed.pathname.endsWith('login')) {
     res.redirect(req.url);
   } else {
     proxy.web(req, res);
