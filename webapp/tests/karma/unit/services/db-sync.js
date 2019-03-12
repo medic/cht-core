@@ -65,15 +65,15 @@ describe('DBSync service', () => {
   });
 
   describe('sync', () => {
-    it('does nothing for admins', () => {
+    it('does nothing for admins except meta replication to medic-all-meta', () => {
       isOnlineOnly.returns(true);
       return service.sync().then(() => {
-        expect(to.callCount).to.equal(0);
+        expect(to.callCount).to.equal(1);
         expect(from.callCount).to.equal(0);
       });
     });
 
-    it('starts bi-direction replication for non-admin', () => {
+    it('starts bi-direction replication for non-admin and meta replication to medic-all-meta', () => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
 
@@ -82,8 +82,8 @@ describe('DBSync service', () => {
         expect(Auth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
-        expect(to.callCount).to.equal(1);
-        expect(to.args[0][1]).to.have.keys('filter', 'checkpoint');
+        expect(to.callCount).to.equal(2);
+        expect(to.args[1][1]).to.have.keys('filter', 'checkpoint');
       });
     });
 
@@ -191,7 +191,7 @@ describe('DBSync service', () => {
       });
     });
 
-    it('does not sync to remote if user lacks "can_edit" permission', () => {
+    it('does not sync to remote if user lacks "can_edit" permission but does meta replication to medic-all-meta', () => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.reject('unauthorized'));
 
@@ -203,7 +203,7 @@ describe('DBSync service', () => {
         expect(Auth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
-        expect(to.callCount).to.equal(0);
+        expect(to.callCount).to.equal(1);
 
         expect(onUpdate.callCount).to.eq(4);
         expect(onUpdate.args[0][0]).to.deep.eq({
