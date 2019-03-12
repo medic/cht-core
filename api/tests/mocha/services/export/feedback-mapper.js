@@ -10,13 +10,23 @@ describe('Feedback mapper', () => {
   describe('getDocIds', () => {
     it('queries task-messages and returns message ids', () => {
       const options = { some: 'option' };
-
-      sinon.stub(db.medic, 'query').resolves({
+      const queryOptions = {
+        descending: true,
+        endkey: 'feedback-',
+        include_docs: false,
+        startkey: 'feedback-￰'     
+      };
+      const allDocs = sinon.stub().returns(Promise.resolve({
         rows: [{ id: 1, value: 1 }, { id: 1, value: 2 }, { id: 1, value: 3 }, { id: 2, value: 1 }]
-      });
+      }));
+      const dbGet = sinon.stub(db, 'get').returns({ allDocs: allDocs });
       return service.getDocIds(options).then(result => {
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-admin/feedback', options ]);
+        chai.expect(dbGet.callCount).to.equal(1);
+        chai.expect(dbGet.args[0]).to.deep.equal([ 'medic-all-meta' ]);
+        chai.expect(allDocs.callCount).to.equal(1);
+        chai.expect(allDocs.args[0]).to.deep.equal([ 
+          Object.assign({}, options, queryOptions)
+        ]);
         chai.expect(result).to.deep.equal([1, 1, 1, 2]);
       });
     });
