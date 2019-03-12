@@ -142,31 +142,6 @@ const getReportsWithinTimeWindow = (
     .then(data => data.rows.map(row => row.doc));
 };
 
-/*
- * Return the value on an object/doc defined by a string.  Support dot notation
- * so the schedule `start_from` configuration can support nested properties.
- */
-const getVal = (obj, path) => {
-  const arrayRegex = /\[([0-9]*)\]/;
-  if (typeof path !== 'string') {
-    return;
-  }
-  path = path.split('.');
-  while (obj && path.length) {
-    let part = path.shift();
-    if (arrayRegex.test(part)) {
-      // property with array index
-      const index = arrayRegex.exec(part)[1];
-      part = part.replace(arrayRegex, '');
-      obj = obj[part][index];
-    } else {
-      // property without array index
-      obj = obj[part];
-    }
-  }
-  return obj;
-};
-
 const getPatient = (patientShortcodeId, includeDocs) => {
   if (!patientShortcodeId) {
     return Promise.resolve();
@@ -192,7 +167,6 @@ const getPatient = (patientShortcodeId, includeDocs) => {
 };
 
 module.exports = {
-  getVal: getVal,
   getLocale: getLocale,
   getClinicPhone: doc => {
     const clinic = getClinic(doc);
