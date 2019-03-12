@@ -94,13 +94,42 @@ angular
     };
 
     var generateMetadataSection = function() {
-      var date = moment(getLastAggregatedDate());
-      return {
-        year: date.year(),
-        month: date.month(),
-        user: Session.userCtx().name,
-        deviceId: getUniqueDeviceId(),
-      };
+      return $q.all([
+          DB().get('_design/medic-client'),
+          DB().query('medic-client/forms', {include_docs: true})
+      ]).then(([ddoc, formResults]) => {
+        const date = moment(getLastAggregatedDate());
+        const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
+        const forms = formResults.rows.reduce((keyToVersion, row) => {
+          let version;
+          if (row.doc._attachments && row.doc._attachments.xml) {
+            // While XML forms may have a version declared in the XML as of writing they are not
+            // required, seldom used, are not enforced (they don't have to change if the form changes)
+            // and so are entirely unreliable. The hash is the only real safe version we have.
+            version = row.doc._attachments.xml.digest;
+          } else {
+            // If this is executing a presumption about the forms view has changed and the block
+            // above wasn't changed as well. As of writing if a form is in the forms view it is an
+            // XML form with the XML attached. We just don't want this to crash
+            version = 'unknown';
+          }
+
+          keyToVersion[row.key] = version;
+
+          return keyToVersion;
+        }, {});
+
+        return {
+          year: date.year(),
+          month: date.month(),
+          user: Session.userCtx().name,
+          deviceId: getUniqueDeviceId(),
+          versions: {
+            appVersion: version,
+            forms: forms
+          }
+        };
+      });
     };
 
     var generateDeviceStats = function() {
@@ -141,17 +170,19 @@ angular
             }
           ),
           DB().info(),
+          generateMetadataSection()
         ])
         .then(function(qAll) {
           var reduceResult = qAll[0];
           var infoResult = qAll[1];
+          var metadata = qAll[2];
 
           var aggregateDoc = {
             type: 'telemetry',
           };
 
           aggregateDoc.metrics = convertReduceToKeyValues(reduceResult);
-          aggregateDoc.metadata = generateMetadataSection();
+          aggregateDoc.metadata = metadata;
           aggregateDoc._id = generateAggregateDocId(aggregateDoc.metadata);
           aggregateDoc.device = generateDeviceStats();
           aggregateDoc.dbInfo = infoResult;

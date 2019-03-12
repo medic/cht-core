@@ -6,6 +6,7 @@ describe('Telemetry service', () => {
   let clock,
     service,
     $window,
+    $log,
     DB,
     storageGetItem,
     storageSetItem,
@@ -32,14 +33,22 @@ describe('Telemetry service', () => {
       PouchDB: () => pouchDb,
     };
 
+    $log = {
+      error: sinon.stub()
+    };
+    $log.error.callsFake(console.error);
+
     DB = {
       info: sinon.stub(),
       put: sinon.stub(),
+      get: sinon.stub(),
+      query: sinon.stub()
     };
 
     module($provide => {
       $provide.value('$q', Q);
       $provide.value('$window', $window);
+      $provide.value('$log', $log);
       $provide.factory('DB', KarmaUtils.mockDB(DB));
       $provide.value('Session', {
         userCtx: () => {
@@ -66,6 +75,7 @@ describe('Telemetry service', () => {
       pouchDb.post = sinon.stub().resolves();
 
       return service.record('test', 100).then(() => {
+        chai.expect($log.error.callCount).to.equal(0);
         chai.expect(pouchDb.post.callCount).to.equal(1);
         chai
           .expect(pouchDb.post.args[0][0])
@@ -84,6 +94,7 @@ describe('Telemetry service', () => {
       pouchDb.post = sinon.stub().resolves();
 
       return service.record('test').then(() => {
+        chai.expect($log.error.callCount).to.equal(0);
         chai.expect(pouchDb.post.args[0][0].value).to.equal(1);
       });
     });
@@ -95,6 +106,7 @@ describe('Telemetry service', () => {
       pouchDb.post = sinon.stub().resolves();
 
       return service.record('test', 1).then(() => {
+        chai.expect($log.error.callCount).to.equal(0);
         chai.expect(storageSetItem.callCount).to.equal(2);
         chai
           .expect(storageSetItem.args[0][0])
@@ -109,7 +121,7 @@ describe('Telemetry service', () => {
       });
     });
 
-    it('aggregates once a month and resets the db', () => {
+    it.only('aggregates once a month and resets the db', () => {
       storageGetItem.withArgs('medic-greg-telemetry-db').returns('dbname');
       storageGetItem.withArgs('medic-greg-telemetry-date').returns(
         moment()
@@ -133,6 +145,32 @@ describe('Telemetry service', () => {
       });
       DB.info.resolves({ some: 'stats' });
       DB.put.resolves();
+      DB.get.withArgs('_design/medic-client').resolves({
+        _id: '_design/medic-client',
+        deploy_info: {
+          version: '3.0.0'
+        }
+      });
+      DB.query.withArgs('medic-client/forms', {include_docs: true}).resolves({
+        rows: [
+          {
+            id: 'form:anc_followup',
+            key: 'anc_followup',
+            doc: {
+              _id: 'form:anc_followup',
+              _attachments: {
+                xml: {
+                  content_type: 'application/xml',
+                  revpos: 10,
+                  digest: 'md5-t/JHKm/uGfTU1smtIh+SNA==',
+                  length: 42869,
+                  stub: true
+                }
+              }
+            }
+          }
+        ]
+      });
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
@@ -143,6 +181,7 @@ describe('Telemetry service', () => {
       };
 
       return service.record('test', 1).then(() => {
+        chai.expect($log.error.callCount).to.equal(0);
         chai.expect(pouchDb.post.callCount).to.equal(1);
         chai
           .expect(pouchDb.post.args[0][0])
@@ -159,6 +198,13 @@ describe('Telemetry service', () => {
         chai.expect(aggregatedDoc.metadata.year).to.equal(2018);
         chai.expect(aggregatedDoc.metadata.month).to.equal(9);
         chai.expect(aggregatedDoc.metadata.user).to.equal('greg');
+        console.log(aggregatedDoc.metadata.versions);
+        chai.expect(aggregatedDoc.metadata.versions).to.deep.equal({
+          appVersion: '3.0.0',
+          forms: {
+            'anc_followup': 'md5-t/JHKm/uGfTU1smtIh+SNA=='
+          }
+        });
         chai.expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
         chai.expect(aggregatedDoc.device).to.deep.equal({
           userAgent: 'Agent Smith',
@@ -196,6 +242,15 @@ describe('Telemetry service', () => {
       DB.info.resolves({ some: 'stats' });
       DB.put.onFirstCall().rejects({ status: 409 });
       DB.put.onSecondCall().resolves();
+      DB.get.withArgs('_design/medic-client').resolves({
+        _id: '_design/medic-client',
+        deploy_info: {
+          version: '3.0.0'
+        }
+      });
+      DB.query.withArgs('medic-client/forms', {include_docs: true}).resolves({
+        rows: []
+      });
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
@@ -206,6 +261,7 @@ describe('Telemetry service', () => {
       };
 
       return service.record('test', 1).then(() => {
+        chai.expect($log.error.callCount).to.equal(0);
         chai.expect(DB.put.callCount).to.equal(2);
         chai.expect(DB.put.args[1][0]._id).to.match(/conflicted/);
         chai.expect(DB.put.args[1][0].metadata.conflicted).to.equal(true);
