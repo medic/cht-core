@@ -5,6 +5,8 @@ const _ = require('underscore'),
       messageUtils = require('@medic/message-utils'),
       registrationUtils = require('@medic/registration-utils');
 
+const MEDIC_DB = 'medic';
+
 const normalizeResponse = doc => {
   return {
     type: 'Automated Reply',
@@ -101,6 +103,7 @@ const getRecordRegistrations = (registrations, record) => {
 };
 
 module.exports = {
+  dbName: MEDIC_DB,
   getDocIds: (options) => {
     return db.medic.query('medic-sms/tasks_messages', options)
       .then(result => result.rows)

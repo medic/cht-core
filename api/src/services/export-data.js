@@ -71,9 +71,12 @@ class SearchResultReader extends Readable {
 
         this.options.skip += this.options.limit;
 
-        return db.medic.allDocs({
+        return db.get(this.mapper.dbName).allDocs({
           keys: ids,
           include_docs: true
+        })
+        .then(result => {
+          return result;
         })
         .then(result => result.rows.map(row => row.doc))
         .then(lineage.hydrateDocs)

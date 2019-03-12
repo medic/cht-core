@@ -1,4 +1,5 @@
 const db = require('../../db');
+const ALL_META_DB = 'medic-all-meta';
 
 const safeStringify = obj => {
   try {
@@ -9,8 +10,13 @@ const safeStringify = obj => {
 };
 
 module.exports = {
+  dbName: ALL_META_DB,
   getDocIds: (options) => {
-    return db.medic.query('medic-admin/feedback', options)
+    options.include_docs = false; 
+    options.endkey = 'feedback-';
+    options.startkey = 'feedback-\ufff0';
+    options.descending = true;
+    return db.get(ALL_META_DB).allDocs(options)
       .then(result => result.rows.map(row => row.id));
   },
   map: () => {

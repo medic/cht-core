@@ -4,6 +4,8 @@ const _ = require('underscore'),
       dateFormat = require('./date-format'),
       search = require('@medic/search')(Promise, db.medic);
 
+const MEDIC_DB = 'medic';
+
 /**
  * Flattens a given object into an object where the keys are dot-notation
  * paths to the flattened values:
@@ -38,6 +40,7 @@ const flatten = (fields, prepend=[]) => {
 };
 
 module.exports = {
+  dbName: MEDIC_DB,
   getDocIds: (options, filters) => {
     return search('reports', filters, options).then(results => results.docIds);
   },

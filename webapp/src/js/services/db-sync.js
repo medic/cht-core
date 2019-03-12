@@ -3,7 +3,8 @@ const _ = require('underscore'),
       READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'],
       DDOC_PREFIX = ['_design/'],
       SYNC_INTERVAL = 5 * 60 * 1000, // 5 minutes
-      META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+      META_SYNC_INTERVAL = 30 * 60 * 1000, // 30 minutes
+      ALL_META_SYNC_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
 
@@ -27,6 +28,7 @@ angular
     const intervalPromises = {
       sync: undefined,
       meta: undefined,
+      allMeta: undefined,
     };
 
     var authenticationIssue = function(errors) {
@@ -111,6 +113,13 @@ angular
           });
           return error;
         });
+    };
+    
+    var replicateToAllMeta = function() {
+      var remote = DB({ allMeta: true, remote: true });
+      var local = DB({ meta: true });
+      remote.info()
+            .then(() => local.replicate.to(remote));
     };
 
     var syncMeta = function() {
@@ -219,6 +228,12 @@ angular
        * @returns Promise which resolves when both directions of the replication complete.
        */
       sync: force => {
+        // Replicating once every 24 hours
+        if (!intervalPromises.allMeta) {
+          intervalPromises.allMeta = $interval(replicateToAllMeta, ALL_META_SYNC_INTERVAL);
+          replicateToAllMeta();
+        }
+
         if (Session.isOnlineOnly()) {
           sendUpdate({ disabled: true });
           return $q.resolve();

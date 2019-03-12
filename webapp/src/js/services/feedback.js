@@ -1,3 +1,5 @@
+var uuidV4 = require('uuid/v4');
+
 /*
   Feedback service
  */
@@ -41,7 +43,10 @@ angular.module('inboxServices').factory('Feedback',
 
     var create = function(info, isManual, callback) {
       var userCtx = Session.userCtx();
+      let currentDate = new Date().toISOString().split('T')[0];
+      let uuid = uuidV4();
       callback(null, {
+        _id: `feedback-${currentDate}-${uuid}`,
         meta: {
           time: new Date().toISOString(),
           user: userCtx,

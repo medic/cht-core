@@ -47,9 +47,11 @@ angular
       return result;
     };
 
-    DB()
-      .query('medic-admin/feedback', {
-        include_docs: true,
+    DB({ allMeta: true })
+      .allDocs({
+        include_docs: true, 
+        endkey: 'feedback-', 
+        startkey: 'feedback-\ufff0',
         descending: true,
         limit: 20,
       })
