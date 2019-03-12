@@ -186,10 +186,17 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
+          // webapp files
           'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
           'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
+          'build/ddocs/medic/_attachments/js/service-worker.js': 'build/ddocs/medic/_attachments/js/service-worker.js',
+
+          // admin files
           'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
           'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
+
+          // public api files
+          'api/src/public/login/script.js': 'api/src/public/login/script.js',
         },
       },
     },
