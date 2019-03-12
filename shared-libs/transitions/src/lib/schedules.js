@@ -1,12 +1,14 @@
 const _ = require('underscore'),
-    config = require('../config'),
-    date = require('../date'),
-    moment = require('moment'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
-    messages = require('../lib/messages'),
-    messageUtils = require('@medic/message-utils'),
-    mutingUtils = require('../lib/muting_utils');
+      objectPath = require('object-path');
+
+const config = require('../config'),
+      date = require('../date'),
+      moment = require('moment'),
+      utils = require('../lib/utils'),
+      logger = require('../lib/logger'),
+      messages = require('../lib/messages'),
+      messageUtils = require('@medic/message-utils'),
+      mutingUtils = require('../lib/muting_utils');
 
 module.exports = {
     // return [hour, minute, timezone]
@@ -81,7 +83,7 @@ module.exports = {
             return false;
         }
 
-        docStart = utils.getVal(doc, schedule.start_from);
+        docStart = objectPath.get(doc, schedule.start_from);
 
         // if the document does not have the `start_from` property (or its
         // falsey) do nothing; this will be rerun on next document change
@@ -170,7 +172,7 @@ module.exports = {
             } else {
                 // bad offset, skip this msg
                 logger.error(
-                    `${msg.offset} cannot be parsed as a valid offset. Skipping this msg of ${schedule.name} schedule.`  
+                    `${msg.offset} cannot be parsed as a valid offset. Skipping this msg of ${schedule.name} schedule.`
                 );
             }
         });
