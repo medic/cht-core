@@ -104,6 +104,7 @@ describe('Export Data Service', () => {
           } }
         ]
       }));
+      sinon.stub(db, 'get').returns({ allDocs: allDocs });
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
         {
           _id: 'abc',
@@ -131,8 +132,8 @@ describe('Export Data Service', () => {
     it('includes tasks and scheduled tasks', () => {
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
-      query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
+      query.onCall(1).returns(Promise.resolve({ rows: [] }));      
+      const allDocs = sinon.stub().returns(Promise.resolve({
         rows: [
           { doc: {
             _id: 'abc',
@@ -154,6 +155,7 @@ describe('Export Data Service', () => {
           } }
         ]
       }));
+      sinon.stub(db, 'get').returns({ allDocs: allDocs });
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
         {
           _id: 'abc',
@@ -188,7 +190,7 @@ describe('Export Data Service', () => {
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
       query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
+      const allDocs = sinon.stub().returns(Promise.resolve({
         rows: [
           { doc: {
             _id: 'abc',
@@ -260,12 +262,13 @@ describe('Export Data Service', () => {
       }));
       query.onCall(1).returns(Promise.resolve({ rows: [ { doc: stockReport } ] }));
       query.onCall(2).returns(Promise.resolve({ rows: [ { doc: visitReport } ] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
+      const allDocs = sinon.stub().returns(Promise.resolve({
         rows: [
           { doc: stockReport },
           { doc: visitReport }
         ]
       }));
+      sinon.stub(db, 'get').returns({ allDocs: allDocs });
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
         stockReport,
         visitReport
@@ -307,7 +310,10 @@ describe('Export Data Service', () => {
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({ rows: [ { key: [ 'assessment' ] } ] }));
       query.onCall(1).returns(Promise.resolve({ rows: [ { doc: report } ] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({ rows: [ { doc: report } ] }));
+      const allDocs = sinon.stub().returns(Promise.resolve({
+        rows: [ { doc: report } ]
+      }));
+      sinon.stub(db, 'get').returns({ allDocs: allDocs });
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
         {
           _id: 'B87FEE75-D435-A648-BDEA-0A1B61021AA3',
@@ -362,7 +368,10 @@ describe('Export Data Service', () => {
       contactMapper.getDocIds = sinon.stub();
       contactMapper.getDocIds.onCall(0).returns(Promise.resolve([ contact2._id, contact1._id ]));
       contactMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({ rows: [ { doc: contact2 }, { doc: contact1 } ] }));
+      const allDocs = sinon.stub().returns(Promise.resolve({
+        rows: [ { doc: contact2 }, { doc: contact1 } ]
+      }));
+      sinon.stub(db, 'get').returns({ allDocs: allDocs });
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
         contact2,
         {
@@ -386,7 +395,8 @@ describe('Export Data Service', () => {
 
   describe('Handle error', () => {
     it('emit error', () => {
-      sinon.stub(db.medic, 'query').rejects({some: 'error'});
+      const allDocs = sinon.stub().returns(Promise.reject({some: 'error'}));
+      sinon.stub(db, 'get').returns({ allDocs: allDocs });
       return mockRequest('feedback')
       .catch(err => {
         const expected = {some: 'error'};
