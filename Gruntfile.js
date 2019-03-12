@@ -851,8 +851,8 @@ module.exports = function(grunt) {
     'mmcss',
     'mmjs',
     'enketo-xslt',
-    'minify',
     'build-common',
+    'minify',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
