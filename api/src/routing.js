@@ -147,7 +147,17 @@ app.use(
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
 // default threshold is 1KB
-app.use(compression());
+
+const additionalCompressibleTypes = ['application/x-font-ttf','font/ttf'];
+app.use(compression({
+  filter: (req, res) => {
+    if (additionalCompressibleTypes.includes(res.getHeader('Content-Type'))) {
+      return true;
+    }
+    // fallback to standard filter function
+    return compression.filter(req, res);
+  }
+}));
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
