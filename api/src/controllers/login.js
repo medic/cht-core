@@ -93,6 +93,7 @@ const createSession = req => {
     }),
     json: true,
     resolveWithFullResponse: true,
+    simple: false, // doesn't throw an error on non-200 responses
     body: { name: user, password: password },
     auth: { user: user, pass: password },
   });
