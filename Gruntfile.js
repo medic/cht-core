@@ -780,26 +780,6 @@ module.exports = function(grunt) {
         extDot: 'last',
       },
     },
-    'regex-check': {
-      'only-in-tests': {
-        files: [
-          {
-            src: [
-              'api/tests/**/*.js',
-              'webapp/tests/**/*.js',
-              'sentinel/tests/**/*.js',
-              'admin/tests/**/*.js',
-              'config/*/test/**/*.spec.js',
-            ],
-          },
-        ],
-        options: {
-          // in Mocha, .only() is used
-          // in Jasmine, fdescribe() and fit() are used
-          pattern: /(\.only\()|(fdescribe\()|(fit\()/g,
-        },
-      }
-    },
     xmlmin: {
       'enketo-xslt': {
         files: {
@@ -994,7 +974,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('static-analysis', 'Static analysis checks', [
-    'regex-check',
     'exec:blank-link-check',
     'exec:eslint',
     'exec:audit-whitelist',
