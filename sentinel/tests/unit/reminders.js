@@ -128,7 +128,7 @@ describe('reminders', () => {
       });
   });
 
-  it('getClinics calls db view', done => {
+  it('getClinics calls db view and hydrates docs', done => {
       sinon.stub(db.medic, 'query').callsArgWith(2, null, {
           rows: [
               {
@@ -138,14 +138,17 @@ describe('reminders', () => {
               }
           ]
       });
+      sinon.stub(reminders._lineage, 'hydrateDocs').resolves([{ id: 'xxx', contact: 'maria' }]);
 
       reminders.getClinics({
           reminder: {}
       }, function(err, clinics) {
           assert(_.isArray(clinics));
           assert.equal(clinics.length, 1);
-          assert.equal(_.first(clinics).id, 'xxx');
-          assert(db.medic.query.called);
+          assert.deepEqual(clinics, [{ id: 'xxx', contact: 'maria' }]);
+          assert.equal(db.medic.query.callCount, 1);
+          assert.equal(reminders._lineage.hydrateDocs.callCount, 1);
+          assert.deepEqual(reminders._lineage.hydrateDocs.args[0], [[{ id: 'xxx' }]]);
           done();
       });
   });
@@ -166,7 +169,7 @@ describe('reminders', () => {
                       tasks: [
                           {
                               form: 'XXX',
-                              ts: now.toISOString()
+                              timestamp: now.toISOString()
                           }
                       ]
                   }
@@ -177,7 +180,7 @@ describe('reminders', () => {
                       tasks: [
                           {
                               form: 'YYY',
-                              ts: now.toISOString()
+                              timestamp: now.toISOString()
                           }
                       ]
                   }
@@ -188,7 +191,7 @@ describe('reminders', () => {
                       tasks: [
                           {
                               form: 'XXX',
-                              ts: now.clone().add(1, 'hour').toISOString()
+                              timestamp: now.clone().add(1, 'hour').toISOString()
                           }
                       ]
                   }
@@ -226,12 +229,14 @@ describe('reminders', () => {
       });
   });
 
-  it('sendReminder saves doc with added task to clinic', done => {
+  it('sendReminder saves doc with added task to clinic, minifies doc first', done => {
       const now = moment();
       const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null);
+      sinon.spy(reminders._lineage, 'minify');
       reminders.sendReminder({
           clinic: {
               contact: {
+                  _id: 'contact',
                   phone: '+1234'
               }
           },
@@ -254,7 +259,10 @@ describe('reminders', () => {
           const week = now.format('w');
           assert.equal(message.message, `hi ${year} ${week}`);
           assert.equal(task.form, 'XXX');
-          assert.equal(task.ts, now.toISOString());
+          assert.equal(task.type, 'reminder');
+          assert.equal(task.timestamp, now.toISOString());
+          assert.deepEqual(clinic.contact, { _id: 'contact'});
+          assert.equal(reminders._lineage.minify.callCount, 1);
           done();
       });
   });
@@ -270,11 +278,11 @@ describe('reminders', () => {
           tasks: [
               {
                   form: 'XXX',
-                  ts: now.clone().add(1, 'minute').toISOString()
+                  timestamp: now.clone().add(1, 'minute').toISOString()
               },
               {
                   form: 'XXY',
-                  ts: now.toISOString()
+                  timestamp: now.toISOString()
               }
           ]
       });
@@ -293,11 +301,11 @@ describe('reminders', () => {
           tasks: [
               {
                   form: 'XXX',
-                  ts: now.toISOString()
+                  timestamp: now.toISOString()
               },
               {
                   form: 'XXY',
-                  ts: now.toISOString()
+                  timestamp: now.toISOString()
               }
           ]
       });
@@ -373,7 +381,7 @@ describe('reminders', () => {
           const viewOpts = call.args[1];
 
           assert.equal(view.callCount, 1);
-          assert.equal(call.args[0], 'medic/sent_reminders');
+          assert.equal(call.args[0], 'medic-sms/sent_reminders');
 
           assert.equal(viewOpts.limit, 1);
           assert(viewOpts.startkey);

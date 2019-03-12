@@ -13,7 +13,8 @@ const asyncOnlyTransitions = [
   'muting',
   'update_notifications',
   'multi_report_alerts',
-  'generate_patient_id_on_people'
+  'generate_patient_id_on_people',
+  'update_sent_forms'
 ];
 
 describe('transitions', () => {
