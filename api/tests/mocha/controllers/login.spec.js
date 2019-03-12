@@ -260,6 +260,26 @@ describe('login controller', () => {
       });
     });
 
+    it('does not set locale cookie if user language not defined', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      sinon.stub(request, 'post').resolves(postResponse);
+      sinon.stub(res, 'send');     
+      sinon.stub(res, 'status').returns(res);
+      const cookie = sinon.stub(res, 'cookie').returns(res);
+      sinon.stub(auth, 'getUserCtx').resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
+      sinon.stub(auth, 'hasAllPermissions').returns(false);
+      sinon.stub(auth, 'getUserSettings').resolves({ });
+      return controller.post(req, res).then(() => {
+        chai.expect(cookie.callCount).to.equal(2);
+        chai.expect(cookie.args[0][0]).to.equal('AuthSession');
+        chai.expect(cookie.args[1][0]).to.equal('userCtx');
+      });
+    });
+
     it('redict admin users to admin app after successful login', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
