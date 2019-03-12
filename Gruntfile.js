@@ -196,7 +196,7 @@ module.exports = function(grunt) {
           'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
 
           // public api files
-          'api/src/public/login/script.js': 'api/src/public/login/script.js',
+          'api/build/public/login/script.js': 'api/build/public/login/script.js',
         },
       },
     },
@@ -236,10 +236,9 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          'build/ddocs/medic/_attachments/css/inbox.css':
-            'build/ddocs/medic/_attachments/css/inbox.css',
-          'build/ddocs/medic-admin/_attachments/css/main.css':
-            'build/ddocs/medic-admin/_attachments/css/main.css',
+          'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
+          'build/ddocs/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-admin/_attachments/css/main.css',
+          'api/build/public/login/style.css': 'api/build/public/login/style.css',
         },
       },
     },
@@ -264,24 +263,16 @@ module.exports = function(grunt) {
     },
     copy: {
       ddocs: {
-        files: [
-          {
-            expand: true,
-            cwd: 'ddocs/',
-            src: '**/*',
-            dest: 'build/ddocs/',
-          },
-        ],
+        expand: true,
+        cwd: 'ddocs/',
+        src: '**/*',
+        dest: 'build/ddocs/',
       },
       webapp: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'webapp/node_modules/font-awesome/fonts/*',
-            dest: 'build/ddocs/medic/_attachments/fonts/',
-          },
-        ],
+        expand: true,
+        flatten: true,
+        src: 'webapp/node_modules/font-awesome/fonts/*',
+        dest: 'build/ddocs/medic/_attachments/fonts/',
       },
       'inbox-file-attachment': {
         expand: true,
@@ -290,20 +281,22 @@ module.exports = function(grunt) {
         dest: 'build/ddocs/medic/_attachments/',
       },
       'ddoc-attachments': {
-        files: [
-          {
-            expand: true,
-            cwd: 'webapp/src/',
-            src: [
-              'audio/**/*',
-              'fonts/**/*',
-              'img/**/*',
-              'templates/inbox.html',
-              'ddocs/medic/_attachments/**/*',
-            ],
-            dest: 'build/ddocs/medic/_attachments/',
-          },
+        expand: true,
+        cwd: 'webapp/src/',
+        src: [
+          'audio/**/*',
+          'fonts/**/*',
+          'img/**/*',
+          'templates/inbox.html',
+          'ddocs/medic/_attachments/**/*',
         ],
+        dest: 'build/ddocs/medic/_attachments/',
+      },
+      'api-resources': {
+        expand: true,
+        cwd: 'api/src/public/',
+        src: '**/*',
+        dest: 'api/build/public/',
       },
       'admin-resources': {
         files: [
@@ -316,35 +309,30 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['admin/node_modules/font-awesome/fonts/*', 'webapp/src/fonts/**/*'],
+            src: [
+              'admin/node_modules/font-awesome/fonts/*',
+              'webapp/src/fonts/**/*'
+            ],
             dest: 'build/ddocs/medic-admin/_attachments/fonts/',
           },
         ],
       },
       'libraries-to-patch': {
-        files: [
-          {
-            expand: true,
-            cwd: 'webapp/node_modules',
-            src: [
-              'bootstrap-daterangepicker/**',
-              'enketo-core/**',
-              'font-awesome/**',
-              'moment/**',
-            ],
-            dest: 'webapp/node_modules_backup',
-          },
+        expand: true,
+        cwd: 'webapp/node_modules',
+        src: [
+          'bootstrap-daterangepicker/**',
+          'enketo-core/**',
+          'font-awesome/**',
+          'moment/**',
         ],
+        dest: 'webapp/node_modules_backup',
       },
       'enketo-xslt': {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
-            dest: 'build/ddocs/medic/_attachments/xslt/',
-          },
-        ],
+        expand: true,
+        flatten: true,
+        src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
+        dest: 'build/ddocs/medic/_attachments/xslt/',
       },
     },
     exec: {
@@ -370,6 +358,7 @@ module.exports = function(grunt) {
           const ignore = [
             'webapp/src/js/modules/xpath-element-path.js',
             'api/src/extracted-resources/**/*',
+            'api/build/**/*',
             '**/node_modules/**',
             'sentinel/src/lib/pupil/**',
             'build/**',
@@ -877,6 +866,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-common', 'Build the static resources', [
     'copy:webapp',
+    'copy:api-resources',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',
     'build-admin',
