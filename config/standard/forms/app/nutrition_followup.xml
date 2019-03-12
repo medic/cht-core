@@ -4,7 +4,7 @@
     <h:title>child nutrition followup</h:title>
     <model>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-05 15-57">
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-12 12-02">
           <inputs>
             <meta>
               <location>
@@ -31,6 +31,7 @@
             <gender/>
             <weight/>
             <height/>
+            <muac/>
             <wfh/>
             <nn3/>
             <wfh_message/>
@@ -74,6 +75,7 @@
       <bind nodeset="/nutrition_followup/measurements/gender" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_followup/measurements/weight" required="true()" type="decimal"/>
       <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_followup/measurements/height" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_followup/measurements/muac" required="false()" type="decimal"/>
       <bind calculate="z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight )" nodeset="/nutrition_followup/measurements/wfh" type="string"/>
       <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" type="string"/>
       <bind calculate="if( /nutrition_followup/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -2 and  /nutrition_followup/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt;= 2 and  /nutrition_followup/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_followup/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_followup/measurements/wfh_message" type="string"/>
@@ -142,6 +144,9 @@
       </input>
       <input ref="/nutrition_followup/measurements/height">
         <label>Height (cms)</label>
+      </input>
+      <input ref="/nutrition_followup/measurements/muac">
+        <label>MUAC Measurement</label>
       </input>
       <input ref="/nutrition_followup/measurements/nn3">
         <label>WFH: <output value=" /nutrition_followup/measurements/wfh "/></label>

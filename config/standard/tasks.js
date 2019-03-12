@@ -293,7 +293,6 @@
     appliesTo: 'scheduled_tasks',
     appliesToType: ['C', 'CW', 'child_health_registration'],
     appliesIf: function(c, r, i) {
-      console.log("imm applies: ", isCoveredByUseCase(c.contact, 'imm') && immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1);
       return (
         isCoveredByUseCase(c.contact, 'imm') &&
         immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1
@@ -311,7 +310,6 @@
     resolvedIf: function(c, r, event, dueDate, i) {
       // Resolved if the scheduled SMS that generated the task is cleared,
       //          if an immunization report has been received in time window starting at SMS send date
-      console.log("^^^^^^^^^^^^^^^^ imm missing visit ^^^^^^^^^^^^^^^^^^^");
       return (
         r.scheduled_tasks[i].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
@@ -330,55 +328,38 @@
     title: 'task.nutrition_followup.title',
     appliesTo: 'scheduled_tasks',
     appliesToType: ['nutrition_screening'],
-    appliesIf: function(c, r, i) {
-      // if OTP: 1 - 12
-      // if SFP: 1 -7##
-      // if SC: 1
-      console.log("########## task.nutrition_followup.title ######################");
-      console.log(c);
-      console.log(r);
-      console.log(i);
-      console.log("isCoveredByUseCase(c.contact, 'gmp'): ", isCoveredByUseCase(c.contact, 'gmp'));
-      // return isCoveredByUseCase(c.contact, 'gmp');
-      // if (i === 4){
-      //
-      // }
-      console.log("applies if: ", isCoveredByUseCase(c.contact, 'gmp') && [2,3].indexOf(r.scheduled_tasks[i].group) !== -1);
+    appliesIf: function(c, r) {
       return (
         isCoveredByUseCase(c.contact, 'gmp') &&
-        [2,3].indexOf(r.scheduled_tasks[i].group) !== -1
+        r.fields.treatment.program &&
+        (r.fields.treatment.program === 'OTP' || r.fields.treatment.program === 'SFP' || r.fields.treatment.program === 'SC')
       );
-      // return true;
     },
     actions: [{ form: 'nutrition_followup' }],
     events: [
       {
         id: 'nutrition-followup-missing-visit',
-        days: 0,
+        dueDate: function(r, e, i){
+          return new Date(r.scheduled_tasks[i].due.slice(0, 10));
+        },
         start: 0,
         end: 3,
-      },
+      }
     ],
     resolvedIf: function(c, r, event, dueDate, i) {
-      console.log("************resolvedIf*************************");
-      console.log("i: ", i);
-      console.log(c);
-      console.log(r);
-      console.log(event);
-      console.log(dueDate);
       return (
         r.scheduled_tasks[i].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
           ['nutrition_followup', 'CF'],
-          Utils.addDate(dueDate, -event.days).getTime(),
+          Utils.addDate(dueDate, 0).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
       );
-    },
+    }
   },
 
-  // create nutrition screening task if degree of severity is severe
+  // create nutrition screening task if degree of severity is severe (3)
   {
     icon: 'child',
     title: 'task.nutrition_screening.title',
@@ -389,7 +370,8 @@
       return r.fields.severity === "3";
     },
     actions: [{form: 'nutrition_screening'}],
-    events: [{
+    events: [
+      {
       id: 'nutrition_screening',
       days: 2,
       start: 2,
@@ -433,10 +415,13 @@
     icon: 'risk',
     title: 'task.death_confirmation.title',
     appliesTo: 'reports',
-    appliesToType: ['DR', 'death_confirmation'],
-    appliesIf: function(c, r, i){
+    appliesToType: ['DR', 'nutrition_followup'],
+    appliesIf: function(c, r){
       /* jshint unused:vars */
-      return r.form === 'DR';
+      return (
+        r.form === 'DR' ||
+        (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.outcome === 'dead')
+      );
     },
     actions: [{form: 'death_confirmation'}],
     events: [{
@@ -445,8 +430,7 @@
       start: 2,
       end: 7
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'death_confirmation' && r.fields.death_report.death === 'yes';
       });
