@@ -101,20 +101,7 @@ angular
         const date = moment(getLastAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
-          let version;
-          if (row.doc._attachments && row.doc._attachments.xml) {
-            // While XML forms may have a version declared in the XML as of writing they are not
-            // required, seldom used, are not enforced (they don't have to change if the form changes)
-            // and so are entirely unreliable. The hash is the only real safe version we have.
-            version = row.doc._attachments.xml.digest;
-          } else {
-            // If this is executing a presumption about the forms view has changed and the block
-            // above wasn't changed as well. As of writing if a form is in the forms view it is an
-            // XML form with the XML attached. We just don't want this to crash
-            version = 'unknown';
-          }
-
-          keyToVersion[row.key] = version;
+          keyToVersion[row.key] = row.doc._rev;
 
           return keyToVersion;
         }, {});
@@ -125,7 +112,7 @@ angular
           user: Session.userCtx().name,
           deviceId: getUniqueDeviceId(),
           versions: {
-            appVersion: version,
+            app: version,
             forms: forms
           }
         };

@@ -121,7 +121,7 @@ describe('Telemetry service', () => {
       });
     });
 
-    it.only('aggregates once a month and resets the db', () => {
+    it('aggregates once a month and resets the db', () => {
       storageGetItem.withArgs('medic-greg-telemetry-db').returns('dbname');
       storageGetItem.withArgs('medic-greg-telemetry-date').returns(
         moment()
@@ -158,15 +158,7 @@ describe('Telemetry service', () => {
             key: 'anc_followup',
             doc: {
               _id: 'form:anc_followup',
-              _attachments: {
-                xml: {
-                  content_type: 'application/xml',
-                  revpos: 10,
-                  digest: 'md5-t/JHKm/uGfTU1smtIh+SNA==',
-                  length: 42869,
-                  stub: true
-                }
-              }
+              _rev: '1-abc'
             }
           }
         ]
@@ -198,11 +190,10 @@ describe('Telemetry service', () => {
         chai.expect(aggregatedDoc.metadata.year).to.equal(2018);
         chai.expect(aggregatedDoc.metadata.month).to.equal(9);
         chai.expect(aggregatedDoc.metadata.user).to.equal('greg');
-        console.log(aggregatedDoc.metadata.versions);
         chai.expect(aggregatedDoc.metadata.versions).to.deep.equal({
-          appVersion: '3.0.0',
+          app: '3.0.0',
           forms: {
-            'anc_followup': 'md5-t/JHKm/uGfTU1smtIh+SNA=='
+            'anc_followup': '1-abc'
           }
         });
         chai.expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
