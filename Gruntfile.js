@@ -866,6 +866,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
+    'copy:api-resources',
     'build-common',
     'couch-compile:primary',
   ]);
@@ -875,7 +876,6 @@ module.exports = function(grunt) {
     'mmjs',
     'enketo-xslt',
     'copy:webapp',
-    'copy:api-resources',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',
     'build-admin',
@@ -901,6 +901,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+    'copy:api-resources',
     'uglify:api',
     'cssmin:api',
     'exec:bundle-dependencies',
