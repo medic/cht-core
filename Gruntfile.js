@@ -184,7 +184,7 @@ module.exports = function(grunt) {
         banner:
           '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
-      build: {
+      web: {
         files: {
           // webapp files
           'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
@@ -194,11 +194,14 @@ module.exports = function(grunt) {
           // admin files
           'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
           'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
-
-          // public api files
-          'api/build/public/login/script.js': 'api/build/public/login/script.js',
         },
       },
+      api: {
+        files: {
+          // public api files
+          'api/build/public/login/script.js': 'api/build/public/login/script.js',
+        }
+      }
     },
     env: {
       'unit-test': {
@@ -231,16 +234,23 @@ module.exports = function(grunt) {
       },
     },
     cssmin: {
-      all: {
+      web: {
         options: {
           keepSpecialComments: 0,
         },
         files: {
           'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
           'build/ddocs/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-admin/_attachments/css/main.css',
-          'api/build/public/login/style.css': 'api/build/public/login/style.css',
         },
       },
+      api: {
+        options: {
+          keepSpecialComments: 0,
+        },
+        files: {
+          'api/build/public/login/style.css': 'api/build/public/login/style.css',
+        },
+      }
     },
     postcss: {
       options: {
@@ -891,6 +901,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+    'uglify:api',
+    'cssmin:api',
     'exec:bundle-dependencies',
     'exec:pack-node-modules',
   ]);
@@ -927,15 +939,11 @@ module.exports = function(grunt) {
     'karma:unit-continuous'
   ]);
 
-  grunt.registerTask(
-    'test-api-integration',
-    'Integration tests for medic-api',
-    [
-      'exec:check-env-vars',
-      'exec:setup-api-integration',
-      'mochaTest:api-integration',
-    ]
-  );
+  grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
+    'exec:check-env-vars',
+    'exec:setup-api-integration',
+    'mochaTest:api-integration',
+  ]);
 
   grunt.registerTask('unit', 'Unit tests', [
     'karma:unit',
@@ -954,13 +962,13 @@ module.exports = function(grunt) {
 
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
-    'uglify',
+    'uglify:web',
     'optimize-js',
-    'cssmin',
+    'cssmin:web',
     'exec:bundlesize',
   ]);
 
-  grunt.registerTask('ci-compile', 'build, minify, lint, unit, integration test', [
+  grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'install-dependencies',
     'build',
     'build-admin',
