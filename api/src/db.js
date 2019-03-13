@@ -52,9 +52,16 @@ if (UNIT_TEST_ENV) {
       return PouchDB.fetch(url, opts);
     },
   });
+  const DBAllMeta = new PouchDB(`${environment.couchUrl}-all-meta`, {
+    fetch: (url, opts) => {
+      opts.headers.set('X-Medic-Service', 'api');
+      return PouchDB.fetch(url, opts);
+    },
+  });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
   DB.setMaxListeners(0);
   module.exports.medic = DB;
+  module.exports.medicAllMeta = DBAllMeta;
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name

@@ -71,7 +71,7 @@ class SearchResultReader extends Readable {
 
         this.options.skip += this.options.limit;
 
-        return db.get(this.mapper.dbName).allDocs({
+        return this.mapper.db.allDocs({
           keys: ids,
           include_docs: true
         })

@@ -103,7 +103,7 @@ describe('Export Data controller', () => {
       auth.check.resolves();
       auth.getUserCtx.returns(Promise.resolve({}));
       auth.isOnlineOnly.returns(true);
-      sinon.stub(db, 'get').returns({ allDocs: () => Promise.reject(new Error('db not found')) });
+      sinon.stub(db.medicAllMeta, 'allDocs').returns(Promise.reject(new Error('db not found')));
       
       controller.get(req, res).then(() => {
         // defer execution to allow the stream to write first

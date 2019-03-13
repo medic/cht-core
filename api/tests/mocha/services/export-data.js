@@ -42,7 +42,7 @@ describe('Export Data Service', () => {
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
       query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      const allDocs = sinon.stub().returns(Promise.resolve({
+      const allDocs = sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
         rows: [
           { doc: {
             _id: 'abc',
@@ -58,7 +58,6 @@ describe('Export Data Service', () => {
           } }
         ]
       }));
-      const dbGet = sinon.stub(db, 'get').returns({ allDocs: allDocs });
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
         {
           _id: 'abc',
@@ -79,7 +78,6 @@ describe('Export Data Service', () => {
       return mockRequest('messages').then(actual => {
         actual.should.equal(expected);
         query.callCount.should.equal(2);
-        dbGet.callCount.should.equal(1);
         allDocs.callCount.should.equal(1);
       });
     });

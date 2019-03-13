@@ -1,10 +1,8 @@
 const db = require('../../db'),
       search = require('@medic/search')(Promise, db.medic);
 
-const MEDIC_DB = 'medic';
-
 module.exports = {
-  dbName: MEDIC_DB,
+  db: db.medic,
   getDocIds: (options, filters) => {
     return search('contacts', filters, options).then(results => results.docIds);
   },
