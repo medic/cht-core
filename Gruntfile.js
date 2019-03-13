@@ -845,26 +845,23 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
-    'exec:clean-build-dir',
-    'copy:ddocs',
     'build-node-modules',
-    'mmcss',
-    'mmjs',
-    'enketo-xslt',
     'build-common',
     'minify',
+    'couch-compile:primary',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
+    'build-common',
+    'couch-compile:primary',
+  ]);
+
+  grunt.registerTask('build-common', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
     'mmcss',
     'mmjs',
     'enketo-xslt',
-    'build-common',
-  ]);
-
-  grunt.registerTask('build-common', 'Build the static resources', [
     'copy:webapp',
     'copy:api-resources',
     'exec:set-ddoc-version',
@@ -877,7 +874,6 @@ module.exports = function(grunt) {
     'couch-compile:secondary',
     'copy:ddoc-attachments',
     'generate-service-worker',
-    'couch-compile:primary',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -892,11 +888,10 @@ module.exports = function(grunt) {
     'notify:deployed',
   ]);
 
-  grunt.registerTask(
-    'build-node-modules',
-    'Build and pack api and sentinel bundles',
-    ['exec:bundle-dependencies', 'exec:pack-node-modules']
-  );
+  grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+    'exec:bundle-dependencies',
+    'exec:pack-node-modules',
+  ]);
 
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
@@ -920,6 +915,7 @@ module.exports = function(grunt) {
     'exec:reset-test-databases',
     'build-node-modules',
     'build-ddoc',
+    'couch-compile:primary',
     'couch-push:test',
     'protractor:performance-tests-and-services',
   ]);
@@ -949,11 +945,11 @@ module.exports = function(grunt) {
     'env:general',
   ]);
 
-  grunt.registerTask(
-    'test',
-    'Lint, unit tests, api-integration tests and e2e tests',
-    ['unit', 'test-api-integration', 'e2e']
-  );
+  grunt.registerTask('test', 'Lint, unit tests, api-integration tests and e2e tests', [
+    'unit',
+    'test-api-integration',
+    'e2e',
+  ]);
 
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
@@ -997,13 +993,15 @@ module.exports = function(grunt) {
     'exec:audit-whitelist',
   ]);
 
-  grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
+  grunt.registerTask('eslint', 'Runs eslint', [
+    'exec:eslint'
+  ]);
 
-  grunt.registerTask(
-    'dev-webapp-no-dependencies',
-    'Build and deploy the webapp for dev, without reinstalling dependencies.',
-    ['build-dev', 'deploy', 'watch']
-  );
+  grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
+    'build-dev',
+    'deploy',
+    'watch',
+  ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
     'exec:api-dev',
@@ -1013,11 +1011,9 @@ module.exports = function(grunt) {
     'exec:setup-admin',
   ]);
 
-  grunt.registerTask(
-    'dev-sentinel',
-    'Run sentinel and watch for file changes',
-    ['exec:sentinel-dev']
-  );
+  grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
+    'exec:sentinel-dev',
+  ]);
 
   grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
     'replace:change-ddoc-id-for-testing',
