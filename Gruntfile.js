@@ -845,6 +845,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
+    'exec:clean-build-dir',
+    'copy:ddocs',
     'build-node-modules',
     'build-common',
     'minify',
@@ -852,13 +854,13 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
+    'exec:clean-build-dir',
+    'copy:ddocs',
     'build-common',
     'couch-compile:primary',
   ]);
 
   grunt.registerTask('build-common', 'Build the static resources', [
-    'exec:clean-build-dir',
-    'copy:ddocs',
     'mmcss',
     'mmjs',
     'enketo-xslt',
@@ -920,11 +922,10 @@ module.exports = function(grunt) {
     'protractor:performance-tests-and-services',
   ]);
 
-  grunt.registerTask(
-    'unit-continuous',
-    'Lint, karma unit tests running on a loop',
-    ['exec:eslint', 'karma:unit-continuous']
-  );
+  grunt.registerTask('unit-continuous', 'Lint, karma unit tests running on a loop', [
+    'exec:eslint',
+    'karma:unit-continuous'
+  ]);
 
   grunt.registerTask(
     'test-api-integration',
