@@ -67,7 +67,8 @@ module.exports = {
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.fields &&
       doc.fields.patient_id &&
-      !transitionUtils.hasRun(info, TRANSITION_NAME)
+      !transitionUtils.hasRun(info, TRANSITION_NAME) &&
+      utils.isValidSubmission(doc)
     );
   },
   onMatch: change => {

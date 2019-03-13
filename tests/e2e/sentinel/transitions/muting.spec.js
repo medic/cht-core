@@ -65,7 +65,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { public_form: true } }
     };
 
     const doc = {
@@ -94,7 +95,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { NOT_MUTE: { public_form: true } }
     };
 
     const doc = {
@@ -144,7 +146,8 @@ describe('muting', () => {
           ],
           join_responses: false
         }
-      }
+      },
+      forms: { mute: { public_form: true } }
     };
 
     const doc1 = {
@@ -242,7 +245,8 @@ describe('muting', () => {
             content: 'Contact already unmuted'
           }],
         }]
-      }
+      },
+      forms: { mute: { public_form: true }, unmute: { public_form: true } }
     };
 
     const mute1 = {
@@ -397,7 +401,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { public_form: true }, unmute: { public_form: true } }
     };
 
     const mute = {
@@ -505,7 +510,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { public_form: true }, unmute: { public_form: true } }
     };
 
     const mute = {
@@ -645,7 +651,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { public_form: true }, unmute: { public_form: true } }
     };
 
     const mute = {
@@ -808,6 +815,7 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
+      content_type: 'xml',
       reported_date: new Date().getTime()
     };
 
@@ -818,6 +826,7 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
+      content_type: 'xml',
       reported_date: new Date().getTime()
     };
 

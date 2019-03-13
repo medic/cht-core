@@ -136,15 +136,13 @@ module.exports = {
     });
   },
   filter: (doc, info = {}) => {
-    const self = module.exports,
-      form = utils.getForm(doc && doc.form);
+    const self = module.exports;
+
     return Boolean(
       doc.type === 'data_record' &&
-        self.getRegistrationConfig(self.getConfig(), doc.form) &&
-        !transitionUtils.hasRun(info, NAME) &&
-        (utils.isXFormReport(doc) || // xform submission
-        (form && utils.getClinicPhone(doc)) || // json submission by known submitter
-          (form && form.public_form)) // json submission to public form
+      self.getRegistrationConfig(self.getConfig(), doc.form) &&
+      !transitionUtils.hasRun(info, NAME) &&
+      utils.isValidSubmission(doc) // requires either an xform, a known submitter or public form for SMS
     );
   },
   getDOB: doc => {

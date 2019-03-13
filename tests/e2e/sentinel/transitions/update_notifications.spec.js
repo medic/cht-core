@@ -57,7 +57,8 @@ describe('update_notifications', () => {
       fields: {
         patient_uuid: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     return utils
@@ -76,7 +77,8 @@ describe('update_notifications', () => {
       notifications: {
         on_form: 'on',
         off_form: 'off'
-      }
+      },
+      forms: { not_off: { public_form: true } }
     };
 
     const doc = {
@@ -137,7 +139,8 @@ describe('update_notifications', () => {
       fields: {
         patient_id: 'unknown'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     const doc2 = {
@@ -148,7 +151,8 @@ describe('update_notifications', () => {
       fields: {
         patient_id: 'this will not match the validation rule'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     return utils
@@ -218,7 +222,8 @@ describe('update_notifications', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     const mute2 = {
@@ -228,7 +233,8 @@ describe('update_notifications', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     const unmute1 = {
@@ -238,7 +244,8 @@ describe('update_notifications', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     const unmute2 = {
@@ -248,7 +255,8 @@ describe('update_notifications', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     let muteTime,

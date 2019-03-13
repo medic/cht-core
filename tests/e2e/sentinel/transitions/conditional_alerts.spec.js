@@ -49,7 +49,8 @@ describe('conditional_alerts', () => {
           message: 'This is an alert',
           recipient: 'reporting_unit'
         }
-      ]
+      ],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -78,7 +79,8 @@ describe('conditional_alerts', () => {
         condition: true,
         message: 'This is an alert',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { O: { public_form: true } }
     };
 
     const doc = {
@@ -107,7 +109,8 @@ describe('conditional_alerts', () => {
         condition: 'FORM(0).somefield > 100',
         message: 'This is an alert',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -138,7 +141,8 @@ describe('conditional_alerts', () => {
         condition: 'FORM(0).somefield > 100',
         message: 'This is an alert',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -184,7 +188,8 @@ describe('conditional_alerts', () => {
         condition: 'FORM(0).temp > 37 && (!FORM(1) || FORM(0).reported_date - FORM(1).reported_date > 10000)',
         message: 'Patient has a fever',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const form1 = {

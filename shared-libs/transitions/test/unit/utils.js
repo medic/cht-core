@@ -213,4 +213,73 @@ describe('utils', () => {
       });
     });
   });
+
+  describe('isValidSubmission', () => {
+    it('should return false with invalid params', () => {
+      utils.isValidSubmission().should.deep.equal(false);
+      utils.isValidSubmission(false).should.deep.equal(false);
+    });
+
+    it('returns false for reports for unknown json form', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').resolves({ F: { public_form: true } });
+      sinon.spy(utils, 'getForm');
+      const actual = utils.isValidSubmission(doc);
+      utils.getForm.callCount.should.equal(1);
+      utils.getForm.args[0][0].should.equal('R');
+      actual.should.equal(false);
+    });
+
+    it('returns false for reports from unknown clinic', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false }});
+      sinon.spy(utils, 'getClinicPhone');
+      const actual = utils.isValidSubmission(doc);
+      config.get.callCount.should.equal(1);
+      config.get.args[0][0].should.equal('forms');
+      utils.getClinicPhone.callCount.should.equal(1);
+      utils.getClinicPhone.args[0].should.deep.equal([doc]);
+      actual.should.equal(false);
+    });
+
+    it('returns true for reports for public forms from unknown clinic', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: true } });
+      sinon.spy(utils, 'getClinicPhone');
+      const actual = utils.isValidSubmission(doc);
+      config.get.callCount.should.equal(1);
+      config.get.args[0][0].should.equal('forms');
+      utils.getClinicPhone.callCount.should.equal(0);
+      actual.should.equal(true);
+    });
+
+    it('returns true for xforms reports', () => {
+      const doc = { form: 'R', content_type: 'xml', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ OTHER: {} });
+      const actual = utils.isValidSubmission(doc);
+      config.get.callCount.should.equal(1);
+      config.get.args[0][0].should.equal('forms');
+      actual.should.equal(true);
+    });
+
+    it('returns true for reports for non-public forms from known clinics', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
+      sinon.stub(utils, 'getClinicPhone').returns('123456');
+      const actual = utils.isValidSubmission(doc);
+      config.get.callCount.should.equal(1);
+      utils.getClinicPhone.callCount.should.equal(1);
+      actual.should.equal(true);
+    });
+
+    it('returns true for reports for non-public forms from known submitters', () => {
+      const doc = { form: 'R', type: 'data_record', contact: { phone: '12345' } };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
+      sinon.spy(utils, 'getClinicPhone');
+      const actual = utils.isValidSubmission(doc);
+      config.get.callCount.should.equal(1);
+      utils.getClinicPhone.callCount.should.equal(1);
+      actual.should.equal(true);
+    });
+  });
 });

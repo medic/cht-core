@@ -28,7 +28,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { DEAD: { public_form: true } }
     };
 
     const doc = {
@@ -62,7 +63,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { MAYBE_DEAD: { public_form: true } }
     };
 
     const doc = {
@@ -96,7 +98,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { DEAD: { public_form: true } }
     };
 
     const doc = {
@@ -130,7 +133,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { DEAD: { public_form: true } }
     };
 
     const doc = {
@@ -170,7 +174,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'fields.time_of_death'
-      }
+      },
+      forms: { DEAD: { public_form: true }, UNDEAD: { public_form: true } }
     };
 
     const doc = {

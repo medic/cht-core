@@ -65,9 +65,10 @@ module.exports = {
   filter: function(doc, info = {}) {
     return Boolean(
       doc &&
-        doc.form &&
-        doc.type === 'data_record' &&
-        !transitionUtils.hasRun(info, NAME)
+      doc.form &&
+      doc.type === 'data_record' &&
+      !transitionUtils.hasRun(info, NAME) &&
+      utils.isValidSubmission(doc)
     );
   },
   getConfig: function() {

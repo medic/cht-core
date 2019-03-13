@@ -17,7 +17,8 @@ describe('multi_report_alerts', () => {
         recipients: 'new_report.from',
         time_window_in_days: 1,
         forms: 'FORM'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -48,7 +49,8 @@ describe('multi_report_alerts', () => {
         recipients: 'new_report.from',
         time_window_in_days: 1,
         forms: 'FORM'
-      }]
+      }],
+      forms: { NOT_FORM: { public_form: true } }
     };
 
     const doc = {
@@ -79,7 +81,8 @@ describe('multi_report_alerts', () => {
         recipients: ['new_report.from'],
         time_window_in_days: 1,
         forms: 'FORM'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -121,7 +124,8 @@ describe('multi_report_alerts', () => {
         recipients: ['new_report.from'],
         time_window_in_days: 1,
         forms: 'FORM'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -186,7 +190,8 @@ describe('multi_report_alerts', () => {
         recipients: ['new_report.sent_by', 'new_report.home_phone'],
         time_window_in_days: 1,
         forms: 'FORM'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -254,7 +259,8 @@ describe('multi_report_alerts', () => {
         recipients: ['new_report.from'],
         time_window_in_days: 1,
         forms: 'FORM'
-      }]
+      }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {

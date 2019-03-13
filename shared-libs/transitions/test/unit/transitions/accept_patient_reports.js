@@ -21,8 +21,22 @@ describe('accept_patient_reports', () => {
     it('no type returns false', () => {
       transition.filter({ form: 'x' }).should.equal(false);
     });
+    it('invalid submission returns false', () => {
+      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      sinon.stub(utils, 'isValidSubmission').returns(false);
+      transition
+        .filter({
+          form: 'x',
+          type: 'data_record',
+          reported_date: 1,
+        })
+        .should.equal(false);
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
+    });
     it('returns true', () => {
       sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      sinon.stub(utils, 'isValidSubmission').returns(true);
       transition
         .filter({
           form: 'x',
@@ -30,6 +44,8 @@ describe('accept_patient_reports', () => {
           reported_date: 1,
         })
         .should.equal(true);
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
     });
   });
 

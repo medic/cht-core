@@ -53,7 +53,8 @@ describe('accept_patient_reports', () => {
   it('should be skipped when transition is disabled', () => {
     const settings = {
       transitions: { accept_patient_reports: false },
-      patient_reports: [{ form: 'FORM' }]
+      patient_reports: [{ form: 'FORM' }],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc = {
@@ -77,7 +78,8 @@ describe('accept_patient_reports', () => {
   it('should be skipped when no matching config', () => {
     const settings = {
       transitions: { accept_patient_reports: false },
-      patient_reports: [{ form: 'FORM' }]
+      patient_reports: [{ form: 'FORM' }],
+      forms: { NOT_FORM: { public_form: true } }
     };
 
     const doc = {
@@ -125,7 +127,8 @@ describe('accept_patient_reports', () => {
             }],
           }]
         }
-      ]
+      ],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc1 = {
@@ -230,7 +233,8 @@ describe('accept_patient_reports', () => {
             }
           ]
         }
-      ]
+      ],
+      forms: { FORM: { public_form: true } }
     };
 
     const doc1 = {
@@ -311,7 +315,7 @@ describe('accept_patient_reports', () => {
       transitions: { accept_patient_reports: true },
       patient_reports: [{ form: 'FORM', messages: [] }],
       registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
-      forms: { sms_form_1: { public_form: true }, sms_form_2: { public_form: false } }
+      forms: { sms_form_1: { public_form: true }, sms_form_2: { public_form: false }, FORM: { public_form: true } }
     };
 
     const reports = [
@@ -436,7 +440,7 @@ describe('accept_patient_reports', () => {
         }
       ],
       registrations: [{ form: 'form_1' }, { form: 'form_2' }],
-      forms: { form_1: { public_form: true }, form_2: { public_form: true } }
+      forms: { form_1: { public_form: true }, form_2: { public_form: true }, SILENCE1: { public_form: false } }
     };
 
     const oneDay = 24 * 60 * 60 * 1000;
@@ -517,7 +521,8 @@ describe('accept_patient_reports', () => {
       fields: {
         patient_id: 'patient',
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     const silence1 = {
@@ -528,7 +533,8 @@ describe('accept_patient_reports', () => {
       fields: {
         patient_id: 'patient',
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { phone: 'phone' }
     };
 
     const silence2 = {
@@ -539,7 +545,8 @@ describe('accept_patient_reports', () => {
       fields: {
         patient_id: 'patient2',
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
     };
 
     return utils

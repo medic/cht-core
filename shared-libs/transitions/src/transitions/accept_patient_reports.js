@@ -104,10 +104,10 @@ const _silenceReminders = (registration, report, config, callback) => {
     task.cleared_by = report._id;
   });
   return db.medic.post(registration, function(err, response) {
-    if (err) { 
+    if (err) {
       return callback(err);
     }
-    
+
     registration._rev = response.rev;
     callback();
   });
@@ -257,11 +257,12 @@ module.exports = {
   filter: function(doc, info = {}) {
     return Boolean(
       doc &&
-        doc.type === 'data_record' &&
-        doc.form &&
-        doc.reported_date &&
-        !transitionUtils.hasRun(info, NAME) &&
-        _hasConfig(doc)
+      doc.type === 'data_record' &&
+      doc.form &&
+      doc.reported_date &&
+      !transitionUtils.hasRun(info, NAME) &&
+      _hasConfig(doc) &&
+      utils.isValidSubmission(doc) // requires either an xform, a public sms form or a known submitter
     );
   },
   // also used by registrations transition.

@@ -48,6 +48,8 @@ describe('multi report alerts', () => {
   ];
 
   it('filter validation', () => {
+    sinon.stub(utils, 'isValidSubmission').returns(false);
+
     assert.equal(transition.filter({}), false);
     assert.equal(transition.filter({
       form: 'x',
@@ -59,13 +61,24 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       form: 'x',
     }), false);
+
+    assert.equal(transition.filter({
+      form: 'x',
+      type: 'data_record'
+    }), false);
+
+    utils.isValidSubmission.returns(true);
     assert.equal(transition.filter({
       form: 'x',
       type: 'data_record'
     }), true);
+
+    assert.equal(utils.isValidSubmission.callCount, 2);
+    assert(utils.isValidSubmission.calledWithExactly({ form: 'x', type: 'data_record'}));
   });
 
   it('filter validation hasRun', () => {
+    sinon.stub(utils, 'isValidSubmission').returns(true);
     assert.equal(transition.filter({
       form: 'x',
       type: 'data_record'

@@ -484,93 +484,37 @@ describe('registration', () => {
   });
 
   describe('filter', () => {
-    it('returns false for reports for unknown json form', done => {
-      const doc = { form: 'R', type: 'data_record' };
-      const getForm = sinon.stub(utils, 'getForm').returns(null);
-      const actual = transition.filter(doc);
-      getForm.callCount.should.equal(1);
-      getForm.args[0][0].should.equal('R');
-      actual.should.equal(false);
-      done();
-    });
-
     it('returns false for reports with no registration configured', done => {
       const doc = { form: 'R', type: 'data_record' };
-      const getForm = sinon
-        .stub(utils, 'getForm')
-        .returns({ public_form: false });
       const configGet = sinon.stub(config, 'get').returns([{ form: 'XYZ' }]);
       const actual = transition.filter(doc);
-      getForm.callCount.should.equal(1);
-      getForm.args[0][0].should.equal('R');
       configGet.callCount.should.equal(1);
       configGet.args[0][0].should.equal('registrations');
       actual.should.equal(false);
       done();
     });
 
-    it('returns true for reports from known clinic', done => {
+    it('returns false for reports that are not valid submissions', () => {
       const doc = { form: 'R', type: 'data_record' };
-      const getForm = sinon
-        .stub(utils, 'getForm')
-        .returns({ public_form: false });
-      const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
-      const getClinicPhone = sinon
-        .stub(utils, 'getClinicPhone')
-        .returns('+55555555');
+      sinon.stub(utils, 'isValidSubmission').returns(false);
+      sinon.stub(config, 'get').returns([{ form: 'R' }]);
       const actual = transition.filter(doc);
-      getForm.callCount.should.equal(1);
-      getForm.args[0][0].should.equal('R');
-      configGet.callCount.should.equal(1);
-      configGet.args[0][0].should.equal('registrations');
-      getClinicPhone.callCount.should.equal(1);
-      actual.should.equal(true);
-      done();
-    });
-
-    it('returns false for reports from unknown clinic', done => {
-      const doc = { form: 'R', type: 'data_record' };
-      const getForm = sinon
-        .stub(utils, 'getForm')
-        .returns({ public_form: false });
-      const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
-      const getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
-      const actual = transition.filter(doc);
-      getForm.callCount.should.equal(1);
-      getForm.args[0][0].should.equal('R');
-      configGet.callCount.should.equal(1);
-      configGet.args[0][0].should.equal('registrations');
-      getClinicPhone.callCount.should.equal(1);
+      config.get.callCount.should.equal(1);
+      config.get.args[0][0].should.equal('registrations');
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([doc]);
       actual.should.equal(false);
-      done();
     });
 
-    it('returns true for reports for public forms from unknown clinic', done => {
+    it('returns true for reports that are valid submissions', done => {
       const doc = { form: 'R', type: 'data_record' };
-      const getForm = sinon
-        .stub(utils, 'getForm')
-        .returns({ public_form: true });
-      const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
-      const getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
+      sinon.stub(utils, 'isValidSubmission').returns(true);
+      sinon.stub(config, 'get').returns([{ form: 'R' }]);
       const actual = transition.filter(doc);
-      getForm.callCount.should.equal(1);
-      getForm.args[0][0].should.equal('R');
-      configGet.callCount.should.equal(1);
-      configGet.args[0][0].should.equal('registrations');
-      getClinicPhone.callCount.should.equal(1);
-      actual.should.equal(true);
-      done();
-    });
-
-    it('returns true for xforms reports', done => {
-      const doc = { form: 'R', content_type: 'xml', type: 'data_record' };
-      const getForm = sinon.stub(utils, 'getForm').returns(null);
-      const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
-      const actual = transition.filter(doc);
-      getForm.callCount.should.equal(1);
-      getForm.args[0][0].should.equal('R');
-      configGet.callCount.should.equal(1);
-      configGet.args[0][0].should.equal('registrations');
+      config.get.callCount.should.equal(1);
+      config.get.args[0][0].should.equal('registrations');
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([doc]);
       actual.should.equal(true);
       done();
     });

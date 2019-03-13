@@ -382,7 +382,8 @@ module.exports = {
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, TRANSITION_NAME)
+      !transitionUtils.hasRun(info, TRANSITION_NAME) &&
+      utils.isValidSubmission(doc)
     ),
   onMatch: onMatch,
   init: validateConfig,
