@@ -5,7 +5,7 @@ module.exports = {
       return;
     }
     const prefix = name + '=';
-    const cookie = cookies.split(';').find(cookie => cookie.startsWith(prefix));
-    return cookie && cookie.substring(prefix.length);
+    const cookie = cookies.split(';').find(cookie => cookie.trim().startsWith(prefix));
+    return cookie && cookie.trim().substring(prefix.length);
   }
 };

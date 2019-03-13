@@ -190,6 +190,22 @@ describe('login controller', () => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
       });
     });
+
+    it('when already logged in and login=force cookie is present, render login', () => {
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
+      const send = sinon.stub(res, 'send');
+      const cookie = sinon.stub(res, 'cookie').returns(res);
+      req.headers.cookie = 'login=force';
+      return controller.get(req, res).then(() => {
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
+        chai.expect(cookie.callCount).to.equal(1);
+        chai.expect(cookie.args[0][0]).to.equal('userCtx');
+        chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
+        chai.expect(send.callCount).to.equal(1);
+        chai.expect(send.args[0][0]).to.include('<form id="form" action="/lg/login" method="POST">');
+      });
+    });
   });
 
   describe('post', () => {
