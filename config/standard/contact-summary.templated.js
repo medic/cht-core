@@ -247,33 +247,52 @@ cards = [
     label: 'contact.profile.growth_monitoring',
     appliesToType: 'person',
     appliesIf: function() {
-      return context.use_cases.gmp && getAgeInMonths() < 60 && getNutritionScreeningReport();
+      return context.use_cases.gmp && getAgeInMonths() < 60 && !!getNutritionScreeningReport();
     },
     fields: function() {
 
       var fields = [];
       var screening_report = getNutritionScreeningReport();
 
+      console.log("*********** screening_report **************");
+      console.log(screening_report);
+
       fields.push({
         label: 'contact.profile.weight',
         translate: true,
-        width: 6,
+        width: 3,
         value: screening_report.fields.measurements.weight
       });
 
       fields.push({
         label: 'contact.profile.height',
         translate: true,
-        width: 6,
+        width: 3,
         value: screening_report.fields.measurements.height
       });
+
+      fields.push({
+        label: 'contact.profile.gender',
+        translate: true,
+        width: 3,
+        value: screening_report.fields.measurements.gender
+      });
+
+      if (screening_report.fields.measurements.hasOwnProperty('muac')){
+        fields.push({
+          label: 'contact.profile.muac',
+          translate: true,
+          width: 3,
+          value: screening_report.fields.measurements.muac
+        });
+      }
 
       fields.push({
         label: 'contact.profile.wfa',
         translate: true,
         width: 4,
         value: screening_report.fields.measurements.wfa,
-        icon: screening_report.fields.measurements.wfa < -3? 'risk':'',
+        icon: screening_report.fields.measurements.wfa < -3? 'warning':'',
 
       });
 
@@ -282,7 +301,7 @@ cards = [
         translate: true,
         width: 4,
         value: screening_report.fields.measurements.hfa,
-        icon: screening_report.fields.measurements.hfa < -3? 'risk':'',
+        icon: screening_report.fields.measurements.hfa < -3? 'warning':'',
 
       });
 
@@ -291,7 +310,7 @@ cards = [
         translate: true,
         width: 4,
         value: screening_report.fields.measurements.wfh,
-        icon: screening_report.fields.measurements.wfh? 'risk':'',
+        icon: screening_report.fields.measurements.wfh < -3? 'warning':'',
       });
 
       return fields;
@@ -302,45 +321,61 @@ cards = [
     label: 'contact.profile.imam',
     appliesToType: 'person',
     appliesIf: function() {
-      return Boolean(getTreatmentProgram());
+      return !!getTreatmentProgram();
     },
     fields: function() {
 
       var fields = [];
 
-      var enrollment_report = reports.find(function(r){
-        return r.form === 'treatment_enrollment';
-      });
+      var enrollment_report = getEnrollmentReport();
+
+      console.log("********* enrollement report ************");
+      console.log(enrollment_report);
 
       if (enrollment_report){
         fields.push({
           label: 'contact.profile.weight',
           translate: true,
-          width: 6,
-          value: enrollment_report.fields.zscore.weight
+          width: 3,
+          value: enrollment_report.fields.measurements.weight
         });
 
         fields.push({
           label: 'contact.profile.height',
           translate: true,
-          width: 6,
-          value: enrollment_report.fields.zscore.height
+          width: 3,
+          value: enrollment_report.fields.measurements.height
         });
+
+        if (enrollment_report.fields.measurements.hasOwnProperty('muac')){
+          fields.push({
+            label: 'contact.profile.muac',
+            translate: true,
+            width: 3,
+            value: enrollment_report.fields.measurements.muac
+          });
+        }
 
         fields.push({
           label: 'contact.profile.wfh',
           translate: true,
-          width: 12,
-          value: enrollment_report.fields.zscore.wfh,
-          icon: enrollment_report.fields.zscore.wfh < -2? 'risk':'',
+          width: 3,
+          value: enrollment_report.fields.measurements.wfh,
+          icon: enrollment_report.fields.measurements.wfh < -3? 'risk':'',
         });
+
 
         fields.push({
           label: 'contact.profile.nutrition_program',
           translate: true,
           width: 6,
-          value: enrollment_report.fields.enrollment.program
+          value: function(){
+            if (enrollment_report.fields.treatment.program === 'OTP') return 'Outpatient Therapeutic Program';
+            else if (enrollment_report.fields.treatment.program === 'SFP') return 'Supplementary Feeding Program';
+            else if (enrollment_report.fields.treatment.program === 'SC') return 'Stabilization center';
+          }()
         });
+
 
         fields.push({
           label: 'contact.profile.sessions',
@@ -361,19 +396,14 @@ cards = [
     label: 'contact.profile.imam_history',
     appliesToType: 'person',
     appliesIf: function() {
-      return Boolean(getFollowupExitReport());
+      return !!getFollowupExitReport();
     },
     fields: function() {
 
       var fields = [];
-      var enrollment_report =  reports.find(function(r){
-        return r.form === 'treatment_enrollment';
-      });
-
-      // var last_followup_visit = getLastFollowupVisitReport();
+      var enrollment_report =  getEnrollmentReport();
 
       var exit_report = getFollowupExitReport();
-      // var date = '';
 
       var d = new Date(0);
       if (exit_report) d.setUTCSeconds(exit_report.reported_date/1000);
@@ -384,35 +414,35 @@ cards = [
           label: 'contact.profile.last_treatment',
           translate: true,
           width: 6,
-          value: enrollment_report.fields.enrollment? enrollment_report.fields.enrollment.program: ''
+          value: enrollment_report.fields.enrollment.program
         });
 
         fields.push({
           label: 'contact.profile.exit_date',
           translate: true,
           width: 6,
-          value: exit_report? d.toISOString().slice(0, 10): ''
+          value: d.toISOString().slice(0, 10)
         });
 
         fields.push({
           label: 'contact.profile.weight_at_exit',
           translate: true,
           width: 6,
-          value: exit_report? exit_report.fields.zscore.weight: ''
+          value: exit_report.fields.measurements.weight
         });
 
         fields.push({
           label: 'contact.profile.height_at_exit',
           translate: true,
           width: 6,
-          value: exit_report? exit_report.fields.zscore.height: ''
+          value: exit_report.fields.measurements.height
         });
 
         fields.push({
           label: 'contact.profile.wfh',
           translate: true,
           width: 12,
-          value: exit_report? exit_report.fields.zscore.wfh: ''
+          value: exit_report.fields.measurements.wfh
         });
 
       }
