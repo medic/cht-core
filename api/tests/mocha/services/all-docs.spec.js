@@ -281,7 +281,7 @@ describe('All Docs service', () => {
         skip: 'skip',
         endkey: 10,
         end_key_doc_id: 'c',
-        key: 'b',
+        key: '"b"',
         startkey: 2,
         start_key: 3,
         start_key_doc_id: 'a',
