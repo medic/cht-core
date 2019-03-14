@@ -28,7 +28,7 @@ describe('All Docs service', () => {
 
   describe('Get Request Ids', () => {
     it('returns request key parameter', () => {
-      query = { key: 'a' };
+      query = { key: '"a"' };
 
       const response = service._getRequestIds(query);
       response.length.should.equal(1);

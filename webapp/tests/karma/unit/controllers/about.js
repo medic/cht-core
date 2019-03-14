@@ -1,20 +1,19 @@
-describe('AboutCtrl controller', function() {
+describe('AboutCtrl controller', () => {
 
   'use strict';
 
-  var createController,
-    $rootScope,
-    scope,
-    $interval,
-    DB,
-    Debug,
-    Session,
-    ResourceIcons;
-
+  let createController;
+  let $rootScope;
+  let scope;
+  let $interval;
+  let DB;
+  let Debug;
+  let Session;
+  let ResourceIcons;
 
   beforeEach(module('inboxApp'));
 
-  beforeEach(inject(function(_$rootScope_, $controller) {
+  beforeEach(inject((_$rootScope_, $controller) => {
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.version = 3;
@@ -27,7 +26,7 @@ describe('AboutCtrl controller', function() {
     };
     Debug = { get: sinon.stub() };
     ResourceIcons = { getDocResources: sinon.stub().resolves() };
-    createController = function() {
+    createController = () => {
       return $controller('AboutCtrl', {
         $interval: $interval,
         $log: { error: sinon.stub() },
@@ -40,21 +39,19 @@ describe('AboutCtrl controller', function() {
     };
   }));
 
-  afterEach(function() {
-    KarmaUtils.restore(Debug, Session);
-  });
-
   it('initializes data', () => {
     DB.info.resolves({ some: 'info' });
     Session.userCtx.returns('session info');
     Debug.get.returns('debug stuff');
-    DB.allDocs.withArgs({ key: '_design/medic' }).resolves({ rows: [{ value: { rev: '23-aaaa' }}] });
-    DB.get
-      .withArgs('_design/medic-client')
-      .resolves({ _id: '_design/medic-client', deploy_info: { version: 4 }, _rev: '4465-dfsadsada' });
+    DB.allDocs.resolves({ rows: [{ value: { rev: '23-aaaa' }}] });
+    DB.get.resolves({ _id: '_design/medic-client', deploy_info: { version: 4 }, _rev: '4465-dfsadsada' });
     createController();
 
     return Promise.resolve().then(() => {
+      chai.expect(DB.allDocs.callCount).to.equal(1);
+      chai.expect(DB.allDocs.args[0][0].key).to.equal('_design/medic-client');
+      chai.expect(DB.get.callCount).to.equal(1);
+      chai.expect(DB.get.args[0][0]).to.equal('_design/medic-client');
       chai.expect(scope.dbInfo).to.deep.equal({ some: 'info' });
       chai.expect(scope.userCtx).to.equal('session info');
       chai.expect(scope.enableDebugModel).to.deep.equal({ val: 'debug stuff' });
