@@ -1,3 +1,4 @@
+/* eslint-disable angular/one-dependency-per-line */
 (function() {
   var _ = require('underscore');
   var merge = require('lodash/merge');
