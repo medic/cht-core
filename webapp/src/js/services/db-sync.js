@@ -1,11 +1,9 @@
-const _ = require('underscore'),
-      READ_ONLY_TYPES = ['form', 'translations'],
-      READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'],
-      DDOC_PREFIX = ['_design/'],
-      SYNC_INTERVAL = 5 * 60 * 1000, // 5 minutes
-      META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-
+const READ_ONLY_TYPES = ['form', 'translations'];
+const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
+const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
+const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 angular
   .module('inboxServices')
@@ -29,11 +27,7 @@ angular
       meta: undefined,
     };
 
-    var authenticationIssue = function(errors) {
-      return _.findWhere(errors, { status: 401 });
-    };
-
-    var readOnlyFilter = function(doc) {
+    const readOnlyFilter = function(doc) {
       // Never replicate "purged" documents upwards
       const keys = Object.keys(doc);
       if (keys.length === 4 &&
@@ -52,107 +46,91 @@ angular
       );
     };
 
-    var getOptions = function(direction) {
-      var options = {};
-      if (direction === 'to') {
-        options.checkpoint = 'source';
-        options.filter = readOnlyFilter;
+    const DIRECTIONS = [
+      {
+        name: 'to',
+        options: {
+          checkpoint: 'source',
+          filter: readOnlyFilter
+        },
+        allowed: () => Auth('can_edit').then(() => true).catch(() => false)
+      },
+      {
+        name: 'from',
+        options: {},
+        allowed: () => $q.resolve(true)
       }
+    ];
 
-      return options;
-    };
-
-    var replicate = function(direction) {
-      var options = getOptions(direction);
-      var remote = DB({ remote: true });
-      return DB()
-        .replicate[direction](remote, options)
-        .on('denied', function(err) {
-          // In theory this could be caused by 401s
-          // TODO: work out what `err` looks like and navigate to login
-          // when we detect it's a 401
-          $log.error('Denied replicating ' + direction + ' remote server', err);
-        })
-        .on('error', function(err) {
-          $log.error('Error replicating ' + direction + ' remote server', err);
-        })
-        .on('complete', function(info) {
-          if (!info.ok && authenticationIssue(info.errors)) {
-            Session.navigateToLogin();
+    const replicate = function(direction) {
+      return direction.allowed()
+        .then(allowed => {
+          if (!allowed) {
+            // not authorized to replicate - that's ok, skip silently
+            return;
           }
+          const remote = DB({ remote: true });
+          return DB()
+            .replicate[direction.name](remote, direction.options)
+            .on('denied', function(err) {
+              // In theory this could be caused by 401s
+              // TODO: work out what `err` looks like and navigate to login
+              // when we detect it's a 401
+              $log.error(`Denied replicating ${direction.name} remote server`, err);
+            })
+            .on('error', function(err) {
+              $log.error(`Error replicating ${direction.name} remote server`, err);
+            })
+            .on('complete', function(info) {
+              const authError = !info.ok &&
+                info.errors &&
+                info.errors.some(error => error.status === 401);
+              if (authError) {
+                Session.navigateToLogin();
+              }
+            })
+            .then(() => {
+              return; // success
+            })
+            .catch(err => {
+              $log.error(`Error replicating ${direction.name} remote server`, err);
+              return direction.name;
+            });
         });
     };
 
-    const replicateTo = () => {
-      const AUTH_FAILURE = {};
-      return Auth('can_edit')
-        // not authorized to replicate to server - that's ok. Silently skip replication.to
-        .catch(() => AUTH_FAILURE)
-        .then(err => {
-          if (err !== AUTH_FAILURE) {
-            return replicate('to');
-          }
-        });
-    };
-
-    const sendUpdateForDirectedReplication = (func, direction) => {
-      return func
-        .then(() => {
-          sendUpdate({
-            direction,
-            directedReplicationStatus: 'success',
-          });
-        })
-        .catch(error => {
-          sendUpdate({
-            direction,
-            directedReplicationStatus: 'failure',
-            error,
-          });
-          return error;
-        });
-    };
-
-    var syncMeta = function() {
-      var remote = DB({ meta: true, remote: true });
-      var local = DB({ meta: true });
-      local.sync(remote);
-    };
+    const getCurrentSeq = () => DB().info().then(info => info.update_seq + '');
+    const getLastSyncSeq = () => $window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
 
     // inProgressSync prevents multiple concurrent replications
     let inProgressSync;
+
     const sync = force => {
       if (!knownOnlineState && !force) {
         return $q.resolve();
       }
 
-      /*
-      Controllers need the status of each directed replication (directedReplicationStatus) and the
-      status of the replication as a whole (aggregateReplicationStatus).
-      */
       if (!inProgressSync) {
         inProgressSync = $q
-          .all([
-            sendUpdateForDirectedReplication(replicate('from'), 'from'),
-            sendUpdateForDirectedReplication(replicateTo(), 'to'),
-          ])
-          .then(results => {
-            const errors = _.filter(results, result => result);
-            if (errors.length > 0) {
-              $log.error('Error replicating remote server', errors);
-              sendUpdate({
-                aggregateReplicationStatus: 'required',
-                error: errors,
-              });
-              return;
-            }
-
-            syncIsRecent = true;
-            sendUpdate({ aggregateReplicationStatus: 'not_required' });
-
-            return DB().info()
-            .then(dbInfo => {
-              $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, dbInfo.update_seq);
+          .all(DIRECTIONS.map(direction => replicate(direction)))
+          .then(errs => {
+            return getCurrentSeq().then(currentSeq => {
+              errs = errs.filter(err => err);
+              let update = { to: 'success', from: 'success' };
+              if (!errs.length) {
+                // no errors
+                syncIsRecent = true;
+                $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+              } else if (currentSeq === getLastSyncSeq()) {
+                // no changes to send, but may have some to receive
+                update = { unknown: true };
+              } else {
+                // definitely need to sync something
+                errs.forEach(err => {
+                  update[err] = 'required';
+                });
+              }
+              sendUpdate(update);
             });
           })
           .finally(() => {
@@ -160,14 +138,18 @@ angular
           });
       }
 
-      sendUpdate({ aggregateReplicationStatus: 'in_progress' });
+      sendUpdate({ inProgress: true });
       return inProgressSync;
     };
 
+    const syncMeta = function() {
+      const remote = DB({ meta: true, remote: true });
+      const local = DB({ meta: true });
+      local.sync(remote);
+    };
+
     const sendUpdate = update => {
-      _.forEach(updateListeners, listener => {
-        listener(update);
-      });
+      updateListeners.forEach(listener => listener(update));
     };
 
     const resetSyncInterval = () => {
@@ -220,6 +202,8 @@ angular
        */
       sync: force => {
         if (Session.isOnlineOnly()) {
+          // online users have potentially too much data so bypass local pouch
+          $log.debug('You have administrative privileges; not replicating');
           sendUpdate({ disabled: true });
           return $q.resolve();
         }

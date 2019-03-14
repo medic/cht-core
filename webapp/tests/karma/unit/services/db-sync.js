@@ -4,19 +4,21 @@ describe('DBSync service', () => {
 
   const { expect } = chai;
 
-  let service,
-    to,
-    from,
-    query,
-    allDocs,
-    info,
-    isOnlineOnly,
-    userCtx,
-    sync,
-    Auth,
-    recursiveOn,
-    $interval,
-    replicationResult;
+  let service;
+  let to;
+  let from;
+  let query;
+  let allDocs;
+  let info;
+  let isOnlineOnly;
+  let userCtx;
+  let sync;
+  let Auth;
+  let recursiveOn;
+  let $interval;
+  let replicationResult;
+  let getItem;
+  let setItem;
 
   beforeEach(() => {
     replicationResult = Q.resolve;
@@ -33,16 +35,18 @@ describe('DBSync service', () => {
     query = sinon.stub();
     allDocs = sinon.stub();
     info = sinon.stub();
-    info.returns(Q.resolve({update_seq: -99}));
+    info.returns(Q.resolve({ update_seq: 99 }));
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
     Auth = sinon.stub();
+    setItem = sinon.stub();
+    getItem = sinon.stub();
 
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
-        replicate: { to: to, from: from },
+        replicate: { to, from },
         allDocs: allDocs,
         sync: sync,
         info: info
@@ -53,6 +57,7 @@ describe('DBSync service', () => {
         userCtx: userCtx
       } );
       $provide.value('Auth', Auth);
+      $provide.value('$window', { localStorage: { setItem, getItem } });
     });
     inject((_DBSync_, _$interval_) => {
       service = _DBSync_;
@@ -87,14 +92,17 @@ describe('DBSync service', () => {
       });
     });
 
-    it('syncs automatically after interval', () => {
+    it('syncs automatically after interval', done => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
 
-      return service.sync().then(() => {
+      service.sync().then(() => {
         expect(from.callCount).to.equal(1);
         $interval.flush(5 * 60 * 1000 + 1);
-        expect(from.callCount).to.equal(2);
+        setTimeout(() => {
+          expect(from.callCount).to.equal(2);
+          done();
+        });
       });
     });
 
@@ -128,6 +136,23 @@ describe('DBSync service', () => {
       });
     });
 
+    it('error in replication with no docs to send results in "unknown" status', () => {
+      isOnlineOnly.returns(false);
+      Auth.returns(Q.resolve());
+
+      replicationResult = () => Q.reject('error');
+      const onUpdate = sinon.stub();
+      service.addUpdateListener(onUpdate);
+      info.returns(Q.resolve({ update_seq: 100 }));
+      getItem.returns('100');
+
+      return service.sync().then(() => {
+        expect(onUpdate.callCount).to.eq(2);
+        expect(onUpdate.args[0][0]).to.deep.eq({ inProgress: true });
+        expect(onUpdate.args[1][0]).to.deep.eq({ unknown: true });
+      });
+    });
+
     it('error in replication results in "required" status', () => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
@@ -137,33 +162,18 @@ describe('DBSync service', () => {
       service.addUpdateListener(onUpdate);
 
       return service.sync().then(() => {
-        expect(onUpdate.callCount).to.eq(4);
-        expect(onUpdate.args[0][0]).to.deep.eq({
-          aggregateReplicationStatus: 'in_progress',
-        });
-        expect(onUpdate.args[1][0]).to.deep.eq({
-          directedReplicationStatus: 'failure',
-          direction: 'from',
-          error: 'error',
-        });
-        expect(onUpdate.args[2][0]).to.deep.eq({
-          directedReplicationStatus: 'failure',
-          direction: 'to',
-          error: 'error',
-        });
-        expect(onUpdate.args[3][0]).to.contain({
-          aggregateReplicationStatus: 'required',
-        });
-        expect(onUpdate.args[3][0].error).to.deep.eq(['error', 'error']);
+        expect(onUpdate.callCount).to.eq(2);
+        expect(onUpdate.args[0][0]).to.deep.eq({ inProgress: true });
+        expect(onUpdate.args[1][0]).to.deep.eq({ to: 'required', from: 'required' });
       });
     });
 
-    it('sync scenarios based on connectivity state', () => {
+    it('sync scenarios based on connectivity state', done => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
 
       // sync with default online status
-      return service.sync().then(() => {
+      service.sync().then(() => {
         expect(from.callCount).to.equal(1);
 
         // go offline, don't attempt to sync
@@ -173,10 +183,12 @@ describe('DBSync service', () => {
 
         // when you come back online eventually, sync immediately
         service.setOnlineStatus(true);
-        expect(from.callCount).to.equal(2);
+
+        expect(from.callCount).to.equal(1);
 
         // wait for the inprogress sync to complete before continuing the test
-        return service.sync().then(() => {
+        service.sync().then(() => {
+
           expect(from.callCount).to.equal(2);
 
           // don't sync if you quickly lose and regain connectivity
@@ -186,7 +198,11 @@ describe('DBSync service', () => {
 
           // eventually, sync on the timer
           $interval.flush(5 * 60 * 1000 + 1);
-          expect(from.callCount).to.equal(3);
+
+          setTimeout(() => {
+            expect(from.callCount).to.equal(3);
+            done();
+          });
         });
       });
     });
@@ -205,21 +221,9 @@ describe('DBSync service', () => {
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(0);
 
-        expect(onUpdate.callCount).to.eq(4);
-        expect(onUpdate.args[0][0]).to.deep.eq({
-          aggregateReplicationStatus: 'in_progress',
-        });
-        expect(onUpdate.args[1][0]).to.deep.eq({
-          directedReplicationStatus: 'success',
-          direction: 'from',
-        });
-        expect(onUpdate.args[2][0]).to.deep.eq({
-          directedReplicationStatus: 'success',
-          direction: 'to',
-        });
-        expect(onUpdate.args[3][0]).to.deep.eq({
-          aggregateReplicationStatus: 'not_required',
-        });
+        expect(onUpdate.callCount).to.eq(2);
+        expect(onUpdate.args[0][0]).to.deep.eq({ inProgress: true });
+        expect(onUpdate.args[1][0]).to.deep.eq({ to: 'success', from: 'success' });
       });
     });
   });

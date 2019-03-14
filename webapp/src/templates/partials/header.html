@@ -92,17 +92,16 @@
           </li>
 
           <li role="separator" class="divider" ng-if="!replicationStatus.disabled"></li>
-          <li role="presentation disabled" ng-show="!replicationStatus.disabled && replicationStatus.current !== 'unknown'">
-            <a role="menuitem" tabindex="-1" ng-if="replicationStatus.current !== 'in_progress'" ng-click="replicate()">
+          <li role="presentation disabled" ng-if="!replicationStatus.disabled && !replicationStatus.current.debounce">
+            <a role="menuitem" tabindex="-1" ng-click="replicate()">
               <i class="fa fa-fw fa-refresh"></i>
               <span translate>sync.now</span>
             </a>
-            <span ng-bind-html="replicationStatus.lastCompleted | relativeDate"></span>
           </li>
           <li role="presentation disabled" ng-if="!replicationStatus.disabled" class="sync-status">
-            <a ng-class="replicationStatus.current" class="no-click">
-              <i class="fa fa-fw" ng-class="replicationStatus.icon"></i>
-              <span translate>{{replicationStatus.textKey}}</span>
+            <a class="no-click" ng-class="replicationStatus.current.className">
+              <i class="fa fa-fw" ng-class="replicationStatus.current.icon"></i>
+              <span translate>{{replicationStatus.current.key}}</span>
             </a>
           </li>
         </ul>
