@@ -4,7 +4,7 @@
     <h:title>Nutrition screening</h:title>
     <model>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-11 16-49">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-14 14-51">
           <inputs>
             <meta>
               <location>
@@ -62,6 +62,7 @@
             <facility/>
             <target_weight/>
             <target_muac/>
+            <other_facility/>
             <additional_notes/>
           </treatment>
           <summary>
@@ -139,8 +140,9 @@
       <bind nodeset="/nutrition_screening/treatment/n_7" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SFP'" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/n_8" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SC'" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/facility" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
-      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_screening/treatment/target_weight" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" type="decimal"/>
-      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_screening/treatment/target_muac" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" type="decimal"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_screening/treatment/target_weight" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_screening/treatment/target_muac" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
+      <bind nodeset="/nutrition_screening/treatment/other_facility" relevant=" /nutrition_screening/treatment/facility  = 'other'" required="true()" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/additional_notes" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_9" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_10" readonly="true()" type="string"/>
@@ -356,7 +358,7 @@
         </item>
       </select1>
       <input ref="/nutrition_screening/treatment/n_5">
-        <label>Note admission criteria:</label>
+        <label>Note:</label>
       </input>
       <input appearance="blue" ref="/nutrition_screening/treatment/n_6">
         <label>OTP admission criteria should be '+ or ++Oedema' or 'MUAC &lt; 11.5cm' or 'Weight for Height Z score &lt;-3'</label>
@@ -383,6 +385,9 @@
       </input>
       <input ref="/nutrition_screening/treatment/target_muac">
         <label>Target MUAC (cm)</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/other_facility">
+        <label>Name of facility</label>
       </input>
       <input ref="/nutrition_screening/treatment/additional_notes">
         <label>Additional notes</label>

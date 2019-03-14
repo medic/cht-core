@@ -322,7 +322,7 @@
     },
   },
 
-  // followup tasks as per schedule
+  // followup tasks as per nutrition program schedule (OTP, SFP, or SC)
   {
     icon: 'child',
     title: 'task.nutrition_followup.title',
@@ -359,7 +359,7 @@
     }
   },
 
-  // create nutrition screening task if degree of severity is severe (3)
+  // create nutrition screening task if degree of severity is moderate or severe
   {
     icon: 'child',
     title: 'task.nutrition_screening.title',
@@ -367,7 +367,7 @@
     appliesToType: ['G'],
     appliesIf: function(c, r, i){
       /* jshint unused:vars */
-      return r.fields.severity === "3";
+      return r.fields.severity === "3" || r.fields.severity === "2";
     },
     actions: [{form: 'nutrition_screening'}],
     events: [
@@ -385,10 +385,36 @@
     }
   },
 
+  // create nutrition screening task if degree of severity is severe (3)
+  {
+    icon: 'child',
+    title: 'task.nutrition_screening_missing.title',
+    appliesTo: 'reports',
+    appliesToType: ['G'],
+    appliesIf: function(c, r, i){
+      /* jshint unused:vars */
+      return r.fields.severity === "3";
+    },
+    actions: [{form: 'nutrition_screening'}],
+    events: [
+      {
+      id: 'nutrition_screening',
+      days: 7,
+      start: 0,
+      end: 7
+    }],
+    resolvedIf: function(c, r, event, dueDate){
+      /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_screening';
+      });
+    }
+  },
+
   // create nutrition screening task if degree of severity is moderate
   {
     icon: 'child',
-    title: 'task.nutrition_screening.title',
+    title: 'task.nutrition_screening_missing.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
     appliesIf: function(c, r, i){
@@ -399,8 +425,8 @@
     events: [{
       id: 'nutrition_screening',
       days: 21,
-      start: 14,
-      end: 0
+      start: 0,
+      end: 7
     }],
     resolvedIf: function(c, r, event, dueDate){
       /* jshint unused:vars */

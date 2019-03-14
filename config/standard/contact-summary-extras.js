@@ -161,6 +161,9 @@ var isVaccineInLineage = function(lineage, vaccine) {
 };
 
 var isCoveredByUseCaseInLineage = function(lineage, usecase) {
+  console.log("**************lineage**************");
+  console.log(lineage);
+  console.log(usecase);
   return lineage && lineage.some(function(c) {
     return c && contains(c.use_cases, usecase);
   });

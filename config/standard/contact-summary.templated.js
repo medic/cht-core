@@ -406,7 +406,7 @@ cards = [
       var exit_report = getFollowupExitReport();
 
       var d = new Date(0);
-      if (exit_report) d.setUTCSeconds(exit_report.reported_date/1000);
+      d.setUTCSeconds(exit_report.reported_date/1000);
 
       if (enrollment_report){
 

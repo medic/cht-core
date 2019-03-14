@@ -480,6 +480,7 @@ var targets = [
   {
     id: 'children-stunted',
     translation_key: 'targets.stunted.title',
+    context: 'ctx1',
     subtitle_translation_key: 'targets.this_month.subtitle',
     type: 'count',
     icon: 'child',
@@ -498,6 +499,7 @@ var targets = [
   // Nutrition: children active MAM
   {
     id: 'children-mam',
+    context: 'ctx2',
     translation_key: 'targets.active_mam.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
     type: 'count',

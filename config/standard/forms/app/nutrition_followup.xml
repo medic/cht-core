@@ -4,7 +4,7 @@
     <h:title>child nutrition followup</h:title>
     <model>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-13 12-03">
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-14 14-53">
           <inputs>
             <meta>
               <location>
@@ -26,7 +26,7 @@
           <patient_id/>
           <enrollment_date/>
           <treatment_program/>
-          <attend_visit/>
+          <attend_visit>yes</attend_visit>
           <task/>
           <measurements>
             <gender/>
@@ -73,7 +73,8 @@
       <bind calculate="instance('contact-summary')/context/enrollment_date" nodeset="/nutrition_followup/enrollment_date" type="string"/>
       <bind calculate="instance('contact-summary')/context/treatment_program" nodeset="/nutrition_followup/treatment_program" type="string"/>
       <bind nodeset="/nutrition_followup/attend_visit" relevant=" /nutrition_followup/inputs/source  = 'task'" type="select1"/>
-      <bind nodeset="/nutrition_followup/task" required="true()" type="select1"/>
+      <bind nodeset="/nutrition_followup/task" relevant=" /nutrition_followup/attend_visit  = 'yes'" required="true()" type="select1"/>
+      <bind nodeset="/nutrition_followup/measurements" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/measurements/gender" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_followup/measurements/weight" required="true()" type="decimal"/>
       <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/nutrition_followup/measurements/height" required="true()" type="decimal"/>
@@ -83,12 +84,13 @@
       <bind calculate="if( /nutrition_followup/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -2 and  /nutrition_followup/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt;= 2 and  /nutrition_followup/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_followup/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_followup/measurements/wfh_message" type="string"/>
       <bind nodeset="/nutrition_followup/measurements/zscore_wfh_note" readonly="true()" relevant=" /nutrition_followup/measurements/wfh  != ''" type="string"/>
       <bind nodeset="/nutrition_followup/measurements/next_appointment" required="true()" type="date"/>
-      <bind nodeset="/nutrition_followup/exit" relevant=" /nutrition_followup/task  = 'exit'"/>
+      <bind nodeset="/nutrition_followup/exit" relevant=" /nutrition_followup/task  = 'exit' and  /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/exit/outcome" type="select1"/>
       <bind nodeset="/nutrition_followup/exit/enrollment" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
       <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /nutrition_followup/enrollment_date )))" nodeset="/nutrition_followup/exit/length_stay" type="string"/>
       <bind nodeset="/nutrition_followup/exit/stay" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
       <bind nodeset="/nutrition_followup/exit/enroll" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="select1"/>
+      <bind nodeset="/nutrition_followup/summary" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/summary/n_2" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_4" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_6" readonly="true()" type="string"/>
