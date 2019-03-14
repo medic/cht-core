@@ -454,7 +454,7 @@ var targets = [
         return r.form === 'G';
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // Nutrition: children under 5 underweight
@@ -473,7 +473,7 @@ var targets = [
         return r.form === 'nutrition_screening' && r.fields.measurements.wfa < -2;
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // children under 5 stunted growth
@@ -493,13 +493,12 @@ var targets = [
         return r.form === 'nutrition_screening' && r.fields.measurements.hfa < -2;
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // Nutrition: children active MAM
   {
     id: 'children-mam',
-    context: 'ctx2',
     translation_key: 'targets.active_mam.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
     type: 'count',
@@ -513,7 +512,7 @@ var targets = [
         return r.form === 'nutrition_screening' && ( (r.fields.measurements.wfh >= -3 && r.fields.measurements.wfh < -2) || (r.fields.measurements.muac >= 11.5 && r.fields.measurements.muac < 12.4) );
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // Nutrition: children active SAM
@@ -529,10 +528,10 @@ var targets = [
     appliesIf: isChildUnder5,
     passesIf: function(c){
       return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && (r.fields.measurements.zscore_wfh < -3 || r.fields.measurements.muac < 11.5);
+        return r.form === 'nutrition_screening' && (r.fields.measurements.wfh < -3 || r.fields.measurements.muac < 11.5);
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // children active OTP
@@ -561,7 +560,7 @@ var targets = [
       });
       return otp && !off && !death;
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // children active SFP
@@ -590,6 +589,6 @@ var targets = [
       });
       return sfp && !off && !death;
     },
-    // date: 'reported',
+    date: 'reported',
   },
 ];

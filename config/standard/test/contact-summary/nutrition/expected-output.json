@@ -6,20 +6,26 @@
         {
           "label": "contact.profile.weight",
           "translate": true,
-          "width": 6,
+          "width": 3,
           "value": "6"
         },
         {
           "label": "contact.profile.height",
           "translate": true,
-          "width": 6,
+          "width": 3,
           "value": "47"
+        },
+        {
+          "label": "contact.profile.gender",
+          "translate": true,
+          "width": 3,
+          "value": "male"
         },
         {
           "label": "contact.profile.wfa",
           "translate": true,
           "width": 4,
-          "value": "-0.9",
+          "value": "0.5",
           "icon": ""
         },
         {
@@ -27,14 +33,14 @@
           "translate": true,
           "width": 4,
           "value": "-4",
-          "icon": "risk"
+          "icon": "warning"
         },
         {
           "label": "contact.profile.wfh",
           "translate": true,
           "width": 4,
           "value": "4",
-          "icon": "risk"
+          "icon": ""
         }
       ]
     },
@@ -44,19 +50,19 @@
         {
           "label": "contact.profile.weight",
           "translate": true,
-          "width": 6,
-          "value": "4"
+          "width": 3,
+          "value": "6"
         },
         {
           "label": "contact.profile.height",
           "translate": true,
-          "width": 6,
-          "value": "45"
+          "width": 3,
+          "value": "47"
         },
         {
           "label": "contact.profile.wfh",
           "translate": true,
-          "width": 12,
+          "width": 3,
           "value": "4",
           "icon": ""
         },
@@ -64,7 +70,7 @@
           "label": "contact.profile.nutrition_program",
           "translate": true,
           "width": 6,
-          "value": "OTP"
+          "value": "Outpatient Therapeutic Program"
         },
         {
           "label": "contact.profile.sessions",
@@ -91,13 +97,13 @@
          "label": "contact.profile.exit_date",
          "translate": true,
          "width": 6,
-         "value": "2018-11-19"
+         "value": "2019-03-14"
        },
        {
          "label": "contact.profile.weight_at_exit",
          "translate": true,
          "width": 6,
-         "value": "7"
+         "value": "3"
        },
        {
          "label": "contact.profile.height_at_exit",
@@ -109,7 +115,7 @@
          "label": "contact.profile.wfh",
          "translate": true,
          "width": 12,
-         "value": "4"
+         "value": "2.158064516129032"
        }
      ]
    }
@@ -179,6 +185,6 @@
       "gmp": true
     },
     "treatment_program": "OTP",
-    "enrollment_date": "2018-11-18"
+    "enrollment_date": "2019-03-14"
   }
 }

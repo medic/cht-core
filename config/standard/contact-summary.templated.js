@@ -254,9 +254,6 @@ cards = [
       var fields = [];
       var screening_report = getNutritionScreeningReport();
 
-      console.log("*********** screening_report **************");
-      console.log(screening_report);
-
       fields.push({
         label: 'contact.profile.weight',
         translate: true,
@@ -328,9 +325,6 @@ cards = [
       var fields = [];
 
       var enrollment_report = getEnrollmentReport();
-
-      console.log("********* enrollement report ************");
-      console.log(enrollment_report);
 
       if (enrollment_report){
         fields.push({
@@ -414,7 +408,7 @@ cards = [
           label: 'contact.profile.last_treatment',
           translate: true,
           width: 6,
-          value: enrollment_report.fields.enrollment.program
+          value: enrollment_report.fields.treatment.program
         });
 
         fields.push({
