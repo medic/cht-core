@@ -17,15 +17,14 @@ var _ = require('underscore'),
  */
 angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
-    $log,
     $q,
     $translate,
     ContactMuted,
     ContactSchema,
     DB,
+    GetDataRecords,
     LineageModelGenerator,
-    Search,
-    GetDataRecords
+    Search
   ) {
     'ngInject';
     'use strict';

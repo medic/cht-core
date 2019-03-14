@@ -5,8 +5,6 @@ var _ = require('underscore'),
 
   'use strict';
 
-  var module = angular.module('inboxFilters');
-
   var getAbsoluteDateString = function(date, options) {
     if (options.withoutTime) {
       return options.FormatDate.date(date);
@@ -92,7 +90,12 @@ var _ = require('underscore'),
     return '<span class="state ' + state + '">' + label + '</span>';
   };
 
-  module.filter('autoreply', function(FormatDate, RelativeDate, $translate, $sce) {
+  angular.module('inboxFilters').filter('autoreply', function(
+    $sce,
+    $translate,
+    FormatDate,
+    RelativeDate
+  ) {
     'ngInject';
     return function (task) {
       if (!task || !task.state) {
@@ -119,7 +122,12 @@ var _ = require('underscore'),
     return '';
   };
 
-  module.filter('state', function(FormatDate, RelativeDate, $translate, $sce) {
+  angular.module('inboxFilters').filter('state', function(
+    $sce,
+    $translate,
+    FormatDate,
+    RelativeDate
+  ) {
     'ngInject';
     return function (task) {
       if (!task) {
@@ -134,7 +142,12 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('dateOfDeath', function(FormatDate, RelativeDate, $translate, $sce) {
+  angular.module('inboxFilters').filter('dateOfDeath', function(
+    $sce,
+    $translate,
+    FormatDate,
+    RelativeDate
+  ) {
     'ngInject';
     return function (dod) {
       if (!dod) {
@@ -148,7 +161,11 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('age', function(FormatDate, RelativeDate, $sce) {
+  angular.module('inboxFilters').filter('age', function(
+    $sce,
+    FormatDate,
+    RelativeDate
+  ) {
     'ngInject';
     return function (dob, dod) {
       return $sce.trustAsHtml(getRelativeDate(dob, {
@@ -161,14 +178,18 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('dayMonth', function() {
+  angular.module('inboxFilters').filter('dayMonth', function() {
     'ngInject';
     return function (date) {
       return '<span>' + moment(date).format('D MMM') + '</span>';
     };
   });
 
-  module.filter('relativeDate', function(FormatDate, RelativeDate, $sce) {
+  angular.module('inboxFilters').filter('relativeDate', function(
+    $sce,
+    FormatDate,
+    RelativeDate
+  ) {
     'ngInject';
     return function (date, raw) {
       var options = {
@@ -185,7 +206,11 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('relativeDay', function(FormatDate, RelativeDate, $sce) {
+  angular.module('inboxFilters').filter('relativeDay', function(
+    $sce,
+    FormatDate,
+    RelativeDate
+  ) {
     'ngInject';
     return function (date, raw) {
       var options = {
@@ -203,19 +228,23 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('simpleDate', function(FormatDate) {
+  angular.module('inboxFilters').filter('simpleDate', function(FormatDate) {
     return function (date) {
       return FormatDate.date(date);
     };
   });
 
-  module.filter('simpleDateTime', function(FormatDate) {
+  angular.module('inboxFilters').filter('simpleDateTime', function(FormatDate) {
     return function (date) {
       return FormatDate.datetime(date);
     };
   });
 
-  module.filter('fullDate', function(FormatDate, RelativeDate, $sce) {
+  angular.module('inboxFilters').filter('fullDate', function(
+    $sce,
+    FormatDate,
+    RelativeDate
+  ) {
     return function (date) {
       if (!date) {
         return '';
@@ -232,7 +261,7 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('weeksPregnant', function() {
+  angular.module('inboxFilters').filter('weeksPregnant', function() {
     return function(weeks) {
       if (!weeks || !weeks.number) {
         return '';

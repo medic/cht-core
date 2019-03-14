@@ -4,9 +4,7 @@ var _ = require('underscore'),
 (function() {
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('ContactsCtrl', function(
+  angular.module('inboxControllers').controller('ContactsCtrl', function(
     $log,
     $ngRedux,
     $q,
@@ -38,7 +36,8 @@ var _ = require('underscore'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state),
+        enketoStatus: Selectors.getEnketoStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -328,7 +327,7 @@ var _ = require('underscore'),
     };
 
     $scope.search = function() {
-      if($scope.filters.search) {
+      if($scope.filters.search && !ctrl.enketoStatus.edited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }

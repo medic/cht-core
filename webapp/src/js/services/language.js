@@ -4,10 +4,9 @@ var moment = require('moment');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
   var localeCookieKey = 'locale';
 
-  inboxServices.factory('SetLanguageCookie',
+  angular.module('inboxServices').factory('SetLanguageCookie',
     function(
       ipCookie
     ) {
@@ -19,7 +18,7 @@ var moment = require('moment');
     }
   );
 
-  inboxServices.factory('SetLanguage',
+  angular.module('inboxServices').factory('SetLanguage',
     function(
       $translate,
       SetLanguageCookie
@@ -44,13 +43,13 @@ var moment = require('moment');
     }
   );
 
-  inboxServices.factory('Language',
+  angular.module('inboxServices').factory('Language',
     function(
       $q,
-      ipCookie,
       SetLanguageCookie,
       Settings,
-      UserSettings
+      UserSettings,
+      ipCookie
     ) {
 
       'ngInject';

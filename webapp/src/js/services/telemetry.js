@@ -3,7 +3,13 @@ var moment = require('moment'),
 
 angular
   .module('inboxServices')
-  .factory('Telemetry', function($log, $q, $window, DB, Session) {
+  .factory('Telemetry', function(
+    $log,
+    $q,
+    $window,
+    DB,
+    Session
+  ) {
     'use strict';
     'ngInject';
 

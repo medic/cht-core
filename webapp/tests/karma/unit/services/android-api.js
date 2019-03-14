@@ -17,6 +17,10 @@ describe('AndroidApi service', () => {
         identifyResponse: identifyResponse,
         registerResponse: registerResponse
       });
+      $provide.value('Feedback', {
+        init: sinon.stub(),
+        submit: sinon.stub()
+      });
     });
     inject((_AndroidApi_, _$log_) => {
       service = _AndroidApi_;

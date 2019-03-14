@@ -81,22 +81,22 @@ var reduxLoggerConfig = {
 (function() {
   'use strict';
 
-  var app = angular.module('inboxApp', [
-    'ipCookie',
+  angular.module('inboxApp', [
     'ngRoute',
-    'ngRedux',
-    'ui.bootstrap',
-    uiRouter,
+    'inboxControllers',
     'inboxDirectives',
     'inboxFilters',
-    'inboxControllers',
     'inboxServices',
-    'pascalprecht.translate',
+    'ipCookie',
+    'ngRedux',
     'nvd3',
+    'pascalprecht.translate',
     'pouchdb',
+    'ui.bootstrap',
+    uiRouter,
   ]);
 
-  app.config(function(
+  angular.module('inboxApp').config(function(
     $compileProvider,
     $locationProvider,
     $ngReduxProvider,
@@ -130,7 +130,7 @@ var reduxLoggerConfig = {
     $ngReduxProvider.createStoreWith(Reducers, middlewares);
   });
 
-  app.constant('APP_CONFIG', {
+  angular.module('inboxApp').constant('APP_CONFIG', {
     name: '@@APP_CONFIG.name',
     version: '@@APP_CONFIG.version',
   });
@@ -145,7 +145,7 @@ var reduxLoggerConfig = {
       },
     },
   };
-  app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
+  angular.module('inboxApp').constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
   if (window.location.href === 'http://localhost:9876/context.html') {
     // karma unit testing - do not bootstrap
@@ -166,7 +166,7 @@ var reduxLoggerConfig = {
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, $state, $transitions, Auth) {
+  angular.module('inboxApp').run(function($state, $transitions, Auth) {
     $transitions.onStart({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);

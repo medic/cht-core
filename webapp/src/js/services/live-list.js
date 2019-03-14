@@ -12,8 +12,8 @@ angular.module('inboxServices').factory('LiveListConfig',
     ContactSchema,
     LiveList,
     RulesEngine,
-    relativeDayFilter,
-    TranslateFrom
+    TranslateFrom,
+    relativeDayFilter
   ) {
     'use strict';
     'ngInject';

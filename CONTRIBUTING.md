@@ -10,8 +10,8 @@ If you have an idea or a question we'd love to hear from you! The easiest way to
 
 ### Submitting code
 
-1. Before starting on code we recommend you raise an issue or message our Google Group to start a discussion about the change you want to make. Existing issues that have been identified as good for first time contributors are labeled with ["Help Wanted"](https://github.com/medic/medic/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22).
-2. When working on your submission follow our [style guide](https://github.com/medic/medic-docs/blob/master/development/style-guide.md) so the codebase is kept consistent and easy to read.
+1. Before starting on code we recommend you raise an issue or message us on [Slack](https://communityhealthtoolkit.org/slack) to start a discussion about the change you want to make. Existing issues that have been identified as good for first time contributors are labeled with ["Help Wanted"](https://github.com/medic/medic/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22).
+2. When working on your submission read our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) to help understand how we work.
 3. When you're happy with the code be sure to run tests and precommit checks.
 4. Now submit a PR with a full description of the issue you're solving and if possible including a link to the GitHub issue.
 5. [Our CI](https://travis-ci.org/medic/) will automatically schedule a build. Keep an eye on the build to make sure it passes.

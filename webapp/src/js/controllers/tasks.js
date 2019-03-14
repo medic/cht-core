@@ -4,17 +4,15 @@ var _ = require('underscore');
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('TasksCtrl',
+  angular.module('inboxControllers').controller('TasksCtrl',
     function(
       $ngRedux,
       $scope,
       $state,
       $stateParams,
       $timeout,
-      $window,
       $translate,
+      $window,
       Actions,
       LiveList,
       RulesEngine,

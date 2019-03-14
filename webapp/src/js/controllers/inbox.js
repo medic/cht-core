@@ -1,14 +1,13 @@
-var feedback = require('../modules/feedback'),
-  _ = require('underscore'),
+var _ = require('underscore'),
   bootstrapTranslator = require('./../bootstrapper/translator'),
   moment = require('moment');
 
 (function() {
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers', []);
+  angular.module('inboxControllers', []);
 
-  inboxControllers.controller('InboxCtrl', function(
+  angular.module('inboxControllers').controller('InboxCtrl', function(
     $log,
     $ngRedux,
     $q,
@@ -20,45 +19,41 @@ var feedback = require('../modules/feedback'),
     $transitions,
     $translate,
     $window,
-    Actions,
     APP_CONFIG,
+    Actions,
     Auth,
     Changes,
     CheckDate,
     ContactSchema,
     CountMessages,
-    DB,
     DBSync,
+    DatabaseConnectionMonitor,
     Debug,
     Enketo,
-    PlaceHierarchy,
+    Feedback,
     JsonForms,
     Language,
-    LiveList,
     LiveListConfig,
     Location,
     Modal,
+    PlaceHierarchy,
+    RecurringProcessManager,
+    ResourceIcons,
     RulesEngine,
-    Select2Search,
     Selectors,
-    SendMessage,
     Session,
     SetLanguage,
     Settings,
-    Snackbar,
-    UpdateServiceWorker,
     Telemetry,
     Tour,
     TranslateFrom,
     UnreadRecords,
+    UpdateServiceWorker,
     UpdateSettings,
     UpdateUser,
     UserSettings,
     WealthQuintilesWatcher,
-    XmlForms,
-    RecurringProcessManager,
-    DatabaseConnectionMonitor,
-    ResourceIcons
+    XmlForms
   ) {
     'ngInject';
 
@@ -187,20 +182,7 @@ var feedback = require('../modules/feedback'),
       delete $window.startupTimes;
     });
 
-    feedback.init({
-      saveDoc: function(doc, callback) {
-        DB()
-          .post(doc)
-          .then(function() {
-            callback();
-          })
-          .catch(callback);
-      },
-      getUserCtx: function(callback) {
-        callback(null, Session.userCtx());
-      },
-      appConfig: APP_CONFIG
-    });
+    Feedback.init();
 
     LiveListConfig($scope);
     CheckDate();
@@ -265,29 +247,25 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $transitions.onBefore({}, (trans) => {
+      if (ctrl.enketoStatus.edited && ctrl.cancelCallback) {
+        $scope.navigationCancel({ to: trans.to(), params: trans.params() });
+        return false;
+      }
+    });
+
     $transitions.onStart({}, function(trans) {
-      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || trans.to().name.indexOf('messages.detail') === -1) {
+      const statesToUnsetSelected = ['contacts', 'messages', 'reports', 'tasks'];
+      const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
+      // unset selected when states have different base state and only when source state has selected property
+      if (parentState && !trans.to().name.startsWith(parentState)) {
         $scope.unsetSelected();
-      }
-      if (trans.to().name.indexOf('tasks.detail') === -1) {
-        Enketo.unload($scope.form);
-        $scope.unsetSelected();
-      }
-      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]) {
-        $scope.$broadcast('ClearSelected');
-      }
-      if (!ctrl.enketoEdited){
-        return;
-      }
-      if (ctrl.cancelCallback){
-        event.preventDefault();
-        $scope.navigationCancel();
       }
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
-    $scope.navigationCancel = function() {
-      if (ctrl.enketoSaving) {
+    $scope.navigationCancel = function(trans) {
+      if (ctrl.enketoStatus.saving) {
         // wait for save to finish
         return;
       }
@@ -305,6 +283,9 @@ var feedback = require('../modules/feedback'),
         singleton: true,
       }).then(function() {
         ctrl.setEnketoEditedStatus(false);
+        if (trans) {
+          return $state.go(trans.to, trans.params);
+        }
         if (ctrl.cancelCallback) {
           ctrl.cancelCallback();
         }
@@ -712,7 +693,7 @@ var feedback = require('../modules/feedback'),
     // https://github.com/medic/medic/issues/2927
     $transitions.onStart({}, closeDropdowns);
 
-    $rootScope.$on('databaseClosedEvent', function () {
+    const dbClosedDeregister = $rootScope.$on('databaseClosedEvent', function () {
       Modal({
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
@@ -769,6 +750,7 @@ var feedback = require('../modules/feedback'),
     RecurringProcessManager.startUpdateRelativeDate();
     $scope.$on('$destroy', function() {
       unsubscribe();
+      dbClosedDeregister();
       RecurringProcessManager.stopUpdateRelativeDate();
     });
 

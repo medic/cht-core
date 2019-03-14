@@ -15,10 +15,9 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('ReportViewModelGenerator',
   function(
     FormatDataRecord,
-    LineageModelGenerator,
-    DB,
     GetSubjectSummaries,
-    GetSummaries
+    GetSummaries,
+    LineageModelGenerator
   ) {
     'ngInject';
     'use strict';

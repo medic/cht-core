@@ -1,7 +1,11 @@
 /*
 Handles service worker updates
 */
-angular.module('inboxServices').factory('UpdateServiceWorker', function($window, $log, $timeout) {
+angular.module('inboxServices').factory('UpdateServiceWorker', function(
+  $log,
+  $timeout,
+  $window
+) {
   'use strict';
   'ngInject';
 

@@ -6,7 +6,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $state,
     $translate,
     Actions,
-    DB,
     Enketo,
     Geolocation,
     Selectors,
@@ -137,10 +136,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
           ctrl.setEnketoSavingStatus(false);
+          ctrl.setEnketoEditedStatus(false);
           Enketo.unload($scope.form);
           $scope.clearSelected();
           ctrl.clearCancelCallback();
-          ctrl.setEnketoEditedStatus(false);
           $state.go('tasks.detail', { id: null });
         })
         .then(() => {
@@ -170,6 +169,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope.form = null;
     $scope.formId = null;
     $scope.setSelected($state.params.id);
+
+    $scope.$on('ClearSelected', () => {
+      Enketo.unload($scope.form);
+    });
 
     $scope.$on('$destroy', unsubscribe);
   }

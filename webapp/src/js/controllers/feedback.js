@@ -1,13 +1,12 @@
-var feedback = require('../modules/feedback');
-
 angular.module('inboxControllers').controller('FeedbackCtrl',
   function (
     $q,
     $scope,
     $translate,
     $uibModalInstance,
-    Translate,
-    Snackbar
+    Feedback,
+    Snackbar,
+    Translate
   ) {
 
     'use strict';
@@ -38,32 +37,28 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
       var message = $scope.model.message && $scope.model.message.trim();
       return validateMessage(message)
         .then(function() {
-          const p = $q.defer();
-
-          if (!$scope.error.message) {
-            feedback.submit(message, true, function(err) {
-              if (err) {
-                $scope.setError(err, 'Error saving feedback');
-                p.reject();
-                return;
-              }
-              $scope.setFinished();
-
-              $translate('feedback.submitted')
-                .then(Snackbar)
-                .then(() => {
-                  $uibModalInstance.close();
-                  p.resolve();
-                })
-                .catch(err => p.reject(err));
-
-            });
-          } else {
+          if ($scope.error.message) {
             $scope.setFinished();
-            p.resolve();
+            return $q.resolve();
           }
 
-          return p;
+          return $q((resolve, reject) => {
+            Feedback.submit(message, true, function(err) {
+              if (err) {
+                return reject(err);
+              }
+              return resolve();
+            });
+          })
+            .then(() => {
+              $scope.setFinished();
+              return $translate('feedback.submitted')
+                .then(Snackbar);
+            })
+            .catch(err => {
+              $scope.setError(err, 'Error saving feedback');
+              throw err;
+            });
         });
     };
 

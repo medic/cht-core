@@ -5,9 +5,7 @@ var moment = require('moment'),
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('TargetGenerator',
+  angular.module('inboxServices').factory('TargetGenerator',
     function(
       $log,
       $parse,

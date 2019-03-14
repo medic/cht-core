@@ -8,11 +8,11 @@ angular
   .module('controllers')
   .controller('EditUserCtrl', function(
     $log,
+    $q,
     $rootScope,
     $scope,
-    $uibModalInstance,
-    $q,
     $translate,
+    $uibModalInstance,
     ContactSchema,
     CreateUser,
     DB,

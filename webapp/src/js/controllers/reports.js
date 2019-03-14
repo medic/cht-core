@@ -31,6 +31,7 @@ angular
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
+        enketoStatus: Selectors.getEnketoStatus(state),
         selectMode: Selectors.getSelectMode(state),
         selected: Selectors.getSelected(state)
       };
@@ -279,7 +280,8 @@ angular
 
     $scope.search = function() {
       // clears report selection for any text search or filter selection
-      if($scope.filters.search || Object.keys($scope.filters).length > 1) {
+      // does not clear selection when someone is editing a form
+      if(($scope.filters.search || Object.keys($scope.filters).length > 1) && !ctrl.enketoStatus.edited) {
         $state.go('reports.detail', { id: null }, { notify: false });
         clearSelection();
       }

@@ -13,7 +13,8 @@ describe('ContactsContentCtrl', () => {
       changesFilter,
       contactChangeFilter = sinon.stub(),
       debounce,
-      getSelected;
+      getSelected,
+      timeout;
 
   const childPerson = {
     _id: 'peach',
@@ -70,7 +71,7 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions, Selectors) => {
+  beforeEach(inject((_$rootScope_, $controller, _$timeout_, $ngRedux, Actions, Selectors) => {
     actions = Actions($ngRedux.dispatch);
 
     scope = _$rootScope_.$new();
@@ -85,6 +86,7 @@ describe('ContactsContentCtrl', () => {
       go: sinon.stub()
     };
 
+    timeout = _$timeout_;
     controller = $controller;
 
     getContact = sinon.stub();
@@ -110,7 +112,7 @@ describe('ContactsContentCtrl', () => {
     const runTasksTest = childrenArray => {
       stateParams = { id: doc._id };
       stubGetContact(doc, childrenArray);
-      return createController().setupPromise;
+      return createController().setupPromise.then(timeout.flush);
     };
 
     it('displays tasks for selected contact', () => {

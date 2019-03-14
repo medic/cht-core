@@ -4,9 +4,6 @@ var _ = require('underscore');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-
   /**
     * This service checks the settings for forms that are expected
     * to be submitted every week, month, year, etc. To be returned,
@@ -18,9 +15,9 @@ var _ = require('underscore');
     *  'kujua-reporting': [ { code: 'R' }, { code: 'D' } ]
     * }
     */
-  inboxServices.factory('ScheduledForms',
-    ['Settings',
+  angular.module('inboxServices').factory('ScheduledForms',
     function(Settings) {
+      'ngInject';
       return function() {
         return Settings().then(function(settings) {
           var results = [];
@@ -35,6 +32,6 @@ var _ = require('underscore');
         });
       };
     }
-  ]);
+  );
 
 }());

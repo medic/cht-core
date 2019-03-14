@@ -42,7 +42,7 @@ angular.module('inboxControllers').controller('HomeCtrl',
         $log.error(err);
         state = 'error';
       }
-      $state.go(state, { }, { location: 'replace' });
+      $state.go(state, { code: 403 }, { location: 'replace' });
     });
 
   }

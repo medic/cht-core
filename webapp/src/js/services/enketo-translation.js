@@ -96,10 +96,13 @@ function N(tagName, text, attrs, children) {
 }
 
 
-angular.module('inboxServices').service('EnketoTranslation', [
-  '$translate', '$log',
-  function($translate, $log) {
+angular.module('inboxServices').service('EnketoTranslation',
+  function(
+    $log,
+    $translate
+  ) {
     'use strict';
+    'ngInject';
 
     var self = this;
 
@@ -392,4 +395,4 @@ angular.module('inboxServices').service('EnketoTranslation', [
     };
 
   }
-]);
+);

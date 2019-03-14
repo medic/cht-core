@@ -5,22 +5,22 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
     $log,
     $ngRedux,
-    $q,
     $scope,
     $state,
     $stateParams,
+    $timeout,
     $translate,
     Actions,
     Auth,
     Changes,
+    ContactChangeFilter,
     ContactViewModelGenerator,
+    Debounce,
     Selectors,
     Snackbar,
     TasksForContact,
     TranslateFrom,
-    UserSettings,
-    ContactChangeFilter,
-    Debounce
+    UserSettings
   ) {
 
     'use strict';
@@ -97,21 +97,20 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             'ContactsContentCtrl',
             function(areTasksEnabled, tasks) {
               if (ctrl.selected) {
-                tasks.forEach(function(task) {
-                  task.title = translate(task.title, task);
-                  task.priorityLabel = translate(task.priorityLabel, task);
+                $timeout(() => {
+                  tasks.forEach(function(task) {
+                    task.title = translate(task.title, task);
+                    task.priorityLabel = translate(task.priorityLabel, task);
+                  });
+                  ctrl.updateSelected({ areTasksEnabled: areTasksEnabled, tasks: tasks });
+                  children.forEach(function(child) {
+                    child.taskCount = tasks.filter(function(task) {
+                      return task.doc &&
+                             task.doc.contact &&
+                             task.doc.contact._id === child.doc._id;
+                    }).length;
+                  });
                 });
-                ctrl.updateSelected({ areTasksEnabled: areTasksEnabled, tasks: tasks });
-                children.forEach(function(child) {
-                  child.taskCount = tasks.filter(function(task) {
-                    return task.doc &&
-                           task.doc.contact &&
-                           task.doc.contact._id === child.doc._id;
-                  }).length;
-                });
-                if (!$scope.$$phase) {
-                  $scope.$apply();
-                }
               }
             });
         })
