@@ -148,8 +148,8 @@ describe('all_docs handler', () => {
       .then(result => {
         result.forEach((stub, key) => docs[key]._rev = stub.rev);
         return Promise.all([
-          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key=allowed_contact'}, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key=denied_contact'}, offlineRequestOptions))
+          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="allowed_contact"'}, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
         ]);
       })
       .then(result => {
@@ -286,17 +286,17 @@ describe('all_docs handler', () => {
     return utils
       .saveDoc(doc)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?key=denied_report' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key=denied_report' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs?key=denied_report` }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
+        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs?key="denied_report"` }, offlineRequestOptions)),
         utils
-          .requestOnTestDb(_.defaults({ path: '/_all_docs/something?key=denied_report' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.defaults({ path: '///_all_docs//something?key=denied_report' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs/something?key=denied_report` }, offlineRequestOptions))
+          .request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"` }, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {
