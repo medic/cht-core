@@ -36,7 +36,7 @@ var _ = require('underscore'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        enketoStatus: Selectors.getEnketoStatus(state),
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
         selected: Selectors.getSelected(state)
       };
     };
@@ -327,7 +327,7 @@ var _ = require('underscore'),
     };
 
     $scope.search = function() {
-      if($scope.filters.search && !ctrl.enketoStatus.edited) {
+      if($scope.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }

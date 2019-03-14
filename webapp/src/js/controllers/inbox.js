@@ -248,7 +248,7 @@ var _ = require('underscore'),
     });
 
     $transitions.onBefore({}, (trans) => {
-      if (ctrl.enketoStatus.edited && ctrl.cancelCallback) {
+      if (ctrl.enketoEdited && ctrl.cancelCallback) {
         $scope.navigationCancel({ to: trans.to(), params: trans.params() });
         return false;
       }
@@ -265,7 +265,7 @@ var _ = require('underscore'),
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function(trans) {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         // wait for save to finish
         return;
       }
