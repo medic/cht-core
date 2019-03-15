@@ -68,7 +68,7 @@ module.exports = {
       if (!date) {
         return '';
       }
-      if (filters.human === 'true'){
+      if (filters && filters.human && filters.human === 'true'){
         return moment(date).toISOString();
       } else {
         return moment(date).valueOf();
