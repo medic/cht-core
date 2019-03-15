@@ -5,7 +5,7 @@ const formatDate = date => {
   if (!date) {
     return '';
   }
-  return moment(date).valueOf();
+  return moment(date).toISOString();
 };
 
 const safeStringify = obj => {
