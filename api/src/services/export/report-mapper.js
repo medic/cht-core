@@ -68,7 +68,7 @@ module.exports = {
       if (!date) {
         return '';
       }
-      return moment(date).valueOf();
+      return moment(date).toISOString();
     };
 
     return getForms().then(forms =>
