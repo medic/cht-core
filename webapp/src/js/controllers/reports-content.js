@@ -31,7 +31,7 @@ var _ = require('underscore');
         return {
           clearCancelCallback: actions.clearCancelCallback,
           setSelected: actions.setSelected,
-          updateSelected: actions.updateSelected
+          updateFirstSelected: actions.updateFirstSelected
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -120,7 +120,7 @@ var _ = require('underscore');
                     selected[0].formatted.oldVerified !== change.doc.verified)) {
                   ctrl.setSelected(selected);
                   $timeout(function() {
-                    ctrl.updateSelected([{ formatted: { verified: change.doc.verified }}]);
+                    ctrl.updateFirstSelected({ formatted: { verified: change.doc.verified }});
                   });
                 }
               });
@@ -137,7 +137,7 @@ var _ = require('underscore');
         var oldVerified = ctrl.selected[0].formatted.verified;
         var newVerified = oldVerified === valid ? undefined : valid;
 
-        ctrl.updateSelected([{ formatted: { verified: newVerified, oldVerified: oldVerified }}]);
+        ctrl.updateFirstSelected({ formatted: { verified: newVerified, oldVerified: oldVerified }});
 
         $scope.setSubActionBarStatus(newVerified);
       });

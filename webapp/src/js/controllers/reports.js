@@ -41,7 +41,8 @@ angular
       return {
         addSelected: actions.addSelected,
         removeSelected: actions.removeSelected,
-        setSelected: actions.setSelected
+        setSelected: actions.setSelected,
+        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -341,15 +342,16 @@ angular
       if (ctrl.selected[0].doc.form) {
         $scope.setLoadingSubActionBar(true);
 
-        var doc = ctrl.selected[0].doc;
-        if (doc.contact) {
-          doc.contact = lineage.minifyLineage(doc.contact);
+        if (ctrl.selected[0].doc.contact) {
+          var minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
+          ctrl.setFirstSelectedDocProperty({ contact: minifiedContact });
         }
 
-        doc.verified = doc.verified === valid ? undefined : valid;
+        var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
+        ctrl.setFirstSelectedDocProperty({ verified: verified });
 
         DB()
-          .post(doc)
+          .post(ctrl.selected[0].doc)
           .catch(function(err) {
             $log.error('Error verifying message', err);
           })

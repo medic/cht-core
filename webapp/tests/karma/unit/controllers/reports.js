@@ -142,7 +142,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.updateSelected([{
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', form: 'P' }
       }]);
@@ -162,7 +162,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.updateSelected([{
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', form: 'P' }
       }]);
@@ -182,7 +182,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.updateSelected([{
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       }]);
@@ -202,7 +202,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.updateSelected([{
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       }]);
@@ -222,7 +222,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.updateSelected([{
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       }]);
@@ -242,7 +242,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.updateSelected([{
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       }]);
