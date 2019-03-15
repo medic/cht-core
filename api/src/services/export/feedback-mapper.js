@@ -1,11 +1,15 @@
 const moment = require('moment');
 const db = require('../../db');
 
-const formatDate = date => {
+const formatDate = (date, filters) => {
   if (!date) {
     return '';
   }
-  return moment(date).toISOString();
+  if (filters.human === 'true'){
+    return moment(date).toISOString();
+  } else {
+    return moment(date).valueOf();
+  }
 };
 
 const safeStringify = obj => {
@@ -21,7 +25,7 @@ module.exports = {
     return db.medic.query('medic-admin/feedback', options)
       .then(result => result.rows.map(row => row.id));
   },
-  map: () => {
+  map: (filters) => {
     return Promise.resolve({
       header: [
         'id',
@@ -34,7 +38,7 @@ module.exports = {
       getRows: doc => {
         return [[
           doc._id,
-          formatDate(doc.meta.time),
+          formatDate(doc.meta.time, filters),
           doc.meta.user.name,
           doc.meta.version,
           doc.meta.url,

@@ -61,6 +61,6 @@ angular
       });
 
     $scope.export = function() {
-      Export('feedback');
+      Export('feedback', { human: true });
     };
   });

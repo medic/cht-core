@@ -44,14 +44,18 @@ const buildHistory = task => {
   return history;
 };
 
-const formatDate = date => {
+const formatDate = (date, filters) => {
   if (!date) {
     return '';
   }
-  return moment(date).toISOString();
+  if (filters.human === 'true'){
+    return moment(date).toISOString();
+  } else {
+    return moment(date).valueOf();
+  }
 };
 
-const getStateDate = (state, task, history) => {
+const getStateDate = (state, task, history, filters) => {
   let date;
   if (state === 'scheduled' && task.due) {
     date = task.due;
@@ -60,7 +64,7 @@ const getStateDate = (state, task, history) => {
   } else if (task.state === state) {
     date = task.timestamp;
   }
-  return formatDate(date);
+  return formatDate(date, filters);
 };
 
 /*
@@ -113,7 +117,7 @@ module.exports = {
       .then(result => result.rows)
       .then(rows => rows.map(row => row.id));
   },
-  map: () => {
+  map: (filters) => {
     return Promise.resolve({
       header: [
         'id',
@@ -164,16 +168,16 @@ module.exports = {
           return task.messages.map(message => [
             record._id,
             record.patient_id || (record.patient && record.patient.patient_id),
-            formatDate(record.reported_date),
+            formatDate(record.reported_date, filters),
             record.from,
             taskType,
             task.state,
-            getStateDate('received', task, history),
-            getStateDate('scheduled', task, history),
-            getStateDate('pending', task, history),
-            getStateDate('sent', task, history),
-            getStateDate('cleared', task, history),
-            getStateDate('muted', task, history),
+            getStateDate('received', task, history, filters),
+            getStateDate('scheduled', task, history, filters),
+            getStateDate('pending', task, history, filters),
+            getStateDate('sent', task, history, filters),
+            getStateDate('cleared', task, history, filters),
+            getStateDate('muted', task, history, filters),
             message.uuid,
             message.sent_by,
             message.to,

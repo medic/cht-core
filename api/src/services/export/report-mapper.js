@@ -68,7 +68,11 @@ module.exports = {
       if (!date) {
         return '';
       }
-      return moment(date).toISOString();
+      if (filters.human === 'true'){
+        return moment(date).toISOString();
+      } else {
+        return moment(date).valueOf();
+      }
     };
 
     return getForms().then(forms =>
