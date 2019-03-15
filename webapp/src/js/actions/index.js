@@ -88,7 +88,6 @@ angular.module('inboxServices').factory('Actions',
 
       function loadSelectedChildren() {
         return dispatch(function(dispatch, getState) {
-          dispatch({ type: 'REQUEST_SELECTED_CHILDREN' });
           var selected = getState().selected;
           return ContactViewModelGenerator.loadChildren(selected).then(function(children) {
             dispatch(createSingleValueAction('RECEIVE_SELECTED_CHILDREN', 'children', children));
@@ -98,7 +97,6 @@ angular.module('inboxServices').factory('Actions',
 
       function loadSelectedReports() {
         return dispatch(function(dispatch, getState) {
-          dispatch({ type: 'REQUEST_SELECTED_REPORTS' });
           var selected = getState().selected;
           return ContactViewModelGenerator.loadReports(selected).then(function(reports) {
             dispatch(createSingleValueAction('RECEIVE_SELECTED_REPORTS', 'reports', reports));

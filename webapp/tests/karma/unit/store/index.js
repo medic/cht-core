@@ -156,12 +156,8 @@ describe('Store', function() {
     loadChildren.withArgs(selected).returns(Promise.resolve(children));
     actions.loadSelectedChildren();
 
-    let state = getState();
-    chai.expect(state).to.not.equal(initialState);
-    chai.expect(state).to.deep.equal({ selected, loadingSelectedChildren: true });
-
     setTimeout(() => {
-      state = getState();
+      const state = getState();
       chai.expect(state).to.not.equal(initialState);
       chai.expect(state.selected).to.not.equal(initialState.selected);
       chai.expect(state).to.deep.equal({ selected: { _id: '1', children }, loadingSelectedChildren: false });
@@ -178,12 +174,9 @@ describe('Store', function() {
     loadReports.withArgs(selected).returns(Promise.resolve(reports));
     actions.loadSelectedReports();
 
-    let state = getState();
-    chai.expect(state).to.not.equal(initialState);
-    chai.expect(state).to.deep.equal({ selected, loadingSelectedReports: true });
 
     setTimeout(() => {
-      state = getState();
+      const state = getState();
       chai.expect(state).to.not.equal(initialState);
       chai.expect(state.selected).to.not.equal(initialState.selected);
       chai.expect(state).to.deep.equal({ selected: { _id: '1', reports }, loadingSelectedReports: false });
