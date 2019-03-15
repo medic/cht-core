@@ -54,12 +54,12 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('UPDATE_SELECTED', 'selected', selected));
       }
 
-      function updateFirstSelected(selected) {
-        dispatch(createSingleValueAction('UPDATE_FIRST_SELECTED', 'selected', selected));
-      }
-
       function setFirstSelectedDocProperty(doc) {
         dispatch(createSingleValueAction('SET_FIRST_SELECTED_DOC_PROPERTY', 'doc', doc));
+      }
+
+      function setFirstSelectedFormattedProperty(formatted) {
+        dispatch(createSingleValueAction('SET_FIRST_SELECTED_FORMATTED_PROPERTY', 'formatted', formatted));
       }
 
       function addSelectedMessage(message) {
@@ -125,8 +125,8 @@ angular.module('inboxServices').factory('Actions',
         // Reports-specific selected actions
         addSelected: addSelected,
         removeSelected: removeSelected,
-        updateFirstSelected: updateFirstSelected,
         setFirstSelectedDocProperty: setFirstSelectedDocProperty,
+        setFirstSelectedFormattedProperty: setFirstSelectedFormattedProperty
       };
     };
   }

@@ -36,19 +36,21 @@
         return Object.assign({}, state, {
           selected: merge({}, state.selected, action.payload.selected)
         });
-      case 'UPDATE_FIRST_SELECTED':
-        selected = state.selected.map(function(item, index) {
-          if (index === 0) {
-            return merge({}, item, action.payload.selected);
-          }
-          return item;
-        });
-        return Object.assign({}, state, { selected: selected });
       case 'SET_FIRST_SELECTED_DOC_PROPERTY':
         selected = state.selected.map(function(item, index) {
           if (index === 0) {
             return Object.assign({}, item, {
               doc: Object.assign({}, item.doc, action.payload.doc)
+            });
+          }
+          return item;
+        });
+        return Object.assign({}, state, { selected: selected });
+      case 'SET_FIRST_SELECTED_FORMATTED_PROPERTY':
+        selected = state.selected.map(function(item, index) {
+          if (index === 0) {
+            return Object.assign({}, item, {
+              formatted: Object.assign({}, item.formatted, action.payload.formatted)
             });
           }
           return item;
