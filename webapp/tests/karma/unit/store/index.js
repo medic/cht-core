@@ -117,12 +117,12 @@ describe('Store', function() {
     chai.expect(state).to.deep.equal({ selected: [selected] });
   });
 
-  it('sets the doc contact for the first selected item in an array', () => {
+  it('sets relevant doc property for the first selected item in an array', () => {
     const oldContact = { some: true, other: true, properties: true };
     const initialState = { selected: [{ doc: { contact: oldContact }}] };
     setupStore(initialState);
     const newContact = { test: true };
-    actions.setFirstSelectedDocContact(newContact);
+    actions.setFirstSelectedDocProperty({ contact: newContact });
     const state = getState();
     chai.expect(state).to.not.equal(initialState);
     chai.expect(state.selected).to.not.equal(initialState.selected);
