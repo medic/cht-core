@@ -139,6 +139,7 @@ describe('ReportsCtrl controller', () => {
 
   describe('verifying reports', () => {
     it('unverified report to verified - valid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
@@ -154,11 +155,13 @@ describe('ReportsCtrl controller', () => {
           name: 'hello',
           form: 'P',
           verified: true,
+          _rev: '1'
         }]);
       });
     });
 
     it('unverified report to verified - invalid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
@@ -173,12 +176,14 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: false
+          verified: false,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified valid to verified invalid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
@@ -193,12 +198,14 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: false
+          verified: false,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified invalid to unverified', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
@@ -213,12 +220,14 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: undefined
+          verified: undefined,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified invalid to verified valid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
@@ -233,12 +242,14 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: true
+          verified: true,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified valid to unverified', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
@@ -253,7 +264,8 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: undefined
+          verified: undefined,
+          _rev: '1'
         }]);
       });
     });
