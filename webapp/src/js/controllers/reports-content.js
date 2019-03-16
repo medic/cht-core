@@ -23,7 +23,9 @@ var _ = require('underscore');
       var mapStateToTarget = function(state) {
         return {
           selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state)
+          selected: Selectors.getSelected(state),
+          summaries: Selectors.getSelectedSummaries(state),
+          validChecks: Selectors.getSelectedValidChecks(state)
         };
       };
       var mapDispatchToTarget = function(dispatch) {
