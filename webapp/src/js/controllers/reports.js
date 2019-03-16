@@ -351,7 +351,11 @@ angular
         ctrl.setFirstSelectedDocProperty({ verified: verified });
 
         DB()
-          .post(ctrl.selected[0].doc)
+          .get(ctrl.selected[0].doc._id)
+          .then(function(doc) {
+            ctrl.setFirstSelectedDocProperty({ _rev: doc._rev });
+            return DB().post(ctrl.selected[0].doc);
+          })
           .catch(function(err) {
             $log.error('Error verifying message', err);
           })
