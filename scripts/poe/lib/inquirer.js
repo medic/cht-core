@@ -93,10 +93,10 @@ const questions = {
     {
       name: 'tags', type: 'input',
       message: 'Do you want to add tags?\n\nAvailable when updating terms or terms_translations; you can use the following keys: \
-        \n\"all\" - for all the imported terms, \
-        \n\"new\" - for the terms which aren\'t already in the project, \
-        \n\"obsolete\" - for the terms which are in the project but not in the imported file and \
-        \n\"overwritten_translations\" - for the terms for which translations change. \
+        \n"all" - for all the imported terms, \
+        \n"new" - for the terms which aren\'t already in the project, \
+        \n"obsolete" - for the terms which are in the project but not in the imported file and \
+        \n"overwritten_translations" - for the terms for which translations change. \
         \n\nexamples: \
         \n# If not specified, the tags are set by default to all terms. \
         \ntags=["name-of-tag", "name-of-another-tag"] \
