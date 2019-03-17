@@ -6,7 +6,7 @@ const fileExists = (fpath) => {
   const valid = fs.existsSync(file);
   if(!valid) {
     error(`Unable to find your translation file:\n${file}`);
-  };
+  }
   return valid;
 };
 
