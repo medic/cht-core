@@ -106,6 +106,18 @@ describe('Store', function() {
     chai.expect(state).to.deep.equal({ selected });
   });
 
+  it('updates selected item', () => {
+    const id = '1';
+    const initialState = { selected: [{ _id: id, expanded: false }] };
+    setupStore(initialState);
+    const selected = { expanded: true };
+    actions.updateSelectedItem(id, selected);
+    const state = getState();
+    chai.expect(state).to.not.equal(initialState);
+    chai.expect(state.selected).to.not.equal(initialState.selected);
+    chai.expect(state).to.deep.equal({ selected: [{ _id: id, expanded: true }] });
+  });
+
   it('sets relevant doc property for the first selected item in an array', () => {
     const oldContact = { some: true, other: true, properties: true };
     const initialState = { selected: [{ doc: { contact: oldContact }}] };

@@ -36,6 +36,14 @@
         return Object.assign({}, state, {
           selected: merge({}, state.selected, action.payload.selected)
         });
+      case 'UPDATE_SELECTED_ITEM':
+        selected = state.selected.map(function(item) {
+          if (item._id === action.payload.id) {
+            return Object.assign({}, item, action.payload.selected);
+          }
+          return item;
+        });
+        return Object.assign({}, state, { selected: selected });
       case 'SET_FIRST_SELECTED_DOC_PROPERTY':
         selected = state.selected.map(function(item, index) {
           if (index === 0) {

@@ -54,6 +54,13 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('UPDATE_SELECTED', 'selected', selected));
       }
 
+      function updateSelectedItem(id, selected) {
+        dispatch({
+          type: 'UPDATE_SELECTED_ITEM',
+          payload: { id: id, selected: selected }
+        });
+      }
+
       function setFirstSelectedDocProperty(doc) {
         dispatch(createSingleValueAction('SET_FIRST_SELECTED_DOC_PROPERTY', 'doc', doc));
       }
@@ -125,6 +132,7 @@ angular.module('inboxServices').factory('Actions',
         // Reports-specific selected actions
         addSelected: addSelected,
         removeSelected: removeSelected,
+        updateSelectedItem: updateSelectedItem,
         setFirstSelectedDocProperty: setFirstSelectedDocProperty,
         setFirstSelectedFormattedProperty: setFirstSelectedFormattedProperty
       };

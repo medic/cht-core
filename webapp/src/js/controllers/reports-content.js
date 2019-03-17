@@ -33,6 +33,7 @@ var _ = require('underscore');
         return {
           clearCancelCallback: actions.clearCancelCallback,
           setSelected: actions.setSelected,
+          updateSelectedItem: actions.updateSelectedItem,
           setFirstSelectedFormattedProperty: actions.setFirstSelectedFormattedProperty
         };
       };
@@ -72,17 +73,18 @@ var _ = require('underscore');
         if (!ctrl.selectMode) {
           return;
         }
+
+        var id = selection._id;
         if (selection.report || selection.expanded) {
-          selection.expanded = !selection.expanded;
+          ctrl.updateSelectedItem(id, { expanded: !selection.expanded });
         } else {
-          selection.loading = true;
-          $scope.refreshReportSilently(selection._id)
+          ctrl.updateSelectedItem(id, { loading: true });
+          $scope.refreshReportSilently(id)
             .then(function() {
-              selection.loading = false;
-              selection.expanded = true;
+              ctrl.updateSelectedItem(id, { loading: false, expanded: true });
             })
             .catch(function(err) {
-              selection.loading = false;
+              ctrl.updateSelectedItem(id, { loading: false });
               $log.error('Error fetching doc for expansion', err);
             });
         }
