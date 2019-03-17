@@ -10,11 +10,15 @@ describe('Contacts Edit controller', () => {
       contactForm,
       spyState;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject((_$rootScope_, $controller) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions) => {
     contactForm = { forEdit: sinon.stub(), forCreate: sinon.stub() };
-    actions = { setCancelCallback: sinon.stub() };
+    const stubbedActions = { setCancelCallback: sinon.stub() };
+    actions = Object.assign({}, Actions($ngRedux.dispatch), stubbedActions);
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();

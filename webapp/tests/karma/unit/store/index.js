@@ -253,4 +253,22 @@ describe('Store', function() {
     chai.expect(state.selected).to.not.equal(initialState.selected);
     chai.expect(state).to.deep.equal({ selected: [item2] });
   });
+
+  it('sets loadingContent', () => {
+    const initialState = { loadingContent: false };
+    setupStore(initialState);
+    actions.setLoadingContent(true);
+    const state = getState();
+    chai.expect(state).to.not.equal(initialState);
+    chai.expect(state).to.deep.equal({ loadingContent: true });
+  });
+
+  it('sets loadingSubActionBar', () => {
+    const initialState = { loadingSubActionBar: false };
+    setupStore(initialState);
+    actions.setLoadingSubActionBar(true);
+    const state = getState();
+    chai.expect(state).to.not.equal(initialState);
+    chai.expect(state).to.deep.equal({ loadingSubActionBar: true });
+  });
 });
