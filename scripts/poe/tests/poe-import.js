@@ -44,7 +44,8 @@ describe('poe', () => {
     expect(post).toHaveBeenCalledWith(expectedOptions);
     expect(console.log.mock.calls).toEqual([
       ['en'],
-      [{total: 177}]
+      [{total: 177}],
+      ['Slack channel not defined (.env). Unable to notify.']
     ]);
   });
 });
