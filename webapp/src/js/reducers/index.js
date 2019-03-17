@@ -105,6 +105,8 @@
         return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
       case 'SET_LOADING_SUB_ACTION_BAR':
         return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
+      case 'SET_SHOW_ACTION_BAR':
+        return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
       default:
         return state;
     }

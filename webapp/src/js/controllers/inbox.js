@@ -86,7 +86,8 @@ var _ = require('underscore'),
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setLoadingContent: actions.setLoadingContent,
         setLoadingSubActionBar: actions.setLoadingSubActionBar,
-        setSelectMode: actions.setSelectMode
+        setSelectMode: actions.setSelectMode,
+        setShowActionBar: actions.setShowActionBar
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -300,7 +301,7 @@ var _ = require('underscore'),
     $scope.unsetSelected = function() {
       $scope.setShowContent(false);
       ctrl.setLoadingContent(false);
-      $scope.showActionBar = false;
+      ctrl.setShowActionBar(false);
       $scope.setTitle();
       $scope.$broadcast('ClearSelected');
     };
@@ -322,7 +323,7 @@ var _ = require('underscore'),
       ctrl.setLoadingContent(false);
       $timeout(function() {
         $scope.setShowContent(true);
-        $scope.showActionBar = true;
+        ctrl.setShowActionBar(true);
         if (!refreshing) {
           $timeout(function() {
             $('.item-body').scrollTop(0);

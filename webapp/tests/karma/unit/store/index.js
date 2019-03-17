@@ -271,4 +271,13 @@ describe('Store', function() {
     chai.expect(state).to.not.equal(initialState);
     chai.expect(state).to.deep.equal({ loadingSubActionBar: true });
   });
+
+  it('sets showActionBar', () => {
+    const initialState = { showActionBar: false };
+    setupStore(initialState);
+    actions.setShowActionBar(true);
+    const state = getState();
+    chai.expect(state).to.not.equal(initialState);
+    chai.expect(state).to.deep.equal({ showActionBar: true });
+  });
 });

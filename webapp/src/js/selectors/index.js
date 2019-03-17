@@ -12,6 +12,7 @@ angular.module('inboxServices').factory('Selectors', function () {
   const getLoadingSubActionBar = state => state.loadingSubActionBar;
   const getSelectMode = state => state.selectMode;
   const getSelected = state => state.selected;
+  const getShowActionBar = state => state.showActionBar;
 
   const getSelectedSummaries = reselect.createSelector(
     getSelected,
@@ -45,6 +46,7 @@ angular.module('inboxServices').factory('Selectors', function () {
     getSelectMode,
     getSelected,
     getSelectedSummaries,
-    getSelectedValidChecks
+    getSelectedValidChecks,
+    getShowActionBar
   };
 });

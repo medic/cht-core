@@ -121,6 +121,10 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loadingSubActionBar', loading));
       }
 
+      function setShowActionBar(showActionBar) {
+        dispatch(createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar', showActionBar));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -130,6 +134,7 @@ angular.module('inboxServices').factory('Actions',
         setSelectMode,
         setLoadingContent,
         setLoadingSubActionBar,
+        setShowActionBar,
         // Global selected actions
         setSelected,
         updateSelected,
