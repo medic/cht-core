@@ -32,6 +32,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
+        loadingContent: Selectors.getLoadingContent(state),
         selected: Selectors.getSelected(state)
       };
     };
@@ -40,6 +41,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       return {
         addSelectedMessage: actions.addSelectedMessage,
         removeSelectedMessage: actions.removeSelectedMessage,
+        setLoadingContent: actions.setLoadingContent,
         updateSelected: actions.updateSelected
       };
     };
@@ -95,7 +97,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       options = options || {};
       if (!id) {
         $scope.error = false;
-        $scope.loadingContent = false;
+        ctrl.setLoadingContent(false);
         $scope.clearSelected();
         return;
       }
@@ -130,7 +132,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           $timeout(scrollToUnread);
         })
         .catch(function(err) {
-          $scope.loadingContent = false;
+          ctrl.setLoadingContent(false);
           $scope.error = true;
           $log.error('Error fetching contact conversation', err);
         });

@@ -22,6 +22,7 @@ var _ = require('underscore');
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
+          loadingContent: Selectors.getLoadingContent(state),
           selectMode: Selectors.getSelectMode(state),
           selected: Selectors.getSelected(state),
           summaries: Selectors.getSelectedSummaries(state),

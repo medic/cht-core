@@ -10,7 +10,9 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state)
+          selectMode: Selectors.getSelectMode(state),
+          loadingContent: Selectors.getLoadingContent(state),
+          loadingSubActionBar: Selectors.getLoadingSubActionBar(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

@@ -10,6 +10,7 @@ angular.module('inboxDirectives').directive('mmMessagesList', function() {
         var ctrl = this;
         var mapStateToTarget = function(state) {
           return {
+            loadingContent: Selectors.getLoadingContent(state),
             selected: Selectors.getSelected(state)
           };
         };

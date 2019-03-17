@@ -84,6 +84,8 @@ var _ = require('underscore'),
       var actions = Actions(dispatch);
       return {
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
+        setLoadingContent: actions.setLoadingContent,
+        setLoadingSubActionBar: actions.setLoadingSubActionBar,
         setSelectMode: actions.setSelectMode
       };
     };
@@ -187,8 +189,8 @@ var _ = require('underscore'),
     LiveListConfig($scope);
     CheckDate();
 
-    $scope.loadingContent = false;
-    $scope.loadingSubActionBar = false;
+    ctrl.setLoadingContent(false);
+    ctrl.setLoadingSubActionBar(false);
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
@@ -297,7 +299,7 @@ var _ = require('underscore'),
      */
     $scope.unsetSelected = function() {
       $scope.setShowContent(false);
-      $scope.loadingContent = false;
+      ctrl.setLoadingContent(false);
       $scope.showActionBar = false;
       $scope.setTitle();
       $scope.$broadcast('ClearSelected');
@@ -317,7 +319,7 @@ var _ = require('underscore'),
     };
 
     $scope.settingSelected = function(refreshing) {
-      $scope.loadingContent = false;
+      ctrl.setLoadingContent(false);
       $timeout(function() {
         $scope.setShowContent(true);
         $scope.showActionBar = true;
@@ -342,12 +344,8 @@ var _ = require('underscore'),
     };
 
     $scope.setLoadingContent = function(id) {
-      $scope.loadingContent = id;
+      ctrl.setLoadingContent(id);
       $scope.setShowContent(true);
-    };
-
-    $scope.setLoadingSubActionBar = function(loadingSubActionBar) {
-      $scope.loadingSubActionBar = loadingSubActionBar;
     };
 
     $transitions.onSuccess({}, function(trans) {

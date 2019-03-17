@@ -10,8 +10,10 @@
       saving: false,
       error: null
     },
+    loadingContent: false,
     loadingSelectedChildren: false,
     loadingSelectedReports: false,
+    loadingSubActionBar: false,
     selectMode: false,
     selected: null
   };
@@ -99,6 +101,10 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
+      case 'SET_LOADING_CONTENT':
+        return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
+      case 'SET_LOADING_SUB_ACTION_BAR':
+        return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
       default:
         return state;
     }

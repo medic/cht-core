@@ -41,6 +41,7 @@ angular
       return {
         addSelected: actions.addSelected,
         removeSelected: actions.removeSelected,
+        setLoadingSubActionBar: actions.setLoadingSubActionBar,
         setSelected: actions.setSelected,
         setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty
       };
@@ -340,7 +341,7 @@ angular
 
     $scope.$on('VerifyReport', function(e, valid) {
       if (ctrl.selected[0].doc.form) {
-        $scope.setLoadingSubActionBar(true);
+        ctrl.setLoadingSubActionBar(true);
 
         if (ctrl.selected[0].doc.contact) {
           var minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
@@ -362,7 +363,7 @@ angular
           .finally(() => {
             $scope.$broadcast('VerifiedReport', valid);
 
-            $scope.setLoadingSubActionBar(false);
+            ctrl.setLoadingSubActionBar(false);
           });
       }
     });

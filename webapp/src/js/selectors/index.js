@@ -6,8 +6,10 @@ angular.module('inboxServices').factory('Selectors', function () {
   const getEnketoEditedStatus = state => state.enketoStatus.edited;
   const getEnketoSavingStatus = state => state.enketoStatus.saving;
   const getEnketoError = state => state.enketoStatus.error;
+  const getLoadingContent = state => state.loadingContent;
   const getLoadingSelectedChildren = state => state.loadingSelectedChildren;
   const getLoadingSelectedReports = state => state.loadingSelectedReports;
+  const getLoadingSubActionBar = state => state.loadingSubActionBar;
   const getSelectMode = state => state.selectMode;
   const getSelected = state => state.selected;
 
@@ -36,8 +38,10 @@ angular.module('inboxServices').factory('Selectors', function () {
     getEnketoEditedStatus,
     getEnketoSavingStatus,
     getEnketoError,
+    getLoadingContent,
     getLoadingSelectedChildren,
     getLoadingSelectedReports,
+    getLoadingSubActionBar,
     getSelectMode,
     getSelected,
     getSelectedSummaries,

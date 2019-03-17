@@ -113,6 +113,14 @@ angular.module('inboxServices').factory('Actions',
         });
       }
 
+      function setLoadingContent(loading) {
+        dispatch(createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent', loading));
+      }
+
+      function setLoadingSubActionBar(loading) {
+        dispatch(createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loadingSubActionBar', loading));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -120,6 +128,8 @@ angular.module('inboxServices').factory('Actions',
         setEnketoEditedStatus,
         setEnketoSavingStatus,
         setSelectMode,
+        setLoadingContent,
+        setLoadingSubActionBar,
         // Global selected actions
         setSelected,
         updateSelected,

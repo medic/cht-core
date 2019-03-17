@@ -1,20 +1,20 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !$ctrl.loadingContent">
     <div translate>No contact selected</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.selected && $ctrl.selected.error && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.selected && $ctrl.selected.error && !$ctrl.loadingContent">
     <div translate>contact.select.error</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !$ctrl.selected.error && !loadingContent">
+  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !$ctrl.selected.error && !$ctrl.loadingContent">
     <div class="material">
       <div class="body meta">
         <div class="card">

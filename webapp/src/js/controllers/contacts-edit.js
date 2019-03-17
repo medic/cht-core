@@ -24,7 +24,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     var mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state)
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        loadingContent: Selectors.getLoadingContent(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -33,12 +34,13 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         setCancelCallback: actions.setCancelCallback,
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError
+        setEnketoError: actions.setEnketoError,
+        setLoadingContent: actions.setLoadingContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.loadingContent = true;
+    ctrl.setLoadingContent(true);
     $scope.setShowContent(true);
     ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
@@ -168,11 +170,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       .then(renderForm)
       .then(setEnketoContact)
       .then(function() {
-        $scope.loadingContent = false;
+        ctrl.setLoadingContent(false);
       })
       .catch(function(err) {
         $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
-        $scope.loadingContent = false;
+        ctrl.setLoadingContent(false);
         $scope.contentError = true;
         $log.error('Error loading contact form.', err);
       });

@@ -1,20 +1,20 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent || loadingForm">
+  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.loadingContent || loadingForm">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !$ctrl.loadingContent">
     <div translate>No task selected</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !loadingForm && contentError">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.loadingContent && !loadingForm && contentError">
     <div translate>{{ errorTranslationKey }}</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !form && !loadingContent && !loadingForm && !contentError">
+  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !form && !$ctrl.loadingContent && !loadingForm && !contentError">
     <div class="body">
       <div>
         <h2>{{$ctrl.selected.title | translateFrom:selected}}</h2>
@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && form && !loadingContent && !loadingForm">
+  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && form && !$ctrl.loadingContent && !loadingForm">
     <div class="body">
       <mm-enketo id="'task-report'" status="$ctrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>

@@ -27,6 +27,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        loadingContent: Selectors.getLoadingContent(state),
         selected: Selectors.getSelected(state)
       };
     };

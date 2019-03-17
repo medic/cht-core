@@ -1,16 +1,16 @@
 <div class="content-pane right-pane">
 
-  <div class="item-content empty-selection" ng-show="loadingContent">
+  <div class="item-content empty-selection" ng-show="$ctrl.loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="item-content empty-selection" ng-show="!$ctrl.selected.messages[0] && !loadingContent">
+  <div class="item-content empty-selection" ng-show="!$ctrl.selected.messages[0] && !$ctrl.loadingContent">
     <div translate>No message selected</div>
   </div>
 
-  <div class="message-content-wrapper item-content" ng-show="$ctrl.selected.messages[0] && !loadingContent">
+  <div class="message-content-wrapper item-content" ng-show="$ctrl.selected.messages[0] && !$ctrl.loadingContent">
     <div class="body">
       <div id="message-header" class="name-header">
         <mm-sender message="$ctrl.selected.contact"></mm-sender>

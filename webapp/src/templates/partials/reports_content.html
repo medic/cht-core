@@ -1,16 +1,16 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent && !$ctrl.selectMode">
+  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.loadingContent && !$ctrl.selectMode">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !$ctrl.selected.length">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.loadingContent && !$ctrl.selected.length">
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content" ng-show="$ctrl.selectMode || (!loadingContent && $ctrl.selected.length && $ctrl.selected[0].doc.form !== undefined)">
+  <div id="reports-content" class="col-sm-8 item-content" ng-show="$ctrl.selectMode || (!$ctrl.loadingContent && $ctrl.selected.length && $ctrl.selected[0].doc.form !== undefined)">
 
     <div class="selection-count" ng-show="$ctrl.selectMode && $ctrl.selected.length">
       <span ng-show="$ctrl.selected.length === 1" translate>select.mode.count.singular</span>
@@ -141,7 +141,7 @@
       </div>
     </div>
 
-    <div ng-show="loadingContent && $ctrl.selectMode">
+    <div ng-show="$ctrl.loadingContent && $ctrl.selectMode">
       <div class="loader"></div>
     </div>
 
