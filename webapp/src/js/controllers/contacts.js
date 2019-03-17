@@ -321,7 +321,7 @@ var _ = require('underscore'),
     });
 
     const clearSelection = () => {
-      $scope.selected = null;
+      ctrl.setSelected(null);
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
     };

@@ -319,7 +319,7 @@ angular
     });
 
     const clearSelection = () => {
-      $scope.selected = [];
+      ctrl.setSelected([]);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $('#reports-list input[type="checkbox"]').prop('checked', false);
