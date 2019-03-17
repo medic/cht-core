@@ -4,8 +4,8 @@ angular.module('inboxServices').factory('Actions',
     'ngInject';
 
     function createSingleValueAction(type, valueName, value) {
-      var action = {
-        type: type,
+      const action = {
+        type,
         payload: {}
       };
       action.payload[valueName] = value;
@@ -31,15 +31,15 @@ angular.module('inboxServices').factory('Actions',
       }
 
       function setEnketoError(error) {
-        dispatch(createSetEnketoStatusAction({ error: error }));
+        dispatch(createSetEnketoStatusAction({ error }));
       }
 
       function setEnketoEditedStatus(edited) {
-        dispatch(createSetEnketoStatusAction({ edited: edited }));
+        dispatch(createSetEnketoStatusAction({ edited }));
       }
 
       function setEnketoSavingStatus(saving) {
-        dispatch(createSetEnketoStatusAction({ saving: saving }));
+        dispatch(createSetEnketoStatusAction({ saving }));
       }
 
       function setSelectMode(selectMode) {
@@ -57,7 +57,7 @@ angular.module('inboxServices').factory('Actions',
       function updateSelectedItem(id, selected) {
         dispatch({
           type: 'UPDATE_SELECTED_ITEM',
-          payload: { id: id, selected: selected }
+          payload: { id, selected }
         });
       }
 
@@ -95,8 +95,8 @@ angular.module('inboxServices').factory('Actions',
 
       function loadSelectedChildren() {
         return dispatch(function(dispatch, getState) {
-          var selected = getState().selected;
-          return ContactViewModelGenerator.loadChildren(selected).then(function(children) {
+          const selected = getState().selected;
+          return ContactViewModelGenerator.loadChildren(selected).then(children => {
             dispatch(createSingleValueAction('RECEIVE_SELECTED_CHILDREN', 'children', children));
           });
         });
@@ -104,37 +104,37 @@ angular.module('inboxServices').factory('Actions',
 
       function loadSelectedReports() {
         return dispatch(function(dispatch, getState) {
-          var selected = getState().selected;
-          return ContactViewModelGenerator.loadReports(selected).then(function(reports) {
+          const selected = getState().selected;
+          return ContactViewModelGenerator.loadReports(selected).then(reports => {
             dispatch(createSingleValueAction('RECEIVE_SELECTED_REPORTS', 'reports', reports));
           });
         });
       }
 
       return {
-        clearCancelCallback: clearCancelCallback,
-        setCancelCallback: setCancelCallback,
-        setEnketoError: setEnketoError,
-        setEnketoEditedStatus: setEnketoEditedStatus,
-        setEnketoSavingStatus: setEnketoSavingStatus,
-        setSelectMode: setSelectMode,
+        clearCancelCallback,
+        setCancelCallback,
+        setEnketoError,
+        setEnketoEditedStatus,
+        setEnketoSavingStatus,
+        setSelectMode,
         // Global selected actions
-        setSelected: setSelected,
-        updateSelected: updateSelected,
+        setSelected,
+        updateSelected,
         // Contacts-specific selected actions
-        setLoadingSelectedChildren: setLoadingSelectedChildren,
-        setLoadingSelectedReports: setLoadingSelectedReports,
-        loadSelectedChildren: loadSelectedChildren,
-        loadSelectedReports: loadSelectedReports,
+        setLoadingSelectedChildren,
+        setLoadingSelectedReports,
+        loadSelectedChildren,
+        loadSelectedReports,
         // Messages-specific selected actions
-        addSelectedMessage: addSelectedMessage,
-        removeSelectedMessage: removeSelectedMessage,
+        addSelectedMessage,
+        removeSelectedMessage,
         // Reports-specific selected actions
-        addSelected: addSelected,
-        removeSelected: removeSelected,
-        updateSelectedItem: updateSelectedItem,
-        setFirstSelectedDocProperty: setFirstSelectedDocProperty,
-        setFirstSelectedFormattedProperty: setFirstSelectedFormattedProperty
+        addSelected,
+        removeSelected,
+        updateSelectedItem,
+        setFirstSelectedDocProperty,
+        setFirstSelectedFormattedProperty
       };
     };
   }

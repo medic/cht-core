@@ -1,8 +1,8 @@
 /* eslint-disable angular/one-dependency-per-line */
 (function() {
-  var _ = require('underscore');
-  var merge = require('lodash/merge');
-  var initialState = {
+  const _ = require('underscore');
+  const merge = require('lodash/merge');
+  const initialState = {
     cancelCallback: null,
     enketoStatus: {
       edited: false,
@@ -20,7 +20,9 @@
       state = initialState;
     }
 
-    var selected;
+    let selected;
+    let filteredMessages;
+    let filteredSelected;
     switch (action.type) {
       case 'SET_CANCEL_CALLBACK':
         return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
@@ -37,15 +39,15 @@
           selected: merge({}, state.selected, action.payload.selected)
         });
       case 'UPDATE_SELECTED_ITEM':
-        selected = state.selected.map(function(item) {
+        selected = state.selected.map(item => {
           if (item._id === action.payload.id) {
             return Object.assign({}, item, action.payload.selected);
           }
           return item;
         });
-        return Object.assign({}, state, { selected: selected });
+        return Object.assign({}, state, { selected });
       case 'SET_FIRST_SELECTED_DOC_PROPERTY':
-        selected = state.selected.map(function(item, index) {
+        selected = state.selected.map((item, index) => {
           if (index === 0) {
             return Object.assign({}, item, {
               doc: Object.assign({}, item.doc, action.payload.doc)
@@ -53,9 +55,9 @@
           }
           return item;
         });
-        return Object.assign({}, state, { selected: selected });
+        return Object.assign({}, state, { selected });
       case 'SET_FIRST_SELECTED_FORMATTED_PROPERTY':
-        selected = state.selected.map(function(item, index) {
+        selected = state.selected.map((item, index) => {
           if (index === 0) {
             return Object.assign({}, item, {
               formatted: Object.assign({}, item.formatted, action.payload.formatted)
@@ -71,9 +73,7 @@
           })
         });
       case 'REMOVE_SELECTED_MESSAGE':
-        var filteredMessages = _.filter(state.selected.messages, function(message) {
-          return message.id !== action.payload.id;
-        });
+        filteredMessages = _.filter(state.selected.messages, message => message.id !== action.payload.id);
         return Object.assign({}, state, {
           selected: Object.assign({}, state.selected, { messages: filteredMessages })
         });
@@ -82,9 +82,7 @@
           selected: state.selected.concat(action.payload.selected)
         });
       case 'REMOVE_SELECTED':
-        var filteredSelected = _.filter(state.selected, function(selected) {
-          return selected._id !== action.payload.id;
-        });
+        filteredSelected = _.filter(state.selected, selected => selected._id !== action.payload.id);
         return Object.assign({}, state, { selected: filteredSelected });
       case 'SET_LOADING_SELECTED_CHILDREN':
         return Object.assign({}, state, { loadingSelectedChildren: action.payload.loadingSelectedChildren });
