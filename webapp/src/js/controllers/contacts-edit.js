@@ -35,13 +35,14 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setEnketoSavingStatus: actions.setEnketoSavingStatus,
         setEnketoError: actions.setEnketoError,
-        setLoadingContent: actions.setLoadingContent
+        setLoadingContent: actions.setLoadingContent,
+        setShowContent: actions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     ctrl.setLoadingContent(true);
-    $scope.setShowContent(true);
+    ctrl.setShowContent(true);
     ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
         $state.go('contacts.detail', { id: null });

@@ -77,7 +77,8 @@ var _ = require('underscore'),
         cancelCallback: Selectors.getCancelCallback(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selectMode: Selectors.getSelectMode(state)
+        selectMode: Selectors.getSelectMode(state),
+        showContent: Selectors.getShowContent(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -87,7 +88,8 @@ var _ = require('underscore'),
         setLoadingContent: actions.setLoadingContent,
         setLoadingSubActionBar: actions.setLoadingSubActionBar,
         setSelectMode: actions.setSelectMode,
-        setShowActionBar: actions.setShowActionBar
+        setShowActionBar: actions.setShowActionBar,
+        setShowContent: actions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -299,7 +301,7 @@ var _ = require('underscore'),
      * Unset the selected item without navigation
      */
     $scope.unsetSelected = function() {
-      $scope.setShowContent(false);
+      ctrl.setShowContent(false);
       ctrl.setLoadingContent(false);
       ctrl.setShowActionBar(false);
       $scope.setTitle();
@@ -322,7 +324,7 @@ var _ = require('underscore'),
     $scope.settingSelected = function(refreshing) {
       ctrl.setLoadingContent(false);
       $timeout(function() {
-        $scope.setShowContent(true);
+        ctrl.setShowContent(true);
         ctrl.setShowActionBar(true);
         if (!refreshing) {
           $timeout(function() {
@@ -332,21 +334,13 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.setShowContent = function(showContent) {
-      if (showContent && ctrl.selectMode) {
-        // when in select mode we never show the RHS on mobile
-        return;
-      }
-      $scope.showContent = showContent;
-    };
-
     $scope.setTitle = function(title) {
       $scope.title = title;
     };
 
     $scope.setLoadingContent = function(id) {
       ctrl.setLoadingContent(id);
-      $scope.setShowContent(true);
+      ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {

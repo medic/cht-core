@@ -1,7 +1,10 @@
 const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('Actions',
-  function(ContactViewModelGenerator) {
+  function(
+    ContactViewModelGenerator,
+    Selectors
+  ) {
     'use strict';
     'ngInject';
 
@@ -97,7 +100,7 @@ angular.module('inboxServices').factory('Actions',
 
       function loadSelectedChildren(options) {
         return dispatch(function(dispatch, getState) {
-          const selected = getState().selected;
+          const selected = Selectors.getSelected(getState());
           return ContactViewModelGenerator.loadChildren(selected, options).then(children => {
             dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_CHILDREN, 'children', children));
           });
@@ -106,7 +109,7 @@ angular.module('inboxServices').factory('Actions',
 
       function loadSelectedReports() {
         return dispatch(function(dispatch, getState) {
-          const selected = getState().selected;
+          const selected = Selectors.getSelected(getState());
           return ContactViewModelGenerator.loadReports(selected).then(reports => {
             dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_REPORTS, 'reports', reports));
           });
@@ -125,6 +128,17 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar', showActionBar));
       }
 
+      function setShowContent(showContent) {
+        return dispatch(function(dispatch, getState) {
+          const selectMode = Selectors.getSelectMode(getState());
+          if (showContent && selectMode) {
+            // when in select mode we never show the RHS on mobile
+            return;
+          }
+          dispatch(createSingleValueAction('SET_SHOW_CONTENT', 'showContent', showContent));
+        });
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -135,6 +149,7 @@ angular.module('inboxServices').factory('Actions',
         setLoadingContent,
         setLoadingSubActionBar,
         setShowActionBar,
+        setShowContent,
         // Global selected actions
         setSelected,
         updateSelected,

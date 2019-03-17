@@ -15,7 +15,9 @@
     loadingSelectedReports: false,
     loadingSubActionBar: false,
     selectMode: false,
-    selected: null
+    selected: null,
+    showActionBar: false,
+    showContent: false
   };
 
   angular.module('inboxServices').constant('Reducers', function(state, action) {
@@ -107,6 +109,8 @@
         return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
       case 'SET_SHOW_ACTION_BAR':
         return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
+      case 'SET_SHOW_CONTENT':
+        return Object.assign({}, state, { showContent: action.payload.showContent });
       default:
         return state;
     }

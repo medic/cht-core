@@ -31,7 +31,8 @@ var _ = require('underscore');
       var mapDispatchToTarget = function(dispatch) {
         var actions = Actions(dispatch);
         return {
-          setSelected: actions.setSelected
+          setSelected: actions.setSelected,
+          setShowContent: actions.setShowContent
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -47,7 +48,7 @@ var _ = require('underscore');
           task.title = TranslateFrom(task.title, task);
         }
         $scope.setTitle(TranslateFrom(task.title, task));
-        $scope.setShowContent(true);
+        ctrl.setShowContent(true);
       };
 
       $scope.setSelected = function(id) {

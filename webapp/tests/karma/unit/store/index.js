@@ -280,4 +280,13 @@ describe('Store', function() {
     chai.expect(state).to.not.equal(initialState);
     chai.expect(state).to.deep.equal({ showActionBar: true });
   });
+
+  it('sets showContent', () => {
+    const initialState = { showContent: false };
+    setupStore(initialState);
+    actions.setShowContent(true);
+    const state = getState();
+    chai.expect(state).to.not.equal(initialState);
+    chai.expect(state).to.deep.equal({ showContent: true });
+  });
 });

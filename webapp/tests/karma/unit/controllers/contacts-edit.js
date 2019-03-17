@@ -23,7 +23,6 @@ describe('Contacts Edit controller', () => {
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
-    scope.setShowContent = sinon.stub();
     contactSchema = { get: sinon.stub().returns({ fields: { parent: '' }}) };
     var $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';

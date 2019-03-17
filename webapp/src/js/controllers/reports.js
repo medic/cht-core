@@ -33,7 +33,8 @@ angular
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state)
+        selected: Selectors.getSelected(state),
+        showContent: Selectors.getShowContent(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -287,7 +288,7 @@ angular
         $state.go('reports.detail', { id: null }, { notify: false });
         clearSelection();
       }
-      if ($scope.isMobile() && $scope.showContent) {
+      if ($scope.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }

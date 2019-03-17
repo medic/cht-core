@@ -37,7 +37,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         setCancelCallback: actions.setCancelCallback,
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError
+        setEnketoError: actions.setEnketoError,
+        setShowContent: actions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -127,7 +128,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope.form = null;
     $scope.loadingForm = true;
     $scope.setRightActionBar();
-    $scope.setShowContent(true);
+    ctrl.setShowContent(true);
     setCancelCallback();
     var options = { merge: true };
     ContactViewModelGenerator.getContact($state.params.id, options)
