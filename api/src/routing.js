@@ -126,7 +126,8 @@ app.use(
         formAction: [`'self'`],
         imgSrc: [
           `'self'`,
-          'data:' // unsafe
+          'data:', // unsafe
+          'blob:',
         ],
         mediaSrc: [`'self'`],
         scriptSrc: [
