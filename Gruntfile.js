@@ -42,6 +42,8 @@ const getSharedLibDirs = () => {
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
 };
 
+const copySharedLibs = 'rm -rf ../shared-libs/*/node_modules && mkdir ./node_modules/@medic && cp -r ../shared-libs/* ./node_modules/@medic';
+
 module.exports = function(grunt) {
   'use strict';
 
@@ -403,6 +405,7 @@ module.exports = function(grunt) {
               `cd ${module}`,
               `npm dedupe`,
               `npm ci --production`,
+              `${copySharedLibs}`,
               `npm pack`,
               `ls -l medic-${module}-0.1.0.tgz`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
@@ -417,6 +420,9 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
+            getSharedLibDirs().forEach(lib => {
+              pkg.bundledDependencies.push(`@medic/${lib}`);
+            });
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
@@ -502,7 +508,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${copySharedLibs} && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {

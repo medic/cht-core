@@ -7,10 +7,6 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@medic/lineage": "../shared-libs/lineage",
-    "@medic/message-utils": "../shared-libs/message-utils",
-    "@medic/phone-number": "../shared-libs/phone-number",
-    "@medic/registration-utils": "../shared-libs/registration-utils",
     "@uirouter/angularjs": "^0.4.3",
     "angular": "^1.7.5",
     "angular-cookie": "^4.1.0",
