@@ -1,0 +1,15 @@
+{
+  "name": "@medic/utils",
+  "version": "1.0.0",
+  "description": "Basic functions that we could reuse",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
