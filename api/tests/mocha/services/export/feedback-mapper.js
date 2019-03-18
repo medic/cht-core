@@ -17,7 +17,7 @@ describe('Feedback mapper', () => {
         include_docs: false,
         startkey: 'feedback-\ufff0'     
       };
-      const allDocs = sinon.stub(db.medicAllMeta, 'allDocs').returns(Promise.resolve({
+      const allDocs = sinon.stub(db.medicUsersMeta, 'allDocs').returns(Promise.resolve({
         rows: [{ id: 1, value: 1 }, { id: 1, value: 2 }, { id: 1, value: 3 }, { id: 2, value: 1 }]
       }));
       return service.getDocIds(options).then(result => {
