@@ -837,13 +837,13 @@ module.exports = function(grunt) {
     'exec:apply-patches',
   ]);
 
-  grunt.registerTask('mmjs', 'Build the JS resources', [
+  grunt.registerTask('build-js', 'Build the JS resources', [
     'browserify:webapp',
     'replace:update-app-constants',
     'ngtemplates:inboxApp',
   ]);
 
-  grunt.registerTask('mmcss', 'Build the CSS resources', [
+  grunt.registerTask('build-css', 'Build the CSS resources', [
     'sass',
     'less:webapp',
     'postcss',
@@ -872,8 +872,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-common', 'Build the static resources', [
-    'mmcss',
-    'mmjs',
+    'build-css',
+    'build-js',
     'enketo-xslt',
     'copy:webapp',
     'exec:set-ddoc-version',
@@ -935,8 +935,7 @@ module.exports = function(grunt) {
     'protractor:performance-tests-and-services',
   ]);
 
-  grunt.registerTask('unit-continuous', 'Lint, karma unit tests running on a loop', [
-    'exec:eslint',
+  grunt.registerTask('unit-continuous', 'Run karma unit tests in a loop', [
     'karma:unit-continuous'
   ]);
 
@@ -955,7 +954,7 @@ module.exports = function(grunt) {
     'env:general',
   ]);
 
-  grunt.registerTask('test', 'Lint, unit tests, api-integration tests and e2e tests', [
+  grunt.registerTask('test', 'Run unit, integration, and e2e tests', [
     'unit',
     'test-api-integration',
     'e2e',
