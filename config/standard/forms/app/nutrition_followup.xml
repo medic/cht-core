@@ -4,7 +4,7 @@
     <h:title>child nutrition followup</h:title>
     <model>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-14 14-53">
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-18 09-32">
           <inputs>
             <meta>
               <location>
@@ -24,10 +24,7 @@
           </inputs>
           <patient_name/>
           <patient_id/>
-          <enrollment_date/>
-          <treatment_program/>
           <attend_visit>yes</attend_visit>
-          <task/>
           <measurements>
             <gender/>
             <weight/>
@@ -37,24 +34,13 @@
             <nn3/>
             <wfh_message/>
             <zscore_wfh_note/>
-            <next_appointment/>
           </measurements>
-          <exit>
-            <outcome/>
-            <enrollment/>
-            <length_stay/>
-            <stay/>
-            <enroll/>
-          </exit>
           <summary>
             <n_2/>
             <n_4/>
             <n_6/>
             <n_7/>
             <n_9/>
-            <n_10/>
-            <n_11/>
-            <n_12/>
           </summary>
           <meta tag="hidden">
             <instanceID/>
@@ -70,10 +56,7 @@
       <bind nodeset="/nutrition_followup/inputs/contact/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/nutrition_followup/patient_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_followup/patient_id" type="string"/>
-      <bind calculate="instance('contact-summary')/context/enrollment_date" nodeset="/nutrition_followup/enrollment_date" type="string"/>
-      <bind calculate="instance('contact-summary')/context/treatment_program" nodeset="/nutrition_followup/treatment_program" type="string"/>
       <bind nodeset="/nutrition_followup/attend_visit" relevant=" /nutrition_followup/inputs/source  = 'task'" type="select1"/>
-      <bind nodeset="/nutrition_followup/task" relevant=" /nutrition_followup/attend_visit  = 'yes'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_followup/measurements" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/measurements/gender" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_followup/measurements/weight" required="true()" type="decimal"/>
@@ -83,22 +66,12 @@
       <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" type="string"/>
       <bind calculate="if( /nutrition_followup/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -2 and  /nutrition_followup/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt;= 2 and  /nutrition_followup/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_followup/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_followup/measurements/wfh_message" type="string"/>
       <bind nodeset="/nutrition_followup/measurements/zscore_wfh_note" readonly="true()" relevant=" /nutrition_followup/measurements/wfh  != ''" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/next_appointment" required="true()" type="date"/>
-      <bind nodeset="/nutrition_followup/exit" relevant=" /nutrition_followup/task  = 'exit' and  /nutrition_followup/attend_visit  = 'yes'"/>
-      <bind nodeset="/nutrition_followup/exit/outcome" type="select1"/>
-      <bind nodeset="/nutrition_followup/exit/enrollment" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
-      <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /nutrition_followup/enrollment_date )))" nodeset="/nutrition_followup/exit/length_stay" type="string"/>
-      <bind nodeset="/nutrition_followup/exit/stay" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
-      <bind nodeset="/nutrition_followup/exit/enroll" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="select1"/>
       <bind nodeset="/nutrition_followup/summary" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/summary/n_2" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_4" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_6" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_7" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_9" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_followup/summary/n_10" readonly="true()" relevant=" /nutrition_followup/task  = 'exit'" type="string"/>
-      <bind nodeset="/nutrition_followup/summary/n_11" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
-      <bind nodeset="/nutrition_followup/summary/n_12" readonly="true()" relevant=" /nutrition_followup/exit/outcome  = 'cured'" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/nutrition_followup/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -130,17 +103,6 @@
         <value>no</value>
       </item>
     </select1>
-    <select1 ref="/nutrition_followup/task">
-      <label>What task would you like to perform?</label>
-      <item>
-        <label>Record <output value=" /nutrition_followup/treatment_program "/> follow up visit</label>
-        <value>visit</value>
-      </item>
-      <item>
-        <label>Exit from <output value=" /nutrition_followup/treatment_program "/></label>
-        <value>exit</value>
-      </item>
-    </select1>
     <group appearance="field-list" ref="/nutrition_followup/measurements">
       <label>Measurements</label>
       <select1 ref="/nutrition_followup/measurements/gender">
@@ -169,72 +131,6 @@
       <input ref="/nutrition_followup/measurements/zscore_wfh_note">
         <label>weight for height: <output value=" /nutrition_followup/measurements/wfh_message "/></label>
       </input>
-      <input ref="/nutrition_followup/measurements/next_appointment">
-        <label>Next appointment date</label>
-      </input>
-    </group>
-    <group appearance="field-list" ref="/nutrition_followup/exit">
-      <label></label>
-      <select1 ref="/nutrition_followup/exit/outcome">
-        <label>Exit outcome</label>
-        <item>
-          <label>Cured</label>
-          <value>cured</value>
-        </item>
-        <item>
-          <label>Cured - Transfer to OTP</label>
-          <value>cured_otp</value>
-        </item>
-        <item>
-          <label>Cured - Transfer to SFP</label>
-          <value>cured_sfp</value>
-        </item>
-        <item>
-          <label>Transfer to OTP</label>
-          <value>otp</value>
-        </item>
-        <item>
-          <label>Transfer to SFP</label>
-          <value>sfp</value>
-        </item>
-        <item>
-          <label>Transfer to SC</label>
-          <value>sc</value>
-        </item>
-        <item>
-          <label>Transfer to a different site for the same program</label>
-          <value>different_site</value>
-        </item>
-        <item>
-          <label>Non-responsive (non-recovered)</label>
-          <value>nonresponsive</value>
-        </item>
-        <item>
-          <label>Dead</label>
-          <value>dead</value>
-        </item>
-        <item>
-          <label>Defaulter</label>
-          <value>defaulter</value>
-        </item>
-      </select1>
-      <input ref="/nutrition_followup/exit/enrollment">
-        <label>Enrollment date: <output value=" /nutrition_followup/enrollment_date "/></label>
-      </input>
-      <input ref="/nutrition_followup/exit/stay">
-        <label>Length of stay in days: <output value=" /nutrition_followup/exit/length_stay "/></label>
-      </input>
-      <select1 ref="/nutrition_followup/exit/enroll">
-        <label>Do you need to enroll <output value=" /nutrition_followup/patient_name "/> in another treatment enrollment program</label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
-      </select1>
     </group>
     <group appearance="field-list summary" ref="/nutrition_followup/summary">
       <label></label>
@@ -252,15 +148,6 @@
       </input>
       <input ref="/nutrition_followup/summary/n_9">
         <label>Weight for height z-score: <output value=" /nutrition_followup/measurements/wfh "/></label>
-      </input>
-      <input ref="/nutrition_followup/summary/n_10">
-        <label>Exit outcome: <output value=" /nutrition_followup/exit/outcome "/></label>
-      </input>
-      <input ref="/nutrition_followup/summary/n_11">
-        <label>Length of stay in days: <output value=" /nutrition_followup/exit/length_stay "/></label>
-      </input>
-      <input ref="/nutrition_followup/summary/n_12">
-        <label>Enroll in another program: <output value=" /nutrition_followup/exit/enroll "/></label>
       </input>
     </group>
   </h:body>
