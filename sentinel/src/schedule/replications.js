@@ -1,8 +1,6 @@
-var _ = require('underscore'),
-    async = require('async'),
+var async = require('async'),
     config = require('../config'),
     later = require('later'),
-    moment = require('moment'),
     db = require('../db');
 
 // set later to use local time
@@ -36,9 +34,9 @@ function replicate(fromDbs, toDb, callback) {
 	const targetDb = db.get(toDb);
   async.forEach(
     fromDbs,
-    function(fromDb, callback) {console.log(`from ${fromDb} to ${toDb}`);
-      const sourceDb = db.get(fromDb);//console.log('sourceDb',sourceDb);
-    	return targetDb.info()
+    function(fromDb, callback) {
+      const sourceDb = db.get(fromDb);
+      return targetDb.info()
                      .then(() => sourceDb.replicate.to(targetDb))
                      .catch(callback);
     },
@@ -58,18 +56,18 @@ module.exports = {
             }
 
             const sched = getSchedule(replication);
-            const timer = later.setInterval(() => module.exports.runReplication(replication, callback), sched);
+            later.setInterval(() => module.exports.runReplication(replication, callback), sched);
 
         }, callback);
     },
     runReplication: function(replication, callback) {
-    	const srcRegex = new RegExp(replication.from);
+      const srcRegex = new RegExp(replication.from);
 
-    	const toDb = replication.to;
-    	return db.allDbs().then(dbs => {
-    		const srcDbs = dbs.filter(db => srcRegex.exec(db));
-    		replicate(srcDbs, toDb, callback)
-    	})
-    	.catch(callback);
+      const toDb = replication.to;
+      return db.allDbs().then(dbs => {
+        const srcDbs = dbs.filter(db => srcRegex.exec(db));
+        replicate(srcDbs, toDb, callback);
+      })
+      .catch(callback);
     },
 };
