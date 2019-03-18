@@ -11,19 +11,18 @@ describe('Feedback mapper', () => {
     it('queries task-messages and returns message ids', () => {
       const options = { some: 'option' };
       const queryOptions = {
+        some: 'option',
         descending: true,
         endkey: 'feedback-',
         include_docs: false,
-        startkey: 'feedback-￰'     
+        startkey: 'feedback-\ufff0'     
       };
       const allDocs = sinon.stub(db.medicAllMeta, 'allDocs').returns(Promise.resolve({
         rows: [{ id: 1, value: 1 }, { id: 1, value: 2 }, { id: 1, value: 3 }, { id: 2, value: 1 }]
       }));
       return service.getDocIds(options).then(result => {
         chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(allDocs.args[0]).to.deep.equal([ 
-          Object.assign({}, options, queryOptions)
-        ]);
+        chai.expect(allDocs.args[0]).to.deep.equal([ queryOptions ]);
         chai.expect(result).to.deep.equal([1, 1, 1, 2]);
       });
     });

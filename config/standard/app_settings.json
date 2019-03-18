@@ -237,6 +237,14 @@
       "message": ""
     }
   ],
+  "replications": [
+    {
+      "from": "medic-user-[^\\-]+-meta",
+      "to": "medic-users-meta",
+      "text_expression": "every 5 minutes",
+      "cron": ""
+    }
+  ],
   "registrations": [
     {
       "form": "CW",

@@ -43,12 +43,12 @@ angular.module('inboxServices').factory('Feedback',
 
     var create = function(info, isManual, callback) {
       var userCtx = Session.userCtx();
-      let currentDate = new Date().toISOString().split('T')[0];
-      let uuid = uuidV4();
+      const date = new Date().toISOString();
+      const uuid = uuidV4();
       callback(null, {
-        _id: `feedback-${currentDate}-${uuid}`,
+        _id: `feedback-${date}-${uuid}`,
         meta: {
-          time: new Date().toISOString(),
+          time: date,
           user: userCtx,
           url: getUrl(),
           app: APP_CONFIG.name,

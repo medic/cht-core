@@ -4,7 +4,7 @@
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 6
   },
   "plugins": [
     "no-only-tests",

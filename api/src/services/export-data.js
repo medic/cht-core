@@ -75,9 +75,6 @@ class SearchResultReader extends Readable {
           keys: ids,
           include_docs: true
         })
-        .then(result => {
-          return result;
-        })
         .then(result => result.rows.map(row => row.doc))
         .then(lineage.hydrateDocs)
         .then(this.hydrate)

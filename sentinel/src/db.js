@@ -2,6 +2,7 @@ const PouchDB = require('pouchdb-core'),
   logger = require('../src/lib/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+PouchDB.plugin(require('pouchdb-replication'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 

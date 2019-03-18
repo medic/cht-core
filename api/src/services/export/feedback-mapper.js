@@ -9,13 +9,13 @@ const safeStringify = obj => {
 };
 
 module.exports = {
-  db: db.medicAllMeta,
+  db: db.medicUsersMeta,
   getDocIds: (options) => {
     options.include_docs = false; 
     options.endkey = 'feedback-';
     options.startkey = 'feedback-\ufff0';
     options.descending = true;
-    return db.medicAllMeta.allDocs(options)
+    return db.medicUsersMeta.allDocs(options)
       .then(result => result.rows.map(row => row.id));
   },
   map: () => {
