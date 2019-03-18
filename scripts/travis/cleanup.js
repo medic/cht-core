@@ -33,6 +33,12 @@ const remove = docs => {
   }
 };
 
+const cleanDb = () => {
+  console.log('Compacting DB...');
+  return db.compact();
+};
+
 get()
   .then(markDeleted)
-  .then(remove);
+  .then(remove)
+  .then(cleanDb);
