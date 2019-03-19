@@ -8,6 +8,8 @@ module.exports = {
       } else {
         return moment(date).valueOf();
       }
-    } else return '';
+    } else {
+      return '';
+    }
   }
 };

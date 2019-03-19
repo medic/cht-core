@@ -13,7 +13,7 @@ module.exports = {
     return db.medic.query('medic-admin/feedback', options)
       .then(result => result.rows.map(row => row.id));
   },
-  map: (filters) => {
+  map: () => {
     return Promise.resolve({
       header: [
         'id',

@@ -61,8 +61,10 @@ module.exports = {
     const correctOptionsTypes = options => {
       if (options.humanReadable) {
         options.humanReadable = (options.humanReadable === 'true');
-      } else options.humanReadable = false;
-    }
+      } else {
+        options.humanReadable = false;
+      }
+    };
 
     const type = req.params.type,
           filters = (req.body && req.body.filters) ||
