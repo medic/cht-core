@@ -8,7 +8,7 @@ angular.module('controllers').controller('ExportReportsCtrl',
     'ngInject';
 
     $scope.export = function() {
-      Export('reports', { human: true });
+      Export('reports', {}, { humanReadable: true });
     };
 
   }
