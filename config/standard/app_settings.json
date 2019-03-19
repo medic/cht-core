@@ -241,8 +241,8 @@
     {
       "from": "medic-user-[^\\-]+-meta",
       "to": "medic-users-meta",
-      "text_expression": "every 5 minutes",
-      "cron": ""
+      "text_expression": "",
+      "cron": "0 2 * * *"
     }
   ],
   "registrations": [

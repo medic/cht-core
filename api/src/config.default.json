@@ -132,5 +132,13 @@
       "month_start_date": 1,
       "visit_count_goal": 0
     }
-  }
+  },
+  "replications": [
+    {
+      "from": "medic-user-[^\\-]+-meta",
+      "to": "medic-users-meta",
+      "text_expression": "",
+      "cron": "0 2 * * *"
+    }
+  ]
 }
