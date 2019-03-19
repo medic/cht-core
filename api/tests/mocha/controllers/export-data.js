@@ -22,7 +22,7 @@ describe('Export Data controller', () => {
   afterEach(() => sinon.restore());
 
   describe('get', () => {
-    
+
     it('Throws an error if you try to query for an unsupported export', () => {
       controller.get({req: true, params: {type: 'fake'}}, {res: true});
       serverUtils.error.callCount.should.equal(1);
@@ -45,7 +45,7 @@ describe('Export Data controller', () => {
         });
     });
 
-    it('corrects filter types', () => {
+    it('corrects filter & option types', () => {
       const req = {
         params: {
           type: 'reports'
@@ -77,11 +77,13 @@ describe('Export Data controller', () => {
             valid: true,
             verified: false
           },
-          {}
+          {
+            humanReadable: false
+          }
         ]);
       });
     });
-    
+
     // NB: This is actually an integration test so we can test that
     // errors from the underlying mapper are handled correctly in
     // the controller.
@@ -102,7 +104,7 @@ describe('Export Data controller', () => {
       auth.getUserCtx.returns(Promise.resolve({}));
       auth.isOnlineOnly.returns(true);
       sinon.stub(db.medic, 'query').returns(Promise.reject(new Error('db not found')));
-      
+
       controller.get(req, res).then(() => {
         // defer execution to allow the stream to write first
         setTimeout(() => {
