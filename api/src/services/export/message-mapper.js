@@ -1,7 +1,7 @@
 const _ = require('underscore'),
-      moment = require('moment'),
       db = require('../../db'),
       config = require('../../config'),
+      dateFormat = require('./date-format'),
       messageUtils = require('@medic/message-utils'),
       registrationUtils = require('@medic/registration-utils');
 
@@ -44,18 +44,7 @@ const buildHistory = task => {
   return history;
 };
 
-const formatDate = (date, filters) => {
-  if (!date) {
-    return '';
-  }
-  if (filters && filters.human && filters.human === 'true'){
-    return moment(date).toISOString();
-  } else {
-    return moment(date).valueOf();
-  }
-};
-
-const getStateDate = (state, task, history, filters) => {
+const getStateDate = (state, task, history, human_readable) => {
   let date;
   if (state === 'scheduled' && task.due) {
     date = task.due;
@@ -64,7 +53,7 @@ const getStateDate = (state, task, history, filters) => {
   } else if (task.state === state) {
     date = task.timestamp;
   }
-  return formatDate(date, filters);
+  return dateFormat.format(date, human_readable);
 };
 
 /*
@@ -117,7 +106,7 @@ module.exports = {
       .then(result => result.rows)
       .then(rows => rows.map(row => row.id));
   },
-  map: (filters) => {
+  map: (filters, options) => {
     return Promise.resolve({
       header: [
         'id',
@@ -168,16 +157,16 @@ module.exports = {
           return task.messages.map(message => [
             record._id,
             record.patient_id || (record.patient && record.patient.patient_id),
-            formatDate(record.reported_date, filters),
+            dateFormat.format(record.reported_date, options.humanReadable),
             record.from,
             taskType,
             task.state,
-            getStateDate('received', task, history, filters),
-            getStateDate('scheduled', task, history, filters),
-            getStateDate('pending', task, history, filters),
-            getStateDate('sent', task, history, filters),
-            getStateDate('cleared', task, history, filters),
-            getStateDate('muted', task, history, filters),
+            getStateDate('received', task, history, options.humanReadable),
+            getStateDate('scheduled', task, history, options.humanReadable),
+            getStateDate('pending', task, history, options.humanReadable),
+            getStateDate('sent', task, history, options.humanReadable),
+            getStateDate('cleared', task, history, options.humanReadable),
+            getStateDate('muted', task, history, options.humanReadable),
             message.uuid,
             message.sent_by,
             message.to,

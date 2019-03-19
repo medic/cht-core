@@ -58,6 +58,12 @@ module.exports = {
       }
     };
 
+    const correctOptionsTypes = options => {
+      if (options.humanReadable) {
+        options.humanReadable = (options.humanReadable === 'true');
+      } else options.humanReadable = false;
+    }
+
     const type = req.params.type,
           filters = (req.body && req.body.filters) ||
                     (req.query && req.query.filters) || {},
@@ -65,6 +71,7 @@ module.exports = {
                     (req.query && req.query.options) || {};
 
     correctFilterTypes(filters);
+    correctOptionsTypes(options);
 
     if (!service.isSupported(type)) {
       return serverUtils.error({
@@ -93,8 +100,8 @@ module.exports = {
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
 
-          // To respond as quickly to the request as possible
-          res.flushHeaders();
+        // To respond as quickly to the request as possible
+        res.flushHeaders();
 
         service
           .export(type, filters, options)
