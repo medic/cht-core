@@ -22,6 +22,7 @@
     "epi-week": "^0.0.1",
     "gsm": "^0.1.4",
     "later": "^1.2.0",
+    "medic-transitions-beta": "^0.0.5",
     "moment": "^2.22.2",
     "mustache": "^3.0.1",
     "object-path": "^0.11.4",
@@ -30,6 +31,7 @@
     "pouchdb-mapreduce": "^7.0.0",
     "pouchdb-replication": "^7.0.0",
     "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
     "underscore": "^1.9.1",
     "uuid": "^3.3.2",
     "winston": "^3.1.0"
@@ -59,6 +61,7 @@
     "pouchdb-core",
     "pouchdb-mapreduce",
     "request",
+    "request-promise-native",
     "underscore",
     "uuid",
     "winston"
