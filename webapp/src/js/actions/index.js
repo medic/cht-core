@@ -1,3 +1,5 @@
+const actionTypes = require('./actionTypes');
+
 angular.module('inboxServices').factory('Actions',
   function(ContactViewModelGenerator) {
     'use strict';
@@ -15,7 +17,7 @@ angular.module('inboxServices').factory('Actions',
     return function(dispatch) {
 
       function createSetCancelCallbackAction(value) {
-        return createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback', value);
+        return createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
       }
 
       function clearCancelCallback() {
@@ -27,7 +29,7 @@ angular.module('inboxServices').factory('Actions',
       }
 
       function createSetEnketoStatusAction(value) {
-        return createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus', value);
+        return createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
       }
 
       function setEnketoError(error) {
@@ -43,61 +45,61 @@ angular.module('inboxServices').factory('Actions',
       }
 
       function setSelectMode(selectMode) {
-        dispatch(createSingleValueAction('SET_SELECT_MODE', 'selectMode', selectMode));
+        dispatch(createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
       }
 
       function setSelected(selected) {
-        dispatch(createSingleValueAction('SET_SELECTED', 'selected', selected));
+        dispatch(createSingleValueAction(actionTypes.SET_SELECTED, 'selected', selected));
       }
 
       function updateSelected(selected) {
-        dispatch(createSingleValueAction('UPDATE_SELECTED', 'selected', selected));
+        dispatch(createSingleValueAction(actionTypes.UPDATE_SELECTED, 'selected', selected));
       }
 
       function updateSelectedItem(id, selected) {
         dispatch({
-          type: 'UPDATE_SELECTED_ITEM',
+          type: actionTypes.UPDATE_SELECTED_ITEM,
           payload: { id, selected }
         });
       }
 
       function setFirstSelectedDocProperty(doc) {
-        dispatch(createSingleValueAction('SET_FIRST_SELECTED_DOC_PROPERTY', 'doc', doc));
+        dispatch(createSingleValueAction(actionTypes.SET_FIRST_SELECTED_DOC_PROPERTY, 'doc', doc));
       }
 
       function setFirstSelectedFormattedProperty(formatted) {
-        dispatch(createSingleValueAction('SET_FIRST_SELECTED_FORMATTED_PROPERTY', 'formatted', formatted));
+        dispatch(createSingleValueAction(actionTypes.SET_FIRST_SELECTED_FORMATTED_PROPERTY, 'formatted', formatted));
       }
 
       function addSelectedMessage(message) {
-        dispatch(createSingleValueAction('ADD_SELECTED_MESSAGE', 'message', message));
+        dispatch(createSingleValueAction(actionTypes.ADD_SELECTED_MESSAGE, 'message', message));
       }
 
       function removeSelectedMessage(id) {
-        dispatch(createSingleValueAction('REMOVE_SELECTED_MESSAGE', 'id', id));
+        dispatch(createSingleValueAction(actionTypes.REMOVE_SELECTED_MESSAGE, 'id', id));
       }
 
       function addSelected(selected) {
-        dispatch(createSingleValueAction('ADD_SELECTED', 'selected', selected));
+        dispatch(createSingleValueAction(actionTypes.ADD_SELECTED, 'selected', selected));
       }
 
       function removeSelected(id) {
-        dispatch(createSingleValueAction('REMOVE_SELECTED', 'id', id));
+        dispatch(createSingleValueAction(actionTypes.REMOVE_SELECTED, 'id', id));
       }
 
       function setLoadingSelectedChildren(loading) {
-        dispatch(createSingleValueAction('SET_LOADING_SELECTED_CHILDREN', 'loadingSelectedChildren', loading));
+        dispatch(createSingleValueAction(actionTypes.SET_LOADING_SELECTED_CHILDREN, 'loadingSelectedChildren', loading));
       }
 
       function setLoadingSelectedReports(loading) {
-        dispatch(createSingleValueAction('SET_LOADING_SELECTED_REPORTS', 'loadingSelectedReports', loading));
+        dispatch(createSingleValueAction(actionTypes.SET_LOADING_SELECTED_REPORTS, 'loadingSelectedReports', loading));
       }
 
       function loadSelectedChildren() {
         return dispatch(function(dispatch, getState) {
           const selected = getState().selected;
           return ContactViewModelGenerator.loadChildren(selected).then(children => {
-            dispatch(createSingleValueAction('RECEIVE_SELECTED_CHILDREN', 'children', children));
+            dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_CHILDREN, 'children', children));
           });
         });
       }
@@ -106,7 +108,7 @@ angular.module('inboxServices').factory('Actions',
         return dispatch(function(dispatch, getState) {
           const selected = getState().selected;
           return ContactViewModelGenerator.loadReports(selected).then(reports => {
-            dispatch(createSingleValueAction('RECEIVE_SELECTED_REPORTS', 'reports', reports));
+            dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_REPORTS, 'reports', reports));
           });
         });
       }
