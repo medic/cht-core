@@ -7,7 +7,7 @@ const config = require('../../../src/config'),
 const rewire = require('rewire');
 const outbound = rewire('../../../src/schedule/outbound');
 
-describe.only('outbound', () => {
+describe('outbound', () => {
   describe('outbound mapping', () => {
     it('supports simple dest => src mapping', () => {
       const doc = {
