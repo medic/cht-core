@@ -79,7 +79,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       Changes({
         key: 'read-status-medic',
         filter: function(change) {
-          return change.doc.type === 'data_record';
+          return change.doc && change.doc.type === 'data_record';
         },
         callback: function(change) {
           changeHandler(change, callback);

@@ -289,15 +289,12 @@ describe('ReportsCtrl controller', () => {
       });
     });
 
-    it('filters contained tombstones', () => {
+    it('filters deletions', () => {
       createController();
 
       return Promise.resolve().then(() => {
-        const change = { doc: { type: 'this is not a form' } };
-        LiveList.reports.containsDeleteStub.returns(true);
+        const change = { doc: { type: 'this is not a form' }, deleted: true };
         chai.expect(!!changesFilter(change)).to.equal(true);
-        chai.expect(LiveList.reports.containsDeleteStub.callCount).to.equal(1);
-        chai.expect(LiveList.reports.containsDeleteStub.args[0]).to.deep.equal([ change.doc ]);
       });
     });
 
@@ -314,9 +311,9 @@ describe('ReportsCtrl controller', () => {
       createController();
 
       return Promise.resolve().then(() => {
-        changesCallback({ deleted: true, doc: { _id: 'id' } });
+        changesCallback({ deleted: true, id: 'id' });
         chai.expect(LiveList.reports.remove.callCount).to.equal(1);
-        chai.expect(LiveList.reports.remove.args[0]).to.deep.equal([ { _id: 'id' } ]);
+        chai.expect(LiveList.reports.remove.args[0]).to.deep.equal(['id']);
         chai.expect(Search.callCount).to.equal(0);
       });
     });

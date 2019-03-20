@@ -10,7 +10,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
-    $timeout,
     $translate,
     $window,
     Changes,
@@ -175,8 +174,8 @@ angular.module('controllers').controller('UpgradeCtrl',
       filter: function(change) {
         return change.id === DEPLOY_DOC_ID;
       },
-      callback: function(change) {
-        $timeout(function() { $scope.deployDoc = change.doc; });
+      callback: function() {
+        DB().get(DEPLOY_DOC_ID).then(doc => $scope.deployDoc = doc);
       }
     });
   }

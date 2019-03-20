@@ -23,6 +23,7 @@ angular
     Search,
     SearchFilters,
     Selectors,
+    Session,
     Tour
   ) {
     'use strict';
@@ -33,7 +34,8 @@ angular
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state)
+        selected: Selectors.getSelected(state),
+        refreshList: state.refreshList
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -42,7 +44,8 @@ angular
         addSelected: actions.addSelected,
         removeSelected: actions.removeSelected,
         setSelected: actions.setSelected,
-        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty
+        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty,
+        setRefreshList: actions.setRefreshList
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -223,6 +226,7 @@ angular
     };
 
     var query = function(opts) {
+      ctrl.setRefreshList(false);
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
@@ -505,11 +509,13 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
+    const refreshList = () => ctrl.refreshList && Session.isOnlineOnly();
+
     var changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
         if (change.deleted) {
-          liveList.remove(change.doc);
+          liveList.remove(change.id);
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
@@ -517,7 +523,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc.form || liveList.containsDeleteStub(change.doc);
+        return change.doc && change.doc.form || change.deleted || refreshList();
       },
     });
 

@@ -21,7 +21,8 @@ angular.module('inboxServices').factory('Changes',
     $log,
     $q,
     $timeout,
-    DB
+    DB,
+    Session
   ) {
 
     'use strict';
@@ -32,11 +33,13 @@ angular.module('inboxServices').factory('Changes',
     var dbs = {
       medic: {
         lastSeq: null,
-        callbacks: {}
+        callbacks: {},
+        liveSync: true
       },
       meta: {
         lastSeq: null,
-        callbacks: {}
+        callbacks: {},
+        liveSync: true
       }
     };
 
@@ -60,12 +63,13 @@ angular.module('inboxServices').factory('Changes',
 
     var watchChanges = function(meta) {
       $log.info(`Initiating changes watch (meta=${meta})`);
+      const db = meta ? dbs.meta : dbs.medic;
       var watch = DB({ meta: meta })
         .changes({
           live: true,
-          since: meta ? dbs.meta.lastSeq : dbs.medic.lastSeq,
+          since: db.lastSeq,
           timeout: false,
-          include_docs: true,
+          include_docs: db.liveSync,
           return_docs: false,
         })
         .on('change', function(change) {
@@ -87,11 +91,12 @@ angular.module('inboxServices').factory('Changes',
       watches = [];
       return $q.all([
         DB().info(),
-        DB({ meta: true }).info()
+        DB({ meta: true }).info(),
       ])
         .then(function(results) {
           dbs.medic.lastSeq = results[0].update_seq;
           dbs.meta.lastSeq = results[1].update_seq;
+          dbs.medic.liveSync = !Session.isOnlineOnly();
           watchChanges(false);
           watchChanges(true);
         })

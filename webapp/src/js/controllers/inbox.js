@@ -385,7 +385,7 @@ var _ = require('underscore'),
           return pt !== 'clinic';
         });
         // check if new document is a contact
-        return hierarchyTypes.indexOf(change.doc.type) !== -1;
+        return change.doc && hierarchyTypes.indexOf(change.doc.type) !== -1;
       },
       callback: updateAvailableFacilities,
     });
@@ -731,7 +731,8 @@ var _ = require('underscore'),
     Changes({
       key: 'inbox-translations',
       filter: function(change) {
-        return change.doc.type === 'translations';
+
+        return change.doc && change.doc.type === 'translations';
       },
       callback: function(change) {
         $translate.refresh(change.doc.code);
@@ -769,10 +770,9 @@ var _ = require('underscore'),
       key: 'inbox-user-context',
       filter: function(change) {
         return (
-          change.doc.type === 'user-settings' &&
           userCtx &&
           userCtx.name &&
-          change.doc.name === userCtx.name
+          change.id === `org.couchdb.user:${userCtx.name}`
         );
       },
       callback: function() {

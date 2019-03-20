@@ -13,7 +13,8 @@
     loadingSelectedChildren: false,
     loadingSelectedReports: false,
     selectMode: false,
-    selected: null
+    selected: null,
+    refreshList: false
   };
 
   angular.module('inboxServices').constant('Reducers', function(state, action) {
@@ -99,6 +100,8 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
+      case 'SET_REFRESH_LIST':
+        return Object.assign({}, state, { refreshList: action.payload.refreshList });
       default:
         return state;
     }

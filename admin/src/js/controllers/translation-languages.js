@@ -84,7 +84,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
 
     const changeListener = Changes({
       key: 'update-languages',
-      filter: change => change.doc.type === 'translations',
+      filter: change => change.id.startsWith('messages-'),
       callback: () => getLanguages()
     });
     

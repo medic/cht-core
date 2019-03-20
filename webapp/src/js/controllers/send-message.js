@@ -4,10 +4,12 @@ var _ = require('underscore'),
 
 angular.module('inboxControllers').controller('SendMessageCtrl',
   function (
+    $ngRedux,
     $q,
     $scope,
     $translate,
     $uibModalInstance,
+    Actions,
     ContactSchema,
     Select2Search,
     SendMessage,
@@ -16,6 +18,16 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
   ) {
     'ngInject';
     'use strict';
+
+    const ctrl = this;
+    const mapStateToTarget = state => ({ refreshList: state.refreshList });
+    const mapDispatchToTarget = function(dispatch) {
+      const actions = Actions(dispatch);
+      return {
+        setRefreshList: actions.setRefreshList
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.error = {};
 
@@ -168,6 +180,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
           ])
             .then(function() {
               if (!$scope.error.message && !$scope.error.phone) {
+                ctrl.setRefreshList(true);
                 return SendMessage(recipients, message).then(function() {
                   $uibModalInstance.close();
                 });
@@ -182,5 +195,6 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         });
     };
 
+    $scope.$on('$destroy', () => unsubscribe());
   }
 );

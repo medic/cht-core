@@ -15,6 +15,7 @@ angular
     MessageContacts,
     MessageListUtils,
     Selectors,
+    Session,
     Tour
   ) {
     'use strict';
@@ -23,13 +24,15 @@ angular
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state)
+        selected: Selectors.getSelected(state),
+        refreshList: state.refreshList
       };
     };
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
-        setSelected: actions.setSelected
+        setSelected: actions.setSelected,
+        setRefreshList: actions.setRefreshList
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -58,6 +61,7 @@ angular
     };
 
     var updateConversations = function(options) {
+      ctrl.setRefreshList(false);
       options = options || {};
       if (!options.changes) {
         $scope.loading = true;
@@ -111,6 +115,8 @@ angular
       ctrl.setSelected(null);
     });
 
+    const refreshList = () => ctrl.refreshList && Session.isOnlineOnly();
+
     var changeListener = Changes({
       key: 'messages-list',
       callback: function() {
@@ -121,7 +127,10 @@ angular
           return false;
         }
         return (
-          change.doc.kujua_message || change.doc.sms_message || change.deleted
+          (change.doc && change.doc.kujua_message) ||
+          (change.doc && change.doc.sms_message) ||
+          change.deleted ||
+          refreshList()
         );
       },
     });

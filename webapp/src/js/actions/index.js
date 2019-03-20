@@ -113,6 +113,10 @@ angular.module('inboxServices').factory('Actions',
         });
       }
 
+      function setRefreshList (refreshList) {
+        dispatch(createSingleValueAction('SET_REFRESH_LIST', 'refreshList', refreshList));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -136,7 +140,8 @@ angular.module('inboxServices').factory('Actions',
         removeSelected,
         updateSelectedItem,
         setFirstSelectedDocProperty,
-        setFirstSelectedFormattedProperty
+        setFirstSelectedFormattedProperty,
+        setRefreshList
       };
     };
   }

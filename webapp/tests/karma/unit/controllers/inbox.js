@@ -182,11 +182,10 @@ describe('InboxCtrl controller', () => {
   it('InboxUserContent Changes listener should filter only logged in user, if exists', () => {
     session.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
     createController();
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: {} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'person'} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings'} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'adm'} })).to.equal(true);
+    chai.expect(changesListener['inbox-user-context'].filter({ id: 'something' })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ id: 'someperson' })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
 
     session.userCtx.returns(false);
     createController();
