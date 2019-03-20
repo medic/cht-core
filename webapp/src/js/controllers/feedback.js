@@ -52,6 +52,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
           })
             .then(() => {
               $scope.setFinished();
+              $uibModalInstance.close();
               return $translate('feedback.submitted')
                 .then(Snackbar);
             })
