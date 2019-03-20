@@ -271,7 +271,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: 'webapp/node_modules/font-awesome/fonts/*',
+            src: 'webapp/node_modules/font-awesome/fonts/*.woff2',
             dest: 'build/ddocs/medic/_attachments/fonts/',
           },
         ],
@@ -309,7 +309,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['admin/node_modules/font-awesome/fonts/*', 'webapp/src/fonts/**/*'],
+            src: ['admin/node_modules/font-awesome/fonts/*.woff2', 'webapp/src/fonts/**/*'],
             dest: 'build/ddocs/medic-admin/_attachments/fonts/',
           },
         ],
