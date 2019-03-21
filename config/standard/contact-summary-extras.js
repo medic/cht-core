@@ -431,6 +431,6 @@ function countFollowups(){
 
 function getFollowupExitReport(){
   return reports.find(function(r){
-    return r.form === 'nutrition_followup' && r.fields.task === 'exit';
+    return r.form === 'nutrition_exit';
   });
 }

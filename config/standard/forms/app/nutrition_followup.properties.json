@@ -1,6 +1,6 @@
 {
   "icon": "medic-health-center",
-  "title": "Nutrition Followup",
+  "title": "Nutrition Followup Visit",
   "context": {
     "person": true,
     "place": false,

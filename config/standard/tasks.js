@@ -438,7 +438,7 @@
 
   // Create death confirmation task
   {
-    icon: 'risk',
+    icon: 'icon-death-general',
     title: 'task.death_confirmation.title',
     appliesTo: 'reports',
     appliesToType: ['DR', 'nutrition_followup'],
@@ -459,6 +459,30 @@
     resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'death_confirmation' && r.fields.death_report.death === 'yes';
+      });
+    }
+  },
+
+  // Exit child from nutrition program
+  {
+    icon: 'child',
+    title: 'task.nutrition_exit.title',
+    appliesTo: 'reports',
+    appliesToType: ['nutrition_followup'],
+    appliesIf: function(c, r){
+      /* jshint unused:vars */
+      return r.fields.measurements.exit === 'yes';
+    },
+    actions: [{form: 'nutrition_exit'}],
+    events: [{
+      id: 'nutrition-exit',
+      days: 2,
+      start: 2,
+      end: 7
+    }],
+    resolvedIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_exit';
       });
     }
   },

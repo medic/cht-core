@@ -1,5 +1,5 @@
 {
-    "icon": "risk",
+    "icon": "icon-death-general",
     "title": "Confirm death",
     "context": {
         "person": false,

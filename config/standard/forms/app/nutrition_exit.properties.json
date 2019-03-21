@@ -1,9 +1,9 @@
 {
   "icon": "medic-health-center",
-  "title": "Nutrition Exit",
+  "title": "Nutrition Treatment Exit",
   "context": {
-    "person": true,
+    "person": false,
     "place": false,
-    "expression": "contact.type === 'person' && contact.date_of_birth && ageInYears(contact) <= 5 && !!summary.treatment_program"
+    "expression": ""
   }
 }
