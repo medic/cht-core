@@ -148,8 +148,8 @@ describe('DBSync service', () => {
 
       return service.sync().then(() => {
         expect(onUpdate.callCount).to.eq(2);
-        expect(onUpdate.args[0][0]).to.deep.eq({ inProgress: true });
-        expect(onUpdate.args[1][0]).to.deep.eq({ unknown: true });
+        expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
+        expect(onUpdate.args[1][0]).to.deep.eq({ state: 'unknown' });
       });
     });
 
@@ -163,7 +163,7 @@ describe('DBSync service', () => {
 
       return service.sync().then(() => {
         expect(onUpdate.callCount).to.eq(2);
-        expect(onUpdate.args[0][0]).to.deep.eq({ inProgress: true });
+        expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'required', from: 'required' });
       });
     });
@@ -222,7 +222,7 @@ describe('DBSync service', () => {
         expect(to.callCount).to.equal(0);
 
         expect(onUpdate.callCount).to.eq(2);
-        expect(onUpdate.args[0][0]).to.deep.eq({ inProgress: true });
+        expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'success', from: 'success' });
       });
     });

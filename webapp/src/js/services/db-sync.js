@@ -89,8 +89,9 @@ angular
                 Session.navigateToLogin();
               }
             })
-            .then(() => {
-              return; // success
+            .then(info => {
+              $log.debug(`Replication ${direction.name} successful`, info);
+              return;
             })
             .catch(err => {
               $log.error(`Error replicating ${direction.name} remote server`, err);
@@ -100,7 +101,7 @@ angular
     };
 
     const getCurrentSeq = () => DB().info().then(info => info.update_seq + '');
-    const getLastSyncSeq = () => $window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
+    const getLastReplicatedSeq = () => $window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
 
     // inProgressSync prevents multiple concurrent replications
     let inProgressSync;
@@ -121,9 +122,9 @@ angular
                 // no errors
                 syncIsRecent = true;
                 $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-              } else if (currentSeq === getLastSyncSeq()) {
+              } else if (currentSeq === getLastReplicatedSeq()) {
                 // no changes to send, but may have some to receive
-                update = { unknown: true };
+                update = { state: 'unknown' };
               } else {
                 // definitely need to sync something
                 errs.forEach(err => {
@@ -138,7 +139,7 @@ angular
           });
       }
 
-      sendUpdate({ inProgress: true });
+      sendUpdate({ state: 'inProgress' });
       return inProgressSync;
     };
 
@@ -204,7 +205,7 @@ angular
         if (Session.isOnlineOnly()) {
           // online users have potentially too much data so bypass local pouch
           $log.debug('You have administrative privileges; not replicating');
-          sendUpdate({ disabled: true });
+          sendUpdate({ state: 'disabled' });
           return $q.resolve();
         }
 

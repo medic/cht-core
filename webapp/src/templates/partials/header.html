@@ -92,7 +92,7 @@
           </li>
 
           <li role="separator" class="divider" ng-if="!replicationStatus.disabled"></li>
-          <li role="presentation disabled" ng-if="!replicationStatus.disabled && !replicationStatus.current.debounce">
+          <li role="presentation disabled" ng-if="!replicationStatus.disabled && !replicationStatus.current.disableSyncButton">
             <a role="menuitem" tabindex="-1" ng-click="replicate()">
               <i class="fa fa-fw fa-refresh"></i>
               <span translate>sync.now</span>

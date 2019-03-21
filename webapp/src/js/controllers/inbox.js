@@ -102,7 +102,7 @@ var _ = require('underscore'),
       inProgress: {
         icon: 'fa-refresh',
         key: 'sync.status.in_progress',
-        debounce: true
+        disableSyncButton: true
       },
       success: {
         icon: 'fa-check',
@@ -127,19 +127,19 @@ var _ = require('underscore'),
       current: SYNC_STATUS.unknown,
     };
 
-    DBSync.addUpdateListener(({ disabled, unknown, inProgress, to, from }) => {
-      if (disabled) {
+    DBSync.addUpdateListener(({ state, to, from }) => {
+      if (state === 'disabled') {
         $scope.replicationStatus.disabled = true;
         return;
       }
-      if (unknown) {
+      if (state === 'unknown') {
         $scope.replicationStatus.current = SYNC_STATUS.unknown;
         return;
       }
       const now = Date.now();
       const lastTrigger = $scope.replicationStatus.lastTrigger;
       const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-      if (inProgress) {
+      if (state === 'inProgress') {
         $scope.replicationStatus.current = SYNC_STATUS.inProgress;
         $scope.replicationStatus.lastTrigger = now;
         $log.info(`Replication started after ${delay} seconds since previous attempt`);
@@ -151,12 +151,12 @@ var _ = require('underscore'),
       if (from === 'success') {
         $scope.replicationStatus.lastSuccess.from = now;
       }
-      if (to === 'required' || from === 'required') {
-        $log.info(`Replication failed after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.required;
-      } else {
+      if (to === 'success' && from === 'success') {
         $log.info(`Replication succeeded after ${delay} seconds`);
         $scope.replicationStatus.current = SYNC_STATUS.success;
+      } else {
+        $log.info(`Replication failed after ${delay} seconds`);
+        $scope.replicationStatus.current = SYNC_STATUS.required;
       }
     });
     
