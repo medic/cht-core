@@ -168,6 +168,21 @@ describe('DBSync service', () => {
       });
     });
 
+    it('completed replication results in "success" status', () => {
+      isOnlineOnly.returns(false);
+      Auth.returns(Q.resolve());
+
+      replicationResult = () => Q.resolve({ some: 'info' });
+      const onUpdate = sinon.stub();
+      service.addUpdateListener(onUpdate);
+
+      return service.sync().then(() => {
+        expect(onUpdate.callCount).to.eq(2);
+        expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
+        expect(onUpdate.args[1][0]).to.deep.eq({ to: 'success', from: 'success' });
+      });
+    });
+
     it('sync scenarios based on connectivity state', done => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
