@@ -46,7 +46,7 @@ describe('Search service', function() {
         return searchStub;
       });
       $provide.value('Session', session);
-      $provide.value('Telemetry', () => Promise.resolve());
+      $provide.value('Telemetry', { record: () => Promise.resolve() });
     });
     inject(function($injector) {
       service = $injector.get('Search');
