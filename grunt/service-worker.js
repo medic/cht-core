@@ -23,7 +23,8 @@ function writeServiceWorkerFile(staticDirectoryPath, rootUrl, outputPath) {
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
+      path.join(staticDirectoryPath, '{audio,css,img,js,xslt}', '*'),
+      path.join(staticDirectoryPath, 'fonts', '*.ttf'),
       path.join(staticDirectoryPath, 'manifest.json'),
     ],
     dynamicUrlToDependencies: {
