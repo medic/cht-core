@@ -247,12 +247,12 @@ cards = [
     label: 'contact.profile.growth_monitoring',
     appliesToType: 'person',
     appliesIf: function() {
-      return context.use_cases.gmp && getAgeInMonths() < 60 && !!getNutritionScreeningReport();
+      return context.use_cases.gmp && getAgeInMonths() < 60 && !!getMostRecentReport(reports, ['nutrition_screening']);
     },
     fields: function() {
 
       var fields = [];
-      var screening_report = getNutritionScreeningReport();
+      var screening_report = getMostRecentReport(reports, ['nutrition_screening']);
 
       fields.push({
         label: 'contact.profile.weight',
@@ -324,7 +324,7 @@ cards = [
 
       var fields = [];
 
-      var enrollment_report = getEnrollmentReport();
+      var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
 
       if (enrollment_report){
         fields.push({
@@ -377,7 +377,7 @@ cards = [
           translate: true,
           width: 6,
           context: {
-            count: countFollowups(),
+            count: countNutritionFollowups(),
             total: 8,
           },
         });
@@ -390,14 +390,14 @@ cards = [
     label: 'contact.profile.imam_history',
     appliesToType: 'person',
     appliesIf: function() {
-      return !!getFollowupExitReport();
+      return !!getMostRecentNutritionEnrollment().exit;
     },
     fields: function() {
 
       var fields = [];
-      var enrollment_report =  getEnrollmentReport();
+      var enrollment_report =  getMostRecentNutritionEnrollment().enrollment;
 
-      var exit_report = getFollowupExitReport();
+      var exit_report = getMostRecentNutritionEnrollment().exit;
 
       var d = new Date(0);
       d.setUTCSeconds(exit_report.reported_date/1000);

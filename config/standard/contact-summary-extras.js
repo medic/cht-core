@@ -161,9 +161,6 @@ var isVaccineInLineage = function(lineage, vaccine) {
 };
 
 var isCoveredByUseCaseInLineage = function(lineage, usecase) {
-  // console.log("**************lineage**************");
-  // console.log(lineage);
-  // console.log(usecase);
   return lineage && lineage.some(function(c) {
     return c && contains(c.use_cases, usecase);
   });
@@ -388,15 +385,37 @@ function getSubsequentVisits(r) {
   return subsequentVisits;
 }
 
-function getEnrollmentReport(){
-  return reports.find(function(r){
-    return r.form === 'nutrition_screening' && r.fields.treatment.enroll === 'yes';
+function getMostRecentNutritionEnrollment(){
+  // returns the most recent enrollment report and a corresponding exit report that was submitted after enrollment
+  var nutrition_reports = {
+    enrollment: null,
+    exit: null
+  };
+  var exits = [];
+  reports.forEach(function(r) {
+    if (r.form === 'nutrition_screening' &&
+        !r.deleted &&
+        (!nutrition_reports.enrollment || (r.reported_date > nutrition_reports.enrollment.reported_date && r.fields.treatment.enroll === 'yes'))) {
+      nutrition_reports.enrollment = r;
+    }
+    // note any exit reports we may find for active enrollment verification
+    if (r.form === 'nutrition_exit'){
+      exits.push(r);
+    }
   });
+
+  // verify they haven't been exited after enrollment
+  if (nutrition_reports.enrollment){
+    nutrition_reports.exit = exits.find(function(r){
+      return r.reported_date > nutrition_reports.enrollment.reported_date;
+    });
+  }
+  return nutrition_reports;
 }
 
 function getTreatmentEnrollmentDate(){
   var date = '';
-  var enrollment_report = getEnrollmentReport();
+  var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
   if (enrollment_report){
     var d = new Date(0);
     d.setUTCSeconds(enrollment_report.reported_date/1000);
@@ -407,30 +426,31 @@ function getTreatmentEnrollmentDate(){
 
 function getTreatmentProgram(){
   var treatment_program = '';
-  var enrollment_report = getEnrollmentReport();
+  var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
   if (enrollment_report) treatment_program = enrollment_report.fields.treatment.program;
   return treatment_program;
 }
 
-function getNutritionScreeningReport(){
-  var screening_report = reports.find(function(r){
-    return r.form === 'nutrition_screening';
-  });
-  return screening_report;
-}
-
-function countFollowups(){
+function countNutritionFollowups(){
   var count = 0;
+  var enrollment = getMostRecentNutritionEnrollment().enrollment;
+  // only count follow up visits after enrollment
   reports.forEach(function(r){
-    if (r.form === 'nutrition_followup' && r.fields.task === 'visit'){
+    if (r.form === 'nutrition_followup' && r.reported_date > enrollment.reported_date){
       count = count + 1;
     }
   });
   return count;
 }
 
-function getFollowupExitReport(){
-  return reports.find(function(r){
-    return r.form === 'nutrition_exit';
+function getMostRecentReport(reports, form) {
+  var result = null;
+  reports.forEach(function(r) {
+    if (form.indexOf(r.form) >= 0 &&
+        !r.deleted &&
+        (!result || r.reported_date > result.reported_date)) {
+      result = r;
+    }
   });
+  return result;
 }
