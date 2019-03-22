@@ -139,13 +139,14 @@ var _ = require('underscore'),
         return _search(type, filters, options, extensions)
           .then(function(searchResults) {
             const timing = performance.now() - before;
-            const filterKeys = Object.keys(filters).sort().join(':');
+            const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
+            const telemetryKey = ['search', type, ...filterKeys].join(':');
             // Will end up with entries like:
             //   search:reports:search                      <-- text search of reports
             //   search:reports:date:search:valid:verified  <-- maximum selected search of reports with text search
             //   search:contacts:search                     <-- text search of contacts
             //   search:contacts:types                      <-- default viewing of contact list
-            Telemetry.record(`search:${type}:${filterKeys}`, timing);
+            Telemetry.record(telemetryKey, timing);
 
             if (docIds && docIds.length) {
               docIds.forEach(function(docId) {
