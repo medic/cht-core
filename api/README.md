@@ -180,7 +180,7 @@ Returns the settings in JSON format.
 
 Request different types of data in various formats.
 
-Each of the export endpoints except contacts supports a `filters.human: true` parameter which returns date formatted in human readable form (ISO 8601). Setting this parameter to false or leaving it out will return dates formatted as an epoch timestamp.
+Each of the export endpoints except contacts supports a `options.humanReadable: true` parameter which returns date formatted in human readable form (ISO 8601). Setting this parameter to false or leaving it out will return dates formatted as an epoch timestamp.
 
 ## GET /api/v2/export/reports
 
