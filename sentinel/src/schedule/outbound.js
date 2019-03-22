@@ -8,9 +8,25 @@ const configService = require('../config'),
 
 const CONFIGURED_PUSHES = 'outbound';
 
-const queuedDocuments = () =>
-  db.medic.query('medic/outbound_queue', {include_docs: true})
-    .then(results => results.rows.map(r => r.doc));
+// Returns a list of tuples of [queueDoc, actualDoc]
+const queued = () =>
+  db.sentinel.allDocs({
+    startkey: 'task:outbound:',
+    endkey: 'task:outbound:\ufff0',
+    include_docs: true
+  })
+  .then(results => {
+    const queues = results.rows.map(r => r.doc);
+
+    return db.medic.allDocs({
+      keys: queues.map(q => q.doc_id),
+      include_docs: true
+    }).then(results => {
+      const docs = results.rows.map(r => r.doc);
+
+      return queues.map((q, idx) => [q, docs[idx]]);
+    });
+  });
 
 // Maps a source document to a destination format using the given push config
 const map = (doc, conf) => {
@@ -42,14 +58,14 @@ const map = (doc, conf) => {
       try {
         srcValue = vm.runInNewContext(expr, {doc: doc});
       } catch (err) {
-        throw Error(`Mapping error for ${conf.name}:${dest}: JS error on source document: ${doc._id}: ${err}`);
+        throw Error(`Mapping error for ${conf.name}/${dest} JS error on source document: ${doc._id}: ${err}`);
       }
     } else {
       srcValue = objectPath.get(doc, path);
     }
 
     if (required && !srcValue) {
-      throw Error(`Mapping error for ${conf.name}:${dest}: no source present`);
+      throw Error(`Mapping error for ${conf.name}/${dest}: cannot find ${path} on source document`);
     }
 
     if (srcValue) {
@@ -76,7 +92,11 @@ const send = (payload, conf) => {
       return Promise.resolve();
     }
 
-    if (authConf.type === 'Basic') {
+    if (!authConf.type) {
+      return Promise.reject(Error('No auth.type, either declare the type or omit the auth property'));
+    }
+
+    if (authConf.type.toLowerCase() === 'basic') {
       sendOptions.auth = {
         username: authConf.username,
         password: authConf.password,
@@ -85,18 +105,15 @@ const send = (payload, conf) => {
       return Promise.resolve();
     }
 
-    if (authConf.type === 'Muso') {
+    if (authConf.type.toLowerCase() === 'muso-sih') {
       const authOptions = {
         method: 'POST',
         form: {
           login: authConf.username,
           password: authConf.password
         },
-        // TODO: I think Request adds this for us?
-        // headers: {
-        //   'Content-Type': 'multipart/form-data'
-        // },
-        url: conf.destination.base_url + authConf.path
+        url: conf.destination.base_url + authConf.path,
+        json: true
       };
 
       return request(authOptions)
@@ -117,22 +134,22 @@ const send = (payload, conf) => {
   return auth().then(() => request(sendOptions));
 };
 
-// Collects pushes to attempt out of a document given a global config
-const collect = (config, doc) => {
-  return doc.outbound_queue.map(pushName => {
+// Collects pushes to attempt out of the queue, given a global config
+const collect = (config, queue) => {
+  return queue.queue.map(pushName => {
     return config.find(conf => conf.name === pushName);
   });
 };
 
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
-  return queuedDocuments()
-  .then(docs => {
+  return queued()
+  .then(queues => {
     const pushConfig = configService.get(CONFIGURED_PUSHES);
     // array of {doc, conf} to be processed
-    const pushes = docs.reduce((pushes, doc) => {
+    const pushes = queues.reduce((pushes, [queue, doc]) => {
       const pushesForDoc =
-        module.exports._collect(pushConfig, doc).map(push => ({doc: doc, conf: push}));
+        module.exports._collect(pushConfig, queue).map(conf => ({queue, doc, conf}));
       return pushes.concat(pushesForDoc);
     }, []);
 
@@ -142,26 +159,32 @@ const execute = () => {
     // all pushes are complete
     // For now we presume we aren't going to get much traffic against this and
     // will probably only be doing one push per schedule call
-    const dirtyDocs = {};
+    const dirtyQueues = {};
     return pushes.reduce(
-      (p, {doc, conf}) => p.then(() => {
+      (p, {queue, doc, conf}) => p.then(() => {
         const payload = module.exports._map(doc, conf);
         return module.exports._send(payload, conf)
           .then(() => {
+            logger.info(`Pushed ${doc._id} to ${conf.name}`);
             // Worked
-            if (!dirtyDocs[doc._id]) {
-              dirtyDocs[doc._id] = doc;
+            if (!dirtyQueues[queue._id]) {
+              dirtyQueues[queue._id] = queue;
             }
 
-            doc.outbound_queue.splice(conf.name, 1);
+            queue.queue.splice(conf.name, 1);
+            if (queue.queue.length === 0) {
+              // Done with this queue completely
+              queue._deleted = true;
+            }
           })
           .catch(err => {
             // Failed
             logger.error(`Failed to push ${doc._id} to ${conf.name}: ${err.message}`);
+            logger.error(err);
             // Don't remove it from the queue so it will be tried again next time
           });
       }), Promise.resolve())
-      .then(() => db.medic.bulkDocs(Object.values(dirtyDocs)));
+      .then(() => db.sentinel.bulkDocs(Object.values(dirtyQueues)));
   });
 };
 
