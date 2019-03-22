@@ -1,34 +1,48 @@
 const vm = require('vm');
 
 const config = require('../config'),
+      db = require('../db'),
       logger = require('../lib/logger');
 
 const CONFIGURED_PUSHES = 'outbound';
 
 const configuredFor = doc => {
-  return config.get(CONFIGURED_PUSHES).filter(conf => {
-    return vm.runInNewContext(conf.relevantTo, {doc: doc});
+  const pushes = config.get(CONFIGURED_PUSHES) || [];
+
+  return pushes.filter(conf => {
+    return conf.relevantTo && vm.runInNewContext(conf.relevantTo, {doc: doc});
   });
 };
 
-const markForOutbound = doc => {
-  // There isn't really currently a better mechanism than just marking a document
-  // task and scheduled_task don't really fit this mould (they are all very much around
-  // sending SMS that have been compiled from some translatable thing).
-  // We could look into reworking the above into a more generic queuing system of which
-  // this could be a part, but that would be a larger project.
-  doc.outbound_queue = configuredFor(doc).map(conf => conf.name);
-  return Promise.resolve(true);
+const markForOutbound = (change) => {
+  const toQueue = configuredFor(change.doc).map(conf => conf.name);
+
+  return db.sentinel.get(`task:outbound:${change.doc._id}`)
+    .then(existingOutboundTask => {
+      // TODO: deal with either ignoring or topping up existing queue
+    })
+    .catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
+
+      return db.sentinel.put({
+        _id: `task:outbound:${change.doc._id}`,
+        doc_id: change.doc._id,
+        queue: toQueue
+      });
+    })
+    .then(() => false);
 };
 
 module.exports = {
   filter: doc => {
     try {
-      return configuredFor(doc);
+      return configuredFor(doc).length >= 1;
     } catch (err) {
       logger.error(`mark_for_outbound filter failed on ${doc._id} with`, err);
       return false;
     }
   },
-  onMatch: ({doc}) => markForOutbound(doc)
+  onMatch: markForOutbound
 };
