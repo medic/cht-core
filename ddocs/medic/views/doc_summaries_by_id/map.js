@@ -73,7 +73,8 @@ function(doc) {
       lineage: getLineage(doc.contact && doc.contact.parent),
       subject: getSubject(doc)
     });
-  } else if (doc.type === 'clinic' ||
+  } else if (doc.type === 'contact' ||
+      doc.type === 'clinic' ||
       doc.type === 'district_hospital' ||
       doc.type === 'health_center' ||
       doc.type === 'person') { // contact
@@ -81,7 +82,7 @@ function(doc) {
       _rev: doc._rev,
       name: doc.name || doc.phone,
       phone: doc.phone,
-      type: doc.type,
+      type: doc.contact_type || doc.type,
       contact: doc.contact && doc.contact._id,
       lineage: getLineage(doc.parent),
       simprints_id: doc.simprints_id,

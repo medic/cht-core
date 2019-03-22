@@ -1,3 +1,5 @@
+// TODO can we remove this now?
+
 var _ = require('underscore');
 
 /**

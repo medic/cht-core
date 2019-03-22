@@ -49,7 +49,7 @@ angular.module('inboxServices').factory('Select2Search',
           sendMessageExtras = options.sendMessageExtras || defaultSendMessageExtras,
           tags = options.tags || false,
           initialValue = options.initialValue || selectEl.val(),
-          types = Array.isArray(_types) ? _types : [ _types ];
+          types = Array.isArray(_types) ? _types : [ _types ]; // TODO types or contact_types?
 
       if (allowNew && types.length !== 1) {
         throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');

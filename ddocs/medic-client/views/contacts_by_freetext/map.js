@@ -31,8 +31,16 @@ function(doc) {
   };
 
   var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
-  var type = doc.type === 'contact' ? doc.contact_type : doc.type;
-  var idx = types.indexOf(type);
+  var idx = -1;
+  if (doc.type === 'contact') {
+    idx = types.indexOf(doc.contact_type);
+    if (idx === -1) {
+      idx = doc.contact_type;
+    }
+  } else {
+    idx = types.indexOf(doc.type);
+  }
+
   if (idx !== -1) {
     var dead = !!doc.date_of_death;
     var muted = !!doc.muted;
@@ -40,9 +48,5 @@ function(doc) {
     Object.keys(doc).forEach(function(key) {
       emitField(key, doc[key], order);
     });
-    var clinic = type === 'person' ? doc.parent : doc;
-    if (clinic && clinic._id) {
-      emitMaybe('clinic:' + clinic._id, order);
-    }
   }
 }

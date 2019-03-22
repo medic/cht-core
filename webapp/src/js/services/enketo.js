@@ -370,6 +370,7 @@ angular.module('inboxServices').service('Enketo',
 
     this.renderContactForm = renderForm;
 
+    // TODO delete this
     this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
       return $q.all([inited, Language()])
         .then(function(results) {

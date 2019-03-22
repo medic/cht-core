@@ -19,6 +19,7 @@
   require('./contact-save');
   require('./contact-schema');
   require('./contact-summary');
+  require('./contact-types');
   require('./contact-view-model-generator');
   require('./contacts');
   require('./count-messages');

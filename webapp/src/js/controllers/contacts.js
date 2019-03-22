@@ -19,6 +19,7 @@ const PAGE_SIZE = 50;
     ContactSchema,
     ContactSummary,
     ContactsActions,
+    ContactTypes,
     Export,
     GetDataRecords,
     GlobalActions,
@@ -395,30 +396,45 @@ const PAGE_SIZE = 50;
       });
     };
 
-    var setActionBarData = function() {
-      var data = {
-        hasResults: $scope.hasContacts,
-        userFacilityId: usersHomePlace && usersHomePlace._id,
-        exportFn: function() {
-          Export('contacts', $scope.filters, { humanReadable: true });
-        },
-      };
-      var type;
+    const getChildren = () => {
+      let p;
       if (usersHomePlace) {
-        type = ContactSchema.getChildPlaceType(usersHomePlace.type);
+        // backwards compatibility with pre-flexible hierarchy users
+        const homeType = usersHomePlace.contact_type || usersHomePlace.type;
+        p = ContactTypes.getChildren(homeType);
       } else if (Session.isAdmin()) {
-        type = ContactSchema.getPlaceTypes()[0];
+        p = ContactTypes.getChildren();
+      } else {
+        return Promise.resolve([]);
       }
-      if (type) {
-        defaultTypeFilter = { types: { selected: [type] } };
-        var schema = ContactSchema.get(type);
-        data.addPlaceLabel = schema.addButtonLabel;
-        data.userChildPlace = {
-          type: type,
-          icon: schema ? schema.icon : '',
-        };
-      }
-      $scope.setLeftActionBar(data);
+      return p
+        .then(children => {
+          console.log('got children', children);
+          return children;
+        })
+        .then(children => children.filter(child => !child.person))
+        .then(places => {
+          defaultTypeFilter = {
+            types: {
+              selected: places.map(place => place.id)
+            }
+          };
+          return places;
+        });
+    };
+
+    var setActionBarData = function() {
+      getChildren().then(children => {
+        console.log('setting children', children);
+        $scope.setLeftActionBar({
+          hasResults: $scope.hasContacts,
+          userFacilityId: usersHomePlace && usersHomePlace._id,
+          childPlaces: children,
+          exportFn: function() {
+            Export('contacts', $scope.filters, { humanReadable: true });
+          },
+        });
+      });
     };
 
     var getUserHomePlaceSummary = function() {

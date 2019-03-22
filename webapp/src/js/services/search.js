@@ -186,6 +186,8 @@ var _ = require('underscore'),
             });
           })
           .then(function(results) {
+            console.log('data records', results);
+
             _currentQuery = {};
             return results;
           })

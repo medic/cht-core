@@ -1,3 +1,5 @@
+// TODO delete this!
+
 var _ = require('underscore');
 
 angular.module('inboxServices').service('ContactForm',
