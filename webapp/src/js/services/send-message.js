@@ -1,7 +1,8 @@
 var _ = require('underscore'),
   uuid = require('uuid/v4'),
   taskUtils = require('@medic/task-utils'),
-  phoneNumber = require('@medic/phone-number');
+  phoneNumber = require('@medic/phone-number'),
+  uuid = require('uuid/v4');
 
 angular
   .module('inboxServices')
@@ -29,6 +30,7 @@ angular
         kujua_message: true,
         type: 'data_record',
         sent_by: (user && user.name) || 'unknown',
+        _id: uuid()
       };
     };
 
@@ -150,7 +152,7 @@ angular
       return task;
     };
 
-    return function(recipients, message) {
+    return function(recipients, message, setRefreshList) {
       if (!_.isArray(recipients)) {
         recipients = [recipients];
       }
@@ -164,6 +166,9 @@ angular
           doc.tasks = explodedRecipients.map(function(recipient) {
             return createTask(settings, recipient, message, user);
           });
+          if (setRefreshList) {
+            setRefreshList(doc._id);
+          }
           return doc;
         })
         .then(function(doc) {

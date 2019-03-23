@@ -113,6 +113,8 @@ module.exports = {
     helper.waitElementToBeVisible(element(by.id('reports-list')));
     if (refresh) {
       browser.refresh();
+    } else {
+      element(by.css('.reset-filter')).click();
     }
   },
 

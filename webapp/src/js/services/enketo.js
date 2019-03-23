@@ -532,7 +532,7 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
-    this.save = function(formInternalId, form, geolocation, docId) {
+    this.save = function(formInternalId, form, geolocation, docId, setRefreshList) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
@@ -547,6 +547,9 @@ angular.module('inboxServices').service('Enketo',
           return xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
         })
         .then(function(docs) {
+          if (setRefreshList) {
+            setRefreshList(docs[0]._id);
+          }
           if (geolocation) {
             // Only update geolocation if one is provided.  Otherwise, maintain
             // whatever is already set in the docs.

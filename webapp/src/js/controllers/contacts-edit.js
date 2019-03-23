@@ -188,7 +188,6 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       var docId = $scope.enketoContact.docId;
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
-      ctrl.setRefreshList(true);
 
       return form.validate()
         .then(function(valid) {
@@ -197,7 +196,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           }
 
           var type = $scope.enketoContact.type;
-          return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
+          return ContactSave($scope.unmodifiedSchema[type], form, docId, type, ctrl.setRefreshList)
             .then(function(result) {
               $log.debug('saved report', result);
               ctrl.setEnketoSavingStatus(false);

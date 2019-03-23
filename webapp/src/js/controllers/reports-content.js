@@ -113,19 +113,29 @@ var _ = require('underscore');
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.deselectReport(change.doc);
+              $scope.deselectReport(change.id);
             });
           } else {
             var selected = ctrl.selected;
             $scope.refreshReportSilently(change.doc || change.id)
               .then(function() {
-                if(selected[0].formatted.verified !== change.doc.verified ||
-                   ('oldVerified' in selected[0].formatted &&
-                    selected[0].formatted.oldVerified !== change.doc.verified)) {
-                  ctrl.setSelected(selected);
-                  $timeout(function() {
-                    ctrl.setFirstSelectedFormattedProperty({ verified: change.doc.verified });
-                  });
+                if (change.doc) {
+                  if (selected[0].formatted.verified !== change.doc.verified ||
+                      ('oldVerified' in selected[0].formatted &&
+                       selected[0].formatted.oldVerified !== change.doc.verified)) {
+                    ctrl.setSelected(selected);
+                    $timeout(function() {
+                      ctrl.setFirstSelectedFormattedProperty({ verified: change.doc.verified });
+                    });
+                  }
+                } else {
+                  if (selected[0].formatted.hasOwnProperty('oldVerified')) {
+                    const verified = ctrl.selected[0].formatted.verified;
+                    ctrl.setSelected(selected);
+                    $timeout(function() {
+                      ctrl.setFirstSelectedFormattedProperty({ verified });
+                    });
+                  }
                 }
               });
           }

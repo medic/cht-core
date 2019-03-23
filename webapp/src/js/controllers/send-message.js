@@ -180,8 +180,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
           ])
             .then(function() {
               if (!$scope.error.message && !$scope.error.phone) {
-                ctrl.setRefreshList(true);
-                return SendMessage(recipients, message).then(function() {
+                return SendMessage(recipients, message, ctrl.setRefreshList).then(function() {
                   $uibModalInstance.close();
                 });
               }

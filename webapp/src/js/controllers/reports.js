@@ -195,7 +195,7 @@ angular
     };
 
     $scope.deselectReport = function(report) {
-      removeSelected(report._id);
+      removeSelected(_.isString(report) ? report : report._id);
       $(
         '#reports-list li[data-record-id="' +
           report._id +
@@ -353,6 +353,7 @@ angular
 
         var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedDocProperty({ verified: verified });
+        ctrl.setRefreshList(doc._id);
 
         DB()
           .get(ctrl.selected[0].doc._id)
@@ -509,7 +510,11 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    const refreshList = () => ctrl.refreshList && Session.isOnlineOnly();
+    const refreshList = change => (
+      ctrl.refreshList &&
+      (ctrl.refreshList === true || ctrl.refreshList === change.id) &&
+      Session.isOnlineOnly()
+    );
 
     var changeListener = Changes({
       key: 'reports-list',
@@ -523,7 +528,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc && change.doc.form || change.deleted || refreshList();
+        return change.doc && change.doc.form || change.deleted || refreshList(change);
       },
     });
 

@@ -472,7 +472,11 @@ var _ = require('underscore'),
       );
     };
 
-    const refreshList = () => ctrl.refreshList && Session.isOnlineOnly();
+    const refreshList = change => (
+      ctrl.refreshList &&
+      (ctrl.refreshList === true || ctrl.refreshList === change.id) &&
+      Session.isOnlineOnly()
+    );
 
     var changeListener = Changes({
       key: 'contacts-list',
@@ -510,7 +514,7 @@ var _ = require('underscore'),
           liveList.containsDeleteStub(change.doc) ||
           isRelevantVisitReport(change.doc) ||
           change.deleted ||
-          refreshList()
+          refreshList(change)
         );
       },
     });
