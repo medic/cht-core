@@ -68,12 +68,12 @@ describe('replications', () => {
       ]);
       const replicateDbs = sinon.stub(replications, 'replicateDbs');
       replicateDbs.returns(Promise.resolve());
-      sinon.stub(db, 'allDbs').resolves(['medic-b', 'medic-s', 'medic-x-1', 'medic-x-2']);
+      sinon.stub(db, 'allDbs').resolves(['medic-b', 'medic-s', `${db.medicDbName}-x-1`, `${db.medicDbName}-x-2`]);
       replications.execute(err => {
           assert.equal(err, null);
           assert.equal(replicateDbs.callCount, 1);
-          assert.deepEqual(replicateDbs.args[0][0], ['medic-x-1', 'medic-x-2']);
-          assert.equal(replicateDbs.args[0][1], 'medic-z');
+          assert.deepEqual(replicateDbs.args[0][0], [`${db.medicDbName}-x-1`, `${db.medicDbName}-x-2`]);
+          assert.equal(replicateDbs.args[0][1], `${db.medicDbName}-z`);
           done();
       });
   });
