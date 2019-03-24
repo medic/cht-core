@@ -6,7 +6,8 @@ PouchDB.plugin(require('pouchdb-replication'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
-const request = require('request');
+const request = require('request'),
+      url = require('url');
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
@@ -44,6 +45,8 @@ if (UNIT_TEST_ENV) {
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
+  const parsedUrl = url.parse(couchUrl);
+
   module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 
   const fetchFn = (url, opts) => {
@@ -53,6 +56,7 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
+  module.exports.medicDbName = parsedUrl.path.replace('/', '');
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
     fetch: fetchFn,
   });

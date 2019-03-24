@@ -9,7 +9,10 @@ const safeStringify = obj => {
 };
 
 module.exports = {
-  db: db.medicUsersMeta,
+  getDocs: ids => {
+    return db.medicUsersMeta.allDocs({ keys: ids, include_docs: true })
+      .then(result => result.rows.map(row => row.doc));
+  },
   getDocIds: (options) => {
     options.include_docs = false; 
     options.endkey = 'feedback-';

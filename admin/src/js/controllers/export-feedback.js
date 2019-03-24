@@ -47,7 +47,7 @@ angular
       return result;
     };
 
-    DB({ allMeta: true })
+    DB({ usersMeta: true })
       .allDocs({
         include_docs: true, 
         endkey: 'feedback-', 

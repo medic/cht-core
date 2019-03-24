@@ -135,8 +135,8 @@
   },
   "replications": [
     {
-      "from": "medic-user-[^\\-]+-meta",
-      "to": "medic-users-meta",
+      "fromSuffix": "user-[^\\-]+-meta",
+      "toSuffix": "users-meta",
       "text_expression": "",
       "cron": "0 2 * * *"
     }

@@ -499,10 +499,6 @@ app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
 
-const allUsersPathPrefix = '/medic-users-meta/';
-// AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
-app.all(allUsersPathPrefix + '*', authorization.setAuthorized);
-
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
   res.writeHead = function(_statusCode, _headers) {

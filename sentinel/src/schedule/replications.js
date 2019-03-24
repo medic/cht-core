@@ -1,6 +1,7 @@
 const config = require('../config'),
       later = require('later'),
-      db = require('../db');
+      db = require('../db'),
+      logger = require('../lib/logger');
 
 // set later to use local time
 later.date.localTime();
@@ -9,10 +10,9 @@ function isConfigValid(config) {
   // Failing parsing will throw an Error
   try {
     return Boolean(
-      config.from &&
-      config.to &&
-      (config.text_expression  && later.parse.text(config.text_expression) || 
-       config.cron && later.parse.cron(config.cron))
+      config.fromSuffix &&
+      config.toSuffix &&
+      getSchedule(config) !== null
     );
   } catch(e) {
     return false;
@@ -35,11 +35,11 @@ function getSchedule(config) {
   }
 }
 
-function replicate(fromDbs, toDb) {
-	const targetDb = db.get(toDb);
-  return fromDbs.reduce((p, fromDb) => {
-    return p.then(() => db.get(fromDb).replicate.to(targetDb));
-  }, Promise.resolve());
+function replicateDb(sourceDb, targetDb) {
+  // Replicate only telemetry and feedback docs
+  return  sourceDb.replicate.to(targetDb, {
+    filter: doc => doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-')
+  });
 }
 
 module.exports = {
@@ -48,23 +48,31 @@ module.exports = {
 
     replications.reduce((p, replication) => {
       if (!isConfigValid(replication)) {
-        return Promise.reject(`Invalid replication config with text expression = '${replication.text_expression}' and cron = '${replication.cron}'`);
+        throw new Error(`Invalid replication config with text expression = '${replication.text_expression}' and cron = '${replication.cron}'`);
       }
 
       const sched = getSchedule(replication);
 
       return p.then(() => later.setInterval(() => module.exports.runReplication(replication), sched));
     }, Promise.resolve())
-    .then(callback)
+    .then(() => callback())
     .catch(callback);
   },
-  runReplication: function(replication) {
-    const srcRegex = new RegExp(replication.from);
+  runReplication: replication => {
+    const srcRegex = new RegExp(`${db.medicDbName}-${replication.fromSuffix}`);
 
-    const toDb = replication.to;
+    const toDb = `${db.medicDbName}-${replication.toSuffix}`;
     return db.allDbs().then(dbs => {
       const srcDbs = dbs.filter(db => srcRegex.exec(db));
-      return replicate(srcDbs, toDb);
+      return module.exports.replicateDbs(srcDbs, toDb);
     });
+  },
+  replicateDbs: (fromDbs, toDb) => {
+    const targetDb = db.get(toDb);
+    return fromDbs.reduce((p, fromDb) => {
+      logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`);
+      const sourceDb = db.get(fromDb);
+      return p.then(() => replicateDb(sourceDb, targetDb));
+    }, Promise.resolve());
   },
 };
