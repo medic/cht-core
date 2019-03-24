@@ -2,8 +2,6 @@ require('chai').should();
 
 const db = require('../../../src/db'),
       service = require('../../../src/services/export-data'),
-      reportMapper = require('../../../src/services/export/report-mapper'),
-      contactMapper = require('../../../src/services/export/contact-mapper'),
       sinon = require('sinon');
 
 describe('Export Data Service', () => {
