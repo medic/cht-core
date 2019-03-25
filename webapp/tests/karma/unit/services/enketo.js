@@ -85,7 +85,8 @@ describe('Enketo service', function() {
       EnketoPrepopulationData = sinon.stub(),
       XmlForm = sinon.stub(),
       Search = sinon.stub(),
-      LineageModelGenerator = { contact: sinon.stub() };
+      LineageModelGenerator = { contact: sinon.stub() },
+      updateOnChange;
 
   beforeEach(function() {
     module('inboxApp');
@@ -441,6 +442,7 @@ describe('Enketo service', function() {
       dbGetAttachment.returns(Promise.resolve('<form/>'));
       UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
       UserSettings.returns(Promise.resolve({ name: 'Jim' }));
+
       return service.save('V', form).then(function(actual) {
         actual = actual[0];
 
@@ -479,7 +481,8 @@ describe('Enketo service', function() {
       dbBulkDocs.returns(Promise.resolve([ { ok: true, id: '(generated-in-service)', rev: '1-abc' } ]));
       dbGetAttachment.returns(Promise.resolve('<form/>'));
       UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
-      return service.save('V', form).then(function(actual) {
+      updateOnChange = sinon.stub();
+      return service.save('V', form, null, null, updateOnChange).then(function(actual) {
         actual = actual[0];
 
         chai.expect(form.validate.callCount).to.equal(1);
@@ -496,6 +499,8 @@ describe('Enketo service', function() {
         chai.expect(actual.contact._id).to.equal('123');
         chai.expect(actual.from).to.equal('555');
         chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        chai.expect(updateOnChange.callCount).to.equal(1);
+        chai.expect(updateOnChange.args[0]).to.deep.equal([actual._id]);
       });
     });
 
@@ -515,7 +520,8 @@ describe('Enketo service', function() {
       }));
       dbBulkDocs.returns(Promise.resolve([ { ok: true, id: '6', rev: '2-abc' } ]));
       dbGetAttachment.returns(Promise.resolve('<form/>'));
-      return service.save('V', form, null, '6').then(function(actual) {
+      updateOnChange = sinon.stub();
+      return service.save('V', form, null, '6', updateOnChange).then(function(actual) {
         actual = actual[0];
 
         chai.expect(form.validate.callCount).to.equal(1);
@@ -536,6 +542,8 @@ describe('Enketo service', function() {
         chai.expect(AddAttachment.args[0][1]).to.equal('content');
         chai.expect(AddAttachment.args[0][2]).to.equal(content);
         chai.expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        chai.expect(updateOnChange.callCount).to.equal(1);
+        chai.expect(updateOnChange.args[0]).to.deep.equal([actual._id]);
       });
     });
 
@@ -566,7 +574,9 @@ describe('Enketo service', function() {
       });
       dbGetAttachment.returns(Promise.resolve('<form/>'));
       UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
-      return service.save('V', form).then(function(actual) {
+      updateOnChange = sinon.stub();
+
+      return service.save('V', form, null, null, updateOnChange).then(function(actual) {
         const endTime = Date.now() + 1;
 
         chai.expect(form.validate.callCount).to.equal(1);
@@ -605,6 +615,9 @@ describe('Enketo service', function() {
         chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
 
         chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+
+        chai.expect(updateOnChange.callCount).to.equal(1);
+        chai.expect(updateOnChange.args[0]).to.deep.equal([actualReport._id]);
       });
     });
 

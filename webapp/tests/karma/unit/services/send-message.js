@@ -6,7 +6,8 @@ describe('SendMessage service', function() {
       Settings,
       allDocs,
       post,
-      query;
+      query,
+      updateOnChange;
 
   beforeEach(function () {
     allDocs = sinon.stub();
@@ -77,8 +78,9 @@ describe('SendMessage service', function() {
     };
 
     allDocs.returns(mockAllDocs(recipient));
+    updateOnChange = sinon.stub();
 
-    service(select2Wrap(recipient), 'hello')
+    service(select2Wrap(recipient), 'hello', updateOnChange)
       .then(function() {
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
@@ -88,6 +90,8 @@ describe('SendMessage service', function() {
           to: '+5552',
           contact: { _id: recipient._id }
         });
+        chai.expect(updateOnChange.callCount).to.equal(1);
+        chai.expect(updateOnChange.args[0]).to.deep.equal([post.args[0][0]._id]);
         done();
       })
       .catch(done);
@@ -173,8 +177,9 @@ describe('SendMessage service', function() {
     ];
 
     allDocs.returns(mockAllDocs(recipients));
+    updateOnChange = sinon.stub();
 
-    service(select2Wrap(recipients), 'hello')
+    service(select2Wrap(recipients), 'hello', updateOnChange)
       .then(function() {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].tasks.length).to.equal(2);
@@ -192,6 +197,8 @@ describe('SendMessage service', function() {
         });
         chai.expect    (post.args[0][0].tasks[0].messages[0].uuid)
           .to.not.equal(post.args[0][0].tasks[1].messages[0].uuid);
+        chai.expect(updateOnChange.callCount).to.equal(1);
+        chai.expect(updateOnChange.args[0]).to.deep.equal([post.args[0][0]._id]);
         done();
       }).catch(done);
   });

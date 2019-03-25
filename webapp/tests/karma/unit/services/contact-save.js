@@ -7,6 +7,7 @@ describe('ContactSave service', () => {
   let get;
   let EnketoTranslation;
   let ExtractLineage;
+  let updateOnChange;
 
   beforeEach(() => {
     EnketoTranslation = {
@@ -46,9 +47,10 @@ describe('ContactSave service', () => {
     bulkDocs.returns(Promise.resolve());
     get.returns(Promise.resolve({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } }));
     ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
+    updateOnChange = sinon.stub();
 
     // when
-    return service(schema, form, docId, type)
+    return service(schema, form, docId, type, updateOnChange)
       .then(() => {
 
         // then
@@ -66,6 +68,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
+        assert.equal(updateOnChange.callCount, 1);
+        assert.deepEqual(updateOnChange.args[0], ['main1']);
       });
   });
 
@@ -83,9 +87,10 @@ describe('ContactSave service', () => {
     bulkDocs.returns(Promise.resolve());
     get.returns(Promise.resolve({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } }));
     ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
+    updateOnChange = sinon.stub();
 
     // when
-    return service(schema, form, docId, type)
+    return service(schema, form, docId, type, updateOnChange)
       .then(() => {
 
         // then
@@ -103,6 +108,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
+        assert.equal(updateOnChange.callCount, 1);
+        assert.deepEqual(updateOnChange.args[0], ['main1']);
       });
   });
 
@@ -130,9 +137,10 @@ describe('ContactSave service', () => {
     });
 
     bulkDocs.returns(Promise.resolve());
+    updateOnChange = sinon.stub();
 
     // when
-    return service(schema, form, docId, type)
+    return service(schema, form, docId, type, updateOnChange)
       .then(() => {
 
         // then
@@ -151,6 +159,9 @@ describe('ContactSave service', () => {
         assert.equal(savedDocs[2].parent.extracted, true);
 
         assert.equal(ExtractLineage.callCount, 3);
+
+        assert.equal(updateOnChange.callCount, 1);
+        assert.deepEqual(updateOnChange.args[0], ['main1']);
       });
   });
 
