@@ -115,6 +115,7 @@ module.exports = {
       browser.refresh();
     } else {
       element(by.css('.reset-filter')).click();
+      helper.waitForAngularComplete();
     }
   },
 
