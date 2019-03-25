@@ -95,10 +95,10 @@ angular.module('inboxServices').factory('Actions',
         dispatch(createSingleValueAction(actionTypes.SET_LOADING_SELECTED_REPORTS, 'loadingSelectedReports', loading));
       }
 
-      function loadSelectedChildren() {
+      function loadSelectedChildren(options) {
         return dispatch(function(dispatch, getState) {
           const selected = getState().selected;
-          return ContactViewModelGenerator.loadChildren(selected).then(children => {
+          return ContactViewModelGenerator.loadChildren(selected, options).then(children => {
             dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_CHILDREN, 'children', children));
           });
         });
