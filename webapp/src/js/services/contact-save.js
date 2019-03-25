@@ -146,7 +146,7 @@ angular.module('inboxServices').service('ContactSave',
       });
     }
 
-    return function(schema, form, docId, type, setRefreshList) {
+    return function(schema, form, docId, type, updateOnChange) {
       return $q.resolve()
         .then(function() {
           if(docId) {
@@ -166,9 +166,9 @@ angular.module('inboxServices').service('ContactSave',
           return prepareSubmittedDocsForSave(schema, original, submitted);
         })
         .then(function(preparedDocs) {
-          if (setRefreshList) {
+          if (updateOnChange) {
             const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-            setRefreshList(primaryDoc && primaryDoc._id || preparedDocs.preparedDocs[0]._id);
+            updateOnChange(primaryDoc && primaryDoc._id || preparedDocs.preparedDocs[0]._id);
           }
           return DB().bulkDocs(preparedDocs.preparedDocs)
             .then(function(bulkDocsResult) {

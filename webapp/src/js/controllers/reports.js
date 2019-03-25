@@ -35,7 +35,7 @@ angular
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selectMode: Selectors.getSelectMode(state),
         selected: Selectors.getSelected(state),
-        refreshList: state.refreshList
+        updateOnChange: state.updateOnChange
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -45,12 +45,13 @@ angular
         removeSelected: actions.removeSelected,
         setSelected: actions.setSelected,
         setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty,
-        setRefreshList: actions.setRefreshList
+        setUpdateOnChange: actions.setUpdateOnChange
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
+    const isOnlineOnly = Session.isOnlineOnly();
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -226,7 +227,7 @@ angular
     };
 
     var query = function(opts) {
-      ctrl.setRefreshList(false);
+      ctrl.setUpdateOnChange(false);
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
@@ -353,7 +354,7 @@ angular
 
         var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedDocProperty({ verified: verified });
-        ctrl.setRefreshList(doc._id);
+        ctrl.setUpdateOnChange(doc._id);
 
         DB()
           .get(ctrl.selected[0].doc._id)
@@ -510,11 +511,9 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    const refreshList = change => (
-      ctrl.refreshList &&
-      (ctrl.refreshList === true || ctrl.refreshList === change.id) &&
-      Session.isOnlineOnly()
-    );
+    const shouldUpdateOnChange = change => isOnlineOnly &&
+                                           ctrl.updateOnChange &&
+                                           (ctrl.updateOnChange === true || ctrl.updateOnChange === change.id);
 
     var changeListener = Changes({
       key: 'reports-list',
@@ -528,7 +527,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc && change.doc.form || change.deleted || refreshList(change);
+        return change.doc && change.doc.form || change.deleted || shouldUpdateOnChange(change);
       },
     });
 

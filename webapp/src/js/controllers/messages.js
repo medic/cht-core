@@ -25,14 +25,15 @@ angular
     var mapStateToTarget = function(state) {
       return {
         selected: Selectors.getSelected(state),
-        refreshList: state.refreshList
+        updateOnChange: state.updateOnChange
+
       };
     };
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
         setSelected: actions.setSelected,
-        setRefreshList: actions.setRefreshList
+        setUpdateOnChange: actions.setUpdateOnChange
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -61,7 +62,7 @@ angular
     };
 
     var updateConversations = function(options) {
-      ctrl.setRefreshList(false);
+      ctrl.setUpdateOnChange(false);
       options = options || {};
       if (!options.changes) {
         $scope.loading = true;
@@ -115,11 +116,9 @@ angular
       ctrl.setSelected(null);
     });
 
-    const refreshList = change => (
-      ctrl.refreshList &&
-      (ctrl.refreshList === true || ctrl.refreshList === change.id) &&
-      Session.isOnlineOnly()
-    );
+    const shouldUpdateOnChange = change => isOnlineOnly &&
+                                           ctrl.updateOnChange &&
+                                           (ctrl.updateOnChange === true || ctrl.updateOnChange === change.id);
 
     var changeListener = Changes({
       key: 'messages-list',
@@ -134,7 +133,7 @@ angular
           (change.doc && change.doc.kujua_message) ||
           (change.doc && change.doc.sms_message) ||
           change.deleted ||
-          refreshList(change)
+          shouldUpdateOnChange(change)
         );
       },
     });

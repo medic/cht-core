@@ -113,8 +113,8 @@ angular.module('inboxServices').factory('Actions',
         });
       }
 
-      function setRefreshList (refreshList) {
-        dispatch(createSingleValueAction('SET_REFRESH_LIST', 'refreshList', refreshList));
+      function setUpdateOnChange(value) {
+        dispatch(createSingleValueAction('SET_UPDATE_ON_CHANGE', 'updateOnChange', value));
       }
 
       return {
@@ -141,7 +141,7 @@ angular.module('inboxServices').factory('Actions',
         updateSelectedItem,
         setFirstSelectedDocProperty,
         setFirstSelectedFormattedProperty,
-        setRefreshList
+        setUpdateOnChange
       };
     };
   }

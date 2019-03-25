@@ -151,7 +151,7 @@ angular
       return task;
     };
 
-    return function(recipients, message, setRefreshList) {
+    return function(recipients, message, updateOnChange) {
       if (!_.isArray(recipients)) {
         recipients = [recipients];
       }
@@ -165,8 +165,8 @@ angular
           doc.tasks = explodedRecipients.map(function(recipient) {
             return createTask(settings, recipient, message, user);
           });
-          if (setRefreshList) {
-            setRefreshList(doc._id);
+          if (updateOnChange) {
+            updateOnChange(doc._id);
           }
           return doc;
         })

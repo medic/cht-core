@@ -144,7 +144,7 @@ describe('Contacts controller', () => {
     const stubbedActions = {
       loadSelectedChildren: sinon.stub().returns(Promise.resolve()),
       loadSelectedReports: sinon.stub().returns(Promise.resolve()),
-      setRefreshList: sinon.stub()
+      setUpdateOnChange: sinon.stub()
     };
     getSelected = () => {
       return Selectors.getSelected($ngRedux.getState());
@@ -181,7 +181,8 @@ describe('Contacts controller', () => {
           isAdmin: () => {
             return isAdmin;
           },
-          isDbAdmin: isDbAdmin
+          isDbAdmin: isDbAdmin,
+          isOnlineOnly: () => isAdmin
         },
         Settings: settings,
         Simprints: { enabled: () => false },

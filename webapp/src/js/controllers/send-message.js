@@ -20,11 +20,11 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     'use strict';
 
     const ctrl = this;
-    const mapStateToTarget = state => ({ refreshList: state.refreshList });
+    const mapStateToTarget = state => ({ updateOnChange: state.updateOnChange });
     const mapDispatchToTarget = function(dispatch) {
       const actions = Actions(dispatch);
       return {
-        setRefreshList: actions.setRefreshList
+        setUpdateOnChange: actions.setUpdateOnChange
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -180,7 +180,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
           ])
             .then(function() {
               if (!$scope.error.message && !$scope.error.phone) {
-                return SendMessage(recipients, message, ctrl.setRefreshList).then(function() {
+                return SendMessage(recipients, message, ctrl.setUpdateOnChange).then(function() {
                   $uibModalInstance.close();
                 });
               }

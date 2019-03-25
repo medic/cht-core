@@ -14,7 +14,8 @@
     loadingSelectedReports: false,
     selectMode: false,
     selected: null,
-    refreshList: false
+    refreshList: false,
+    updateOnChange: false
   };
 
   angular.module('inboxServices').constant('Reducers', function(state, action) {
@@ -100,8 +101,8 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
-      case 'SET_REFRESH_LIST':
-        return Object.assign({}, state, { refreshList: action.payload.refreshList });
+      case 'SET_UPDATE_ON_CHANGE':
+        return Object.assign({}, state, { updateOnChange: action.payload.updateOnChange });
       default:
         return state;
     }
