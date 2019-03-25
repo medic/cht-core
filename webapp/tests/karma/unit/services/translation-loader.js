@@ -116,4 +116,38 @@ describe('TranslationLoader service', function() {
       chai.expect(DBGet.args[0][0]).to.equal('messages-en');
     });
   });
+
+  describe('test method', () => {
+    it('should return false when not matching', () => {
+      chai.expect(service.test()).to.equal(undefined);
+      chai.expect(service.test([])).to.equal(false);
+      chai.expect(service.test({})).to.equal(false);
+      chai.expect(service.test(100)).to.equal(false);
+      chai.expect(service.test('04aa1bfa-f87d-467e-bf46-51eeb367370b')).to.equal(false);
+      chai.expect(service.test('messages-')).to.equal(false);
+    });
+
+    it('should return true when matching', () => {
+      chai.expect(service.test('messages-en')).to.equal(true);
+      chai.expect(service.test('messages-fr')).to.equal(true);
+      chai.expect(service.test('messages-any')).to.equal(true);
+    });
+  });
+
+  describe('getCode', () => {
+    it('should return false when not matching', () => {
+      chai.expect(service.getCode()).to.equal(false);
+      chai.expect(service.getCode([])).to.equal(null);
+      chai.expect(service.getCode({})).to.equal(null);
+      chai.expect(service.getCode(100)).to.equal(null);
+      chai.expect(service.getCode('04aa1bfa-f87d-467e-bf46-51eeb367370b')).to.equal(null);
+      chai.expect(service.getCode('messages-')).to.equal(null);
+    });
+
+    it('should return code when matching', () => {
+      chai.expect(service.getCode('messages-en')).to.equal('en');
+      chai.expect(service.getCode('messages-fr')).to.equal('fr');
+      chai.expect(service.getCode('messages-any')).to.equal('any');
+    });
+  });
 });

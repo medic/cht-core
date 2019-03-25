@@ -47,6 +47,7 @@ var _ = require('underscore'),
     Telemetry,
     Tour,
     TranslateFrom,
+    TranslationLoader,
     UnreadRecords,
     UpdateServiceWorker,
     UpdateSettings,
@@ -730,13 +731,8 @@ var _ = require('underscore'),
 
     Changes({
       key: 'inbox-translations',
-      filter: function(change) {
-
-        return change.doc && change.doc.type === 'translations';
-      },
-      callback: function(change) {
-        $translate.refresh(change.doc.code);
-      },
+      filter: change => TranslationLoader.test(change.id),
+      callback: change => $translate.refresh(TranslationLoader.getCode(change.id)),
     });
 
     Changes({
