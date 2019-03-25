@@ -53,7 +53,6 @@ describe('ReportsCtrl controller', () => {
       reports: {
         initialised: () => true,
         setSelected: sinon.stub(),
-        containsDeleteStub: sinon.stub(),
         remove: sinon.stub(),
         count: sinon.stub(),
         set: sinon.stub()
@@ -285,7 +284,6 @@ describe('ReportsCtrl controller', () => {
       return Promise.resolve().then(() => {
         const change = { doc: { form: 'something' } };
         chai.expect(!!changesFilter(change)).to.equal(true);
-        chai.expect(LiveList.reports.containsDeleteStub.callCount).to.equal(0);
       });
     });
 
@@ -300,7 +298,6 @@ describe('ReportsCtrl controller', () => {
 
     it('filters everything else', () => {
       createController();
-      LiveList.reports.containsDeleteStub.returns(false);
 
       return Promise.resolve().then(() => {
         chai.expect(!!changesFilter({ doc: { some: 'thing' } })).to.equal(false);

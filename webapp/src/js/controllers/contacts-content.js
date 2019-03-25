@@ -162,8 +162,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
-        return change.doc &&
-               ContactChangeFilter.matchContact(change, ctrl.selected) ||
+        return ContactChangeFilter.matchContact(change, ctrl.selected) ||
                ContactChangeFilter.isRelevantContact(change, ctrl.selected) ||
                ContactChangeFilter.isRelevantReport(change, ctrl.selected);
       },

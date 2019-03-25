@@ -481,13 +481,11 @@ var _ = require('underscore'),
       key: 'contacts-list',
       callback: function(change) {
         const limit = liveList.count();
-        if (change.deleted &&
-          (change.doc && change.doc.type !== 'data_record') ||
-          (!change.doc && liveList.contains(change.id))) {
-          liveList.remove(change.doc || change.id);
+        if (change.deleted) {
+          liveList.remove(change.id);
         }
 
-        if (change.doc) {
+        if (change.doc && !change.deleted) {
           liveList.invalidateCache(change.doc._id);
 
           // Invalidate the contact for changing reports with visited_contact_uuid
@@ -510,9 +508,8 @@ var _ = require('underscore'),
       filter: function(change) {
         return (
           (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
-          liveList.containsDeleteStub(change.doc) ||
+          (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc) ||
-          change.deleted ||
           shouldUpdateOnChange(change)
         );
       },

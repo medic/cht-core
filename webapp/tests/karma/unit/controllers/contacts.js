@@ -36,7 +36,9 @@ describe('Contacts controller', () => {
     liveListInit,
     liveListReset,
     actions,
-    getSelected;
+    getSelected,
+    dispatch,
+    getState;
 
   beforeEach(() => {
     module('inboxApp');
@@ -71,7 +73,6 @@ describe('Contacts controller', () => {
           return false;
         },
         contains: deadListContains,
-        containsDeleteStub: sinon.stub(),
         setScope: sinon.stub()
       };
     };
@@ -192,6 +193,8 @@ describe('Contacts controller', () => {
         XmlForms: xmlForms,
       });
     };
+    dispatch = Actions($ngRedux.dispatch);
+    getState = $ngRedux.getState;
   }));
 
   it('sets title', () => {
@@ -767,7 +770,6 @@ describe('Contacts controller', () => {
             changesFilter({ doc: { type: 'district_hospital' } }),
             true
           );
-          assert.equal(contactsLiveList.containsDeleteStub.callCount, 0);
         });
     });
 
@@ -778,7 +780,6 @@ describe('Contacts controller', () => {
           assert.isNotOk(changesFilter({ doc: {} }));
           assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
           assert.isNotOk(changesFilter({ doc: { type: '' } }));
-          assert.equal(contactsLiveList.containsDeleteStub.callCount, 3);
         });
     });
 
@@ -819,12 +820,58 @@ describe('Contacts controller', () => {
         });
     });
 
-    it('filtering returns true for contained tombstones', () => {
-      contactsLiveList.containsDeleteStub.returns(true);
+    it('filtering returns true for contained deletions', () => {
+      isAdmin = false;
+      deadListContains.returns(true);
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(changesFilter({ doc: {} }), true);
+          assert.equal(changesFilter({ deleted: true, id: 'some_id' }), true);
+          assert.equal(deadListContains.callCount, 1);
+          assert.deepEqual(deadListContains.args[0], ['some_id']);
+        });
+    });
+
+    it('filtering returns false for not contained deletions', () => {
+      deadListContains.returns(false);
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(changesFilter({ deleted: true, id: 'some_id' }), false);
+          assert.equal(deadListContains.callCount, 1);
+          assert.deepEqual(deadListContains.args[0], ['some_id']);
+        });
+    });
+
+    it('filtering returns true for self triggered changes for admins', () => {
+      isAdmin = true;
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          dispatch.setUpdateOnChange('some_id');
+          assert.equal(changesFilter({ id: 'some_id' }), true);
+        });
+    });
+
+    it('filtering returns false for not self triggered changes for admins', () => {
+      isAdmin = true;
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          dispatch.setUpdateOnChange(false);
+          assert.equal(changesFilter({ id: 'some_id' }), false);
+        });
+    });
+
+    it('clears updateOnChange when searching', () => {
+      searchResults = [{ _id: 'search-result' }, { _id: district._id }];
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          dispatch.setUpdateOnChange('some_other_id');
+          changesCallback({ id: 'some_id' });
+          assert.equal(searchService.args[1][2].limit, 2);
+          assert.equal(getState().updateOnChange, false);
         });
     });
   });
@@ -1027,7 +1074,7 @@ describe('Contacts controller', () => {
       const deletedReport = {
         type: 'data_record',
         form: 'home_visit',
-        fields: { visited_contact_uuid: 'deleted' },
+        fields: { visited_contact_uuid: 'something' },
         _deleted: true,
       };
       const irrelevantReports = [
@@ -1043,6 +1090,12 @@ describe('Contacts controller', () => {
           form: 'home_visit',
           fields: { visited_contact_uuid: 'something' },
         },
+        {
+          type: 'data_record',
+          form: 'home_visit',
+          fields: { visited_contact_uuid: 'irrelevant' },
+          _deleted: true
+        }
       ];
 
       deadListContains.returns(false);
@@ -1056,6 +1109,7 @@ describe('Contacts controller', () => {
           assert.equal(!!changesFilter({ doc: irrelevantReports[1], id: 'irrelevant2' }), false);
           assert.equal(!!changesFilter({ doc: irrelevantReports[2], id: 'irrelevant3' }), false);
           assert.equal(!!changesFilter({ doc: irrelevantReports[3], id: 'irrelevant4' }), false);
+          assert.equal(!!changesFilter({ doc: irrelevantReports[4], id: 'irrelevant5' }), false);
           assert.equal(!!changesFilter({ doc: deletedReport, deleted: true }), true);
         });
     });
