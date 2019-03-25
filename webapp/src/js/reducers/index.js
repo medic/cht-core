@@ -103,13 +103,13 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
-      case 'SET_LOADING_CONTENT':
+      case actionTypes.SET_LOADING_CONTENT:
         return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
-      case 'SET_LOADING_SUB_ACTION_BAR':
+      case actionTypes.SET_LOADING_SUB_ACTION_BAR:
         return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
-      case 'SET_SHOW_ACTION_BAR':
+      case actionTypes.SET_SHOW_ACTION_BAR:
         return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
-      case 'SET_SHOW_CONTENT':
+      case actionTypes.SET_SHOW_CONTENT:
         return Object.assign({}, state, { showContent: action.payload.showContent });
       default:
         return state;

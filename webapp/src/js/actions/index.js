@@ -117,15 +117,15 @@ angular.module('inboxServices').factory('Actions',
       }
 
       function setLoadingContent(loading) {
-        dispatch(createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent', loading));
+        dispatch(createSingleValueAction(actionTypes.SET_LOADING_CONTENT, 'loadingContent', loading));
       }
 
       function setLoadingSubActionBar(loading) {
-        dispatch(createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loadingSubActionBar', loading));
+        dispatch(createSingleValueAction(actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading));
       }
 
       function setShowActionBar(showActionBar) {
-        dispatch(createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar', showActionBar));
+        dispatch(createSingleValueAction(actionTypes.SET_SHOW_ACTION_BAR, 'showActionBar', showActionBar));
       }
 
       function setShowContent(showContent) {
@@ -135,7 +135,7 @@ angular.module('inboxServices').factory('Actions',
             // when in select mode we never show the RHS on mobile
             return;
           }
-          dispatch(createSingleValueAction('SET_SHOW_CONTENT', 'showContent', showContent));
+          dispatch(createSingleValueAction(actionTypes.SET_SHOW_CONTENT, 'showContent', showContent));
         });
       }
 
