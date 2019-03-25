@@ -34,12 +34,12 @@ angular.module('inboxServices').factory('Changes',
       medic: {
         lastSeq: null,
         callbacks: {},
-        liveSync: true
+        watchIncludeDocs: true
       },
       meta: {
         lastSeq: null,
         callbacks: {},
-        liveSync: true
+        watchIncludeDocs: true
       }
     };
 
@@ -69,7 +69,7 @@ angular.module('inboxServices').factory('Changes',
           live: true,
           since: db.lastSeq,
           timeout: false,
-          include_docs: db.liveSync,
+          include_docs: db.watchIncludeDocs,
           return_docs: false,
         })
         .on('change', function(change) {
@@ -96,7 +96,7 @@ angular.module('inboxServices').factory('Changes',
         .then(function(results) {
           dbs.medic.lastSeq = results[0].update_seq;
           dbs.meta.lastSeq = results[1].update_seq;
-          dbs.medic.liveSync = !Session.isOnlineOnly();
+          dbs.medic.watchIncludeDocs = !Session.isOnlineOnly();
           watchChanges(false);
           watchChanges(true);
         })
