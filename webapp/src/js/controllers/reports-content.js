@@ -117,7 +117,7 @@ var _ = require('underscore');
             });
           } else {
             var selected = ctrl.selected;
-            $scope.refreshReportSilently(change.doc || change.id)
+            $scope.refreshReportSilently(change.id)
               .then(function() {
                 if (change.doc) {
                   if (selected[0].formatted.verified !== change.doc.verified ||

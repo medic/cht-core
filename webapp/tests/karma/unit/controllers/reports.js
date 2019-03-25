@@ -17,7 +17,10 @@ describe('ReportsCtrl controller', () => {
       changesFilter,
       searchFilters,
       liveListInit,
-      liveListReset;
+      liveListReset,
+      dispatch,
+      getState,
+      isOnlineOnly;
 
   beforeEach(() => {
     module('inboxApp');
@@ -104,12 +107,15 @@ describe('ReportsCtrl controller', () => {
         'ReportViewModelGenerator': {},
         'Search': Search,
         'SearchFilters': searchFilters,
+        'Session': { isOnlineOnly: () => isOnlineOnly },
         'Settings': KarmaUtils.nullPromise(),
         'Tour': () => {},
         'UpdateFacility': {},
         'Verified': {}
       });
     };
+    dispatch = Actions($ngRedux.dispatch);
+    getState = $ngRedux.getState;
   }));
 
   it('set up controller', () => {
@@ -304,6 +310,33 @@ describe('ReportsCtrl controller', () => {
       });
     });
 
+    it('filters self made changes', () => {
+      isOnlineOnly = true;
+      createController();
+      return Promise.resolve().then(() => {
+        dispatch.setUpdateOnChange('some_id');
+        chai.expect(changesFilter({ id: 'some_id' })).to.equal(true);
+      });
+    });
+
+    it('filters non self made changes', () => {
+      isOnlineOnly = true;
+      createController();
+      return Promise.resolve().then(() => {
+        dispatch.setUpdateOnChange('some_id');
+        chai.expect(changesFilter({ id: 'some_other_id' })).to.equal(false);
+      });
+    });
+
+    it('filters stub changes when not admin', () => {
+      isOnlineOnly = false;
+      createController();
+      return Promise.resolve().then(() => {
+        dispatch.setUpdateOnChange('some_id');
+        chai.expect(changesFilter({ id: 'some_id' })).to.equal(false);
+      });
+    });
+
     it('removes deleted reports from the list', () => {
       createController();
 
@@ -315,13 +348,15 @@ describe('ReportsCtrl controller', () => {
       });
     });
 
-    it('refreshes list', () => {
+    it('refreshes list and clears updateOnChange', () => {
       createController();
+      dispatch.setUpdateOnChange('some_id');
 
       return Promise.resolve().then(() => {
         changesCallback({ doc: { _id: 'id' } });
         chai.expect(LiveList.reports.remove.callCount).to.equal(0);
         chai.expect(Search.callCount).to.equal(1);
+        chai.expect(getState().updateOnChange).to.equal(false);
       });
     });
   });
