@@ -27,10 +27,12 @@ require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
-var uiRouter = require('@uirouter/angularjs').default;
+const uiRouter = require('@uirouter/angularjs').default;
 
 require('ng-redux');
-var reduxThunk = require('redux-thunk').default;
+const reduxThunk = require('redux-thunk').default;
+const cloneDeep = require('lodash/cloneDeep');
+const lineage = require('@medic/lineage')();
 
 require('moment');
 require('moment/locale/bm');
@@ -50,30 +52,45 @@ require('./filters');
 require('./directives');
 require('./enketo/main');
 
-var bootstrapper = require('./bootstrapper');
-var router = require('./router');
-var _ = require('underscore');
+const bootstrapper = require('./bootstrapper');
+const router = require('./router');
+const _ = require('underscore');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
 };
-var reduxLoggerConfig = {
+const makeLoggable = object => {
+  const recursiveProperties = {
+    'selected': ['doc', 'formatted']
+  };
+
+  Object.keys(recursiveProperties).forEach(key => {
+    recursiveProperties[key].forEach(property => {
+      if (object[key] && object[key][property]) {
+        lineage.minify(object[key][property]);
+      }
+    });
+  });
+};
+const reduxLoggerConfig = {
   actionTransformer: function(action) {
-    var updatedAction = {};
+    const loggableAction = cloneDeep(action);
+    makeLoggable(loggableAction.payload);
     try {
-      JSON.stringify(action);
+      JSON.stringify(loggableAction);
     } catch(error) {
-      updatedAction.payload = 'Payload is not serializable';
+      loggableAction.payload = 'Payload is not serializable';
     }
-    return Object.assign({}, action, updatedAction);
+    return loggableAction;
   },
   stateTransformer: function(state) {
-    var updatedState = {};
+    let loggableState = cloneDeep(state);
+    makeLoggable(loggableState);
     try {
-      JSON.stringify(state.selected);
+      JSON.stringify(loggableState);
     } catch(error) {
-      updatedState.selected = 'Selected is not serializable';
+      loggableState = 'State is not serializable';
     }
-    return Object.assign({}, state, updatedState);
+    return loggableState;
   },
   collapsed: true
 };
