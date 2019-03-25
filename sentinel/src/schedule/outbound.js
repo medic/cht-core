@@ -129,6 +129,9 @@ const send = (payload, conf) => {
           };
         });
     }
+
+    // Misconfigured auth type
+    return Promise.reject(new Error(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`));
   };
 
   return auth().then(() => request(sendOptions));
@@ -191,6 +194,7 @@ const execute = () => {
 module.exports = {
   execute: cb => module.exports._execute().then(() => cb()).catch(cb),
   _execute: execute,
+  _queued: queued,
   _collect: collect,
   _map: map,
   _send: send

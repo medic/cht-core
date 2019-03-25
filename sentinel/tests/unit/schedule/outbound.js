@@ -8,7 +8,44 @@ const rewire = require('rewire');
 const outbound = rewire('../../../src/schedule/outbound');
 
 describe('outbound', () => {
-  describe('outbound mapping', () => {
+  beforeEach(() => sinon.restore());
+
+  describe('queued', () => {
+    it('gets all queues and associated docs', () => {
+      const queue = {
+        _id: 'task:outbound:some_doc_id',
+        doc_id: 'some_doc_id',
+        queue: ['some', 'queue']
+      };
+      const doc = {
+        _id: 'some_doc_id',
+        some: 'data'
+      };
+
+      const dbSentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
+      const dbMedicAllDocs = sinon.stub(db.medic, 'allDocs');
+
+      dbSentinelAllDocs.resolves({
+        rows: [{
+          doc: queue
+        }]
+      });
+
+      dbMedicAllDocs.resolves({
+        rows: [{
+          doc: doc
+        }]
+      });
+
+      return outbound._queued()
+        .then(results => {
+          assert.deepEqual(results, [
+            [queue, doc]
+          ]);
+        });
+    });
+  });
+  describe('mapping', () => {
     it('supports simple dest => src mapping', () => {
       const doc = {
         _id: 'test-doc',
@@ -69,7 +106,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.throws(() => outbound._map(doc, conf), 'no source');
+      assert.throws(() => outbound._map(doc, conf), 'Mapping error for test-config/foo');
     });
     it('supports optional path mappings', () => {
       const doc = {
@@ -118,7 +155,7 @@ describe('outbound', () => {
       });
     });
   });
-  describe('outbound push', () => {
+  describe('push', () => {
     let request;
     beforeEach(() => {
       request = sinon.stub();
@@ -196,7 +233,7 @@ describe('outbound', () => {
         name: 'test-config',
         destination: {
           auth: {
-            type: 'Muso',
+            type: 'muso-sih',
             username: 'admin',
             password: 'pass',
             path: '/login'
@@ -210,8 +247,7 @@ describe('outbound', () => {
         statut: 200,
         message: 'Requête traitée avec succès.',
         data: {
-          username_token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp',
-          expiration_token: 1552323059
+          username_token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
         }
       });
       request.onCall(1).resolves();
@@ -240,7 +276,7 @@ describe('outbound', () => {
         name: 'test-config',
         destination: {
           auth: {
-            type: 'Muso',
+            type: 'muso-sih',
             username: 'admin',
             password: 'wrong pass',
             path: '/login'
@@ -266,7 +302,7 @@ describe('outbound', () => {
         });
     });
   });
-  describe('collect, which takes a document and collects pushes to try', () => {
+  describe('collect, which takes a queue for a doc and collects pushes to try', () => {
     it('should return empty for no valid pushes', () => {
       const config = [{
         name: 'test-push-1'
@@ -275,13 +311,13 @@ describe('outbound', () => {
         name: 'test-push-2'
       }];
 
-      const doc = {
-        _id: 'test-doc',
-        outbound_queue: []
+      const queue = {
+        _id: 'task:outbound:some_doc_id',
+        queue: []
       };
 
       assert.deepEqual(
-        outbound._collect(config, doc),
+        outbound._collect(config, queue),
         []
       );
     });
@@ -294,35 +330,32 @@ describe('outbound', () => {
         name: 'test-push-2'
       }];
 
-      const doc = {
-        _id: 'test-doc',
-        outbound_queue: ['test-push-1']
+      const queue = {
+        _id: 'task:outbound:some_doc_id',
+        queue: ['test-push-1']
       };
 
       assert.deepEqual(
-        outbound._collect(config, doc),
+        outbound._collect(config, queue),
         [{name: 'test-push-1', some: 'more config'}]
       );
     });
   });
   describe('coordination', () => {
     let configGet,
-        dbMedicQuery,
-        dbMedicBulkDocs,
+        dbSentinelAllDocs,
+        dbMedicAllDocs,
+        dbSentinelBulkDocs,
         map, send, collect;
 
     beforeEach(() => {
       configGet = sinon.stub(config, 'get');
-      dbMedicQuery = sinon.stub(db.medic, 'query');
-      dbMedicBulkDocs = sinon.stub(db.medic, 'bulkDocs');
+      dbSentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
+      dbMedicAllDocs = sinon.stub(db.medic, 'allDocs');
+      dbSentinelBulkDocs = sinon.stub(db.sentinel, 'bulkDocs');
       map = sinon.stub(outbound, '_map');
       send = sinon.stub(outbound, '_send');
       collect = sinon.stub(outbound, '_collect');
-    });
-
-
-    afterEach(() => {
-      sinon.restore();
     });
 
     it('should find docs with outbound queues; collect, map and send them; removing those that are successful', () => {
@@ -330,30 +363,42 @@ describe('outbound', () => {
         name: 'test-push-1'
       };
 
+      const queue1 = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+      const queue2 = {
+        _id: 'task:outbound:test-doc-2',
+        doc_id: 'test-doc-2',
+        queue: ['test-push-2']
+      };
+
       const doc1 = {
-        _id: 'test-doc-1', outbound_queue: ['test-push-1']
+        _id: 'test-doc-1', some: 'data-1'
       };
       const doc2 = {
-        _id: 'test-doc-2', outbound_queue: ['test-push-1']
+        _id: 'test-doc-2', some: 'data-2'
       };
 
       configGet.returns([conf]);
-      dbMedicQuery.resolves({rows: [{doc: doc1}, {doc: doc2}]});
+      dbSentinelAllDocs.resolves({rows: [{doc: queue1}, {doc: queue2}]});
+      dbMedicAllDocs.resolves({rows: [{doc: doc1}, {doc: doc2}]});
       collect.returns([conf]);
       map.returns({map: 'called'});
       send.onCall(0).resolves(); // test-doc-1's push succeeds
       send.onCall(1).rejects(); // but test-doc-2's push fails, so...
-      dbMedicBulkDocs.resolves();
+      dbSentinelBulkDocs.resolves();
 
       return outbound._execute()
         .then(() => {
           assert.equal(configGet.callCount, 1);
-          assert.equal(dbMedicQuery.callCount, 1);
-          assert.equal(dbMedicBulkDocs.callCount, 1);
+          assert.equal(dbMedicAllDocs.callCount, 1);
+          assert.equal(dbSentinelAllDocs.callCount, 1);
+          assert.equal(dbSentinelBulkDocs.callCount, 1);
           // ... only the first doc has changed...
-          assert.equal(dbMedicBulkDocs.args[0][0][0]._id, 'test-doc-1');
-          // ... to have the queue item removed.
-          assert.deepEqual(dbMedicBulkDocs.args[0][0][0].outbound_queue, []);
+          assert.equal(dbSentinelBulkDocs.args[0][0][0]._id, 'task:outbound:test-doc-1');
+          assert.equal(dbSentinelBulkDocs.args[0][0][0]._deleted, true);
           // (test-doc-2 has not been touched and would be tried again next time)
         });
     });
