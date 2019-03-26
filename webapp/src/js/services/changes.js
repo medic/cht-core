@@ -91,7 +91,7 @@ angular.module('inboxServices').factory('Changes',
       watches = [];
       return $q.all([
         DB().info(),
-        DB({ meta: true }).info(),
+        DB({ meta: true }).info()
       ])
         .then(function(results) {
           dbs.medic.lastSeq = results[0].update_seq;
