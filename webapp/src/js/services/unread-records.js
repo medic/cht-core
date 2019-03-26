@@ -67,8 +67,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       });
   };
 
-  return function(callback) {
-
+  const service = (callback) => {
     // wait for db.info to avoid uncaught exceptions: #3754
     DB().info().then(function() {
 
@@ -95,6 +94,8 @@ angular.module('inboxServices').factory('UnreadRecords', function(
         }
       });
     });
+    service.count = () => getCount(callback);
   };
 
+  return service;
 });

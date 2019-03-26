@@ -755,10 +755,14 @@ var _ = require('underscore'),
     });
 
     RecurringProcessManager.startUpdateRelativeDate();
+    if (Session.isOnlineOnly()) {
+      RecurringProcessManager.startUpdateReadDocsCount();
+    }
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();
       RecurringProcessManager.stopUpdateRelativeDate();
+      RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
     var userCtx = Session.userCtx();

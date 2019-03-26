@@ -1,13 +1,22 @@
 angular.module('inboxServices').factory('RecurringProcessManager',
   function(
     $interval,
-    RelativeDate
+    RelativeDate,
+    UnreadRecords
   ) {
     'use strict';
     'ngInject';
 
-    var recurringProcesses = {
-      updateRelativeDates: false
+    const recurringProcesses = {
+      updateRelativeDates: false,
+      updateReadDocsCount: false
+    };
+
+    const stopRecurringProcess = (processName) => {
+      if (recurringProcesses[processName]) {
+        $interval.cancel(recurringProcesses[processName]);
+        recurringProcesses[processName] = false;
+      }
     };
 
     return {
@@ -23,12 +32,20 @@ angular.module('inboxServices').factory('RecurringProcessManager',
           false //don't digest
         );
       },
-      stopUpdateRelativeDate: function() {
-        if (recurringProcesses.updateRelativeDates) {
-          $interval.cancel(recurringProcesses.updateRelativeDates);
-          recurringProcesses.updateRelativeDates = false;
+      stopUpdateRelativeDate: () => stopRecurringProcess('updateRelativeDates'),
+      startUpdateReadDocsCount: () => {
+        if (recurringProcesses.updateReadDocsCount) {
+          $interval.cancel(recurringProcesses.updateReadDocsCount);
         }
-      }
+
+        recurringProcesses.updateReadDocsCount = $interval(
+          UnreadRecords.count,
+          UnreadRecords.getUpdateTimeDelta || 10 * 60 * 1000,
+          0,
+          true //do digest
+        );
+      },
+      stopUpdateReadDocsCount: () => stopRecurringProcess('updateReadDocsCount')
     };
   }
 );
