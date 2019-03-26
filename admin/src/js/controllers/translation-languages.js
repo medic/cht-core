@@ -11,6 +11,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     ExportProperties,
     Modal,
     Settings,
+    TranslationLoader,
     UpdateSettings
   ) {
 
@@ -84,10 +85,10 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
 
     const changeListener = Changes({
       key: 'update-languages',
-      filter: change => change.id.startsWith('messages-'),
+      filter: change => TranslationLoader.test(change.id),
       callback: () => getLanguages()
     });
-    
+
     $scope.$on('$destroy', changeListener.unsubscribe);
 
     $scope.editLanguage = function(doc) {
