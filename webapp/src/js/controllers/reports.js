@@ -196,12 +196,9 @@ angular
     };
 
     $scope.deselectReport = function(report) {
-      removeSelected(_.isString(report) ? report : report._id);
-      $(
-        '#reports-list li[data-record-id="' +
-          report._id +
-          '"] input[type="checkbox"]'
-      ).prop('checked', false);
+      const reportId = report._id || report;
+      removeSelected(reportId);
+      $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
       $scope.settingSelected(true);
     };
 

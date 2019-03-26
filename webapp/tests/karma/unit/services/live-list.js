@@ -341,29 +341,30 @@ describe('LiveListSrv', function() {
         it('should return false for an empty list', function() {
           // expect
           assert.notOk(service.testing.contains( doc(123) ));
-          assert.notOk(service.testing.contains( '123' ));
+          assert.notOk(service.testing.contains( 123 ));
         });
 
         it('should return false if supplied item\'s ID does not match an item in the list', function() {
           // given
-          list_of('1', '2', '3');
+          list_of(1, 2, 3);
 
           // expect
-          assert.notOk(service.testing.contains( doc('999') ));
+          assert.notOk(service.testing.contains( doc(999) ));
+          assert.notOk(service.testing.contains( 999 ));
           assert.notOk(service.testing.contains( '999' ));
         });
 
         it('true if supplied ID matches an item in the list', function() {
           // given
-          list_of('1', '2', '3');
+          list_of(1, 2, 3);
 
           // expect
-          assert.ok(service.testing.contains( doc('1') ));
-          assert.ok(service.testing.contains( '1' ));
-          assert.ok(service.testing.contains( doc('2') ));
-          assert.ok(service.testing.contains( '2' ));
-          assert.ok(service.testing.contains( doc('3') ));
-          assert.ok(service.testing.contains( '3' ));
+          assert.ok(service.testing.contains( doc(1) ));
+          assert.ok(service.testing.contains( 1 ));
+          assert.ok(service.testing.contains( doc(2) ));
+          assert.ok(service.testing.contains( 2 ));
+          assert.ok(service.testing.contains( doc(3) ));
+          assert.ok(service.testing.contains( 3 ));
         });
       });
 
@@ -401,22 +402,22 @@ describe('LiveListSrv', function() {
 
         it('should not return removed items', function() {
           // given
-          list_of('1', '2', '3', '4');
+          list_of(1, 2, 3, 4);
           assert.deepEqual(service.testing.getList(), [
-            { _id: '1' },
-            { _id: '2' },
-            { _id: '3' },
-            { _id: '4' },
+            { _id: 1 },
+            { _id: 2 },
+            { _id: 3 },
+            { _id: 4 },
           ]);
 
           // when
-          service.testing.remove(doc('2'));
-          service.testing.remove('4');
+          service.testing.remove(doc(2));
+          service.testing.remove(4);
 
           // then
           assert.deepEqual(service.testing.getList(), [
-            { _id: '1' },
-            { _id: '3' },
+            { _id: 1 },
+            { _id: 3 },
           ]);
         });
       });

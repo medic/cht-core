@@ -377,7 +377,7 @@ angular.module('inboxServices').factory('LiveList',
         return false;
       }
 
-      return !!indexes[listName].dom[_.isString(item) ? item : item._id];
+      return !!indexes[listName].dom[item._id || item];
     }
 
     function _insert(listName, newItem, skipDomAppend, removedDomElement) {
@@ -425,7 +425,7 @@ angular.module('inboxServices').factory('LiveList',
 
     function _remove(listName, removedItem) {
       var idx = indexes[listName];
-      const removedItemId = _.isString(removedItem) ? removedItem : removedItem._id;
+      const removedItemId = removedItem._id || removedItem;
 
       if (!idx.list) {
         return;
