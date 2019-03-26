@@ -40,7 +40,7 @@ angular.module('inboxServices').factory('RecurringProcessManager',
 
         recurringProcesses.updateReadDocsCount = $interval(
           UnreadRecords.count,
-          UnreadRecords.getUpdateTimeDelta || 10 * 60 * 1000,
+          UnreadRecords.getUpdateTimeDelta || 5 * 60 * 1000, // 5 minutes
           0,
           true //do digest
         );

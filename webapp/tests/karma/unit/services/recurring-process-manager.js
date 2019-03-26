@@ -62,7 +62,7 @@ describe('RecurringProcessManager Service', () => {
 
       chai.expect($interval.callCount).to.equal(1);
       chai.expect($interval.args[0][0]).to.equal(UnreadRecords.count);
-      chai.expect($interval.args[0][1]).to.equal(10 * 60 * 1000);
+      chai.expect($interval.args[0][1]).to.equal(5 * 60 * 1000);
       chai.expect($interval.args[0][2]).to.equal(0);
       chai.expect($interval.args[0][3]).to.equal(true);
       done();
@@ -123,10 +123,10 @@ describe('RecurringProcessManager Service', () => {
 
     it('should register and stop the updateReadDocsCount interval', done => {
       service.startUpdateReadDocsCount();
-      $interval.flush(5 * 10 * 60 * 1000);
+      $interval.flush(5 * 5 * 60 * 1000);
       chai.expect(UnreadRecords.count.callCount).to.equal(5);
       service.stopUpdateReadDocsCount();
-      $interval.flush(10 * 10 * 60 * 1000);
+      $interval.flush(10 * 5 * 60 * 1000);
       chai.expect(UnreadRecords.count.callCount).to.equal(5);
       done();
     });

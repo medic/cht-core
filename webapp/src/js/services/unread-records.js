@@ -94,6 +94,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
         }
       });
     });
+
     service.count = () => getCount(callback);
   };
 
