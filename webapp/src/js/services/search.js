@@ -29,8 +29,8 @@ var _ = require('underscore'),
       DB,
       GetDataRecords,
       SearchFactory,
-      Session//,
-      // Telemetry
+      Session,
+      Telemetry
     ) {
 
       'ngInject';
@@ -146,8 +146,7 @@ var _ = require('underscore'),
             //   search:reports:date:search:valid:verified  <-- maximum selected search of reports with text search
             //   search:contacts:search                     <-- text search of contacts
             //   search:contacts:types                      <-- default viewing of contact list
-            // Telemetry.record(telemetryKey, timing);
-            $log.debug('would have telemetried', telemetryKey, timing);
+            Telemetry.record(telemetryKey, timing);
 
             if (docIds && docIds.length) {
               docIds.forEach(function(docId) {
