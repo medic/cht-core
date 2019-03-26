@@ -54,6 +54,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
               $scope.setFinished();
               $uibModalInstance.close();
               return $translate('feedback.submitted')
+                .catch(() => 'feedback.submitted') // translation not found
                 .then(Snackbar);
             })
             .catch(err => {
