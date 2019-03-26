@@ -182,6 +182,16 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
+          <collectionProp name="-169244482">
+            <stringProp name="-1505319621">/home/newtewt/dev/medic-webapp/tests/scalability/previous_results/3.4.0.jtl</stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="1237">false</stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="1237">false</stringProp>
+          </collectionProp>
         </collectionProp>
         <stringProp name="prefix_label">3.3.0-</stringProp>
       </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
