@@ -114,7 +114,7 @@ angular.module('inboxServices').service('ContactSave',
           if (preparedSibling.type && !preparedSibling.contact_type) {
             preparedSibling.contact_type = preparedSibling.type;
           }
-          preparedSibling.type = 'contact';
+          preparedSibling.type = 'contact'; // TODO fix
 
           if (preparedSibling.parent === 'PARENT') {
             delete preparedSibling.parent;
@@ -158,7 +158,7 @@ angular.module('inboxServices').service('ContactSave',
           if (original) {
             submitted.doc = $.extend({}, original, submitted.doc);
           } else {
-            submitted.doc.type = 'contact';
+            submitted.doc.type = 'contact'; // TODO this will break a lot of configurations that rely on type
             submitted.doc.contact_type = type;
           }
           return prepareSubmittedDocsForSave(original, submitted);
