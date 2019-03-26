@@ -119,23 +119,14 @@ var _ = require('underscore');
             var selected = ctrl.selected;
             $scope.refreshReportSilently(change.id)
               .then(function() {
-                if (change.doc) {
-                  if (selected[0].formatted.verified !== change.doc.verified ||
-                      ('oldVerified' in selected[0].formatted &&
-                       selected[0].formatted.oldVerified !== change.doc.verified)) {
-                    ctrl.setSelected(selected);
-                    $timeout(function() {
-                      ctrl.setFirstSelectedFormattedProperty({ verified: change.doc.verified });
-                    });
-                  }
-                } else {
-                  if (selected[0].formatted.hasOwnProperty('oldVerified')) {
-                    const verified = ctrl.selected[0].formatted.verified;
-                    ctrl.setSelected(selected);
-                    $timeout(function() {
-                      ctrl.setFirstSelectedFormattedProperty({ verified });
-                    });
-                  }
+                if ((change.doc && selected[0].formatted.verified !== change.doc.verified) ||
+                    (change.doc && 'oldVerified' in selected[0].formatted && selected[0].formatted.oldVerified !== change.doc.verified) ||
+                    (!change.doc && 'oldVerified' in selected[0].formatted)) {
+                  const verified = $scope.selected[0].formatted.verified;
+                  ctrl.setSelected(selected);
+                  $timeout(function() {
+                    ctrl.setFirstSelectedFormattedProperty({ verified: change.doc ? change.doc.verified : verified });
+                  });
                 }
               });
           }
