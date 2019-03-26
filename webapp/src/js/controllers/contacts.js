@@ -485,7 +485,7 @@ var _ = require('underscore'),
           liveList.remove(change.id);
         }
 
-        if (change.doc && !change.deleted) {
+        if (change.doc) {
           liveList.invalidateCache(change.doc._id);
 
           // Invalidate the contact for changing reports with visited_contact_uuid
