@@ -13,11 +13,11 @@
 const GitHub = require('@octokit/rest');
 
 const TYPES = [
-  { label: 'Type: Feature', title: 'Features', issues: [] },
-  { label: 'Type: Improvement', title: 'Improvements', issues: [] },
-  { label: 'Type: Performance', title: 'Performance fixes', issues: [] },
-  { label: 'Type: Bug', title: 'Bug fixes', issues: [] },
-  { label: 'Type: Technical issue', title: 'Technical issues', issues: [] }
+  { labels: ['Type: Feature'], title: 'Features', issues: [] },
+  { labels: ['enhancement', 'Type: Improvement'], title: 'Improvements', issues: [] },
+  { labels: ['Type: Performance'], title: 'Performance fixes', issues: [] },
+  { labels: ['bug', 'Type: Bug'], title: 'Bug fixes', issues: [] },
+  { labels: ['Type: Technical issue'], title: 'Technical issues', issues: [] }
 ];
 const github = new GitHub({
   headers: { 'user-agent': 'changelog-generator' }
@@ -97,7 +97,7 @@ const getIssues = cards => {
 const sort = issues => {
   const errors = [];
   issues.forEach(issue => {
-    const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => label.name === type.label));
+    const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => type.labels.includes(label.name)));
     if (!matchingTypes.length) {
       errors.push(`Issue doesn't have any Type label: ${issue.data.html_url}`);
       return;
@@ -115,10 +115,15 @@ const sort = issues => {
   }
 
   TYPES.forEach(type => {
-    type.issues.sort((lhs, rhs) => lhs.data.number - rhs.data.number);
+    type.issues.sort((lhs, rhs) => lhs.data.html_url.localeCompare(rhs.data.html_url));
   });
 
   return TYPES;
+};
+
+const getRepo = issue => {
+  const parts = issue.data.repository_url.split('/');
+  return parts[parts.length - 1];
 };
 
 const output = groups => {
@@ -126,7 +131,7 @@ const output = groups => {
     if (group.issues.length) {
       console.log(`### ${group.title}`);
       console.log('');
-      group.issues.forEach(issue => console.log(`- [#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
+      group.issues.forEach(issue => console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
       console.log('');
     }
   });
