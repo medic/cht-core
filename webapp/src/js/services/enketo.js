@@ -43,7 +43,7 @@ angular.module('inboxServices').service('Enketo',
       return currentForm;
     };
 
-    const srv = this;
+    const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
@@ -51,7 +51,7 @@ angular.module('inboxServices').service('Enketo',
         setLastChangedDoc: actions.setLastChangedDoc
       };
     };
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
 
     var init = function() {
       ZScore()
@@ -566,7 +566,7 @@ angular.module('inboxServices').service('Enketo',
               doc.geolocation = geolocation;
             });
           }
-          srv.setLastChangedDoc(docs[0]);
+          self.setLastChangedDoc(docs[0]);
           return docs;
         })
         .then(saveDocs)

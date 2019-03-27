@@ -119,13 +119,12 @@ var _ = require('underscore');
             var selected = ctrl.selected;
             $scope.refreshReportSilently(change.id)
               .then(function() {
-                if ((change.doc && selected[0].formatted.verified !== change.doc.verified) ||
-                    (change.doc && 'oldVerified' in selected[0].formatted && selected[0].formatted.oldVerified !== change.doc.verified) ||
-                    (!change.doc && 'oldVerified' in selected[0].formatted)) {
-                  const verified = $scope.selected[0].formatted.verified;
+                if((change.doc && selected[0].formatted.verified !== change.doc.verified) ||
+                   (change.doc && ('oldVerified' in selected[0].formatted &&
+                    selected[0].formatted.oldVerified !== change.doc.verified))) {
                   ctrl.setSelected(selected);
                   $timeout(function() {
-                    ctrl.setFirstSelectedFormattedProperty({ verified: change.doc ? change.doc.verified : verified });
+                    ctrl.setFirstSelectedFormattedProperty({ verified: change.doc.verified });
                   });
                 }
               });

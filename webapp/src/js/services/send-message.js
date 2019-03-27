@@ -17,7 +17,7 @@ angular
     'use strict';
     'ngInject';
 
-    const srv = this;
+    const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
@@ -25,7 +25,7 @@ angular
         setLastChangedDoc: actions.setLastChangedDoc
       };
     };
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
 
     var identity = function(i) {
       return !!i;
@@ -177,7 +177,7 @@ angular
           doc.tasks = explodedRecipients.map(function(recipient) {
             return createTask(settings, recipient, message, user);
           });
-          srv.setLastChangedDoc(doc);
+          self.setLastChangedDoc(doc);
           return doc;
         })
         .then(function(doc) {

@@ -14,7 +14,7 @@ angular.module('inboxServices').service('ContactSave',
     'use strict';
     'ngInject';
 
-    const srv = this;
+    const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
@@ -22,7 +22,7 @@ angular.module('inboxServices').service('ContactSave',
         setLastChangedDoc: actions.setLastChangedDoc
       };
     };
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
 
     function generateFailureMessage(bulkDocsResult) {
       return _.reduce(bulkDocsResult, function(msg, result) {
@@ -179,7 +179,7 @@ angular.module('inboxServices').service('ContactSave',
         })
         .then(function(preparedDocs) {
           const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-          srv.setLastChangedDoc(primaryDoc|| preparedDocs.preparedDocs[0]);
+          self.setLastChangedDoc(primaryDoc|| preparedDocs.preparedDocs[0]);
 
           return DB().bulkDocs(preparedDocs.preparedDocs)
             .then(function(bulkDocsResult) {

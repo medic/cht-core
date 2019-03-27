@@ -41,7 +41,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         setCancelCallback: actions.setCancelCallback,
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError,
+        setEnketoError: actions.setEnketoError
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

@@ -32,7 +32,7 @@ angular.module('inboxServices').factory('Changes',
 
     var RETRY_MILLIS = 5000;
 
-    const srv = this;
+    const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
@@ -41,7 +41,7 @@ angular.module('inboxServices').factory('Changes',
       };
     };
 
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
 
     var dbs = {
       medic: {
@@ -86,9 +86,9 @@ angular.module('inboxServices').factory('Changes',
           return_docs: false,
         })
         .on('change', function(change) {
-          if (srv.lastChangedDoc && srv.lastChangedDoc._id === change.id) {
-            change.doc = change.doc || srv.lastChangedDoc;
-            srv.setLastChangedDoc(false);
+          if (self.lastChangedDoc && self.lastChangedDoc._id === change.id) {
+            change.doc = change.doc || self.lastChangedDoc;
+            self.setLastChangedDoc(false);
           }
 
           notifyAll(meta, change);
