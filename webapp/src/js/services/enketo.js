@@ -44,11 +44,11 @@ angular.module('inboxServices').service('Enketo',
     };
 
     const srv = this;
-    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
       return {
-        setUpdateOnChange: actions.setUpdateOnChange
+        setLastChangedDoc: actions.setLastChangedDoc
       };
     };
     $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
@@ -566,7 +566,7 @@ angular.module('inboxServices').service('Enketo',
               doc.geolocation = geolocation;
             });
           }
-          srv.setUpdateOnChange(docs[0]);
+          srv.setLastChangedDoc(docs[0]);
           return docs;
         })
         .then(saveDocs)

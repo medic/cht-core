@@ -15,11 +15,11 @@ angular.module('inboxServices').service('ContactSave',
     'ngInject';
 
     const srv = this;
-    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
       return {
-        setUpdateOnChange: actions.setUpdateOnChange
+        setLastChangedDoc: actions.setLastChangedDoc
       };
     };
     $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
@@ -179,7 +179,7 @@ angular.module('inboxServices').service('ContactSave',
         })
         .then(function(preparedDocs) {
           const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-          srv.setUpdateOnChange(primaryDoc|| preparedDocs.preparedDocs[0]);
+          srv.setLastChangedDoc(primaryDoc|| preparedDocs.preparedDocs[0]);
 
           return DB().bulkDocs(preparedDocs.preparedDocs)
             .then(function(bulkDocsResult) {

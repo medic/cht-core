@@ -44,7 +44,7 @@ angular
         removeSelected: actions.removeSelected,
         setSelected: actions.setSelected,
         setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty,
-        setUpdateOnChange: actions.setUpdateOnChange
+        setLastChangedDoc: actions.setLastChangedDoc
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -348,7 +348,7 @@ angular
 
         var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedDocProperty({ verified: verified });
-        ctrl.setUpdateOnChange(doc);
+        ctrl.setLastChangedDoc(doc);
 
         DB()
           .get(ctrl.selected[0].doc._id)

@@ -17,7 +17,7 @@ describe('ContactSave service', () => {
     ExtractLineage = sinon.stub();
     bulkDocs = sinon.stub();
     get = sinon.stub();
-    Actions = { setUpdateOnChange: sinon.stub() };
+    Actions = { setLastChangedDoc: sinon.stub() };
 
     module('inboxApp');
     module($provide => {
@@ -69,8 +69,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(Actions.setUpdateOnChange.callCount, 1);
-        assert.deepEqual(Actions.setUpdateOnChange.args[0], [savedDocs[0]]);
+        assert.equal(Actions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(Actions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
@@ -108,8 +108,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(Actions.setUpdateOnChange.callCount, 1);
-        assert.deepEqual(Actions.setUpdateOnChange.args[0], [savedDocs[0]]);
+        assert.equal(Actions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(Actions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
@@ -159,8 +159,8 @@ describe('ContactSave service', () => {
 
         assert.equal(ExtractLineage.callCount, 3);
 
-        assert.equal(Actions.setUpdateOnChange.callCount, 1);
-        assert.deepEqual(Actions.setUpdateOnChange.args[0], [savedDocs[0]]);
+        assert.equal(Actions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(Actions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 

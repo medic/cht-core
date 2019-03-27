@@ -99,7 +99,7 @@ describe('Enketo service', function() {
     });
 
     XmlForm.returns(Promise.resolve({ id: 'abc' }));
-    Actions = { setUpdateOnChange: sinon.stub() };
+    Actions = { setLastChangedDoc: sinon.stub() };
 
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -500,8 +500,8 @@ describe('Enketo service', function() {
         chai.expect(actual.contact._id).to.equal('123');
         chai.expect(actual.from).to.equal('555');
         chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
-        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([actual]);
+        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -542,8 +542,8 @@ describe('Enketo service', function() {
         chai.expect(AddAttachment.args[0][1]).to.equal('content');
         chai.expect(AddAttachment.args[0][2]).to.equal(content);
         chai.expect(AddAttachment.args[0][3]).to.equal('application/xml');
-        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
-        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([actual]);
+        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -615,8 +615,8 @@ describe('Enketo service', function() {
 
         chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
 
-        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
-        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([actualReport]);
+        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
       });
     });
 

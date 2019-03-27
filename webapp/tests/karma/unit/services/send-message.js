@@ -14,7 +14,7 @@ describe('SendMessage service', function() {
     post = sinon.stub();
     query = sinon.stub();
     Settings = sinon.stub();
-    Actions = { setUpdateOnChange: sinon.stub() };
+    Actions = { setLastChangedDoc: sinon.stub() };
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -91,8 +91,8 @@ describe('SendMessage service', function() {
           to: '+5552',
           contact: { _id: recipient._id }
         });
-        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
-        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([post.args[0][0]]);
+        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([post.args[0][0]]);
         done();
       })
       .catch(done);
@@ -197,8 +197,8 @@ describe('SendMessage service', function() {
         });
         chai.expect    (post.args[0][0].tasks[0].messages[0].uuid)
           .to.not.equal(post.args[0][0].tasks[1].messages[0].uuid);
-        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
-        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([post.args[0][0]]);
+        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([post.args[0][0]]);
         done();
       }).catch(done);
   });

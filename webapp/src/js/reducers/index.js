@@ -15,7 +15,7 @@
     selectMode: false,
     selected: null,
     refreshList: false,
-    updateOnChange: false
+    lastChangedDoc: false
   };
 
   angular.module('inboxServices').constant('Reducers', function(state, action) {
@@ -101,8 +101,8 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
-      case 'SET_UPDATE_ON_CHANGE':
-        return Object.assign({}, state, { updateOnChange: action.payload.updateOnChange });
+      case 'SET_LAST_CHANGED_DOC':
+        return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
       default:
         return state;
     }

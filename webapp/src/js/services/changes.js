@@ -33,11 +33,11 @@ angular.module('inboxServices').factory('Changes',
     var RETRY_MILLIS = 5000;
 
     const srv = this;
-    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
       return {
-        setUpdateOnChange: actions.setUpdateOnChange
+        setLastChangedDoc: actions.setLastChangedDoc
       };
     };
 
@@ -86,9 +86,9 @@ angular.module('inboxServices').factory('Changes',
           return_docs: false,
         })
         .on('change', function(change) {
-          if (srv.updateOnChange && srv.updateOnChange._id === change.id) {
-            change.doc = change.doc || srv.updateOnChange;
-            srv.setUpdateOnChange(false);
+          if (srv.lastChangedDoc && srv.lastChangedDoc._id === change.id) {
+            change.doc = change.doc || srv.lastChangedDoc;
+            srv.setLastChangedDoc(false);
           }
 
           notifyAll(meta, change);

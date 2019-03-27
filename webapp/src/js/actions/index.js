@@ -113,8 +113,8 @@ angular.module('inboxServices').factory('Actions',
         });
       }
 
-      function setUpdateOnChange(value) {
-        dispatch(createSingleValueAction('SET_UPDATE_ON_CHANGE', 'updateOnChange', value));
+      function setLastChangedDoc(value) {
+        return createSingleValueAction('SET_LAST_CHANGED_DOC', 'lastChangedDoc', value);
       }
 
       return {
@@ -141,7 +141,7 @@ angular.module('inboxServices').factory('Actions',
         updateSelectedItem,
         setFirstSelectedDocProperty,
         setFirstSelectedFormattedProperty,
-        setUpdateOnChange
+        setLastChangedDoc
       };
     };
   }

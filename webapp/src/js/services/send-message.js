@@ -18,11 +18,11 @@ angular
     'ngInject';
 
     const srv = this;
-    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
       return {
-        setUpdateOnChange: actions.setUpdateOnChange
+        setLastChangedDoc: actions.setLastChangedDoc
       };
     };
     $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
@@ -177,7 +177,7 @@ angular
           doc.tasks = explodedRecipients.map(function(recipient) {
             return createTask(settings, recipient, message, user);
           });
-          srv.setUpdateOnChange(doc);
+          srv.setLastChangedDoc(doc);
           return doc;
         })
         .then(function(doc) {
