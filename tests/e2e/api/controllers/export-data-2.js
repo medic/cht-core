@@ -54,7 +54,7 @@ describe('Export Data V2.0', () => {
           '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
         ];
         expect(rows.length).toBe(expected.length);
-        expect(rows[0]).toBe(expected[0]);
+        expect(rows[0]).toBe(expected[0], 'export reports row should be the same as expected row');
         rows.splice(1).forEach(row => {
           expect(expected).toContain(row);
         });
