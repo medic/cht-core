@@ -171,12 +171,8 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     Changes({
       key: 'upgrade',
-      filter: function(change) {
-        return change.id === DEPLOY_DOC_ID;
-      },
-      callback: function() {
-        DB().get(DEPLOY_DOC_ID).then(doc => $scope.deployDoc = doc);
-      }
+      filter: change => change.id === DEPLOY_DOC_ID,
+      callback: () => getCurrentDeployment()
     });
   }
 );
