@@ -7,7 +7,7 @@ describe('ContactSave service', () => {
   let get;
   let EnketoTranslation;
   let ExtractLineage;
-  let updateOnChange;
+  let Actions;
 
   beforeEach(() => {
     EnketoTranslation = {
@@ -17,6 +17,7 @@ describe('ContactSave service', () => {
     ExtractLineage = sinon.stub();
     bulkDocs = sinon.stub();
     get = sinon.stub();
+    Actions = { setUpdateOnChange: sinon.stub() };
 
     module('inboxApp');
     module($provide => {
@@ -27,6 +28,7 @@ describe('ContactSave service', () => {
       }));
       $provide.value('EnketoTranslation', EnketoTranslation);
       $provide.value('ExtractLineage', ExtractLineage);
+      $provide.value('Actions', () => Actions);
     });
     inject(_ContactSave_ => {
       service = _ContactSave_;
@@ -47,10 +49,9 @@ describe('ContactSave service', () => {
     bulkDocs.returns(Promise.resolve());
     get.returns(Promise.resolve({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } }));
     ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
-    updateOnChange = sinon.stub();
 
     // when
-    return service(schema, form, docId, type, updateOnChange)
+    return service(schema, form, docId, type)
       .then(() => {
 
         // then
@@ -68,8 +69,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(updateOnChange.callCount, 1);
-        assert.deepEqual(updateOnChange.args[0], ['main1']);
+        assert.equal(Actions.setUpdateOnChange.callCount, 1);
+        assert.deepEqual(Actions.setUpdateOnChange.args[0], [savedDocs[0]]);
       });
   });
 
@@ -87,10 +88,9 @@ describe('ContactSave service', () => {
     bulkDocs.returns(Promise.resolve());
     get.returns(Promise.resolve({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } }));
     ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
-    updateOnChange = sinon.stub();
 
     // when
-    return service(schema, form, docId, type, updateOnChange)
+    return service(schema, form, docId, type)
       .then(() => {
 
         // then
@@ -108,8 +108,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(updateOnChange.callCount, 1);
-        assert.deepEqual(updateOnChange.args[0], ['main1']);
+        assert.equal(Actions.setUpdateOnChange.callCount, 1);
+        assert.deepEqual(Actions.setUpdateOnChange.args[0], [savedDocs[0]]);
       });
   });
 
@@ -137,10 +137,9 @@ describe('ContactSave service', () => {
     });
 
     bulkDocs.returns(Promise.resolve());
-    updateOnChange = sinon.stub();
 
     // when
-    return service(schema, form, docId, type, updateOnChange)
+    return service(schema, form, docId, type)
       .then(() => {
 
         // then
@@ -160,8 +159,8 @@ describe('ContactSave service', () => {
 
         assert.equal(ExtractLineage.callCount, 3);
 
-        assert.equal(updateOnChange.callCount, 1);
-        assert.deepEqual(updateOnChange.args[0], ['main1']);
+        assert.equal(Actions.setUpdateOnChange.callCount, 1);
+        assert.deepEqual(Actions.setUpdateOnChange.args[0], [savedDocs[0]]);
       });
   });
 

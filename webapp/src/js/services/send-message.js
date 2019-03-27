@@ -6,7 +6,9 @@ var _ = require('underscore'),
 angular
   .module('inboxServices')
   .factory('SendMessage', function(
+    $ngRedux,
     $q,
+    Actions,
     DB,
     ExtractLineage,
     Settings,
@@ -14,6 +16,16 @@ angular
   ) {
     'use strict';
     'ngInject';
+
+    const srv = this;
+    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setUpdateOnChange: actions.setUpdateOnChange
+      };
+    };
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
 
     var identity = function(i) {
       return !!i;
@@ -151,7 +163,7 @@ angular
       return task;
     };
 
-    return function(recipients, message, updateOnChange) {
+    return function(recipients, message) {
       if (!_.isArray(recipients)) {
         recipients = [recipients];
       }
@@ -165,9 +177,7 @@ angular
           doc.tasks = explodedRecipients.map(function(recipient) {
             return createTask(settings, recipient, message, user);
           });
-          if (updateOnChange) {
-            updateOnChange(doc._id);
-          }
+          srv.setUpdateOnChange(doc);
           return doc;
         })
         .then(function(doc) {

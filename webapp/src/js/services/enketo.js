@@ -7,10 +7,12 @@ var uuid = require('uuid/v4'),
 angular.module('inboxServices').service('Enketo',
   function(
     $log,
+    $ngRedux,
     $q,
     $timeout,
     $translate,
     $window,
+    Actions,
     AddAttachment,
     ContactSummary,
     DB,
@@ -40,6 +42,16 @@ angular.module('inboxServices').service('Enketo',
     this.getCurrentForm = function() {
       return currentForm;
     };
+
+    const srv = this;
+    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setUpdateOnChange: actions.setUpdateOnChange
+      };
+    };
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
 
     var init = function() {
       ZScore()
@@ -532,7 +544,7 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
-    this.save = function(formInternalId, form, geolocation, docId, updateOnChange) {
+    this.save = function(formInternalId, form, geolocation, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
@@ -547,9 +559,6 @@ angular.module('inboxServices').service('Enketo',
           return xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
         })
         .then(function(docs) {
-          if (updateOnChange) {
-            updateOnChange(docs[0]._id);
-          }
           if (geolocation) {
             // Only update geolocation if one is provided.  Otherwise, maintain
             // whatever is already set in the docs.
@@ -557,6 +566,7 @@ angular.module('inboxServices').service('Enketo',
               doc.geolocation = geolocation;
             });
           }
+          srv.setUpdateOnChange(docs[0]);
           return docs;
         })
         .then(saveDocs)

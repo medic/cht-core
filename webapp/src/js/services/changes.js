@@ -19,8 +19,10 @@
 angular.module('inboxServices').factory('Changes',
   function(
     $log,
+    $ngRedux,
     $q,
     $timeout,
+    Actions,
     DB,
     Session
   ) {
@@ -29,6 +31,17 @@ angular.module('inboxServices').factory('Changes',
     'ngInject';
 
     var RETRY_MILLIS = 5000;
+
+    const srv = this;
+    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setUpdateOnChange: actions.setUpdateOnChange
+      };
+    };
+
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
 
     var dbs = {
       medic: {
@@ -73,6 +86,11 @@ angular.module('inboxServices').factory('Changes',
           return_docs: false,
         })
         .on('change', function(change) {
+          if (srv.updateOnChange && srv.updateOnChange._id === change.id) {
+            change.doc = change.doc || srv.updateOnChange;
+            srv.setUpdateOnChange(false);
+          }
+
           notifyAll(meta, change);
         })
         .on('error', function(err) {

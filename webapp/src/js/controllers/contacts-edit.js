@@ -33,8 +33,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         setCancelCallback: actions.setCancelCallback,
         setEnketoEditedStatus: actions.setEnketoEditedStatus,
         setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError,
-        setUpdateOnChange: actions.setUpdateOnChange
+        setEnketoError: actions.setEnketoError
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -196,7 +195,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           }
 
           var type = $scope.enketoContact.type;
-          return ContactSave($scope.unmodifiedSchema[type], form, docId, type, ctrl.setUpdateOnChange)
+          return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
               ctrl.setEnketoSavingStatus(false);

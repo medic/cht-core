@@ -17,17 +17,14 @@ describe('ReportsCtrl controller', () => {
       changesFilter,
       searchFilters,
       liveListInit,
-      liveListReset,
-      dispatch,
-      getState,
-      isOnlineOnly;
+      liveListReset;
 
   beforeEach(() => {
     module('inboxApp');
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(($rootScope, $controller, $ngRedux, Actions) => {
+  beforeEach(inject(($rootScope, $controller) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();
@@ -58,7 +55,8 @@ describe('ReportsCtrl controller', () => {
         setSelected: sinon.stub(),
         remove: sinon.stub(),
         count: sinon.stub(),
-        set: sinon.stub()
+        set: sinon.stub(),
+        contains: sinon.stub()
       },
       'report-search': {
         set: sinon.stub()
@@ -107,15 +105,12 @@ describe('ReportsCtrl controller', () => {
         'ReportViewModelGenerator': {},
         'Search': Search,
         'SearchFilters': searchFilters,
-        'Session': { isOnlineOnly: () => isOnlineOnly },
         'Settings': KarmaUtils.nullPromise(),
         'Tour': () => {},
         'UpdateFacility': {},
         'Verified': {}
       });
     };
-    dispatch = Actions($ngRedux.dispatch);
-    getState = $ngRedux.getState;
   }));
 
   it('set up controller', () => {
@@ -295,10 +290,12 @@ describe('ReportsCtrl controller', () => {
 
     it('filters deletions', () => {
       createController();
-
+      LiveList.reports.contains.returns(true);
       return Promise.resolve().then(() => {
-        const change = { doc: { type: 'this is not a form' }, deleted: true };
+        const change = { deleted: true, id: 'some_id' };
         chai.expect(!!changesFilter(change)).to.equal(true);
+        chai.expect(LiveList.reports.contains.callCount).to.equal(1);
+        chai.expect(LiveList.reports.contains.args[0]).to.deep.equal(['some_id']);
       });
     });
 
@@ -307,24 +304,6 @@ describe('ReportsCtrl controller', () => {
 
       return Promise.resolve().then(() => {
         chai.expect(!!changesFilter({ doc: { some: 'thing' } })).to.equal(false);
-      });
-    });
-
-    it('filters self made changes', () => {
-      isOnlineOnly = true;
-      createController();
-      return Promise.resolve().then(() => {
-        dispatch.setUpdateOnChange('some_id');
-        chai.expect(changesFilter({ id: 'some_id' })).to.equal(true);
-      });
-    });
-
-    it('filters non self made changes', () => {
-      isOnlineOnly = true;
-      createController();
-      return Promise.resolve().then(() => {
-        dispatch.setUpdateOnChange('some_id');
-        chai.expect(changesFilter({ id: 'some_other_id' })).to.equal(false);
       });
     });
 
@@ -339,15 +318,13 @@ describe('ReportsCtrl controller', () => {
       });
     });
 
-    it('refreshes list and clears updateOnChange', () => {
+    it('refreshes list', () => {
       createController();
-      dispatch.setUpdateOnChange('some_id');
 
       return Promise.resolve().then(() => {
         changesCallback({ doc: { _id: 'id' } });
         chai.expect(LiveList.reports.remove.callCount).to.equal(0);
         chai.expect(Search.callCount).to.equal(1);
-        chai.expect(getState().updateOnChange).to.equal(false);
       });
     });
   });

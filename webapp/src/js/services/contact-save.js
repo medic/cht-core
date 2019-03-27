@@ -3,7 +3,9 @@ var uuidV4 = require('uuid/v4');
 
 angular.module('inboxServices').service('ContactSave',
   function(
+    $ngRedux,
     $q,
+    Actions,
     DB,
     EnketoTranslation,
     ExtractLineage
@@ -11,6 +13,16 @@ angular.module('inboxServices').service('ContactSave',
 
     'use strict';
     'ngInject';
+
+    const srv = this;
+    const mapStateToTarget = (state) => ({ updateOnChange: state.updateOnChange });
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setUpdateOnChange: actions.setUpdateOnChange
+      };
+    };
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(srv);
 
     function generateFailureMessage(bulkDocsResult) {
       return _.reduce(bulkDocsResult, function(msg, result) {
@@ -146,7 +158,7 @@ angular.module('inboxServices').service('ContactSave',
       });
     }
 
-    return function(schema, form, docId, type, updateOnChange) {
+    return function(schema, form, docId, type) {
       return $q.resolve()
         .then(function() {
           if(docId) {
@@ -166,10 +178,9 @@ angular.module('inboxServices').service('ContactSave',
           return prepareSubmittedDocsForSave(schema, original, submitted);
         })
         .then(function(preparedDocs) {
-          if (updateOnChange) {
-            const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-            updateOnChange(primaryDoc && primaryDoc._id || preparedDocs.preparedDocs[0]._id);
-          }
+          const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+          srv.setUpdateOnChange(primaryDoc|| preparedDocs.preparedDocs[0]);
+
           return DB().bulkDocs(preparedDocs.preparedDocs)
             .then(function(bulkDocsResult) {
               var failureMessage = generateFailureMessage(bulkDocsResult);

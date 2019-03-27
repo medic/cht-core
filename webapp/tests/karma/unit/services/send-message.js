@@ -7,13 +7,14 @@ describe('SendMessage service', function() {
       allDocs,
       post,
       query,
-      updateOnChange;
+      Actions;
 
   beforeEach(function () {
     allDocs = sinon.stub();
     post = sinon.stub();
     query = sinon.stub();
     Settings = sinon.stub();
+    Actions = { setUpdateOnChange: sinon.stub() };
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -26,6 +27,7 @@ describe('SendMessage service', function() {
         return Promise.resolve({ phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', Settings);
+      $provide.value('Actions', () => Actions);
     });
     inject(function(_SendMessage_) {
       service = _SendMessage_;
@@ -78,9 +80,8 @@ describe('SendMessage service', function() {
     };
 
     allDocs.returns(mockAllDocs(recipient));
-    updateOnChange = sinon.stub();
 
-    service(select2Wrap(recipient), 'hello', updateOnChange)
+    service(select2Wrap(recipient), 'hello')
       .then(function() {
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
@@ -90,8 +91,8 @@ describe('SendMessage service', function() {
           to: '+5552',
           contact: { _id: recipient._id }
         });
-        chai.expect(updateOnChange.callCount).to.equal(1);
-        chai.expect(updateOnChange.args[0]).to.deep.equal([post.args[0][0]._id]);
+        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
+        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([post.args[0][0]]);
         done();
       })
       .catch(done);
@@ -177,9 +178,8 @@ describe('SendMessage service', function() {
     ];
 
     allDocs.returns(mockAllDocs(recipients));
-    updateOnChange = sinon.stub();
 
-    service(select2Wrap(recipients), 'hello', updateOnChange)
+    service(select2Wrap(recipients), 'hello')
       .then(function() {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].tasks.length).to.equal(2);
@@ -197,8 +197,8 @@ describe('SendMessage service', function() {
         });
         chai.expect    (post.args[0][0].tasks[0].messages[0].uuid)
           .to.not.equal(post.args[0][0].tasks[1].messages[0].uuid);
-        chai.expect(updateOnChange.callCount).to.equal(1);
-        chai.expect(updateOnChange.args[0]).to.deep.equal([post.args[0][0]._id]);
+        chai.expect(Actions.setUpdateOnChange.callCount).to.equal(1);
+        chai.expect(Actions.setUpdateOnChange.args[0]).to.deep.equal([post.args[0][0]]);
         done();
       }).catch(done);
   });

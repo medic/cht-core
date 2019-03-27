@@ -8,8 +8,7 @@ describe('Contacts Edit controller', () => {
       scope,
       $rootScope,
       contactForm,
-      spyState,
-      contactSave;
+      spyState;
 
   beforeEach(module('inboxApp'));
 
@@ -19,7 +18,6 @@ describe('Contacts Edit controller', () => {
       setCancelCallback: sinon.stub(),
       setEnketoSavingStatus: sinon.stub(),
       setEnketoError: sinon.stub(),
-      setUpdateOnChange: sinon.stub()
     };
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
@@ -37,8 +35,6 @@ describe('Contacts Edit controller', () => {
       params: { parent_id: 'parent_id' }
     };
 
-    contactSave = sinon.stub();
-
     createController = () => {
       return $controller('ContactsEditCtrl', {
         '$log': { error: sinon.stub() },
@@ -49,7 +45,7 @@ describe('Contacts Edit controller', () => {
         '$translate': $translate,
         'Actions': () => actions,
         'ContactForm': contactForm,
-        'ContactSave': contactSave,
+        'ContactSave': sinon.stub(),
         'ContactSchema': contactSchema,
         'Enketo': sinon.stub(),
         'LineageModelGenerator': { contact: sinon.stub().resolves() },
@@ -100,30 +96,6 @@ describe('Contacts Edit controller', () => {
     cancelCallback();
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'id' } ]);
-  });
-
-  it('saving calls ContactSave with correct params', () => {
-    contactSchema = { get: sinon.stub().returns({ 'clinic': 'schema' }) };
-    contactSchema.get.withArgs('person').returns({ fields: { parent: '' }});
-
-    createController();
-    contactSave.resolves();
-    scope.enketoContact = {
-      formInstance: { validate: sinon.stub().resolves(true) },
-      docId: 'docID',
-      type: 'clinic'
-    };
-    return scope.save().then(() => {
-      chai.expect(scope.enketoContact.formInstance.validate.callCount).to.equal(1);
-      chai.expect(contactSave.callCount).to.equal(1);
-      chai.expect(contactSave.args[0]).to.deep.equal([
-        'schema',
-        scope.enketoContact.formInstance,
-        scope.enketoContact.docId,
-        scope.enketoContact.type,
-        actions.setUpdateOnChange
-      ]);
-    });
   });
 
 });

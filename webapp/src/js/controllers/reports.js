@@ -34,8 +34,7 @@ angular
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state),
-        updateOnChange: state.updateOnChange
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -223,7 +222,6 @@ angular
     };
 
     var query = function(opts) {
-      ctrl.setUpdateOnChange(false);
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
@@ -350,7 +348,7 @@ angular
 
         var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedDocProperty({ verified: verified });
-        ctrl.setUpdateOnChange(doc._id);
+        ctrl.setUpdateOnChange(doc);
 
         DB()
           .get(ctrl.selected[0].doc._id)
@@ -507,8 +505,6 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    const shouldUpdateOnChange = change => ctrl.updateOnChange === true || ctrl.updateOnChange === change.id;
-
     var changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
@@ -521,7 +517,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc && change.doc.form || change.deleted || shouldUpdateOnChange(change);
+        return change.doc && change.doc.form || change.deleted && liveList.contains(change.id);
       },
     });
 

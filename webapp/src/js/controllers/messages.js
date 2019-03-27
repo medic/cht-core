@@ -62,7 +62,6 @@ angular
     };
 
     var updateConversations = function(options) {
-      ctrl.setUpdateOnChange(false);
       options = options || {};
       if (!options.changes) {
         $scope.loading = true;
@@ -116,8 +115,6 @@ angular
       ctrl.setSelected(null);
     });
 
-    const shouldUpdateOnChange = change => ctrl.updateOnChange === true || ctrl.updateOnChange === change.id;
-
     var changeListener = Changes({
       key: 'messages-list',
       callback: function() {
@@ -130,8 +127,7 @@ angular
         return (
           (change.doc && change.doc.kujua_message) ||
           (change.doc && change.doc.sms_message) ||
-          change.deleted ||
-          shouldUpdateOnChange(change)
+          change.deleted
         );
       },
     });
