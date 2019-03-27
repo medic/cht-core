@@ -134,21 +134,20 @@ _.templateSettings = {
     contacts: 'can_view_contacts',
     analytics: 'can_view_analytics',
     reports: 'can_view_reports',
-    'reports.edit': 'can_update_reports'
+    'reports.edit': ['can_update_reports', 'can_view_reports']
   };
 
-  var getRequiredPermission = function(route) {
-    var baseRoute = route.split('.')[0];
-    return _.uniq(_.compact([ROUTE_PERMISSIONS[baseRoute], ROUTE_PERMISSIONS[route]]));
+  var getRequiredPermissions = function(route) {
+    return ROUTE_PERMISSIONS[route] || ROUTE_PERMISSIONS[route.split('.')[0]];
   };
 
   // Detects reloads or route updates (#/something)
   angular.module('inboxApp').run(function($state, $transitions, Auth) {
     $transitions.onBefore({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
-        var permission = getRequiredPermission(trans.to().name);
-        if (permission && permission.length) {
-          return Auth(permission).catch(function() {
+        const permissions = getRequiredPermissions(trans.to().name);
+        if (permissions && permissions.length) {
+          return Auth(permissions).catch(function() {
             return $state.target('error', { code: 403 });
           });
         }
