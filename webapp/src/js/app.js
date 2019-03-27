@@ -148,8 +148,8 @@ _.templateSettings = {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);
         if (permission) {
-          Auth(permission).catch(function() {
-            $state.go('error', { code: 403 });
+          return Auth(permission).catch(function() {
+            return $state.target('error', { code: 403 });
           });
         }
       }
