@@ -97,6 +97,7 @@ require('../../../webapp/src/js/services/search');
 require('../../../webapp/src/js/services/select2-search');
 require('../../../webapp/src/js/services/settings');
 require('../../../webapp/src/js/services/session');
+require('../../../webapp/src/js/services/telemetry');
 require('../../../webapp/src/js/services/translate');
 require('../../../webapp/src/js/services/translate-from');
 require('../../../webapp/src/js/services/translation-loader');

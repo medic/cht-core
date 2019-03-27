@@ -90,7 +90,7 @@
       </form>
     </div>
 
-    <div ng-if="partners" class="partners">
+    <div ng-if="partners && partners.length" class="partners">
       <h3 translate>partner.supporting</h3>
       <ul class="list-inline">
         <li ng-repeat="partner in partners">
