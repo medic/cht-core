@@ -54,7 +54,7 @@ describe('Export Data V2.0', () => {
           '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
         ];
         expect(rows.length).toBe(expected.length);
-        expect(rows[0]).toBe(expected[0], 'export reports row should be the same as expected row');
+        expect(rows[0]).toBe(expected[0]);
         rows.splice(1).forEach(row => {
           expect(expected).toContain(row);
         });
@@ -87,7 +87,7 @@ describe('Export Data V2.0', () => {
     it('GET Filters by date', () => {
       const from = Date.UTC(2018,1,2,12);
       const to = Date.UTC(2018,1,3,12);
-      utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
+      return utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
           const rows = result.split('\n');
           rows.pop(); // Last row is empty string, discard
 
