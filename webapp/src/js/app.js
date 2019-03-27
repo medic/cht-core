@@ -32,6 +32,7 @@ const uiRouter = require('@uirouter/angularjs').default;
 require('ng-redux');
 const reduxThunk = require('redux-thunk').default;
 const cloneDeep = require('lodash/cloneDeep');
+const objectPath = require('object-path');
 const lineage = require('@medic/lineage')();
 
 require('moment');
@@ -58,18 +59,23 @@ const _ = require('underscore');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
 };
-const makeLoggable = object => {
-  const recursiveProperties = {
-    'selected': ['doc', 'formatted']
-  };
 
-  Object.keys(recursiveProperties).forEach(key => {
-    recursiveProperties[key].forEach(property => {
-      if (object[key] && object[key][property]) {
-        lineage.minify(object[key][property]);
-      }
-    });
-  });
+const minifySelected = selected => {
+  const pathsToMinify = ['doc', 'formatted'];
+  const lineageDocs = objectPath.get(selected, 'lineage', []);
+  const docsToMinify = pathsToMinify
+    .map(path => objectPath.get(selected, path))
+    .filter(doc => doc)
+    .concat(lineageDocs);
+
+  docsToMinify.forEach(lineage.minify);
+};
+const makeLoggable = object => {
+  if (Array.isArray(object.selected)) {
+    object.selected.forEach(minifySelected);
+  } else {
+    minifySelected(object.selected);
+  }
 };
 const reduxLoggerConfig = {
   actionTransformer: function(action) {
