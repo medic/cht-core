@@ -138,8 +138,8 @@ _.templateSettings = {
   };
 
   var getRequiredPermission = function(route) {
-    var baseRoute = route in ROUTE_PERMISSIONS ? route : route.split('.')[0];
-    return ROUTE_PERMISSIONS[baseRoute];
+    var baseRoute = route.split('.')[0];
+    return _.uniq(_.compact([ROUTE_PERMISSIONS[baseRoute], ROUTE_PERMISSIONS[route]]));
   };
 
   // Detects reloads or route updates (#/something)
@@ -147,7 +147,7 @@ _.templateSettings = {
     $transitions.onBefore({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);
-        if (permission) {
+        if (permission && permission.length) {
           return Auth(permission).catch(function() {
             return $state.target('error', { code: 403 });
           });
