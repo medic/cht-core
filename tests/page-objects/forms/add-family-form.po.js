@@ -43,7 +43,9 @@ module.exports = {
     const sex = element.all(by.css('[name="/data/ephemeral_dob/g_sex"]'));
     helper.waitUntilReady(sex);
     const age = element(by.css('[name="/data/ephemeral_dob/age"]'));
-    sex.get(0).click();
+    const female = sex.get(0);
+    helper.waitElementToBeClickable(female);
+    female.click();
     age.clear().sendKeys(20);
   },
 
