@@ -57,7 +57,6 @@ var _ = require('underscore'),
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var liveList = LiveList.contacts;
-    const isOnlineOnly = Session.isOnlineOnly();
 
     LiveList.$init($scope, 'contacts', 'contact-search');
 
@@ -473,9 +472,7 @@ var _ = require('underscore'),
       );
     };
 
-    const shouldUpdateOnChange = change => isOnlineOnly &&
-                                           ctrl.updateOnChange &&
-                                           (ctrl.updateOnChange === true || ctrl.updateOnChange === change.id);
+    const shouldUpdateOnChange = change => ctrl.updateOnChange === true || ctrl.updateOnChange === change.id;
 
     var changeListener = Changes({
       key: 'contacts-list',

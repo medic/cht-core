@@ -49,14 +49,10 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       message: ''
     };
 
-    const userCtx = Session.userCtx(),
-          isOnlineOnly = Session.isOnlineOnly(userCtx);
+    const userCtx = Session.userCtx();
+
     let updateOnChange = false;
-
-    const shouldUpdateOnChange = change => isOnlineOnly &&
-                                           updateOnChange &&
-                                           (updateOnChange === true || updateOnChange === change.id);
-
+    const shouldUpdateOnChange = change => updateOnChange === true || updateOnChange === change.id;
     const setUpdateOnChange = value => updateOnChange = value;
 
     var checkScroll = function() {

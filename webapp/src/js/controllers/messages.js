@@ -116,9 +116,7 @@ angular
       ctrl.setSelected(null);
     });
 
-    const shouldUpdateOnChange = change => isOnlineOnly &&
-                                           ctrl.updateOnChange &&
-                                           (ctrl.updateOnChange === true || ctrl.updateOnChange === change.id);
+    const shouldUpdateOnChange = change => ctrl.updateOnChange === true || ctrl.updateOnChange === change.id;
 
     var changeListener = Changes({
       key: 'messages-list',

@@ -328,15 +328,6 @@ describe('ReportsCtrl controller', () => {
       });
     });
 
-    it('filters stub changes when not admin', () => {
-      isOnlineOnly = false;
-      createController();
-      return Promise.resolve().then(() => {
-        dispatch.setUpdateOnChange('some_id');
-        chai.expect(changesFilter({ id: 'some_id' })).to.equal(false);
-      });
-    });
-
     it('removes deleted reports from the list', () => {
       createController();
 

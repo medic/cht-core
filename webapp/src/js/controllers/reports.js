@@ -51,7 +51,6 @@ angular
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
-    const isOnlineOnly = Session.isOnlineOnly();
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -508,9 +507,7 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    const shouldUpdateOnChange = change => isOnlineOnly &&
-                                           ctrl.updateOnChange &&
-                                           (ctrl.updateOnChange === true || ctrl.updateOnChange === change.id);
+    const shouldUpdateOnChange = change => ctrl.updateOnChange === true || ctrl.updateOnChange === change.id;
 
     var changeListener = Changes({
       key: 'reports-list',
