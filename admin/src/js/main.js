@@ -13,6 +13,9 @@ require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('@uirouter/angularjs');
 
+require('ng-redux');
+const reducers = require('../../../webapp/src/js/reducers');
+
 angular.module('controllers', []);
 require('./controllers/main');
 require('./controllers/authorization-permissions');
@@ -105,6 +108,7 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
+require('../../../webapp/src/js/actions');
 
 angular.module('adminApp', [
   'ngRoute',
@@ -114,6 +118,7 @@ angular.module('adminApp', [
   'inboxFilters',
   'inboxServices',
   'ipCookie',
+  'ngRedux',
   'pascalprecht.translate',
   'pouchdb',
   'services',
@@ -136,6 +141,7 @@ angular.module('adminApp').constant('POUCHDB_OPTIONS', {
 angular.module('adminApp').config(function(
   $compileProvider,
   $locationProvider,
+  $ngReduxProvider,
   $stateProvider,
   $translateProvider
 ) {
@@ -149,6 +155,8 @@ angular.module('adminApp').config(function(
   $translateProvider.useSanitizeValueStrategy('escape');
   $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
+
+  $ngReduxProvider.createStoreWith(reducers, []);
 
   $stateProvider
     .state('settings', {
