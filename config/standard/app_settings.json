@@ -194,9 +194,7 @@
     ],
     "can_update_reports": [
       "national_admin",
-      "district_admin",
-      "data_entry",
-      "gateway"
+      "district_admin"
     ],
     "can_delete_contacts": [
       "national_admin",
