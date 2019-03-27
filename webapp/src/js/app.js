@@ -134,16 +134,17 @@ _.templateSettings = {
     contacts: 'can_view_contacts',
     analytics: 'can_view_analytics',
     reports: 'can_view_reports',
+    'reports.edit': 'can_update_reports'
   };
 
   var getRequiredPermission = function(route) {
-    var baseRoute = route.split('.')[0];
+    var baseRoute = route in ROUTE_PERMISSIONS ? route : route.split('.')[0];
     return ROUTE_PERMISSIONS[baseRoute];
   };
 
   // Detects reloads or route updates (#/something)
   angular.module('inboxApp').run(function($state, $transitions, Auth) {
-    $transitions.onStart({}, function(trans) {
+    $transitions.onBefore({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);
         if (permission) {

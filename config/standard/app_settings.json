@@ -192,6 +192,12 @@
       "national_admin",
       "district_admin"
     ],
+    "can_update_reports": [
+      "national_admin",
+      "district_admin",
+      "data_entry",
+      "gateway"
+    ],
     "can_delete_contacts": [
       "national_admin",
       "district_admin"
