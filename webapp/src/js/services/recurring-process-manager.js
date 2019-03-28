@@ -22,7 +22,7 @@ angular.module('inboxServices').factory('RecurringProcessManager',
     return {
       startUpdateRelativeDate: function() {
         if (recurringProcesses.updateRelativeDates) {
-          $interval.cancel(recurringProcesses.updateRelativeDates);
+          return;
         }
 
         recurringProcesses.updateRelativeDates = $interval(
@@ -35,7 +35,7 @@ angular.module('inboxServices').factory('RecurringProcessManager',
       stopUpdateRelativeDate: () => stopRecurringProcess('updateRelativeDates'),
       startUpdateReadDocsCount: () => {
         if (recurringProcesses.updateReadDocsCount) {
-          $interval.cancel(recurringProcesses.updateReadDocsCount);
+          return;
         }
 
         recurringProcesses.updateReadDocsCount = $interval(

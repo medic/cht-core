@@ -46,14 +46,13 @@ describe('RecurringProcessManager Service', () => {
       done();
     });
 
-    it('should cancel the previous UpdateRelativeDates interval before adding a new one', done => {
+    it('should return early if the interval already exists', done => {
       $interval.returns('theInterval');
       service.startUpdateRelativeDate();
       service.startUpdateRelativeDate();
 
-      chai.expect($interval.cancel.callCount).to.equal(1);
-      chai.expect($interval.cancel.args[0].length).to.equal(1);
-      chai.expect($interval.cancel.args[0][0]).to.equal('theInterval');
+      chai.expect($interval.callCount).to.equal(1);
+      chai.expect($interval.cancel.callCount).to.equal(0);
       done();
     });
 
@@ -79,14 +78,13 @@ describe('RecurringProcessManager Service', () => {
       done();
     });
 
-    it('should cancel the previous UpdateReadDocsCount interval before adding a new one', done => {
+    it('should return early if the interval already exists', done => {
       $interval.returns('theInterval');
       service.startUpdateReadDocsCount();
-      service.stopUpdateReadDocsCount();
+      service.startUpdateReadDocsCount();
 
-      chai.expect($interval.cancel.callCount).to.equal(1);
-      chai.expect($interval.cancel.args[0].length).to.equal(1);
-      chai.expect($interval.cancel.args[0][0]).to.equal('theInterval');
+      chai.expect($interval.callCount).to.equal(1);
+      chai.expect($interval.cancel.callCount).to.equal(0);
       done();
     });
 
