@@ -81,14 +81,14 @@ const fixtures = {
       form: 'DR',
       reported_date: now,
     }),
-    nutrition_followup_dead: freshCloneOf({
+    nutrition_exit_dead: freshCloneOf({
       _id: 'nfd',
       fields: {
         exit: {
           outcome: 'dead'
         }
       },
-      form: 'nutrition_followup',
+      form: 'nutrition_exit',
       reported_date: now
     }),
   },
@@ -600,21 +600,21 @@ describe('Standard Configuration Tasks', function() {
           const task = tasks[0];
 
           assertTitle(task, 'task.death_confirmation.title');
-          assertIcon(task, 'risk');
+          assertIcon(task, 'icon-death-general');
           assertNotResolved(task);
           assert.include(task.actions[0], {form: 'death_confirmation'});
         });
     });
 
     it('should raise death confirmation task from nutrition followup death exit', function(){
-      session.assert(contactWith(fixtures.reports.nutrition_followup_dead()));
+      session.assert(contactWith(fixtures.reports.nutrition_exit_dead()));
 
       return session.emitTasks()
         .then(tasks => {
           const task = tasks[0];
 
           assertTitle(task, 'task.death_confirmation.title');
-          assertIcon(task, 'risk');
+          assertIcon(task, 'icon-death-general');
           assertNotResolved(task);
           assert.include(task.actions[0], {form: 'death_confirmation'});
         });

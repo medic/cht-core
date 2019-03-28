@@ -441,12 +441,12 @@
     icon: 'icon-death-general',
     title: 'task.death_confirmation.title',
     appliesTo: 'reports',
-    appliesToType: ['DR', 'nutrition_followup'],
+    appliesToType: ['DR', 'nutrition_exit'],
     appliesIf: function(c, r){
       /* jshint unused:vars */
       return (
         r.form === 'DR' ||
-        (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.outcome === 'dead')
+        (r.form === 'nutrition_exit' && r.fields.exit.outcome === 'dead')
       );
     },
     actions: [{form: 'death_confirmation'}],

@@ -25,7 +25,7 @@
           "label": "contact.profile.wfa",
           "translate": true,
           "width": 4,
-          "value": "0.5",
+          "value": "0",
           "icon": ""
         },
         {
@@ -97,25 +97,25 @@
          "label": "contact.profile.exit_date",
          "translate": true,
          "width": 6,
-         "value": "2019-03-14"
+         "value": "2019-03-28"
        },
        {
          "label": "contact.profile.weight_at_exit",
          "translate": true,
          "width": 6,
-         "value": "3"
+         "value": "5"
        },
        {
          "label": "contact.profile.height_at_exit",
          "translate": true,
          "width": 6,
-         "value": "45"
+         "value": "50"
        },
        {
          "label": "contact.profile.wfh",
          "translate": true,
          "width": 12,
-         "value": "2.158064516129032"
+         "value": "4"
        }
      ]
    }
@@ -185,6 +185,6 @@
       "gmp": true
     },
     "treatment_program": "OTP",
-    "enrollment_date": "2019-03-14"
+    "enrollment_date": "2019-03-28"
   }
 }
