@@ -30,7 +30,7 @@ function writeServiceWorkerFile(staticDirectoryPath, rootUrl, outputPath) {
       path.join(__dirname, 'fonts', 'fontawesome-webfont.woff2'),
       path.join(__dirname, 'fonts', 'enketo-icons-v2.woff'),
       path.join(__dirname, 'fonts', 'NotoSans-Bold.ttf'),
-      path.join(__dirname, 'fonts', 'NotoSans-Regular'),
+      path.join(__dirname, 'fonts', 'NotoSans-Regular.ttf'),
     ],
     dynamicUrlToDependencies: {
       [rootUrl]: [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
