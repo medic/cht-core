@@ -90,6 +90,7 @@
       .state('analytics', {
         url: '/analytics?tour',
         controller: 'AnalyticsCtrl',
+        controllerAs: '$ctrl',
         templateUrl: 'templates/partials/analytics.html'
       })
       .state('analytics.reporting', {
@@ -97,6 +98,7 @@
         views: {
           content: {
             controller: 'AnalyticsReportingCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/analytics/reporting.html'
           }
         }
@@ -110,6 +112,7 @@
         views: {
           detail: {
             controller: 'AnalyticsReportingDetailCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/analytics/reporting_detail.html'
           }
         }
@@ -119,6 +122,7 @@
         views: {
           content: {
             controller: 'AnalyticsTargetsCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/analytics/targets.html'
           }
         }

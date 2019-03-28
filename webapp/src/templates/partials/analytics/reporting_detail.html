@@ -49,9 +49,9 @@
   </div>
 </div>
 
-<div class="loader" ng-show="loadingTotals"></div>
+<div class="loader" ng-show="$ctrl.loadingTotals"></div>
 
-<div ng-show="place && !loadingTotals" class="district-totals">
+<div ng-show="place && !$ctrl.loadingTotals" class="district-totals">
   <div class="alert alert-danger" role="alert" ng-show="error" translate>analytics.connection.error</div>
   <div class="row" ng-hide="error">
     <div class="col-sm-2 col-xs-6">
@@ -82,7 +82,7 @@
   </div>
 </div>
 
-<div class="facility-select" ng-show="place && place.type === 'district_hospital' && !loadingTotals">
+<div class="facility-select" ng-show="place && place.type === 'district_hospital' && !$ctrl.loadingTotals">
   <div class="row title" ng-show="facilities.length">
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-1" translate>analytics.reporting.reports</div>
@@ -102,7 +102,7 @@
   </div>
 </div>
 
-<div class="facility-select" ng-show="place && !loadingTotals">
+<div class="facility-select" ng-show="place && !$ctrl.loadingTotals">
   <div class="row title" ng-show="clinics.length">
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
@@ -129,7 +129,7 @@
             <i class="fa fa-caret-down" ng-show="record.id && expandedRecord === record.id"></i><i class="fa fa-caret-right" ng-show="record.id && expandedRecord !== record.id"></i>{{record.name}}
           </div>
         </div>
-        <div class="loader" ng-show="record.id && loadingRecord === record.id"></div>
+        <div class="loader" ng-show="record.id && $ctrl.loadingRecord === record.id"></div>
         <div class="fields" ng-if="expandedRecord && expandedRecord === record.id">
           <div class="row">
             <div class="col-sm-12"><label translate>fields</label></div>

@@ -25,7 +25,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
 
     $scope.analyticsModules = [];
 
-    $scope.loading = true;
+    ctrl.loading = true;
 
     ctrl.setSelected(null);
     $scope.clearSelected();
@@ -45,7 +45,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
         }));
       }
 
-      $scope.loading = false;
+      ctrl.loading = false;
       $scope.analyticsModules = modules;
     });
 

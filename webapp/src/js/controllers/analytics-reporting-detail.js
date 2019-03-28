@@ -18,6 +18,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+
     $scope.filters.form = $state.params.form;
     $scope.filters.place = $state.params.place;
 
@@ -69,20 +71,20 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
         $scope.expandedRecord = null;
       } else {
         $timeout(function() {
-          $scope.loadingRecord = id;
+          ctrl.loadingRecord = id;
         });
         DB()
           .get(id)
           .then(FormatDataRecord)
           .then(function(formatted) {
             $timeout(function() {
-              $scope.loadingRecord = false;
+              ctrl.loadingRecord = false;
               $scope.formattedRecord = formatted[0];
               $scope.expandedRecord = id;
             });
           })
           .catch(function(err) {
-            $scope.loadingRecord = false;
+            ctrl.loadingRecord = false;
             $log.error('Error getting doc', err);
           });
       }
@@ -179,7 +181,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     var setDistrict = function(placeId) {
       $scope.error = false;
-      $scope.loadingTotals = true;
+      ctrl.loadingTotals = true;
       var dates = reportingUtils.getDates($scope.filters);
       DB()
         .get(placeId || $scope.place._id)
@@ -206,13 +208,13 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
               ];
               $scope.filters.district = findDistrict(place);
               $scope.place = place;
-              $scope.loadingTotals = false;
+              ctrl.loadingTotals = false;
             });
         })
         .catch(function(err) {
           $log.error('Error setting place.', err);
           $scope.error = true;
-          $scope.loadingTotals = false;
+          ctrl.loadingTotals = false;
         });
     };
 
