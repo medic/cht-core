@@ -1,7 +1,6 @@
 angular.module('inboxServices').factory('ResourceIcons',
   function(
     $log,
-    APP_CONFIG,
     Changes,
     DB
   ) {
@@ -75,10 +74,6 @@ angular.module('inboxServices').factory('ResourceIcons',
         const name = $this.attr('data-title') || $this.attr('title');
         $this.html(getHtmlContent(name, doc));
       });
-      if (document.getElementById('app') && doc === 'branding') {
-        document.getElementById('app').innerHTML = cache[doc].doc.title;
-        $(`.${css}`).attr('title', `${cache[doc].doc.title} | ${APP_CONFIG.version}`);
-      }
     };
 
     const updateResources = docId => {
