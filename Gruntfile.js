@@ -269,6 +269,7 @@ module.exports = function(grunt) {
     'generate-service-worker': {
       config: {
         staticDirectoryPath: 'build/ddocs/medic/_attachments',
+        apiSrcDirectoryPath: 'api/src',
         scriptOutputPath: 'build/ddocs/medic/_attachments/js/service-worker.js',
       }
     },
