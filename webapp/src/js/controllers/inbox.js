@@ -157,7 +157,7 @@ var _ = require('underscore'),
     setAppTitle();
 
     Changes({
-      key: 'resource-icons',
+      key: 'branding-icon',
       filter: change => change.id === 'branding',
       callback: () => setAppTitle()
     });
