@@ -147,9 +147,7 @@ var _ = require('underscore'),
 
       updateReplicationStatus(status);
     });
-
-
-
+    
     const setAppTitle = () => {
       ResourceIcons.getAppTitle().then(title => {
         document.title = title;
