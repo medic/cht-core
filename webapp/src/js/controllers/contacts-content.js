@@ -10,12 +10,12 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $stateParams,
     $timeout,
     $translate,
-    Actions,
     Auth,
     Changes,
     ContactChangeFilter,
     ContactViewModelGenerator,
     Debounce,
+    GlobalActions,
     Selectors,
     Snackbar,
     TasksForContact,
@@ -36,9 +36,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        updateSelected: actions.updateSelected
+        updateSelected: globalActions.updateSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

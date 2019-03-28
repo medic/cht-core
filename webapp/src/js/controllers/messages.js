@@ -9,9 +9,9 @@ angular
     $state,
     $stateParams,
     $timeout,
-    Actions,
     Changes,
     Export,
+    GlobalActions,
     MessageContacts,
     MessageListUtils,
     Selectors,
@@ -27,9 +27,9 @@ angular
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setSelected: actions.setSelected
+        setSelected: globalActions.setSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

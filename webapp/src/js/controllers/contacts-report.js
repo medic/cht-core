@@ -5,10 +5,10 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope,
     $state,
     $translate,
-    Actions,
     ContactViewModelGenerator,
     Enketo,
     Geolocation,
+    GlobalActions,
     Selectors,
     Snackbar,
     Telemetry,
@@ -32,13 +32,13 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setCancelCallback: actions.setCancelCallback,
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError,
-        setShowContent: actions.setShowContent
+        setCancelCallback: globalActions.setCancelCallback,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
+        setEnketoError: globalActions.setEnketoError,
+        setShowContent: globalActions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -75,7 +75,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
             .then(function(formInstance) {
               $scope.setTitle(TranslateFrom(form.doc.title));
               $scope.form = formInstance;
-              $scope.loadingForm = false;
+              ctrl.loadingForm = false;
             })
             .then(() => {
               telemetryData.postRender = Date.now();
@@ -126,7 +126,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     };
 
     $scope.form = null;
-    $scope.loadingForm = true;
+    ctrl.loadingForm = true;
     $scope.setRightActionBar();
     ctrl.setShowContent(true);
     setCancelCallback();
@@ -139,7 +139,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         $log.error('Error loading form', err);
         $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
         $scope.contentError = true;
-        $scope.loadingForm = false;
+        ctrl.loadingForm = false;
       });
 
     $scope.$on('$destroy', function() {

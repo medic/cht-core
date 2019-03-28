@@ -6,12 +6,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $scope,
     $state,
     $translate,
-    Actions,
     DB,
     Enketo,
     FileReader,
     Geolocation,
     GetReportContent,
+    GlobalActions,
     LineageModelGenerator,
     Selectors,
     Snackbar,
@@ -36,14 +36,14 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setCancelCallback: actions.setCancelCallback,
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError,
-        setLoadingContent: actions.setLoadingContent
+        clearCancelCallback: globalActions.clearCancelCallback,
+        setCancelCallback: globalActions.setCancelCallback,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
+        setEnketoError: globalActions.setEnketoError,
+        setLoadingContent: globalActions.setLoadingContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

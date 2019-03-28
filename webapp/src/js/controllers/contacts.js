@@ -12,13 +12,13 @@ var _ = require('underscore'),
     $state,
     $stateParams,
     $translate,
-    Actions,
     Auth,
     Changes,
     ContactSchema,
     ContactSummary,
     Export,
     GetDataRecords,
+    GlobalActions,
     LiveList,
     Search,
     SearchFilters,
@@ -41,15 +41,15 @@ var _ = require('underscore'),
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setSelected: actions.setSelected,
-        updateSelected: actions.updateSelected,
-        loadSelectedChildren: actions.loadSelectedChildren,
-        loadSelectedReports: actions.loadSelectedReports,
-        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
-        setLoadingSelectedReports: actions.setLoadingSelectedReports
+        clearCancelCallback: globalActions.clearCancelCallback,
+        setSelected: globalActions.setSelected,
+        updateSelected: globalActions.updateSelected,
+        loadSelectedChildren: globalActions.loadSelectedChildren,
+        loadSelectedReports: globalActions.loadSelectedReports,
+        setLoadingSelectedChildren: globalActions.setLoadingSelectedChildren,
+        setLoadingSelectedReports: globalActions.setLoadingSelectedReports
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

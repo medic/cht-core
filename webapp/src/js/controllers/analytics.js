@@ -7,8 +7,8 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     $state,
     $stateParams,
     $timeout,
-    Actions,
     AnalyticsModules,
+    GlobalActions,
     Tour
   ) {
     'use strict';
@@ -16,9 +16,9 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
 
     var ctrl = this;
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setSelected: actions.setSelected
+        setSelected: globalActions.setSelected
       };
     };
     var unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);

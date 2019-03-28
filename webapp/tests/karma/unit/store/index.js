@@ -1,7 +1,7 @@
 describe('Store', function() {
   'use strict';
 
-  let actions,
+  let globalActions,
       getState,
       loadChildren = sinon.stub(),
       loadReports = sinon.stub(),
@@ -15,8 +15,8 @@ describe('Store', function() {
       'ngInject';
       $provide.value('ContactViewModelGenerator', { loadChildren, loadReports });
     });
-    inject(function($ngRedux, Actions, Selectors) {
-      actions = Actions($ngRedux.dispatch);
+    inject(function($ngRedux, GlobalActions, Selectors) {
+      globalActions = GlobalActions($ngRedux.dispatch);
       getState = $ngRedux.getState;
       selectors = Selectors;
     });
@@ -30,7 +30,7 @@ describe('Store', function() {
     it('clears cancelCallback', () => {
       const initialState = createGlobalState({ cancelCallback: 'test' });
       setupStore(initialState);
-      actions.clearCancelCallback();
+      globalActions.clearCancelCallback();
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -41,7 +41,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ cancelCallback: null });
       setupStore(initialState);
       const cancelCallback = 'test';
-      actions.setCancelCallback(cancelCallback);
+      globalActions.setCancelCallback(cancelCallback);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -54,7 +54,7 @@ describe('Store', function() {
       });
       setupStore(initialState);
       const error = 'test';
-      actions.setEnketoError(error);
+      globalActions.setEnketoError(error);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -67,7 +67,7 @@ describe('Store', function() {
         enketoStatus: { edited: false }
       });
       setupStore(initialState);
-      actions.setEnketoEditedStatus(true);
+      globalActions.setEnketoEditedStatus(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -80,7 +80,7 @@ describe('Store', function() {
         enketoStatus: { saving: false }
       });
       setupStore(initialState);
-      actions.setEnketoSavingStatus(true);
+      globalActions.setEnketoSavingStatus(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -91,7 +91,7 @@ describe('Store', function() {
     it('sets selectMode', () => {
       const initialState = createGlobalState({ selectMode: false });
       setupStore(initialState);
-      actions.setSelectMode(true);
+      globalActions.setSelectMode(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -102,7 +102,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: null });
       setupStore(initialState);
       const selected = {};
-      actions.setSelected(selected);
+      globalActions.setSelected(selected);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -113,7 +113,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: { doc: '1' } });
       setupStore(initialState);
       const selected = { doc: '2' };
-      actions.updateSelected(selected);
+      globalActions.updateSelected(selected);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -126,7 +126,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [{ _id: id, expanded: false }] });
       setupStore(initialState);
       const selected = { expanded: true };
-      actions.updateSelectedItem(id, selected);
+      globalActions.updateSelectedItem(id, selected);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -139,7 +139,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [{ doc: { contact: oldContact }}] });
       setupStore(initialState);
       const newContact = { test: true };
-      actions.setFirstSelectedDocProperty({ contact: newContact });
+      globalActions.setFirstSelectedDocProperty({ contact: newContact });
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -151,7 +151,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [{ formatted: { verified: true }}] });
       setupStore(initialState);
       const formatted = { verified: undefined };
-      actions.setFirstSelectedFormattedProperty(formatted);
+      globalActions.setFirstSelectedFormattedProperty(formatted);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -162,7 +162,7 @@ describe('Store', function() {
     it('sets loadingSelectedChildren', () => {
       const initialState = createGlobalState({ loadingSelectedChildren: false });
       setupStore(initialState);
-      actions.setLoadingSelectedChildren(true);
+      globalActions.setLoadingSelectedChildren(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -172,7 +172,7 @@ describe('Store', function() {
     it('sets loadingSelectedReports', () => {
       const initialState = createGlobalState({ loadingSelectedReports: false });
       setupStore(initialState);
-      actions.setLoadingSelectedReports(true);
+      globalActions.setLoadingSelectedReports(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -186,7 +186,7 @@ describe('Store', function() {
 
       const children = ['child'];
       loadChildren.withArgs(selected).returns(Promise.resolve(children));
-      actions.loadSelectedChildren();
+      globalActions.loadSelectedChildren();
 
       setTimeout(() => {
         const state = getState();
@@ -205,7 +205,7 @@ describe('Store', function() {
 
       const reports = ['report'];
       loadReports.withArgs(selected).returns(Promise.resolve(reports));
-      actions.loadSelectedReports();
+      globalActions.loadSelectedReports();
 
 
       setTimeout(() => {
@@ -224,7 +224,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: { messages: [message1] } });
       setupStore(initialState);
 
-      actions.addSelectedMessage(message2);
+      globalActions.addSelectedMessage(message2);
 
       const state = getState();
       const globalState = selectors.getGlobalState(state);
@@ -240,7 +240,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: { messages: [message1, message2] } });
       setupStore(initialState);
 
-      actions.removeSelectedMessage('1');
+      globalActions.removeSelectedMessage('1');
 
       const state = getState();
       const globalState = selectors.getGlobalState(state);
@@ -256,7 +256,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [item1] });
       setupStore(initialState);
 
-      actions.addSelected(item2);
+      globalActions.addSelected(item2);
 
       const state = getState();
       const globalState = selectors.getGlobalState(state);
@@ -271,7 +271,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [item1, item2] });
       setupStore(initialState);
 
-      actions.removeSelected('1');
+      globalActions.removeSelected('1');
 
       const state = getState();
       const globalState = selectors.getGlobalState(state);
@@ -283,7 +283,7 @@ describe('Store', function() {
     it('sets loadingContent', () => {
       const initialState = createGlobalState({ loadingContent: false });
       setupStore(initialState);
-      actions.setLoadingContent(true);
+      globalActions.setLoadingContent(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -293,7 +293,7 @@ describe('Store', function() {
     it('sets loadingSubActionBar', () => {
       const initialState = createGlobalState({ loadingSubActionBar: false });
       setupStore(initialState);
-      actions.setLoadingSubActionBar(true);
+      globalActions.setLoadingSubActionBar(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -303,7 +303,7 @@ describe('Store', function() {
     it('sets showActionBar', () => {
       const initialState = createGlobalState({ showActionBar: false });
       setupStore(initialState);
-      actions.setShowActionBar(true);
+      globalActions.setShowActionBar(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -313,7 +313,7 @@ describe('Store', function() {
     it('sets showContent', () => {
       const initialState = createGlobalState({ showContent: false });
       setupStore(initialState);
-      actions.setShowContent(true);
+      globalActions.setShowContent(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);

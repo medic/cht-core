@@ -35,7 +35,7 @@ describe('Contacts controller', () => {
     isDbAdmin,
     liveListInit,
     liveListReset,
-    actions,
+    globalActions,
     getSelected;
 
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe('Contacts controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions, Selectors) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, GlobalActions, Selectors) => {
     deadListFind = sinon.stub();
     deadListContains = sinon.stub();
     deadList = () => {
@@ -140,8 +140,8 @@ describe('Contacts controller', () => {
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
 
-    actions = Actions($ngRedux.dispatch);
-    const stubbedActions = {
+    globalActions = GlobalActions($ngRedux.dispatch);
+    const stubbedGlobalActions = {
       loadSelectedChildren: sinon.stub().returns(Promise.resolve()),
       loadSelectedReports: sinon.stub().returns(Promise.resolve())
     };
@@ -161,7 +161,7 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
-        Actions: () => Object.assign({}, actions, stubbedActions),
+        GlobalActions: () => Object.assign({}, globalActions, stubbedGlobalActions),
         Auth: auth,
         Changes: changes,
         ContactSchema: contactSchema,

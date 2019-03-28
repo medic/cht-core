@@ -11,11 +11,11 @@ angular
     $state,
     $stateParams,
     $timeout,
-    Actions,
     AddReadStatus,
     Changes,
     DB,
     Export,
+    GlobalActions,
     LiveList,
     MarkRead,
     Modal,
@@ -38,13 +38,13 @@ angular
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        addSelected: actions.addSelected,
-        removeSelected: actions.removeSelected,
-        setLoadingSubActionBar: actions.setLoadingSubActionBar,
-        setSelected: actions.setSelected,
-        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty
+        addSelected: globalActions.addSelected,
+        removeSelected: globalActions.removeSelected,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelected: globalActions.setSelected,
+        setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

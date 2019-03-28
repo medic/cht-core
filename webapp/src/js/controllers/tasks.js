@@ -13,7 +13,7 @@ var _ = require('underscore');
       $timeout,
       $translate,
       $window,
-      Actions,
+      GlobalActions,
       LiveList,
       RulesEngine,
       Selectors,
@@ -29,10 +29,10 @@ var _ = require('underscore');
         };
       };
       var mapDispatchToTarget = function(dispatch) {
-        var actions = Actions(dispatch);
+        var globalActions = GlobalActions(dispatch);
         return {
-          setSelected: actions.setSelected,
-          setShowContent: actions.setShowContent
+          setSelected: globalActions.setSelected,
+          setShowContent: globalActions.setShowContent
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

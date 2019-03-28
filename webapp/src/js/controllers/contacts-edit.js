@@ -7,11 +7,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $state,
     $timeout,
     $translate,
-    Actions,
     ContactForm,
     ContactSave,
     ContactSchema,
     Enketo,
+    GlobalActions,
     LineageModelGenerator,
     Selectors,
     Snackbar
@@ -29,14 +29,14 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setCancelCallback: actions.setCancelCallback,
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError,
-        setLoadingContent: actions.setLoadingContent,
-        setShowContent: actions.setShowContent
+        setCancelCallback: globalActions.setCancelCallback,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
+        setEnketoError: globalActions.setEnketoError,
+        setLoadingContent: globalActions.setLoadingContent,
+        setShowContent: globalActions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

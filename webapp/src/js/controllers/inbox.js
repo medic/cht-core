@@ -20,7 +20,6 @@ var _ = require('underscore'),
     $translate,
     $window,
     APP_CONFIG,
-    Actions,
     Auth,
     Changes,
     CheckDate,
@@ -31,6 +30,7 @@ var _ = require('underscore'),
     Debug,
     Enketo,
     Feedback,
+    GlobalActions,
     JsonForms,
     Language,
     LiveListConfig,
@@ -82,14 +82,14 @@ var _ = require('underscore'),
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setLoadingContent: actions.setLoadingContent,
-        setLoadingSubActionBar: actions.setLoadingSubActionBar,
-        setSelectMode: actions.setSelectMode,
-        setShowActionBar: actions.setShowActionBar,
-        setShowContent: actions.setShowContent
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setLoadingContent: globalActions.setLoadingContent,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectMode: globalActions.setSelectMode,
+        setShowActionBar: globalActions.setShowActionBar,
+        setShowContent: globalActions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

@@ -11,8 +11,8 @@ var _ = require('underscore');
       $scope,
       $stateParams,
       $timeout,
-      Actions,
       Changes,
+      GlobalActions,
       MessageState,
       Selectors
     ) {
@@ -30,12 +30,12 @@ var _ = require('underscore');
         };
       };
       var mapDispatchToTarget = function(dispatch) {
-        var actions = Actions(dispatch);
+        var globalActions = GlobalActions(dispatch);
         return {
-          clearCancelCallback: actions.clearCancelCallback,
-          setSelected: actions.setSelected,
-          updateSelectedItem: actions.updateSelectedItem,
-          setFirstSelectedFormattedProperty: actions.setFirstSelectedFormattedProperty
+          clearCancelCallback: globalActions.clearCancelCallback,
+          setSelected: globalActions.setSelected,
+          updateSelectedItem: globalActions.updateSelectedItem,
+          setFirstSelectedFormattedProperty: globalActions.setFirstSelectedFormattedProperty
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

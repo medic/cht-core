@@ -1,15 +1,15 @@
 <div class="content-pane right-pane">
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingForm">
+  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.loadingForm">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingForm && contentError">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.loadingForm && contentError">
     <div translate>{{ errorTranslationKey }}</div>
   </div>
 
-  <div class="col-sm-8 item-content material" ng-show="$ctrl.selected && form && !loadingForm">
+  <div class="col-sm-8 item-content material" ng-show="$ctrl.selected && form && !$ctrl.loadingForm">
     <div class="card">
       <mm-enketo id="'contact-report'" status="$ctrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>

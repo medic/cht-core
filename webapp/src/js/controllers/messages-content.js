@@ -15,8 +15,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
-    Actions,
     Changes,
+    GlobalActions,
     LineageModelGenerator,
     MarkRead,
     MessageContacts,
@@ -37,12 +37,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        addSelectedMessage: actions.addSelectedMessage,
-        removeSelectedMessage: actions.removeSelectedMessage,
-        setLoadingContent: actions.setLoadingContent,
-        updateSelected: actions.updateSelected
+        addSelectedMessage: globalActions.addSelectedMessage,
+        removeSelectedMessage: globalActions.removeSelectedMessage,
+        setLoadingContent: globalActions.setLoadingContent,
+        updateSelected: globalActions.updateSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

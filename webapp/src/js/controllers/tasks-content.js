@@ -5,9 +5,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope,
     $state,
     $translate,
-    Actions,
     Enketo,
     Geolocation,
+    GlobalActions,
     Selectors,
     Snackbar,
     Telemetry,
@@ -32,13 +32,13 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setCancelCallback: actions.setCancelCallback,
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError
+        clearCancelCallback: globalActions.clearCancelCallback,
+        setCancelCallback: globalActions.setCancelCallback,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
+        setEnketoError: globalActions.setEnketoError
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
