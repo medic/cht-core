@@ -364,9 +364,9 @@ cards = [
           translate: true,
           width: 6,
           value: function(){
-            if (enrollment_report.fields.treatment.program === 'OTP') return 'Outpatient Therapeutic Program';
-            else if (enrollment_report.fields.treatment.program === 'SFP') return 'Supplementary Feeding Program';
-            else if (enrollment_report.fields.treatment.program === 'SC') return 'Stabilization center';
+            if (enrollment_report.fields.treatment.program === 'OTP') return 'contact.profile.nutrition_program.otp';
+            else if (enrollment_report.fields.treatment.program === 'SFP') return 'contact.profile.nutrition_program.sfp';
+            else if (enrollment_report.fields.treatment.program === 'SC') return 'contact.profile.nutrition_program.sc';
           }()
         });
 
