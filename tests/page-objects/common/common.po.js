@@ -114,6 +114,8 @@ module.exports = {
     if (refresh) {
       browser.refresh();
     } else {
+      // A trick to trigger a list refresh.
+      // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
       helper.waitForAngularComplete();
     }
