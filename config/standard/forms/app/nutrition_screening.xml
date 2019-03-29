@@ -4,7 +4,7 @@
     <h:title>Nutrition screening</h:title>
     <model>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-21 11-14">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-29 11-10">
           <inputs>
             <meta>
               <location>
@@ -35,15 +35,6 @@
             <wfa/>
             <hfa/>
             <wfh/>
-            <nn1/>
-            <nn2/>
-            <nn3/>
-            <wfa_message/>
-            <hfa_message/>
-            <wfh_message/>
-            <zscore_wfa_note/>
-            <zscore_hfa_note/>
-            <zscore_wfh_note/>
           </measurements>
           <treatment>
             <n_1/>
@@ -53,14 +44,24 @@
             <n_5/>
             <n_6/>
             <n_7/>
+            <n_8/>
+            <n_9/>
+            <n_10/>
+            <n_11/>
+            <n_12/>
+            <n_13/>
+            <n_14/>
+            <n_15/>
+            <n_16/>
+            <n_17/>
             <enroll/>
             <reason/>
             <admission_type/>
             <admission_criteria/>
             <program/>
-            <n_9/>
-            <n_10/>
-            <n_11/>
+            <n_18/>
+            <n_19/>
+            <n_20/>
             <facility/>
             <target_weight/>
             <target_muac/>
@@ -68,15 +69,6 @@
             <additional_notes/>
           </treatment>
           <summary>
-            <n_12/>
-            <n_13/>
-            <n_14/>
-            <n_15/>
-            <n_16/>
-            <n_17/>
-            <n_18/>
-            <n_19/>
-            <n_20/>
             <n_21/>
             <n_22/>
             <n_23/>
@@ -87,14 +79,34 @@
             <n_28/>
             <n_29/>
             <n_30/>
-            <n_31/>
+            <n_3/>
+            <n_4/>
+            <n_5/>
+            <n_6/>
+            <n_7/>
             <n_32/>
             <n_33/>
-            <n_34/>
+            <n_9/>
+            <n_10/>
+            <n_11/>
+            <n_12/>
             <n_35/>
             <n_36/>
-            <n_37/>
+            <n_14/>
+            <n_15/>
+            <n_16/>
+            <n_17/>
             <n_38/>
+            <n_39/>
+            <n_40/>
+            <n_41/>
+            <n_42/>
+            <n_43/>
+            <n_44/>
+            <c_reason/>
+            <n_45/>
+            <n_46/>
+            <n_47/>
           </summary>
           <meta tag="hidden">
             <instanceID/>
@@ -120,44 +132,36 @@
       <bind calculate="round(z-score('weight-for-age',  /nutrition_screening/measurements/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/measurements/weight ), 1)" nodeset="/nutrition_screening/measurements/wfa" type="string"/>
       <bind calculate="round(z-score('height-for-age',  /nutrition_screening/measurements/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/measurements/height ), 1)" nodeset="/nutrition_screening/measurements/hfa" type="string"/>
       <bind calculate="round(z-score('weight-for-height',  /nutrition_screening/measurements/gender ,  /nutrition_screening/measurements/height ,  /nutrition_screening/measurements/weight ), 1)" nodeset="/nutrition_screening/measurements/wfh" type="string"/>
-      <bind nodeset="/nutrition_screening/measurements/nn1" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/measurements/nn2" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/measurements/nn3" readonly="true()" type="string"/>
-      <bind calculate="if( /nutrition_screening/measurements/wfa  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/measurements/wfa  &lt; -3), &quot;&lt; -3SD [Severely Malnourished]&quot;, if( ( /nutrition_screening/measurements/wfa  &lt; -2 and  /nutrition_screening/measurements/wfa  &gt;= -3), &quot;-3SD to &lt; -2SD [Moderately Malnourished]&quot;, if( ( /nutrition_screening/measurements/wfa  &lt;= 2 and  /nutrition_screening/measurements/wfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/measurements/wfa  &gt; 2 and  /nutrition_screening/measurements/wfa  &lt;= 3), &quot;&gt;2SD [Overweight]&quot;, if( ( /nutrition_screening/measurements/wfa  &gt; 3 ), &quot;&gt;3SD [Obese]&quot;, &quot;&quot; ) ) ) ) ) )" nodeset="/nutrition_screening/measurements/wfa_message" type="string"/>
-      <bind calculate="if( /nutrition_screening/measurements/hfa  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/measurements/hfa  &lt; -3), &quot;&lt; -3SD [Severely Stunted]&quot;, if( ( /nutrition_screening/measurements/hfa  &lt; -2 and  /nutrition_screening/measurements/hfa  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Stunted]&quot;, if( ( /nutrition_screening/measurements/hfa  &lt;= 2 and  /nutrition_screening/measurements/hfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/measurements/hfa  &gt; 2), &quot;&gt;2SD [High]&quot;, &quot;&quot; ) ) ) ) )" nodeset="/nutrition_screening/measurements/hfa_message" type="string"/>
-      <bind calculate="if( /nutrition_screening/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_screening/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_screening/measurements/wfh  &lt; -2 and  /nutrition_screening/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_screening/measurements/wfh  &lt;= 2 and  /nutrition_screening/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_screening/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_screening/measurements/wfh_message" type="string"/>
-      <bind nodeset="/nutrition_screening/measurements/zscore_wfa_note" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/measurements/zscore_hfa_note" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/measurements/zscore_wfh_note" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  != ''" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/n_1" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/n_2" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_3" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_4" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_5" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_6" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_7" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_3" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_4" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &lt; -2 and  /nutrition_screening/measurements/wfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_5" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &lt;= 2 and  /nutrition_screening/measurements/wfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_6" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &gt; 2 and  /nutrition_screening/measurements/wfa  &lt;= 3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_7" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &gt; 3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_8" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_9" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_10" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &lt; -2 and  /nutrition_screening/measurements/hfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_11" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &lt;= 2 and  /nutrition_screening/measurements/hfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_12" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &gt; 2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_13" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_14" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_15" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &lt; -2 and  /nutrition_screening/measurements/wfh  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_16" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &lt;= 2 and  /nutrition_screening/measurements/wfh  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_17" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &gt; 2" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/enroll" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/reason" relevant=" /nutrition_screening/treatment/enroll  = 'no'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/admission_type" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/admission_criteria" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select"/>
       <bind nodeset="/nutrition_screening/treatment/program" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
-      <bind nodeset="/nutrition_screening/treatment/n_9" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'OTP'" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_10" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SFP'" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_11" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SC'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_18" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'OTP'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_19" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SFP'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_20" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SC'" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/facility" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/nutrition_screening/treatment/target_weight" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
       <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/nutrition_screening/treatment/target_muac" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
       <bind nodeset="/nutrition_screening/treatment/other_facility" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" required="true()" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/additional_notes" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_12" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_13" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_14" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_15" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_16" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_17" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_18" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_19" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_20" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_21" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_22" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_23" readonly="true()" type="string"/>
@@ -168,14 +172,34 @@
       <bind nodeset="/nutrition_screening/summary/n_28" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_29" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_30" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_31" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_32" readonly="true()" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_33" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_34" readonly="true()" relevant=" /nutrition_screening/treatment/target_weight  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_35" readonly="true()" relevant=" /nutrition_screening/treatment/target_muac  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_36" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'no'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_37" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_38" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_3" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_4" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &lt; -2 and  /nutrition_screening/measurements/wfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_5" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &lt;= 2 and  /nutrition_screening/measurements/wfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_6" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &gt; 2 and  /nutrition_screening/measurements/wfa  &lt;= 3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_7" readonly="true()" relevant=" /nutrition_screening/measurements/wfa  &gt; 3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_32" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_33" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_9" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_10" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &lt; -2 and  /nutrition_screening/measurements/hfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_11" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &lt;= 2 and  /nutrition_screening/measurements/hfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_12" readonly="true()" relevant=" /nutrition_screening/measurements/hfa  &gt; 2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_35" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_36" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_14" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_15" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &lt; -2 and  /nutrition_screening/measurements/wfh  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_16" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &lt;= 2 and  /nutrition_screening/measurements/wfh  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_17" readonly="true()" relevant=" /nutrition_screening/measurements/wfh  &gt; 2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_38" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_39" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_40" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_41" readonly="true()" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_42" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_43" readonly="true()" relevant=" /nutrition_screening/treatment/target_weight  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_44" readonly="true()" relevant=" /nutrition_screening/treatment/target_muac  != ''" type="string"/>
+      <bind calculate="jr:choice-name( /nutrition_screening/treatment/reason , ' /nutrition_screening/treatment/reason ')" nodeset="/nutrition_screening/summary/c_reason" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_45" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'no'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_46" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_47" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/nutrition_screening/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -227,24 +251,6 @@
       <input ref="/nutrition_screening/measurements/muac">
         <label>MUAC Measurement</label>
       </input>
-      <input appearance="hidden" ref="/nutrition_screening/measurements/nn1">
-        <label>WFA: <output value=" /nutrition_screening/measurements/wfa "/></label>
-      </input>
-      <input appearance="hidden" ref="/nutrition_screening/measurements/nn2">
-        <label>HFA: <output value=" /nutrition_screening/measurements/hfa "/></label>
-      </input>
-      <input appearance="hidden" ref="/nutrition_screening/measurements/nn3">
-        <label>WFH: <output value=" /nutrition_screening/measurements/wfh "/></label>
-      </input>
-      <input appearance="hidden" ref="/nutrition_screening/measurements/zscore_wfa_note">
-        <label>weight for age: <output value=" /nutrition_screening/measurements/wfa_message "/></label>
-      </input>
-      <input appearance="hidden" ref="/nutrition_screening/measurements/zscore_hfa_note">
-        <label>height for age: <output value=" /nutrition_screening/measurements/hfa_message "/></label>
-      </input>
-      <input appearance="hidden" ref="/nutrition_screening/measurements/zscore_wfh_note">
-        <label>weight for height: <output value=" /nutrition_screening/measurements/wfh_message "/></label>
-      </input>
     </group>
     <group appearance="field-list" ref="/nutrition_screening/treatment">
       <label>Interpretation</label>
@@ -255,19 +261,49 @@
         <label>weight for age: <output value=" /nutrition_screening/measurements/wfa "/></label>
       </input>
       <input ref="/nutrition_screening/treatment/n_3">
-        <label>interpretation: <output value=" /nutrition_screening/measurements/wfa_message "/></label>
+        <label>interpretation: &lt; -3SD [Severely Malnourished]</label>
       </input>
       <input ref="/nutrition_screening/treatment/n_4">
-        <label>height for age: <output value=" /nutrition_screening/measurements/hfa "/></label>
+        <label>interpretation: -3SD to &lt; -2SD [Moderately Malnourished]</label>
       </input>
       <input ref="/nutrition_screening/treatment/n_5">
-        <label>interpretation: <output value=" /nutrition_screening/measurements/hfa_message "/></label>
+        <label>interpretation: -2SD to 2SD [Normal]</label>
       </input>
       <input ref="/nutrition_screening/treatment/n_6">
-        <label>weight for height: <output value=" /nutrition_screening/measurements/wfh "/></label>
+        <label>interpretation: &gt;2SD [Overweight]</label>
       </input>
       <input ref="/nutrition_screening/treatment/n_7">
-        <label>interpretation: <output value=" /nutrition_screening/measurements/wfh_message "/></label>
+        <label>interpretation: &gt;3SD [Obese]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_8">
+        <label>height for age: <output value=" /nutrition_screening/measurements/hfa "/></label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_9">
+        <label>interpretation: &lt; -3SD [Severely Stunted]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_10">
+        <label>interpretation: -3SD to &lt;-2SD [Moderately Stunted]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_11">
+        <label>interpretation: -2SD to 2SD [Normal]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_12">
+        <label>interpretation: &gt;2SD [High]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_13">
+        <label>weight for height: <output value=" /nutrition_screening/measurements/wfh "/></label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_14">
+        <label>interpretation: &lt; -3SD [Severely Wasted]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_15">
+        <label>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_16">
+        <label>interpretation: -2SD to 2SD [Normal]</label>
+      </input>
+      <input ref="/nutrition_screening/treatment/n_17">
+        <label>interpretation: &gt;2SD [Overweight]</label>
       </input>
       <select1 ref="/nutrition_screening/treatment/enroll">
         <label>Do you want to enroll(child name) into a treatment program?</label>
@@ -372,13 +408,13 @@
           <value>SC</value>
         </item>
       </select1>
-      <input ref="/nutrition_screening/treatment/n_9">
+      <input ref="/nutrition_screening/treatment/n_18">
         <label>OTP admission criteria should be '+ or ++Oedema' or 'MUAC &lt; 11.5cm' or 'Weight for Height Z score &lt;-3'</label>
       </input>
-      <input ref="/nutrition_screening/treatment/n_10">
+      <input ref="/nutrition_screening/treatment/n_19">
         <label>SFP admission criteria should be 'MUAC between 11.5 to 12.4cm' or 'Weight for Height Z score ≥ -3 to &lt; -2'</label>
       </input>
-      <input ref="/nutrition_screening/treatment/n_11">
+      <input ref="/nutrition_screening/treatment/n_20">
         <label>SC admission criteria should be '+++ Oedema' or 'MUAC &lt; 11.5cm with complications' or 'Weight for Height Z score &lt;-3 with complications'</label>
       </input>
       <select1 ref="/nutrition_screening/treatment/facility">
@@ -407,85 +443,115 @@
     </group>
     <group appearance="field-list summary" ref="/nutrition_screening/summary">
       <label>Click on submit to finalize this report</label>
-      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_12">
+      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_21">
         <label>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_13">
+      <input ref="/nutrition_screening/summary/n_22">
         <label>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_14">
+      <input ref="/nutrition_screening/summary/n_23">
         <label>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_15">
+      <input ref="/nutrition_screening/summary/n_24">
         <label>Gender: <output value=" /nutrition_screening/measurements/gender "/></label>
       </input>
-      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_16">
+      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_25">
         <label>Measurements&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_17">
+      <input ref="/nutrition_screening/summary/n_26">
         <label>Weight: <output value=" /nutrition_screening/measurements/weight "/> kg</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_18">
+      <input ref="/nutrition_screening/summary/n_27">
         <label>Height: <output value=" /nutrition_screening/measurements/height "/> cm</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_19">
+      <input ref="/nutrition_screening/summary/n_28">
         <label>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</label>
       </input>
-      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_20">
+      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_29">
         <label>Weight for age</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_21">
+      <input ref="/nutrition_screening/summary/n_30">
         <label>z-score: <output value=" /nutrition_screening/measurements/wfa "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_22">
-        <label>interpretation: <output value=" /nutrition_screening/measurements/wfa_message "/></label>
+      <input ref="/nutrition_screening/summary/n_3">
+        <label>interpretation: &lt; -3SD [Severely Malnourished]</label>
       </input>
-      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_23">
+      <input ref="/nutrition_screening/summary/n_4">
+        <label>interpretation: -3SD to &lt; -2SD [Moderately Malnourished]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_5">
+        <label>interpretation: -2SD to 2SD [Normal]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_6">
+        <label>interpretation: &gt;2SD [Overweight]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_7">
+        <label>interpretation: &gt;3SD [Obese]</label>
+      </input>
+      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_32">
         <label>Height for age</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_24">
+      <input ref="/nutrition_screening/summary/n_33">
         <label>z-score: <output value=" /nutrition_screening/measurements/hfa "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_25">
-        <label>interpretation: <output value=" /nutrition_screening/measurements/hfa_message "/></label>
+      <input ref="/nutrition_screening/summary/n_9">
+        <label>interpretation: &lt; -3SD [Severely Stunted]</label>
       </input>
-      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_26">
+      <input ref="/nutrition_screening/summary/n_10">
+        <label>interpretation: -3SD to &lt;-2SD [Moderately Stunted]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_11">
+        <label>interpretation: -2SD to 2SD [Normal]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_12">
+        <label>interpretation: &gt;2SD [High]</label>
+      </input>
+      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_35">
         <label>Weight for height</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_27">
+      <input ref="/nutrition_screening/summary/n_36">
         <label>z-score: <output value=" /nutrition_screening/measurements/wfh "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_28">
-        <label>interpretation: <output value=" /nutrition_screening/measurements/wfh_message "/></label>
+      <input ref="/nutrition_screening/summary/n_14">
+        <label>interpretation: &lt; -3SD [Severely Wasted]</label>
       </input>
-      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_29">
+      <input ref="/nutrition_screening/summary/n_15">
+        <label>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_16">
+        <label>interpretation: -2SD to 2SD [Normal]</label>
+      </input>
+      <input ref="/nutrition_screening/summary/n_17">
+        <label>interpretation: &gt;2SD [Overweight]</label>
+      </input>
+      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_38">
         <label>Treatment enrollment</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_30">
+      <input ref="/nutrition_screening/summary/n_39">
         <label>Enrolled into a treatment program: <output value=" /nutrition_screening/treatment/enroll "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_31">
+      <input ref="/nutrition_screening/summary/n_40">
         <label>Facility of admission: <output value=" /nutrition_screening/treatment/facility "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_32">
+      <input ref="/nutrition_screening/summary/n_41">
         <label>Facility referral: <output value=" /nutrition_screening/treatment/other_facility "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_33">
+      <input ref="/nutrition_screening/summary/n_42">
         <label>Program: <output value=" /nutrition_screening/treatment/program "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_34">
+      <input ref="/nutrition_screening/summary/n_43">
         <label>Target weight: <output value=" /nutrition_screening/treatment/target_weight "/> kg</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_35">
+      <input ref="/nutrition_screening/summary/n_44">
         <label>Target MUAC: <output value=" /nutrition_screening/treatment/target_muac "/> cm</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_36">
-        <label>Reason for non-enrollment: <output value=" /nutrition_screening/treatment/reason "/></label>
+      <input ref="/nutrition_screening/summary/n_45">
+        <label>Reason for non-enrollment: <output value=" /nutrition_screening/summary/c_reason "/></label>
       </input>
-      <input ref="/nutrition_screening/summary/n_37">
+      <input ref="/nutrition_screening/summary/n_46">
         <label>Additional notes:</label>
       </input>
-      <input ref="/nutrition_screening/summary/n_38">
+      <input ref="/nutrition_screening/summary/n_47">
         <label><output value=" /nutrition_screening/treatment/additional_notes "/></label>
       </input>
     </group>
