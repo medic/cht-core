@@ -14,8 +14,7 @@ services:
 
   dns:
     container_name: medic-dns
-    image: dns:latest
-    stdin_open: true
+    image: emsi/bind9:latest
     ports:
      - 53:53/udp
      - 53:53/tcp
