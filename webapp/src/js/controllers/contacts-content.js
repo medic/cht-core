@@ -26,22 +26,23 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         selected: Selectors.getSelected(state),
         loadingContent: Selectors.getLoadingContent(state),
         loadingSelectedChildren: Selectors.getLoadingSelectedChildren(state),
-        loadingSelectedReports: Selectors.getLoadingSelectedReports(state)
+        loadingSelectedReports: Selectors.getLoadingSelectedReports(state),
+        loadingSummary: Selectors.getLoadingSummary(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
         updateSelected: globalActions.updateSelected
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var taskEndDate,
         reportStartDate,

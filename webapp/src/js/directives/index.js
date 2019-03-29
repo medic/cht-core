@@ -6,6 +6,7 @@
 
   require('./actionbar');
   require('./auth');
+  require('./contacts-list');
   require('./content-row');
   require('./date-filter');
   require('./enketo');

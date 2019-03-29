@@ -7,7 +7,14 @@
 
 <div class="inner">
   <div class="inbox page">
-    <ng-include src="'templates/partials/contacts_list.html'"></ng-include>
+    <mm-contacts-list
+      appending="appending"
+      error="error"
+      filtered="filtered"
+      hasContacts="hasContacts"
+      loading="$ctrl.loading"
+      moreItems="moreItems"
+    ></mm-contacts-list>
     <ui-view name="content"/>
   </div>
 </div>
