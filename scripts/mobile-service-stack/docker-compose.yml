@@ -20,7 +20,7 @@ services:
      - 53:53/tcp
     volumes:
      - ./dns/named.conf.local:/etc/bind/named.conf.local
-     - ./deploy/db.medic.local:/etc/bind/db.medic.local
+     - ./deploy/db.medic.dev:/etc/bind/db.medic.dev
 
 secrets:
   nginx.crt:

@@ -1,5 +1,5 @@
-zone "medic.local" {
+zone "medic.dev" {
   type master;
-  file "/etc/bind/db.medic.local";
+  file "/etc/bind/db.medic.dev";
 };
 

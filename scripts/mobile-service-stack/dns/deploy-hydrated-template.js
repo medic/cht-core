@@ -1,4 +1,4 @@
-// This script takes the medic.local.template file and writes a copy hydrated with the machine's ip information
+// This script takes the medic.dev.template file and writes a copy hydrated with the machine's ip information
 
 const path = require('path');
 const fs = require('fs');
@@ -13,7 +13,7 @@ const getIpAddress = () => {
 };
 
 const getHydratedTemplate = ipAddress => {
-  const templateString = fs.readFileSync(path.join(__dirname, 'db.medic.local.template')).toString();
+  const templateString = fs.readFileSync(path.join(__dirname, 'db.medic.dev.template')).toString();
   const compiledTemplate = _.template(templateString);
   return compiledTemplate({ ipAddress });
 };
@@ -32,8 +32,8 @@ const main = () => {
   if (!fs.existsSync(pathToDeployFolder)) {
     fs.mkdirSync(pathToDeployFolder);
   }
-  
-  const resultingPath = path.join(pathToDeployFolder, 'db.medic.local');
+
+  const resultingPath = path.join(pathToDeployFolder, 'db.medic.dev');
   console.log(`Writing to ${resultingPath}.`);
   fs.writeFileSync(resultingPath, template);
 };

@@ -21,4 +21,4 @@ node ./dns/deploy-hydrated-template.js
 docker-compose up -d
 
 # Test the service is running
-host dev.medic.local 127.0.0.1
+host medic.dev 127.0.0.1
