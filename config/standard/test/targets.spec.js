@@ -1533,7 +1533,9 @@ describe('Standard Configuration Targets', function() {
       session.assert(childWithReport(
         {
           form: 'G',
-          fields: {},
+          fields: {
+            severity: 1
+          },
           reported_date: today,
         }
       ));
