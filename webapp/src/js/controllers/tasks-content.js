@@ -75,14 +75,14 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         } else {
           Enketo.unload($scope.form);
           $scope.form = null;
-          $scope.loadingForm = false;
+          ctrl.loadingForm = false;
           $scope.contentError = false;
           ctrl.clearCancelCallback();
         }
       });
       $scope.contentError = false;
       if (action.type === 'report') {
-        $scope.loadingForm = true;
+        ctrl.loadingForm = true;
         $scope.formId = action.form;
         XmlForm(action.form, { include_docs: true })
           .then(function(formDoc) {
@@ -90,7 +90,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
             Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
               .then(function(formInstance) {
                 $scope.form = formInstance;
-                $scope.loadingForm = false;
+                ctrl.loadingForm = false;
                 if (formDoc.doc.translation_key) {
                   $scope.setTitle($translate.instant(formDoc.doc.translation_key));
                 } else {
@@ -110,7 +110,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           .catch(function(err) {
             $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
             $scope.contentError = true;
-            $scope.loadingForm = false;
+            ctrl.loadingForm = false;
             $log.error('Error loading form.', err);
           });
       } else if (action.type === 'contact') {

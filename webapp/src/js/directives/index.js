@@ -23,5 +23,6 @@
   require('./sender');
   require('./show-muted-modal');
   require('./status-filter');
+  require('./tasks-list');
 
 }());

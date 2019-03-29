@@ -4,6 +4,7 @@ describe('TasksContentCtrl', function() {
       getEnketoEditedStatus,
       task,
       watchCallback,
+      ctrl,
       createController,
       render,
       XmlForm;
@@ -27,7 +28,7 @@ describe('TasksContentCtrl', function() {
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
     render.returns(Promise.resolve());
     createController = function() {
-      $controller('TasksContentCtrl', {
+      ctrl = $controller('TasksContentCtrl', {
         $scope: $scope,
         $q: Q,
         Enketo: { render: render },
@@ -71,7 +72,7 @@ describe('TasksContentCtrl', function() {
     };
     createController();
     chai.expect($scope.formId).to.equal(null);
-    chai.expect($scope.loadingForm).to.equal(undefined);
+    chai.expect(ctrl.loadingForm).to.equal(undefined);
     chai.expect(render.callCount).to.equal(0);
     done();
   });
@@ -95,7 +96,7 @@ describe('TasksContentCtrl', function() {
     };
     createController();
     chai.expect($scope.formId).to.equal(null);
-    chai.expect($scope.loadingForm).to.equal(undefined);
+    chai.expect(ctrl.loadingForm).to.equal(undefined);
     chai.expect(render.callCount).to.equal(0);
     done();
   });

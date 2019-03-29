@@ -1,11 +1,11 @@
 <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
-  <ul ng-show="!error && hasTasks"></ul>
-  <p ng-show="error" class="alert alert-danger" role="alert">
+  <ul ng-show="!$ctrl.error && $ctrl.hasTasks"></ul>
+  <p ng-show="$ctrl.error" class="alert alert-danger" role="alert">
     <span translate>Error fetching tasks</span>
-    <a class="btn btn-link" ng-click="refreshTaskList()" translate>Reload</a>
+    <a class="btn btn-link" ng-click="$ctrl.refreshTaskList()" translate>Reload</a>
   </p>
-  <p class="loading-status" ng-show="!error && !loading && !hasTasks && !tasksDisabled" translate>No tasks found</p>
-  <p class="loading-status" ng-show="!error && !loading && hasTasks && !tasksDisabled" translate>task.list.complete</p>
-  <p class="loading-status" ng-show="tasksDisabled" translate>tasks.disabled</p>
-  <div class="loader" ng-show="loading && !tasksDisabled && !error"></div>
+  <p class="loading-status" ng-show="!$ctrl.error && !$ctrl.loading && !$ctrl.hasTasks && !$ctrl.tasksDisabled" translate>No tasks found</p>
+  <p class="loading-status" ng-show="!$ctrl.error && !$ctrl.loading && $ctrl.hasTasks && !$ctrl.tasksDisabled" translate>task.list.complete</p>
+  <p class="loading-status" ng-show="$ctrl.tasksDisabled" translate>tasks.disabled</p>
+  <div class="loader" ng-show="$ctrl.loading && !$ctrl.tasksDisabled && !$ctrl.error"></div>
 </div>
