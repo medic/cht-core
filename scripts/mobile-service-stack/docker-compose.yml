@@ -22,7 +22,8 @@ services:
      - 53:53/udp
      - 53:53/tcp
     volumes:
-     - ./dns:/dns
+     - ./dns/named.conf.local:/dns/named.conf.local
+     - ./deploy/db.medic.local:/dns/db.medic.local
 
 secrets:
   nginx.crt:

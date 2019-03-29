@@ -1,3 +1,6 @@
+
+# This script starts an authoritative DNS server which resolves *.medicmobile.local to the local machine's ip
+
 #!/usr/bin/env bash
 exit_on_error() {
   exit_code=$?
@@ -10,6 +13,10 @@ exit_on_error() {
 set -e
 trap exit_on_error EXIT
 
+
+node ./dns/deploy-hydrated-template.js
+
+docker-compose down # In case
 docker-compose up -d
 
 # Unsure why this is required and we can't just use volumes like normal people

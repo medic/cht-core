@@ -10,7 +10,7 @@ $TTL	604800
 			 604800 )	; Negative Cache TTL
 ;
 @	IN	NS	ns.medic.local.
-ns  IN  A   192.168.1.78
-@	IN	A	192.168.1.78
-dev IN  A 192.168.1.78
+ns  IN  A   <%= ipAddress %>
+@	IN	A	<%= ipAddress %>
+dev IN  A <%= ipAddress %>
 
