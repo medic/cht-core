@@ -45,46 +45,6 @@
       ]
     },
     {
-      "label": "contact.profile.imam",
-      "fields": [
-        {
-          "label": "contact.profile.weight",
-          "translate": true,
-          "width": 3,
-          "value": "6"
-        },
-        {
-          "label": "contact.profile.height",
-          "translate": true,
-          "width": 3,
-          "value": "47"
-        },
-        {
-          "label": "contact.profile.wfh",
-          "translate": true,
-          "width": 3,
-          "value": "4",
-          "icon": ""
-        },
-        {
-          "label": "contact.profile.nutrition_program",
-          "translate": true,
-          "width": 6,
-          "value": "Outpatient Therapeutic Program"
-        },
-        {
-          "label": "contact.profile.sessions",
-          "value": "contact.profile.visits.of",
-          "translate": true,
-          "width": 6,
-          "context": {
-            "count": 0,
-            "total": 8
-          }
-        }
-      ]
-    },
-    {
      "label": "contact.profile.imam_history",
      "fields": [
        {
@@ -184,7 +144,7 @@
       "imm": false,
       "gmp": true
     },
-    "treatment_program": "OTP",
+    "treatment_program": "",
     "enrollment_date": "2019-03-28"
   }
 }
