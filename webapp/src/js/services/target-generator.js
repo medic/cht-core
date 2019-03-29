@@ -10,14 +10,17 @@ var moment = require('moment'),
       $log,
       $parse,
       $q,
+      CalendarInterval,
       RulesEngine,
       Settings,
+      UHCSettings,
       UserContact
     ) {
 
       'ngInect';
 
       var targets = [];
+      let relevantInterval;
 
       var isRelevant = function(instance) {
         if (!instance.date) {
@@ -27,10 +30,8 @@ var moment = require('moment'),
         if (instance.deleted) {
           return false;
         }
-        var start = moment().startOf('month');
-        var end = moment().endOf('month');
         var instanceDate = moment(instance.date);
-        return instanceDate.isAfter(start) && instanceDate.isBefore(end);
+        return instanceDate.isAfter(relevantInterval.start) && instanceDate.isBefore(relevantInterval.end);
       };
 
       var calculatePercent = function(pass, total) {
@@ -72,11 +73,13 @@ var moment = require('moment'),
       };
 
       var init = $q.all([ Settings(), UserContact() ])
-        .then(function(results) {
-          var items = results[0].tasks &&
-                      results[0].tasks.targets &&
-                      results[0].tasks.targets.items;
-          var userContact = results[1];
+        .then(([settings, userContact]) => {
+          var items = settings.tasks &&
+                      settings.tasks.targets &&
+                      settings.tasks.targets.items;
+
+          relevantInterval = CalendarInterval.getCurrent(UHCSettings.getMonthStartDate(settings));
+
           if (!items) {
             targets = [];
             return;

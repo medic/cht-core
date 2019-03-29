@@ -127,9 +127,9 @@
     "debounce_interval": 200
   },
   "uhc": {
+    "month_start_date": 1,
     "contacts_default_sort": "",
     "visit_count": {
-      "month_start_date": 1,
       "visit_count_goal": 0
     }
   },

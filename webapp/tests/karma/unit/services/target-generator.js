@@ -6,7 +6,9 @@ describe('TargetGenerator service', function() {
       RulesEngine,
       UserContact,
       injector,
-      now = new Date().valueOf();
+      now = new Date().valueOf(),
+      CalendarInterval,
+      UHCSettings;
 
   beforeEach(function() {
     Settings = sinon.stub();
@@ -15,11 +17,18 @@ describe('TargetGenerator service', function() {
       listen: sinon.stub(),
       enabled: true
     };
+    CalendarInterval = {
+      getCurrent: sinon.stub().returns({ start: moment().startOf('month'), end: moment().endOf('month') })
+    };
+    UHCSettings = { getMonthStartDate: sinon.stub() };
+
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Settings', Settings);
       $provide.value('RulesEngine', RulesEngine);
       $provide.value('UserContact', UserContact);
+      $provide.value('CalendarInterval', CalendarInterval);
+      $provide.value('UHCSettings', UHCSettings);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
@@ -181,6 +190,10 @@ describe('TargetGenerator service', function() {
   });
 
   it('calculates multiple targets', function(done) {
+    CalendarInterval.getCurrent.returns({
+      start: moment().startOf('month'),
+      end: moment().endOf('month')
+    });
     Settings.returns(Promise.resolve({ tasks: { targets: { items: [
       { id: 'report', type: 'count' },
       { id: 'registration', type: 'percent' }
@@ -223,6 +236,10 @@ describe('TargetGenerator service', function() {
   };
 
   it('deals with deleted instances', function(done) {
+    CalendarInterval.getCurrent.returns({
+      start: moment().startOf('month'),
+      end: moment().endOf('month')
+    });
     Settings.returns(Promise.resolve({ tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
@@ -395,6 +412,57 @@ describe('TargetGenerator service', function() {
       listener(null, [
         { _id: '1', type: 'report', pass: true, date: 1000 }
       ]);
+    });
+  });
+
+  it('gets the relevancy interval depending on settings', done => {
+    const settings = {
+      tasks: {
+        targets: {
+          items: [{ id: 'report', type: 'count' }]
+        }
+      }
+    };
+    Settings.resolves(settings);
+    UHCSettings.getMonthStartDate.returns(3);
+    UserContact.resolves();
+    RulesEngine.listen.callsArgWith(2, null, []);
+    injector.get('TargetGenerator')(() => {
+      chai.expect(UHCSettings.getMonthStartDate.callCount).to.equal(1);
+      chai.expect(UHCSettings.getMonthStartDate.args[0]).to.deep.equal([settings]);
+      chai.expect(CalendarInterval.getCurrent.callCount).to.equal(1);
+      chai.expect(CalendarInterval.getCurrent.args[0]).to.deep.equal([3]);
+      done();
+    });
+  });
+
+  it('ignores target instances outside if the relevancy interval', (done) => {
+    const settings = {
+      tasks: {
+        targets: {
+          items: [{ id: 'report', type: 'count' }]
+        }
+      }
+    };
+    Settings.resolves(settings);
+    UserContact.resolves();
+    UHCSettings.getMonthStartDate.returns(3);
+    CalendarInterval.getCurrent.returns({
+      start: moment().subtract(10, 'days'),
+      end: moment().add(20, 'days')
+    });
+    RulesEngine.listen.callsArgWith(2, null, [
+      { _id: '1', type: 'report', pass: true, date: moment().subtract(5, 'days') },
+      { _id: '2', type: 'report', pass: true, date: moment().add(2, 'days') },
+      { _id: '3', type: 'report', pass: true, date: moment().subtract(15, 'days') },
+      { _id: '4', type: 'report', pass: true, date: moment().add(21, 'days') }
+    ]);
+    injector.get('TargetGenerator')((err, actual) => {
+      chai.expect(actual.length).to.equal(1);
+      chai.expect(actual[0].id).to.equal('report');
+      chai.expect(actual[0].type).to.equal('count');
+      chai.expect(actual[0].value.pass).to.equal(2);
+      done();
     });
   });
 

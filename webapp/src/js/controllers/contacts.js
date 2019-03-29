@@ -28,6 +28,7 @@ var _ = require('underscore'),
     Simprints,
     Tour,
     TranslateFrom,
+    UHCSettings,
     UserSettings,
     XmlForms
   ) {
@@ -421,27 +422,15 @@ var _ = require('underscore'),
         });
     };
 
-    var getVisitCountSettings = function(uhcSettings) {
-      if (!uhcSettings.visit_count) {
-        return {};
-      }
-
-      return {
-        monthStartDate: uhcSettings.visit_count.month_start_date,
-        visitCountGoal: uhcSettings.visit_count.visit_count_goal,
-      };
-    };
-
     var setupPromise = $q
       .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
-      .then(function(results) {
-        usersHomePlace = results[0];
-        $scope.lastVisitedDateExtras = results[1];
-        var uhcSettings = (results[2] && results[2].uhc) || {};
-        $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
-        if ($scope.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
-          $scope.sortDirection = $scope.defaultSortDirection =
-            uhcSettings.contacts_default_sort;
+      .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
+        usersHomePlace = homePlaceSummary;
+        $scope.lastVisitedDateExtras = viewLastVisitedDate;
+        $scope.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
+
+        if ($scope.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
+          $scope.sortDirection = $scope.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
 
         setActionBarData();
