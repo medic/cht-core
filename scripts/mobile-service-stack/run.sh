@@ -14,14 +14,10 @@ set -e
 trap exit_on_error EXIT
 
 
+docker-compose down # In case
 node ./dns/deploy-hydrated-template.js
 
-docker-compose down # In case
 docker-compose up -d
-
-# Unsure why this is required and we can't just use volumes like normal people
-sleep 5
-docker exec -i medic-bind cp -a /dns/. /data/bind/etc/
-docker restart medic-bind
+docker exec medic-dns service bind9 start
 
 host dev.medic.local 127.0.0.1

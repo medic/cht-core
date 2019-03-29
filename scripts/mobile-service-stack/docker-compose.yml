@@ -13,17 +13,15 @@ services:
     network_mode: host
 
   dns:
-    restart: always
-    container_name: medic-bind
-    image: sameersbn/bind:latest
-    environment:
-     - WEBMIN_ENABLED=false
+    container_name: medic-dns
+    build: dns
+    stdin_open: true
     ports:
      - 53:53/udp
      - 53:53/tcp
     volumes:
-     - ./dns/named.conf.local:/dns/named.conf.local
-     - ./deploy/db.medic.local:/dns/db.medic.local
+     - ./dns/named.conf.local:/etc/bind/named.conf.local
+     - ./deploy/db.medic.local:/etc/bind/db.medic.local
 
 secrets:
   nginx.crt:
