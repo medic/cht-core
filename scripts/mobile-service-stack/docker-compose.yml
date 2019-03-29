@@ -1,0 +1,32 @@
+version: '3.3'
+services:
+  https:
+    image: nginx
+    container_name: medic-nginx
+    ports:
+     - 443:443
+    volumes:
+     - ./https/nginx-ssl-proxy.conf:/etc/nginx/conf.d/default.conf
+    secrets:
+     - nginx.crt
+     - nginx.key
+    network_mode: host
+
+  dns:
+    restart: always
+    container_name: medic-bind
+    image: sameersbn/bind:latest
+    environment:
+     - WEBMIN_ENABLED=false
+    ports:
+     - 53:53/udp
+     - 53:53/tcp
+    volumes:
+     - ./dns:/dns
+
+secrets:
+  nginx.crt:
+    file: "./https/certificate.crt"
+  nginx.key:
+    file: "./https/certificate.key"
+  

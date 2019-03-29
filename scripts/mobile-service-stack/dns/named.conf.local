@@ -1,0 +1,5 @@
+zone "medic.local" {
+  type master;
+  file "/etc/bind/db.medic.local";
+};
+

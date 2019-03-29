@@ -475,6 +475,9 @@ module.exports = function(grunt) {
       'setup-api-integration': {
         cmd: 'cd api && npm ci',
       },
+      'mobile-service-stack': {
+        cmd: 'cd scripts/mobile-service-stack && ./run.sh',
+      },
       'npm-ci-shared-libs': {
         cmd: () => {
           return getSharedLibDirs()
