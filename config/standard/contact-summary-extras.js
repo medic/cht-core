@@ -427,7 +427,8 @@ function getTreatmentEnrollmentDate(){
 function getTreatmentProgram(){
   var treatment_program = '';
   var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
-  if (enrollment_report) treatment_program = enrollment_report.fields.treatment.program;
+  var exit_report = getMostRecentNutritionEnrollment().exit;
+  if (enrollment_report && !exit_report) treatment_program = enrollment_report.fields.treatment.program;
   return treatment_program;
 }
 

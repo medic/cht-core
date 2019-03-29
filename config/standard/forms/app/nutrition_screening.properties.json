@@ -1,6 +1,6 @@
 {
   "icon": "child",
-  "title": "Nutrition Screening",
+  "title": "Child Nutrition Screening",
   "context": {
     "person": true,
     "place": false,
