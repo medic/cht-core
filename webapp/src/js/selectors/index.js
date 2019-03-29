@@ -1,5 +1,6 @@
 const reselect = require('reselect');
 
+// Global
 const getGlobalState = state => state.global;
 const getCancelCallback = state => getGlobalState(state).cancelCallback;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
@@ -34,6 +35,10 @@ const getSelectedValidChecks = reselect.createSelector(
   }
 );
 
+// Contacts
+const getContactsState = state => state.contacts;
+const getLoadingSummary = state => getContactsState(state).loadingSummary;
+
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getCancelCallback,
@@ -50,5 +55,8 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedSummaries,
   getSelectedValidChecks,
   getShowActionBar,
-  getShowContent
+  getShowContent,
+
+  getContactsState,
+  getLoadingSummary
 });
