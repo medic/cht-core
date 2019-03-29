@@ -20,7 +20,7 @@ const markForOutbound = (change) => {
   return db.sentinel.get(`task:outbound:${change.doc._id}`)
     .then(existingOutboundTask => {
       // TODO: deal with either ignoring or topping up existing queue
-      logger.log(`${existingOutboundTask._id} already exists, ignoring`);
+      logger.info(`${existingOutboundTask._id} already exists, ignoring`);
     })
     .catch(err => {
       if (err.status !== 404) {
@@ -29,6 +29,7 @@ const markForOutbound = (change) => {
 
       return db.sentinel.put({
         _id: `task:outbound:${change.doc._id}`,
+        created: Date.now(),
         doc_id: change.doc._id,
         queue: toQueue
       });

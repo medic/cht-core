@@ -146,9 +146,13 @@ const collect = (config, queue) => {
 
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
+  const pushConfig = configService.get(CONFIGURED_PUSHES);
+  if (!pushConfig) {
+    return Promise.resolve();
+  }
+
   return queued()
   .then(queues => {
-    const pushConfig = configService.get(CONFIGURED_PUSHES);
     // array of {doc, conf} to be processed
     const pushes = queues.reduce((pushes, [queue, doc]) => {
       const pushesForDoc =
