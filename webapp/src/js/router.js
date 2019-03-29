@@ -45,6 +45,7 @@
       .state('reports', {
         url: '/reports?tour&query',
         controller: 'ReportsCtrl',
+        controllerAs: 'reportsCtrl',
         templateUrl: 'templates/partials/reports.html'
       })
       .state('reports.add', {
@@ -91,7 +92,7 @@
       .state('analytics', {
         url: '/analytics?tour',
         controller: 'AnalyticsCtrl',
-        controllerAs: '$ctrl',
+        controllerAs: 'analyticsCtrl',
         templateUrl: 'templates/partials/analytics.html'
       })
       .state('analytics.reporting', {
@@ -113,7 +114,7 @@
         views: {
           detail: {
             controller: 'AnalyticsReportingDetailCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'analyticsReportingDetailCtrl',
             templateUrl: 'templates/partials/analytics/reporting_detail.html'
           }
         }
@@ -133,7 +134,7 @@
       .state('contacts', {
         url: '/contacts?tour',
         controller: 'ContactsCtrl',
-        controllerAs: '$ctrl',
+        controllerAs: 'contactsCtrl',
         templateUrl: 'templates/partials/contacts.html'
       })
       .state('contacts.add', {
@@ -218,6 +219,7 @@
       .state('tasks', {
         url: '/tasks?tour',
         controller: 'TasksCtrl',
+        controllerAs: 'tasksCtrl',
         templateUrl: 'templates/partials/tasks.html'
       })
       .state('tasks.detail', {
