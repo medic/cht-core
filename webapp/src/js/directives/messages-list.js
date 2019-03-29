@@ -1,23 +1,25 @@
-angular.module('inboxDirectives').directive('mmMessagesList', function() {
-  'use strict';
+angular.module('inboxDirectives').component('mmMessagesList', {
+  templateUrl: 'templates/directives/messages_list.html',
+  controller: function($ngRedux, $scope, Selectors) {
+    'ngInject';
 
-    return {
-      restrict: 'E',
-      templateUrl: 'templates/directives/messages_list.html',
-      controller: function($ngRedux, $scope, Selectors) {
-        'ngInject';
-
-        var ctrl = this;
-        var mapStateToTarget = function(state) {
-          return {
-            loadingContent: Selectors.getLoadingContent(state),
-            selected: Selectors.getSelected(state)
-          };
-        };
-        var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
-
-        $scope.$on('$destroy', unsubscribe);
-      },
-      controllerAs: '$ctrl'
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        loadingContent: Selectors.getLoadingContent(state),
+        selected: Selectors.getSelected(state)
+      };
     };
-  });
+    const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+
+    ctrl.banana = 'banoona';
+
+    $scope.$on('$destroy', unsubscribe);
+  },
+  bindings: {
+    appending: '<',
+    error: '<',
+    loading: '<',
+    messages: '<'
+  }
+});

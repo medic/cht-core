@@ -23,6 +23,7 @@
       .state('messages', {
         url: '/messages?tour',
         controller: 'MessagesCtrl',
+        controllerAs: 'messagesCtrl',
         templateUrl: 'templates/partials/messages.html'
       })
       .state('messages.detail', {
@@ -132,6 +133,7 @@
       .state('contacts', {
         url: '/contacts?tour',
         controller: 'ContactsCtrl',
+        controllerAs: '$ctrl',
         templateUrl: 'templates/partials/contacts.html'
       })
       .state('contacts.add', {

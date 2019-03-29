@@ -16,7 +16,7 @@
         <mm-sender message="$ctrl.selected.contact"></mm-sender>
       </div>
       <div id="message-content">
-        <div class="loader" ng-show="loadingMoreContent"></div>
+        <div class="loader" ng-show="$ctrl.loadingMoreContent"></div>
         <p class="loading-status" ng-show="allLoaded" translate>No more messages</p>
         <div>
           <ul>

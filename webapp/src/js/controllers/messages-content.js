@@ -29,15 +29,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         loadingContent: Selectors.getLoadingContent(state),
         selected: Selectors.getSelected(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
         addSelectedMessage: globalActions.addSelectedMessage,
         removeSelectedMessage: globalActions.removeSelectedMessage,
@@ -45,7 +45,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         updateSelected: globalActions.updateSelected
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.send = {
       message: ''
@@ -144,13 +144,13 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         var skip = options.skip && ctrl.selected.messages.length;
         if (skip) {
           $timeout(function() {
-            $scope.loadingMoreContent = true;
+            ctrl.loadingMoreContent = true;
           });
         }
 
         MessageContacts.conversation(selectedId, skip)
           .then(function(conversation) {
-            $scope.loadingMoreContent = false;
+            ctrl.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
