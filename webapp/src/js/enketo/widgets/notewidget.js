@@ -72,7 +72,7 @@ define( function( require, exports, module ) {
     function applyLiveLinkHtml( $el ) {
         // The html may include form inputs with values set via javascript,
         // explicitly set value attributes otherwise call html() won't include them
-        $el.find(`input[type='text']`).each(function () {
+        $el.find('input').each(function () {
           $(this).attr('value', $(this).val());
         });
 
