@@ -74,7 +74,7 @@ define( function( require, exports, module ) {
         // explicitly set value attributes otherwise call html() won't include them
         $el.find(`input[type='text']`).each(function () {
           $(this).attr('value', $(this).val());
-        })
+        });
 
         var html = $el.html();
 
