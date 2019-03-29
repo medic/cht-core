@@ -365,9 +365,9 @@
     title: 'task.nutrition_screening.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return r.fields.severity === "3" || r.fields.severity === "2";
+    appliesIf: function(c, r){
+      var severity = r.fields.severity.toString();
+      return severity === "3" || severity === "2";
     },
     actions: [{form: 'nutrition_screening'}],
     events: [
@@ -377,8 +377,7 @@
       start: 2,
       end: 0
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening';
       });
@@ -391,9 +390,8 @@
     title: 'task.nutrition_screening_missing.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return r.fields.severity === "3";
+    appliesIf: function(c, r){
+      return r.fields.severity.toString() === "3";
     },
     actions: [{form: 'nutrition_screening'}],
     events: [
@@ -403,8 +401,7 @@
       start: 0,
       end: 7
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening';
       });
@@ -417,9 +414,8 @@
     title: 'task.nutrition_screening_missing.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return r.fields.severity === "2";
+    appliesIf: function(c, r){
+      return r.fields.severity.toString() === "2";
     },
     actions: [{form: 'nutrition_screening'}],
     events: [{
@@ -428,8 +424,7 @@
       start: 0,
       end: 7
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening';
       });
@@ -443,7 +438,6 @@
     appliesTo: 'reports',
     appliesToType: ['DR', 'nutrition_exit'],
     appliesIf: function(c, r){
-      /* jshint unused:vars */
       return (
         r.form === 'DR' ||
         (r.form === 'nutrition_exit' && r.fields.exit.outcome === 'dead')
@@ -470,7 +464,6 @@
     appliesTo: 'reports',
     appliesToType: ['nutrition_followup'],
     appliesIf: function(c, r){
-      /* jshint unused:vars */
       return r.fields.measurements.exit === 'yes';
     },
     actions: [{form: 'nutrition_exit'}],
