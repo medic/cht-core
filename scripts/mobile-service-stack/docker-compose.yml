@@ -14,7 +14,7 @@ services:
 
   dns:
     container_name: medic-dns
-    build: dns
+    image: dns:latest
     stdin_open: true
     ports:
      - 53:53/udp

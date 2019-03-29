@@ -32,7 +32,10 @@ const main = () => {
   if (!fs.existsSync(pathToDeployFolder)) {
     fs.mkdirSync(pathToDeployFolder);
   }
-  fs.writeFileSync(path.join(pathToDeployFolder, 'db.medic.local'), template);
+  console.log(`Using IP address: ${ipAddress}`);
+  const resultingPath = path.join(pathToDeployFolder, 'db.medic.local');
+  console.log(`Writing to ${resultingPath}.`);
+  fs.writeFileSync(resultingPath, template);
 };
 
 main();

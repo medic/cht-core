@@ -13,11 +13,12 @@ exit_on_error() {
 set -e
 trap exit_on_error EXIT
 
+# Clean up any previous runs
+docker-compose down
 
-docker-compose down # In case
+# Create some data and launch the services
 node ./dns/deploy-hydrated-template.js
-
 docker-compose up -d
-docker exec medic-dns service bind9 start
 
+# Test the service is running
 host dev.medic.local 127.0.0.1
