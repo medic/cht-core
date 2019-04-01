@@ -1,4 +1,4 @@
-describe('TranslationLoader service', function() {
+describe('UHCSettings service', function() {
 
   'use strict';
 
@@ -15,10 +15,10 @@ describe('TranslationLoader service', function() {
 
   describe('getMonthStartDate', () => {
     it('should return falsy for invalid input', () => {
-      chai.expect(service.getMonthStartDate(false)).to.equal(false);
-      chai.expect(service.getMonthStartDate()).to.equal(undefined);
-      chai.expect(service.getMonthStartDate({})).to.equal(undefined);
-      chai.expect(service.getMonthStartDate({ uhc: false })).to.equal(false);
+      chai.expect(!!service.getMonthStartDate(false)).to.equal(false);
+      chai.expect(!!service.getMonthStartDate()).to.equal(false);
+      chai.expect(!!service.getMonthStartDate({})).to.equal(false);
+      chai.expect(!!service.getMonthStartDate({ uhc: false })).to.equal(false);
     });
 
     it('should return correct month_start_date', () => {
@@ -75,10 +75,10 @@ describe('TranslationLoader service', function() {
 
   describe('getContactsDefaultSort', () => {
     it('should return falsy when for invalid input', () => {
-      chai.expect(service.getContactsDefaultSort(false)).to.equal(false);
-      chai.expect(service.getContactsDefaultSort()).to.equal(undefined);
-      chai.expect(service.getContactsDefaultSort({})).to.equal(undefined);
-      chai.expect(service.getContactsDefaultSort({ uhc: false })).to.equal(false);
+      chai.expect(!!service.getContactsDefaultSort(false)).to.equal(false);
+      chai.expect(!!service.getContactsDefaultSort()).to.equal(false);
+      chai.expect(!!service.getContactsDefaultSort({})).to.equal(false);
+      chai.expect(!!service.getContactsDefaultSort({ uhc: false })).to.equal(false);
     });
 
     it('should return correct value', () => {

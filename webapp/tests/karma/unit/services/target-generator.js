@@ -7,7 +7,7 @@ describe('TargetGenerator service', function() {
       UserContact,
       injector,
       now = new Date().valueOf(),
-      CalendarInterval,
+      calendarInterval,
       UHCSettings;
 
   beforeEach(function() {
@@ -17,9 +17,6 @@ describe('TargetGenerator service', function() {
       listen: sinon.stub(),
       enabled: true
     };
-    CalendarInterval = {
-      getCurrent: sinon.stub().returns({ start: moment().startOf('month'), end: moment().endOf('month') })
-    };
     UHCSettings = { getMonthStartDate: sinon.stub() };
 
     module('inboxApp');
@@ -27,12 +24,12 @@ describe('TargetGenerator service', function() {
       $provide.value('Settings', Settings);
       $provide.value('RulesEngine', RulesEngine);
       $provide.value('UserContact', UserContact);
-      $provide.value('CalendarInterval', CalendarInterval);
       $provide.value('UHCSettings', UHCSettings);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(function($injector) {
+    inject(function($injector, CalendarInterval) {
       injector = $injector;
+      calendarInterval = CalendarInterval;
     });
   });
 
@@ -190,10 +187,6 @@ describe('TargetGenerator service', function() {
   });
 
   it('calculates multiple targets', function(done) {
-    CalendarInterval.getCurrent.returns({
-      start: moment().startOf('month'),
-      end: moment().endOf('month')
-    });
     Settings.returns(Promise.resolve({ tasks: { targets: { items: [
       { id: 'report', type: 'count' },
       { id: 'registration', type: 'percent' }
@@ -236,10 +229,6 @@ describe('TargetGenerator service', function() {
   };
 
   it('deals with deleted instances', function(done) {
-    CalendarInterval.getCurrent.returns({
-      start: moment().startOf('month'),
-      end: moment().endOf('month')
-    });
     Settings.returns(Promise.resolve({ tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
@@ -427,11 +416,12 @@ describe('TargetGenerator service', function() {
     UHCSettings.getMonthStartDate.returns(3);
     UserContact.resolves();
     RulesEngine.listen.callsArgWith(2, null, []);
+    sinon.spy(calendarInterval, 'getCurrent');
     injector.get('TargetGenerator')(() => {
       chai.expect(UHCSettings.getMonthStartDate.callCount).to.equal(1);
       chai.expect(UHCSettings.getMonthStartDate.args[0]).to.deep.equal([settings]);
-      chai.expect(CalendarInterval.getCurrent.callCount).to.equal(1);
-      chai.expect(CalendarInterval.getCurrent.args[0]).to.deep.equal([3]);
+      chai.expect(calendarInterval.getCurrent.callCount).to.equal(1);
+      chai.expect(calendarInterval.getCurrent.args[0]).to.deep.equal([3]);
       done();
     });
   });
@@ -446,24 +436,23 @@ describe('TargetGenerator service', function() {
     };
     Settings.resolves(settings);
     UserContact.resolves();
-    UHCSettings.getMonthStartDate.returns(3);
-    CalendarInterval.getCurrent.returns({
-      start: moment().subtract(10, 'days'),
-      end: moment().add(20, 'days')
-    });
+    const monthStartDate = moment().subtract(14, 'days').date();
+    UHCSettings.getMonthStartDate.returns(monthStartDate);
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: moment().subtract(5, 'days') },
       { _id: '2', type: 'report', pass: true, date: moment().add(2, 'days') },
       { _id: '3', type: 'report', pass: true, date: moment().subtract(15, 'days') },
       { _id: '4', type: 'report', pass: true, date: moment().add(21, 'days') }
     ]);
+    sinon.spy(calendarInterval, 'getCurrent');
     injector.get('TargetGenerator')((err, actual) => {
       chai.expect(actual.length).to.equal(1);
       chai.expect(actual[0].id).to.equal('report');
       chai.expect(actual[0].type).to.equal('count');
       chai.expect(actual[0].value.pass).to.equal(2);
+      chai.expect(calendarInterval.getCurrent.callCount).to.equal(1);
+      chai.expect(calendarInterval.getCurrent.args[0]).to.deep.equal([monthStartDate]);
       done();
     });
   });
-
 });

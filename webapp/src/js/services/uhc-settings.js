@@ -31,9 +31,9 @@ angular.module('inboxServices').factory('UHCSettings',
     };
 
     return {
-      getVisitCountSettings: getVisitCountSettings,
-      getMonthStartDate: getMonthStartDate,
-      getContactsDefaultSort: getContactsDefaultSort
+      getVisitCountSettings,
+      getMonthStartDate,
+      getContactsDefaultSort
     };
   }
 );
