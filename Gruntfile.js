@@ -184,14 +184,24 @@ module.exports = function(grunt) {
         banner:
           '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
-      build: {
+      web: {
         files: {
+          // webapp files
           'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
           'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
+          'build/ddocs/medic/_attachments/js/service-worker.js': 'build/ddocs/medic/_attachments/js/service-worker.js',
+
+          // admin files
           'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
           'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
         },
       },
+      api: {
+        files: {
+          // public api files
+          'api/build/public/login/script.js': 'api/build/public/login/script.js',
+        }
+      }
     },
     env: {
       'unit-test': {
@@ -224,17 +234,23 @@ module.exports = function(grunt) {
       },
     },
     cssmin: {
-      all: {
+      web: {
         options: {
           keepSpecialComments: 0,
         },
         files: {
-          'build/ddocs/medic/_attachments/css/inbox.css':
-            'build/ddocs/medic/_attachments/css/inbox.css',
-          'build/ddocs/medic-admin/_attachments/css/main.css':
-            'build/ddocs/medic-admin/_attachments/css/main.css',
+          'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
+          'build/ddocs/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-admin/_attachments/css/main.css',
         },
       },
+      api: {
+        options: {
+          keepSpecialComments: 0,
+        },
+        files: {
+          'api/build/public/login/style.css': 'api/build/public/login/style.css',
+        },
+      }
     },
     postcss: {
       options: {
@@ -257,24 +273,16 @@ module.exports = function(grunt) {
     },
     copy: {
       ddocs: {
-        files: [
-          {
-            expand: true,
-            cwd: 'ddocs/',
-            src: '**/*',
-            dest: 'build/ddocs/',
-          },
-        ],
+        expand: true,
+        cwd: 'ddocs/',
+        src: '**/*',
+        dest: 'build/ddocs/',
       },
       webapp: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'webapp/node_modules/font-awesome/fonts/*',
-            dest: 'build/ddocs/medic/_attachments/fonts/',
-          },
-        ],
+        expand: true,
+        flatten: true,
+        src: 'webapp/node_modules/font-awesome/fonts/*',
+        dest: 'build/ddocs/medic/_attachments/fonts/',
       },
       'inbox-file-attachment': {
         expand: true,
@@ -283,20 +291,22 @@ module.exports = function(grunt) {
         dest: 'build/ddocs/medic/_attachments/',
       },
       'ddoc-attachments': {
-        files: [
-          {
-            expand: true,
-            cwd: 'webapp/src/',
-            src: [
-              'audio/**/*',
-              'fonts/**/*',
-              'img/**/*',
-              'templates/inbox.html',
-              'ddocs/medic/_attachments/**/*',
-            ],
-            dest: 'build/ddocs/medic/_attachments/',
-          },
+        expand: true,
+        cwd: 'webapp/src/',
+        src: [
+          'audio/**/*',
+          'fonts/**/*',
+          'img/**/*',
+          'templates/inbox.html',
+          'ddocs/medic/_attachments/**/*',
         ],
+        dest: 'build/ddocs/medic/_attachments/',
+      },
+      'api-resources': {
+        expand: true,
+        cwd: 'api/src/public/',
+        src: '**/*',
+        dest: 'api/build/public/',
       },
       'admin-resources': {
         files: [
@@ -309,35 +319,30 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['admin/node_modules/font-awesome/fonts/*', 'webapp/src/fonts/**/*'],
+            src: [
+              'admin/node_modules/font-awesome/fonts/*',
+              'webapp/src/fonts/**/*'
+            ],
             dest: 'build/ddocs/medic-admin/_attachments/fonts/',
           },
         ],
       },
       'libraries-to-patch': {
-        files: [
-          {
-            expand: true,
-            cwd: 'webapp/node_modules',
-            src: [
-              'bootstrap-daterangepicker/**',
-              'enketo-core/**',
-              'font-awesome/**',
-              'moment/**',
-            ],
-            dest: 'webapp/node_modules_backup',
-          },
+        expand: true,
+        cwd: 'webapp/node_modules',
+        src: [
+          'bootstrap-daterangepicker/**',
+          'enketo-core/**',
+          'font-awesome/**',
+          'moment/**',
         ],
+        dest: 'webapp/node_modules_backup',
       },
       'enketo-xslt': {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
-            dest: 'build/ddocs/medic/_attachments/xslt/',
-          },
-        ],
+        expand: true,
+        flatten: true,
+        src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
+        dest: 'build/ddocs/medic/_attachments/xslt/',
       },
     },
     exec: {
@@ -363,6 +368,7 @@ module.exports = function(grunt) {
           const ignore = [
             'webapp/src/js/modules/xpath-element-path.js',
             'api/src/extracted-resources/**/*',
+            'api/build/**/*',
             '**/node_modules/**',
             'sentinel/src/lib/pupil/**',
             'build/**',
@@ -811,13 +817,13 @@ module.exports = function(grunt) {
     'exec:apply-patches',
   ]);
 
-  grunt.registerTask('mmjs', 'Build the JS resources', [
+  grunt.registerTask('build-js', 'Build the JS resources', [
     'browserify:webapp',
     'replace:update-app-constants',
     'ngtemplates:inboxApp',
   ]);
 
-  grunt.registerTask('mmcss', 'Build the CSS resources', [
+  grunt.registerTask('build-css', 'Build the CSS resources', [
     'sass',
     'less:webapp',
     'postcss',
@@ -832,23 +838,23 @@ module.exports = function(grunt) {
     'exec:clean-build-dir',
     'copy:ddocs',
     'build-node-modules',
-    'mmcss',
-    'mmjs',
-    'enketo-xslt',
-    'minify',
     'build-common',
+    'minify',
+    'couch-compile:primary',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
-    'mmcss',
-    'mmjs',
-    'enketo-xslt',
+    'copy:api-resources',
     'build-common',
+    'couch-compile:primary',
   ]);
 
   grunt.registerTask('build-common', 'Build the static resources', [
+    'build-css',
+    'build-js',
+    'enketo-xslt',
     'copy:webapp',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',
@@ -860,7 +866,6 @@ module.exports = function(grunt) {
     'couch-compile:secondary',
     'copy:ddoc-attachments',
     'generate-service-worker',
-    'couch-compile:primary',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -875,11 +880,13 @@ module.exports = function(grunt) {
     'notify:deployed',
   ]);
 
-  grunt.registerTask(
-    'build-node-modules',
-    'Build and pack api and sentinel bundles',
-    ['exec:bundle-dependencies', 'exec:pack-node-modules']
-  );
+  grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+    'copy:api-resources',
+    'uglify:api',
+    'cssmin:api',
+    'exec:bundle-dependencies',
+    'exec:pack-node-modules',
+  ]);
 
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
@@ -903,25 +910,20 @@ module.exports = function(grunt) {
     'exec:reset-test-databases',
     'build-node-modules',
     'build-ddoc',
+    'couch-compile:primary',
     'couch-push:test',
     'protractor:performance-tests-and-services',
   ]);
 
-  grunt.registerTask(
-    'unit-continuous',
-    'Lint, karma unit tests running on a loop',
-    ['exec:eslint', 'karma:unit-continuous']
-  );
+  grunt.registerTask('unit-continuous', 'Run karma unit tests in a loop', [
+    'karma:unit-continuous'
+  ]);
 
-  grunt.registerTask(
-    'test-api-integration',
-    'Integration tests for medic-api',
-    [
-      'exec:check-env-vars',
-      'exec:setup-api-integration',
-      'mochaTest:api-integration',
-    ]
-  );
+  grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
+    'exec:check-env-vars',
+    'exec:setup-api-integration',
+    'mochaTest:api-integration',
+  ]);
 
   grunt.registerTask('unit', 'Unit tests', [
     'karma:unit',
@@ -932,21 +934,21 @@ module.exports = function(grunt) {
     'env:general',
   ]);
 
-  grunt.registerTask(
-    'test',
-    'Lint, unit tests, api-integration tests and e2e tests',
-    ['unit', 'test-api-integration', 'e2e']
-  );
+  grunt.registerTask('test', 'Run unit, integration, and e2e tests', [
+    'unit',
+    'test-api-integration',
+    'e2e',
+  ]);
 
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
-    'uglify',
+    'uglify:web',
     'optimize-js',
-    'cssmin',
+    'cssmin:web',
     'exec:bundlesize',
   ]);
 
-  grunt.registerTask('ci-compile', 'build, minify, lint, unit, integration test', [
+  grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'install-dependencies',
     'build',
     'build-admin',
@@ -979,13 +981,15 @@ module.exports = function(grunt) {
     'exec:audit-whitelist',
   ]);
 
-  grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
+  grunt.registerTask('eslint', 'Runs eslint', [
+    'exec:eslint'
+  ]);
 
-  grunt.registerTask(
-    'dev-webapp-no-dependencies',
-    'Build and deploy the webapp for dev, without reinstalling dependencies.',
-    ['build-dev', 'deploy', 'watch']
-  );
+  grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
+    'build-dev',
+    'deploy',
+    'watch',
+  ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
     'exec:api-dev',
@@ -995,11 +999,9 @@ module.exports = function(grunt) {
     'exec:setup-admin',
   ]);
 
-  grunt.registerTask(
-    'dev-sentinel',
-    'Run sentinel and watch for file changes',
-    ['exec:sentinel-dev']
-  );
+  grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
+    'exec:sentinel-dev',
+  ]);
 
   grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
     'replace:change-ddoc-id-for-testing',
