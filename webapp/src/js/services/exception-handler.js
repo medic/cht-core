@@ -17,6 +17,10 @@
     let last;
 
     const shouldGenerateFeedback = message => {
+      if(!message){
+        return false;
+      }
+
       // don't double-log errors as a basic infinite loop defense
       if (last === message) {
         return false;
