@@ -4,7 +4,8 @@ const objectPath = require('object-path'),
 
 const configService = require('../config'),
       db = require('../db'),
-      logger = require('../lib/logger');
+      logger = require('../lib/logger'),
+      lineage = require('@medic/lineage')(Promise, db.medic);
 
 const CONFIGURED_PUSHES = 'outbound';
 
@@ -23,9 +24,8 @@ const queued = () =>
       include_docs: true
     }).then(results => {
       const docs = results.rows.map(r => r.doc);
-
-      return queues.map((q, idx) => [q, docs[idx]]);
-    });
+      return lineage.hydrateDocs(docs);
+    }).then(docs => queues.map((q, idx) => [q, docs[idx]]));
   });
 
 // Maps a source document to a destination format using the given push config
@@ -151,7 +151,7 @@ const execute = () => {
     return Promise.resolve();
   }
 
-  return queued()
+  return module.exports._queued()
   .then(queues => {
     // array of {doc, conf} to be processed
     const pushes = queues.reduce((pushes, [queue, doc]) => {

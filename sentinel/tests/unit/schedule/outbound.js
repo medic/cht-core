@@ -11,6 +11,16 @@ describe('outbound', () => {
   beforeEach(() => sinon.restore());
 
   describe('queued', () => {
+    let lineage;
+    beforeEach(() => {
+      lineage = sinon.stub();
+      outbound.__set__('lineage', {hydrateDocs: lineage});
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
     it('gets all queues and associated docs', () => {
       const queue = {
         _id: 'task:outbound:some_doc_id',
@@ -36,6 +46,8 @@ describe('outbound', () => {
           doc: doc
         }]
       });
+
+      lineage.resolves([doc]);
 
       return outbound._queued()
         .then(results => {
@@ -343,17 +355,14 @@ describe('outbound', () => {
   });
   describe('coordination', () => {
     let configGet,
-        dbSentinelAllDocs,
-        dbMedicAllDocs,
         dbSentinelBulkDocs,
-        map, send, collect;
+        queued, map, send, collect;
 
     beforeEach(() => {
       configGet = sinon.stub(config, 'get');
-      dbSentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
-      dbMedicAllDocs = sinon.stub(db.medic, 'allDocs');
       dbSentinelBulkDocs = sinon.stub(db.sentinel, 'bulkDocs');
       map = sinon.stub(outbound, '_map');
+      queued = sinon.stub(outbound, '_queued');
       send = sinon.stub(outbound, '_send');
       collect = sinon.stub(outbound, '_collect');
     });
@@ -381,9 +390,8 @@ describe('outbound', () => {
         _id: 'test-doc-2', some: 'data-2'
       };
 
+      queued.resolves([[queue1, doc1], [queue2, doc2]]);
       configGet.returns([conf]);
-      dbSentinelAllDocs.resolves({rows: [{doc: queue1}, {doc: queue2}]});
-      dbMedicAllDocs.resolves({rows: [{doc: doc1}, {doc: doc2}]});
       collect.returns([conf]);
       map.returns({map: 'called'});
       send.onCall(0).resolves(); // test-doc-1's push succeeds
@@ -393,8 +401,6 @@ describe('outbound', () => {
       return outbound._execute()
         .then(() => {
           assert.equal(configGet.callCount, 1);
-          assert.equal(dbMedicAllDocs.callCount, 1);
-          assert.equal(dbSentinelAllDocs.callCount, 1);
           assert.equal(dbSentinelBulkDocs.callCount, 1);
           // ... only the first doc has changed...
           assert.equal(dbSentinelBulkDocs.args[0][0][0]._id, 'task:outbound:test-doc-1');
