@@ -1,9 +1,9 @@
 # Process to Run Developer Builds on Mobile Devices
-This process is relevant for viewing Medic services on mobile devices when Medic's services are run on a developer machine running Webapp >v3.5.0. Webapp v3.5.0 relies on service workers, which require a valid HTTPS certificate to function. Follow these steps to make your developer build accessible via a trusted url https://medic.dev from your android device.
+This process is relevant for viewing the Medic webapp on mobile devices when the api service is run on a developer machine running Webapp >v3.5.0. Webapp v3.5.0 relies on service workers, which require a valid HTTPS certificate to function. Follow these steps to make your developer build accessible from your android device at the trusted url https://medic.dev.
 
 ## Preparing (do this once)
 ### Setup for an android devices
-Perform these steps **once** for each Android device you wish to use for running developer builds:
+Perform these steps **once** for each Android device you wish to use:
 
 1. Install the Medic Mobile Android App by following [these installation steps](https://github.com/medic/medic-android#installation) or downloading it from the app store.
 1. Install Medic's developer certificate as a trusted authority.
@@ -31,7 +31,11 @@ Perform these steps **each time** you want to connect your mobile device to your
 1. Launch the Medic's android app.
   
 
-
-
 ## Notes
-If a service is running on port 53. `sudo lsof -i -n -P | grep :53` and `systemctl stop systemd-resolved`.
+**Port in Use**
+    ERROR: for medic-dns  Cannot start service dns: .... 0.0.0.0:53: bind: address already in use
+
+You may see an error about port 53 already being in use. This means your machine is already running a DNS server of some variety. You can either configure your existing server to be an authority for medic.dev, or you can stop running that server (sorry).
+
+* To find out what service is running on port 53 `sudo lsof -i -n -P | grep :53`.
+* On Ubuntu >18.04, `systemd-resolved` runs by default and cannot be used as a DNS authority. Follow [these steps](https://askubuntu.com/a/907249/608846).
