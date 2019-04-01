@@ -1,14 +1,12 @@
 // A refactored version of angular.copy function that deep clones with acceptable performance
 
-const getPrototypeOf = Object.getPrototypeOf;
-
 const isObject = value => value !== null && typeof value === 'object';
 
 const isFunction = value => typeof value === 'function';
 
 const isArray = value => Array.isArray(value) || value instanceof Array;
 
-const isBlankObject = value => value !== null && typeof value === 'object' && !getPrototypeOf(value);
+const isBlankObject = value => value !== null && typeof value === 'object' && !Object.getPrototypeOf(value);
 
 const isWindow = value => value && value.window === value;
 
@@ -103,7 +101,7 @@ const clone = source => {
     clone = copyType(source);
 
     if (clone === undefined) {
-      clone = isArray(source) ? [] : Object.create(getPrototypeOf(source));
+      clone = isArray(source) ? [] : Object.create(Object.getPrototypeOf(source));
       needsRecurse = true;
     }
 
