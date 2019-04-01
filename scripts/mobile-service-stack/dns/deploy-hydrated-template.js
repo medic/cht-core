@@ -22,7 +22,7 @@ const main = () => {
   const ipAddress = getIpAddress();
 
   if (ipAddress) {
-    console.log(`Using IP address: ${ipAddress}`);
+    console.log(`DNS authority for medic.dev is available: ${ipAddress}`);
   } else {
     console.error('Could not find valid IP address');
   }
