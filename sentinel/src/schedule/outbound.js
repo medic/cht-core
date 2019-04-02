@@ -61,10 +61,10 @@ const map = (doc, conf) => {
         throw Error(`Mapping error for ${conf.name}/${dest} JS error on source document: ${doc._id}: ${err}`);
       }
     } else {
-      srcValue = objectPath.get(doc, path);
+      srcValue = objectPath.get({doc: doc}, path);
     }
 
-    if (required && !srcValue) {
+    if (required && srcValue === undefined) {
       throw Error(`Mapping error for ${conf.name}/${dest}: cannot find ${path} on source document`);
     }
 
