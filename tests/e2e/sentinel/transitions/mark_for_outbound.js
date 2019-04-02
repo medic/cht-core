@@ -65,10 +65,11 @@ describe('mark_for_outbound', () => {
       transitions: {
         mark_for_outbound: true
       },
-      outbound: [{
-        name: 'test',
-        relevantTo: `doc.type === 'something else'`
-      }]
+      outbound: {
+        test: {
+          relevantTo: `doc.type === 'something else'`
+        }
+      }
     };
 
     return utils
@@ -87,10 +88,11 @@ describe('mark_for_outbound', () => {
       transitions: {
         mark_for_outbound: true
       },
-      outbound: [{
-        name: 'test',
-        relevantTo: `doc.type === 'data_record' && doc.form === 'test'`
-      }]
+      outbound: {
+        test: {
+          relevantTo: `doc.type === 'data_record' && doc.form === 'test'`
+        }
+      }
     };
 
     return utils
@@ -108,13 +110,14 @@ describe('mark_for_outbound', () => {
       transitions: {
         mark_for_outbound: true
       },
-      outbound: [{
-        name: 'test',
-        relevantTo: `doc.type === 'data_record' && doc.form === 'test'`
-      }, {
-        name: 'test2',
-        relevantTo: 'doc.secondTime'
-      }]
+      outbound: {
+        test: {
+          relevantTo: `doc.type === 'data_record' && doc.form === 'test'`
+        },
+        test2: {
+          relevantTo: 'doc.secondTime'
+        }
+      }
     };
 
     return utils

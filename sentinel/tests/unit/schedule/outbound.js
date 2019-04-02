@@ -66,7 +66,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         mapping: {
           'api_foo': 'doc.foo',
           'bar': 'doc.bar'
@@ -88,7 +88,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         mapping: {
           'when': 'doc.reported_date',
           'data.the_foo': 'doc.fields.foo'
@@ -112,7 +112,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         mapping: {
           'foo': 'doc.fields.foo'
         }
@@ -131,7 +131,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         mapping: {
           'foo': {
             path: 'doc.fields.foo',
@@ -155,7 +155,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         mapping: {
           'list_count': {expr: 'doc.fields.a_list.length'},
           'foo': {expr: 'doc.fields.foo === \'Yes\''},
@@ -184,7 +184,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         destination: {
           base_url: 'http://test',
           path: '/foo'
@@ -208,7 +208,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         destination: {
           auth: {
             type: 'Basic',
@@ -242,7 +242,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         destination: {
           auth: {
             type: 'muso-sih',
@@ -285,7 +285,7 @@ describe('outbound', () => {
       };
 
       const conf = {
-        name: 'test-config',
+        key: 'test-config',
         destination: {
           auth: {
             type: 'muso-sih',
@@ -317,10 +317,10 @@ describe('outbound', () => {
   describe('collect, which takes a queue for a doc and collects pushes to try', () => {
     it('should return empty for no valid pushes', () => {
       const config = [{
-        name: 'test-push-1'
+        key: 'test-push-1'
       },
       {
-        name: 'test-push-2'
+        key: 'test-push-2'
       }];
 
       const queue = {
@@ -335,11 +335,11 @@ describe('outbound', () => {
     });
     it('should return pushes to attempt', () => {
       const config = [{
-        name: 'test-push-1',
+        key: 'test-push-1',
         some: 'more config'
       },
       {
-        name: 'test-push-2'
+        key: 'test-push-2'
       }];
 
       const queue = {
@@ -349,7 +349,7 @@ describe('outbound', () => {
 
       assert.deepEqual(
         outbound._collect(config, queue),
-        [{name: 'test-push-1', some: 'more config'}]
+        [{key: 'test-push-1', some: 'more config'}]
       );
     });
   });
@@ -368,9 +368,16 @@ describe('outbound', () => {
     });
 
     it('should find docs with outbound queues; collect, map and send them; removing those that are successful', () => {
-      const conf = {
-        name: 'test-push-1'
+      const config = {
+        'test-push-1': {
+          some: 'config'
+        }
       };
+
+      const collected = [{
+        key: 'test-push-1',
+        some: 'config'
+      }];
 
       const queue1 = {
         _id: 'task:outbound:test-doc-1',
@@ -391,8 +398,8 @@ describe('outbound', () => {
       };
 
       queued.resolves([[queue1, doc1], [queue2, doc2]]);
-      configGet.returns([conf]);
-      collect.returns([conf]);
+      configGet.returns(config);
+      collect.returns(collected);
       map.returns({map: 'called'});
       send.onCall(0).resolves(); // test-doc-1's push succeeds
       send.onCall(1).rejects(); // but test-doc-2's push fails, so...

@@ -9,6 +9,11 @@ const configService = require('../config'),
 
 const CONFIGURED_PUSHES = 'outbound';
 
+const arrayinate = object => Object.keys(object).map(k => {
+  object[k].key = k;
+  return object[k];
+});
+
 // Returns a list of tuples of [queueDoc, actualDoc]
 const queued = () =>
   db.sentinel.allDocs({
@@ -58,14 +63,14 @@ const map = (doc, conf) => {
       try {
         srcValue = vm.runInNewContext(expr, {doc: doc});
       } catch (err) {
-        throw Error(`Mapping error for ${conf.name}/${dest} JS error on source document: ${doc._id}: ${err}`);
+        throw Error(`Mapping error for ${conf.key}/${dest} JS error on source document: ${doc._id}: ${err}`);
       }
     } else {
       srcValue = objectPath.get({doc: doc}, path);
     }
 
     if (required && srcValue === undefined) {
-      throw Error(`Mapping error for ${conf.name}/${dest}: cannot find ${path} on source document`);
+      throw Error(`Mapping error for ${conf.key}/${dest}: cannot find ${path} on source document`);
     }
 
     if (srcValue) {
@@ -140,14 +145,14 @@ const send = (payload, conf) => {
 // Collects pushes to attempt out of the queue, given a global config
 const collect = (config, queue) => {
   return queue.queue.map(pushName => {
-    return config.find(conf => conf.name === pushName);
+    return config.find(conf => conf.key === pushName);
   });
 };
 
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
-  const pushConfig = configService.get(CONFIGURED_PUSHES);
-  if (!pushConfig) {
+  const pushConfig = arrayinate(configService.get(CONFIGURED_PUSHES) || {});
+  if (!pushConfig.length) {
     return Promise.resolve();
   }
 
@@ -172,13 +177,13 @@ const execute = () => {
         const payload = module.exports._map(doc, conf);
         return module.exports._send(payload, conf)
           .then(() => {
-            logger.info(`Pushed ${doc._id} to ${conf.name}`);
+            logger.info(`Pushed ${doc._id} to ${conf.key}`);
             // Worked
             if (!dirtyQueues[queue._id]) {
               dirtyQueues[queue._id] = queue;
             }
 
-            queue.queue.splice(conf.name, 1);
+            queue.queue.splice(conf.key, 1);
             if (queue.queue.length === 0) {
               // Done with this queue completely
               queue._deleted = true;
@@ -186,7 +191,7 @@ const execute = () => {
           })
           .catch(err => {
             // Failed
-            logger.error(`Failed to push ${doc._id} to ${conf.name}: ${err.message}`);
+            logger.error(`Failed to push ${doc._id} to ${conf.key}: ${err.message}`);
             logger.error(err);
             // Don't remove it from the queue so it will be tried again next time
           });

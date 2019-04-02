@@ -6,8 +6,13 @@ const config = require('../config'),
 
 const CONFIGURED_PUSHES = 'outbound';
 
+const arrayinate = object => Object.keys(object).map(k => {
+  object[k].key = k;
+  return object[k];
+});
+
 const configuredFor = doc => {
-  const pushes = config.get(CONFIGURED_PUSHES) || [];
+  const pushes = arrayinate(config.get(CONFIGURED_PUSHES) || {});
 
   return pushes.filter(conf => {
     return conf.relevantTo && vm.runInNewContext(conf.relevantTo, {doc: doc});
@@ -15,7 +20,7 @@ const configuredFor = doc => {
 };
 
 const markForOutbound = (change) => {
-  const toQueue = configuredFor(change.doc).map(conf => conf.name);
+  const toQueue = configuredFor(change.doc).map(conf => conf.key);
 
   return db.sentinel.get(`task:outbound:${change.doc._id}`)
     .then(existingOutboundTask => {
