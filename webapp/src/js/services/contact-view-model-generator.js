@@ -21,7 +21,6 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     $q,
     $translate,
     ContactMuted,
-    ContactSchema,
     DB,
     GetDataRecords,
     LineageModelGenerator,
@@ -53,7 +52,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         return 1;
       }
       return 0;
-    }
+    };
 
     const NAME_COMPARATOR = (lhs, rhs) => {
       const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
