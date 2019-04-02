@@ -68,8 +68,8 @@ describe('outbound', () => {
       const conf = {
         name: 'test-config',
         mapping: {
-          'api_foo': 'foo',
-          'bar': 'bar'
+          'api_foo': 'doc.foo',
+          'bar': 'doc.bar'
         }
       };
 
@@ -90,8 +90,8 @@ describe('outbound', () => {
       const conf = {
         name: 'test-config',
         mapping: {
-          'when': 'reported_date',
-          'data.the_foo': 'fields.foo'
+          'when': 'doc.reported_date',
+          'data.the_foo': 'doc.fields.foo'
         }
       };
 
@@ -114,7 +114,7 @@ describe('outbound', () => {
       const conf = {
         name: 'test-config',
         mapping: {
-          'foo': 'fields.foo'
+          'foo': 'doc.fields.foo'
         }
       };
 
@@ -134,10 +134,10 @@ describe('outbound', () => {
         name: 'test-config',
         mapping: {
           'foo': {
-            path: 'fields.foo',
+            path: 'doc.fields.foo',
             optional: true
           },
-          'bar': 'fields.bar'
+          'bar': 'doc.fields.bar'
         }
       };
 
