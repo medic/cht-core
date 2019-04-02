@@ -20,7 +20,7 @@
             </div>
           </div>
           <ul>
-            <mm-content-row ng-repeat="child in contactsDeceasedCtrl.selectedContact.children.deceased"
+            <mm-content-row ng-repeat="child in contactsDeceasedCtrl.selectedContact.children" ng-if="child.deceased"
               id="child.doc._id"
               route="'contacts'"
               heading="child.doc.name"

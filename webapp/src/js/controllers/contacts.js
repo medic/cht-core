@@ -204,6 +204,7 @@ const PAGE_SIZE = 50;
     };
 
     var getActionBarDataForChild = function(docType) {
+      // TODO this should return an array of types...
       var selectedChildPlaceType = ContactSchema.getChildPlaceType(docType);
       if (!selectedChildPlaceType) {
         return $q.resolve();
@@ -218,13 +219,12 @@ const PAGE_SIZE = 50;
 
     // only admins can edit their own place
     var getCanEdit = function(selectedDoc) {
+      if (Session.isAdmin()) {
+        return true;
+      }
       return setupPromise
-        .then(function() {
-          return Session.isAdmin() || usersHomePlace._id !== selectedDoc._id;
-        })
-        .catch(function() {
-          return false;
-        });
+        .then(() => usersHomePlace._id !== selectedDoc._id)
+        .catch(() => false);
     };
 
     var translateTitle = function(key, label) {
@@ -257,7 +257,14 @@ const PAGE_SIZE = 50;
       ctrl.updateSelectedContact({ tasksByContact });
     };
 
-    $scope.setSelected = function(selected, contactViewModelOptions) {
+    const getTitle = selected => {
+      const title = (selected.type && selected.type.name_key) ||
+                    'contact.profile';
+      return $translate(title).catch(() => title);
+    };
+
+
+    $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedContact();
       ctrl.setSelectedContact(selected);
@@ -287,7 +294,7 @@ const PAGE_SIZE = 50;
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
             selected: [ctrl.selectedContact.doc],
-            sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
+            sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit,
           });
@@ -330,7 +337,7 @@ const PAGE_SIZE = 50;
                   $scope.setRightActionBar({
                     selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
-                    sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
+                    sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
                     canEdit,
                     canDelete,
                   });
