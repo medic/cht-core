@@ -27,8 +27,12 @@ const markForOutbound = (change) => {
         throw err;
       }
 
+      const taskId = `task:outbound:${change.doc._id}`;
+
+      logger.info(`Creating outbound task ${taskId}`);
+
       return db.sentinel.put({
-        _id: `task:outbound:${change.doc._id}`,
+        _id: taskId,
         created: Date.now(),
         doc_id: change.doc._id,
         queue: toQueue
@@ -42,7 +46,7 @@ module.exports = {
     try {
       return configuredFor(doc).length >= 1;
     } catch (err) {
-      logger.error(`mark_for_outbound filter failed on ${doc._id} with`, err);
+      logger.error(`mark_for_outbound filter failed on ${doc._id} with ${err.message}`);
       return false;
     }
   },

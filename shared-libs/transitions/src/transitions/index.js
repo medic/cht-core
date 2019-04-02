@@ -263,7 +263,7 @@ const saveDoc = (change, callback) => {
 const applyTransition = ({ key, change, transition }, callback) => {
   if (!canRun({ key, change, transition })) {
     logger.debug(
-      `canRun test failed on transition ${transition.key} for doc ${change.id} seq ${change.seq}`
+      `canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`
     );
     return callback();
   }
