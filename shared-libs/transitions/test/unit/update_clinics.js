@@ -8,7 +8,6 @@ let lineageStub;
 
 describe('update clinic', () => {
   beforeEach(() => {
-    process.env.TEST_ENV = true;
     lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
   });
 
@@ -33,13 +32,10 @@ describe('update clinic', () => {
     assert(!transition.filter(doc));
   });
 
-  it('should update clinic by phone', () => {
+  it('should not update clinic by phone', () => {
     var doc = {
       from: phone,
       type: 'data_record',
-      contact: {
-        parent: null,
-      },
     };
 
     var contact = {
@@ -75,16 +71,13 @@ describe('update clinic', () => {
       },
     };
 
-    sinon
-      .stub(dbPouch.medic, 'query')
-      .callsArgWith(2, null, { rows: [{ id: contact._id }] });
-    sinon.stub(dbPouch.medic, 'put').callsArg(1);
-    lineageStub.returns(Promise.resolve(contact));
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ id: contact._id }] });
+    lineageStub.resolves(contact);
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
-      assert.equal(doc.contact.phone, phone);
+      assert(!doc.contact.phone);
     });
   });
 
@@ -93,7 +86,7 @@ describe('update clinic', () => {
       type: 'data_record',
       from: 'WRONG',
     };
-    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, { rows: [] });
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert(!doc.contact);
@@ -106,7 +99,7 @@ describe('update clinic', () => {
       from: '+12345',
       refid: '1000',
     };
-    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, { rows: [] });
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert(!doc.contact);
@@ -153,15 +146,11 @@ describe('update clinic', () => {
       },
     };
 
-    lineageStub.returns(Promise.resolve(contact));
-    sinon
-      .stub(dbPouch.medic, 'query')
-      .callsArgWith(2, null, { rows: [{ doc: contact }] });
-    sinon.stub(dbPouch.medic, 'put').callsArg(1);
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ doc: contact }] });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
-      assert.equal(doc.contact.phone, '+12345');
+      assert.deepEqual(doc.contact, contact.contact);
     });
   });
 
@@ -207,12 +196,8 @@ describe('update clinic', () => {
       name: 'zenith',
       phone: '+12345',
     };
-    sinon
-      .stub(dbPouch.medic, 'query')
-      .callsArgWith(2, null, { rows: [{ doc: clinic }] });
-    sinon.stub(dbPouch.medic, 'get').callsArgWith(1, null, contact);
-    sinon.stub(dbPouch.medic, 'put').callsArg(1);
-    lineageStub.returns(Promise.resolve(contact));
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ doc: clinic }] });
+    lineageStub.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
@@ -232,9 +217,7 @@ describe('update clinic', () => {
         type: 'data_record',
       },
     };
-    const view = sinon
-      .stub(dbPouch.medic, 'query')
-      .callsArgWith(2, null, { rows: [] });
+    const view = sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
     return transition.onMatch(change).then(() => {
       assert.equal(view.args[0][1].key[0], 'external');
       assert.equal(view.args[0][1].key[1], '123');
@@ -248,9 +231,7 @@ describe('update clinic', () => {
         type: 'data_record',
       },
     };
-    const view = sinon
-      .stub(dbPouch.medic, 'query')
-      .callsArgWith(2, null, { rows: [] });
+    const view = sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
     return transition.onMatch(change).then(() => {
       assert.equal(view.args[0][1].key, '123');
     });
@@ -262,10 +243,8 @@ describe('update clinic', () => {
       type: 'data_record',
     };
 
-    sinon
-      .stub(dbPouch.medic, 'query')
-      .callsArgWith(2, null, { rows: [{ id: 'someID' }] });
-    lineageStub.withArgs('someID').returns(Promise.reject('some error'));
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
+    lineageStub.withArgs('someID').rejects('some error');
 
     return transition.onMatch({ doc: doc }).catch(err => {
       assert.equal(err, 'some error');

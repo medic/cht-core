@@ -393,7 +393,10 @@ describe('functional transitions', () => {
           id: 'has default response',
           from: 'phone2',
           type: 'data_record',
-          message: 'I just sent an SMS',
+          sms_message: {
+            message: 'I just sent an SMS',
+            from: 'phone2',
+          },
           reported_date: new Date().valueOf()
         },
         {
@@ -459,11 +462,11 @@ describe('functional transitions', () => {
       sinon.stub(db.medic, 'query')
       // update_clinics
         .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
-        .callsArgWith(2, null, { rows: [{ id: 'contact1', key: 'phone1' }] })
+        .resolves({ rows: [{ id: 'contact1', key: 'phone1' }] })
         .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: false, limit: 1 })
-        .callsArgWith(2, null, ({ rows: [{ key: 'phone2' }] }))
+        .resolves({ rows: [{ key: 'phone2' }] })
         .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: false, limit: 1 })
-        .callsArgWith(2, null, ({ rows: [{ id: 'contact3', key: 'phone3' }] }))
+        .resolves({ rows: [{ id: 'contact3', key: 'phone3' }] })
         //update_sent_by
         .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: true })
         .resolves({ rows: [{ id: 'contact1', doc: contact1 }] })
@@ -492,7 +495,7 @@ describe('functional transitions', () => {
 
         assert.equal(savedDocs[0].id, 'has alert');
         assert.equal(savedDocs[0]._id.length, 36);
-        assert.equal(savedDocs[0].errors.length, 0);
+        assert(!savedDocs[0].errors);
         assert.deepEqual(savedDocs[0].contact, { _id: 'contact1', parent: { _id: 'clinic' } });
         assert.equal(savedDocs[0].sent_by, 'Merkel');
         assert.equal(savedDocs[0].tasks.length, 1);
@@ -509,10 +512,13 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[1]._id.length, 36);
         assert.equal(savedDocs[1].tasks.length, 1);
         assert.equal(savedDocs[1].tasks[0].messages[0].message, 'SMS received');
-        assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks']);
+        assert.equal(savedDocs[1].errors.length, 1);
+        assert.equal(savedDocs[1].errors[0].code, 'sys.facility_not_found');
+        assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks', 'errors']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
-        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves.length, 2);
         assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
 
         assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);

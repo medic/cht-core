@@ -28,7 +28,7 @@ describe('record-utils-parser', () => {
     };
     const doc = recordUtils.createByForm(body);
     chai.expect(new Date(doc.reported_date).toUTCString())
-      .to.equal('Fri, 09 Nov 2012 22:22:05 GMT'); 
+      .to.equal('Fri, 09 Nov 2012 22:22:05 GMT');
   });
 
   it('deep keys parsed', () => {
@@ -70,15 +70,14 @@ describe('record-utils-parser', () => {
     chai.expect(doc.sms_message.from).to.equal(body.from);
   });
 
-  it('parsed form success maintains facility not found', () => {
+  it('parsed form success does not add sys.facility_not_found', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
       from:'+888',
       message:'1!YYYZ!foo#bar'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
-    chai.expect(doc.errors.length).to.equal(1);
+    chai.expect(doc.errors.length).to.equal(0);
   });
 
   it('autoreply on YYYY form is ignored', () => {
@@ -89,8 +88,7 @@ describe('record-utils-parser', () => {
     };
     const doc = recordUtils.createByForm(body);
     chai.expect(doc.form).to.equal('YYYY');
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
-    chai.expect(doc.errors.length).to.equal(1);
+    chai.expect(doc.errors.length).to.equal(0);
   });
 
   it('form not found error not set by default', () => {
@@ -99,8 +97,7 @@ describe('record-utils-parser', () => {
       message:'foo bar baz'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
-    chai.expect(doc.errors.length).to.equal(1);
+    chai.expect(doc.errors.length).to.equal(0);
   });
 
   it('form not found error set in forms only mode', () => {
@@ -112,20 +109,18 @@ describe('record-utils-parser', () => {
       message:'foo bar baz'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
-    chai.expect(doc.errors[1].code).to.equal('sys.form_not_found');
-    chai.expect(doc.errors.length).to.equal(2);
+    chai.expect(doc.errors[0].code).to.equal('sys.form_not_found');
+    chai.expect(doc.errors.length).to.equal(1);
   });
 
-  it('only facility not found error on muvuku add', () => {
+  it('no facility not found error on muvuku add', () => {
     sinon.stub(config, 'get').withArgs('forms').returns(definitions.forms);
     const body = {
       from:'+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
-    chai.expect(doc.errors.length).to.equal(1);
+    chai.expect(doc.errors.length).to.equal(0);
   });
 
   it('form not found response locale from query', () => {
@@ -138,16 +133,12 @@ describe('record-utils-parser', () => {
       message: '1!0000!2012#2#20#foo#bar'
     };
     const doc = recordUtils.createByForm(body, { locale: 'fr' });
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
+    chai.expect(doc.errors[0].code).to.equal('sys.form_not_found');
     chai.expect(doc.errors[0].message).to.equal('translated');
-    chai.expect(doc.errors[1].code).to.equal('sys.form_not_found');
-    chai.expect(doc.errors[1].message).to.equal('translated');
-    chai.expect(doc.errors.length).to.equal(2);
-    chai.expect(translate.callCount).to.equal(2);
-    chai.expect(translate.args[0][0]).to.equal('sys.facility_not_found');
+    chai.expect(doc.errors.length).to.equal(1);
+    chai.expect(translate.callCount).to.equal(1);
+    chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('fr');
-    chai.expect(translate.args[1][0]).to.equal('sys.form_not_found');
-    chai.expect(translate.args[1][1]).to.equal('fr');
   });
 
   it('form not found message locale on form overrides locale on query', () => {
@@ -161,11 +152,9 @@ describe('record-utils-parser', () => {
       message: '1!0000!2012#2#20#foo#bar'
     };
     recordUtils.createByForm(body, { locale: 'fr' });
-    chai.expect(translate.callCount).to.equal(2);
-    chai.expect(translate.args[0][0]).to.equal('sys.facility_not_found');
+    chai.expect(translate.callCount).to.equal(1);
+    chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('es');
-    chai.expect(translate.args[1][0]).to.equal('sys.form_not_found');
-    chai.expect(translate.args[1][1]).to.equal('es');
   });
 
   it('form not found message locale fallback to app_settings', () => {
@@ -179,11 +168,9 @@ describe('record-utils-parser', () => {
       message: '1!0000!2012#2#20#foo#bar'
     };
     recordUtils.createByForm(body);
-    chai.expect(translate.callCount).to.equal(2);
-    chai.expect(translate.args[0][0]).to.equal('sys.facility_not_found');
+    chai.expect(translate.callCount).to.equal(1);
+    chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('ne');
-    chai.expect(translate.args[1][0]).to.equal('sys.form_not_found');
-    chai.expect(translate.args[1][1]).to.equal('ne');
   });
 
   it('form not found message when locale undefined', () => {
@@ -197,11 +184,9 @@ describe('record-utils-parser', () => {
       message: '1!0000!2012#2#20#foo#bar'
     };
     recordUtils.createByForm(body);
-    chai.expect(translate.callCount).to.equal(2);
-    chai.expect(translate.args[0][0]).to.equal('sys.facility_not_found');
+    chai.expect(translate.callCount).to.equal(1);
+    chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('en');
-    chai.expect(translate.args[1][0]).to.equal('sys.form_not_found');
-    chai.expect(translate.args[1][1]).to.equal('en');
   });
 
   it('assign sys.empty error to empty report', () => {
@@ -211,8 +196,7 @@ describe('record-utils-parser', () => {
     };
     sinon.stub(config, 'translate').returns('translated');
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
-    chai.expect(doc.errors[1].code).to.equal('sys.empty');
+    chai.expect(doc.errors[0].code).to.equal('sys.empty');
   });
 
   it('one word report gets undefined form property', () => {
@@ -235,7 +219,7 @@ describe('record-utils-parser', () => {
       sent_timestamp:'1352399720000'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors.length).to.equal(2);
+    chai.expect(doc.errors.length).to.equal(1);
     chai.expect(doc.errors[0].code).to.equal('extra_fields');
   });
 
@@ -262,7 +246,6 @@ describe('record-utils-parser', () => {
     // unstructured message has form of null
     chai.expect(doc.form).to.equal(undefined);
     chai.expect(doc.sms_message.message).to.equal('hello world! anyone there?');
-    chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
   });
 
   it('creates record with empty message field', () => {

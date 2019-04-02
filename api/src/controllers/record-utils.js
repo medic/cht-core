@@ -160,10 +160,6 @@ const getDataRecord = (formData, options) => {
     addError(record, 'extra_fields');
   }
 
-  if (!def || !def.public_form) {
-    addError(record, 'sys.facility_not_found');
-  }
-
   if (typeof options.message === 'string' && !options.message.trim()) {
     addError(record, 'sys.empty');
   }

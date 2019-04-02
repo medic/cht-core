@@ -334,8 +334,7 @@ const expectTransitions = (infodoc, ...transitions) => {
 
 const isUntransitionedDoc = doc => {
   return doc._rev.startsWith('1-') &&
-         doc.errors.length === 1 &&
-         doc.errors[0].code === 'sys.facility_not_found' &&
+         (!doc.errors || !doc.errors.length) &&
          !doc.tasks.length &&
          !doc.scheduled_tasks &&
          !doc.contact &&
@@ -528,7 +527,7 @@ describe('transitions', () => {
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //form_not_found
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'form_not_found');
@@ -543,7 +542,7 @@ describe('transitions', () => {
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //dead
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'dead');
@@ -599,7 +598,7 @@ describe('transitions', () => {
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //form_not_found
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'form_not_found');
@@ -614,7 +613,7 @@ describe('transitions', () => {
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //dead
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'dead');
@@ -666,6 +665,7 @@ describe('transitions', () => {
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes, messages]) => {
+        console.log(require('util').inspect(changes, { depth: 100 }));
         expect(messages.messages.length).toEqual(0);
         expect(changes.every(change => isUntransitionedDoc(change.doc))).toEqual(true);
         ids = changes.map(change => change.id);

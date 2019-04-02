@@ -23,7 +23,7 @@ describe('record-utils-public-forms', () => {
     chai.expect(doc.errors.length).to.equal(0);
   });
 
-  it('private form has facility not found error', () => {
+  it('private form has no facility not found error', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
       from: '+9999999999',
@@ -33,7 +33,7 @@ describe('record-utils-public-forms', () => {
     const doc = recordUtils.createByForm(body);
     chai.expect(doc.fields.two).to.equal('two'); // make sure form parsed correctly
     chai.expect(doc.from).to.equal(body.from);
-    chai.expect(doc.errors.length).to.equal(1);
+    chai.expect(doc.errors.length).to.equal(0);
   });
 
 });
