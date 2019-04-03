@@ -19,8 +19,8 @@ if (!releaseName) {
   process.exit(0);
 }
 
-const testingDb = new PouchDB(`${UPLOAD_URL}/_couch/builds_testing`);
-const stagingDb = new PouchDB(`${UPLOAD_URL}/_couch/builds`);
+const testingDb = new PouchDB(`${UPLOAD_URL}/${BUILDS_SERVER}`);
+const stagingDb = new PouchDB(`${UPLOAD_URL}/${STAGING_SERVER}`);
 
 const testingDocId = `medic:medic:test-${TRAVIS_BUILD_NUMBER}`;
 const stagingDocId = `medic:medic:${releaseName}`;
