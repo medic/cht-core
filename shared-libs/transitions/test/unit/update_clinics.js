@@ -3,6 +3,7 @@ const sinon = require('sinon'),
   dbPouch = require('../../src/db'),
   transition = require('../../src/transitions/update_clinics'),
   config = require('../../src/config'),
+  utils = require('../../src/lib/utils'),
   phone = '+34567890123';
 
 let lineageStub;
@@ -284,11 +285,11 @@ describe('update clinic', () => {
       assert(!doc.contact);
       assert.equal(doc.errors.length, 1);
       assert.equal(doc.errors[0].code, 'sys.facility_not_found');
-      assert.equal(config.get.callCount, 1);
+      assert.equal(config.get.withArgs('forms').callCount, 1);
     });
   });
 
-  it('should add sys.facility_not_found when form not public', () => {
+  it('should add sys.facility_not_found when form not public and translates message', () => {
     const doc = {
       from: '123',
       type: 'data_record',
@@ -297,12 +298,16 @@ describe('update clinic', () => {
 
     sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
     sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
+    sinon.stub(utils, 'translate').returns('translated');
+    sinon.stub(utils, 'getLocale').returns('locale');
 
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);
       assert(!doc.contact);
       assert.equal(doc.errors.length, 1);
-      assert.equal(doc.errors[0].code, 'sys.facility_not_found');
+      assert.deepEqual(doc.errors[0], { code: 'sys.facility_not_found', message: 'translated' });
+      assert.equal(utils.translate.callCount, 1);
+      assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found', 'locale']);
     });
   });
 

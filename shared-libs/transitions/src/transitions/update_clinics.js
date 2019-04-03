@@ -2,7 +2,8 @@ const transitionUtils = require('./utils'),
   db = require('../db'),
   lineage = require('@medic/lineage')(Promise, db.medic),
   utils = require('../lib/utils'),
-  NAME = 'update_clinics';
+  NAME = 'update_clinics',
+  FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
 const getContact = doc => {
   if (doc.refid) {
@@ -80,7 +81,11 @@ module.exports = {
 
       const form = change.doc.form && utils.getForm(change.doc.form);
       if (!form || !form.public_form) {
-        utils.addError(change.doc, { code: 'sys.facility_not_found', message: 'sys.facility_not_found' });
+        const error = {
+          code: FACILITY_NOT_FOUND,
+          message: utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc))
+        };
+        utils.addError(change.doc, error);
         return true;
       }
     });
