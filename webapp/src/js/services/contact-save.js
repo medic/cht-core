@@ -13,8 +13,9 @@ angular.module('inboxServices').service('ContactSave',
 
     'use strict';
     'ngInject';
-    
-    const CONTACT_TYPES = [ 'parent', 'contact' ];
+
+    const CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
+    const HARDCODED_CONTACT_TYPES = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
     const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
@@ -86,7 +87,7 @@ angular.module('inboxServices').service('ContactSave',
     };
 
     const extractIfRequired = (name, value) => {
-      return CONTACT_TYPES.includes(name) ? ExtractLineage(value) : value;
+      return CONTACT_FIELD_NAMES.includes(name) ? ExtractLineage(value) : value;
     };
 
     // Mutates the passed doc to attach prepared siblings, and returns all
@@ -101,7 +102,7 @@ angular.module('inboxServices').service('ContactSave',
       const preparedSiblings = [];
       let promiseChain = $q.resolve();
 
-      CONTACT_TYPES.forEach(fieldName => {
+      CONTACT_FIELD_NAMES.forEach(fieldName => {
         let value = doc[fieldName];
         if (_.isObject(value)) {
           value = doc[fieldName]._id;
@@ -157,8 +158,12 @@ angular.module('inboxServices').service('ContactSave',
           const submitted = EnketoTranslation.contactRecordToJs(form.getDataStr({ irrelevant: false }));
           if (original) {
             submitted.doc = $.extend({}, original, submitted.doc);
+          } else if (HARDCODED_CONTACT_TYPES.includes(type)) {
+            // default hierarchy - maintain backwards compatibility
+            submitted.doc.type = type;
           } else {
-            submitted.doc.type = 'contact'; // TODO this will break a lot of configurations that rely on type
+            // configured hierarchy
+            submitted.doc.type = 'contact';
             submitted.doc.contact_type = type;
           }
           return prepareSubmittedDocsForSave(original, submitted);

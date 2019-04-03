@@ -211,9 +211,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     var addPatientName = function(reports, contacts) {
       reports.forEach(function(report) {
         if (report.fields && !report.fields.patient_name) {
-          var patientId = report.fields.patient_id ||
-                          report.patient_id;
-          var patient = contacts.find(contact.patient_id === patientId);
+          var patientId = report.fields.patient_id || report.patient_id;
+          var patient = contacts.find(contact => contact.patient_id === patientId);
           if (patient) {
             report.fields.patient_name = patient.name;
           }

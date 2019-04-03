@@ -148,34 +148,47 @@
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'contacts'">
         <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBar.right.selected && !actionBarCtrl.loadingContent && ('contacts.detail' | isState)">
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': (!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)}">
-            <span class="fa fa-plus"></span>
-            <p translate>action.report.add</p>
-          </a>
-          <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
-            <li ng-repeat="form in actionBar.right.relevantForms | orderBy: 'title' track by form.code">
-              <a show-muted-modal to-state="contacts.report" to-state-params="{ id: actionBar.right.selected[0]._id, formId: form.code }">
-                <span ng-bind-html="form.icon | resourceIcon"></span>
-                <span class="content">{{form.title}}</span>
-              </a>
-            </li>
-          </ul>
+          <span>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': (!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)}">
+              <span class="fa fa-plus"></span>
+              <p translate>action.report.add</p>
+            </a>
+            <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
+              <li ng-repeat="form in actionBar.right.relevantForms | orderBy: 'title' track by form.code">
+                <a show-muted-modal to-state="contacts.report" to-state-params="{ id: actionBar.right.selected[0]._id, formId: form.code }">
+                  <span ng-bind-html="form.icon | resourceIcon"></span>
+                  <span class="content">{{form.title}}</span>
+                </a>
+              </li>
+            </ul>
+          </span>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].child.type" ui-sref="contacts.addChild({ type: actionBar.right.selected[0].child.type, parent_id: actionBar.right.selected[0]._id })" mm-auth="can_create_places">
-            <span class="fa-stack">
-              <i ng-bind-html="actionBar.right.selected[0].child.icon | resourceIcon"></i>
-              <i class="fa fa-plus fa-stack-1x"></i>
-            </span>
-            <p translate>{{actionBar.right.selected[0].child.addPlaceLabel}}</p>
-          </a>
+          <span ng-repeat="group in actionBar.right.childTypes" mm-auth="{{group.permission}}">
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })" mm-auth="can_create_people">
-            <span class="fa-stack">
-              <i ng-bind-html="'medic-person' | resourceIcon"></i>
-              <i class="fa fa-plus fa-stack-1x"></i>
-            </span>
-            <p translate>action.person.add</p>
-          </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-if="group.types.length > 1">
+              <span class="fa {{group.menu_icon}}"></span>
+              <p translate>{{group.menu_key}}</p>
+            </a>
+            <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-if="group.types.length > 1">
+              <li ng-repeat="type in group.types | orderBy: 'id' track by type.id">
+                <a class="mm-icon mm-icon-caption" ui-sref="contacts.addChild({ type: type.id, parent_id: actionBar.right.selected[0]._id })">
+                  <span class="fa-stack">
+                    <i ng-bind-html="type.icon | resourceIcon"></i>
+                    <i class="fa fa-plus fa-stack-1x"></i>
+                  </span>
+                  <p translate>{{type.create_key}}</p>
+                </a>
+              </li>
+            </ul>
+
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-if="group.types.length === 1" ui-sref="contacts.addChild({ type: group.types[0].id, parent_id: actionBar.right.selected[0]._id })">
+              <span class="fa-stack">
+                <i ng-bind-html="group.types[0].icon | resourceIcon"></i>
+                <i class="fa fa-plus fa-stack-1x"></i>
+              </span>
+              <p translate>{{group.types[0].create_key}}</p>
+            </a>
+          </span>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo" mm-auth="can_view_call_action">
             <span class="fa fa-phone"></span>

@@ -370,22 +370,6 @@ angular.module('inboxServices').service('Enketo',
 
     this.renderContactForm = renderForm;
 
-    // TODO delete this
-    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
-      return $q.all([inited, Language()])
-        .then(function(results) {
-          return translateXml(xmlString, results[1]);
-        })
-        .then(transformXml)
-        .then(function(doc) {
-          return renderFromXmls(doc, selector, instanceData);
-        })
-        .then(function(form) {
-          registerEditedListener(selector, editedListener);
-          return form;
-        });
-    };
-
     var xmlToDocs = function(doc, record) {
 
       function mapOrAssignId(e, id) {

@@ -14,7 +14,7 @@ var nools = require('nools'),
     function(
       $q,
       Changes,
-      ContactSchema,
+      ContactTypes,
       Search,
       Session,
       Settings,
@@ -186,8 +186,7 @@ var nools = require('nools'),
           key: 'rules-engine',
           callback: updateFacts,
           filter: function(change) {
-            return change.doc.form ||
-                   ContactSchema.getTypes().indexOf(change.doc.type) !== -1; // TODO more types
+            return change.doc.form || ContactTypes.includes().indexOf(change.doc);
           }
         });
       };

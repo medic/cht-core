@@ -16,7 +16,6 @@ const PAGE_SIZE = 50;
     $translate,
     Auth,
     Changes,
-    ContactSchema,
     ContactSummary,
     ContactsActions,
     ContactTypes,
@@ -203,18 +202,28 @@ const PAGE_SIZE = 50;
         });
     };
 
-    var getActionBarDataForChild = function(docType) {
-      // TODO this should return an array of types...
-      var selectedChildPlaceType = ContactSchema.getChildPlaceType(docType);
-      if (!selectedChildPlaceType) {
-        return $q.resolve();
-      }
-      var schema = ContactSchema.get(selectedChildPlaceType);
-      return {
-        addPlaceLabel: schema.addButtonLabel,
-        type: selectedChildPlaceType,
-        icon: schema ? schema.icon : '',
-      };
+    const getChildTypes = function(typeId) {
+      return ContactTypes.getChildren(typeId).then(childTypes => {
+        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
+        const models = [];
+        if (grouped.places) {
+          models.push({
+            menu_key: 'Add place',
+            menu_icon: 'fa-building',
+            permission: 'can_create_places',
+            types: grouped.places
+          });
+        }
+        if (grouped.persons) {
+          models.push({
+            menu_key: 'Add person',
+            menu_icon: 'fa-user',
+            permission: 'can_create_people',
+            types: grouped.persons
+          });
+        }
+        return models;
+      });
     };
 
     // only admins can edit their own place
@@ -263,7 +272,6 @@ const PAGE_SIZE = 50;
       return $translate(title).catch(() => title);
     };
 
-
     $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedContact();
@@ -271,32 +279,29 @@ const PAGE_SIZE = 50;
       ctrl.clearCancelCallback();
       const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
 
-      let title = '';
-      if (ctrl.selectedContact.doc.type === 'person') {
-        title = 'contact.profile';
-      } else {
-        title = ContactSchema.get(ctrl.selectedContact.doc.type).label;
-      }
       ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
-          $translate(title).catch(() => title),
-          getActionBarDataForChild(ctrl.selectedContact.doc.type),
+          getTitle(ctrl.selectedContact),
           getCanEdit(ctrl.selectedContact.doc),
+          getChildTypes(ctrl.selectedContact.type.id)
         ])
         .then(function(results) {
-          $scope.setTitle(results[0]);
-          if (results[1]) {
+          const title = results[0];
+          const canEdit = results[1];
+          const childTypes = results[2];
+          $scope.setTitle(title);
+          if (canEdit) {
             ctrl.updateSelectedContact({ doc: { child: results[1] }});
           }
-          const canEdit = results[2];
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
             selected: [ctrl.selectedContact.doc],
             sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit,
+            canEdit: canEdit,
+            childTypes: childTypes
           });
 
           return lazyLoadedContactData
@@ -307,8 +312,9 @@ const PAGE_SIZE = 50;
                 getTasks()
               ])
               .then(function(results) {
-                ctrl.setContactsLoadingSummary(false);
                 const summary = results[0];
+                const settings = results[1];
+                ctrl.setContactsLoadingSummary(false);
                 ctrl.updateSelectedContact({ summary: summary });
                 const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
@@ -318,7 +324,7 @@ const PAGE_SIZE = 50;
                   const showUnmuteModal = function(formId) {
                     return ctrl.selectedContact.doc &&
                           ctrl.selectedContact.doc.muted &&
-                          !isUnmuteForm(results[1], formId);
+                          !isUnmuteForm(settings, formId);
                   };
                   const formSummaries = forms && forms.map(function(xForm) {
                     return {
@@ -340,10 +346,12 @@ const PAGE_SIZE = 50;
                     sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
                     canEdit,
                     canDelete,
+                    childTypes,
                   });
                 });
+                console.log('set relevantForms to ', formSummaries);
               });
-          });
+            });
         })
         .catch(function(e) {
           $log.error('Error setting selected contact');
@@ -539,7 +547,7 @@ const PAGE_SIZE = 50;
       },
       filter: function(change) {
         return (
-          (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
+          ContactTypes.includes(change.doc) ||
           (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc)
         );

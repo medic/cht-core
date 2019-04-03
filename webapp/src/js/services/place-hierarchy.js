@@ -10,7 +10,7 @@ var _ = require('underscore');
 */
 angular.module('inboxServices').factory('PlaceHierarchy',
   function(
-    ContactSchema,
+    ContactTypes,
     Contacts,
     Settings
   ) {
@@ -73,17 +73,20 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       return firstNonStubNode(hierarchy);
     };
 
-    // By default exclude clinic (the lowest level) to increase performance.
-    var defaultHierarchyTypes = ContactSchema.getPlaceTypes().filter(function(type) {
-      return type !== 'clinic';
-    });
-
     return function() {
-      return Settings().then(function(settings) {
-        var types = settings.place_hierarchy_types || defaultHierarchyTypes;
-
-        return Contacts(types).then(buildHierarchy);
-      });
+      return Settings()
+        .then(settings => {
+          if (settings.place_hierarchy_types) {
+            return settings.place_hierarchy_types;
+          }
+          return ContactTypes.getAll().then(types => {
+            return types
+              .filter(type => !type.person && type.id !== 'clinic') // By default exclude people and clinics (the lowest level) to increase performance.
+              .map(type => type.id);
+          });
+        })
+        .then(types => Contacts(types))
+        .then(places => buildHierarchy(places));
     };
   }
 );
