@@ -403,6 +403,7 @@ describe('functional transitions', () => {
           id: 'random form that no transition runs on',
           form: 'F',
           type: 'data_record',
+          content_type: 'xml',
           reported_date: new Date().valueOf()
         },
         {

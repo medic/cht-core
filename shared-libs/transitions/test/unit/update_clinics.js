@@ -2,6 +2,7 @@ const sinon = require('sinon'),
   assert = require('chai').assert,
   dbPouch = require('../../src/db'),
   transition = require('../../src/transitions/update_clinics'),
+  config = require('../../src/config'),
   phone = '+34567890123';
 
 let lineageStub;
@@ -85,6 +86,7 @@ describe('update clinic', () => {
     var doc = {
       type: 'data_record',
       from: 'WRONG',
+      content_type: 'xml'
     };
     sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -98,6 +100,7 @@ describe('update clinic', () => {
       type: 'data_record',
       from: '+12345',
       refid: '1000',
+      content_type: 'xml'
     };
     sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -250,4 +253,91 @@ describe('update clinic', () => {
       assert.equal(err, 'some error');
     });
   });
+
+  it('should add sys.facility_not_found when no form', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+    };
+
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    return transition.onMatch({ doc }).then(changed => {
+      assert(changed);
+      assert(!doc.contact);
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'sys.facility_not_found');
+    });
+  });
+
+  it('should add sys.facility_not_found when form not found', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm'
+    };
+
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(config, 'get').withArgs('forms').returns({ 'other': {} });
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(changed);
+      assert(!doc.contact);
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'sys.facility_not_found');
+      assert.equal(config.get.callCount, 1);
+    });
+  });
+
+  it('should add sys.facility_not_found when form not public', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm'
+    };
+
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(changed);
+      assert(!doc.contact);
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'sys.facility_not_found');
+    });
+  });
+
+  it('should not add sys.facility_not_found when xml', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm',
+      content_type: 'xml'
+    };
+
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(!changed);
+      assert(!doc.contact);
+      assert(!doc.errors);
+    });
+  });
+
+  it('should not add sys.facility_not_found when form is public', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm',
+    };
+
+    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': { public_form: true } });
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(!changed);
+      assert(!doc.contact);
+      assert(!doc.errors);
+    });
+  });
+
 });

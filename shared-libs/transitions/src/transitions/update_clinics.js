@@ -74,7 +74,7 @@ module.exports = {
         return true;
       }
 
-      if (!change.doc.sms_message) {
+      if (change.doc.content_type === utils.XFORM_CONTENT_TYPE) {
         return;
       }
 
