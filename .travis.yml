@@ -92,9 +92,9 @@ after_failure:
   - |
     (cd tests/logs
       for log in $(ls *.log); do
-        echo "---------- $log ----------"
+        echo "----------- $log -----------"
         tail "$log"
-        echo "--------------------------"
+        echo "----------------------------"
       done
     )
 
