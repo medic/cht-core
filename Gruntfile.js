@@ -8,6 +8,8 @@ const {
   COUCH_URL,
   COUCH_NODE_NAME,
   UPLOAD_URL,
+  STAGING_SERVER,
+  BUILD_SERVER,
   TRAVIS_BUILD_NUMBER
 } = process.env;
 
