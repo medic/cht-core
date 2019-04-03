@@ -665,7 +665,6 @@ describe('transitions', () => {
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes, messages]) => {
-        console.log(require('util').inspect(changes, { depth: 100 }));
         expect(messages.messages.length).toEqual(0);
         expect(changes.every(change => isUntransitionedDoc(change.doc))).toEqual(true);
         ids = changes.map(change => change.id);
