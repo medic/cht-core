@@ -1,12 +1,10 @@
-const _ = require('underscore'),
-      async = require('async'),
+const async = require('async'),
       feed = require('./lib/feed'),
       db = require('./db'),
       logger = require('./lib/logger'),
       metadata = require('./lib/metadata'),
       tombstoneUtils = require('@medic/tombstone-utils'),
       transitionsLib = require('./config').getTransitionsLib(),
-      PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500; // items
 
 let changesFeed,
@@ -47,10 +45,6 @@ const attach = () => {
   }
 };
 
-const changeQueue = async.queue((task, callback) =>
-  processChange(task, () => _.delay(callback, PROCESSING_DELAY))
-);
-
 const processChange = (change, callback) => {
   if (!change) {
     return callback();
@@ -84,6 +78,8 @@ const processChange = (change, callback) => {
     updateMetadata(change, callback);
   });
 };
+
+const changeQueue = async.queue(processChange);
 
 const updateMetadata = (change, callback) => {
   processed++;
