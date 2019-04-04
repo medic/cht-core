@@ -23,7 +23,11 @@ env:
     - BUILDS_SERVER=_couch/builds_testing
     - STAGING_SERVER=_couch/builds
     - EXTERNAL_SERVER=_couch/builds_external
-    - EXTERNAL_CONTRIBUTOR=false
+    - |
+      if [[ -z "$UPLOAD_URL" ]]; then
+        export UPLOAD_URL=$PUBLIC_UPLOAD_URL
+        export BUILDS_SERVER=$EXTERNAL_SERVER
+      fi
     #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
     - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
@@ -42,12 +46,6 @@ before_script:
   - npm install -g grunt-cli
   - npm install -g horticulturalist
   - ./scripts/travis/couch-config
-  - |
-    if [[ -z "$UPLOAD_URL" ]]; then
-      export UPLOAD_URL=$PUBLIC_UPLOAD_URL
-      export EXTERNAL_CONTRIBUTOR=true
-      export BUILDS_SERVER=$EXTERNAL_SERVER
-    fi
   - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/${BUILDS_SERVER}"
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
   - echo "COUCH_URL=${COUCH_URL}"
