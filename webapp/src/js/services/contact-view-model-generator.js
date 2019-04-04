@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-    registrationUtils = require('@medic/registration-utils');
+const _ = require('underscore');
+const registrationUtils = require('@medic/registration-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -107,15 +107,15 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return lhs.doc.muted ? 1 : -1;
     };
 
-    var setPrimaryContact = function(model) {
-      var parent = model.lineage && model.lineage.length && model.lineage[0];
-      model.isPrimaryContact = parent &&
-        parent.contact &&
-        (parent.contact._id === model.doc._id);
+    const setPrimaryContact = model => {
+      const immediateParent = model.lineage && model.lineage.length && model.lineage[0];
+      model.isPrimaryContact = immediateParent &&
+        immediateParent.contact &&
+        immediateParent.contact._id === model.doc._id;
     };
 
-    var setMutedState = function(model) {
-      model.doc.muted = ContactMuted(model.doc, model.lineage);
+    const setMutedState = modelToMute => {
+      modelToMute.doc.muted = ContactMuted(modelToMute.doc, modelToMute.lineage);
     };
 
     const groupChildrenByType = children => {
@@ -123,7 +123,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const addPrimaryContact = function(doc, children) {
-      var contactId = doc && doc.contact && doc.contact._id;
+      const contactId = doc && doc.contact && doc.contact._id;
       if (!contactId) {
         return children;
       }
@@ -151,10 +151,10 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    var sortChildren = function(model, childModels) {
+    const sortChildren = function(model, childModels) {
       childModels.forEach(group => {
         const comparator = group.type && group.type.sort_by_dob ? AGE_COMPARATOR : NAME_COMPARATOR;
-        group.contacts.sort(comparator);
+        group.contacts.sort(_.partial(MUTED_COMPARATOR, comparator));
       });
       childModels.sort(TYPE_COMPARATOR);
       return childModels;
@@ -210,7 +210,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return children;
     };
 
-    var loadChildren = function(model, options) {
+    const loadChildren = function(model, options) {
       model.children = [];
       return ContactTypes.getAll().then(types => {
         return getChildren(model, types, options)
@@ -222,11 +222,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var addPatientName = function(reports, contacts) {
+    const addPatientName = function(reports, contacts) {
       reports.forEach(function(report) {
         if (report.fields && !report.fields.patient_name) {
-          var patientId = report.fields.patient_id || report.patient_id;
-          var patient = contacts.find(contact => contact.patient_id === patientId);
+          const patientId = report.fields.patient_id || report.patient_id;
+          const patient = contacts.find(contact => contact.patient_id === patientId);
           if (patient) {
             report.fields.patient_name = patient.name;
           }
@@ -234,7 +234,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var getHeading = function(report) {
+    const getHeading = function(report) {
       if (report.validSubject && report.subject && report.subject.value) {
         return report.subject.value;
       }
@@ -244,11 +244,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return $translate.instant('report.subject.unknown');
     };
 
-    var addHeading = function(reports) {
-      var reportIds = _.pluck(reports, '_id');
+    const addHeading = function(reports) {
+      const reportIds = _.pluck(reports, '_id');
       return GetDataRecords(reportIds).then(function(dataRecords) {
         dataRecords.forEach(function(dataRecord) {
-          var report = reports.find(report => report._id === dataRecord._id);
+          const report = reports.find(report => report._id === dataRecord._id);
           if (report) {
             report.heading = getHeading(dataRecord);
           }
@@ -257,23 +257,22 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var getReports = function(contactDocs) {
-      var subjectIds = [];
+    const getReports = function(contactDocs) {
+      const subjectIds = [];
       contactDocs.forEach(function(doc) {
         subjectIds.push(registrationUtils.getSubjectIds(doc));
       });
-      subjectIds = _.flatten(subjectIds);
-      return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
-        .then(function(reports) {
-          reports.forEach(function(report) {
-            report.valid = !report.errors || !report.errors.length;
-          });
-          return reports;
+      const searchOptions = { subjectIds: _.flatten(subjectIds) };
+      return Search('reports', searchOptions, { include_docs: true }).then(function(reports) {
+        reports.forEach(function(report) {
+          report.valid = !report.errors || !report.errors.length;
         });
+        return reports;
+      });
     };
 
-    var loadReports = function(model) {
-      var contacts = [ model.doc ];
+    const loadReports = function(model) {
+      const contacts = [ model.doc ];
       model.children.forEach(group => {
         if (group.type && group.type.person) {
           group.contacts.forEach(contact => contacts.push(contact.doc));
