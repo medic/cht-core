@@ -4,6 +4,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
     $log,
     $ngRedux,
+    $q,
     $scope,
     $state,
     $stateParams,

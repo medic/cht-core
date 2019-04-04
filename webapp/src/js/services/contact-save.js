@@ -136,7 +136,6 @@ angular.module('inboxServices').service('ContactSave',
           doc[fieldName] = original[fieldName];
         } else {
           promiseChain = promiseChain.then(function() {
-            console.log('getting', value, doc, fieldName);
             return DB().get(value).then(function(dbFieldValue) {
               // In a correctly configured form one of these will be the
               // parent This must happen before we attempt to run

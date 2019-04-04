@@ -73,20 +73,23 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       return firstNonStubNode(hierarchy);
     };
 
+    const getContactTypes = () => {
+      return Settings().then(settings => {
+        if (settings.place_hierarchy_types) {
+          return settings.place_hierarchy_types;
+        }
+        return ContactTypes.getPlaceTypes().then(types => {
+          return types
+            .filter(type => type.id !== 'clinic') // By default exclude people and clinics (the lowest level) to increase performance.
+            .map(type => type.id);
+        });
+      });
+    };
+
     return function() {
-      return Settings()
-        .then(settings => {
-          if (settings.place_hierarchy_types) {
-            return settings.place_hierarchy_types;
-          }
-          return ContactTypes.getAll().then(types => {
-            return types
-              .filter(type => !type.person && type.id !== 'clinic') // By default exclude people and clinics (the lowest level) to increase performance.
-              .map(type => type.id);
-          });
-        })
-        .then(types => Contacts(types))
-        .then(places => buildHierarchy(places));
+      return getContactTypes()
+        .then(Contacts)
+        .then(buildHierarchy);
     };
   }
 );

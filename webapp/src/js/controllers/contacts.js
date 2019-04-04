@@ -137,8 +137,6 @@ const PAGE_SIZE = 50;
         });
       }
 
-      console.log('SEARCHING', actualFilter, options, extensions, docIds);
-
       return Search('contacts', actualFilter, options, extensions, docIds)
         .then(function(contacts) {
           // If you have a home place make sure its at the top
@@ -192,7 +190,7 @@ const PAGE_SIZE = 50;
           ctrl.loading = false;
           ctrl.appending = false;
           $scope.hasContacts = liveList.count() > 0;
-          setActionBarData();
+          getChildren().then(setActionBarData);
         })
         .catch(function(err) {
           ctrl.error = true;
@@ -349,7 +347,6 @@ const PAGE_SIZE = 50;
                     childTypes,
                   });
                 });
-                console.log('set relevantForms to ', formSummaries);
               });
             });
         })
@@ -422,33 +419,17 @@ const PAGE_SIZE = 50;
       } else {
         return Promise.resolve([]);
       }
-      return p
-        .then(children => {
-          console.log('got children', children);
-          return children;
-        })
-        .then(children => children.filter(child => !child.person))
-        .then(places => {
-          defaultTypeFilter = {
-            types: {
-              selected: places.map(place => place.id)
-            }
-          };
-          return places;
-        });
+      return p.then(children => children.filter(child => !child.person));
     };
 
-    var setActionBarData = function() {
-      getChildren().then(children => {
-        console.log('setting children', children);
-        $scope.setLeftActionBar({
-          hasResults: $scope.hasContacts,
-          userFacilityId: usersHomePlace && usersHomePlace._id,
-          childPlaces: children,
-          exportFn: function() {
-            Export('contacts', $scope.filters, { humanReadable: true });
-          },
-        });
+    var setActionBarData = function(childPlaces) {
+      $scope.setLeftActionBar({
+        hasResults: $scope.hasContacts,
+        userFacilityId: usersHomePlace && usersHomePlace._id,
+        childPlaces: childPlaces,
+        exportFn: function() {
+          Export('contacts', $scope.filters, { humanReadable: true });
+        },
       });
     };
 
@@ -482,17 +463,27 @@ const PAGE_SIZE = 50;
     };
 
     var setupPromise = $q
-      .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
+      .all([
+        getUserHomePlaceSummary(),
+        canViewLastVisitedDate(),
+        Settings()
+       ])
       .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
         usersHomePlace = homePlaceSummary;
         $scope.lastVisitedDateExtras = viewLastVisitedDate;
         $scope.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
-
         if ($scope.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
           $scope.sortDirection = $scope.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
-
-        setActionBarData();
+        return getChildren();
+      })
+      .then(childTypes => {
+        defaultTypeFilter = {
+          types: {
+            selected: childTypes.map(type => type.id)
+          }
+        };
+        setActionBarData(childTypes);
         return $scope.search();
       });
 

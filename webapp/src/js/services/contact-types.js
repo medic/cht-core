@@ -44,6 +44,16 @@ angular.module('inboxServices').service('ContactTypes', function(
           return (!parent && !parents.length) || parents.includes(parent);
         });
       });
-    }
+    },
+
+    /**
+     * Returns a Promise to resolve all the configured place contact types
+     */
+    getPlaceTypes: () => getConfig().then(types => types.filter(type => !type.person)),
+
+    /**
+     * Returns a Promise to resolve all the configured person contact types
+     */
+    getPersonTypes: () => getConfig().then(types => types.filter(type => type.person)),
   };
 });

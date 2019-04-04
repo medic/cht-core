@@ -10,11 +10,14 @@ describe('PlaceHierarchy service', () => {
     module('inboxApp');
     Contacts = sinon.stub();
     settings = {};
+    const placeTypes = [
+      { id: 'district_hospital' },
+      { id: 'health_center' },
+      { id: 'clinic' }
+    ];
     module($provide => {
       $provide.value('Contacts', Contacts);
-      $provide.value('ContactSchema', {
-        getPlaceTypes: () => [ 'district_hospital', 'health_center', 'clinic' ]
-      });
+      $provide.value('ContactTypes', { getPlaceTypes: () => Promise.resolve(placeTypes) });
       $provide.value('Settings', () => Promise.resolve(settings));
     });
     inject($injector => {

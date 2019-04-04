@@ -75,13 +75,12 @@ angular.module('inboxServices').factory('LiveListConfig',
 
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
-        listItem: function(contact, settings) {
+        listItem: function(contact, contactTypes) {
           if (!this.scope) {
             return;
           }
           const typeId = contact.contact_type || contact.type;
-          const types = settings.contact_types || [];
-          const type = types.find(type => type.id === typeId);
+          const type = contactTypes.find(type => type.id === typeId);
           var scope = this.scope.$new(true);
           scope.id = contact._id;
           scope.route = 'contacts';
@@ -161,7 +160,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           }
           return r2.reported_date - r1.reported_date;
         },
-        listItem: function(report, settings, removedDomElement) {
+        listItem: function(report, contactTypes, removedDomElement) {
           if (!this.scope) {
             return;
           }
@@ -288,13 +287,16 @@ angular.module('inboxServices').factory('LiveListConfig',
 angular.module('inboxServices').factory('LiveList',
   function(
     $timeout,
-    ResourceIcons,
-    Settings
+    ContactTypes,
+    ResourceIcons
   ) {
     'ngInject';
 
-    var api = {};
-    var indexes = {};
+    const api = {};
+    const indexes = {};
+    let contactTypes;
+
+    ContactTypes.getAll().then(types => contactTypes = types);
 
     function findSortedIndex(list, newItem, orderBy) {
       // start at the end of the list?
@@ -322,8 +324,8 @@ angular.module('inboxServices').factory('LiveList',
       }
     }
 
-    function listItemFor(idx, doc, settings, removedDomElement) {
-      var li = $(idx.listItem(doc, settings, removedDomElement));
+    function listItemFor(idx, doc, contactTypes, removedDomElement) {
+      var li = $(idx.listItem(doc, contactTypes, removedDomElement));
       if (doc._id === idx.selected) {
         li.addClass('selected');
       }
@@ -406,28 +408,26 @@ angular.module('inboxServices').factory('LiveList',
         return;
       }
 
-      Settings().then(settings => {
-        var li = listItemFor(idx, newItem, settings, removedDomElement);
+      var li = listItemFor(idx, newItem, contactTypes, removedDomElement);
 
-        var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
-        idx.list.splice(newItemIndex, 0, newItem);
-        idx.dom[newItem._id] = li;
+      var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
+      idx.list.splice(newItemIndex, 0, newItem);
+      idx.dom[newItem._id] = li;
 
-        if (skipDomAppend) {
-          return;
+      if (skipDomAppend) {
+        return;
+      }
+
+      var activeDom = $(idx.selector);
+      if(activeDom.length) {
+        var children = activeDom.children();
+        if (!children.length || newItemIndex === children.length) {
+          activeDom.append(li);
+        } else {
+          activeDom.children().eq(newItemIndex)
+              .before(li);
         }
-
-        var activeDom = $(idx.selector);
-        if(activeDom.length) {
-          var children = activeDom.children();
-          if (!children.length || newItemIndex === children.length) {
-            activeDom.append(li);
-          } else {
-            activeDom.children().eq(newItemIndex)
-                .before(li);
-          }
-        }
-      });
+      }
     }
 
     function _invalidateCache(listName, id) {
@@ -509,21 +509,19 @@ angular.module('inboxServices').factory('LiveList',
     function refreshAll() {
       const now = new Date();
 
-      Settings().then(settings => {
-        _.forEach(indexes, function(idx, name) {
-          // N.B. no need to update a list that's never been generated
-          if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
-            // regenerate all list contents so relative dates relate to today
-            // instead of yesterday
-            for (let i = 0; i < idx.list.length; ++i) {
-              const item = idx.list[i];
-              idx.dom[item._id] = listItemFor(idx, item, settings);
-            }
-
-            api[name].refresh();
-            idx.lastUpdate = now;
+      _.forEach(indexes, function(idx, name) {
+        // N.B. no need to update a list that's never been generated
+        if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
+          // regenerate all list contents so relative dates relate to today
+          // instead of yesterday
+          for (let i = 0; i < idx.list.length; ++i) {
+            const item = idx.list[i];
+            idx.dom[item._id] = listItemFor(idx, item, contactTypes);
           }
-        });
+
+          api[name].refresh();
+          idx.lastUpdate = now;
+        }
       });
 
       // Schedule this task again for tomorrow

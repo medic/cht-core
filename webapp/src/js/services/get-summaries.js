@@ -14,7 +14,6 @@ angular.module('inboxServices').factory('GetSummaries',
     // this workaround is no longer needed.
     // https://github.com/medic/medic/issues/4666
     var summarise = function(doc) {
-      console.log('summarising', doc);
       if (!doc) {
         return;
       }
@@ -123,7 +122,6 @@ angular.module('inboxServices').factory('GetSummaries',
         var summaries = _.map(response.rows, function(row) {
           return summarise(row.doc);
         });
-        console.log('got summaries', summaries);
         return summaries.filter(function(summary) {
           return summary;
         });

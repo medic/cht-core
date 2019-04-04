@@ -12,23 +12,23 @@ angular.module('inboxServices').factory('Contacts',
     'use strict';
     'ngInject';
 
-    const init = ContactTypes.getAll().then(types => {
-      return types
-        .filter(type => !type.person)
-        .map(type => {
-          return Cache({
-            get: function(callback) {
-              DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type] })
-                .then(function(result) {
-                  callback(null, _.pluck(result.rows, 'doc'));
-                })
-                .catch(callback);
-            },
-            invalidate: function(doc) {
-              return type === (doc.contact_type || doc.type);
-            }
-          });
+    const init = ContactTypes.getPlaceTypes().then(types => {
+      const cacheByType = {};
+      types.forEach(type => {
+        cacheByType[type.id] = Cache({
+          get: function(callback) {
+            DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type.id] })
+              .then(function(result) {
+                callback(null, _.pluck(result.rows, 'doc'));
+              })
+              .catch(callback);
+          },
+          invalidate: function(doc) {
+            return type.id === (doc.contact_type || doc.type);
+          }
         });
+      });
+      return cacheByType;
     });
 
     /**

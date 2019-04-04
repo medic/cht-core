@@ -21,11 +21,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     $q,
     $translate,
     ContactMuted,
+    ContactTypes,
     DB,
     GetDataRecords,
     LineageModelGenerator,
-    Search,
-    Settings
+    Search
   ) {
     'ngInject';
     'use strict';
@@ -160,6 +160,18 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return childModels;
     };
 
+    const getPersonChildTypes = (types, parentId) => {
+      if (!parentId) {
+        return [];
+      }
+      const childTypes = types.filter(type => {
+        return type.person &&
+               type.parents &&
+               type.parents.includes(parentId);
+      });
+      return childTypes;
+    };
+
     const getChildren = (model, types, { getChildPlaces } = {}) => {
       const options = { include_docs: true };
       const contactId = model.doc._id;
@@ -168,10 +180,12 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         options.startkey = [ contactId ];
         options.endkey = [ contactId, {} ];
       } else {
-        // just get people
-        options.keys = types
-          .filter(type => type.person && type.parents && type.parents.includes(model.type))
-          .map(type => [ contactId, type.id ]);
+        // just get person children
+        const childTypes = getPersonChildTypes(types, model.type && model.type.id);
+        if (!childTypes.length) {
+          return $q.resolve([]);
+        }
+        options.keys = childTypes.map(type => [ contactId, type.id ]);
       }
       return DB().query('medic-client/contacts_by_parent', options)
         .then(response => response.rows);
@@ -198,7 +212,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var loadChildren = function(model, options) {
       model.children = [];
-      return getContactTypes().then(types => {
+      return ContactTypes.getAll().then(types => {
         return getChildren(model, types, options)
           .then(children => addPrimaryContact(model.doc, children))
           .then(children => markDeceased(model, children))
@@ -274,10 +288,6 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    const getContactTypes = () => {
-      return Settings().then(settings => settings.contact_types || []);
-    };
-
     const setType = function(model, types) {
       const typeId = model.doc.contact_type || model.doc.type;
       model.type = types.find(type => type.id === typeId);
@@ -286,7 +296,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     return {
       getContact: function(id, options) {
         return $q.all([
-          getContactTypes(),
+          ContactTypes.getAll(),
           LineageModelGenerator.contact(id, options)
         ])
           .then(function(results) {

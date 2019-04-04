@@ -19,7 +19,10 @@ describe('ContactsContentCtrl', () => {
     });
     const model = {
       doc: doc,
-      children: { persons: childRows }
+      children: [{
+        type: { id: 'person', person: true },
+        contacts: childRows
+      }]
     };
 
     getContact.returns(Promise.resolve());

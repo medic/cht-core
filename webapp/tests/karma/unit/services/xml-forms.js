@@ -6,6 +6,7 @@ describe('XmlForms service', () => {
       Changes,
       Auth,
       UserContact,
+      getContactType,
       contextUtils;
 
   const mockEnketoDoc = (formInternalId, docId) => {
@@ -28,6 +29,7 @@ describe('XmlForms service', () => {
     Changes = sinon.stub();
     Auth = sinon.stub();
     UserContact = sinon.stub();
+    getContactType = sinon.stub();
     contextUtils = {};
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -37,6 +39,7 @@ describe('XmlForms service', () => {
       $provide.value('Auth', Auth);
       $provide.value('UserContact', UserContact);
       $provide.value('XmlFormsContextUtils', contextUtils);
+      $provide.value('ContactTypes', { get: getContactType });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(_$injector_ => {
@@ -208,6 +211,7 @@ describe('XmlForms service', () => {
     dbQuery.returns(Promise.resolve({ rows: given }));
     UserContact.returns(Promise.resolve());
     const service = $injector.get('XmlForms');
+    getContactType.resolves({ person: true });
     service('test', { doc: { type: 'person' } }, (err, actual) => {
       try {
         chai.expect(err).to.equal(null);
@@ -288,6 +292,7 @@ describe('XmlForms service', () => {
     dbQuery.returns(Promise.resolve({ rows: given }));
     UserContact.returns(Promise.resolve());
     const service = $injector.get('XmlForms');
+    getContactType.resolves({ person: false });
     service('test', { doc: { type: 'district_hospital' } }, (err, actual) => {
       try {
         chai.expect(err).to.equal(null);
@@ -337,6 +342,7 @@ describe('XmlForms service', () => {
     dbQuery.returns(Promise.resolve({ rows: given }));
     UserContact.returns(Promise.resolve({ name: 'Frank' }));
     const service = $injector.get('XmlForms');
+    getContactType.resolves({ person: false });
     service('test', { doc: { color: 'blue' } }, (err, actual) => {
       try {
         chai.expect(err).to.equal(null);
@@ -380,11 +386,13 @@ describe('XmlForms service', () => {
     dbQuery.returns(Promise.resolve({ rows: given }));
     UserContact.returns(Promise.resolve());
     const service = $injector.get('XmlForms');
+    getContactType.resolves({ person: true });
     service('test', { doc: { sex: 'female', type: 'person' } }, (err, actual) => {
       try {
         chai.expect(err).to.equal(null);
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        chai.expect(getContactType.args[0][0]).to.equal('person');
         done();
       } catch(e) {
         // don't let assertion errors bubble up to the service again

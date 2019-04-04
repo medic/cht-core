@@ -37,10 +37,8 @@ angular.module('inboxServices').factory('GetDataRecords',
     };
 
     const getSummaries = function(ids, options) {
-      console.log('getting summaries', ids);
       return GetSummaries(ids)
         .then(summaries => {
-          console.log('getting subject summaries', summaries);
           const promiseToSummary = options.hydrateContactNames ? HydrateContactNames(summaries) : Promise.resolve(summaries);
           return promiseToSummary.then(GetSubjectSummaries);
         });
