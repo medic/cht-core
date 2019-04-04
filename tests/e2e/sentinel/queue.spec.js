@@ -58,7 +58,7 @@ let originalTimeout;
 describe('Sentinel queue drain', () => {
   beforeAll(done => {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 150000;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;
     utils.saveDocs(contacts).then(done);
   });
   afterAll(done => {
