@@ -41,7 +41,7 @@ describe('BrandingImages service', function() {
       get.returns(Promise.resolve());
       var service = injector.get('ResourceIcons');
       var actual = service.getImg('logo', 'branding');
-      chai.expect(actual).to.equal('<span class="header-logo" title="logo">&nbsp</span>');
+      chai.expect(actual).to.equal('<span class="header-logo" data-title="logo">&nbsp</span>');
       done();
     });
 
@@ -62,7 +62,7 @@ describe('BrandingImages service', function() {
       setTimeout(function() {
         var actual = service.getImg('logo', 'branding');
         var expected =
-          '<span class="header-logo" title="logo">' +
+          '<span class="header-logo" data-title="logo">' +
             '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
           '</span>';
         chai.expect(actual).to.equal(expected);
