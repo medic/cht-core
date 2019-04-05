@@ -13,7 +13,7 @@ angular.module('controllers').controller('MainCtrl',
     $translate.use('en');
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
-    Auth('can_configure')
+    Auth.any('can_view_outgoing_messages', 'can_configure')
     .then(function() {
       $scope.authorized = true;
     })
