@@ -19,14 +19,13 @@ env:
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost
-    - PUBLIC_UPLOAD_URL=https://staging.dev.medicmobile.org
     - BUILDS_SERVER=_couch/builds_testing
     - STAGING_SERVER=_couch/builds
-    - EXTERNAL_SERVER=_couch/builds_external
+    # External Contributor Settings
     - |
       if [[ -z "$UPLOAD_URL" ]]; then
-        export UPLOAD_URL=$PUBLIC_UPLOAD_URL
-        export BUILDS_SERVER=$EXTERNAL_SERVER
+        export UPLOAD_URL=https://staging.dev.medicmobile.org
+        export BUILDS_SERVER=_couch/builds_external
       fi
     #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
