@@ -127,6 +127,7 @@ describe('Sentinel queue drain', () => {
       .then(tombstones => {
         tombstones.forEach(tombstone => {
           expect(tombstone.type).toEqual('tombstone');
+          expect(tombstone.tombstone).toBeDefined();
         });
       });
   });
