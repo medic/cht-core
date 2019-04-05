@@ -2,6 +2,7 @@ const fs = require('fs');
 const utils = require('./utils');
 const constants = require('./constants');
 const auth = require('./auth')();
+const contactForms = require('./contact-forms.json');
 const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
 
 class BaseConfig {
@@ -105,11 +106,13 @@ const login = browser => {
 };
 
 const setupSettings = () => {
-  return utils.request({
-    path: '/api/v1/settings',
-    method: 'PUT',
-    body: JSON.stringify({ setup_complete: true }),
-    headers: { 'Content-Type': 'application/json' }
+  return utils.saveDocs(contactForms).then(() => { // saves the standard contact forms
+    return utils.request({
+      path: '/api/v1/settings',
+      method: 'PUT',
+      body: JSON.stringify({ setup_complete: true }),
+      headers: { 'Content-Type': 'application/json' }
+    });
   });
 };
 

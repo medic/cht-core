@@ -7353,5 +7353,6 @@
   "multi_report_alerts": [],
   "sms": {
     "outgoing_service": "medic-gateway"
-  }
+  },
+  "contact_types_TODO": []
 }

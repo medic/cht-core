@@ -9,7 +9,6 @@ describe('Add new health center tests : ', () => {
   it('should add new health center', () => {
     commonElements.goToPeople();
     contactPage.addNewDistrict('Auckland');
-    contactPage.completeNewPersonForm('Kiwimate');
     contactPage.addHealthCenter();
   });
 });

@@ -154,7 +154,7 @@ const deleteAll = (except = []) => {
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
     doc =>
-      ['translations', 'translations-backup', 'user-settings', 'info'].includes(
+      ['translations', 'translations-backup', 'user-settings', 'info', 'form'].includes(
         doc.type
       ),
     'service-worker-meta',
