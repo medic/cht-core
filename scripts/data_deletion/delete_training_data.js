@@ -23,6 +23,8 @@
  * the rev on a form in between each batch (see bump_rev.js).
  */
 
+ /* eslint-disable no-unused-vars */
+
 'use strict';
 
 var PouchDB = require('pouchdb');

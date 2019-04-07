@@ -1,6 +1,8 @@
-var https = require("https");
-var url = require("url");
-var _ = require("underscore");
+const https = require('https');
+const url = require('url');
+const _ = require('underscore');
+
+let instance_url;
 
 if (process.env.COUCH_URL) {
   instance_url = url.parse(process.env.COUCH_URL);
@@ -23,10 +25,10 @@ https.get(all_users_url, (res) => {
 
     medic_users.forEach(function(medic_user){
 
-      const rev_value = medic_user.value.rev
-      const user_id = medic_user.id
+      const rev_value = medic_user.value.rev;
+      const user_id = medic_user.id;
 
-      if(user_id == 'org.couchdb.user:admin' || user_id == '_design/_auth'){
+      if(user_id === 'org.couchdb.user:admin' || user_id === '_design/_auth'){
         console.log('Skipping...');
       } else {
         console.log(user_id);
@@ -34,7 +36,7 @@ https.get(all_users_url, (res) => {
         var del_url = users_db + '/' + user_id + '?rev=' + rev_value;
         var options = url.parse(del_url);
 
-        _.extend(options, {method: 'DELETE'});
+        const del_options = _.extend(options, {method: 'DELETE'});
 
         var del_req = https.request(del_options, function (resp) {
             resp.setEncoding('utf-8');
@@ -51,7 +53,7 @@ https.get(all_users_url, (res) => {
         });
         del_req.end();
       }
-  })
+  });
   });
 
 }).on('error', (e) => {

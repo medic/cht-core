@@ -15,9 +15,11 @@ if (typeof (args.version) !== 'string') {
 
 async function createProjectAddColumnsAndIssues() {
   var projectResponse = await projects.createProject(args.v);
-  for (const key in config.columnNamesData) {
-    var columnData = await projects.addColumnsToProject(config.columnNamesData[key].name, projectResponse.data.id);
-    config.columnNamesData[key].columnId = columnData.data.id;
+  const columnNames = Object.keys(config.columnNamesData);
+  for (let i = 0; i < columnNames.length; i++) {
+    const columnConfig = config.columnNamesData[columnNames[i]];
+    var columnData = await projects.addColumnsToProject(columnConfig.name, projectResponse.data.id);
+    columnConfig.columnId = columnData.data.id;
   }
 
   try{
@@ -25,7 +27,7 @@ async function createProjectAddColumnsAndIssues() {
     var response = await issues();
     var issueIds = response.data.map(x => x.id);
     await projects.addIssuesToColumn(config.columnNamesData.toDo.columnId, issueIds);
-    console.log("Project created at: " + projectResponse.data.html_url);
+    console.log('Project created at: ' + projectResponse.data.html_url);
   } catch(err){
     console.error(err);
   }

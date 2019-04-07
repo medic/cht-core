@@ -1,9 +1,6 @@
 {
   "parserOptions": {
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true
-    },
-    "ecmaVersion": 2017,
+    "ecmaVersion": 2018,
     "sourceType": "module"
   },
   "env": {
@@ -21,8 +18,7 @@
     "camelcase": 2,
     "comma-style": [2, "last"],
     "curly": [2, "all"],
-    "dot-notation": [2, { "allowKeywords": true }
-    ],
+    "dot-notation": [2, { "allowKeywords": true }],
     "eqeqeq": [2, "allow-null" ],
     "global-strict": [0, "never"],
     "guard-for-in": 2,

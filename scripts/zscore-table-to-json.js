@@ -18,7 +18,7 @@ var pivot = function(data, keyFn) {
         result[i] = {
           key: keyFn(i),
           points: []
-        }
+        };
       }
       result[i].points.unshift(parseFloat(point));
     });
@@ -38,7 +38,7 @@ var getHFWChart = function(callback) {
       var keyFn = function(i) {
         // height starts at 45cm and increments by 0.1cm
         return (i / 10) + 45;
-      }
+      };
       var chart = {
         id: 'weight-for-height',
         data: {
@@ -63,7 +63,7 @@ var getWFAChart = function(callback) {
       var keyFn = function(i) {
         // age starts at 0 days and increments by 1 day
         return i;
-      }
+      };
       var chart = {
         id: 'weight-for-age',
         data: {
@@ -88,7 +88,7 @@ var getHFAChart = function(callback) {
       var keyFn = function(i) {
         // age starts at 0 days and increments by 1 day
         return i;
-      }
+      };
       var chart = {
         id: 'height-for-age',
         data: {
