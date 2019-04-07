@@ -8,6 +8,8 @@ const {
   COUCH_URL,
   COUCH_NODE_NAME,
   UPLOAD_URL,
+  STAGING_SERVER,
+  BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER
 } = process.env;
 
@@ -127,7 +129,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: UPLOAD_URL + '/_couch/builds',
+            dest: `${UPLOAD_URL}/${STAGING_SERVER}`,
           },
         ],
       },
@@ -135,7 +137,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/_couch/builds_testing`,
+            dest: `${UPLOAD_URL}/${BUILDS_SERVER}`,
           },
         ],
       }
