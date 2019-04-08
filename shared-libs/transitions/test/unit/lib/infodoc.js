@@ -281,4 +281,79 @@ describe('infodoc', () => {
         });
     });
   });
+
+  describe('updateTransition(s)', () => {
+    it('updateTransition should set transition data', () => {
+      const change = { seq: 12, doc: { _rev: 2 }, info: {}};
+      infodoc.updateTransition(change, 'update_clinics', true);
+      assert.deepEqual(
+        change.info,
+        {
+          transitions: {
+            update_clinics: { ok: true, seq: 12, last_rev: 2 }
+          }
+        });
+      infodoc.updateTransition(change, 'accept_patient_reports', false);
+      assert.deepEqual(
+        change.info,
+        {
+          transitions: {
+            update_clinics: { ok: true, seq: 12, last_rev: 2 },
+            accept_patient_reports: { ok: false, seq: 12, last_rev: 2 }
+          }
+        });
+    });
+
+    it('updateTransitions should update infodoc', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      const change = {
+        id: 'some',
+        seq: 'seq',
+        doc: { _rev: '123' },
+        info: {
+          _id: 'some-info',
+          transitions: {
+            one: { ok: true },
+            two: { ok: false },
+            three: { ok: true }
+          }
+        }
+      };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return infodoc.updateTransitions(change).then(() => {
+        assert.equal(db.sentinel.get.callCount, 1);
+        assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
+        assert.equal(db.sentinel.put.callCount, 1);
+        assert.deepEqual(db.sentinel.put.args[0], [Object.assign(info, { transitions: change.info.transitions})]);
+      });
+    });
+
+    it('updateTransitions should catch save errors', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      const change = {
+        id: 'some',
+        seq: 'seq',
+        doc: { _rev: '123' },
+        info: {
+          _id: 'some-info',
+          transitions: {
+            one: { ok: true },
+            two: { ok: false },
+            three: { ok: true }
+          }
+        }
+      };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').rejects({ some: 'err' });
+
+      return infodoc.updateTransitions(change).then(() => {
+        assert.equal(db.sentinel.get.callCount, 1);
+        assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
+        assert.equal(db.sentinel.put.callCount, 1);
+        assert.deepEqual(db.sentinel.put.args[0], [Object.assign(info, { transitions: change.info.transitions})]);
+      });
+    });
+  });
 });
