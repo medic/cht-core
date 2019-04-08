@@ -1,7 +1,8 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const db = require('../../../src/db');
-const feed = require('../../../src/lib/feed');
+const feed = require('../../../src/lib/feed'),
+      tombstoneUtils = require('@medic/tombstone-utils');
 
 describe('feed', () => {
 
@@ -46,4 +47,13 @@ describe('feed', () => {
     chai.expect(queue.push.callCount).to.equal(0);
   });
 
+  it('should ignore tombstones', () => {
+    sinon.stub(tombstoneUtils, 'isTombstoneId').withArgs('some-uuid____tombstone').returns(true);
+    feed.followFeed('123', queue);
+    chai.expect(handler.on.args[0][0]).to.equal('change');
+    const callbackFn = handler.on.args[0][1];
+    const change = { id: 'some-uuid____tombstone' };
+    callbackFn(change);
+    chai.expect(queue.push.callCount).to.equal(0);
+  });
 });

@@ -1,5 +1,6 @@
 const logger = require('./logger');
-const db = require('../db');
+const db = require('../db'),
+      tombstoneUtils = require('@medic/tombstone-utils');
 
 // we don't run transitions on ddocs or info docs
 const IDS_TO_IGNORE = /^_design\/|-info$/;
@@ -9,7 +10,7 @@ module.exports = {
     return db.medic
       .changes({ live: true, since: seq })
       .on('change', change => {
-        if (!change.id.match(IDS_TO_IGNORE)) {
+        if (!change.id.match(IDS_TO_IGNORE) && !tombstoneUtils.isTombstoneId(change.id)) {
           queue.push(change);
         }
       })
