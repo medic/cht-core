@@ -11,7 +11,7 @@ const pageSize = 100;
 
 const HOST = 'localhost';
 const PORT = 5984;
-const AUTH = 'admin:pass'
+const AUTH = 'admin:pass';
 const DB_NAME = 'medic';
 
 const results = [];
@@ -48,7 +48,7 @@ const getIds = (ids=[], skip=0) => {
 };
 
 const getSize = id => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const options = {
       host: HOST,
       port: PORT,

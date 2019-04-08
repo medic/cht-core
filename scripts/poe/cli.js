@@ -23,7 +23,7 @@ const options = async (args) => {
   if(args.length > 1) {
     const opts = config[args[0]];
     opts.file = args[1];
-    opts.api_token = process.env.POE_API_TOKEN;
+    opts.api_token = process.env.POE_API_TOKEN; // eslint-disable-line camelcase
     opts.id = process.env.POE_PROJECT_ID;
     if(args[0] === 'import') {
       // Tags the import with ../../package.json version or the extra arg
@@ -37,7 +37,7 @@ const options = async (args) => {
   banner.show(args[0]);
   const {...opts} = await inquirer.ask(args[0]);
   return opts;
-}
+};
 
 const run = async (args) => {
   const cmd = args.length && ALL_CMDS.includes(args[0]) && args[0];
@@ -45,7 +45,7 @@ const run = async (args) => {
     usage.show(ALL_CMDS);
   } else {
     if(POE_CMDS.includes(cmd)) {
-      const opts = await options(args)
+      const opts = await options(args);
       const spinner = new Spinner(`${capitalize(cmd)}ing translations...`);
       spinner.start();
       try {
