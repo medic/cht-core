@@ -288,8 +288,8 @@ cards = [
         label: 'contact.profile.wfa',
         translate: true,
         width: 4,
-        value: screening_report.fields.measurements.wfa,
-        icon: screening_report.fields.measurements.wfa < -3? 'warning':'',
+        value: screening_report.fields.wfa,
+        icon: screening_report.fields.wfa < -3? 'warning':'',
 
       });
 
@@ -297,8 +297,8 @@ cards = [
         label: 'contact.profile.hfa',
         translate: true,
         width: 4,
-        value: screening_report.fields.measurements.hfa,
-        icon: screening_report.fields.measurements.hfa < -3? 'warning':'',
+        value: screening_report.fields.hfa,
+        icon: screening_report.fields.hfa < -3? 'warning':'',
 
       });
 
@@ -306,8 +306,8 @@ cards = [
         label: 'contact.profile.wfh',
         translate: true,
         width: 4,
-        value: screening_report.fields.measurements.wfh,
-        icon: screening_report.fields.measurements.wfh < -3? 'warning':'',
+        value: screening_report.fields.wfh,
+        icon: screening_report.fields.wfh < -3? 'warning':'',
       });
 
       return fields;
@@ -354,8 +354,8 @@ cards = [
           label: 'contact.profile.wfh',
           translate: true,
           width: 3,
-          value: enrollment_report.fields.measurements.wfh,
-          icon: enrollment_report.fields.measurements.wfh < -3? 'risk':'',
+          value: enrollment_report.fields.wfh,
+          icon: enrollment_report.fields.wfh < -3? 'risk':'',
         });
 
 
