@@ -100,8 +100,8 @@ module.exports = {
         return userCtx;
       })
       .then((userCtx) => {
-        if (!userCtx.roles.includes('can_export_all')) {
-          auth.check(req, getExportPermission(req.params.type));
+        if (!auth.hasAllPermissions(userCtx, 'can_export_all')) {
+          return auth.check(req, getExportPermission(req.params.type));
         }
       })
       .then(() => {
