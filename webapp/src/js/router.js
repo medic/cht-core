@@ -35,7 +35,7 @@
         views: {
           content: {
             controller: 'MessagesContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'messagesContentCtrl',
             templateUrl: 'templates/partials/messages_content.html'
           }
         }
@@ -56,7 +56,7 @@
         views: {
           content: {
             controller: 'ReportsAddCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'reportsAddCtrl',
             templateUrl: 'templates/partials/reports_add.html'
           }
         }
@@ -69,7 +69,7 @@
         views: {
           content: {
             controller: 'ReportsAddCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'reportsAddCtrl',
             templateUrl: 'templates/partials/reports_add.html'
           }
         }
@@ -82,7 +82,7 @@
         views: {
           content: {
             controller: 'ReportsContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'reportsContentCtrl',
             templateUrl: 'templates/partials/reports_content.html'
           }
         }
@@ -100,7 +100,7 @@
         views: {
           content: {
             controller: 'AnalyticsReportingCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'analyticsReportingCtrl',
             templateUrl: 'templates/partials/analytics/reporting.html'
           }
         }
@@ -124,7 +124,7 @@
         views: {
           content: {
             controller: 'AnalyticsTargetsCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'analyticsTargetsCtrl',
             templateUrl: 'templates/partials/analytics/targets.html'
           }
         }
@@ -142,7 +142,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -156,7 +156,7 @@
         views: {
           content: {
             controller: 'ContactsReportCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsReportCtrl',
             templateUrl: 'templates/partials/contacts_report.html'
           }
         }
@@ -169,7 +169,7 @@
         views: {
           content: {
             controller: 'ContactsDeceasedCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsDeceasedCtrl',
             templateUrl: 'templates/partials/contacts_deceased.html'
           }
         }
@@ -182,7 +182,7 @@
         views: {
           content: {
             controller: 'ContactsContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsContentCtrl',
             templateUrl: 'templates/partials/contacts_content.html'
           }
         }
@@ -196,7 +196,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -209,7 +209,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -230,7 +230,7 @@
         views: {
           content: {
             controller: 'TasksContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'tasksContentCtrl',
             templateUrl: 'templates/partials/tasks_content.html'
           }
         }
