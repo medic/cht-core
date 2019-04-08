@@ -111,7 +111,7 @@ describe('Sentinel queue drain', () => {
           expect(info.transitions.default_responses.ok).toBe(true);
           expect(info.transitions.update_clinics).toBeDefined();
           expect(info.transitions.update_clinics.ok).toBe(true);
-          expect(info._rev.startsWith('4-')).toBe(true);
+          expect(info._rev.startsWith('3-')).toBe(true);
         });
       })
       .then(() => utils.deleteDocs(ids))
