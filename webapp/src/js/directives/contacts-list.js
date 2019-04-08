@@ -1,5 +1,5 @@
 angular.module('inboxDirectives').component('mmContactsList', {
-  templateUrl: 'templates/partials/contacts_list.html',
+  templateUrl: 'templates/directives/contacts_list.html',
   bindings: {
     appending: '<',
     error: '<',
