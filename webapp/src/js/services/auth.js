@@ -131,11 +131,9 @@ angular.module('inboxServices').factory('Auth',
         }
 
         return Settings().then(function(settings) {
-          var validPermissions = permissionsList
-            .map(function(permissions, key) {
-              return checkPermissions(requiredPermissions[key], disallowedPermissions[key], roles, settings);
-            })
-            .includes(true);
+          const validPermissions = permissionsList.some((permission, i) => {
+            return checkPermissions(requiredPermissions[i], disallowedPermissions[i], roles, settings);
+          });
 
           if (!validPermissions) {
             return authFail('no matching permissions', permissionsList, roles);

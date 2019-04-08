@@ -121,7 +121,8 @@
     "can_view_last_visited_date": [],
     "can_write_wealth_quintiles": [],
     "can_edit_verification": ["national_admin", "district_admin"],
-    "can_view_outgoing_messages": []
+    "can_view_outgoing_messages": ["national_admin"],
+    "can_export_all": ["national_admin"]
   },
   "changes_controller": {
     "reiterate_changes": true,
