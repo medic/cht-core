@@ -366,6 +366,7 @@ module.exports = function(grunt) {
             'tests/**/*.js',
             'webapp/src/**/*.js',
             'webapp/tests/**/*.js',
+            'scripts/**/*.js',
           ];
           const ignore = [
             'webapp/src/js/modules/xpath-element-path.js',

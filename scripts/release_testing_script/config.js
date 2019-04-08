@@ -17,16 +17,16 @@ var columnData = {
     name: 'Fail',
     order: 3
   }
-}
+};
 
 module.exports = {
   repoName: 'medic',
   owner: 'medic',
-  labels: "Release Test",
+  labels: 'Release Test',
   columnNamesData: columnData,
   token: JSON.parse(fs.readFileSync('token.json', 'utf8')).token,
   headers: {
     'User-Agent': 'medic-qa',
     'Accept': 'application/vnd.github.inertia-preview+json'
   }
-}
+};

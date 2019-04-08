@@ -1,16 +1,15 @@
 /*
  * Publish the ddoc from the testing db to staging.
  */
-const https = require('https'),
-      http = require('http'),
-      {
-        UPLOAD_URL,
-        TRAVIS_BUILD_NUMBER,
-        TRAVIS_TAG,
-        TRAVIS_BRANCH
-      } = process.env,
-      releaseName = TRAVIS_TAG || TRAVIS_BRANCH;
-
+const {
+  UPLOAD_URL,
+  TRAVIS_BUILD_NUMBER,
+  BUILDS_SERVER,
+  STAGING_SERVER,
+  TRAVIS_TAG,
+  TRAVIS_BRANCH
+} = process.env;
+const releaseName = TRAVIS_TAG || TRAVIS_BRANCH;
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
@@ -46,7 +45,7 @@ const prepare = doc => {
         return doc;
       }
       throw err;
-    })
+    });
 };
 
 const publish = doc => {

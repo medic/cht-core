@@ -14,13 +14,12 @@ Example:
 
 const couchUrl = process.argv[2] || process.env.COUCH_URL || 'http://admin:pass@localhost:5984/medic';
 
-const _ = require('lodash'),
-    PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb');
 
 function log(...args) {
   args.unshift('LOG');
   console.log.apply(console, args);
-};
+}
 
 function sanitiseUrl(url) {
   return url.substring(0, url.indexOf('://') + 3) +
@@ -36,23 +35,35 @@ function snip(s, w) {
 }
 
 function rightPad(s, w) {
-  if(!s) s = '';
-  else s = s.toString();
-  while(s.length < w) s += ' ';
+  if(!s) {
+    s = '';
+  } else {
+    s = s.toString();
+  }
+  while(s.length < w) {
+    s += ' ';
+  }
   return s;
 }
 
 function leftPad(s, w) {
-  if(!s) s = '';
-  else s = s.toString();
-  while(s.length < w) s = ' ' + s;
+  if(!s) {
+    s = '';
+  } else {
+    s = s.toString();
+  }
+  while(s.length < w) {
+    s = ' ' + s;
+  }
   return s;
 }
 
 function printTableRow(...columns) {
   let i, row = '';
   for(i=0; i<columns.length; i+=2) {
-    if(i) row += ' | ';
+    if(i) {
+      row += ' | ';
+    }
     const colWidth = columns[i+1];
     let val = columns[i];
     val = !colWidth ? val : colWidth>0 ?
@@ -72,7 +83,7 @@ console.log('        state | to               |  len | message                  
 db.query('medic-sms/tasks_messages')
   .then((res) => {
     res.rows.map((row) => {
-        doc = row.value;
+        const doc = row.value;
         const m = doc.message;
         printTableRow(
             doc.state, -13,
