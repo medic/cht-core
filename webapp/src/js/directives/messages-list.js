@@ -12,8 +12,6 @@ angular.module('inboxDirectives').component('mmMessagesList', {
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
-    ctrl.banana = 'banoona';
-
     $scope.$on('$destroy', unsubscribe);
   },
   bindings: {
