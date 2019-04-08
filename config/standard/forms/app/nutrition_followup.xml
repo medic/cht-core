@@ -4,7 +4,7 @@
     <h:title>child nutrition followup</h:title>
     <model>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-03-21 11-59">
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-04-08 09-46">
           <inputs>
             <meta>
               <location>
@@ -22,6 +22,7 @@
               <patient_id/>
             </contact>
           </inputs>
+          <patient_uuid/>
           <patient_name/>
           <patient_id/>
           <attend_visit>yes</attend_visit>
@@ -58,6 +59,7 @@
       <bind nodeset="/nutrition_followup/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/nutrition_followup/inputs/contact/name" type="string"/>
       <bind nodeset="/nutrition_followup/inputs/contact/patient_id" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/nutrition_followup/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/nutrition_followup/patient_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_followup/patient_id" type="string"/>
       <bind nodeset="/nutrition_followup/attend_visit" relevant=" /nutrition_followup/inputs/source  = 'task'" type="select1"/>

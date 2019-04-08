@@ -4,7 +4,7 @@
     <h:title>Nutrition screening</h:title>
     <model>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-03-29 11-10">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-04-08 09-44">
           <inputs>
             <meta>
               <location>
@@ -23,6 +23,7 @@
               <date_of_birth/>
             </contact>
           </inputs>
+          <patient_uuid/>
           <child_name/>
           <patient_id/>
           <dob/>
@@ -121,6 +122,7 @@
       <bind nodeset="/nutrition_screening/inputs/contact/name" type="string"/>
       <bind nodeset="/nutrition_screening/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/nutrition_screening/inputs/contact/date_of_birth" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/nutrition_screening/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/nutrition_screening/child_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_screening/patient_id" type="string"/>
       <bind calculate="substr(../inputs/contact/date_of_birth, 0, 10)" nodeset="/nutrition_screening/dob" type="string"/>

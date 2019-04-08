@@ -4,7 +4,7 @@
     <h:title>Death Confirmation</h:title>
     <model>
       <instance>
-        <death_confirmation delimiter="#" id="death_confirmation" prefix="J1!death_confirmation!" version="2019-02-06 14-20">
+        <death_confirmation delimiter="#" id="death_confirmation" prefix="J1!death_confirmation!" version="2019-04-08 09-48">
           <inputs>
             <meta>
               <location>
@@ -28,6 +28,7 @@
               </parent>
             </contact>
           </inputs>
+          <patient_uuid/>
           <child_name/>
           <patient_id/>
           <chw_name/>
@@ -57,6 +58,7 @@
       <bind nodeset="/death_confirmation/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/death_confirmation/inputs/contact/parent/contact/name" type="string"/>
       <bind nodeset="/death_confirmation/inputs/contact/parent/contact/phone" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/death_confirmation/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/death_confirmation/child_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/death_confirmation/patient_id" type="string"/>
       <bind calculate="../inputs/contact/parent/contact/name" nodeset="/death_confirmation/chw_name" type="string"/>

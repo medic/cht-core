@@ -4,7 +4,7 @@
     <h:title>Child nutrition treatment exit</h:title>
     <model>
       <instance>
-        <nutrition_exit delimiter="#" id="nutrition_exit" prefix="J1!nutrition_exit!" version="2019-03-21 11-37">
+        <nutrition_exit delimiter="#" id="nutrition_exit" prefix="J1!nutrition_exit!" version="2019-04-08 09-48">
           <inputs>
             <meta>
               <location>
@@ -22,6 +22,7 @@
               <patient_id/>
             </contact>
           </inputs>
+          <patient_uuid/>
           <patient_name/>
           <patient_id/>
           <enrollment_date/>
@@ -65,6 +66,7 @@
       <bind nodeset="/nutrition_exit/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/nutrition_exit/inputs/contact/name" type="string"/>
       <bind nodeset="/nutrition_exit/inputs/contact/patient_id" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/nutrition_exit/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/nutrition_exit/patient_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_exit/patient_id" type="string"/>
       <bind calculate="instance('contact-summary')/context/enrollment_date" nodeset="/nutrition_exit/enrollment_date" type="string"/>
