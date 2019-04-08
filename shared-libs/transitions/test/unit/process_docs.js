@@ -86,6 +86,7 @@ describe('processDocs', () => {
     sinon.stub(infodoc, 'bulkUpdate').resolves();
     sinon.stub(transitions, 'applyTransition');
     sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    sinon.stub(infodoc, 'updateTransitions').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -107,7 +108,6 @@ describe('processDocs', () => {
       chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([infoDocs]);
       chai.expect(transitions.applyTransition.callCount).to.equal(3);
-      console.log(require('util').inspect(transitions.applyTransition.args, { depth: 100 }));
       chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '1', doc: hydratedDocs[0], info: infoDocs[0] }})).to.equal(true);
       chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '2', doc: docs[1], info: infoDocs[1] }})).to.equal(true);
       chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '3', doc: docs[2], info: infoDocs[2] }})).to.equal(true);
@@ -117,6 +117,11 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '1', from: 1, contact: true })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '2', from: 2 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
+
+      chai.expect(infodoc.updateTransitions.callCount).to.equal(3);
+      chai.expect(infodoc.updateTransitions.calledWithMatch({ id: '1' })).to.equal(true);
+      chai.expect(infodoc.updateTransitions.calledWithMatch({ id: '2' })).to.equal(true);
+      chai.expect(infodoc.updateTransitions.calledWithMatch({ id: '3' })).to.equal(true);
     });
   });
 
@@ -145,6 +150,7 @@ describe('processDocs', () => {
       .withArgs(sinon.match({ _id: '2' })).callsArgWith(1, { error: 'error' })
       .withArgs(sinon.match({ _id: '3' })).callsArgWith(1, null, { ok: true })
       .withArgs(sinon.match({ _id: '4' })).callsArgWith(1, { error: 'error' });
+    sinon.stub(infodoc, 'updateTransitions').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -168,7 +174,6 @@ describe('processDocs', () => {
       chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([infoDocs]);
       chai.expect(transitions.applyTransition.callCount).to.equal(4);
-      console.log(require('util').inspect(transitions.applyTransition.args, { depth: 100 }));
       chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '1', doc: hydratedDocs[0], info: infoDocs[0] }})).to.equal(true);
       chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '2', doc: hydratedDocs[1], info: infoDocs[1] }})).to.equal(true);
       chai.expect(transitions.applyTransition.calledWithMatch({ change: { id: '3', doc: docs[2], info: infoDocs[2] }})).to.equal(true);
@@ -180,6 +185,8 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '2', from: 2, contact: true })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '4', from: 4 })).to.equal(true);
+
+      chai.expect(infodoc.updateTransitions.callCount).to.equal(2);
     });
   });
 });

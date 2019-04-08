@@ -244,10 +244,11 @@ const saveDoc = (change, callback) => {
     // waiting until next change and try again.
     if (err) {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
-    } else {
-      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+      return callback(err);
     }
-    return callback(err, result);
+
+    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    infodoc.updateTransitions(change).then(() => callback(err, result));
   });
 };
 
@@ -285,9 +286,8 @@ const applyTransition = ({ key, change, transition }, callback) => {
       if (!changed) {
         return changed;
       }
-      return infodoc.updateTransition(change, key, true).then(() => {
-        return changed;
-      });
+      infodoc.updateTransition(change, key, true);
+      return changed;
     })
     .catch(err => {
       // adds an error to the doc but it will only get saved if there are
@@ -301,9 +301,8 @@ const applyTransition = ({ key, change, transition }, callback) => {
       if (!err.changed) {
         return false;
       }
-      return infodoc.updateTransition(change, key, false).then(() => {
-        return true;
-      });
+      infodoc.updateTransition(change, key, false);
+      return true;
     })
     .then(changed => callback(null, changed)); // return the promise instead
 };

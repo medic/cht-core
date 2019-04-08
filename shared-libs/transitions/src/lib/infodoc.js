@@ -82,19 +82,24 @@ const updateInfoDoc = (doc, legacyRev) => {
 };
 
 const updateTransition = (change, transition, ok) => {
-  return findInfoDoc(db.sentinel, change).then(doc => {
-    doc = doc || change.info;
-    doc.transitions = doc.transitions || {};
-    doc.transitions[transition] = {
-      last_rev: change.doc._rev,
-      seq: change.seq,
-      ok: ok,
-    };
+  const info = change.info;
+  info.transitions = info.transitions || {};
+  info.transitions[transition] = {
+    last_rev: change.doc._rev,
+    seq: change.seq,
+    ok: ok,
+  };
+};
 
-    return db.sentinel.put(doc).catch(err => {
-      logger.error('Error updating metaData: %o', err);
+const updateTransitions = change => {
+  return findInfoDoc(db.sentinel, change)
+    .then(doc => {
+      doc.transitions = change.info.transitions || {};
+      return db.sentinel.put(doc);
+    })
+    .catch(err => {
+      logger.error('Error updating infodoc: %o', err);
     });
-  });
 };
 
 const bulkGet = changes => {
@@ -165,5 +170,6 @@ module.exports = {
   updateTransition: (change, transition, ok) =>
     updateTransition(change, transition, ok),
   bulkGet: bulkGet,
-  bulkUpdate: bulkUpdate
+  bulkUpdate: bulkUpdate,
+  updateTransitions: updateTransitions
 };

@@ -28,7 +28,7 @@ describe('functional transitions', () => {
         condition: 'true',
       },
     });
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
@@ -80,7 +80,7 @@ describe('functional transitions', () => {
       },
     });
 
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
@@ -142,7 +142,7 @@ describe('functional transitions', () => {
       },
     });
 
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
@@ -204,7 +204,9 @@ describe('functional transitions', () => {
     it('should throw infodoc errors', done => {
       const doc = { _id: 'my_id', type: 'data_record', form: 'v' };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'get')
+        .resolves({})
+        .onCall(0).rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').rejects({ some: 'err' });
 
@@ -261,7 +263,9 @@ describe('functional transitions', () => {
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
 
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'get')
+        .resolves({})
+        .onCall(0).rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').resolves();
       sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
@@ -324,11 +328,8 @@ describe('functional transitions', () => {
       transitions.processChange({ id: doc._id }, (err) => {
         assert.equal(err.error, 'something');
         assert.equal(doc.tasks[0].messages[0].message, 'alert!');
-        assert.equal(db.sentinel.get.callCount, 2);
-        assert.equal(db.sentinel.put.callCount, 2);
-
-        assert.equal(Object.keys(db.sentinel.put.args[1][0].transitions).length, 1);
-        assert.equal(db.sentinel.put.args[1][0].transitions.conditional_alerts.ok, true);
+        assert.equal(db.sentinel.get.callCount, 1);
+        assert.equal(db.sentinel.put.callCount, 1);
         assert.equal(db.medic.put.callCount, 1);
 
         assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
@@ -455,7 +456,7 @@ describe('functional transitions', () => {
       sinon.stub(db.sentinel, 'bulkDocs').resolves();
 
       //update transitions
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'get').callsFake(id => Promise.resolve({ id, doc_id: id.replace('-info', '') }));
       sinon.stub(db.sentinel, 'put').resolves();
 
       sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
@@ -504,10 +505,10 @@ describe('functional transitions', () => {
         assert.deepEqualExcluding(savedDocs[0], originalDocs[0], ['_id', 'errors', 'contact', 'sent_by', 'tasks']);
         // first doc is updated by 3 transitions
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[0]._id);
-        assert.equal(infodocSaves.length, 3);
-        assert.equal(infodocSaves[2][0].transitions.update_clinics.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.conditional_alerts.ok, true);
 
         assert.equal(savedDocs[1].id, 'has default response');
         assert.equal(savedDocs[1]._id.length, 36);
@@ -523,15 +524,16 @@ describe('functional transitions', () => {
 
         assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);
-        assert.equal(infodocSaves.length, 0);
+        assert.equal(infodocSaves.length, 1);
+        assert.deepEqual(infodocSaves[0][0].transitions, {});
 
         assert.equal(savedDocs[3].id, 'random form with contact');
         assert.equal(savedDocs[3].sent_by, 'Angela');
         assert.deepEqualExcluding(savedDocs[3], originalDocs[3], 'sent_by');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[3]._id);
-        assert.equal(infodocSaves.length, 2);
-        assert.equal(infodocSaves[1][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[1][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
 
         assert.equal(savedDocs[4].id, 'will have errors');
         assert.equal(savedDocs[4].sent_by, 'Angela');
@@ -542,11 +544,11 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[4].tasks[1].messages[0].message, 'too much randomness');
         assert.deepEqualExcluding(savedDocs[4], originalDocs[4], ['_id', 'sent_by', 'errors', 'tasks']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[4]._id);
-        assert.equal(infodocSaves.length, 4);
-        assert.equal(infodocSaves[2][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.accept_patient_reports.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.accept_patient_reports.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.conditional_alerts.ok, true);
       });
     });
   });
