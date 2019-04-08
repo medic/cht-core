@@ -21,17 +21,17 @@ env:
     - COUCH_NODE_NAME=nonode@nohost
     - BUILDS_SERVER=_couch/builds_testing
     - STAGING_SERVER=_couch/builds
-    # External Contributor Settings
-    - |
-      if [[ -z "$UPLOAD_URL" ]]; then
-        export UPLOAD_URL=https://staging.dev.medicmobile.org
-        export BUILDS_SERVER=_couch/builds_external
-      fi
-    #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
+    # AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
     - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 
 before_install:
+  # External contributors can't access the secured $UPLOAD_URL environment variable
+  - |
+    if [[ -z "$UPLOAD_URL" ]]; then
+      export UPLOAD_URL=https://staging.dev.medicmobile.org
+      export BUILDS_SERVER=_couch/builds_external
+    fi
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
   - ./scripts/travis/couch-start
