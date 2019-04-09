@@ -25,8 +25,6 @@ angular.module('inboxServices').factory('Auth',
     'ngInject';
     'use strict';
 
-    let failureReason;
-
     const check = (permissions, userRoles, settings, expected) => {
       return _.every(permissions, (permission) => {
         const roles = settings.permissions[permission];
@@ -61,15 +59,12 @@ angular.module('inboxServices').factory('Auth',
 
     const checkPermissions = (required, disallowed, roles, settings) => {
       if (!check(required, roles, settings, true)) {
-        failureReason = 'missing required permission(s)';
-        return false;
+        return 'missing required permission(s)';
       }
 
       if (!check(disallowed, roles, settings, false)) {
-        failureReason = 'found disallowed permission(s)';
-        return false;
+        return 'found disallowed permission(s)';
       }
-
       return true;
     };
 
@@ -105,7 +100,7 @@ angular.module('inboxServices').factory('Auth',
         return Settings().then(settings => {
           const result = checkPermissions(requiredPermissions, disallowedPermissions, roles, settings);
           if (result !== true) {
-            return authFail(failureReason, permissions, roles);
+            return authFail(result, permissions, roles);
           }
 
           return $q.resolve();
@@ -114,6 +109,8 @@ angular.module('inboxServices').factory('Auth',
     };
 
     auth.any = permissionsList => {
+      // The `permissionsList` is an array that contains groups of arrays mainly attributed
+      // to the complexity of permssion grouping
       return getRoles().then(roles => {
         if (!_.isArray(permissionsList)) {
           return auth(permissionsList);
@@ -136,7 +133,7 @@ angular.module('inboxServices').factory('Auth',
 
         return Settings().then(settings => {
           const validPermissions = permissionsList.some((permission, i) => {
-            return checkPermissions(requiredPermissions[i], disallowedPermissions[i], roles, settings);
+            return true === checkPermissions(requiredPermissions[i], disallowedPermissions[i], roles, settings);
           });
 
           if (!validPermissions) {
