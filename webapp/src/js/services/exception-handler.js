@@ -16,8 +16,8 @@
     let Feedback;
     let last;
 
-    const shouldGenerateFeedback = (message, cause) => {
-      if(!message && cause.includes('unhandled rejection')){
+    const shouldGenerateFeedback = (message) => {
+      if(!message){
         return false;
       }
 
@@ -36,7 +36,7 @@
       // Resolve the dependency at runtime to avoid circular dependency
       Feedback = Feedback || $injector.get('Feedback');
 
-      if (shouldGenerateFeedback(exception.message, cause)) {
+      if (shouldGenerateFeedback(exception.message)) {
         last = exception.message;
 
         const error = { message: exception.message, stack: exception.stack, cause: cause };
