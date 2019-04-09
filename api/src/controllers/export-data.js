@@ -77,14 +77,14 @@ module.exports = {
 
     if (!service.isSupported(type)) {
       return serverUtils.error({
-        message: `v2 export only supports ${service.supportedExports}`,
+        message: `Invalid export type "${type}"`,
         code: 404
       }, req, res);
     }
 
-    logger.info('v2 export requested for', type);
-    logger.info('params:', JSON.stringify(filters, null, 2));
-    logger.info('options:', JSON.stringify(options, null, 2));
+    logger.info(`Export requested for "${type}"`);
+    logger.info(`  params: ${JSON.stringify(filters, null, 2)}`);
+    logger.info(`  options: ${JSON.stringify(options, null, 2)}`);
 
     // We currently only support online users (CouchDB admins and National Admins)
     // If we want to support offline users we should either:
@@ -110,9 +110,9 @@ module.exports = {
           .on('error', err => {
             // Because we've already flushed the headers above we can't use
             // serverUtils anymore, we just have to close the connection
-            logger.error('Error exporting v2 data for', type);
-            logger.error('params:', JSON.stringify(filters, null, 2));
-            logger.error('options:', JSON.stringify(options, null, 2));
+            logger.error(`Error exporting data for "${type}"`);
+            logger.info(`  params: ${JSON.stringify(filters, null, 2)}`);
+            logger.info(`  options: ${JSON.stringify(options, null, 2)}`);
             logger.error('%o', err);
             res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
           })
