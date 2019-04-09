@@ -17,7 +17,7 @@
     let last;
 
     const shouldGenerateFeedback = (message, cause) => {
-      if(!message && cause.includes('unhandled rejection')){
+      if(!message || cause.includes('unhandled rejection')){
         return false;
       }
 
