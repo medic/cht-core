@@ -234,12 +234,7 @@ const finalize = ({ change, results }, callback) => {
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
-  saveDoc(change, callback);
-};
-
-const saveDoc = (change, callback) => {
-  lineage.minify(change.doc);
-  db.medic.put(change.doc, (err, result) => {
+  saveDoc(change, (err, result) => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
@@ -250,6 +245,11 @@ const saveDoc = (change, callback) => {
     logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
     infodoc.updateTransitions(change).then(() => callback(err, result));
   });
+};
+
+const saveDoc = (change, callback) => {
+  lineage.minify(change.doc);
+  db.medic.put(change.doc, callback);
 };
 
 /*
