@@ -82,6 +82,50 @@ describe('Export Data Service', () => {
       });
     });
 
+    it('exports human readable dates', () => {
+      const query = sinon.stub(db.medic, 'query');
+      query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
+      query.onCall(1).returns(Promise.resolve({ rows: [] }));
+      const allDocs = sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
+        rows: [
+          { doc: {
+            _id: 'abc',
+            patient_id: '123456',
+            reported_date: 1553002449000,
+            responses: [ { sent_by: '+123456789', message: 'hello' } ]
+          } },
+          { doc: {
+            _id: 'def',
+            patient_id: '654321',
+            reported_date: 1551002449000,
+            responses: [ { sent_by: '+987654321', message: 'hi' } ]
+          } }
+        ]
+      }));
+      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+        {
+          _id: 'abc',
+          patient_id: '123456',
+          reported_date: 1553002449000,
+          responses: [ { sent_by: '+123456789', message: 'hello' } ]
+        },
+        {
+          _id: 'def',
+          patient_id: '654321',
+          reported_date: 1551002449000,
+          responses: [ { sent_by: '+987654321', message: 'hi' } ]
+        }
+      ]));
+      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
+                       '"abc","123456","2019-03-19T13:34:09.000Z",,"Automated Reply","sent","","","","2019-03-19T13:34:09.000Z","","",,"+123456789",,"hello"\n' +
+                       '"def","654321","2019-02-24T10:00:49.000Z",,"Automated Reply","sent","","","","2019-02-24T10:00:49.000Z","","",,"+987654321",,"hi"\n';
+      return mockRequest('messages', {}, { humanReadable: true }).then(actual => {
+        actual.should.equal(expected);
+        query.callCount.should.equal(2);
+        allDocs.callCount.should.equal(1);
+      });
+    });
+
     it('includes tasks and scheduled tasks', () => {
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
@@ -232,7 +276,7 @@ describe('Export Data Service', () => {
         reportMapper.getDocIds.callCount.should.equal(2);
       });
     });
-  
+
     it('works for enketo reports', () => {
       const report = {
         _id: 'B87FEE75-D435-A648-BDEA-0A1B61021AA3',

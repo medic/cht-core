@@ -1,7 +1,7 @@
 const _ = require('underscore'),
       objectPath = require('object-path'),
-      moment = require('moment'),
       db = require('../../db'),
+      dateFormat = require('./date-format'),
       search = require('@medic/search')(Promise, db.medic);
 
 /**
@@ -41,7 +41,7 @@ module.exports = {
   getDocIds: (options, filters) => {
     return search('reports', filters, options).then(results => results.docIds);
   },
-  map: (filters) => {
+  map: (filters, options) => {
     // Either selected forms or all currently used forms
     const getForms = () => {
       const forms = (
@@ -63,13 +63,6 @@ module.exports = {
     const uniqueColumns = allFields => _.union(
       ...allFields.map(f => Object.keys(flatten(f)))
     ).sort();
-
-    const formatDate = date => {
-      if (!date) {
-        return '';
-      }
-      return moment(date).valueOf();
-    };
 
     return getForms().then(forms =>
       Promise.all(forms.map(form =>
@@ -107,7 +100,7 @@ module.exports = {
               record._id,
               record.form,
               record.patient_id,
-              formatDate(record.reported_date),
+              dateFormat.format(record.reported_date, options.humanReadable),
               record.from,
               objectPath.get(record, ['contact', 'name']),
               objectPath.get(record, ['contact', 'parent', 'name']),
