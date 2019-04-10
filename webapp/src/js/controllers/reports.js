@@ -20,6 +20,7 @@ angular
     MarkRead,
     Modal,
     ReportViewModelGenerator,
+    ReportsActions,
     Search,
     SearchFilters,
     Selectors,
@@ -39,12 +40,14 @@ angular
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
+      const reportsActions = ReportsActions(dispatch);
       return {
         addSelected: globalActions.addSelected,
         removeSelected: globalActions.removeSelected,
+        setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setSelected: globalActions.setSelected,
-        setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty
+        setReportsErrorSyntax: reportsActions.setReportsErrorSyntax,
+        setSelected: globalActions.setSelected
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -228,7 +231,7 @@ angular
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
-        $scope.errorSyntax = false;
+        ctrl.setReportsErrorSyntax(false);
         ctrl.loading = true;
         if (ctrl.selected.length && $scope.isMobile()) {
           $scope.selectReport();
@@ -248,7 +251,7 @@ angular
           ctrl.loading = false;
           $scope.appending = false;
           $scope.error = false;
-          $scope.errorSyntax = false;
+          ctrl.setReportsErrorSyntax(false);
           if (
             !$state.params.id &&
             !$scope.isMobile() &&
@@ -275,7 +278,7 @@ angular
             err.reason.toLowerCase().indexOf('bad query syntax') !== -1
           ) {
             // invalid freetext filter query
-            $scope.errorSyntax = true;
+            ctrl.setReportsErrorSyntax(true);
           }
           $log.error('Error loading messages', err);
         });

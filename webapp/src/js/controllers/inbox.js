@@ -195,7 +195,6 @@ var _ = require('underscore'),
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
     $scope.error = false;
-    $scope.errorSyntax = false;
     $scope.appending = false;
     $scope.facilities = [];
     $scope.people = [];
