@@ -26,7 +26,7 @@ describe('Export Data controller', () => {
     it('Throws an error if you try to query for an unsupported export', () => {
       controller.get({req: true, params: {type: 'fake'}}, {res: true});
       serverUtils.error.callCount.should.equal(1);
-      serverUtils.error.args[0][0].message.should.contain('v2 export only supports');
+      serverUtils.error.args[0][0].message.should.equal('Invalid export type "fake"');
       serverUtils.error.args[0][1].req.should.equal(true);
       serverUtils.error.args[0][2].res.should.equal(true);
     });
