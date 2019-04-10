@@ -1,4 +1,4 @@
-const {log, error, mkdir} = require('./utils');
+const {log, error, mkdir, sanitize} = require('./utils');
 const fs = require('fs');
 
 const fileExists = (fpath) => {
@@ -31,7 +31,8 @@ const hasValidLine = (line, idx) => {
 };
 
 const hasValidContent = (fpath) => {
-  const content = fs.readFileSync(fpath, 'utf8');
+  const tempFPath = sanitize(fpath);
+  const content = fs.readFileSync(tempFPath, 'utf8');
   let valid = true;
   content.toString().split('\n').some((line, idx) => {
     if (!hasValidLine(line, idx)) {

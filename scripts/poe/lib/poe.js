@@ -1,5 +1,6 @@
-const {save, mmVersion, error} = require('./utils');
+const {save, mmVersion, error, tempFile} = require('./utils');
 const queryString = require('querystring');
+const fs = require('fs');
 const post = require('./post');
 const {readStream} = require('./read');
 const {validTranslations, validDirectory} = require('./validate');
@@ -8,7 +9,8 @@ const slack = require('./slack')(process.env.SLACK_WEBHOOK_URL);
 const upload = async (opts) => {
   if(validTranslations(opts.file)) {
     opts.language = opts.file.split('-').pop().split('.')[0];
-    const form = {file: readStream(`${process.cwd()}/${opts.file}`)};
+    const path = `${process.cwd()}/${opts.file}`;
+    const form = {file: readStream(tempFile(path))};
     delete opts.file;
     Object.keys(opts).forEach((key) => { form[key] = opts[key]; });
     try {
@@ -24,6 +26,7 @@ const upload = async (opts) => {
       } else {
         console.log(res.result);
         slack.send(`Translations ${mmVersion()}: ${JSON.stringify(res.result)}`);
+        fs.unlinkSync(tempFile(path));
       }
       return res.response;
     } catch(err) {
