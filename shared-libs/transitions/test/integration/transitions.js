@@ -524,8 +524,7 @@ describe('functional transitions', () => {
 
         assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);
-        assert.equal(infodocSaves.length, 1);
-        assert.deepEqual(infodocSaves[0][0].transitions, {});
+        assert.equal(infodocSaves.length, 0);
 
         assert.equal(savedDocs[3].id, 'random form with contact');
         assert.equal(savedDocs[3].sent_by, 'Angela');
