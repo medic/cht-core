@@ -10,14 +10,16 @@ angular.module('inboxControllers').controller('ConfigurationUserCtrl',
     $scope.updatePassword = function() {
       Modal({
         templateUrl: 'templates/modals/update_password.html',
-        controller: 'EditUserCtrl'
+        controller: 'EditUserCtrl',
+        controllerAs: 'editUserCtrl'
       });
     };
 
     $scope.editSettings = function() {
       Modal({
         templateUrl: 'templates/modals/edit_user_settings.html',
-        controller: 'EditUserCtrl'
+        controller: 'EditUserCtrl',
+        controllerAs: 'editUserCtrl'
       });
     };
 

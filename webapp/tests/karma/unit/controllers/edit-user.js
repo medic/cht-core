@@ -11,7 +11,8 @@ describe('EditUserCtrl controller', () => {
       UserSettings,
       translate,
       Translate,
-      userToEdit;
+      userToEdit,
+      ctrl;
 
   beforeEach(() => {
     module('inboxApp');
@@ -89,7 +90,7 @@ describe('EditUserCtrl controller', () => {
       };
       mockEditCurrentUser = user => {
         UserSettings.returns(Promise.resolve(user));
-        createController();
+        ctrl = createController();
       };
     });
   });
@@ -132,7 +133,7 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.password = '';
         scope.updatePassword();
         setTimeout(() => {
-          chai.expect(scope.errors.password).to.equal('Password field must be filled');
+          chai.expect(ctrl.errors.password).to.equal('Password field must be filled');
           done();
         });
       });
@@ -145,7 +146,7 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.password = '2sml4me';
         scope.updatePassword();
         setTimeout(() => {
-          chai.expect(scope.errors.password).to.equal('short');
+          chai.expect(ctrl.errors.password).to.equal('short');
           done();
         });
       });
@@ -158,7 +159,7 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.password = 'password';
         scope.updatePassword();
         setTimeout(() => {
-          chai.expect(scope.errors.password).to.equal('hackable');
+          chai.expect(ctrl.errors.password).to.equal('hackable');
           done();
         });
       });
@@ -173,7 +174,7 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.passwordConfirm = password + 'a';
         scope.updatePassword();
         setTimeout(() => {
-          chai.expect(scope.errors.password).to.equal('wrong');
+          chai.expect(ctrl.errors.password).to.equal('wrong');
           done();
         });
       });

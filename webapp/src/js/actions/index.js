@@ -4,5 +4,6 @@
 
   require('./global');
   require('./contacts');
+  require('./reports');
 
 }());
