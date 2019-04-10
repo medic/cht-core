@@ -976,7 +976,7 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'exec:blank-link-check',
     'exec:eslint',
-    'exec:audit-whitelist',
+    // 'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
