@@ -25,7 +25,7 @@ describe('replications', () => {
   it('config with invalid replication throws error', done => {
     sinon.stub(config, 'get').returns([{fromSuffix:'x', cron:1, toSuffix:'x'}]);
     const runReplication = sinon.stub(replications, 'runReplication');
-    assert.throws(() => replications.execute(), 'Invalid replication config with text expression = \'undefined\' and cron = \'1\'');
+    assert.throws(() => replications.execute(), 'Invalid replication config with fromSuffix = \'x\', toSuffix = \'x\', text expression = \'undefined\' and cron = \'1\'');
     assert.equal(runReplication.callCount, 0);
     done();
   });
