@@ -19,7 +19,7 @@ angular.module('inboxDirectives').directive('mmFormTypeFilter', function(SearchF
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'formTypeFilterCtrl',
     link: function(scope) {
       SearchFilters.formType(function(forms) {
         scope.filters.forms = forms;

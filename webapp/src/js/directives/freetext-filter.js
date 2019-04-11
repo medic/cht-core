@@ -19,7 +19,7 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'freetextFilterCtrl',
     link: function(scope) {
       SearchFilters.freetext(scope.search);
     }

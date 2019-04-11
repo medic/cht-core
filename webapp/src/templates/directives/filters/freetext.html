@@ -1,13 +1,13 @@
 <span class="filter input-group freetext-filter" ng-class="{'only-filter': currentTab === 'contacts'}">
-  <input id="freetext" class="form-control" type="text" ng-model="filters.search" ng-attr-placeholder="{{'freetext.search' | translate}}" ng-disabled="$ctrl.selectMode && $ctrl.selected.length">
+  <input id="freetext" class="form-control" type="text" ng-model="filters.search" ng-attr-placeholder="{{'freetext.search' | translate}}" ng-disabled="freetextFilterCtrl.selectMode && freetextFilterCtrl.selected.length">
   <span class="input-group-btn">
-    <button id="search" class="btn btn-default" type="button" ng-disabled="$ctrl.selectMode && $ctrl.selected.length">
+    <button id="search" class="btn btn-default" type="button" ng-disabled="freetextFilterCtrl.selectMode && freetextFilterCtrl.selected.length">
       <span class="fa fa-search"></span>
     </button>
   </span>
 </span>
 
-<span class="filter dropdown mobile-freetext-filter" ng-show="currentTab === 'reports'" ng-class="{ 'disabled': $ctrl.selectMode && $ctrl.selected.length }">
+<span class="filter dropdown mobile-freetext-filter" ng-show="currentTab === 'reports'" ng-class="{ 'disabled': freetextFilterCtrl.selectMode && freetextFilterCtrl.selected.length }">
   <span id="mobile-search" class="mm-button" data-toggle="dropdown">
     <span class="mm-button-icon">
       <span class="fa fa-search"></span>

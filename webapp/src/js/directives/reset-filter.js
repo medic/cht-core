@@ -18,6 +18,6 @@ angular.module('inboxDirectives').directive('mmResetFilter', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: 'resetFilterCtrl'
   };
 });
