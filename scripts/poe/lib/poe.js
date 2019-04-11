@@ -62,7 +62,7 @@ const download = async (opts) => {
       return response;
     });
     await Promise.all(downloads).then(() => {
-      comparePlaceholders(langs, '.');
+      comparePlaceholders(langs, dir);
     });
   }
 };

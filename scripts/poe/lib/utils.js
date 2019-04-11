@@ -31,8 +31,7 @@ module.exports = {
   capitalize: (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   },
-  comparePlaceholders: async (langs, filePath) => {
-    const dir =`${process.cwd()}/${filePath}`;
+  comparePlaceholders: async (langs, dir) => {
     const templateFile = `${dir}/messages-en.properties`;
     langs.filter(lang => lang !== 'en').forEach(lang => {
       const file = `${dir}/messages-${lang}.properties`;
