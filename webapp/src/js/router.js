@@ -10,6 +10,7 @@
       .state('error', {
         url: '/error/:code',
         controller: 'ErrorCtrl',
+        controllerAs: 'errorCtrl',
         templateUrl: 'templates/partials/error.html'
       })
 

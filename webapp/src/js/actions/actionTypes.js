@@ -24,6 +24,9 @@ module.exports = {
   // Contacts
   SET_LOADING_SUMMARY: 'SET_LOADING_SUMMARY',
 
+  // Messages
+  SET_MESSAGES_ERROR: 'SET_MESSAGES_ERROR',
+
   // Reports
   SET_REPORTS_ERROR_SYNTAX: 'SET_REPORTS_ERROR_SYNTAX'
 };

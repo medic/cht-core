@@ -61,6 +61,7 @@ var _ = require('underscore'),
 
     LiveList.$init($scope, 'contacts', 'contact-search');
 
+    ctrl.error = false;
     ctrl.loading = true;
     ctrl.setSelected(null);
     $scope.filters = {};
@@ -90,7 +91,7 @@ var _ = require('underscore'),
 
       if (!options.silent) {
         ctrl.loading = true;
-        $scope.error = false;
+        ctrl.error = false;
       }
 
       if (options.paginating) {
@@ -186,7 +187,7 @@ var _ = require('underscore'),
           setActionBarData();
         })
         .catch(function(err) {
-          $scope.error = true;
+          ctrl.error = true;
           ctrl.loading = false;
           $scope.appending = false;
           $log.error('Error searching for contacts', err);

@@ -12,17 +12,18 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
     $scope.model = {};
-    $scope.error = {};
+    ctrl.error = {};
 
     var validateMessage = function(message) {
       if (message) {
-        $scope.error.message = false;
+        ctrl.error.message = false;
         return $q.resolve();
       } else {
         return Translate.fieldIsRequired('Bug description')
           .then(function(error) {
-            $scope.error.message = error;
+            ctrl.error.message = error;
           });
       }
     };
@@ -37,7 +38,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
       var message = $scope.model.message && $scope.model.message.trim();
       return validateMessage(message)
         .then(function() {
-          if ($scope.error.message) {
+          if (ctrl.error.message) {
             $scope.setFinished();
             return $q.resolve();
           }

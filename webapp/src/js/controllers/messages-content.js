@@ -20,6 +20,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     LineageModelGenerator,
     MarkRead,
     MessageContacts,
+    MessagesActions,
     Modal,
     Selectors,
     SendMessage,
@@ -38,10 +39,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
+      const messagesActions = MessagesActions(dispatch);
       return {
         addSelectedMessage: globalActions.addSelectedMessage,
         removeSelectedMessage: globalActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
+        setMessagesError: messagesActions.setMessagesError,
         updateSelected: globalActions.updateSelected
       };
     };
@@ -96,7 +99,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var selectContact = function(id, type, options) {
       options = options || {};
       if (!id) {
-        $scope.error = false;
+        ctrl.setMessagesError(false);
         ctrl.setLoadingContent(false);
         $scope.clearSelected();
         return;
@@ -119,7 +122,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           }
 
           $scope.setLoadingContent(false);
-          $scope.error = false;
+          ctrl.setMessagesError(false);
           var unread = _.filter(conversation, function(message) {
             return !message.read;
           });
@@ -133,7 +136,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         })
         .catch(function(err) {
           ctrl.setLoadingContent(false);
-          $scope.error = true;
+          ctrl.setMessagesError(true);
           $log.error('Error fetching contact conversation', err);
         });
     };
@@ -213,6 +216,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
+        controllerAs: 'sendMessageCtrl',
         model: {
           to: ctrl.selected.id,
           message: $scope.send.message

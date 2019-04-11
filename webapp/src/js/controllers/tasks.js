@@ -77,7 +77,7 @@ var _ = require('underscore');
         LiveList.tasks.refresh();
       });
       ctrl.setSelected(null);
-      $scope.error = false;
+      ctrl.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
       $scope.tasksDisabled = !RulesEngine.enabled;
       ctrl.loading = true;
@@ -96,7 +96,7 @@ var _ = require('underscore');
         }
       };
       LiveList.tasks.notifyError = function() {
-        $scope.error = true;
+        ctrl.error = true;
         $scope.clearSelected();
       };
 

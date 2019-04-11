@@ -60,6 +60,7 @@ angular
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
     ctrl.setSelected([]);
+    ctrl.error = false;
     $scope.filters = {
       search: $stateParams.query,
     };
@@ -230,7 +231,7 @@ angular
     var query = function(opts) {
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
-        $scope.error = false;
+        ctrl.error = false;
         ctrl.setReportsErrorSyntax(false);
         ctrl.loading = true;
         if (ctrl.selected.length && $scope.isMobile()) {
@@ -250,7 +251,7 @@ angular
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
           ctrl.loading = false;
           $scope.appending = false;
-          $scope.error = false;
+          ctrl.error = false;
           ctrl.setReportsErrorSyntax(false);
           if (
             !$state.params.id &&
@@ -270,7 +271,7 @@ angular
           initScroll();
         })
         .catch(function(err) {
-          $scope.error = true;
+          ctrl.error = true;
           ctrl.loading = false;
           if (
             $scope.filters.search &&

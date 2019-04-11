@@ -17,15 +17,16 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     'ngInject';
     'use strict';
 
-    $scope.error = {};
+    const ctrl = this;
+    ctrl.error = {};
 
     var validateMessage = function(message) {
       if (message) {
-        $scope.error.message = false;
+        ctrl.error.message = false;
       } else {
         return Translate.fieldIsRequired('tasks.0.messages.0.message')
           .then(function(error) {
-            $scope.error.message = error;
+            ctrl.error.message = error;
           });
       }
     };
@@ -47,7 +48,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       if (!recipients || recipients.length === 0) {
         return Translate.fieldIsRequired('tasks.0.messages.0.to')
           .then(function(error) {
-            $scope.error.phone = error;
+            ctrl.error.phone = error;
           });
       }
 
@@ -61,11 +62,11 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         }).join(', ');
         return $translate('Invalid contact numbers', { recipients: errorRecipients })
           .then(function(error) {
-            $scope.error.phone = error;
+            ctrl.error.phone = error;
           });
       }
 
-      $scope.error.phone = false;
+      ctrl.error.phone = false;
     };
 
     var formatPlace = function(row) {
@@ -167,7 +168,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
             validatePhoneNumbers(settings, recipients)
           ])
             .then(function() {
-              if (!$scope.error.message && !$scope.error.phone) {
+              if (!ctrl.error.message && !ctrl.error.phone) {
                 return SendMessage(recipients, message).then(function() {
                   $uibModalInstance.close();
                 });

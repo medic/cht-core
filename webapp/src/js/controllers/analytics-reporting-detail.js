@@ -19,6 +19,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     'ngInject';
 
     const ctrl = this;
+    ctrl.error = false;
 
     $scope.filters.form = $state.params.form;
     $scope.filters.place = $state.params.place;
@@ -180,7 +181,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
 
     var setDistrict = function(placeId) {
-      $scope.error = false;
+      ctrl.error = false;
       ctrl.loadingTotals = true;
       var dates = reportingUtils.getDates($scope.filters);
       DB()
@@ -213,7 +214,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
         })
         .catch(function(err) {
           $log.error('Error setting place.', err);
-          $scope.error = true;
+          ctrl.error = true;
           ctrl.loadingTotals = false;
         });
     };

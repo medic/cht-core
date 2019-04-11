@@ -39,6 +39,10 @@ const getSelectedValidChecks = reselect.createSelector(
 const getContactsState = state => state.contacts;
 const getLoadingSummary = state => getContactsState(state).loadingSummary;
 
+// Messages
+const getMessagesState = state => state.messages;
+const getMessagesError = state => getMessagesState(state).error;
+
 // Reports
 const getReportsState = state => state.reports;
 const getReportsErrorSyntax = state => getReportsState(state).errorSyntax;
@@ -63,6 +67,9 @@ angular.module('inboxServices').constant('Selectors', {
 
   getContactsState,
   getLoadingSummary,
+
+  getMessagesState,
+  getMessagesError,
 
   getReportsState,
   getReportsErrorSyntax

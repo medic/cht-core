@@ -194,7 +194,6 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    $scope.error = false;
     $scope.appending = false;
     $scope.facilities = [];
     $scope.people = [];
@@ -558,6 +557,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
+        controllerAs: 'sendMessageCtrl',
         model: {
           to: target.attr('data-send-to'),
         },
@@ -659,6 +659,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/feedback.html',
         controller: 'FeedbackCtrl',
+        controllerAs: 'feedbackCtrl'
       });
     };
 

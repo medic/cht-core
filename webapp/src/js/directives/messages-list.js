@@ -7,6 +7,7 @@ angular.module('inboxDirectives').component('mmMessagesList', {
     const mapStateToTarget = function(state) {
       return {
         loadingContent: Selectors.getLoadingContent(state),
+        error: Selectors.getMessagesError(state),
         selected: Selectors.getSelected(state)
       };
     };
@@ -16,7 +17,6 @@ angular.module('inboxDirectives').component('mmMessagesList', {
   },
   bindings: {
     appending: '<',
-    error: '<',
     loading: '<',
     messages: '<'
   }
