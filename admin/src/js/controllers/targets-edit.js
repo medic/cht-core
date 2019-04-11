@@ -95,6 +95,17 @@ angular.module('controllers').controller('TargetsEditCtrl',
         });
     };
 
+    const targetExists = (settings) => {
+      if ($scope.editing) {
+        // The ID has been set to read-only
+        return false;
+      }
+      const  items = (settings.tasks && settings.tasks.targets &&
+        settings.tasks.targets.items) || [];
+      const exists = items.some(item => item.id === $scope.target.id);
+      return exists;
+    };
+
     var updateItem = function(settings) {
       var items = (settings.tasks && settings.tasks.targets &&
                    settings.tasks.targets.items) || [];
@@ -133,17 +144,25 @@ angular.module('controllers').controller('TargetsEditCtrl',
       $scope.saving = true;
       $scope.status = 'Submitting';
 
-      Settings()
-        .then(updateItem)
-        .then(UpdateSettings)
-        .then(function() {
-          $scope.saving = false;
-          $scope.status = 'Saved';
-        })
-        .catch(function(err) {
-          $log.error('Error updating settings', err);
-          $scope.saving = false;
-          $scope.status = 'Save failed';
+      return Settings()
+        .then(settings => {
+          if (targetExists(settings)) {
+            $scope.errors.id = 'analytics.targets.unique.id';
+            $scope.status = 'Failed validation';
+            $scope.saving = false;
+            return;
+          }
+          return updateItem(settings)
+            .then(UpdateSettings)
+            .then(function() {
+              $scope.saving = false;
+              $scope.status = 'Saved';
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.saving = false;
+              $scope.status = 'Save failed';
+            });
         });
     };
 
