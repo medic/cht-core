@@ -497,7 +497,7 @@ app.all(
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
-const metaPathPrefix = '/medic-user-*-meta/';
+const metaPathPrefix = `/${environment.db}-user-*-meta/`;
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
