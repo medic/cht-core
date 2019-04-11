@@ -200,7 +200,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
               if (place.type === 'health_center') {
                 $scope.clinics = rows;
               } else {
-                $scope.facilities = rows;
+                ctrl.facilities = rows;
               }
               $scope.chart = [
                 { key: 'valid', y: $scope.totals.complete },

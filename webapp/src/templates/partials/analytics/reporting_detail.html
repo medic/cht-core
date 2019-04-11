@@ -83,12 +83,12 @@
 </div>
 
 <div class="facility-select" ng-show="place && place.type === 'district_hospital' && !analyticsReportingDetailCtrl.loadingTotals">
-  <div class="row title" ng-show="facilities.length">
+  <div class="row title" ng-show="analyticsReportingDetailCtrl.facilities.length">
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-1" translate>analytics.reporting.reports</div>
     <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
   </div>
-  <a ui-sref="analytics.reporting.detail({ form: filters.form, place: facility.id })" class="row facility" ng-repeat="facility in facilities">
+  <a ui-sref="analytics.reporting.detail({ form: filters.form, place: facility.id })" class="row facility" ng-repeat="facility in analyticsReportingDetailCtrl.facilities">
     <div class="col-sm-4">
       {{facility.name}} ({{facility.clinics.length}})
     </div>

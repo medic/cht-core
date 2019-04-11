@@ -85,6 +85,7 @@ var _ = require('underscore'),
       var globalActions = GlobalActions(dispatch);
       return {
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setFacilities: globalActions.setFacilities,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setSelectMode: globalActions.setSelectMode,
@@ -194,7 +195,6 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    $scope.facilities = [];
     $scope.people = [];
     $scope.filterQuery = { value: null };
     $scope.version = APP_CONFIG.version;
@@ -350,7 +350,7 @@ var _ = require('underscore'),
     var updateAvailableFacilities = function() {
       PlaceHierarchy()
         .then(function(hierarchy) {
-          $scope.facilities = hierarchy;
+          ctrl.setFacilities(hierarchy);
         })
         .catch(function(err) {
           $log.error('Error loading facilities', err);

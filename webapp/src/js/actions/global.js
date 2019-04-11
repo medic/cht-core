@@ -139,6 +139,10 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      function setFacilities(facilities) {
+        dispatch(createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -150,6 +154,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setLoadingSubActionBar,
         setShowActionBar,
         setShowContent,
+        setFacilities,
         // Global selected actions
         setSelected,
         updateSelected,

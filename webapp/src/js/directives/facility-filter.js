@@ -11,6 +11,7 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
+          facilities: Selectors.getFacilities(state),
           selectMode: Selectors.getSelectMode(state),
           selected: Selectors.getSelected(state)
         };
@@ -19,7 +20,7 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'facilityFilterCtrl',
     link: function(scope) {
       SearchFilters.facility(function(facilities) {
         scope.filters.facilities = facilities;

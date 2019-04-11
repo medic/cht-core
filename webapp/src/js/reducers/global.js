@@ -8,6 +8,7 @@ const initialState = {
     saving: false,
     error: null
   },
+  facilities: [],
   loadingContent: false,
   loadingSelectedChildren: false,
   loadingSelectedReports: false,
@@ -109,6 +110,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
     case actionTypes.SET_SHOW_CONTENT:
       return Object.assign({}, state, { showContent: action.payload.showContent });
+    case actionTypes.SET_FACILITIES:
+      return Object.assign({}, state, { facilities: action.payload.facilities });
     default:
       return state;
   }
