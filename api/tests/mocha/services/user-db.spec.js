@@ -15,7 +15,7 @@ describe('User DB service', () => {
 
     it('returns the user db name', () => {
       const given = 'jimbob';
-      const expected = 'medic-user-jimbob-meta';
+      const expected = `${environment.db}-user-jimbob-meta`;
       const actual = service.getDbName(given);
       chai.expect(actual).to.equal(expected);
     });
@@ -26,7 +26,7 @@ describe('User DB service', () => {
       const invalid = '.<>^,?!';
       const escaped = '(46)(60)(62)(94)(44)(63)(33)';
       const given   = valid + invalid;
-      const expected = `medic-user-${valid + escaped}-meta`;
+      const expected = `${environment.db}-user-${valid + escaped}-meta`;
       const actual = service.getDbName(given);
       chai.expect(actual).to.equal(expected);
     });
@@ -52,10 +52,10 @@ describe('User DB service', () => {
       environment.username = 'auser';
       environment.password = 'apass';
       return service.create('gareth').then(() => {
-        chai.expect(create.args[0][0]).to.equal('medic-user-gareth-meta');
+        chai.expect(create.args[0][0]).to.equal(`${environment.db}-user-gareth-meta`);
         chai.expect(get.callCount).to.equal(1);
         const requestParams = requestPut.args[0][0];
-        chai.expect(requestParams.url).to.equal('http://localhost:7357/medic-user-gareth-meta/_security');
+        chai.expect(requestParams.url).to.equal(`http://localhost:7357/${environment.db}-user-gareth-meta/_security`);
         chai.expect(requestParams.auth).to.deep.equal({ user: 'auser', pass: 'apass' });
         chai.expect(requestParams.json).to.equal(true);
         chai.expect(requestParams.body.admins.names[0]).to.equal('gareth');
