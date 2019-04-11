@@ -48,7 +48,7 @@ module.exports = {
 
     replications.reduce((p, replication) => {
       if (!isConfigValid(replication)) {
-        throw new Error(`Invalid replication config with text expression = '${replication.text_expression}' and cron = '${replication.cron}'`);
+        throw new Error(`Invalid replication config with fromSuffix = '${replication.fromSuffix}', toSuffix = '${replication.toSuffix}', text expression = '${replication.text_expression}' and cron = '${replication.cron}'`);
       }
 
       const sched = getSchedule(replication);
