@@ -16,7 +16,6 @@ angular.module('inboxDirectives').component('mmMessagesList', {
     $scope.$on('$destroy', unsubscribe);
   },
   bindings: {
-    appending: '<',
     loading: '<',
     messages: '<'
   }

@@ -60,6 +60,7 @@ angular
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
     ctrl.setSelected([]);
+    ctrl.appending = false;
     ctrl.error = false;
     $scope.filters = {
       search: $stateParams.query,
@@ -239,7 +240,7 @@ angular
         }
       }
       if (options.skip) {
-        $scope.appending = true;
+        ctrl.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
@@ -250,7 +251,7 @@ angular
         .then(function(data) {
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
           ctrl.loading = false;
-          $scope.appending = false;
+          ctrl.appending = false;
           ctrl.error = false;
           ctrl.setReportsErrorSyntax(false);
           if (
