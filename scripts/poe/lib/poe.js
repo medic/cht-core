@@ -1,4 +1,4 @@
-const {save, mmVersion, error, tempFile} = require('./utils');
+const {save, mmVersion, error, tempFilePath, comparePlaceholders} = require('./utils');
 const queryString = require('querystring');
 const fs = require('fs');
 const post = require('./post');
@@ -10,7 +10,8 @@ const upload = async (opts) => {
   if(validTranslations(opts.file)) {
     opts.language = opts.file.split('-').pop().split('.')[0];
     const path = `${process.cwd()}/${opts.file}`;
-    const form = {file: readStream(tempFile(path))};
+    const filePath = tempFilePath(path);
+    const form = {file: readStream(filePath)};
     delete opts.file;
     Object.keys(opts).forEach((key) => { form[key] = opts[key]; });
     try {
@@ -26,7 +27,7 @@ const upload = async (opts) => {
       } else {
         console.log(res.result);
         slack.send(`Translations ${mmVersion()}: ${JSON.stringify(res.result)}`);
-        fs.unlinkSync(tempFile(path));
+        fs.unlinkSync(filePath);
       }
       return res.response;
     } catch(err) {
@@ -57,10 +58,12 @@ const download = async (opts) => {
       }
       const file = `messages-${lang}.properties`;
       console.log(`\t${lang} saved to ${dir}/${file}`);
-      save(result.url, `${dir}/${file}`);
+      await save(result.url, `${dir}/${file}`);
       return response;
     });
-    await Promise.all(downloads);
+    await Promise.all(downloads).then(() => {
+      comparePlaceholders(langs, '.');
+    });
   }
 };
 
