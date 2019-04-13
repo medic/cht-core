@@ -247,6 +247,7 @@
       .state('about', {
         url: '/about',
         controller: 'AboutCtrl',
+        controllerAs: 'aboutCtrl',
         templateUrl: 'templates/partials/about.html'
       })
 

@@ -143,6 +143,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
       }
 
+      function setVersion(version) {
+        dispatch(createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -155,6 +159,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowActionBar,
         setShowContent,
         setFacilities,
+        setVersion,
         // Global selected actions
         setSelected,
         updateSelected,

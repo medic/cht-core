@@ -112,6 +112,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { showContent: action.payload.showContent });
     case actionTypes.SET_FACILITIES:
       return Object.assign({}, state, { facilities: action.payload.facilities });
+    case actionTypes.SET_VERSION:
+      return Object.assign({}, state, { version: action.payload.version });
     default:
       return state;
   }

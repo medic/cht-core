@@ -78,7 +78,8 @@ var _ = require('underscore'),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state)
+        showContent: Selectors.getShowContent(state),
+        version: Selectors.getVersion(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -90,7 +91,8 @@ var _ = require('underscore'),
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setSelectMode: globalActions.setSelectMode,
         setShowActionBar: globalActions.setShowActionBar,
-        setShowContent: globalActions.setShowContent
+        setShowContent: globalActions.setShowContent,
+        setVersion: globalActions.setVersion
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -195,7 +197,7 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    $scope.version = APP_CONFIG.version;
+    ctrl.setVersion(APP_CONFIG.version);
     $scope.actionBar = {};
     $scope.tours = [];
     $scope.baseUrl = Location.path;

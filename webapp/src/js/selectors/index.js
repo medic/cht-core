@@ -16,6 +16,7 @@ const getSelectMode = state => getGlobalState(state).selectMode;
 const getSelected = state => getGlobalState(state).selected;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
+const getVersion = state => getGlobalState(state).version;
 
 const getSelectedSummaries = reselect.createSelector(
   getSelected,
@@ -66,6 +67,7 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedValidChecks,
   getShowActionBar,
   getShowContent,
+  getVersion,
 
   getContactsState,
   getLoadingSummary,
