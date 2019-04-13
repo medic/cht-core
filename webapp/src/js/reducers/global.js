@@ -9,6 +9,7 @@ const initialState = {
     error: null
   },
   facilities: [],
+  isAdmin: false,
   loadingContent: false,
   loadingSelectedChildren: false,
   loadingSelectedReports: false,
@@ -16,7 +17,8 @@ const initialState = {
   selectMode: false,
   selected: null,
   showActionBar: false,
-  showContent: false
+  showContent: false,
+  version: null
 };
 
 module.exports = function(state, action) {
@@ -114,6 +116,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { facilities: action.payload.facilities });
     case actionTypes.SET_VERSION:
       return Object.assign({}, state, { version: action.payload.version });
+    case actionTypes.SET_IS_ADMIN:
+      return Object.assign({}, state, { isAdmin: action.payload.isAdmin });
     default:
       return state;
   }

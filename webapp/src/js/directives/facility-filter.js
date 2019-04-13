@@ -12,6 +12,7 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
       var mapStateToTarget = function(state) {
         return {
           facilities: Selectors.getFacilities(state),
+          isAdmin: Selectors.getIsAdmin(state),
           selectMode: Selectors.getSelectMode(state),
           selected: Selectors.getSelected(state)
         };

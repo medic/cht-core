@@ -10,6 +10,7 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
+          isAdmin: Selectors.getIsAdmin(state),
           loadingContent: Selectors.getLoadingContent(state),
           loadingSubActionBar: Selectors.getLoadingSubActionBar(state),
           selectMode: Selectors.getSelectMode(state),
@@ -20,6 +21,6 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: 'actionBarCtrl'
   };
 });

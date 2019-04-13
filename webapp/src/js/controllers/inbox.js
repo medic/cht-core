@@ -87,6 +87,7 @@ var _ = require('underscore'),
       return {
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setFacilities: globalActions.setFacilities,
+        setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setSelectMode: globalActions.setSelectMode,
@@ -201,7 +202,7 @@ var _ = require('underscore'),
     $scope.actionBar = {};
     $scope.tours = [];
     ctrl.adminUrl = Location.adminPath;
-    $scope.isAdmin = Session.isAdmin();
+    ctrl.setIsAdmin(Session.isAdmin());
 
     if (
       $window.medicmobile_android &&

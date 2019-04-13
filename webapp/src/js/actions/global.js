@@ -147,6 +147,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
       }
 
+      function setIsAdmin(isAdmin) {
+        dispatch(createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -160,6 +164,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowContent,
         setFacilities,
         setVersion,
+        setIsAdmin,
         // Global selected actions
         setSelected,
         updateSelected,
