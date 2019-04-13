@@ -200,7 +200,6 @@ var _ = require('underscore'),
     ctrl.setVersion(APP_CONFIG.version);
     $scope.actionBar = {};
     $scope.tours = [];
-    $scope.baseUrl = Location.path;
     $scope.adminUrl = Location.adminPath;
     $scope.isAdmin = Session.isAdmin();
 
