@@ -33,7 +33,6 @@ describe('ReportsCtrl controller', () => {
     scope.readStatus = { forms: 0, messages: 0 };
     scope.updateReadStatus = () => {};
     scope.isRead = () => true;
-    scope.setFilterQuery = () => {};
     scope.reports = [ report, { _id: 'a' } ];
     scope.clearSelected = () => {};
     scope.setBackTarget = () => {};

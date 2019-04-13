@@ -195,7 +195,6 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    $scope.filterQuery = { value: null };
     $scope.version = APP_CONFIG.version;
     $scope.actionBar = {};
     $scope.tours = [];
@@ -230,12 +229,6 @@ var _ = require('underscore'),
 
     $scope.isMobile = function() {
       return $('#mobile-detection').css('display') === 'inline';
-    };
-
-    $scope.setFilterQuery = function(query) {
-      if (query) {
-        $scope.filterQuery.value = query;
-      }
     };
 
     $scope.$on('HideContent', function() {
