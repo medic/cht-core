@@ -195,7 +195,6 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    $scope.people = [];
     $scope.filterQuery = { value: null };
     $scope.version = APP_CONFIG.version;
     $scope.actionBar = {};
