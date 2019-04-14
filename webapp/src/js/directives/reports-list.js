@@ -6,7 +6,6 @@ angular.module('inboxDirectives').component('mmReportsList', {
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
-        errorSyntax: Selectors.getReportsErrorSyntax(state),
         selectMode: Selectors.getSelectMode(state),
         selected: Selectors.getSelected(state)
       };

@@ -48,7 +48,6 @@ const getMessagesError = state => getMessagesState(state).error;
 
 // Reports
 const getReportsState = state => state.reports;
-const getReportsErrorSyntax = state => getReportsState(state).errorSyntax;
 
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
@@ -77,6 +76,5 @@ angular.module('inboxServices').constant('Selectors', {
   getMessagesState,
   getMessagesError,
 
-  getReportsState,
-  getReportsErrorSyntax
+  getReportsState
 });

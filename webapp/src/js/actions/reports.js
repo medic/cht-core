@@ -15,13 +15,7 @@ angular.module('inboxServices').factory('ReportsActions',
 
     return function(dispatch) {
 
-      function setReportsErrorSyntax(value) {
-        dispatch(createSingleValueAction(actionTypes.SET_REPORTS_ERROR_SYNTAX, 'errorSyntax', value));
-      }
-
-      return {
-        setReportsErrorSyntax
-      };
+      return {};
     };
   }
 );

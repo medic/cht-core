@@ -20,7 +20,6 @@ angular
     MarkRead,
     Modal,
     ReportViewModelGenerator,
-    ReportsActions,
     Search,
     SearchFilters,
     Selectors,
@@ -40,13 +39,11 @@ angular
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
-      const reportsActions = ReportsActions(dispatch);
       return {
         addSelected: globalActions.addSelected,
         removeSelected: globalActions.removeSelected,
         setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setReportsErrorSyntax: reportsActions.setReportsErrorSyntax,
         setSelected: globalActions.setSelected
       };
     };
@@ -233,7 +230,7 @@ angular
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         ctrl.error = false;
-        ctrl.setReportsErrorSyntax(false);
+        ctrl.errorSyntax = false;
         ctrl.loading = true;
         if (ctrl.selected.length && $scope.isMobile()) {
           $scope.selectReport();
@@ -253,7 +250,7 @@ angular
           ctrl.loading = false;
           ctrl.appending = false;
           ctrl.error = false;
-          ctrl.setReportsErrorSyntax(false);
+          ctrl.errorSyntax = false;
           if (
             !$state.params.id &&
             !$scope.isMobile() &&
@@ -280,7 +277,7 @@ angular
             err.reason.toLowerCase().indexOf('bad query syntax') !== -1
           ) {
             // invalid freetext filter query
-            ctrl.setReportsErrorSyntax(true);
+            ctrl.errorSyntax = true;
           }
           $log.error('Error loading messages', err);
         });
