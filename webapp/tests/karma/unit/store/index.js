@@ -139,7 +139,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [{ doc: { contact: oldContact }}] });
       setupStore(initialState);
       const newContact = { test: true };
-      globalActions.setFirstSelectedDocProperty({ contact: newContact });
+      globalActions.setFirstSelectedReportDocProperty({ contact: newContact });
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -151,7 +151,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: [{ formatted: { verified: true }}] });
       setupStore(initialState);
       const formatted = { verified: undefined };
-      globalActions.setFirstSelectedFormattedProperty(formatted);
+      globalActions.setFirstSelectedReportFormattedProperty(formatted);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
@@ -159,24 +159,24 @@ describe('Store', function() {
       chai.expect(globalState).to.deep.equal({ selected: [{ formatted }] });
     });
 
-    it('sets loadingSelectedChildren', () => {
-      const initialState = createGlobalState({ loadingSelectedChildren: false });
+    it('sets loadingSelectedContactChildren', () => {
+      const initialState = createGlobalState({ loadingSelectedContactChildren: false });
       setupStore(initialState);
-      globalActions.setLoadingSelectedChildren(true);
+      globalActions.setLoadingSelectedContactChildren(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
-      chai.expect(globalState).to.deep.equal({ loadingSelectedChildren: true });
+      chai.expect(globalState).to.deep.equal({ loadingSelectedContactChildren: true });
     });
 
-    it('sets loadingSelectedReports', () => {
-      const initialState = createGlobalState({ loadingSelectedReports: false });
+    it('sets loadingSelectedContactReports', () => {
+      const initialState = createGlobalState({ loadingSelectedContactReports: false });
       setupStore(initialState);
-      globalActions.setLoadingSelectedReports(true);
+      globalActions.setLoadingSelectedContactReports(true);
       const state = getState();
       const globalState = selectors.getGlobalState(state);
       chai.expect(state).to.not.equal(initialState);
-      chai.expect(globalState).to.deep.equal({ loadingSelectedReports: true });
+      chai.expect(globalState).to.deep.equal({ loadingSelectedContactReports: true });
     });
 
     it('loads selected children', (done) => {
@@ -186,14 +186,14 @@ describe('Store', function() {
 
       const children = ['child'];
       loadChildren.withArgs(selected).returns(Promise.resolve(children));
-      globalActions.loadSelectedChildren();
+      globalActions.loadSelectedContactChildren();
 
       setTimeout(() => {
         const state = getState();
       const globalState = selectors.getGlobalState(state);
         chai.expect(state).to.not.equal(initialState);
         chai.expect(globalState.selected).to.not.equal(selectors.getGlobalState(initialState).selected);
-        chai.expect(globalState).to.deep.equal({ selected: { _id: '1', children }, loadingSelectedChildren: false });
+        chai.expect(globalState).to.deep.equal({ selected: { _id: '1', children }, loadingSelectedContactChildren: false });
         done();
       });
     });
@@ -205,7 +205,7 @@ describe('Store', function() {
 
       const reports = ['report'];
       loadReports.withArgs(selected).returns(Promise.resolve(reports));
-      globalActions.loadSelectedReports();
+      globalActions.loadSelectedContactReports();
 
 
       setTimeout(() => {
@@ -213,7 +213,7 @@ describe('Store', function() {
       const globalState = selectors.getGlobalState(state);
         chai.expect(state).to.not.equal(initialState);
         chai.expect(globalState.selected).to.not.equal(selectors.getGlobalState(initialState).selected);
-        chai.expect(globalState).to.deep.equal({ selected: { _id: '1', reports }, loadingSelectedReports: false });
+        chai.expect(globalState).to.deep.equal({ selected: { _id: '1', reports }, loadingSelectedContactReports: false });
         done();
       });
     });
@@ -224,7 +224,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: { messages: [message1] } });
       setupStore(initialState);
 
-      globalActions.addSelectedMessage(message2);
+      messagesActions.addSelectedMessage(message2);
 
       const state = getState();
       const globalState = selectors.getGlobalState(state);
@@ -240,7 +240,7 @@ describe('Store', function() {
       const initialState = createGlobalState({ selected: { messages: [message1, message2] } });
       setupStore(initialState);
 
-      globalActions.removeSelectedMessage('1');
+      messagesActions.removeSelectedMessage('1');
 
       const state = getState();
       const globalState = selectors.getGlobalState(state);

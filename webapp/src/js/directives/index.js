@@ -6,6 +6,7 @@
 
   require('./actionbar');
   require('./auth');
+  require('./contacts-filters');
   require('./contacts-list');
   require('./content-row');
   require('./date-filter');
@@ -19,6 +20,7 @@
   require('./modal');
   require('./navigation');
   require('./report-image');
+  require('./reports-filters');
   require('./reports-list');
   require('./reset-filter');
   require('./sender');

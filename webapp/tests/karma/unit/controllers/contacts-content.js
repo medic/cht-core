@@ -98,7 +98,7 @@ describe('ContactsContentCtrl', () => {
     };
 
     getSelected = () => {
-      return Selectors.getSelected($ngRedux.getState());
+      return Selectors.getSelectedContact($ngRedux.getState());
     };
 
     debounce = (func) => {

@@ -10,17 +10,33 @@ const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getFacilities = state => getGlobalState(state).facilities;
 const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
-const getLoadingSelectedChildren = state => getGlobalState(state).loadingSelectedChildren;
-const getLoadingSelectedReports = state => getGlobalState(state).loadingSelectedReports;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 const getSelectMode = state => getGlobalState(state).selectMode;
-const getSelected = state => getGlobalState(state).selected;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
 const getVersion = state => getGlobalState(state).version;
 
-const getSelectedSummaries = reselect.createSelector(
-  getSelected,
+// Analytics
+const getAnalyticsState = state => state.analytics;
+const getSelectedAnalytics = state => getAnalyticsState(state).selected;
+
+// Contacts
+const getContactsState = state => state.contacts;
+const getContactsLoadingSummary = state => getContactsState(state).contactsLoadingSummary;
+const getLoadingSelectedContactChildren = state => getGlobalState(state).loadingSelectedContactChildren;
+const getLoadingSelectedContactReports = state => getGlobalState(state).loadingSelectedContactReports;
+const getSelectedContact = state => getContactsState(state).selected;
+
+// Messages
+const getMessagesState = state => state.messages;
+const getMessagesError = state => getMessagesState(state).error;
+const getSelectedMessage = state => getMessagesState(state).selected;
+
+// Reports
+const getReportsState = state => state.reports;
+const getSelectedReports = state => getReportsState(state).selected;
+const getSelectedReportsSummaries = reselect.createSelector(
+  getSelectedReports,
   selected => {
     if (!Array.isArray(selected)) {
       return [];
@@ -28,8 +44,8 @@ const getSelectedSummaries = reselect.createSelector(
     return selected.map(item => item.formatted || item.summary);
   }
 );
-const getSelectedValidChecks = reselect.createSelector(
-  getSelected,
+const getSelectedReportsValidChecks = reselect.createSelector(
+  getSelectedReports,
   selected => {
     if (!Array.isArray(selected)) {
       return [];
@@ -38,16 +54,9 @@ const getSelectedValidChecks = reselect.createSelector(
   }
 );
 
-// Contacts
-const getContactsState = state => state.contacts;
-const getLoadingSummary = state => getContactsState(state).loadingSummary;
-
-// Messages
-const getMessagesState = state => state.messages;
-const getMessagesError = state => getMessagesState(state).error;
-
-// Reports
-const getReportsState = state => state.reports;
+// Tasks
+const getTasksState = state => state.tasks;
+const getSelectedTask = state => getTasksState(state).selected;
 
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
@@ -59,22 +68,30 @@ angular.module('inboxServices').constant('Selectors', {
   getFacilities,
   getIsAdmin,
   getLoadingContent,
-  getLoadingSelectedChildren,
-  getLoadingSelectedReports,
+  getLoadingSelectedContactChildren,
+  getLoadingSelectedContactReports,
   getLoadingSubActionBar,
   getSelectMode,
-  getSelected,
-  getSelectedSummaries,
-  getSelectedValidChecks,
   getShowActionBar,
   getShowContent,
   getVersion,
 
+  getAnalyticsState,
+  getSelectedAnalytics,
+
   getContactsState,
-  getLoadingSummary,
+  getContactsLoadingSummary,
+  getSelectedContact,
 
   getMessagesState,
   getMessagesError,
+  getSelectedMessage,
 
-  getReportsState
+  getReportsState,
+  getSelectedReports,
+  getSelectedReportsSummaries,
+  getSelectedReportsValidChecks,
+
+  getTasksState,
+  getSelectedTask
 });

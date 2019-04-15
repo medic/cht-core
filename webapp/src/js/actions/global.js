@@ -2,7 +2,6 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
-    ContactViewModelGenerator,
     Selectors
   ) {
     'use strict';
@@ -47,73 +46,12 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetEnketoStatusAction({ saving }));
       }
 
-      function setSelectMode(selectMode) {
-        dispatch(createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
+      function setFacilities(facilities) {
+        dispatch(createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
       }
 
-      function setSelected(selected) {
-        dispatch(createSingleValueAction(actionTypes.SET_SELECTED, 'selected', selected));
-      }
-
-      function updateSelected(selected) {
-        dispatch(createSingleValueAction(actionTypes.UPDATE_SELECTED, 'selected', selected));
-      }
-
-      function updateSelectedItem(id, selected) {
-        dispatch({
-          type: actionTypes.UPDATE_SELECTED_ITEM,
-          payload: { id, selected }
-        });
-      }
-
-      function setFirstSelectedDocProperty(doc) {
-        dispatch(createSingleValueAction(actionTypes.SET_FIRST_SELECTED_DOC_PROPERTY, 'doc', doc));
-      }
-
-      function setFirstSelectedFormattedProperty(formatted) {
-        dispatch(createSingleValueAction(actionTypes.SET_FIRST_SELECTED_FORMATTED_PROPERTY, 'formatted', formatted));
-      }
-
-      function addSelectedMessage(message) {
-        dispatch(createSingleValueAction(actionTypes.ADD_SELECTED_MESSAGE, 'message', message));
-      }
-
-      function removeSelectedMessage(id) {
-        dispatch(createSingleValueAction(actionTypes.REMOVE_SELECTED_MESSAGE, 'id', id));
-      }
-
-      function addSelected(selected) {
-        dispatch(createSingleValueAction(actionTypes.ADD_SELECTED, 'selected', selected));
-      }
-
-      function removeSelected(id) {
-        dispatch(createSingleValueAction(actionTypes.REMOVE_SELECTED, 'id', id));
-      }
-
-      function setLoadingSelectedChildren(loading) {
-        dispatch(createSingleValueAction(actionTypes.SET_LOADING_SELECTED_CHILDREN, 'loadingSelectedChildren', loading));
-      }
-
-      function setLoadingSelectedReports(loading) {
-        dispatch(createSingleValueAction(actionTypes.SET_LOADING_SELECTED_REPORTS, 'loadingSelectedReports', loading));
-      }
-
-      function loadSelectedChildren(options) {
-        return dispatch(function(dispatch, getState) {
-          const selected = Selectors.getSelected(getState());
-          return ContactViewModelGenerator.loadChildren(selected, options).then(children => {
-            dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_CHILDREN, 'children', children));
-          });
-        });
-      }
-
-      function loadSelectedReports() {
-        return dispatch(function(dispatch, getState) {
-          const selected = Selectors.getSelected(getState());
-          return ContactViewModelGenerator.loadReports(selected).then(reports => {
-            dispatch(createSingleValueAction(actionTypes.RECEIVE_SELECTED_REPORTS, 'reports', reports));
-          });
-        });
+      function setIsAdmin(isAdmin) {
+        dispatch(createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
 
       function setLoadingContent(loading) {
@@ -122,6 +60,10 @@ angular.module('inboxServices').factory('GlobalActions',
 
       function setLoadingSubActionBar(loading) {
         dispatch(createSingleValueAction(actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading));
+      }
+
+      function setSelectMode(selectMode) {
+        dispatch(createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
       }
 
       function setShowActionBar(showActionBar) {
@@ -139,16 +81,8 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
-      function setFacilities(facilities) {
-        dispatch(createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
-      }
-
       function setVersion(version) {
         dispatch(createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
-      }
-
-      function setIsAdmin(isAdmin) {
-        dispatch(createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
 
       return {
@@ -157,31 +91,14 @@ angular.module('inboxServices').factory('GlobalActions',
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
-        setSelectMode,
+        setFacilities,
+        setIsAdmin,
         setLoadingContent,
         setLoadingSubActionBar,
+        setSelectMode,
         setShowActionBar,
         setShowContent,
-        setFacilities,
         setVersion,
-        setIsAdmin,
-        // Global selected actions
-        setSelected,
-        updateSelected,
-        // Contacts-specific selected actions
-        setLoadingSelectedChildren,
-        setLoadingSelectedReports,
-        loadSelectedChildren,
-        loadSelectedReports,
-        // Messages-specific selected actions
-        addSelectedMessage,
-        removeSelectedMessage,
-        // Reports-specific selected actions
-        addSelected,
-        removeSelected,
-        updateSelectedItem,
-        setFirstSelectedDocProperty,
-        setFirstSelectedFormattedProperty
       };
     };
   }

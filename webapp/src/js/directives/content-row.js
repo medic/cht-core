@@ -77,7 +77,7 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selected: Selectors.getSelected(state)
+          selected: Selectors.getSelectedContact(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

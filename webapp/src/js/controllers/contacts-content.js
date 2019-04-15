@@ -14,8 +14,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     Changes,
     ContactChangeFilter,
     ContactViewModelGenerator,
+    ContactsActions,
     Debounce,
-    GlobalActions,
     Selectors,
     Snackbar,
     TasksForContact,
@@ -29,17 +29,17 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state),
+        selectedContact: Selectors.getSelectedContact(state),
         loadingContent: Selectors.getLoadingContent(state),
-        loadingSelectedChildren: Selectors.getLoadingSelectedChildren(state),
-        loadingSelectedReports: Selectors.getLoadingSelectedReports(state),
-        loadingSummary: Selectors.getLoadingSummary(state)
+        loadingSelectedContactChildren: Selectors.getLoadingSelectedContactChildren(state),
+        loadingSelectedContactReports: Selectors.getLoadingSelectedContactReports(state),
+        contactsLoadingSummary: Selectors.getContactsLoadingSummary(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
-      const globalActions = GlobalActions(dispatch);
+      const contactsActions = ContactsActions(dispatch);
       return {
-        updateSelected: globalActions.updateSelected
+        updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -90,21 +90,21 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var getTasks = function() {
       return Auth('can_view_tasks')
         .then(function() {
-          ctrl.updateSelected({ tasks: [] });
-          var children = ctrl.selected.children.persons || [];
+          ctrl.updateSelectedContact({ tasks: [] });
+          var children = ctrl.selectedContact.children.persons || [];
           TasksForContact(
-            ctrl.selected.doc._id,
-            ctrl.selected.doc.type,
+            ctrl.selectedContact.doc._id,
+            ctrl.selectedContact.doc.type,
             _.pluck(children, 'id'),
             'ContactsContentCtrl',
             function(areTasksEnabled, tasks) {
-              if (ctrl.selected) {
+              if (ctrl.selectedContact) {
                 $timeout(() => {
                   tasks.forEach(function(task) {
                     task.title = translate(task.title, task);
                     task.priorityLabel = translate(task.priorityLabel, task);
                   });
-                  ctrl.updateSelected({ areTasksEnabled: areTasksEnabled, tasks: tasks });
+                  ctrl.updateSelectedContact({ areTasksEnabled: areTasksEnabled, tasks: tasks });
                   children.forEach(function(child) {
                     child.taskCount = tasks.filter(function(task) {
                       return task.doc &&
@@ -129,7 +129,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       var options = { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id };
       return ContactViewModelGenerator.getContact(id, options)
         .then(function(model) {
-          var refreshing = (ctrl.selected && ctrl.selected.doc._id) === id;
+          var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.setSelected(model, options);
           $scope.settingSelected(refreshing);
           return getTasks();
@@ -164,14 +164,14 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
-        return ContactChangeFilter.matchContact(change, ctrl.selected) ||
-               ContactChangeFilter.isRelevantContact(change, ctrl.selected) ||
-               ContactChangeFilter.isRelevantReport(change, ctrl.selected);
+        return ContactChangeFilter.matchContact(change, ctrl.selectedContact) ||
+               ContactChangeFilter.isRelevantContact(change, ctrl.selectedContact) ||
+               ContactChangeFilter.isRelevantReport(change, ctrl.selectedContact);
       },
       callback: function(change) {
-        if (ContactChangeFilter.matchContact(change, ctrl.selected) && ContactChangeFilter.isDeleted(change)) {
+        if (ContactChangeFilter.matchContact(change, ctrl.selectedContact) && ContactChangeFilter.isDeleted(change)) {
           debouncedReloadContact.cancel();
-          var parentId = ctrl.selected.doc.parent && ctrl.selected.doc.parent._id;
+          var parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
           if (parentId) {
             // redirect to the parent
             return $state.go($state.current.name, {id: parentId});
@@ -180,7 +180,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             return $scope.clearSelected();
           }
         }
-        return debouncedReloadContact(ctrl.selected.doc._id, true);
+        return debouncedReloadContact(ctrl.selectedContact.doc._id, true);
       }
     });
 

@@ -142,11 +142,11 @@ describe('Contacts controller', () => {
 
     globalActions = GlobalActions($ngRedux.dispatch);
     const stubbedGlobalActions = {
-      loadSelectedChildren: sinon.stub().returns(Promise.resolve()),
-      loadSelectedReports: sinon.stub().returns(Promise.resolve())
+      loadSelectedContactChildren: sinon.stub().returns(Promise.resolve()),
+      loadSelectedContactReports: sinon.stub().returns(Promise.resolve())
     };
     getSelected = () => {
-      return Selectors.getSelected($ngRedux.getState());
+      return Selectors.getSelectedContact($ngRedux.getState());
     };
 
     createController = () => {

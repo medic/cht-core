@@ -11,8 +11,7 @@ angular.module('inboxDirectives').directive('mmFormTypeFilter', function(SearchF
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state)
+          selectMode: Selectors.getSelectMode(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
@@ -20,6 +19,9 @@ angular.module('inboxDirectives').directive('mmFormTypeFilter', function(SearchF
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'formTypeFilterCtrl',
+    bindToController: {
+      selected: '<'
+    },
     link: function(scope) {
       SearchFilters.formType(function(forms) {
         scope.filters.forms = forms;
