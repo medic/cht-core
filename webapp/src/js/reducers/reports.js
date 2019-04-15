@@ -1,3 +1,4 @@
+const _ = require('underscore');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
   selected: []
