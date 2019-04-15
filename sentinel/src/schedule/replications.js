@@ -3,6 +3,8 @@ const config = require('../config'),
       db = require('../db'),
       logger = require('../lib/logger');
 
+var timers = [];
+
 // set later to use local time
 later.date.localTime();
 
@@ -46,6 +48,10 @@ module.exports = {
   execute: callback => {
     const replications = config.get('replications') || [];
 
+    // Clear existing timers
+    timers.forEach(timer => timer.clear());
+    timers = [];
+
     replications.reduce((p, replication) => {
       if (!isConfigValid(replication)) {
         throw new Error(`Invalid replication config with fromSuffix = '${replication.fromSuffix}', toSuffix = '${replication.toSuffix}', text expression = '${replication.text_expression}' and cron = '${replication.cron}'`);
@@ -53,7 +59,11 @@ module.exports = {
 
       const sched = getSchedule(replication);
 
-      return p.then(() => later.setInterval(() => module.exports.runReplication(replication), sched));
+      return p.then(() => {
+        const timer = later.setInterval(() => module.exports.runReplication(replication), sched);
+        timers.push(timer);
+        return Promise.resolve();
+      });
     }, Promise.resolve())
     .then(() => callback())
     .catch(callback);
