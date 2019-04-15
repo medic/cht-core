@@ -1,6 +1,6 @@
 describe('TasksContentCtrl', function() {
   var $scope,
-      globalActions,
+      tasksActions,
       getEnketoEditedStatus,
       task,
       watchCallback,
@@ -14,8 +14,8 @@ describe('TasksContentCtrl', function() {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(function($controller, $ngRedux, GlobalActions, Selectors) {
-    globalActions = GlobalActions($ngRedux.dispatch);
+  beforeEach(inject(function($controller, $ngRedux, TasksActions, Selectors) {
+    tasksActions = TasksActions($ngRedux.dispatch);
     render = sinon.stub();
     XmlForm = sinon.stub();
     $scope = {
@@ -23,7 +23,7 @@ describe('TasksContentCtrl', function() {
       $watch: function(prop, cb) {
         watchCallback = cb;
       },
-      setSelected: () => globalActions.setSelected(task)
+      setSelected: () => tasksActions.setSelectedTask(task)
     };
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
     render.returns(Promise.resolve());
