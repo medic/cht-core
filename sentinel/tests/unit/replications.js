@@ -31,7 +31,7 @@ describe('replications', () => {
   });
 
   it('config with three matching replications calls runReplication thrice', done => {
-      sinon.stub(later, 'setInterval').callsArgWith(0);
+      sinon.stub(later, 'setInterval').callsArgWith(0).returns({ clear: sinon.stub() });
       sinon.stub(config, 'get').returns([
           {fromSuffix:'x', cron:'x', toSuffix:'x'},
           {fromSuffix:'y', cron:'y', toSuffix:'y'},
@@ -46,7 +46,7 @@ describe('replications', () => {
   });
 
   it('executes runReplication but does not start replicating if no matching dbs', done => {
-      sinon.stub(later, 'setInterval').callsArgWith(0);
+      sinon.stub(later, 'setInterval').callsArgWith(0).returns({ clear: sinon.stub() });
       sinon.stub(config, 'get').returns([
           {fromSuffix:'x', cron:'y', toSuffix:'z'}
       ]);
@@ -62,7 +62,7 @@ describe('replications', () => {
   });
 
   it('executes runReplication starts replicating matching dbs', done => {
-      sinon.stub(later, 'setInterval').callsArgWith(0);
+      sinon.stub(later, 'setInterval').callsArgWith(0).returns({ clear: sinon.stub() });
       sinon.stub(config, 'get').returns([
           {fromSuffix:'x', cron:'y', toSuffix:'z'}
       ]);
