@@ -200,6 +200,8 @@ cards = [
           }
         } else if (report.form === 'IMM') {
           addImmunizations(immunizations, report.fields);
+        } else if (report.form === 'C_IMM') {
+          addImmunizations(immunizations, report.fields);
         }  else {
           addImmunizations(immunizations, report.form);
         }
