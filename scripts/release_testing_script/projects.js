@@ -1,5 +1,5 @@
-const config = require('./config'),
-  octokit = require('@octokit/rest')({ headers: config.headers })
+const config = require('./config');
+const octokit = require('@octokit/rest')({ headers: config.headers });
 
 async function createProject(projectName) {
   octokit.authenticate({
@@ -13,11 +13,10 @@ async function createProject(projectName) {
   };
   try {
     return octokit.projects.createRepoProject(data);
+  } catch (err) {
+    console.log('Error occured when creating the project ' + err);
   }
-  catch (err) {
-    console.log("Error occured when creating the project " + err);
-  };
-};
+}
 
 async function addColumnsToProject(columnName, projectId) {
   var data = {
@@ -26,21 +25,16 @@ async function addColumnsToProject(columnName, projectId) {
   };
   try {
     return await octokit.projects.createProjectColumn(data);
-  }
-  catch (err) {
+  } catch (err) {
     console.log(err);
-  };
+  }
 }
 
 function sortColumnData(columns) {
-  var sorted = [];
-  for (const key in columns) {
-    sorted.push([key, columns[key].order]);
-  };
-
-  sorted.sort(function (a, b) {
-    return a[1] - b[1];
+  var sorted = columns.map((column, index) => {
+    sorted.push([index, column.order]);
   });
+  sorted.sort((a, b) => a[1] - b[1]);
   return sorted;
 }
 
@@ -48,12 +42,11 @@ function generateMoveBody(columns, sortedData) {
   var data = [];
   var i;
   for (i = 1; i < sortedData.length; i++) {
-    data.push(
-      {
-        headers: config.headers,
-        column_id: columns[sortedData[i][0]].columnId,
-        position: `after:${columns[sortedData[i - 1][0]].columnId}`
-      });
+    data.push({
+      headers: config.headers,
+      column_id: columns[sortedData[i][0]].columnId,
+      position: `after:${columns[sortedData[i - 1][0]].columnId}`
+    });
   }
   return data;
 }
@@ -61,10 +54,9 @@ function generateMoveBody(columns, sortedData) {
 async function reOrderColumns(columns) {
   var sorted = sortColumnData(columns);
   var data = generateMoveBody(columns, sorted);
-
-  for (const index in data) {
-    await octokit.projects.moveProjectColumn(data[index]);
-  };
+  for (let i = 0; i < data.length; i++) {
+    await octokit.projects.moveProjectColumn(data[i]);
+  }
 }
 
 function addIssuesToColumn(columnId, issueIds) {
@@ -76,8 +68,7 @@ function addIssuesToColumn(columnId, issueIds) {
     };
     try {
       octokit.projects.createProjectCard(data);
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err);
     }
   });

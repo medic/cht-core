@@ -490,14 +490,13 @@ angular
               delete exportFilters[type].options;
             }
           });
-
           var $link = $(e.target).closest('a');
           $link.addClass('mm-icon-disabled');
           $timeout(function() {
             $link.removeClass('mm-icon-disabled');
           }, 2000);
 
-          Export('reports', exportFilters);
+          Export('reports', exportFilters, { humanReadable: true });
         },
       });
     };
