@@ -18,6 +18,26 @@ angular.module('inboxServices').factory('GlobalActions',
 
     return function(dispatch) {
 
+      function setLeftActionBar(value) {
+        dispatch(createSingleValueAction(actionTypes.SET_ACTION_BAR_LEFT, 'left', value));
+      }
+
+      function createSetRightActionBarAction(value) {
+        return createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT, 'right', value);
+      }
+
+      function setRightActionBar(value) {
+        dispatch(createSetRightActionBarAction(value));
+      }
+
+      function clearRightActionBar() {
+        dispatch(createSetRightActionBarAction({}));
+      }
+
+      function setRightActionBarVerified(value) {
+        dispatch(createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
+      }
+
       function createSetCancelCallbackAction(value) {
         return createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
       }
@@ -87,17 +107,21 @@ angular.module('inboxServices').factory('GlobalActions',
 
       return {
         clearCancelCallback,
+        clearRightActionBar,
         setCancelCallback,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
         setFacilities,
         setIsAdmin,
+        setLeftActionBar,
         setLoadingContent,
         setLoadingSubActionBar,
+        setRightActionBar,
         setSelectMode,
         setShowActionBar,
         setShowContent,
+        setRightActionBarVerified,
         setVersion,
       };
     };

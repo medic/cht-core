@@ -24,7 +24,7 @@ describe('ReportsCtrl controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(($rootScope, $controller, $ngRedux, ReportsActions) => {
+  beforeEach(inject(($rootScope, $controller, $ngRedux, GlobalActions, ReportsActions) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();
@@ -38,11 +38,12 @@ describe('ReportsCtrl controller', () => {
     scope.setBackTarget = () => {};
     scope.isMobile = () => false;
     scope.setTitle = () => {};
-    scope.setRightActionBar = sinon.stub();
-    scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
-    scope.setLoadingSubActionBar = sinon.stub();
 
+    const globalActions = GlobalActions($ngRedux.dispatch);
+    const stubbedGlobalActions = {
+      setRightActionBar: sinon.stub()
+    };
     reportsActions = ReportsActions($ngRedux.dispatch);
 
     liveListInit = sinon.stub();
@@ -98,6 +99,7 @@ describe('ReportsCtrl controller', () => {
         'EditGroup': {},
         'Export': () => {},
         'FormatDataRecord': FormatDataRecord,
+        'GlobalActions': () => Object.assign({}, globalActions, stubbedGlobalActions),
         'LiveList': LiveList,
         'MarkRead': MarkRead,
         'MessageState': {},
@@ -122,7 +124,7 @@ describe('ReportsCtrl controller', () => {
     const phone = 12345;
     get.returns(Promise.resolve({ _id: 'def', name: 'hello', phone: phone }));
     post.returns(Promise.resolve());
-    createController();
+    const ctrl = createController();
     const report = { doc: {
       _id: 'abc',
       form: 'P',
@@ -130,8 +132,8 @@ describe('ReportsCtrl controller', () => {
     }};
     scope.setSelected(report);
     setTimeout(() => { // timeout to let the DB query finish
-      chai.expect(scope.setRightActionBar.callCount).to.equal(1);
-      chai.expect(scope.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
+      chai.expect(ctrl.setRightActionBar.callCount).to.equal(1);
+      chai.expect(ctrl.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
       done();
     });
   });

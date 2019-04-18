@@ -46,11 +46,14 @@ var _ = require('underscore'),
       const contactsActions = ContactsActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        clearRightActionBar: globalActions.clearRightActionBar,
         loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
         loadSelectedContactReports: contactsActions.loadSelectedContactReports,
+        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
+        setLeftActionBar: globalActions.setLeftActionBar,
         setLoadingSelectedContactChildren: contactsActions.setLoadingSelectedContactChildren,
         setLoadingSelectedContactReports: contactsActions.setLoadingSelectedContactReports,
-        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
+        setRightActionBar: globalActions.setRightActionBar,
         setSelectedContact: contactsActions.setSelectedContact,
         updateSelectedContact: contactsActions.updateSelectedContact
       };
@@ -257,9 +260,8 @@ var _ = require('underscore'),
           }
           var canEdit = results[2];
 
-          $scope.setRightActionBar({
+          ctrl.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [ctrl.selectedContact.doc],
             sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
@@ -302,8 +304,7 @@ var _ = require('underscore'),
                       ctrl.selectedContact.children.places.length === 0) &&
                       (!ctrl.selectedContact.children.persons ||
                         ctrl.selectedContact.children.persons.length === 0));
-                  $scope.setRightActionBar({
-                    selected: [ctrl.selectedContact.doc],
+                  ctrl.setRightActionBar({
                     relevantForms: formSummaries,
                     sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
                     canEdit: canEdit,
@@ -317,7 +318,7 @@ var _ = require('underscore'),
           $log.error('Error setting selected contact');
           $log.error(e);
           ctrl.updateSelectedContact({ error: true });
-          $scope.setRightActionBar();
+          ctrl.clearRightActionBar();
         });
     };
 
@@ -394,7 +395,7 @@ var _ = require('underscore'),
           icon: schema ? schema.icon : '',
         };
       }
-      $scope.setLeftActionBar(data);
+      ctrl.setLeftActionBar(data);
     };
 
     var getUserHomePlaceSummary = function() {

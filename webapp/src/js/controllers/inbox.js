@@ -199,7 +199,6 @@ var _ = require('underscore'),
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
     ctrl.setVersion(APP_CONFIG.version);
-    $scope.actionBar = {};
     $scope.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
@@ -556,28 +555,6 @@ var _ = require('underscore'),
         },
       });
     });
-
-    $scope.setSubActionBarStatus = function(verified) {
-      $scope.actionBar.right.verified = verified;
-    };
-
-    $scope.setRightActionBar = function(model) {
-      if (!$scope.actionBar) {
-        $scope.actionBar = {};
-      }
-      $scope.actionBar.right = model;
-    };
-
-    $scope.setLeftActionBar = function(model) {
-      if (!$scope.actionBar) {
-        $scope.actionBar = {};
-      }
-      $scope.actionBar.left = model;
-    };
-
-    $scope.setActionBar = function(model) {
-      $scope.actionBar = model;
-    };
 
     $scope.emit = function() {
       $rootScope.$broadcast.apply($rootScope, arguments);

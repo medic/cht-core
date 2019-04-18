@@ -10,10 +10,13 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
+          actionBar: Selectors.getActionBar(state),
           isAdmin: Selectors.getIsAdmin(state),
           loadingContent: Selectors.getLoadingContent(state),
           loadingSubActionBar: Selectors.getLoadingSubActionBar(state),
           selectMode: Selectors.getSelectMode(state),
+          selectedContactDoc: Selectors.getSelectedContactDoc(state),
+          selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
           showActionBar: Selectors.getShowActionBar(state)
         };
       };

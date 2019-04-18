@@ -35,6 +35,7 @@ angular
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selectMode: Selectors.getSelectMode(state),
         selectedReports: Selectors.getSelectedReports(state),
+        selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
         showContent: Selectors.getShowContent(state)
       };
     };
@@ -45,7 +46,9 @@ angular
         addSelectedReport: reportsActions.addSelectedReport,
         removeSelectedReport: reportsActions.removeSelectedReport,
         setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
+        setLeftActionBar: globalActions.setLeftActionBar,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setRightActionBar: globalActions.setRightActionBar,
         setSelectedReports: reportsActions.setSelectedReports
       };
     };
@@ -111,33 +114,30 @@ angular
     };
 
     var setRightActionBar = function() {
-      var model = {};
-      model.selected = ctrl.selectedReports.map(function(s) {
-        return s.doc || s.summary;
-      });
-      var doc =
+      const model = {};
+      const doc =
         !ctrl.selectMode &&
-        model.selected &&
-        model.selected.length === 1 &&
-        model.selected[0];
+        ctrl.selectedReportsDocs &&
+        ctrl.selectedReportsDocs.length === 1 &&
+        ctrl.selectedReportsDocs[0];
       if (!doc) {
-        return $scope.setRightActionBar(model);
+        return ctrl.setRightActionBar(model);
       }
       model.verified = doc.verified;
       model.type = doc.content_type;
       model.verifyingReport = $scope.verifyingReport;
       if (!doc.contact || !doc.contact._id) {
-        return $scope.setRightActionBar(model);
+        return ctrl.setRightActionBar(model);
       }
 
       DB()
         .get(doc.contact._id)
         .then(function(contact) {
           model.sendTo = contact;
-          $scope.setRightActionBar(model);
+          ctrl.setRightActionBar(model);
         })
         .catch(function(err) {
-          $scope.setRightActionBar(model);
+          ctrl.setRightActionBar(model);
           throw err;
         });
     };
@@ -487,7 +487,7 @@ angular
     };
 
     var setActionBarData = function() {
-      $scope.setLeftActionBar({
+      ctrl.setLeftActionBar({
         hasResults: $scope.hasReports,
         exportFn: function(e) {
           var exportFilters = _.extendOwn({}, $scope.filters);

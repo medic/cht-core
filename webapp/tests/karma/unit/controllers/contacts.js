@@ -35,15 +35,14 @@ describe('Contacts controller', () => {
     isDbAdmin,
     liveListInit,
     liveListReset,
-    contactsActions,
-    getSelected;
+    getSelectedContact;
 
   beforeEach(() => {
     module('inboxApp');
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, Selectors) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, GlobalActions, Selectors) => {
     deadListFind = sinon.stub();
     deadListContains = sinon.stub();
     deadList = () => {
@@ -86,8 +85,6 @@ describe('Contacts controller', () => {
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
     scope.clearSelection = sinon.stub();
-    scope.setRightActionBar = sinon.stub();
-    scope.setLeftActionBar = sinon.stub();
     contactSchema = {
       get: sinon.stub(),
       getChildPlaceType: sinon.stub(),
@@ -140,12 +137,18 @@ describe('Contacts controller', () => {
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
 
-    contactsActions = ContactsActions($ngRedux.dispatch);
+    const globalActions = GlobalActions($ngRedux.dispatch);
+    const stubbedGlobalActions = {
+      clearRightActionBar: sinon.stub(),
+      setLeftActionBar: sinon.stub(),
+      setRightActionBar: sinon.stub()
+    };
+    const contactsActions = ContactsActions($ngRedux.dispatch);
     const stubbedContactsActions = {
       loadSelectedContactChildren: sinon.stub().returns(Promise.resolve()),
       loadSelectedContactReports: sinon.stub().returns(Promise.resolve())
     };
-    getSelected = () => {
+    getSelectedContact = () => {
       return Selectors.getSelectedContact($ngRedux.getState());
     };
 
@@ -161,13 +164,14 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
-        ContactsActions: () => Object.assign({}, contactsActions, stubbedContactsActions),
         Auth: auth,
         Changes: changes,
         ContactSchema: contactSchema,
         ContactSummary: contactSummary,
+        ContactsActions: () => Object.assign({}, contactsActions, stubbedContactsActions),
         Export: () => {},
         GetDataRecords: getDataRecords,
+        GlobalActions: () => Object.assign({}, globalActions, stubbedGlobalActions),
         LiveList: {
           contacts: contactsLiveList,
           'contact-search': contactSearchLiveList,
@@ -210,8 +214,10 @@ describe('Contacts controller', () => {
   });
 
   describe('selecting contacts', () => {
+    let ctrl;
     const testContactSelection = selected => {
-      return createController()
+      ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           return scope.setSelected(selected);
@@ -220,9 +226,7 @@ describe('Contacts controller', () => {
 
     it('set selected contact', () => {
       return testContactSelection({ doc: district }).then(() => {
-        assert.checkDeepProperties(getSelected().doc, district);
-        assert(scope.setRightActionBar.called);
-        assert(scope.setRightActionBar.args[0][0].selected);
+        assert.checkDeepProperties(getSelectedContact(), { doc: district });
       });
     });
 
@@ -233,42 +237,43 @@ describe('Contacts controller', () => {
           throw new Error('Expected error to be thrown');
         })
         .catch(() => {
-          assert.checkDeepProperties(getSelected(), { doc: district, error: true });
-          assert.equal(scope.setRightActionBar.callCount, 2);
-          assert.deepEqual(scope.setRightActionBar.args[1], []);
+          assert.checkDeepProperties(getSelectedContact(), { doc: district, error: true });
+          assert.equal(ctrl.setRightActionBar.callCount, 1);
+          assert.equal(ctrl.clearRightActionBar.callCount, 1);
         });
     });
   });
 
   describe('sets right actionBar', () => {
     const testRightActionBar = (selected, assertions) => {
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           return scope.setSelected(selected);
         })
         .then(() => {
           assert(
-            scope.setRightActionBar.called,
+            ctrl.setRightActionBar.called,
             'right actionBar should be set'
           );
-          const actionBarArgs = scope.setRightActionBar.getCall(1).args[0];
-          assertions(actionBarArgs);
+          assertions(ctrl.setRightActionBar.getCall(1).args[0]);
         });
     };
 
     it('with the selected doc', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
-        assert.checkDeepProperties(actionBarArgs.selected[0], district);
+      return testRightActionBar({ doc: district }, () => {
+        assert.checkDeepProperties(getSelectedContact(), { doc: district });
       });
     });
 
     it('for the New Place button', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
-        assert.equal(actionBarArgs.selected[0].child.type, childType);
-        assert.equal(actionBarArgs.selected[0].child.icon, icon);
+      return testRightActionBar({ doc: district }, () => {
+        const selectedContact = getSelectedContact();
+        assert.equal(selectedContact.doc.child.type, childType);
+        assert.equal(selectedContact.doc.child.icon, icon);
         assert.equal(
-          actionBarArgs.selected[0].child.addPlaceLabel,
+          selectedContact.doc.child.addPlaceLabel,
           buttonLabel
         );
       });
@@ -277,12 +282,13 @@ describe('Contacts controller', () => {
     it('no New Place button if no child type', () => {
       contactSchema.getChildPlaceType.returns(undefined);
       return testRightActionBar({ doc: person }, actionBarArgs => {
-        assert.equal(actionBarArgs.selected[0].child, undefined);
+        const selectedContact = getSelectedContact();
+        assert.equal(selectedContact.doc.child, undefined);
         // But the other buttons are there!
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
         assert.deepEqual(actionBarArgs.sendTo, person);
-        assert.equal(actionBarArgs.selected[0]._id, person._id);
+        assert.equal(selectedContact.doc._id, person._id);
       });
     });
 
@@ -308,13 +314,14 @@ describe('Contacts controller', () => {
     it(`sets the actionbar partially if it couldn't get forms`, () => {
       xmlForms.callsArgWith(2, { error: 'no forms brew' }); // call the callback
       return testRightActionBar({ doc: person }, actionBarArgs => {
+        const selectedContact = getSelectedContact();
         assert.equal(actionBarArgs.relevantForms, undefined);
         assert.checkDeepProperties(actionBarArgs.sendTo, person);
-        assert.equal(actionBarArgs.selected[0]._id, person._id);
-        assert.equal(actionBarArgs.selected[0].child.type, childType);
-        assert.equal(actionBarArgs.selected[0].child.icon, icon);
+        assert.equal(selectedContact.doc._id, person._id);
+        assert.equal(selectedContact.doc.child.type, childType);
+        assert.equal(selectedContact.doc.child.icon, icon);
         assert.equal(
-          actionBarArgs.selected[0].child.addPlaceLabel,
+          selectedContact.doc.child.addPlaceLabel,
           buttonLabel
         );
       });
@@ -362,17 +369,18 @@ describe('Contacts controller', () => {
     describe('translates form titles', () => {
       const testTranslation = (form, expectedTitle) => {
         xmlForms.callsArgWith(2, null, [form]);
-        return createController()
+        const ctrl = createController();
+        return ctrl
           .getSetupPromiseForTesting()
           .then(() => {
             return scope.setSelected({ doc: district, reportLoader: Promise.resolve() });
           })
           .then(() => {
             assert(
-              scope.setRightActionBar.called,
+              ctrl.setRightActionBar.called,
               'right actionBar should be set'
             );
-            const actionBarArgs = scope.setRightActionBar.getCall(1).args[0];
+            const actionBarArgs = ctrl.setRightActionBar.getCall(1).args[0];
             assert.deepEqual(actionBarArgs.relevantForms.length, 1);
             assert.equal(actionBarArgs.relevantForms[0].title, expectedTitle);
           });
@@ -417,17 +425,18 @@ describe('Contacts controller', () => {
           }
         });
 
-        return createController()
+        const ctrl = createController();
+        return ctrl
           .getSetupPromiseForTesting()
           .then(() => {
             return scope.setSelected({ doc: { _id: 'my-contact', muted: false }, reportLoader: Promise.resolve() });
           })
           .then(() => {
             assert(
-              scope.setRightActionBar.called,
+              ctrl.setRightActionBar.called,
               'right actionBar should be set'
             );
-            assert.deepEqual(scope.setRightActionBar.args[1][0].relevantForms, [
+            assert.deepEqual(ctrl.setRightActionBar.args[1][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
               { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: false},
               { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: false}
@@ -448,17 +457,18 @@ describe('Contacts controller', () => {
           }
         });
 
-        return createController()
+        const ctrl = createController();
+        return ctrl
           .getSetupPromiseForTesting()
           .then(() => {
             return scope.setSelected({ doc: { _id: 'my-contact', muted: true }, reportLoader: Promise.resolve() });
           })
           .then(() => {
             assert(
-              scope.setRightActionBar.called,
+              ctrl.setRightActionBar.called,
               'right actionBar should be set'
             );
-            assert.deepEqual(scope.setRightActionBar.args[1][0].relevantForms, [
+            assert.deepEqual(ctrl.setRightActionBar.args[1][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
               { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: true},
               { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: true}
@@ -470,11 +480,12 @@ describe('Contacts controller', () => {
 
   describe('sets left actionBar', () => {
     it('when user has facility_id', () => {
-      createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert(scope.setLeftActionBar.called, 'left actionBar should be set');
-          const actionBarArgs = scope.setLeftActionBar.getCall(0).args[0];
+          assert(ctrl.setLeftActionBar.called, 'left actionBar should be set');
+          const actionBarArgs = ctrl.setLeftActionBar.getCall(0).args[0];
           assert.deepEqual(actionBarArgs.userChildPlace, {
             type: childType,
             icon: icon,
@@ -487,10 +498,11 @@ describe('Contacts controller', () => {
     it(`when user doesn't have facility_id`, () => {
       userSettings = KarmaUtils.promiseService(null, {});
       getDataRecords = KarmaUtils.promiseService();
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert(scope.setLeftActionBar.called);
+          assert(ctrl.setLeftActionBar.called);
         });
     });
   });

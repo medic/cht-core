@@ -35,9 +35,10 @@ var _ = require('underscore');
         const reportsActions = ReportsActions(dispatch);
         return {
           clearCancelCallback: globalActions.clearCancelCallback,
+          setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
-          updateSelectedReportItem: reportsActions.updateSelectedReportItem,
-          setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty
+          setRightActionBarVerified: globalActions.setRightActionBarVerified,
+          updateSelectedReportItem: reportsActions.updateSelectedReportItem
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -146,7 +147,7 @@ var _ = require('underscore');
 
         ctrl.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
 
-        $scope.setSubActionBarStatus(newVerified);
+        ctrl.setRightActionBarVerified(newVerified);
       });
     }
   );

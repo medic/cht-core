@@ -1,5 +1,9 @@
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
+  actionBar: {
+    left: {},
+    right: {}
+  },
   cancelCallback: null,
   enketoStatus: {
     edited: false,
@@ -22,6 +26,24 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
+    case actionTypes.SET_ACTION_BAR_LEFT:
+      return Object.assign({}, state, {
+        actionBar: Object.assign({}, state.actionBar, {
+          left: Object.assign({}, state.actionBar.left, action.payload.left)
+        })
+      });
+    case actionTypes.SET_ACTION_BAR_RIGHT:
+      return Object.assign({}, state, {
+        actionBar: Object.assign({}, state.actionBar, {
+          right: Object.assign({}, state.actionBar.right, action.payload.right)
+        })
+      });
+    case actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED:
+      return Object.assign({}, state, {
+        actionBar: Object.assign({}, state.actionBar, {
+          right: Object.assign({}, state.actionBar.right, { verified: action.payload.verified })
+        })
+      });
     case actionTypes.SET_CANCEL_CALLBACK:
       return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
     case actionTypes.SET_ENKETO_STATUS:

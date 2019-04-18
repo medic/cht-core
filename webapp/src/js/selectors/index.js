@@ -2,6 +2,7 @@ const reselect = require('reselect');
 
 // Global
 const getGlobalState = state => state.global;
+const getActionBar = state => getGlobalState(state).actionBar;
 const getCancelCallback = state => getGlobalState(state).cancelCallback;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
@@ -26,6 +27,10 @@ const getContactsLoadingSummary = state => getContactsState(state).contactsLoadi
 const getLoadingSelectedContactChildren = state => getGlobalState(state).loadingSelectedContactChildren;
 const getLoadingSelectedContactReports = state => getGlobalState(state).loadingSelectedContactReports;
 const getSelectedContact = state => getContactsState(state).selected;
+const getSelectedContactDoc = reselect.createSelector(
+  getSelectedContact,
+  selected => selected && selected.doc
+);
 
 // Messages
 const getMessagesState = state => state.messages;
@@ -37,21 +42,15 @@ const getReportsState = state => state.reports;
 const getSelectedReports = state => getReportsState(state).selected;
 const getSelectedReportsSummaries = reselect.createSelector(
   getSelectedReports,
-  selected => {
-    if (!Array.isArray(selected)) {
-      return [];
-    }
-    return selected.map(item => item.formatted || item.summary);
-  }
+  selected => selected.map(item => item.formatted || item.summary)
 );
 const getSelectedReportsValidChecks = reselect.createSelector(
   getSelectedReports,
-  selected => {
-    if (!Array.isArray(selected)) {
-      return [];
-    }
-    return selected.map(item => item.summary && item.summary.valid || item.formatted && !(item.formatted.errors && item.formatted.errors.length));
-  }
+  selected => selected.map(item => item.summary && item.summary.valid || item.formatted && !(item.formatted.errors && item.formatted.errors.length))
+);
+const getSelectedReportsDocs = reselect.createSelector(
+  getSelectedReports,
+  selected => selected.map(item => item.doc || item.summary)
 );
 
 // Tasks
@@ -60,6 +59,7 @@ const getSelectedTask = state => getTasksState(state).selected;
 
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
+  getActionBar,
   getCancelCallback,
   getEnketoStatus,
   getEnketoEditedStatus,
@@ -82,6 +82,7 @@ angular.module('inboxServices').constant('Selectors', {
   getContactsState,
   getContactsLoadingSummary,
   getSelectedContact,
+  getSelectedContactDoc,
 
   getMessagesState,
   getMessagesError,
@@ -91,6 +92,7 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedReports,
   getSelectedReportsSummaries,
   getSelectedReportsValidChecks,
+  getSelectedReportsDocs,
 
   getTasksState,
   getSelectedTask

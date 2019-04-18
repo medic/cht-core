@@ -11,6 +11,7 @@ angular
     $timeout,
     Changes,
     Export,
+    GlobalActions,
     MessageContacts,
     MessageListUtils,
     MessagesActions,
@@ -27,8 +28,10 @@ angular
       };
     };
     const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       const messagesActions = MessagesActions(dispatch);
       return {
+        setLeftActionBar: globalActions.setLeftActionBar,
         setSelectedMessage: messagesActions.setSelectedMessage
       };
     };
@@ -127,7 +130,7 @@ angular
     });
 
     var setActionBarData = function() {
-      $scope.setLeftActionBar({
+      ctrl.setLeftActionBar({
         hasResults: $scope.messages.length > 0,
         exportFn: function() {
           Export('messages', $scope.filters);

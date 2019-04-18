@@ -34,6 +34,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     var mapDispatchToTarget = function(dispatch) {
       var globalActions = GlobalActions(dispatch);
       return {
+        clearRightActionBar: globalActions.clearRightActionBar,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
@@ -127,7 +128,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
     $scope.form = null;
     ctrl.loadingForm = true;
-    $scope.setRightActionBar();
+    ctrl.clearRightActionBar();
     ctrl.setShowContent(true);
     setCancelCallback();
     var options = { merge: true };
