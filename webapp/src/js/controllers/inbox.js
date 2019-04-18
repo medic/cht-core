@@ -56,6 +56,17 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
+    const dbFetch = $window.PouchDB.fetch;
+    $window.PouchDB.fetch = function() {
+      return dbFetch.apply(this, arguments)
+        .then(function(response) {
+          if (response.status === 401) {
+            Session.navigateToLogin();
+          }
+          return response;
+        });
+    };    
+
     $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
       'boot_time:1:to_first_code_execution',
