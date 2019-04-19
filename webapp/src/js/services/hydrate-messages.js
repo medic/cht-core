@@ -3,7 +3,6 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('HydrateMessages',
   function(
     $q,
-    DB,
     LineageModelGenerator
   ) {
 

@@ -8,8 +8,8 @@ angular.module('controllers').controller('SettingsAdvancedCtrl',
     $scope,
     $timeout,
     Settings,
-    translateFilter,
-    UpdateSettings
+    UpdateSettings,
+    translateFilter
   ) {
 
     'use strict';

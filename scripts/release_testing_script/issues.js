@@ -2,7 +2,7 @@ const config = require('./config'),
   octokit = require('@octokit/rest')({ headers: config.headers });
 
 async function issues() {
-  data = {
+  const data = {
     owner: config.owner,
     repo: config.repoName,
     labels: config.labels,
@@ -11,9 +11,9 @@ async function issues() {
 
   try {
     return await octokit.issues.getForRepo(data);
-  } catch(err){
-    console.log("An error occured getting issues" + err);
-  };
+  } catch(err) {
+    console.log('An error occured getting issues' + err);
+  }
 }
 
 module.exports = issues;

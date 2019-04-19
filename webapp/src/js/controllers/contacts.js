@@ -4,9 +4,7 @@ var _ = require('underscore'),
 (function() {
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('ContactsCtrl', function(
+  angular.module('inboxControllers').controller('ContactsCtrl', function(
     $log,
     $ngRedux,
     $q,
@@ -362,7 +360,7 @@ var _ = require('underscore'),
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export('contacts', $scope.filters);
+          Export('contacts', $scope.filters, { humanReadable: true });
         },
       };
       var type;

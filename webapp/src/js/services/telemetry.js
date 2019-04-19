@@ -3,7 +3,13 @@ var moment = require('moment'),
 
 angular
   .module('inboxServices')
-  .factory('Telemetry', function($log, $q, $window, DB, Session) {
+  .factory('Telemetry', function(
+    $log,
+    $q,
+    $window,
+    DB,
+    Session
+  ) {
     'use strict';
     'ngInject';
 
@@ -94,13 +100,29 @@ angular
     };
 
     var generateMetadataSection = function() {
-      var date = moment(getLastAggregatedDate());
-      return {
-        year: date.year(),
-        month: date.month(),
-        user: Session.userCtx().name,
-        deviceId: getUniqueDeviceId(),
-      };
+      return $q.all([
+          DB().get('_design/medic-client'),
+          DB().query('medic-client/forms', {include_docs: true})
+      ]).then(([ddoc, formResults]) => {
+        const date = moment(getLastAggregatedDate());
+        const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
+        const forms = formResults.rows.reduce((keyToVersion, row) => {
+          keyToVersion[row.key] = row.doc._rev;
+
+          return keyToVersion;
+        }, {});
+
+        return {
+          year: date.year(),
+          month: date.month(),
+          user: Session.userCtx().name,
+          deviceId: getUniqueDeviceId(),
+          versions: {
+            app: version,
+            forms: forms
+          }
+        };
+      });
     };
 
     var generateDeviceStats = function() {
@@ -141,17 +163,19 @@ angular
             }
           ),
           DB().info(),
+          generateMetadataSection()
         ])
         .then(function(qAll) {
           var reduceResult = qAll[0];
           var infoResult = qAll[1];
+          var metadata = qAll[2];
 
           var aggregateDoc = {
             type: 'telemetry',
           };
 
           aggregateDoc.metrics = convertReduceToKeyValues(reduceResult);
-          aggregateDoc.metadata = generateMetadataSection();
+          aggregateDoc.metadata = metadata;
           aggregateDoc._id = generateAggregateDocId(aggregateDoc.metadata);
           aggregateDoc.device = generateDeviceStats();
           aggregateDoc.dbInfo = infoResult;

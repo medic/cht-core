@@ -1,7 +1,6 @@
 angular.module('controllers').controller('ImportTranslationCtrl',
   function (
     $scope,
-    $translate,
     $uibModalInstance,
     FileReader,
     ImportProperties,

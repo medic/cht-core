@@ -10,9 +10,9 @@ angular
     $q,
     $translate,
     DB,
+    FormatDate,
     Language,
-    Settings,
-    FormatDate
+    Settings
   ) {
     'ngInject';
     'use strict';

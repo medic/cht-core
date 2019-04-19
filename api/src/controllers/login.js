@@ -83,6 +83,7 @@ const createSession = req => {
     }),
     json: true,
     resolveWithFullResponse: true,
+    simple: false, // doesn't throw an error on non-200 responses
     body: { name: user, password: password },
     auth: { user: user, pass: password },
   });
@@ -138,8 +139,10 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      return auth.getUserSettings(userCtx).then(settings => {
-        setLocaleCookie(res, settings.language);
+      return auth.getUserSettings(userCtx).then(({ language }={}) => {
+        if (language) {
+          setLocaleCookie(res, language);
+        }
         res.status(302).send(getRedirectUrl(userCtx));
       });
     })

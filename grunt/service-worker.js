@@ -24,7 +24,7 @@ function writeServiceWorkerFile(staticDirectoryPath, outputPath) {
     handleFetch: true,
     staticFileGlobs: [
       path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
-      path.join(staticDirectoryPath, 'manfiest.json'),
+      path.join(staticDirectoryPath, 'manifest.json'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],

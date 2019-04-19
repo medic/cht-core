@@ -6,9 +6,7 @@ var utilsFactory = require('@medic/bulk-docs-utils');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('DeleteDocs',
+  angular.module('inboxServices').factory('DeleteDocs',
     function(
       $log,
       $q,

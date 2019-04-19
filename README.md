@@ -171,10 +171,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 ### End to End tests
 
-They live in [tests](tests). To run them:
-
-1. Update and start Webdriver: `npm run webdriver`
-2. Run tests: `grunt e2e`
+They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 ### API integration tests
 

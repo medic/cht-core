@@ -2,8 +2,6 @@
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
   var errors = {
     403: {
       title: 'error.403.title',
@@ -15,11 +13,14 @@
     }
   };
 
-  inboxControllers.controller('ErrorCtrl',
-    ['$scope', '$stateParams',
-    function ($scope, $stateParams) {
+  angular.module('inboxControllers').controller('ErrorCtrl',
+    function (
+      $scope,
+      $stateParams
+    ) {
+      'ngInject';
       $scope.error = errors[$stateParams.code] || errors['404'];
     }
-  ]);
+  );
 
 }());

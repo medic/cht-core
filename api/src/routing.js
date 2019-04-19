@@ -129,8 +129,10 @@ app.use(
         formAction: [`'self'`],
         imgSrc: [
           `'self'`,
-          'data:' // unsafe
+          'data:', // unsafe
+          'blob:',
         ],
+        mediaSrc: [`'self'`],
         scriptSrc: [
           `'self'`,
           `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
@@ -217,7 +219,7 @@ app.get('/favicon.ico', (req, res) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(path.join(__dirname, 'extracted-resources')));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);

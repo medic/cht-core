@@ -76,16 +76,8 @@
       "national_admin",
       "district_admin"
     ],
-    "can_export_audit": [
-      "national_admin",
-      "district_admin"
-    ],
     "can_export_feedback": [
       "national_admin"
-    ],
-    "can_export_server_logs": [
-      "national_admin",
-      "district_admin"
     ],
     "can_view_analytics": [
       "national_admin",
@@ -197,6 +189,10 @@
       "district_admin"
     ],
     "can_bulk_delete_reports": [
+      "national_admin",
+      "district_admin"
+    ],
+    "can_update_reports": [
       "national_admin",
       "district_admin"
     ],

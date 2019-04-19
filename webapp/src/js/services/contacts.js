@@ -3,7 +3,6 @@ var _ = require('underscore'),
 
 angular.module('inboxServices').factory('Contacts',
   function(
-    $log,
     $q,
     Cache,
     ContactSchema,

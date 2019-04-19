@@ -20,9 +20,9 @@ angular.module('inboxServices').factory('GetDataRecords',
   function(
     $q,
     DB,
-    HydrateContactNames,
     GetSubjectSummaries,
-    GetSummaries
+    GetSummaries,
+    HydrateContactNames
   ) {
 
     'use strict';

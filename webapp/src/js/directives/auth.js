@@ -1,6 +1,11 @@
 var _ = require('underscore');
 
-angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $parse, $q) {
+angular.module('inboxDirectives').directive('mmAuth', function(
+  $log,
+  $parse,
+  $q,
+  Auth
+) {
   'use strict';
   'ngInject';
   var link = function(scope, element, attributes) {

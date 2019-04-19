@@ -1,8 +1,6 @@
 angular.module('inboxControllers').controller('TourSelectCtrl',
   function(
     $scope,
-    $state,
-    $translate,
     $uibModalInstance,
     Tour
   ) {

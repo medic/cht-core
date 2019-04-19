@@ -1,7 +1,6 @@
 angular.module('controllers').controller('DeleteDocConfirm',
   function (
     $scope,
-    $translate,
     $uibModalInstance,
     DB,
     ExtractLineage

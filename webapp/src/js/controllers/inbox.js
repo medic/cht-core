@@ -5,9 +5,9 @@ var _ = require('underscore'),
 (function() {
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers', []);
+  angular.module('inboxControllers', []);
 
-  inboxControllers.controller('InboxCtrl', function(
+  angular.module('inboxControllers').controller('InboxCtrl', function(
     $log,
     $ngRedux,
     $q,
@@ -19,45 +19,40 @@ var _ = require('underscore'),
     $transitions,
     $translate,
     $window,
-    Actions,
     APP_CONFIG,
+    Actions,
     Auth,
     Changes,
     CheckDate,
     ContactSchema,
     CountMessages,
-    DB,
     DBSync,
+    DatabaseConnectionMonitor,
     Debug,
     Enketo,
-    PlaceHierarchy,
+    Feedback,
     JsonForms,
     Language,
-    LiveList,
     LiveListConfig,
     Location,
     Modal,
+    PlaceHierarchy,
+    RecurringProcessManager,
+    ResourceIcons,
     RulesEngine,
-    Select2Search,
-    SendMessage,
     Session,
     SetLanguage,
     Settings,
-    Snackbar,
-    UpdateServiceWorker,
     Telemetry,
     Tour,
     TranslateFrom,
     UnreadRecords,
+    UpdateServiceWorker,
     UpdateSettings,
     UpdateUser,
     UserSettings,
     WealthQuintilesWatcher,
-    XmlForms,
-    RecurringProcessManager,
-    DatabaseConnectionMonitor,
-    ResourceIcons,
-    Feedback
+    XmlForms
   ) {
     'ngInject';
 
@@ -100,10 +95,6 @@ var _ = require('underscore'),
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-
-    ResourceIcons.getAppTitle().then(title => {
-      document.title = title;
-    });
 
     $scope.replicationStatus = {
       disabled: false,
@@ -155,6 +146,20 @@ var _ = require('underscore'),
       }
 
       updateReplicationStatus(status);
+    });
+    
+    const setAppTitle = () => {
+      ResourceIcons.getAppTitle().then(title => {
+        document.title = title;
+        $('.header-logo').attr('title', `${title} | ${APP_CONFIG.version}`);
+      });
+    };
+    setAppTitle();
+
+    Changes({
+      key: 'branding-icon',
+      filter: change => change.id === 'branding',
+      callback: () => setAppTitle()
     });
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
@@ -696,7 +701,7 @@ var _ = require('underscore'),
     // https://github.com/medic/medic/issues/2927
     $transitions.onStart({}, closeDropdowns);
 
-    $rootScope.$on('databaseClosedEvent', function () {
+    const dbClosedDeregister = $rootScope.$on('databaseClosedEvent', function () {
       Modal({
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
@@ -753,6 +758,7 @@ var _ = require('underscore'),
     RecurringProcessManager.startUpdateRelativeDate();
     $scope.$on('$destroy', function() {
       unsubscribe();
+      dbClosedDeregister();
       RecurringProcessManager.stopUpdateRelativeDate();
     });
 

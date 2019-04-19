@@ -6,15 +6,13 @@ var COOKIE_NAME = 'userCtx',
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('Session',
+  angular.module('inboxServices').factory('Session',
     function(
       $http,
       $log,
       $window,
-      ipCookie,
-      Location
+      Location,
+      ipCookie
     ) {
 
       'ngInject';

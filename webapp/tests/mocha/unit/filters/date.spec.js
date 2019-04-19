@@ -41,7 +41,7 @@ describe('date filter', function() {
 
 
   describe('age', function() {
-    const age = filter.age(FormatDate, RelativeDate, $sce);
+    const age = filter.age($sce, FormatDate, RelativeDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -59,7 +59,7 @@ describe('date filter', function() {
 
   describe('autoreply', function() {
 
-    const autoreply = filter.autoreply(FormatDate, RelativeDate, $translate, $sce);
+    const autoreply = filter.autoreply($sce, $translate, FormatDate, RelativeDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -70,7 +70,7 @@ describe('date filter', function() {
 
   describe('dayMonth', function() {
 
-    const dayMonth = filter.dayMonth(FormatDate, $translate);
+    const dayMonth = filter.dayMonth($sce, $translate, FormatDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -81,7 +81,7 @@ describe('date filter', function() {
 
   describe('fullDate', function() {
 
-    const fullDate = filter.fullDate(FormatDate, RelativeDate, $sce);
+    const fullDate = filter.fullDate($sce, FormatDate, RelativeDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -98,7 +98,7 @@ describe('date filter', function() {
 
   describe('relativeDate', function() {
 
-    const relativeDate = filter.relativeDate(FormatDate, RelativeDate, $sce);
+    const relativeDate = filter.relativeDate($sce, FormatDate, RelativeDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -112,7 +112,7 @@ describe('date filter', function() {
 
   describe('relativeDay', function() {
 
-    const relativeDay = filter.relativeDay(FormatDate, RelativeDate, $sce);
+    const relativeDay = filter.relativeDay($sce, FormatDate, RelativeDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -152,7 +152,7 @@ describe('date filter', function() {
 
   describe('state', function() {
 
-    const state = filter.state(FormatDate, RelativeDate, $translate, $sce);
+    const state = filter.state($sce, $translate, FormatDate, RelativeDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -163,7 +163,7 @@ describe('date filter', function() {
 
   describe('weeksPregnant', function() {
 
-    const weeksPregnant = filter.weeksPregnant(FormatDate);
+    const weeksPregnant = filter.weeksPregnant();
 
     it('should return nicely-formatted output', function() {
       // given
