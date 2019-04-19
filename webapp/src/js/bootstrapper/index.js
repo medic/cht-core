@@ -31,16 +31,15 @@
     }
   };
 
-  var getDbInfo = function() {
+  const getDbInfo = function() {
     // parse the URL to determine the remote and local database names
-    var url = window.location.href;
-    var protocolLocation = url.indexOf('//') + 2;
-    var hostLocation = url.indexOf('/', protocolLocation) + 1;
-    var dbNameLocation = url.indexOf('/', hostLocation);
-    var dbName = url.slice(hostLocation, dbNameLocation);
+    const location = window.location;
+    const dbName = 'medic';
+    const port = location.port ? ':' + location.port : '';
+    const remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
     return {
       name: dbName,
-      remote: url.slice(0, dbNameLocation)
+      remote: remoteDB
     };
   };
 
@@ -192,4 +191,5 @@
       });
 
   };
+
 }());
