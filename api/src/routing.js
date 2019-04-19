@@ -3,6 +3,7 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
+  url  = require('url'),
   environment = require('./environment'),
   db = require('./db'),
   path = require('path'),
@@ -37,10 +38,12 @@ const _ = require('underscore'),
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
   appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
+  adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/',
   serverUtils = require('./server-utils'),
   uuid = require('uuid'),
   compression = require('compression'),
   BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
+  STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),
   app = express();
 
 // requires content-type application/json header
@@ -158,19 +161,45 @@ app.get('/', function(req, res) {
     // couchdb request - let it go
     proxy.web(req, res);
   } else {
-    // redirect to the app path - redirect to _rewrite
-    res.redirect(appPrefix);
+    res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
   }
 });
 
-/*
-To facilitate service worker prefetch on Chrome <66, serve a version of the app which does not require authentication
-*/
-app.get(appPrefix, (req, res, next) => {
-  if ('_sw-precache' in req.query) {
-    return res.sendFile(path.join(__dirname, 'extracted-resources/templates/inbox.html'));
+app.get(appPrefix, (req, res) => {
+  if (('deviceID' in req.query) || req.is('application/json')) {
+    // couchdb request - let it go
+    return proxy.web(req, res);
   }
-  next();
+  const parsed = url.parse(req.url);
+  parsed.pathname = '/';
+  res.redirect(url.format(parsed));
+});
+
+app.all('/medic/*', (req, res, next) => {
+  if (environment.db === 'medic') {
+    return next();
+  }
+
+  const parsed = url.parse(req.url);
+  const pathNameTokens = parsed.pathname.split('/');
+  pathNameTokens[1] = environment.db;
+  parsed.pathname = pathNameTokens.join('/');
+  req.url = url.format(parsed);
+  if (parsed.pathname.endsWith('login')) {
+    res.redirect(req.url);
+  } else {
+    proxy.web(req, res);
+  }
+}); 
+
+app.all('/admin*', (req, res) => {
+  const originalUrl = req.url;
+  if (originalUrl.split('/')[2] === 'fonts') {
+    res.redirect(req.url.slice(6));
+  } else {
+    req.url = `${adminAppPrefix}${originalUrl.slice(7)}`;
+    proxy.web(req, res);
+  }
 });
 
 app.get('/favicon.ico', (req, res) => {

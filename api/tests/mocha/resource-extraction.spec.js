@@ -77,25 +77,6 @@ describe('Resource Extraction', () => {
       });
   });
 
-  it('service worker hydrated', done => {
-    const expected = {
-      content: { toString: () => 'APP_PREFIX' },
-      attachments: {
-        'js/service-worker.js': { digest: 'current' },
-      }
-    };
-    doMocking(expected);
-    resourceExtraction.run()
-      .then(() => {
-        expect(mockFs.writeFile.callCount).to.eq(1);
-
-        const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-        expect(actualOutputPath).to.include('src/extracted-resources/js/service-worker.js');
-        expect(actualContent).to.include('/_design/medic/_rewrite');
-        done();
-      });
-  });
-
   it('non-cacheable attachments not written to disk', done => {
     doMocking({ attachments: { 'skip/me.js': {} }});
     resourceExtraction.run().then(() => {

@@ -54,17 +54,37 @@ describe('login controller', () => {
   describe('safePath', () => {
 
     [
-      '',
-      null,
-      'http://example.com',
-      '%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E',
-      'https://app.medicmobile.org/wrong/path',
-      'http://app.medicmobile.org/lg/_design/medic/_rewrite', // wrong protocol
-      '/lg/_design/medic/_rewrite/../../../../../.htpasswd',
-      '/lg/_design/medic/_rewrite_gone_bad',
-    ].forEach(requested => {
-      it(`Bad URL "${requested}" should redirect to root`, () => {
-        chai.expect('/lg/_design/medic/_rewrite').to.equal(controller.safePath(requested));
+      {
+        given: '',
+        expected: '/'
+      },
+      {
+        given: null,
+        expected: '/'
+      },
+      {
+        given: 'http://example.com',
+        expected: '/'
+      },
+      {
+        given: '%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E',
+        expected: '/%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E'
+      },
+      {
+        given: 'https://app.medicmobile.org/right/path',
+        expected: '/right/path'
+      },
+      {
+        given: 'http://app.medicmobile.org/lg/_design/medic/_rewrite',
+        expected: '/lg/_design/medic/_rewrite'
+      },
+      {
+        given: '/lg/_design/medic/_rewrite/../../../../../.htpasswd',
+        expected: '/.htpasswd'
+      },
+    ].forEach(({given, expected}) => {
+      it(`Bad URL "${given}" should redirect to root`, () => {
+        chai.expect(expected).to.equal(controller.safePath(given));
       });
     });
 
@@ -118,7 +138,7 @@ describe('login controller', () => {
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
         chai.expect(redirect.callCount).to.equal(1);
-        chai.expect(redirect.args[0][0]).to.equal('/lg/_design/medic/_rewrite');
+        chai.expect(redirect.args[0][0]).to.equal('/');
       });
     });
 
@@ -246,7 +266,7 @@ describe('login controller', () => {
         chai.expect(hasAllPermissions.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
-        chai.expect(send.args[0][0]).to.deep.equal('/lg/_design/medic/_rewrite');
+        chai.expect(send.args[0][0]).to.deep.equal('/');
         chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[0][1]).to.equal('abc');
@@ -300,7 +320,7 @@ describe('login controller', () => {
         chai.expect(hasAllPermissions.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
-        chai.expect(send.args[0][0]).to.deep.equal('/lg/_design/medic-admin/_rewrite');
+        chai.expect(send.args[0][0]).to.deep.equal('/admin/');
       });
     });
   });

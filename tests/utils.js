@@ -341,7 +341,11 @@ module.exports = {
         path: options,
       };
     }
-    options.path = '/' + constants.DB_NAME + (options.path || '');
+
+    const pathAndReqType = `${options.path}${options.method}`;
+    if (pathAndReqType !== '/GET') {
+      options.path = '/' + constants.DB_NAME + (options.path || '');
+    }
     return request(options, { debug: debug, notJson: notJson });
   },
 
@@ -534,14 +538,10 @@ module.exports = {
     `http://${constants.API_HOST}:${constants.API_PORT}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${
-      constants.DB_NAME
-    }/_design/medic/_rewrite/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${
-      constants.DB_NAME
-    }/_design/medic-admin/_rewrite/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
 
   getLoginUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${
