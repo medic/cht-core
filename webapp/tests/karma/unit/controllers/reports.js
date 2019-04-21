@@ -89,6 +89,8 @@ describe('ReportsCtrl controller', () => {
 
     searchFilters = { destroy: sinon.stub() };
 
+    sinon.stub(Date, 'now').returns(0);
+
     createController = () => {
       return $controller('ReportsCtrl', {
         '$scope': scope,
@@ -112,6 +114,8 @@ describe('ReportsCtrl controller', () => {
       });
     };
   }));
+
+  afterEach(() => sinon.restore());
 
   it('set up controller', () => {
     createController();
@@ -150,14 +154,14 @@ describe('ReportsCtrl controller', () => {
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0]).to.deep.include({
+        chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
           form: 'P',
+          verified_date: 0,
           verified: true,
-          _rev: '1'
-        });
-        chai.expect(parseInt(post.args[0][0].verified_date)).to.be.closeTo(Date.now(), 1000);
+          rev: '1',
+        }]);
       });
     });
 
@@ -173,13 +177,14 @@ describe('ReportsCtrl controller', () => {
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0]).to.deep.include({
+        chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
           form: 'P',
           verified: false,
-          _rev: '1'
-        });
+          _rev: '1',
+          verified_date: 0,
+        }]);
       });
     });
 
@@ -195,13 +200,15 @@ describe('ReportsCtrl controller', () => {
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0]).to.deep.include({
+        chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
           form: 'P',
           verified: false,
-          _rev: '1'
-        });
+          _rev: '1',
+          verified_date: 0,
+          verified: false
+        }]);
       });
     });
 
@@ -217,13 +224,14 @@ describe('ReportsCtrl controller', () => {
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0]).to.deep.include({
+        chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
           form: 'P',
           verified: undefined,
-          _rev: '1'
-        });
+          _rev: '1',
+          verified_date: 0,
+        }]);
       });
     });
 
@@ -239,13 +247,13 @@ describe('ReportsCtrl controller', () => {
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0]).to.deep.include({
+        chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
           form: 'P',
           verified: true,
-          _rev: '1'
-        });
+          verified_date: 0,
+        }]);
       });
     });
 
@@ -261,13 +269,14 @@ describe('ReportsCtrl controller', () => {
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0]).to.deep.include({
+        chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
           form: 'P',
           verified: undefined,
-          _rev: '1'
-        });
+          _rev: '1',
+          verified_date: 0,
+        }]);
       });
     });
   });
