@@ -143,7 +143,7 @@ _.templateSettings = {
 
   // Detects reloads or route updates (#/something)
   angular.module('inboxApp').run(function($state, $transitions, Auth) {
-    $transitions.onStart({}, function(trans) {
+    $transitions.onBefore({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         const permissions = getRequiredPermissions(trans.to().name);
         if (permissions && permissions.length) {
