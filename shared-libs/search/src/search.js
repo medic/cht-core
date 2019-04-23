@@ -30,7 +30,7 @@ module.exports = function(Promise, DB) {
       start = options.skip;
       end = start + options.limit;
     }
-    return _.sortBy(rows, 'value').slice(start, end);
+    return _.sortBy(rows, row => row.sort + row.value).slice(start, end);
   };
 
   // Get the intersection of the results of multiple search queries.
@@ -40,7 +40,11 @@ module.exports = function(Promise, DB) {
     intersection = _.uniq(intersection, 'id');
     _.each(responses, function(response) {
       intersection = _.reject(intersection, function(row) {
-        return !_.findWhere(response, { id: row.id });
+        const existent = _.findWhere(response, { id: row.id });
+        if (existent && existent.sort) {
+          row.sort = existent.sort + row.sort;
+        }
+        return !existent;
       });
     });
 

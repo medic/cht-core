@@ -39,7 +39,8 @@ const couchConfig = (() => {
 const getSharedLibDirs = () => {
   return fs
     .readdirSync('shared-libs')
-    .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
+    .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory())
+    .filter(lib => lib !== 'lineage' && lib !== 'memdown');
 };
 
 module.exports = function(grunt) {

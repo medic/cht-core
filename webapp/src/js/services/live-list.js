@@ -45,6 +45,14 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (!c1 || !c2) {
             return;
           }
+
+          const c1Muted = !!c1.muted,
+            c2Muted = !!c2.muted;
+          if (c1Muted !== c2Muted) {
+            // sort muted people to the bottom
+            return c1Muted ? 1 : -1;
+          }
+
           if (c1.sortByLastVisitedDate) {
             return c1.lastVisitedDate - c2.lastVisitedDate;
           }
@@ -54,12 +62,14 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (c1.type !== c2.type) {
             return ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type);
           }
+
           var c1Dead = !!c1.date_of_death;
           var c2Dead = !!c2.date_of_death;
           if (c1Dead !== c2Dead) {
             // sort dead people to the bottom
             return c1Dead ? 1 : -1;
           }
+
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
