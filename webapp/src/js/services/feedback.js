@@ -11,9 +11,17 @@ angular.module('inboxServices').factory('Feedback',
     'ngInject';
     'use strict';
 
-    var levels = ['error', 'warn', 'log', 'info'],
-        log = [],
-        options = {};
+    let options = {};
+
+    const LEVELS = ['error', 'warn', 'log', 'info'],
+          LOG_LENGTH = 20,
+          logs = new Array(LOG_LENGTH);
+    let logIdx = 0;
+
+    // Flips and reverses log into a clean latest first array for logging out
+    const getLog = () =>
+      // [oldest + newest] -> reversed -> filter empty
+      (logs.slice(logIdx, LOG_LENGTH).concat(logs.slice(0, logIdx))).reverse().filter(i => !!i);
 
     var getUrl = function() {
       var url = options.document && options.document.URL;
@@ -26,13 +34,15 @@ angular.module('inboxServices').factory('Feedback',
 
     var registerConsoleInterceptor = function() {
       // intercept console logging
-      levels.forEach(function(level) {
+      LEVELS.forEach(function(level) {
         var original = options.console[level];
         options.console[level] = function() {
           // push the error onto the stack
-          log.splice(0, 0, { level: level, arguments: JSON.stringify(arguments) });
-          // remove any old log entries
-          log.splice(20, Number.MAX_VALUE);
+          logs[logIdx++] = { level: level, arguments: JSON.stringify(arguments) };
+          if (logIdx === LOG_LENGTH) {
+            logIdx = 0;
+          }
+
           // output to the console as per usual
           original.apply(options.console, arguments);
         };
@@ -51,7 +61,7 @@ angular.module('inboxServices').factory('Feedback',
           source: isManual ? 'manual' : 'automatic'
         },
         info: info,
-        log: log,
+        log: getLog(),
         type: 'feedback'
       });
     };
