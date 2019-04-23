@@ -139,10 +139,10 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      return auth.getUserSettings(userCtx).then(({ language }={}) => {
-        if (language) {
-          setLocaleCookie(res, language);
-        }
+      // Delete login=force cookie
+      res.clearCookie('login');
+      return auth.getUserSettings(userCtx).then(settings => {
+        setLocaleCookie(res, settings.language);
         res.status(302).send(getRedirectUrl(userCtx));
       });
     })
@@ -189,6 +189,10 @@ module.exports = {
       .then(userCtx => {
         // already logged in
         setUserCtxCookie(res, userCtx);
+        var hasForceLoginCookie = cookie.get(req, 'login') === 'force';
+        if (hasForceLoginCookie) {
+          throw new Error('Force login');
+        }
         res.redirect(redirect);
       })
       .catch(() => {

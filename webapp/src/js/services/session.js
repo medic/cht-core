@@ -36,7 +36,8 @@ var COOKIE_NAME = 'userCtx',
       var logout = function() {
         $http.delete('/_session')
           .catch(function() {
-            // Ignore exception. User can already be logged out.
+            // Set cookie to force login before using app
+            ipCookie('login', 'force', { path: '/' });
           })
           .then(navigateToLogin);
       };
