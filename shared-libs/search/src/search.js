@@ -30,7 +30,6 @@ module.exports = function(Promise, DB) {
       start = options.skip;
       end = start + options.limit;
     }
-
     return _.sortBy(rows, row => 'sort' in row ? row.sort : row.value).slice(start, end);
   };
 
