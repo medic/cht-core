@@ -21,14 +21,16 @@ describe('login controller', () => {
     req = {
       query: {},
       body: {},
-      hostname: 'xx.app.medicmobile.org'
+      hostname: 'xx.app.medicmobile.org',
+      headers: {cookie: ''}
     };
     res = {
       redirect: () => {},
       send: () => {},
       status: () => {},
       json: () => {},
-      cookie: () => {}
+      cookie: () => {},
+      clearCookie: () => {}
     };
     originalEnvironment = Object.assign(environment);
 
@@ -188,6 +190,22 @@ describe('login controller', () => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
       });
     });
+
+    it('when already logged in and login=force cookie is present, render login', () => {
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
+      const send = sinon.stub(res, 'send');
+      const cookie = sinon.stub(res, 'cookie').returns(res);
+      req.headers.cookie = 'login=force';
+      return controller.get(req, res).then(() => {
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
+        chai.expect(cookie.callCount).to.equal(1);
+        chai.expect(cookie.args[0][0]).to.equal('userCtx');
+        chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
+        chai.expect(send.callCount).to.equal(1);
+        chai.expect(send.args[0][0]).to.include('<form id="form" action="/lg/login" method="POST">');
+      });
+    });
   });
 
   describe('post', () => {
@@ -250,6 +268,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');     
       const status = sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
+      const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(false);
@@ -277,6 +296,8 @@ describe('login controller', () => {
         chai.expect(cookie.args[2][0]).to.equal('locale');
         chai.expect(cookie.args[2][1]).to.equal('es');
         chai.expect(cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(clearCookie.callCount).to.equal(1);
+        chai.expect(clearCookie.args[0][0]).to.equal('login');
       });
     });
 
@@ -294,7 +315,7 @@ describe('login controller', () => {
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ });
       return controller.post(req, res).then(() => {
-        chai.expect(cookie.callCount).to.equal(2);
+        chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
       });

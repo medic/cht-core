@@ -127,7 +127,8 @@
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
     var userCtx = getUserCtx();
-    if (!userCtx) {
+    const hasForceLoginCookie = document.cookie.includes('login=force');
+    if (!userCtx || hasForceLoginCookie) {
       var err = new Error('User must reauthenticate');
       err.status = 401;
       return redirectToLogin(dbInfo, err, callback);
