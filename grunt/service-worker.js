@@ -23,8 +23,14 @@ function writeServiceWorkerFile(staticDirectoryPath, outputPath) {
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
+      path.join(staticDirectoryPath, '{audio,css,img,js,xslt}', '*'),
       path.join(staticDirectoryPath, 'manifest.json'),
+
+      // Fonts
+      path.join(__dirname, 'fonts', 'fontawesome-webfont.woff2'),
+      path.join(__dirname, 'fonts', 'enketo-icons-v2.woff'),
+      path.join(__dirname, 'fonts', 'NotoSans-Bold.ttf'),
+      path.join(__dirname, 'fonts', 'NotoSans-Regular.ttf'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
