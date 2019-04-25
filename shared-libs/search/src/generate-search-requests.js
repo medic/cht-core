@@ -122,11 +122,14 @@ var contactTypeRequest = function(filters, sortByLastVisitedDate) {
     return;
   }
   var view = 'medic-client/contacts_by_type';
+  let request;
   if (filters.types.selected && filters.types.options) {
-    return getRequestForMultidropdown(view, filters.types, getKeysArray);
+    request = getRequestForMultidropdown(view, filters.types, getKeysArray);
+  } else {
+    // Used by select2search.
+    request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
   }
-  // Used by select2search.
-  const request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
+
   if (sortByLastVisitedDate) {
     request.map = row => {
       const [muted, dead] = row.value.split(' ');

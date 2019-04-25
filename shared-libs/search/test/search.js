@@ -309,6 +309,59 @@ describe('Search service', function() {
       });
     });
 
+    it('should sort muted contacts to the bottom when sorting by last visited date', () => {
+      GenerateSearchRequests.shouldSortByLastVisitedDate.returns(true);
+      GenerateSearchRequests.generate.returns([
+        { view: 'contacts_by_type', params: { key: 'clinic' }, map: row => {
+            const [muted, dead] = row.value.split(' ');
+            row.sort = muted + ' ' + dead;
+            return row;
+          }},
+        { view: 'contacts_by_last_visited', params: { reduce: true } }
+      ]);
+
+      DB.query.onCall(0).resolves({
+        rows: [
+          { id: 'a', value: 'false false maria' },
+          { id: 'b', value: 'false false george' },
+          { id: 'c', value: 'false false claire' },
+          { id: 'd', value: 'true false stan' },
+          { id: 'e', value: 'true false francine' },
+          { id: 'f', value: 'true true bud' },
+          { id: 'g', value: 'true true homer' }
+        ]
+      });
+      DB.query.onCall(1).resolves({
+        rows: [
+          { id: 'e', value: 12 },
+          { id: 'b', value: 13 },
+          { id: 'g', value: 18 },
+          { id: 'f', value: 19 },
+          { id: 'c', value: 20 },
+          { id: 'd', value: 21 },
+          { id: 'a', value: 22 }
+        ]
+      });
+
+      return service('contacts', {}, {}, { sortByLastVisitedDate: true }).then(result => {
+        chai.expect(result).to.deep.equal({
+          docIds: ['b', 'c', 'a', 'e', 'd', 'g', 'f'],
+          queryResultsCache: [
+            { id: 'e', value: 12, sort: 'true false 12' },
+            { id: 'b', value: 13, sort: 'false false 13' },
+            { id: 'g', value: 18, sort: 'true true 18' },
+            { id: 'f', value: 19, sort: 'true true 19' },
+            { id: 'c', value: 20, sort: 'false false 20' },
+            { id: 'd', value: 21, sort: 'true false 21' },
+            { id: 'a', value: 22, sort: 'false false 22' }
+          ]
+        });
+        chai.expect(DB.query.callCount).to.equal(2);
+        chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: 'clinic' }]);
+        chai.expect(DB.query.args[1]).to.deep.equal(['contacts_by_last_visited', { reduce: true }]);
+      });
+    });
+
   });
 
 });
