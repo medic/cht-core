@@ -28,6 +28,7 @@
     "pouchdb-adapter-http": "^7.0.0",
     "pouchdb-core": "^7.0.0",
     "pouchdb-mapreduce": "^7.0.0",
+    "pouchdb-replication": "^7.0.0",
     "request": "^2.88.0",
     "underscore": "^1.9.1",
     "uuid": "^3.3.2",

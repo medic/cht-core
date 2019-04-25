@@ -1,3 +1,5 @@
+var uuidV4 = require('uuid/v4');
+
 /*
   Feedback service
  */
@@ -51,9 +53,12 @@ angular.module('inboxServices').factory('Feedback',
 
     var create = function(info, isManual, callback) {
       var userCtx = Session.userCtx();
+      const date = new Date().toISOString();
+      const uuid = uuidV4();
       callback(null, {
+        _id: `feedback-${date}-${uuid}`,
         meta: {
-          time: new Date().toISOString(),
+          time: date,
           user: userCtx,
           url: getUrl(),
           app: APP_CONFIG.name,
@@ -103,7 +108,7 @@ angular.module('inboxServices').factory('Feedback',
             return callback(err);
           }
 
-          DB().post(doc, callback);
+          DB({meta: true}).post(doc, callback);
         });
       }
     };
