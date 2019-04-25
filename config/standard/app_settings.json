@@ -237,6 +237,14 @@
       "message": ""
     }
   ],
+  "replications": [
+    {
+      "fromSuffix": "user-[^\\-]+-meta",
+      "toSuffix": "users-meta",
+      "text_expression": "",
+      "cron": "0 2 * * *"
+    }
+  ],
   "registrations": [
     {
       "form": "CW",

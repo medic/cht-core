@@ -132,5 +132,13 @@
       "month_start_date": 1,
       "visit_count_goal": 0
     }
-  }
+  },
+  "replications": [
+    {
+      "fromSuffix": "user-[^\\-]+-meta",
+      "toSuffix": "users-meta",
+      "text_expression": "",
+      "cron": "0 2 * * *"
+    }
+  ]
 }
