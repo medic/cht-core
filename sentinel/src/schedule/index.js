@@ -7,6 +7,7 @@ const async = require('async'),
 const tasks = {
   dueTasks: require('./due_tasks'),
   reminders: require('./reminders'),
+  replications: require('./replications'),
 };
 
 function getTime(_hour, _minute) {
@@ -45,6 +46,9 @@ exports.checkSchedule = function() {
         } else {
           cb();
         }
+      },
+      cb => {
+        tasks.replications.execute(cb);
       },
     ],
     err => {
