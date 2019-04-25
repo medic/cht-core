@@ -253,7 +253,7 @@ describe('DeleteDocs service', function() {
     try {
       JSON.stringify(report);
     } catch (e) {
-      if (e.message === 'Converting circular structure to JSON') {
+      if (e.message.startsWith('Converting circular structure to JSON')) {
         isCircularBefore = true;
       }
     }
