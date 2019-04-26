@@ -259,7 +259,7 @@ var addImmunizations = function(master, vaccines_received) {
     if(!master[dose[0]]) {
       master[dose[0]] = typeof vaccines_received === 'string' ?
           vaccines_received.toUpperCase() === dose[1] :
-          vaccines_received['received_' + dose[0]] === 'yes';
+          vaccines_received['received_' + dose[0]].toLowerCase() === 'yes';
     }
   });
 };
