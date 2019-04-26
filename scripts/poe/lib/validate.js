@@ -1,6 +1,5 @@
 const {log, error, mkdir, extractPlaceholders} = require('./utils');
 const fs = require('fs');
-const chalk = require('chalk');
 
 const fileExists = (fpath) => {
   const file = `${process.cwd()}/${fpath}`;
@@ -41,7 +40,7 @@ const validatePlaceHolders = (langs, dir) => {
     translations.map((e1) => {
       const e2 = translationsTemplate.find(t => t.key === e1.key);
       if (e1.match.toString() !== e2.match.toString()) {
-        console.log(`\n${chalk.yellow('Warning: ')}${chalk.red(`messages-${lang}.properties: `)}Translation key ${chalk.green(e1.key)} on line ${chalk.red(e1.index + 1)} has placeholders that do not match those of messages-en.properties`);
+        console.log(`\nWarning: messages-${lang}.properties: Translation key ${e1.key} on line ${e1.index + 1} has placeholders that do not match those of messages-en.properties`);
       }
     });
   });
