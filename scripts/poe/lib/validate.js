@@ -1,5 +1,6 @@
-const {log, error, mkdir, sanitize} = require('./utils');
+const {log, error, mkdir, extractPlaceholders} = require('./utils');
 const fs = require('fs');
+const chalk = require('chalk');
 
 const fileExists = (fpath) => {
   const file = `${process.cwd()}/${fpath}`;
@@ -19,32 +20,8 @@ const hasValidName = (fpath) => {
   return valid;
 };
 
-const hasValidLine = (line, idx) => {
-  if(!line.trim().length) {
-    return true;
-  }
-  const valid = line.indexOf('=') > 0;
-  if(!valid) {
-    error(`line ${idx} - Found invalid translation:\n${line}`);
-  }
-  return valid;
-};
-
-const hasValidContent = (fpath) => {
-  const tempFPath = sanitize(fpath);
-  const content = fs.readFileSync(tempFPath, 'utf8');
-  let valid = true;
-  content.toString().split('\n').some((line, idx) => {
-    if (!hasValidLine(line, idx)) {
-      valid = false;
-      return true;
-    }
-  });
-  return valid;
-};
-
 const validTranslations = (fpath) => {
-  return fileExists(fpath) && hasValidName(fpath) && hasValidContent(fpath);
+  return fileExists(fpath) && hasValidName(fpath);
 };
 
 const validDirectory = (fpath) => {
@@ -55,7 +32,23 @@ const validDirectory = (fpath) => {
   return valid;
 };
 
+const validatePlaceHolders = (langs, dir) => {
+  const templateFile = `${dir}/messages-en.properties`;
+  langs.filter(lang => lang !== 'en').forEach(lang => {
+    const file = `${dir}/messages-${lang}.properties`;
+    const translations = extractPlaceholders(file);
+    const translationsTemplate = extractPlaceholders(templateFile);
+    translations.map((e1) => {
+      const e2 = translationsTemplate.find(t => t.key === e1.key);
+      if (e1.match.toString() !== e2.match.toString()) {
+        console.log(`\n${chalk.yellow('Warning: ')}${chalk.red(`messages-${lang}.properties: `)}Translation key ${chalk.green(e1.key)} on line ${chalk.red(e1.index + 1)} has placeholders that do not match those of messages-en.properties`);
+      }
+    });
+  });
+};
+
 module.exports = {
   validTranslations: (fpath) => validTranslations(fpath),
-  validDirectory: (fpath) => validDirectory(fpath)
+  validDirectory: (fpath) => validDirectory(fpath),
+  validatePlaceHolders: (lang, fpath) => validatePlaceHolders(lang, fpath)
 };

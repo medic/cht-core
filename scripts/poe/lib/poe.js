@@ -1,17 +1,14 @@
-const {save, mmVersion, error, tempFilePath, comparePlaceholders} = require('./utils');
+const {save, mmVersion, error} = require('./utils');
 const queryString = require('querystring');
-const fs = require('fs');
 const post = require('./post');
 const {readStream} = require('./read');
-const {validTranslations, validDirectory} = require('./validate');
+const {validTranslations, validDirectory, validatePlaceHolders} = require('./validate');
 const slack = require('./slack')(process.env.SLACK_WEBHOOK_URL);
 
 const upload = async (opts) => {
   if(validTranslations(opts.file)) {
     opts.language = opts.file.split('-').pop().split('.')[0];
-    const path = `${process.cwd()}/${opts.file}`;
-    const filePath = tempFilePath(path);
-    const form = {file: readStream(filePath)};
+    const form = {file: readStream(`${process.cwd()}/${opts.file}`)};
     delete opts.file;
     Object.keys(opts).forEach((key) => { form[key] = opts[key]; });
     try {
@@ -27,7 +24,6 @@ const upload = async (opts) => {
       } else {
         console.log(res.result);
         slack.send(`Translations ${mmVersion()}: ${JSON.stringify(res.result)}`);
-        fs.unlinkSync(filePath);
       }
       return res.response;
     } catch(err) {
@@ -38,7 +34,7 @@ const upload = async (opts) => {
 
 const download = async (opts) => {
   if(validDirectory(opts.file)) {
-    const dir =`${process.cwd()}/${opts.file}`;
+    const dir = `${process.cwd()}/${opts.file}`;
     delete opts.file;
     const langs = opts.language === 'all' ? await languages(opts) : [opts.language];
     const downloads = langs.map(async (lang) => {
@@ -61,9 +57,8 @@ const download = async (opts) => {
       await save(result.url, `${dir}/${file}`);
       return response;
     });
-    await Promise.all(downloads).then(() => {
-      comparePlaceholders(langs, dir);
-    });
+    await Promise.all(downloads);
+    validatePlaceHolders(langs, dir);
   }
 };
 

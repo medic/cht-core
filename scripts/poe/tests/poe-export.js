@@ -4,6 +4,7 @@ const {validDirectory} = require('../lib/validate');
 
 jest.mock('fs');
 jest.mock('../lib/post');
+jest.mock('../lib/utils');
 jest.mock('../lib/validate');
 
 const exportArg = {
@@ -41,6 +42,6 @@ describe('poe', () => {
     await poe.download(exportArg);
     expect(post).toHaveBeenCalledWith(expectedLangOptions);
     expect(console.log).toHaveBeenCalledWith(
-        '\ten saved to /Users/simon/poe/translations/messages-en.properties');
+      '\ten saved to /Users/simon/poe/translations/messages-en.properties');
   });
 });

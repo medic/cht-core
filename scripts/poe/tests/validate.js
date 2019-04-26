@@ -18,10 +18,6 @@ describe('validate', () => {
     expect(valid('tests/translations/good-en.properties')).toBeTruthy();
   });
 
-  test('bad translation content', () => {
-    expect(valid('tests/translations/bad-en.properties')).toBeFalsy();
-  });
-
   test('directory', () => {
     expect(validDirectory('tests/translations')).toBeTruthy();
   });
