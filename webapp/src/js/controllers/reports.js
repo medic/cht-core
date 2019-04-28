@@ -348,12 +348,12 @@ angular
           .catch(() => false)
           .then(function (canEditVerification) {
             if (canEditVerification) {
-              return Promise.resolve(false);
+              return false;
             }
             
             const docHasExistingResult = doc.verified !== undefined;
             if (docHasExistingResult) {
-              return Promise.resolve(true);
+              return true;
             }
 
             return Modal({
