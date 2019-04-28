@@ -14,7 +14,7 @@ function registerServiceWorkerTasks(grunt) {
 }
 
 // Use the swPrecache library to generate a service-worker script
-function writeServiceWorkerFile({staticDirectoryPath, rootUrl, apiSrcDirectoryPath, scriptOutputPath}) {
+function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scriptOutputPath}) {
   const config = {
     cacheId: 'cache',
     claimsClient: true,
@@ -26,14 +26,14 @@ function writeServiceWorkerFile({staticDirectoryPath, rootUrl, apiSrcDirectoryPa
       path.join(staticDirectoryPath, 'manifest.json'),
 
       // Fonts
-      path.join(__dirname, 'fonts', 'fontawesome-webfont.woff2'),
-      path.join(__dirname, 'fonts', 'enketo-icons-v2.woff'),
-      path.join(__dirname, 'fonts', 'NotoSans-Bold.ttf'),
-      path.join(__dirname, 'fonts', 'NotoSans-Regular.ttf'),
+      path.join(staticDirectoryPath, 'fonts', 'fontawesome-webfont.woff2'),
+      path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
+      path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
+      path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
       path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
-      [rootUrl]: [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
     },
     ignoreUrlParametersMatching: [/redirect/],
