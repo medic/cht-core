@@ -285,3 +285,33 @@ function countDoses(r) {
   });
   return dosesGiven;
 }
+
+module.exports = {
+  MS_IN_DAY: MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY: MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC: DAYS_IN_PNC,
+  antenatalForms: antenatalForms,
+  deliveryForms: deliveryForms,
+  postnatalForms: postnatalForms,
+  immunizationForms: immunizationForms,
+  immunizationMonths: immunizationMonths,
+  getMostRecentReport: getMostRecentReport,
+  isFormFromArraySubmittedInWindow: isFormFromArraySubmittedInWindow,
+  isCoveredByUseCase: isCoveredByUseCase,
+  isHighRiskPregnancy: isHighRiskPregnancy,
+  isHomeBirth: isHomeBirth,
+  getNewestPregnancyTimestamp: getNewestPregnancyTimestamp,
+  getNewestDeliveryTimestamp: getNewestDeliveryTimestamp,
+  isNewestPregnancy: isNewestPregnancy,
+  isHealthyDelivery: isHealthyDelivery,
+  isWomanInActivePncPeriod: isWomanInActivePncPeriod,
+  isChildUnder5: isChildUnder5,
+  isFormSubmittedInWindow: isFormSubmittedInWindow,
+  countReportsSubmittedInWindow: countReportsSubmittedInWindow,
+  countANCVisits: countANCVisits,
+  isFormCodeSame: isFormCodeSame,
+  isFacilityDelivery: isFacilityDelivery,
+  receivedVaccine: receivedVaccine,
+  isBcgReported: isBcgReported,
+  countDoses: countDoses,
+};
