@@ -338,7 +338,7 @@ angular
       });
     });
 
-    $scope.$on('VerifyReport', function(e, valid, requireConfirmation) {
+    $scope.$on('VerifyReport', function(e, valid) {
       if (ctrl.selected[0].doc.form) {
         $scope.setLoadingSubActionBar(true);
         const doc = $scope.selected[0].doc;

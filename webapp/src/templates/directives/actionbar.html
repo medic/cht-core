@@ -101,11 +101,11 @@
               <div class="loader"></div>
             </div>
             <div class="dropdown-menu sub-actions" mm-auth="can_verify_reports" ng-show="actionBar.right.verifyingReport && !loadingSubActionBar">
-              <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBar.right.verified === false }" ng-click="emit('VerifyReport', false, requireVerificationConfirmation)">
+              <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBar.right.verified === false }" ng-click="emit('VerifyReport', false)">
                 <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-invalid-icon.html'"></span>
                 <span translate>reports.verify.invalid</span>
               </a>
-              <a class="mm-icon mm-icon-caption verify-valid" ng-class="{ active: actionBar.right.verified }" ng-click="emit('VerifyReport', true, requireVerificationConfirmation)">
+              <a class="mm-icon mm-icon-caption verify-valid" ng-class="{ active: actionBar.right.verified }" ng-click="emit('VerifyReport', true)">
                 <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-valid-icon.html'"></span>
                 <span translate>reports.verify.valid</span>
               </a>
