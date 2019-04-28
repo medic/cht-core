@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+const _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader'),
   lineageFactory = require('@medic/lineage');
 
@@ -11,8 +11,10 @@ angular
     $state,
     $stateParams,
     $timeout,
+    $translate,
     Actions,
     AddReadStatus,
+    Auth,
     Changes,
     DB,
     Export,
@@ -336,33 +338,61 @@ angular
       });
     });
 
-    $scope.$on('VerifyReport', function(e, valid) {
+    $scope.$on('VerifyReport', function(e, valid, requireConfirmation) {
       if (ctrl.selected[0].doc.form) {
         $scope.setLoadingSubActionBar(true);
+        const doc = $scope.selected[0].doc;
 
-        if (ctrl.selected[0].doc.contact) {
-          var minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
-          ctrl.setFirstSelectedDocProperty({ contact: minifiedContact });
-        }
+        Auth('can_edit_verification')
+          .then(() => true)
+          .catch(() => false)
+          .then(function (canEditVerification) {
+            if (canEditVerification) {
+              return Promise.resolve(false);
+            }
+            
+            const docHasExistingResult = doc.verified !== undefined;
+            if (docHasExistingResult) {
+              return Promise.resolve(true);
+            }
 
-        var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
-        ctrl.setFirstSelectedDocProperty({ verified: verified });
-        ctrl.setLastChangedDoc(ctrl.selected[0].doc);
-
-        DB()
-          .get(ctrl.selected[0].doc._id)
-          .then(function(doc) {
-            ctrl.setFirstSelectedDocProperty({ _rev: doc._rev });
-            return DB().post(ctrl.selected[0].doc);
+            return Modal({
+              templateUrl: 'templates/modals/verify_confirm.html',
+              controller: 'VerifyReportModalCtrl',
+              model: {
+                proposedVerificationState: $translate.instant(valid ? 'reports.verify.valid' : 'reports.verify.invalid'),
+              },
+            });
           })
-          .catch(function(err) {
-            $log.error('Error verifying message', err);
-          })
-          .finally(() => {
-            $scope.$broadcast('VerifiedReport', valid);
+          .then(function(abortVerification) {
+            if (abortVerification) {
+              return;
+            }
 
-            $scope.setLoadingSubActionBar(false);
-          });
+            if (doc.contact) {
+              doc.contact = lineage.minifyLineage(doc.contact);
+            }
+
+            const clearVerification = doc.verified === valid;
+            if (clearVerification) {
+              doc.verified = undefined;
+              doc.verified_date = undefined;
+            } else {
+              doc.verified = valid;
+              doc.verified_date = Date.now();  
+            }
+
+            return DB()
+              .post(doc)
+              .catch(function(err) {
+                $log.error('Error verifying message', err);
+              })
+              .finally(() => {
+                $scope.$broadcast('VerifiedReport', valid);
+              });
+          })
+          .catch(err => $log.error(err))
+          .finally(() => $scope.setLoadingSubActionBar(false));
       }
     });
 
