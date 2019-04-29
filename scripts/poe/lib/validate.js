@@ -32,18 +32,22 @@ const validDirectory = (fpath) => {
 };
 
 const validatePlaceHolders = (langs, dir) => {
+  let valid = true;
   const templateFile = `${dir}/messages-en.properties`;
+  const templatePlaceholders = extractPlaceholders(templateFile);
   langs.filter(lang => lang !== 'en').forEach(lang => {
     const file = `${dir}/messages-${lang}.properties`;
-    const translations = extractPlaceholders(file);
-    const translationsTemplate = extractPlaceholders(templateFile);
-    translations.map((e1) => {
-      const e2 = translationsTemplate.find(t => t.key === e1.key);
-      if (e1.match.toString() !== e2.match.toString()) {
-        console.log(`\nWarning: messages-${lang}.properties: Translation key ${e1.key} on line ${e1.index + 1} has placeholders that do not match those of messages-en.properties`);
+    const placeholders = extractPlaceholders(file);
+    Object.keys(placeholders).forEach(k => {
+      const placeholder = placeholders[k];
+      const templatePlaceholder = templatePlaceholders[k];
+      if (placeholder.placeholders.toString() !== templatePlaceholder.placeholders.toString()) {
+        valid = false;
+        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholder.index + 1} has placeholders that do not match those of messages-en.properties`);
       }
     });
   });
+  return valid;
 };
 
 module.exports = {

@@ -15,17 +15,20 @@ module.exports = {
   },
   extractPlaceholders: (file) => {
     const content = fs.readFileSync(file, 'utf8');
-    return content
+
+    const result = {};
+    content
       .toString()
       .split('\n')
-      .map((line, index) => {
-        const match = line.match(/{{.+?}}/g);
-        if (match) {
+      .forEach((line, index) => {
+        const placeholders = line.match(/{{.+?}}/g);
+        if (placeholders) {
+          placeholders.sort();
           const key = line.split('=')[0].trim();
-          return { match, key, index };
+          result[key] = {placeholders, index};
         }
-      })
-      .filter(Boolean);
+      });
+      return result;
   },
   log: (msg) => {
     console.log(msg);
@@ -45,11 +48,12 @@ module.exports = {
       - Sort file content alpahabetically in ascending order
       - Get rid of comments (lines starting with #)
     */
+
     const out = res.body
-      .split(os.EOL)
-      .filter(line => !line.startsWith('#'))
+      .split('\n')
+      .filter(line => !line.trim().startsWith('#'))
       .sort()
-      .join(os.EOL);
+      .join('\n');
     return fs.writeFileSync(filePath, out);
   }
 };
