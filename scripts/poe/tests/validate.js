@@ -4,8 +4,11 @@ const path = require('path');
 
 describe('validate', () => {
 
-  console = { log: jest.fn() };
-  
+  console = {
+    log: jest.fn(),
+    error: jest.fn()
+  };
+
   test('translation file exists', () => {
     expect(valid('tests/messages-en.properties')).toBeFalsy();
   });
@@ -25,8 +28,13 @@ describe('validate', () => {
 
   test('matching translation placeholders', () => {
     validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations'));
-    expect(console.log).toHaveBeenCalledWith('\nWarning: messages-sw.properties: Translation key Number\\ of\\ facilities on line 2 has placeholders that do not match those of messages-en.properties');
-    expect(console.log).toHaveBeenCalledWith('\nWarning: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
+    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
+  });
+
+  test.skip('successful matching translation placeholders', () => {
+    // TODO
+    // expect(console.log).toHaveBeenCalledWith('\nWarning: messages-sw.properties: Translation key Number\\ of\\ facilities on line 2 has placeholders that do not match those of messages-en.properties');
+    // expect(console.log).toHaveBeenCalledWith('\nWarning: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
   });
 
 });

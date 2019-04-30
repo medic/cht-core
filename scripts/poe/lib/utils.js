@@ -1,5 +1,5 @@
 const fs = require('fs');
-const os = require('os');
+// const os = require('os');
 const chalk = require('chalk');
 const req = require('request');
 const {promisify} = require('util');
