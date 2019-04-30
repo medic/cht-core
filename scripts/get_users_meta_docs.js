@@ -1,43 +1,47 @@
 const inquirer = require('inquirer'),
-      PouchDB = require('pouchdb'),
+      PouchDB = require('pouchdb-core'),
       fs = require('fs'),
-      path = require('path');
+      path = require('path'),
+      minimist = require('minimist');
 
-if(process.argv[2] === '-h' || process.argv[2] === '--help') {
+PouchDB.plugin(require('pouchdb-adapter-http'));
+
+const argv = minimist(process.argv.slice(2));
+
+if(argv['h'] || argv['help']) {
   console.log(`Display or save telemetry and feedback docs.
 
 Usage:
-    ${process.argv[1]} [medic users meta db URL]
+    ${process.argv[1]} -h | --help
+    ${process.argv[1]} --mode (interactive | batch) --type (telemetry | feedback) [medic users meta db URL]
+
+Options:
+    -h --help     Show this screen.
+    --mode        Interactive or Batch mode (Output docs to stdout)
+    --type        Meta document type to fetch. 
 
 Example:
-    ${process.argv[1]} http://admin:pass@localhost:5984/medic-users-meta
+    ${process.argv[1]} --interactive --type telemetry http://admin:pass@localhost:5984/medic-users-meta
 `);
   process.exit(0);
 }
 
-const couchUrl = process.argv[2] || 'http://admin:pass@localhost:5984/medic-users-meta';
+const mode = argv['mode'];
+const type = argv['type'];
+const couchUrl = argv['_'][0] || 'http://admin:pass@localhost:5984/medic-users-meta';
 
 const db = PouchDB(couchUrl);
 
-var type;
-var docIndex = 0;
-var docs;
-var filePath;
+let docIndex = 0;
+let docs;
 
 const actionChoices = [
-  'Display next', 
-  'Display previous', 
-  'Save current in working directory', 
-  'Save all in working directory',
-  'Quit'
+  { name: 'Display next', value: 'next' }, 
+  { name: 'Display previous', value: 'previous' }, 
+  { name: 'Save current in working directory', value: 'save_current' }, 
+  { name: 'Save all in working directory', value: 'save_all' },
+  { name: 'Quit', value: 'quit' }
 ];
-
-const typeQuestions = [{
-  type: 'list',
-  name: 'docType',
-  message: 'What type of docs do you want to review?',
-  choices: ['feedback', 'telemetry']
-}];
 
 const actionQuestions = [{
   type: 'list',
@@ -48,50 +52,51 @@ const actionQuestions = [{
 
 const askActionQuestions = () => {
   inquirer.prompt(actionQuestions)
-          .then(response => {
-            const actionIndex = actionChoices.indexOf(response.action);
-            switch (actionIndex) {
-              case 0:
-                docIndex++;
-                console.log(docs[docIndex]);
-                askActionQuestions();
-                break;
-              case 1:
-                docIndex = Math.max(0, --docIndex);
-                console.log(docs[docIndex]);
-                askActionQuestions();
-                break;
-              case 2:
-                filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
-                fs.writeFileSync(filePath, JSON.stringify(docs[docIndex]));
-                console.log(`Current document saved to ${filePath}`);
-                askActionQuestions();
-                break;
-              case 3:
-                filePath = path.join(path.resolve(__dirname), `${type}.json`);
-                fs.writeFileSync(filePath, JSON.stringify(docs));
-                console.log(`Documents saved to ${filePath}`);
-                askActionQuestions();
-                break;
-              case 4:
-                break;
-              default:
-                askActionQuestions();
+          .then(response => {console.log(response);
+            if (response.action === 'next') {
+              docIndex = Math.min(docs.length - 1, ++docIndex);
+              console.log(docs[docIndex]);
+              askActionQuestions();
+            } else if (response.action === 'previous') {
+              docIndex = Math.max(0, --docIndex);
+              console.log(docs[docIndex]);
+              askActionQuestions();
+            } else if (response.action === 'save_current') {
+              let filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
+              fs.writeFileSync(filePath, JSON.stringify(docs[docIndex], null, 2));
+              console.log(`Current document saved to ${filePath}`);
+              askActionQuestions();
+            } else if (response.action === 'save_all') {
+              let filePath = path.join(path.resolve(__dirname), `${type}.json`);
+              fs.writeFileSync(filePath, JSON.stringify(docs, null, 2));
+              console.log(`Documents saved to ${filePath}`);
+              askActionQuestions();
+            } else if (response.action === 'quit') {
+              return;
+            } else {
+              askActionQuestions();
             }
           });
 };
 
-inquirer.prompt(typeQuestions)
-        .then(response => {
-          type = response.docType;
-          return db.allDocs({
-                     include_docs: true,
-                     startkey: `${type}-`,
-                     endkey: `${type}-\ufff0`,
-                   })
-                   .then(function(data) {
-                     docs = data.rows.map(row => row.doc);
-                     console.log(docs[docIndex]);
-                     askActionQuestions();
-                   });
-        });
+(async function() {
+
+  try {
+    const data = await db.allDocs({
+     include_docs: true,
+     startkey: `${type}-`,
+     endkey: `${type}-\ufff0`,
+    });
+    
+    docs = data.rows.map(row => row.doc);
+
+    if (mode === 'batch') {
+      console.log(JSON.stringify(docs, null, 2));
+    } else if (mode === 'interactive') {
+     console.log(docs[docIndex]);
+     askActionQuestions();
+    }
+  } catch(err) {
+    console.log(err);
+  }
+})();
