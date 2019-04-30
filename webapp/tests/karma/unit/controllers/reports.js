@@ -2,11 +2,6 @@ describe('ReportsCtrl controller', () => {
 
   'use strict';
 
-  const nestedPromiseKarmaGarbage = promise => Promise.resolve()
-    .then(() => Promise.resolve())
-    .then(() => Promise.resolve())
-    .then(promise);
-
   let createController,
       scope,
       actions,
@@ -101,6 +96,7 @@ describe('ReportsCtrl controller', () => {
 
     createController = () => {
       return $controller('ReportsCtrl', {
+        '$q': Q,
         '$scope': scope,
         '$translate': { instant: () => {} },
         AddReadStatus: () => {},
@@ -181,7 +177,7 @@ describe('ReportsCtrl controller', () => {
           doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
         };
         scope.$broadcast('VerifyReport', setTo);
-        return nestedPromiseKarmaGarbage(() => {
+        return Q.resolve(() => {
           chai.expect(modal.callCount).to.eq(confirm !== undefined ? 1 : 0);
           if (expectPost) {
             chai.expect(post.callCount).to.equal(1);
