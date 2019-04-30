@@ -12,6 +12,7 @@ angular.module('controllers').controller('MainCtrl',
     'ngInject';
     $translate.use('en');
     $scope.authorized = false;
+    $scope.navbarCollapsed = true;
     Auth('can_configure')
     .then(function() {
       $scope.authorized = true;
