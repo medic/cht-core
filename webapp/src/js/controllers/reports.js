@@ -338,78 +338,107 @@ angular
       });
     });
 
-    $scope.$on('VerifyReport', function(e, valid) {
-      if (ctrl.selected[0].doc.form) {
-        $scope.setLoadingSubActionBar(true);
-        const doc = $scope.selected[0].doc;
-
-        const promptUserToConfirmVerification = () => {
-          const verificationTranslationKey = valid ? 'reports.verify.valid' : 'reports.verify.invalid';
-          return Modal({
-            templateUrl: 'templates/modals/verify_confirm.html',
-            controller: 'VerifyReportModalCtrl',
-            model: {
-              proposedVerificationState: $translate.instant(verificationTranslationKey),
-            },
-          })
-          .then(() => true)
-          .catch(() => false);
-        };
-
-        const shouldReportBeVerified = function (canUserEdit) {
-          // verify if all verifications are allowed
-          if (canUserEdit) {
-            return true;
-          }
-          
-          // don't verify if user can't edit and this is an edit
-          const docHasExistingResult = doc.verified !== undefined;
-          if (docHasExistingResult) {
-            return false;
-          }
-
-          // verify if this is not an edit and the user accepts a prompt
-          return promptUserToConfirmVerification();
-        };
-
-        const verifyReport = function() {
-          if (doc.contact) {
-            doc.contact = lineage.minifyLineage(doc.contact);
-          }
-
-          const clearVerification = doc.verified === valid;
-          if (clearVerification) {
-            doc.verified = undefined;
-            doc.verified_date = undefined;
-          } else {
-            doc.verified = valid;
-            doc.verified_date = Date.now();  
-          }
-
-          return DB()
-            .post(doc)
-            .catch(function(err) {
-              $log.error('Error verifying message', err);
-            })
-            .finally(() => {
-              $scope.$broadcast('VerifiedReport', valid);
-            });
-        };
-
-        Auth('can_edit_verification')
-          .then(() => true)
-          .catch(() => false)
-          .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
-          .then(function(shouldVerify) {
-            if (!shouldVerify) {
-              return;
-            }
-
-            return verifyReport();
-          })
-          .catch(err => $log.error(`Error verifying message: ${err}`))
-          .finally(() => $scope.setLoadingSubActionBar(false));
+    $scope.$on('VerifyReport', function(e, reportIsValid) {
+      if (!ctrl.selected[0].doc.form) {
+        return;
       }
+
+      $scope.setLoadingSubActionBar(true);
+      const doc = $scope.selected[0].doc;
+
+      const promptUserToConfirmVerification = () => {
+        const verificationTranslationKey = valid ? 'reports.verify.valid' : 'reports.verify.invalid';
+        return Modal({
+          templateUrl: 'templates/modals/verify_confirm.html',
+          controller: 'VerifyReportModalCtrl',
+          model: {
+            proposedVerificationState: $translate.instant(verificationTranslationKey),
+          },
+        })
+        .then(() => true)
+        .catch(() => false);
+      };
+
+      const shouldReportBeVerified = function (canUserEdit) {
+        // verify if all verifications are allowed
+        if (canUserEdit) {
+          return true;
+        }
+        
+        // don't verify if user can't edit and this is an edit
+        const docHasExistingResult = doc.verified !== undefined;
+        if (docHasExistingResult) {
+          return false;
+        }
+
+      const doc = $scope.selected[0].doc;
+      const promptUserToConfirmVerification = () => {
+        const verificationTranslationKey = reportIsValid ? 'reports.verify.valid' : 'reports.verify.invalid';
+        return Modal({
+          templateUrl: 'templates/modals/verify_confirm.html',
+          controller: 'VerifyReportModalCtrl',
+          model: {
+            proposedVerificationState: $translate.instant(verificationTranslationKey),
+          },
+        })
+        .then(() => true)
+        .catch(() => false);
+      };
+
+      const shouldReportBeVerified = function (canUserEdit) {
+        // verify if all verifications are allowed
+        if (canUserEdit) {
+          return true;
+        }
+        
+        // don't verify if user can't edit and this is an edit
+        const docHasExistingResult = doc.verified !== undefined;
+        if (docHasExistingResult) {
+          return false;
+        }
+
+        // verify if this is not an edit and the user accepts a prompt
+        return promptUserToConfirmVerification();
+      };
+
+      const writeVerificationToDoc = function() {
+        if (doc.contact) {
+          doc.contact = lineage.minifyLineage(doc.contact);
+        }
+
+        const clearVerification = doc.verified === reportIsValid;
+        if (clearVerification) {
+          doc.verified = undefined;
+          doc.verified_date = undefined;
+        } else {
+          doc.verified = reportIsValid;
+          doc.verified_date = Date.now();  
+        }
+
+        return DB()
+          .post(doc)
+          .catch(function(err) {
+            $log.error('Error verifying message', err);
+          })
+          .finally(() => {
+            $scope.$broadcast('VerifiedReport', reportIsValid);
+          });
+      };
+
+      $scope.setLoadingSubActionBar(true);
+      Auth('can_edit_verification')
+        .then(() => true)
+        .catch(() => false)
+        .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
+        .then(function(shouldVerify) {
+          if (!shouldVerify) {
+            return;
+          }
+
+          return writeVerificationToDoc();
+        })
+        .catch(err => $log.error(`Error verifying message: ${err}`))
+        .finally(() => $scope.setLoadingSubActionBar(false));
     });
 
     var initScroll = function() {
