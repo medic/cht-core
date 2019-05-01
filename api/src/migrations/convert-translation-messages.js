@@ -1,10 +1,9 @@
-const _ = require('underscore'),
-  db = require('../db'),
-  properties = require('properties'),
-  DDOC_ID = '_design/medic';
+const db = require('../db'),
+      properties = require('properties'),
+      DDOC_ID = '_design/medic';
 
 const getAttachment = name => {
-  return db.medic.getAttachment(DDOC_ID, name)
+  return db.medic.getAttachment(DDOC_ID, `/translations/${name}.properties/`)
     .then(attachment => {
       return new Promise((resolve, reject) => {
         properties.parse(attachment.toString('utf8'), (err, values) => {
@@ -14,6 +13,11 @@ const getAttachment = name => {
           resolve(values);
         });
       });
+    })
+    .catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
     });
 };
 
@@ -21,31 +25,35 @@ module.exports = {
   name: 'convert-translation-messages',
   created: new Date(2018, 11, 8),
   run: () => {
-      return db.medic.get(DDOC_ID)
-        .then(function(ddoc) {
-          const translationAttachmentKeys = Object.keys(ddoc._attachments).filter(k => k.includes('translations'));
-          return Promise.all(translationAttachmentKeys.map((translationAttachmentKey) => {
-            const translationMessageKey = translationAttachmentKey.match(/translations\/(.+).properties/)[1];
-            return db.medic.get(translationMessageKey)
-              .then(function(translationMessageValues) {
-                if (_.has(translationMessageValues, 'values')) {
-                  return getAttachment(translationAttachmentKey)
-                    .then((translationAttachmentValues) => {
-                      let customTranslations = {}; 
-                      return Promise.all(Object.keys(translationMessageValues.values).map((translationMessageKey) => {
-                        if (!_.has(translationAttachmentValues, translationMessageKey)) {
-                          customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
-                        }
-                      }))
-                      .then (() => {
-                        delete translationMessageValues.values;
-                        translationMessageValues.custom = customTranslations;
-                        return db.medic.put(translationMessageValues);
-                      });             
-                    });
-                } 
+    return db.medic.query('medic-client/doc_by_type', {
+      startkey: [ 'translations', false ],
+      endkey: [ 'translations', true ],
+      include_docs: true
+    }).then(translations => {
+      return Promise.all(translations.map(translationRecord => {
+        if (translationRecord.values) {
+            return getAttachment(translationRecord._id)
+              .then(originalTranslation => {
+                translationRecord.generic = {};
+                translationRecord.custom = {};
+
+                if (originalTranslation) {
+                  Object.keys(translationRecord.values).forEach(key => {
+                    if (originalTranslation[key]) {
+                      translationRecord.generic[key] = translationRecord.values[key];
+                    } else {
+                      translationRecord.custom[key] = translationRecord.values[key];
+                    }
+                  });
+                } else {
+                  translationRecord.generic = translationRecord.values;
+                }
+
+                delete translationRecord.values;
+                return db.medic.put(translationRecord);
               });
-            }));
-        });
+          }
+      }));
+    });
   }
 };
