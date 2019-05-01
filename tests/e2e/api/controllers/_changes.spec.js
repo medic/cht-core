@@ -537,7 +537,7 @@ describe('changes handler', () => {
             expect(changes.results.every(change => {
               return expectedIds.includes(change.id) ||
                      change.id.startsWith('messages-') ||
-                     change.id.startsWith('form:contact:')
+                     change.id.startsWith('form:contact:');
             })).toBe(true);
             // because we still process pending changes, it's not a given we will receive only 4 changes.
             expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
