@@ -112,10 +112,12 @@ angular.module('inboxServices').service('ContactSave',
         }
         if (value === 'NEW') {
           const preparedSibling = prepare(siblings[fieldName]);
-          if (preparedSibling.type && !preparedSibling.contact_type) {
-            preparedSibling.contact_type = preparedSibling.type;
+
+          // by default all siblings are "person" types but can be overridden
+          // by specifying the type and contact_type in the form
+          if (!preparedSibling.type) {
+            preparedSibling.type = 'person';
           }
-          preparedSibling.type = 'contact'; // TODO fix
 
           if (preparedSibling.parent === 'PARENT') {
             delete preparedSibling.parent;

@@ -14,7 +14,7 @@ describe('Add new person tests : ', () => {
   it('should add new person', () => {
     commonElements.goToPeople();
     expect(commonElements.isAt('contacts-list'));
-    contactPage.addNewDistrict('BedeDistrict');
+    contactPage.addNewDistrict('BedeDistrict'); // TODO restore this to its former glory, creating a person as part of the district creation!
     contactPage.completeNewPersonForm('Bede');
     const firstInLHS = element(by.css('#contacts-list .content-row:first-child'));
     helper.waitUntilReady(firstInLHS);
