@@ -16,10 +16,15 @@ describe('Add new person tests : ', () => {
     expect(commonElements.isAt('contacts-list'));
     contactPage.addNewDistrict('BedeDistrict');
     contactPage.completeNewPersonForm('Bede');
+    const firstInLHS = element(by.css('#contacts-list .content-row:first-child'));
+    helper.waitUntilReady(firstInLHS);
+    firstInLHS.click();
     helper.waitUntilReady(element(by.css('div[ng-if="!contactsContentCtrl.loadingSelectedContactChildren"]')));
     const district = element(by.css('.card h2'));
+    helper.waitUntilReady(district);
     expect(district.getText()).toBe('BedeDistrict');
     const name = element(by.css('.children h4 span'));
+    helper.waitUntilReady(name);
     expect(name.getText()).toBe('Bede');
   });
 });

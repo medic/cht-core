@@ -121,7 +121,9 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         .then(results => {
           const settings = results[0];
           const contactTypes = results[1];
-          const personTypes = contactTypes.filter(type => type.person);
+          const personTypes = contactTypes
+            .filter(type => type.person)
+            .map(type => type.id);
           const searchIds = contactTypes.map(type => type.id);
           return Select2Search($phone, searchIds, {
             tags: true,

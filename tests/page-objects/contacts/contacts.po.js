@@ -6,12 +6,12 @@ const searchBox = element(by.css('#freetext')),
       newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital?from=list"]')),
       newPlaceName = element(by.css('[name="/data/init/custom_place_name"]')),
       nextButton = element(by.css('button.btn.btn-primary.next-page.ng-scope')),
-      newPersonTextBox = element(by.css('[name="/data/contact/name"]')),
+      newPersonTextBox = element(by.css('[name="/data/person/name"]')),
       datePicker = element(by.css('[placeholder="yyyy-mm-dd"]')),
       phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]')),
       phoneNumber = phoneNumbers.first(),
       alternativePhoneNumber = phoneNumbers.get(1),
-      personNotes = element(by.css('[name="/data/contact/notes"]')),
+      personNotes = element(by.css('[name="/data/person/notes"]')),
       submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
 
 const skipCreate = element(by.css('[name="/data/init/create_new_person"][value="none"]'));
@@ -51,6 +51,9 @@ module.exports = {
   },
 
   completeNewPersonForm: name => {
+    const newPersonButton = element(by.css('[href$="/add/person"]'));
+    helper.waitUntilReady(newPersonButton);
+    helper.clickElement(newPersonButton);
     helper.waitUntilReady(newPersonTextBox);
     newPersonTextBox.sendKeys(name);
     datePicker.sendKeys('22-03-2016');
