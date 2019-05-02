@@ -10,7 +10,8 @@ const { UNIT_TEST_ENV } = process.env;
 if (UNIT_TEST_ENV) {
   const DBS_TO_STUB = [
     'medic',
-    'users'
+    'users',
+    'medicUsersMeta'
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
