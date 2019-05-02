@@ -26,15 +26,14 @@ describe('validate', () => {
     expect(validDirectory('tests/translations')).toBeTruthy();
   });
 
-  test('matching translation placeholders', () => {
-    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations'));
-    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
+  test('successful matching translation placeholders', () => {
+    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'matching-placeholders'));
+    expect(console.error).toHaveBeenCalledTimes(0);
   });
 
-  test.skip('successful matching translation placeholders', () => {
-    // TODO
-    // expect(console.log).toHaveBeenCalledWith('\nWarning: messages-sw.properties: Translation key Number\\ of\\ facilities on line 2 has placeholders that do not match those of messages-en.properties');
-    // expect(console.log).toHaveBeenCalledWith('\nWarning: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
+  test('error on non-matching translation placeholders', () => {
+    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'non-matching-placeholders'));
+    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
   });
 
 });

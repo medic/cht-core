@@ -1,9 +1,6 @@
 const fs = require('fs');
-// const os = require('os');
 const chalk = require('chalk');
-const req = require('request');
-const {promisify} = require('util');
-const get = promisify(req.get);
+const get = require('./get');
 const pkg = require('../../../package.json');
 
 module.exports = {
@@ -48,7 +45,6 @@ module.exports = {
       - Sort file content alpahabetically in ascending order
       - Get rid of comments (lines starting with #)
     */
-
     const out = res.body
       .split('\n')
       .filter(line => !line.trim().startsWith('#'))

@@ -44,10 +44,8 @@ describe('poe', () => {
     expect(post).toHaveBeenCalledWith(expectedLangOptions);
   });
 
-  test.skip('successful download', async () => {
-    // TODO
-    // expect(console.error).toHaveBeenCalledWith('');
-    // expect(console.log).toHaveBeenCalledWith(
-    //   '\ten saved to /Users/simon/poe/translations/messages-en.properties');
+  test('successful download', async () => {
+    expect(console.log).toHaveBeenCalledWith(
+      '\ten saved to /Users/simon/poe/translations/messages-en.properties');
   });
 });
