@@ -7371,7 +7371,9 @@
       "group_key": "contact.type.health_center.plural",
       "create_key": "contact.type.health_center.new",
       "edit_key": "contact.type.place.edit",
-      "parents": [ "district_hospital" ],
+      "parents": [
+        "district_hospital"
+      ],
       "icon": "medic-health-center",
       "create_form": "form:contact:health_center:create",
       "edit_form": "form:contact:health_center:edit"
@@ -7382,7 +7384,9 @@
       "group_key": "contact.type.clinic.plural",
       "create_key": "contact.type.clinic.new",
       "edit_key": "contact.type.place.edit",
-      "parents": [ "health_center" ],
+      "parents": [
+        "health_center"
+      ],
       "icon": "medic-clinic",
       "create_form": "form:contact:clinic:create",
       "edit_form": "form:contact:clinic:edit"
@@ -7394,7 +7398,11 @@
       "create_key": "contact.type.person.new",
       "edit_key": "contact.type.person.edit",
       "primary_contact_key": "clinic.field.contact",
-      "parents": [ "district_hospital", "health_center", "clinic" ],
+      "parents": [
+        "district_hospital",
+        "health_center",
+        "clinic"
+      ],
       "icon": "medic-person",
       "create_form": "form:contact:person:create",
       "edit_form": "form:contact:person:edit",
