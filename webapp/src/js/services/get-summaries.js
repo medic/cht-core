@@ -2,6 +2,7 @@ var _ = require('underscore');
 
 angular.module('inboxServices').factory('GetSummaries',
   function(
+    ContacTypes,
     DB,
     Session
   ) {
@@ -88,11 +89,7 @@ angular.module('inboxServices').factory('GetSummaries',
           lineage: getLineage(doc.contact && doc.contact.parent),
           subject: getSubject(doc)
         };
-      } else if (doc.type === 'contact' ||
-          doc.type === 'clinic' ||
-          doc.type === 'district_hospital' ||
-          doc.type === 'health_center' ||
-          doc.type === 'person') { // contact
+      } else if (ContacTypes.includes(doc)) { // contact
         return {
           _id: doc._id,
           _rev: doc._rev,

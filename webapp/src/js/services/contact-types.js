@@ -12,6 +12,8 @@ angular.module('inboxServices').service('ContactTypes', function(
   ];
 
   const getConfig = () => Settings().then(config => config.contact_types || []);
+  const filterOnPerson = person => getConfig().then(types => types.filter(type => !!type.person === person));
+  const isHardcodedType = type => HARDCODED_TYPES.includes(type);
 
   return {
 
@@ -26,16 +28,22 @@ angular.module('inboxServices').service('ContactTypes', function(
     getAll: getConfig,
 
     /**
-     * Returns true is the given doc is a contact type.
+     * Returns true if the given type is one of the contact types that
+     * were hardcoded in old versions.
+     */
+    isHardcodedType: isHardcodedType,
+
+    /**
+     * Returns true if the given doc is a contact type.
      */
     includes: doc => {
-      return doc.type === 'contact' ||           // configurable hierarchy
-             HARDCODED_TYPES.includes(doc.type); // hardcoded hierarchy
+      return doc.type === 'contact' ||  // configurable hierarchy
+             isHardcodedType(doc.type); // hardcoded hierarchy
     },
 
     /**
      * Returns a Promise to resolve an array of child type names for the
-     * given type. If type is falsey, returns the types with no parent.
+     * given type id. If parent is falsey, returns the types with no parent.
      */
     getChildren: parent => {
       return getConfig().then(types => {
@@ -49,11 +57,11 @@ angular.module('inboxServices').service('ContactTypes', function(
     /**
      * Returns a Promise to resolve all the configured place contact types
      */
-    getPlaceTypes: () => getConfig().then(types => types.filter(type => !type.person)),
+    getPlaceTypes: () => filterOnPerson(false),
 
     /**
      * Returns a Promise to resolve all the configured person contact types
      */
-    getPersonTypes: () => getConfig().then(types => types.filter(type => type.person)),
+    getPersonTypes: () => filterOnPerson(true),
   };
 });

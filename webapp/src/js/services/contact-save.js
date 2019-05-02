@@ -5,6 +5,7 @@ angular.module('inboxServices').service('ContactSave',
   function(
     $ngRedux,
     $q,
+    ContactTypes,
     DB,
     EnketoTranslation,
     ExtractLineage,
@@ -15,7 +16,6 @@ angular.module('inboxServices').service('ContactSave',
     'ngInject';
 
     const CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
-    const HARDCODED_CONTACT_TYPES = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
     const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
@@ -159,7 +159,7 @@ angular.module('inboxServices').service('ContactSave',
           const submitted = EnketoTranslation.contactRecordToJs(form.getDataStr({ irrelevant: false }));
           if (original) {
             submitted.doc = $.extend({}, original, submitted.doc);
-          } else if (HARDCODED_CONTACT_TYPES.includes(type)) {
+          } else if (ContactTypes.isHardcodedType(type)) {
             // default hierarchy - maintain backwards compatibility
             submitted.doc.type = type;
           } else {

@@ -209,7 +209,7 @@ module.exports = function(DB, userCtx, initialReplication) {
             }
           }
 
-          if (['district_hospital', 'health_center', 'clinic', 'person'].includes(doc.type)) {
+          if (['district_hospital', 'health_center', 'clinic', 'person', 'contact'].includes(doc.type)) {
             acc.contacts.push(doc);
           }
 
