@@ -71,7 +71,7 @@
     "@medic/server-checks",
     "@medic/task-utils",
     "@medic/tombstone-utils",
-    "@medic/transitions",
+    "@twd/transitions",
     "@medic/translation-utils",
     "@medic/view-map-utils",
     "async",
