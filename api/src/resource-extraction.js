@@ -22,7 +22,7 @@ const getDestinationDirectory = () => {
   if (!destination) {
     const isProduction = env['NODE_ENV'] === 'production';
     const defaultLocation = path.join(__dirname, `extracted-resources`);
-    destination = isProduction ? '/tmp' : defaultLocation;
+    destination = isProduction ? '/tmp/extracted-resources' : defaultLocation;
   }
 
   return path.resolve(destination);
