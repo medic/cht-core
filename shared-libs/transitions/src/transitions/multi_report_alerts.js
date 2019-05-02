@@ -388,4 +388,5 @@ module.exports = {
   init: validateConfig,
   _getCountedReportsAndPhones: getCountedReportsAndPhones,
   _lineage: lineage,
+  asynchronousOnly: true
 };
