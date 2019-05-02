@@ -87,7 +87,7 @@ angular.module('inboxServices').service('EnketoTranslation',
       Object.keys(data).forEach(function(key) {
         const value = data[key];
         const current = findCurrentElement(elem, key, childMatcher);
-        if (typeof value === 'object') {
+        if (value !== null && typeof value === 'object') {
           if (current.children().length) {
             // childMatcher intentionally does not recurse. It exists to
             // allow the initial layer of binding to be flexible.

@@ -1,34 +1,31 @@
 const helper = require('../../helper');
 
-const searchBox = element(by.css('#freetext')),
-      seachButton = element(by.css('#search')),
-      refreshButton = element(by.css('.fa fa-undo')),
-      newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital?from=list"]')),
-      newPlaceName = element(by.css('[name="/data/init/custom_place_name"]')),
-      nextButton = element(by.css('button.btn.btn-primary.next-page.ng-scope')),
-      newPersonTextBox = element(by.css('[name="/data/person/name"]')),
-      datePicker = element(by.css('[placeholder="yyyy-mm-dd"]')),
-      phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]')),
-      phoneNumber = phoneNumbers.first(),
-      alternativePhoneNumber = phoneNumbers.get(1),
-      personNotes = element(by.css('[name="/data/person/notes"]')),
-      submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
-
-const skipCreate = element(by.css('[name="/data/init/create_new_person"][value="none"]'));
+const searchBox = element(by.css('#freetext'));
+const seachButton = element(by.css('#search'));
+const refreshButton = element(by.css('.fa fa-undo'));
+const newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital?from=list"]'));
+const newPlaceName = element(by.css('[name="/data/init/custom_place_name"]'));
+const nextButton = element(by.css('button.btn.btn-primary.next-page.ng-scope'));
+const newPersonTextBox = element(by.css('[name="/data/contact/name"]'));
+const personNotes = element(by.css('[name="/data/contact/notes"]'));
+const submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
+const newPersonButton = element(by.css('[name="/data/init/create_new_person"][value="new_person"]'));
+const writeName = element(by.css('[name="/data/district_hospital/is_name_generated"][value="false"]'));
 
 module.exports = {
 
-  getSubmitButton: () => {
-    return submitButton;
-  },
+  getSubmitButton: () => submitButton,
 
   addNewDistrict: districtName => {
     helper.waitUntilReady(newDistrictButton);
     newDistrictButton.click();
-    helper.waitElementToBeVisible(skipCreate);
-    skipCreate.click();
+    helper.waitElementToBeVisible(newPersonButton);
+    newPersonButton.click();
+    newPersonTextBox.sendKeys('Bede');
+    personNotes.sendKeys('Main CHW');
     nextButton.click();
-    helper.waitElementToBeVisible(newPlaceName);
+    helper.waitElementToBeVisible(writeName);
+    writeName.click();
     newPlaceName.sendKeys(districtName);
     submitButton.click();
   },
@@ -37,33 +34,17 @@ module.exports = {
     const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
     helper.waitUntilReady(newHealthCenterButton);
     helper.clickElement(newHealthCenterButton);
-    helper.waitElementToBeVisible(skipCreate);
-    skipCreate.click();
+    helper.waitElementToBeVisible(newPersonButton);
+    newPersonButton.click();
+    newPersonTextBox.sendKeys('Gareth');
     nextButton.click();
-    helper.waitElementToBeVisible(newPlaceName);
+    const writeNameHC = element(by.css('[name="/data/health_center/is_name_generated"][value="false"]'));
+    helper.waitElementToBeVisible(writeNameHC);
+    writeNameHC.click();
     newPlaceName.sendKeys('Mavuvu Clinic');
     element(by.css('[name="/data/health_center/external_id"]')).sendKeys('1234457');
     element(by.css('[name="/data/health_center/notes"]')).sendKeys('some notes');
     submitButton.click();
-    const center = element(by.css('.card h2'));
-    helper.waitUntilReady(center);
-    expect(center.getText()).toBe('Mavuvu Clinic');
-  },
-
-  completeNewPersonForm: name => {
-    const newPersonButton = element(by.css('[href$="/add/person"]'));
-    helper.waitUntilReady(newPersonButton);
-    helper.clickElement(newPersonButton);
-    helper.waitUntilReady(newPersonTextBox);
-    newPersonTextBox.sendKeys(name);
-    datePicker.sendKeys('22-03-2016');
-    datePicker.sendKeys(protractor.Key.ENTER);
-    helper.waitElementToBeVisible(phoneNumber);
-    phoneNumber.sendKeys('+64212156789');
-    alternativePhoneNumber.sendKeys('+64212345719');
-    personNotes.sendKeys('some notes for the person');
-    submitButton.click();
-    helper.waitUntilReady(element(by.css('.card .heading')));
   },
 
   refresh: () => {
