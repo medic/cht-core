@@ -1,5 +1,4 @@
 const rewire = require('rewire'),
-      path = require('path'),
       resourceExtraction = rewire('../../src/resource-extraction'),
       sinon = require('sinon'),
       { expect } = require('chai'); // jshint ignore:line
