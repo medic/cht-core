@@ -194,6 +194,7 @@ describe('login controller', () => {
     it('when already logged in and login=force cookie is present, render login', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
       const send = sinon.stub(res, 'send');
+      sinon.stub(db, 'get').resolves({});
       const cookie = sinon.stub(res, 'cookie').returns(res);
       req.headers.cookie = 'login=force';
       return controller.get(req, res).then(() => {
@@ -265,7 +266,7 @@ describe('login controller', () => {
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
-      const send = sinon.stub(res, 'send');     
+      const send = sinon.stub(res, 'send');
       const status = sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
@@ -308,7 +309,7 @@ describe('login controller', () => {
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
       sinon.stub(request, 'post').resolves(postResponse);
-      sinon.stub(res, 'send');     
+      sinon.stub(res, 'send');
       sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
@@ -328,7 +329,7 @@ describe('login controller', () => {
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
-      const send = sinon.stub(res, 'send');     
+      const send = sinon.stub(res, 'send');
       const status = sinon.stub(res, 'status').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);

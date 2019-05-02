@@ -6,6 +6,7 @@ const db = require('../db'),
       messageUtils = require('../message-utils'),
       recordUtils = require('./record-utils'),
       logger = require('../logger'),
+      config = require('../config'),
       // map from the medic-gateway state to the medic app's state
       STATUS_MAP = {
         UNSENT: 'received-by-gateway',
@@ -63,6 +64,10 @@ const getOutgoing = () => {
   });
 };
 
+const runTransitions = docs => {
+  return config.getTransitionsLib().processDocs(docs);
+};
+
 // Process webapp-terminating messages
 const addNewMessages = req => {
   let messages = req.body.messages;
@@ -93,7 +98,7 @@ const addNewMessages = req => {
       message: message.content,
       gateway_ref: message.id,
     })))
-    .then(docs => db.medic.bulkDocs(docs))
+    .then(docs => runTransitions(docs))
     .then(results => {
       const allOk = results.every(result => result.ok);
       if (!allOk) {
