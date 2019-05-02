@@ -6,9 +6,13 @@ const inquirer = require('inquirer'),
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
-const argv = minimist(process.argv.slice(2));
+const argv = minimist(process.argv.slice(2), {
+  alias: {
+    'h': 'help'
+  }
+});
 
-if(argv['h'] || argv['help']) {
+if(argv.h) {
   console.log(`Display or save telemetry and feedback docs.
 
 Usage:
@@ -50,35 +54,6 @@ const actionQuestions = [{
   choices: actionChoices
 }];
 
-const askActionQuestions = () => {
-  inquirer.prompt(actionQuestions)
-          .then(response => {console.log(response);
-            if (response.action === 'next') {
-              docIndex = Math.min(docs.length - 1, ++docIndex);
-              console.log(docs[docIndex]);
-              askActionQuestions();
-            } else if (response.action === 'previous') {
-              docIndex = Math.max(0, --docIndex);
-              console.log(docs[docIndex]);
-              askActionQuestions();
-            } else if (response.action === 'save_current') {
-              let filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
-              fs.writeFileSync(filePath, JSON.stringify(docs[docIndex], null, 2));
-              console.log(`Current document saved to ${filePath}`);
-              askActionQuestions();
-            } else if (response.action === 'save_all') {
-              let filePath = path.join(path.resolve(__dirname), `${type}.json`);
-              fs.writeFileSync(filePath, JSON.stringify(docs, null, 2));
-              console.log(`Documents saved to ${filePath}`);
-              askActionQuestions();
-            } else if (response.action === 'quit') {
-              return;
-            } else {
-              askActionQuestions();
-            }
-          });
-};
-
 (async function() {
 
   try {
@@ -93,8 +68,27 @@ const askActionQuestions = () => {
     if (mode === 'batch') {
       console.log(JSON.stringify(docs, null, 2));
     } else if (mode === 'interactive') {
-     console.log(docs[docIndex]);
-     askActionQuestions();
+     console.log(JSON.stringify(docs[docIndex], null, 2));
+     for (;;) {
+      const response = await inquirer.prompt(actionQuestions);
+      if (response.action === 'next') {
+        docIndex = Math.min(docs.length - 1, ++docIndex);
+        console.log(JSON.stringify(docs[docIndex], null, 2));
+      } else if (response.action === 'previous') {
+        docIndex = Math.max(0, --docIndex);
+        console.log(JSON.stringify(docs[docIndex], null, 2));
+      } else if (response.action === 'save_current') {
+        let filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
+        fs.writeFileSync(filePath, JSON.stringify(docs[docIndex], null, 2));
+        console.log(`Current document saved to ${filePath}`);
+      } else if (response.action === 'save_all') {
+        let filePath = path.join(path.resolve(__dirname), `${type}.json`);
+        fs.writeFileSync(filePath, JSON.stringify(docs, null, 2));
+        console.log(`Documents saved to ${filePath}`);
+      } else if (response.action === 'quit') {  
+        break;
+      }  
+     }
     }
   } catch(err) {
     console.log(err);
