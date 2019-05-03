@@ -39,7 +39,7 @@ const isRelevantReport = (doc, info = {}) =>
 const isRelevantContact = (doc, info = {}) =>
   Boolean(doc &&
           !info._rev &&
-          ['person', 'clinic', 'health_center', 'district_hospital'].includes(doc.type) &&
+          ['contact', 'person', 'clinic', 'health_center', 'district_hospital'].includes(doc.type) &&
           !doc.muted &&
           mutingUtils.isMutedInLineage(doc));
 
