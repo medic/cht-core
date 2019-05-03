@@ -38,3 +38,51 @@
     }
   }
 }
+
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  &.horizontal li {
+    display: inline;
+  }
+}
+
+.sender {
+  .position {
+    color: @label-color;
+    white-space: normal;
+  }
+  .name {
+    font-weight: bold;
+  }
+}
+
+.select2-results,
+.select2-choice {
+  .sender span {
+    margin-right: 10px;
+  }
+  .everyone-at {
+    font-weight: bold;
+  }
+  .fa {
+    color: @ok-color;
+  }
+}
+.select2-results .select2-highlighted .sender .position {
+  color: #ffffff;
+}
+
+.lineage {
+  margin-bottom: 0;
+  li:after {
+    content: '\2022'; /* bullet */
+    padding: 0 5px;
+  }
+}
+
+.lineage li:last-child:after {
+  content: '';
+  padding: 0;
+}

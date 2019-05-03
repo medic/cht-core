@@ -2,8 +2,6 @@ require('chai').should();
 
 const db = require('../../../src/db'),
       service = require('../../../src/services/export-data'),
-      reportMapper = require('../../../src/services/export/report-mapper'),
-      contactMapper = require('../../../src/services/export/contact-mapper'),
       sinon = require('sinon');
 
 describe('Export Data Service', () => {
@@ -39,26 +37,13 @@ describe('Export Data Service', () => {
     });
 
     it('formats responses', () => {
-      const query = sinon.stub(db.medic, 'query');
-      query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
-      query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      const allDocs = sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
-        rows: [
-          { doc: {
-            _id: 'abc',
-            patient_id: '123456',
-            reported_date: 123456789,
-            responses: [ { sent_by: '+123456789', message: 'hello' } ]
-          } },
-          { doc: {
-            _id: 'def',
-            patient_id: '654321',
-            reported_date: 987654321,
-            responses: [ { sent_by: '+987654321', message: 'hi' } ]
-          } }
-        ]
-      }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+      const type = 'messages';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
+      getDocIds.onCall(1).returns(Promise.resolve([]));
+      const getDocs = sinon.stub(mapper, 'getDocs');
+      getDocs.returns(Promise.resolve([
         {
           _id: 'abc',
           patient_id: '123456',
@@ -75,84 +60,21 @@ describe('Export Data Service', () => {
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
                        '"abc","123456",123456789,,"Automated Reply","sent","","","",123456789,"","",,"+123456789",,"hello"\n' +
                        '"def","654321",987654321,,"Automated Reply","sent","","","",987654321,"","",,"+987654321",,"hi"\n';
-      return mockRequest('messages').then(actual => {
+      return mockRequest(type).then(actual => {
         actual.should.equal(expected);
-        query.callCount.should.equal(2);
-        allDocs.callCount.should.equal(1);
-      });
-    });
-
-    it('exports human readable dates', () => {
-      const query = sinon.stub(db.medic, 'query');
-      query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
-      query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      const allDocs = sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
-        rows: [
-          { doc: {
-            _id: 'abc',
-            patient_id: '123456',
-            reported_date: 1553002449000,
-            responses: [ { sent_by: '+123456789', message: 'hello' } ]
-          } },
-          { doc: {
-            _id: 'def',
-            patient_id: '654321',
-            reported_date: 1551002449000,
-            responses: [ { sent_by: '+987654321', message: 'hi' } ]
-          } }
-        ]
-      }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
-        {
-          _id: 'abc',
-          patient_id: '123456',
-          reported_date: 1553002449000,
-          responses: [ { sent_by: '+123456789', message: 'hello' } ]
-        },
-        {
-          _id: 'def',
-          patient_id: '654321',
-          reported_date: 1551002449000,
-          responses: [ { sent_by: '+987654321', message: 'hi' } ]
-        }
-      ]));
-      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       '"abc","123456","2019-03-19T13:34:09.000Z",,"Automated Reply","sent","","","","2019-03-19T13:34:09.000Z","","",,"+123456789",,"hello"\n' +
-                       '"def","654321","2019-02-24T10:00:49.000Z",,"Automated Reply","sent","","","","2019-02-24T10:00:49.000Z","","",,"+987654321",,"hi"\n';
-      return mockRequest('messages', {}, { humanReadable: true }).then(actual => {
-        actual.should.equal(expected);
-        query.callCount.should.equal(2);
-        allDocs.callCount.should.equal(1);
+        getDocIds.callCount.should.equal(2);
+        getDocs.callCount.should.equal(1);
       });
     });
 
     it('includes tasks and scheduled tasks', () => {
-      const query = sinon.stub(db.medic, 'query');
-      query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
-      query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
-        rows: [
-          { doc: {
-            _id: 'abc',
-            patient_id: '123456',
-            reported_date: 123456789,
-            tasks: [
-              { messages: [{ to: '+123456789', message: 'hello' }]},
-              { messages: [{ to: '+123456788', message: 'goodbye' }]}
-            ]
-          } },
-          { doc: {
-            _id: 'def',
-            patient_id: '654321',
-            reported_date: 987654321,
-            scheduled_tasks: [
-              { messages: [{ to: '+223456789', message: 'hi' }]},
-              { messages: [{ to: '+223456788', message: 'bye' }]}
-            ]
-          } }
-        ]
-      }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+      const type = 'messages';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
+      getDocIds.onCall(1).returns(Promise.resolve([]));
+      const getDocs = sinon.stub(mapper, 'getDocs');
+      getDocs.returns(Promise.resolve([
         {
           _id: 'abc',
           patient_id: '123456',
@@ -177,34 +99,19 @@ describe('Export Data Service', () => {
                        '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456788","goodbye"\n' +
                        '"def","654321",987654321,,"Task Message",,"","","","","","",,,"+223456789","hi"\n' +
                        '"def","654321",987654321,,"Task Message",,"","","","","","",,,"+223456788","bye"\n';
-      return mockRequest('messages').then(actual => {
+      return mockRequest(type).then(actual => {
         actual.should.equal(expected);
       });
     });
 
     it('formats incoming messages', () => {
-      const query = sinon.stub(db.medic, 'query');
-      query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'abc' }, { id: 'def' } ] }));
-      query.onCall(1).returns(Promise.resolve({ rows: [] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
-        rows: [
-          { doc: {
-            _id: 'abc',
-            patient_id: '123456',
-            reported_date: 123456789,
-            from: '+123456789',
-            sms_message: { message: 'hello' }
-          } },
-          { doc: {
-            _id: 'def',
-            patient_id: '654321',
-            reported_date: 987654321,
-            from: '+987654321',
-            sms_message: { message: 'hi' }
-          } }
-        ]
-      }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+      const type = 'messages';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
+      getDocIds.onCall(1).returns(Promise.resolve([]));
+      const getDocs = sinon.stub(mapper, 'getDocs');
+      getDocs.returns(Promise.resolve([
         {
           _id: 'abc',
           patient_id: '123456',
@@ -223,7 +130,7 @@ describe('Export Data Service', () => {
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
                        '"abc","123456",123456789,"+123456789","Message","received",123456789,"","","","","",,"+123456789",,"hello"\n' +
                        '"def","654321",987654321,"+987654321","Message","received",987654321,"","","","","",,"+987654321",,"hi"\n';
-      return mockRequest('messages').then(actual => {
+      return mockRequest(type).then(actual => {
         actual.should.equal(expected);
       });
     });
@@ -246,9 +153,11 @@ describe('Export Data Service', () => {
         reported_date: 987654321,
         form: 'V'
       };
-      reportMapper.getDocIds = sinon.stub();
-      reportMapper.getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
-      reportMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
+      const type = 'reports';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
+      getDocIds.onCall(1).returns(Promise.resolve([]));
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({
         rows: [
@@ -258,22 +167,18 @@ describe('Export Data Service', () => {
       }));
       query.onCall(1).returns(Promise.resolve({ rows: [ { doc: stockReport } ] }));
       query.onCall(2).returns(Promise.resolve({ rows: [ { doc: visitReport } ] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({
-        rows: [
-          { doc: stockReport },
-          { doc: visitReport }
-        ]
-      }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+      const getDocs = sinon.stub(mapper, 'getDocs');
+      getDocs.returns(Promise.resolve([
         stockReport,
         visitReport
       ]));
       const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,name\n' +
                        '"abc","STCK","123456",123456789,,,,,,\n' +
                        '"def","V","654321",987654321,,,,,,"Sally"\n';
-      return mockRequest('reports').then(actual => {
+      return mockRequest(type).then(actual => {
         actual.should.equal(expected);
-        reportMapper.getDocIds.callCount.should.equal(2);
+        getDocIds.callCount.should.equal(2);
+        getDocs.callCount.should.equal(1);
       });
     });
 
@@ -299,14 +204,16 @@ describe('Export Data Service', () => {
         hidden_fields: [
         ]
       };
-      reportMapper.getDocIds = sinon.stub();
-      reportMapper.getDocIds.onCall(0).returns(Promise.resolve([ 'B87FEE75-D435-A648-BDEA-0A1B61021AA3' ]));
-      reportMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
+      const type = 'reports';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
+      getDocIds.onCall(1).returns(Promise.resolve([]));
       const query = sinon.stub(db.medic, 'query');
       query.onCall(0).returns(Promise.resolve({ rows: [ { key: [ 'assessment' ] } ] }));
       query.onCall(1).returns(Promise.resolve({ rows: [ { doc: report } ] }));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({ rows: [ { doc: report } ] }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+      const getDocs = sinon.stub(mapper, 'getDocs');
+      getDocs.returns(Promise.resolve([
         {
           _id: 'B87FEE75-D435-A648-BDEA-0A1B61021AA3',
           _rev: '3-e361f7bce1a97799b3265336a2e68f11',
@@ -334,9 +241,9 @@ describe('Export Data Service', () => {
       ]));
       const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,patient_name\n' +
                        '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,1450959150540,"+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n';
-      return mockRequest('reports').then(actual => {
+      return mockRequest(type).then(actual => {
         actual.should.equal(expected);
-        reportMapper.getDocIds.callCount.should.equal(2);
+        getDocIds.callCount.should.equal(2);
       });
     });
   });
@@ -357,11 +264,13 @@ describe('Export Data Service', () => {
         parent: { _id: contact2._id }
       };
 
-      contactMapper.getDocIds = sinon.stub();
-      contactMapper.getDocIds.onCall(0).returns(Promise.resolve([ contact2._id, contact1._id ]));
-      contactMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
-      sinon.stub(db.medic, 'allDocs').returns(Promise.resolve({ rows: [ { doc: contact2 }, { doc: contact1 } ] }));
-      sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([
+      const type = 'contacts';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).returns(Promise.resolve([ contact2._id, contact1._id ]));
+      getDocIds.onCall(1).returns(Promise.resolve([]));
+      const getDocs = sinon.stub(mapper, 'getDocs');
+      getDocs.returns(Promise.resolve([
         contact2,
         {
           _id: '1',
@@ -374,7 +283,7 @@ describe('Export Data Service', () => {
       const expected = 'id,rev,name,patient_id,type\n' +
                        '"2",,"dunedin",,"district"\n' +
                        '"1",,"gdawg",,"person"\n';
-      return mockRequest('contacts').then(actual => {
+      return mockRequest(type).then(actual => {
         actual.should.equal(expected);
       });
 
@@ -384,8 +293,11 @@ describe('Export Data Service', () => {
 
   describe('Handle error', () => {
     it('emit error', () => {
-      sinon.stub(db.medic, 'query').rejects({some: 'error'});
-      return mockRequest('feedback')
+      const type = 'feedback';
+      var mapper = service._mapper(type);
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.returns(Promise.reject({some: 'error'}));
+      return mockRequest(type)
       .catch(err => {
         const expected = {some: 'error'};
         err.should.deep.equal(expected);

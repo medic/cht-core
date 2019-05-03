@@ -23,15 +23,35 @@ describe('finalize transition', () => {
 
   it('save is called if transition results have changes', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     transitions.finalize(
       {
         change: { doc: doc },
         results: [null, null, true],
       },
-      () => {
+      (err, result) => {
         assert.equal(saveDoc.callCount, 1);
         assert(saveDoc.args[0][0]._rev);
+        assert(!err);
+        assert.deepEqual(result, { ok: true });
+        done();
+      }
+    );
+  });
+
+  it('should callback with save errors', done => {
+    const doc = { _rev: '1' };
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+    transitions.finalize(
+      {
+        change: { doc: doc },
+        results: [null, null, true],
+      },
+      (err, result) => {
+        assert.deepEqual(err, { error: 'something' });
+        assert.equal(saveDoc.callCount, 1);
+        assert(saveDoc.args[0][0]._rev);
+        assert(!result);
         done();
       }
     );
@@ -41,10 +61,9 @@ describe('finalize transition', () => {
     const doc = { _rev: '1' };
     const info = {};
     sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(db.medic, 'get').rejects({ status: 404 });
-    sinon.stub(db.medic, 'put').resolves({});
     sinon.stub(db.sentinel, 'put').resolves({});
     const transition = {
+      filter: () => true,
       onMatch: change => {
         change.doc.foo = 'bar';
         return Promise.resolve(true);
@@ -78,12 +97,14 @@ describe('finalize transition', () => {
     const doc = { _rev: '1' };
     var transition = {
       onMatch: () => Promise.reject({ changed: false, message: 'oops' }),
+      filter: () => true
     };
     transitions.applyTransition(
       {
         key: 'x',
         change: {
           doc: doc,
+          info: {}
         },
         transition: transition,
       },

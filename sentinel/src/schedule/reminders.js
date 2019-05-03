@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     config = require('../config'),
-    messages = require('../lib/messages'),
+    messages = config.getTransitionsLib().messages,
     later = require('later'),
     moment = require('moment'),
     db = require('../db');
