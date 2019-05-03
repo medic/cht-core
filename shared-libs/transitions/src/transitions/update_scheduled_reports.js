@@ -52,47 +52,48 @@ module.exports = {
   // also includes changed doc
   //
   _getDuplicates: doc => {
-    const options = { include_docs: true },
-          clinicId = utils.getClinicID(doc);
-    let view;
+    const parentId = doc.contact && doc.contact.parent && doc.contact.parent._id;
+    if (!parentId) {
+      return Promise.resolve();
+    }
 
+    let view;
+    const options = { include_docs: true };
     if (doc.fields.week || doc.fields.week_number) {
       options.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
-        clinicId,
+        parentId,
       ];
       options.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
-        clinicId,
+        parentId,
         {},
       ];
-      view = 'reports_by_form_year_week_clinic_id_reported_date';
+      view = 'medic/reports_by_form_year_week_clinic_id_reported_date';
     } else if (doc.fields.month || doc.fields.month_num) {
       options.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
-        clinicId,
+        parentId,
       ];
       options.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
-        clinicId,
+        parentId,
         {},
       ];
-      view = 'reports_by_form_year_month_clinic_id_reported_date';
-    }
-
-    if (!view || !clinicId) {
+      view = 'medic/reports_by_form_year_month_clinic_id_reported_date';
+    } else {
       return Promise.resolve();
     }
 
-    return db.medic.query(`medic/${view}`, options).then(data => data && data.rows);
+    return db.medic.query(view, options).then(data => data && data.rows);
   },
   _isFormScheduled: function(doc) {
     return (

@@ -28,40 +28,6 @@ const getLocale = doc => {
   );
 };
 
-const getClinicID = doc => {
-  const f = getClinic(doc);
-  return f && f._id;
-};
-
-const getParent = (facility, type) => {
-  while (facility && facility.type !== type) {
-    facility = facility.parent;
-  }
-  return facility;
-};
-
-const getClinic = doc => {
-  return doc && getParent(doc.contact, 'clinic');
-};
-
-const getHealthCenter = doc => {
-  return doc && getParent(doc.contact, 'health_center');
-};
-
-const getDistrict = doc => {
-  return doc && getParent(doc.contact, 'district_hospital');
-};
-
-const getHealthCenterPhone = doc => {
-  const f = getHealthCenter(doc);
-  return f && f.contact && f.contact.phone;
-};
-
-const getDistrictPhone = doc => {
-  const f = getDistrict(doc);
-  return f && f.contact && f.contact.phone;
-};
-
 // updates the states of matching scheduled tasks
 // returns the number of updated tasks
 const setTasksStates = (doc, state, predicate) => {
@@ -106,19 +72,22 @@ const addError = (doc, error) => {
 };
 
 const getReportsWithSameClinicAndForm = (options={}) => {
-  const formName = options.formName,
-    clinicId = getClinicID(options.doc);
-
+  const formName = options.formName;
   if (!formName) {
     return Promise.reject('Missing required argument `formName` for match query.');
   }
-  if (!clinicId) {
-    return Promise.reject('Missing required argument `clinicId` for match query.');
+
+  const parentId = options.doc &&
+                   options.doc.contact &&
+                   options.doc.contact.parent &&
+                   options.doc.contact.parent._id;
+  if (!parentId) {
+    return Promise.reject('Missing required argument `parentId` for match query.');
   }
 
   return db.medic.query('medic/reports_by_form_and_clinic', {
-    startkey: [formName, clinicId],
-    endkey: [formName, clinicId],
+    startkey: [formName, parentId],
+    endkey: [formName, parentId],
     include_docs: true,
   }).then(data => data.rows);
 };
@@ -166,21 +135,17 @@ const getPatient = (patientShortcodeId, includeDocs) => {
   });
 };
 
+const hasKnownSender = doc => {
+  const contact = doc && doc.contact;
+  if (!contact) {
+    return false;
+  }
+  return (contact.phone) ||
+         (contact.parent && contact.parent.contact && contact.parent.contact.phone);
+};
+
 module.exports = {
   getLocale: getLocale,
-  getClinicPhone: doc => {
-    const clinic = getClinic(doc);
-    return (
-      (clinic && clinic.contact && clinic.contact.phone) ||
-      (doc.contact && doc.contact.phone)
-    );
-  },
-  getClinicID: getClinicID,
-  getClinic: getClinic,
-  getHealthCenter: getHealthCenter,
-  getDistrict: getDistrict,
-  getHealthCenterPhone: getHealthCenterPhone,
-  getDistrictPhone: getDistrictPhone,
   addError: addError,
   getReportsWithinTimeWindow: getReportsWithinTimeWindow,
   getReportsWithSameClinicAndForm: getReportsWithSameClinicAndForm,
@@ -300,6 +265,6 @@ module.exports = {
     const form = doc && module.exports.getForm(doc.form);
     return module.exports.isXFormReport(doc) || // xform submission
            (form && form.public_form) || // json submission to public form
-           (form && module.exports.getClinicPhone(doc)); // json submission by known submitter
+           (form && hasKnownSender(doc)); // json submission by known submitter
   }
 };

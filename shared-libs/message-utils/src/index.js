@@ -44,6 +44,11 @@ var getDistrictPhone = function(doc) {
   return district && district.contact && district.contact.phone;
 };
 
+const getParentPhone = function(doc, type) {
+  const parent = doc && getParent(doc, type);
+  return parent && parent.contact && parent.contact.phone;
+};
+
 var applyPhoneReplacement = function(config, phone) {
   var replacement = config.outgoing_phone_replace;
   if (!phone || !replacement || !replacement.match) {
@@ -83,14 +88,33 @@ var getRecipient = function(context, recipient) {
   var phone;
   if (recipient === 'reporting_unit') {
     phone = from;
+  } else if (recipient.startsWith('ancestor:')) {
+    const type = recipient.split(':')[1];
+    phone = getParentPhone(context.patient, type) ||
+            getParentPhone(context, type);
+  } else if (recipient === 'parent') {
+    const patient = context.patient || context;
+    const facility = patient.parent ? patient : patient.contact;
+    phone = facility.parent &&
+            facility.parent.parent &&
+            facility.parent.parent.contact &&
+            facility.parent.parent.contact.phone;
+  } else if (recipient === 'grandparent') {
+    const patient = context.patient || context;
+    const facility = patient.parent ? patient : patient.contact;
+    phone = facility.parent &&
+            facility.parent.parent &&
+            facility.parent.parent.parent &&
+            facility.parent.parent.parent.contact &&
+            facility.parent.parent.parent.contact.phone;
   } else if (recipient === 'clinic') {
     phone = getClinicPhone(context.patient) ||
             getClinicPhone(context) ||
             (context.contact && context.contact.phone);
-  } else if (recipient === 'health_center' || recipient === 'parent') {
+  } else if (recipient === 'health_center') {
     phone = getHealthCenterPhone(context.patient) ||
             getHealthCenterPhone(context);
-  } else if (recipient === 'district' || recipient === 'grandparent') {
+  } else if (recipient === 'district') {
     phone = getDistrictPhone(context.patient) ||
             getDistrictPhone(context);
   } else if (context.fields && context.fields[recipient]) {
