@@ -1,71 +1,62 @@
-// Because we're doing DB switching we need invalidate the cache so the require
-// gets processed again
-[
-  'migrations/extract-person-contacts.js',
-  'controllers/people.js',
-  'controllers/places.js'
-].forEach(k => {
-  delete require.cache[require.resolve('../../../src/' + k)];
-});
-
 var utils = require('./utils');
 
 var ANY_STRING = new RegExp('^.*$');
 var ANY_NUMBER = new RegExp('^[0-9]+(\\.[0-9]*)?$');
 
+const config = require('../../../src/config');
+
+const settings = {
+  contact_types: [
+    {
+      id: 'district_hospital',
+      name_key: 'contact.type.district_hospital',
+      group_key: 'contact.type.district_hospital.plural',
+      create_key: 'contact.type.district_hospital.new',
+      edit_key: 'contact.type.place.edit',
+      icon: 'medic-district-hospital',
+      create_form: 'form:contact:district_hospital:create',
+      edit_form: 'form:contact:district_hospital:edit'
+    },
+    {
+      id: 'health_center',
+      name_key: 'contact.type.health_center',
+      group_key: 'contact.type.health_center.plural',
+      create_key: 'contact.type.health_center.new',
+      edit_key: 'contact.type.place.edit',
+      parents: [ 'district_hospital' ],
+      icon: 'medic-health-center',
+      create_form: 'form:contact:health_center:create',
+      edit_form: 'form:contact:health_center:edit'
+    },
+    {
+      id: 'clinic',
+      name_key: 'contact.type.clinic',
+      group_key: 'contact.type.clinic.plural',
+      create_key: 'contact.type.clinic.new',
+      edit_key: 'contact.type.place.edit',
+      parents: [ 'health_center' ],
+      icon: 'medic-clinic',
+      create_form: 'form:contact:clinic:create',
+      edit_form: 'form:contact:clinic:edit',
+      count_visits: true
+    },
+    {
+      id: 'person',
+      name_key: 'contact.type.person',
+      group_key: 'contact.type.person.plural',
+      create_key: 'contact.type.person.new',
+      edit_key: 'contact.type.person.edit',
+      primary_contact_key: 'clinic.field.contact',
+      parents: [ 'district_hospital', 'health_center', 'clinic' ],
+      icon: 'medic-person',
+      create_form: 'form:contact:person:create',
+      edit_form: 'form:contact:person:edit',
+      person: true
+    }
+  ]
+};
+
 describe('extract-person-contacts migration', function() {
-  beforeEach(() => {
-    return utils.initSettings({
-      contact_types: [
-        {
-          id: 'district_hospital',
-          name_key: 'contact.type.district_hospital',
-          group_key: 'contact.type.district_hospital.plural',
-          create_key: 'contact.type.district_hospital.new',
-          edit_key: 'contact.type.place.edit',
-          icon: 'medic-district-hospital',
-          create_form: 'form:contact:district_hospital:create',
-          edit_form: 'form:contact:district_hospital:edit'
-        },
-        {
-          id: 'health_center',
-          name_key: 'contact.type.health_center',
-          group_key: 'contact.type.health_center.plural',
-          create_key: 'contact.type.health_center.new',
-          edit_key: 'contact.type.place.edit',
-          parents: [ 'district_hospital' ],
-          icon: 'medic-health-center',
-          create_form: 'form:contact:health_center:create',
-          edit_form: 'form:contact:health_center:edit'
-        },
-        {
-          id: 'clinic',
-          name_key: 'contact.type.clinic',
-          group_key: 'contact.type.clinic.plural',
-          create_key: 'contact.type.clinic.new',
-          edit_key: 'contact.type.place.edit',
-          parents: [ 'health_center' ],
-          icon: 'medic-clinic',
-          create_form: 'form:contact:clinic:create',
-          edit_form: 'form:contact:clinic:edit',
-          count_visits: true
-        },
-        {
-          id: 'person',
-          name_key: 'contact.type.person',
-          group_key: 'contact.type.person.plural',
-          create_key: 'contact.type.person.new',
-          edit_key: 'contact.type.person.edit',
-          primary_contact_key: 'clinic.field.contact',
-          parents: [ 'district_hospital', 'health_center', 'clinic' ],
-          icon: 'medic-person',
-          create_form: 'form:contact:person:create',
-          edit_form: 'form:contact:person:edit',
-          person: true
-        }
-      ]
-    });
-  });
 
   afterEach(function() {
     return utils.tearDown();
@@ -227,6 +218,8 @@ describe('extract-person-contacts migration', function() {
     };
 
     return utils.initDb([clinic, healthCenter, districtHospital])
+      .then(() => utils.initSettings(settings))
+      .then(() => config.load())
       .then(() => utils.runMigration('extract-person-contacts'))
       .then(() => utils.assertDb([districtHospitalFixed, districtHospitalContact,
                                   healthCenterFixed, healthCenterContact,
@@ -244,6 +237,8 @@ describe('extract-person-contacts migration', function() {
           phone: '+123'
         },
       }, ])
+      .then(() => utils.initSettings(settings))
+      .then(() => config.load())
       .then(function() {
 
         // when
@@ -288,6 +283,8 @@ describe('extract-person-contacts migration', function() {
           rc_code: 'rc1'
         },
       }, ])
+      .then(() => utils.initSettings(settings))
+      .then(() => config.load())
       .then(function() {
 
         // when
@@ -344,6 +341,8 @@ describe('extract-person-contacts migration', function() {
             }
           }
         }])
+        .then(() => utils.initSettings(settings))
+        .then(() => config.load())
         .then(function() {
 
           // when
@@ -379,6 +378,8 @@ describe('extract-person-contacts migration', function() {
           }
         }
       }])
+      .then(() => utils.initSettings(settings))
+      .then(() => config.load())
       .then(function() {
         return utils.runMigration('extract-person-contacts');
       })

@@ -139,12 +139,7 @@ var createPerson = function(id, callback) {
       .then(() => callback())
       .catch(() => {
         // we tried our best - log the details and exit
-        logger.error(
-          `Failed to restore contact on facility
-            ${facilityId}
-            , contact:
-            ${JSON.stringify(oldContact)}`
-        );
+        logger.error(`Failed to restore contact on facility "${facilityId}", contact: ${JSON.stringify(oldContact)}`);
       });
   };
 

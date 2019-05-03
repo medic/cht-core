@@ -1,8 +1,7 @@
-const utils = require('../lib/utils'),
-  db = require('../db'),
-  logger = require('../lib/logger'),
-  transitionUtils = require('./utils'),
-  NAME = 'update_scheduled_reports';
+const db = require('../db');
+const logger = require('../lib/logger');
+const transitionUtils = require('./utils');
+const NAME = 'update_scheduled_reports';
 
 module.exports = {
   filter: (doc, info = {}) => {
