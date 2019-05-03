@@ -70,7 +70,7 @@ describe('record-utils-parser', () => {
     chai.expect(doc.sms_message.from).to.equal(body.from);
   });
 
-  it('parsed form success does not add sys.facility_not_found', () => {
+  it('parsed form success does not have errors', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
       from:'+888',
@@ -113,7 +113,7 @@ describe('record-utils-parser', () => {
     chai.expect(doc.errors.length).to.equal(1);
   });
 
-  it('no facility not found error on muvuku add', () => {
+  it('no errors on muvuku add', () => {
     sinon.stub(config, 'get').withArgs('forms').returns(definitions.forms);
     const body = {
       from:'+888',

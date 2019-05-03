@@ -10,7 +10,7 @@ describe('record-utils-public-forms', () => {
     sinon.restore();
   });
 
-  it('public form has no facility not found error', () => {
+  it('public form does not have errors', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
       from: '+9999999999',
@@ -23,7 +23,7 @@ describe('record-utils-public-forms', () => {
     chai.expect(doc.errors.length).to.equal(0);
   });
 
-  it('private form has no facility not found error', () => {
+  it('private form does not have errors', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
       from: '+9999999999',
