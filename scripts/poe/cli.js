@@ -48,13 +48,19 @@ const run = async (args) => {
       const opts = await options(args);
       const spinner = new Spinner(`${capitalize(cmd)}ing translations...`);
       spinner.start();
+      let failed;
       try {
         await poe[POE_FUNS[cmd]](opts);
       } catch(ex) {
         console.log(ex);
+        failed = true;
       } finally {
         spinner.stop();
-        console.log('\ndone.');
+        if (failed) {
+          process.exit(1);
+        } else {
+          console.log('\ndone.');
+        }
       }
     } else {
       other[cmd]();
