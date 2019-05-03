@@ -43,7 +43,7 @@ const _ = require('underscore'),
   uuid = require('uuid'),
   compression = require('compression'),
   BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
-  STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),
+  extractedResourceDirectory = require('./resource-extraction').getDestinationDirectory(),
   app = express();
 
 // requires content-type application/json header
@@ -171,7 +171,7 @@ app.get('/', function(req, res) {
     // couchdb request - let it go
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(STATIC_RESOURCE_DESTINATION, 'templates/inbox.html'));
+    res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
   }
 });
 
@@ -230,7 +230,7 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, '../build/public')));
-app.use(express.static(path.join(__dirname, 'extracted-resources')));
+app.use(express.static(extractedResourceDirectory));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -602,7 +602,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(__dirname, 'extracted-resources/js/service-worker.js'));
+  res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
 });
 
 // To clear the application cache for users upgrading from legacy clients, serve an empty application manifest

@@ -7,9 +7,9 @@ Therefore, we extract all cacheable resources into a folder and serve them as pu
 const
   fs = require('fs'),
   path = require('path'),
+  { env } = require('process'),
   db = require('./db'),
   logger = require('./logger'),
-  STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),
   isAttachmentCacheable = name => name === 'manifest.json' || !!name.match(/(?:audio|css|fonts|templates|img|js|xslt)\/.*/);
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
@@ -17,22 +17,34 @@ let extractedDigests = {};
 
 const createFolderIfDne = x => !fs.existsSync(x) && fs.mkdirSync(x);
 
+const getDestinationDirectory = () => {
+  let destination = env['MEDIC_API_RESOURCE_PATH'];
+  if (!destination) {
+    const isProduction = env['NODE_ENV'] === 'production';
+    const defaultLocation = path.join(__dirname, `extracted-resources`);
+    destination = isProduction ? '/tmp/extracted-resources' : defaultLocation;
+  }
+
+  return path.resolve(destination);
+};
+
 const extractCacheableAttachments = () => {
-  createFolderIfDne(STATIC_RESOURCE_DESTINATION);
+  const extractToDirectory = getDestinationDirectory();
+  createFolderIfDne(extractToDirectory);
   return db.medic
     .get('_design/medic')
     .then(ddoc => Promise.resolve(Object.keys(ddoc._attachments))
       .then(attachmentNames => attachmentNames.filter(name => extractedDigests[name] !== ddoc._attachments[name].digest))
       .then(attachmentNames => attachmentNames.filter(isAttachmentCacheable))
-      .then(requiredNames => Promise.all(requiredNames.map(required => extractAttachment(required))))
+      .then(requiredNames => Promise.all(requiredNames.map(required => extractAttachment(extractToDirectory, required))))
       .then(attachmentNames => attachmentNames.forEach(name => extractedDigests[name] = ddoc._attachments[name].digest))
     );
 };
 
-const extractAttachment = attachmentName => db.medic
+const extractAttachment = (extractToDirectory, attachmentName) => db.medic
   .getAttachment('_design/medic', attachmentName)
   .then(raw => new Promise((resolve, reject) => {
-    const outputPath = path.join(STATIC_RESOURCE_DESTINATION, attachmentName);
+    const outputPath = path.join(extractToDirectory, attachmentName);
     createFolderIfDne(path.dirname(outputPath));
 
     fs.writeFile(outputPath, raw, err => {
@@ -46,5 +58,6 @@ const extractAttachment = attachmentName => db.medic
 
 module.exports = {
   run: extractCacheableAttachments,
+  getDestinationDirectory,
   clearCache: () => extractedDigests = {},
 };

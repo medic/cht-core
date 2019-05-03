@@ -31,6 +31,21 @@ function doMocking(overwrites = {}) {
 }
 
 describe('Resource Extraction', () => {
+  describe('getDestinationDirectory', () => {
+    const testScenario = (env, expected) => resourceExtraction.__with__({
+      env,
+      __dirname: '/__dirname',
+    })(() => {
+      const actual = resourceExtraction.getDestinationDirectory();
+      expect(actual).to.eq(expected);
+    });
+
+    it('default', () => testScenario({}, '/__dirname/extracted-resources'));
+    it('explicit via env', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo' }, '/foo'));
+    it('default in production', () => testScenario({ NODE_ENV: 'production' }, '/tmp/extracted-resources'));
+    it('explit and production', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo', NODE_ENV: 'production' }, '/foo'));
+  });
+
   it('attachments written to disk', done => {
     const expected = { content: { toString: () => 'foo' } };
     doMocking(expected);
