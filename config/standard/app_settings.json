@@ -7389,7 +7389,8 @@
       ],
       "icon": "medic-clinic",
       "create_form": "form:contact:clinic:create",
-      "edit_form": "form:contact:clinic:edit"
+      "edit_form": "form:contact:clinic:edit",
+      "count_visits": true
     },
     {
       "id": "person",

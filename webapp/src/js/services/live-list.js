@@ -90,32 +90,30 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
           scope.muted = contact.muted;
-          if (type && type.person) {
-            if (Number.isInteger(contact.lastVisitedDate) && contact.lastVisitedDate >= 0) {
-              if (contact.lastVisitedDate === 0) {
-                scope.overdue = true;
-                scope.summary = $translate.instant('contact.last.visited.unknown');
+          if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
+            if (contact.lastVisitedDate === 0) {
+              scope.overdue = true;
+              scope.summary = $translate.instant('contact.last.visited.unknown');
+            } else {
+              var now = new Date().getTime();
+              var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+              scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
+              scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+            }
+
+            var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+            scope.visits = {
+              count: $translate.instant('contacts.visits.count', { count: visitCount }),
+              summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
+            };
+
+            if (contact.visitCountGoal) {
+              if (!contact.visitCount) {
+                scope.visits.status = 'pending';
+              } else if (contact.visitCount < contact.visitCountGoal) {
+                scope.visits.status = 'started';
               } else {
-                var now = new Date().getTime();
-                var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
-                scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
-                scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
-              }
-
-              var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
-              scope.visits = {
-                count: $translate.instant('contacts.visits.count', { count: visitCount }),
-                summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
-              };
-
-              if (contact.visitCountGoal) {
-                if (!contact.visitCount) {
-                  scope.visits.status = 'pending';
-                } else if (contact.visitCount < contact.visitCountGoal) {
-                  scope.visits.status = 'started';
-                } else {
-                  scope.visits.status = 'done';
-                }
+                scope.visits.status = 'done';
               }
             }
           }

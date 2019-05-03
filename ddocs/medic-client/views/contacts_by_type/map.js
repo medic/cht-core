@@ -1,8 +1,11 @@
 function(doc) {
-  var idx = -1;
-  var types = [ 'district_hospital', 'health_center', 'clinic', 'person', 'contact' ];
+  var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+  var idx;
   if (doc.type === 'contact') {
-    idx = doc.contact_type;
+    idx = types.indexOf(doc.contact_type);
+    if (idx === -1) {
+      idx = doc.contact_type;
+    }
   } else {
     idx = types.indexOf(doc.type);
   }
