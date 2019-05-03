@@ -129,3 +129,6 @@ notifications:
       - "[webapp] <%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
     on_success: change
     on_failure: always
+  webhooks:
+    urls:
+      - https://hooks.zapier.com/hooks/catch/3653132/j182m9/
