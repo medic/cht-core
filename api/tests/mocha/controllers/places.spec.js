@@ -1,11 +1,61 @@
-const controller = require('../../../src/controllers/places'),
-      chai = require('chai'),
-      people = require('../../../src/controllers/people'),
-      cutils = require('../../../src/controllers/utils'),
-      db = require('../../../src/db'),
-      sinon = require('sinon');
+const chai = require('chai');
+const sinon = require('sinon');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
+const controller = require('../../../src/controllers/places');
+const people = require('../../../src/controllers/people');
+const cutils = require('../../../src/controllers/utils');
 
 let examplePlace;
+
+const contactTypes = [
+  {
+    id: 'district_hospital',
+    name_key: 'contact.type.district_hospital',
+    group_key: 'contact.type.district_hospital.plural',
+    create_key: 'contact.type.district_hospital.new',
+    edit_key: 'contact.type.place.edit',
+    icon: 'medic-district-hospital',
+    create_form: 'form:contact:district_hospital:create',
+    edit_form: 'form:contact:district_hospital:edit'
+  },
+  {
+    id: 'health_center',
+    name_key: 'contact.type.health_center',
+    group_key: 'contact.type.health_center.plural',
+    create_key: 'contact.type.health_center.new',
+    edit_key: 'contact.type.place.edit',
+    parents: [ 'district_hospital' ],
+    icon: 'medic-health-center',
+    create_form: 'form:contact:health_center:create',
+    edit_form: 'form:contact:health_center:edit'
+  },
+  {
+    id: 'clinic',
+    name_key: 'contact.type.clinic',
+    group_key: 'contact.type.clinic.plural',
+    create_key: 'contact.type.clinic.new',
+    edit_key: 'contact.type.place.edit',
+    parents: [ 'health_center' ],
+    icon: 'medic-clinic',
+    create_form: 'form:contact:clinic:create',
+    edit_form: 'form:contact:clinic:edit',
+    count_visits: true
+  },
+  {
+    id: 'person',
+    name_key: 'contact.type.person',
+    group_key: 'contact.type.person.plural',
+    create_key: 'contact.type.person.new',
+    edit_key: 'contact.type.person.edit',
+    primary_contact_key: 'clinic.field.contact',
+    parents: [ 'district_hospital', 'health_center', 'clinic' ],
+    icon: 'medic-person',
+    create_form: 'form:contact:person:create',
+    edit_form: 'form:contact:person:edit',
+    person: true
+  }
+];
 
 describe('places controller', () => {
 
@@ -15,6 +65,7 @@ describe('places controller', () => {
       name: 'St. Paul',
       parent: 'x'
     };
+    sinon.stub(config, 'get').returns(contactTypes);
   });
 
   afterEach(() => {
@@ -85,7 +136,7 @@ describe('places controller', () => {
         }
       };
       controller._validatePlace(data).catch(err => {
-        chai.expect(err.message).to.equal('Health Center xyz should have "district_hospital" parent type.');
+        chai.expect(err.message).to.equal('health_center "xyz" should have one of the following parent types: "district_hospital".');
         done();
       });
     });
@@ -97,7 +148,7 @@ describe('places controller', () => {
         type: 'district_hospital'
       };
       controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Clinic xyz should have "health_center" parent type.');
+        chai.expect(err.message).to.equal('clinic "xyz" should have one of the following parent types: "health_center".');
         done();
       });
     });
@@ -105,12 +156,6 @@ describe('places controller', () => {
     it('does not return error if district is missing parent', () => {
       delete examplePlace.parent;
       examplePlace.type = 'district_hospital';
-      return controller._validatePlace(examplePlace);
-    });
-
-    it('does not return error if national office is missing parent', () => {
-      delete examplePlace.parent;
-      examplePlace.type = 'national_office';
       return controller._validatePlace(examplePlace);
     });
 

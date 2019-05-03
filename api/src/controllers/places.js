@@ -1,10 +1,10 @@
-const _ = require('underscore'),
-      people = require('./people'),
-      utils = require('./utils'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
-      PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
-      PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
+const _ = require('underscore');
+const config = require('../config');
+const people = require('./people');
+const utils = require('./utils');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
 const getPlace = id => {
   return lineage.fetchHydratedDoc(id)
@@ -22,7 +22,16 @@ const getPlace = id => {
     });
 };
 
-const isAPlace = place => PLACE_TYPES.indexOf(place.type) !== -1;
+const getContactType = place => {
+  const types = config.get('contact_types') || [];
+  const typeId = place.contact_type || place.type;
+  return types.find(type => type.id === typeId);
+};
+
+const isAPlace = place => {
+  const type = getContactType(place);
+  return type && !type.person;
+};
 
 /*
  * Validate the basic data structure for a place.  Not checking against the
@@ -59,15 +68,14 @@ const validatePlace = place => {
   if (!_.isString(place.name)) {
     return err(`Property "name" on place ${placeId} must be a string.`);
   }
-  if (['clinic', 'health_center'].indexOf(place.type) !== -1) {
+  const type = getContactType(place);
+  if (type.parents && type.parents.length) {
     if (!place.parent) {
       return err(`Place ${placeId} is missing a "parent" property.`);
     }
-    if (place.type === 'clinic' && place.parent.type !== 'health_center') {
-      return err(`Clinic ${placeId} should have "health_center" parent type.`);
-    }
-    if (place.type === 'health_center' && place.parent.type !== 'district_hospital') {
-      return err(`Health Center ${placeId} should have "district_hospital" parent type.`);
+    const parentType = place.parent.contact_type || place.parent.type;
+    if (!type.parents.includes(parentType)) {
+      return err(`${type.id} "${placeId}" should have one of the following parent types: "${type.parents}".`);
     }
   }
   if (place.contact) {
