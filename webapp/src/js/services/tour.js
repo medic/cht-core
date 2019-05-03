@@ -407,24 +407,28 @@ angular.module('inboxServices').service('Tour',
     var current;
 
     var createTemplate = function() {
-      return  '<div class="popover tour">' +
-                '<div class="arrow"></div>' +
-                '<h3 class="popover-title"></h3>' +
-                '<div class="popover-content"></div>' +
-                '<div class="popover-navigation">' +
-                  '<div class="btn-group">' +
-                    '<button class="btn btn-sm btn-default" data-role="prev">' +
-                      '&laquo; ' + $translate.instant('Previous') +
-                    '</button>' +
-                    '<button class="btn btn-sm btn-default" data-role="next">' +
-                      $translate.instant('Next') + ' &raquo;' +
-                    '</button>' +
-                  '</div>' +
-                  '<button class="btn btn-sm btn-link" data-role="end">' +
-                    $translate.instant('End tour') +
-                  '</button>' +
-                '</div>' +
-              '</div>';
+      return  `<div class="popover tour">
+                <div class="arrow"></div>
+                <h3 class="popover-title"></h3>
+                <div class="popover-content"></div>
+                <div class="popover-navigation">
+                  <div class="col-xs-12">
+                    <div class="pull-left">
+                      <button class="btn btn-sm btn-default" data-role="prev">
+                        &laquo; ${$translate.instant('Previous')}
+                      </button>
+                    </div>
+                    <div class="pull-right">
+                      <button class="btn btn-sm btn-primary" data-role="next">
+                        ${$translate.instant('Next')} &raquo;
+                      </button>
+                    </div>
+                  </div>
+                  <button class="btn btn-sm btn-link" data-role="end">
+                    ${$translate.instant('End tour')}
+                  </button>
+                </div>
+              </div>`;
     };
 
     var getTour = function(name) {
@@ -550,7 +554,7 @@ angular.module('inboxServices').service('Tour',
           if (results.length) {
             return {
               order: 4,
-    
+
               id: 'analytics',
               icon: 'fa-bar-chart-o',
               name: 'Analytics'
@@ -594,12 +598,12 @@ angular.module('inboxServices').service('Tour',
             if (route) {
               $state.go(route, { tour: name });
             } else {
-              var message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
+              var message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
               Feedback.submit(message, false, function(err) {
                 if (err) {
                   $log.error('Error saving feedback', err);
                 }
-              }); 
+              });
             }
           }
         });

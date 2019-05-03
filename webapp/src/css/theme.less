@@ -92,15 +92,24 @@ a {
   }
 }
 
-.popover .popover-title {
-  background-color: @background-color;
-}
 .popover.tour {
-  border-color: #000000;
-  border-width: 2px;
-  padding: 0;
+  font-family: Noto, sans-serif;
   .popover-title {
     font-weight: bold;
+    font-size: 16px;
+    background-color: transparent;
+    border-bottom: 2px solid @seperator-color;
+    line-height: 40px;
+    padding: 0 20px;
+  }
+  .popover-content {
+    padding: 4px 20px;
+  }
+  .popover-navigation {
+    .col-xs-12 {
+      padding-left: 0;
+      padding-right: 0;
+    }
   }
   &.right > .arrow {
     border-right-color: #000000;
@@ -115,9 +124,9 @@ a {
     }
   }
   &.bottom > .arrow {
-    border-bottom-color: #000000;
+    border-bottom-color: rgba(0, 0, 0, 0.2);
     &::after {
-      border-bottom-color: @background-color;
+      border-bottom-color: #FFFFFF;
       top: 2px;
     }
   }
