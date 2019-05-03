@@ -132,7 +132,9 @@ self.addEventListener('fetch', function(event) {
     // if (event.request.method === 'GET' && event.request.headers.get('accept').indexOf('application/json') === -1) {
     // But it fails when running e2e test
     // this has been attributed by the root url serving both json GET request and the cached HTML page
-    if (event.request.headers.get('accept').indexOf('application/json') !== -1) {
+    const isJsonRequest = event.request.headers.get('accept').indexOf('application/json') !== -1;
+    const isRootRequest = new URL(event.request.url).pathname === '/';
+    if (isRootRequest && isJsonRequest) {
       return event.respondWith(async function() {
         return fetch(event.request);
       }());
