@@ -89,7 +89,7 @@ Create a `.env` file in the app directory with the following contents
 
 ```shell
 COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@localhost
+COUCH_NODE_NAME=couchdb@127.0.0.1
 ```
 
 Then do an initial deploy of the webapp:
@@ -121,7 +121,7 @@ If `npm start` is not to your taste for whatever reason, the apps can be deploye
 ```shell
 cd sentinel
 npm ci
-export COUCH_NODE_NAME=couchdb@localhost
+export COUCH_NODE_NAME=couchdb@127.0.0.1
 export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
@@ -132,7 +132,7 @@ Then run either `node ./server.js` from the sentinel directory or `grunt dev-sen
 ```shell
 cd api
 npm ci
-export COUCH_NODE_NAME=couchdb@localhost
+export COUCH_NODE_NAME=couchdb@127.0.0.1
 export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
