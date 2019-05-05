@@ -52,7 +52,7 @@ module.exports = [
         true
       );
       // use contact id to avoid counting multiple pregnancies for same person
-      instance._id = c.contact._id + '-' + 'pregnancy-registrations-this-month';
+      instance._id = c.contact._id + '~' + 'pregnancy-registrations-this-month';
       emitTargetInstance(instance);
     },
     date: 'reported',
