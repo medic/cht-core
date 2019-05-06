@@ -5,8 +5,7 @@ const _ = require('underscore'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
   registrationUtils = require('@medic/registration-utils'),
-  logger = require('./logger'),
-  XFORM_CONTENT_TYPE = 'xml';
+  logger = require('./logger');
 
 /*
  * Get desired locale
@@ -300,8 +299,7 @@ module.exports = {
   isValidSubmission: doc => {
     const form = doc && module.exports.getForm(doc.form);
     return Boolean(
-      doc &&
-      doc.content_type === XFORM_CONTENT_TYPE || // xform submission
+      module.exports.isXFormReport(doc) || // xform submission
       (form && form.public_form) || // json submission to public form
       (form && module.exports.getClinicPhone(doc)) // json submission by known submitter
     );
