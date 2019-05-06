@@ -149,13 +149,11 @@ This process is relevant for viewing the Medic webapp on mobile devices when the
 1. Create an ngrok account at https://ngrok.com/ 
 2. Follow instructions on downloading and linking your account.
 3. Start the webapp. This can be via docker, grunt, debug, horti, etc....
-3. Run ngrok and forward it towards the port you are running the webapp on. </br>
-  EX: For running webapp in docker locally using the docker instructions above `$ ./ngrok https 443`. This will forward the traffic from your ngrok url on https to 443 on your local machine. </br>
-  EX: For runnning via horti, debug, or grunt where the api starts on port 5988. `$ ./ngrok https 5988` This will forward the traffic from your ngrok url on https to 5988 on your local machine. 
-
-  The url looks like this. </br> 
-  Forwarding                    http://1661304e.ngrok.io -> http://localhost:5988                                        
-Forwarding                    https://1661304e.ngrok.io -> http://localhost:5988    
+3. Run ngrok and forward it towards the port you are running the webapp on.
+  * EX: For running webapp in docker locally using the docker instructions above `$ ./ngrok https 443`. This will forward the traffic from your ngrok url on https to 443 on your local machine. </br>
+  * EX: For runnning via horti, debug, or grunt where the api starts on port 5988. `$ ./ngrok https 5988` This will forward the traffic from your ngrok url on https to 5988 on your local machine. 
+3. You can then enter the url into our android app or browser and connect to your local dev environment.                
+* Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988    
 
 ### Data
 
