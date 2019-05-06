@@ -483,7 +483,7 @@ module.exports = {
       patientShortcode = doc.patient_id,
       patientNameField = getPatientNameField(options.params);
 
-    const contactType = options.registrationConfig.contact_type || 'person';
+    const contactType = options.params.contact_type || 'person';
 
     utils.getPatientContactUuid(
       patientShortcode,

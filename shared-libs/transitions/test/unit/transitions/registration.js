@@ -171,7 +171,57 @@ describe('registration', () => {
       });
     });
 
-    it('errors if the configuration doesnt point to an id', () => {
+    it('trigger creates a new contact with the given type', done => {
+      const change = {
+        doc: {
+          _id: 'def',
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: '+555123',
+          fields: { patient_name: 'jack' },
+          birth_date: '2017-03-31T01:15:09.000Z',
+        },
+      };
+      const getPatientContactUuid = sinon
+        .stub(utils, 'getPatientContactUuid')
+        .callsArgWith(1);
+      // return expected view results when searching for contacts_by_phone
+      const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+        rows: [
+          {
+            doc: {
+              _id: 'abc',
+              parent: { _id: 'papa' },
+            },
+          },
+        ],
+      });
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const eventConfig = {
+        form: 'R',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '{ "contact_type": "patient" }'
+        }],
+      };
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(transition, 'validate').callsArgWith(2);
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+        doc.patient_id = '05649';
+        callback();
+      });
+
+      transition.onMatch(change).then(() => {
+        saveDoc.callCount.should.equal(1);
+        saveDoc.args[0][0].type.should.equal('patient');
+        done();
+      });
+    });
+
+    it('errors if the configuration does not point to an id', () => {
       const patientId = '05648';
       const doc = {
         type: 'data_record',
