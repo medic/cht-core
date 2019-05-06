@@ -146,7 +146,7 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 This process is relevant for viewing the Medic webapp on mobile devices when the api service is run on a developer machine running Webapp >v3.5.0. Webapp v3.5.0 relies on service workers, which require a valid HTTPS certificate to function. Follow these steps to make your developer build accessible from your android device at the trusted url created by ngrok.
 
-1. Create an ngrok account
+1. Create an ngrok account at https://ngrok.com/ 
 2. Follow instructions on downloading and linking your account.
 3. Start the webapp. This can be via docker, grunt, debug, horti, etc....
 3. Run ngrok and forward it towards the port you are running the webapp on. </br>
