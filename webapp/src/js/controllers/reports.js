@@ -459,7 +459,7 @@ angular
         if (!$scope.loading && $scope.moreItems) {
           query({ skip: true });
         }
-      });console.log('start', (new Date).getTime());
+      });
     };
 
     if (!$state.params.id) {
