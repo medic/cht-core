@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    Search = require('@medic/search');
+    Search = require('@twd/search');
 
 (function () {
 

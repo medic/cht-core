@@ -17,7 +17,7 @@
     "@medic/message-utils": "^1.0.2",
     "@medic/phone-number": "^1.0.0",
     "@medic/registration-utils": "^1.1.0",
-    "@medic/search": "file:../shared-libs/search",
+    "@twd/search": "^1.2.0-beta-0",
     "@medic/task-utils": "^1.0.0",
     "@medic/translation-utils": "^1.0.1",
     "@uirouter/angularjs": "^1.0.21",
