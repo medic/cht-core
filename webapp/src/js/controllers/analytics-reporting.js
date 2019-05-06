@@ -11,6 +11,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+
     $scope.filters = {
       time_unit: 'month',
       quantity: 3
@@ -23,8 +25,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
       .then(function(results) {
         var forms = results[0];
         var districts = results[1];
-        $scope.forms = forms;
-        $scope.districts = districts;
+        ctrl.forms = forms;
+        ctrl.districts = districts;
         if (!forms.length) {
           throw new Error('No scheduled forms found');
         }
