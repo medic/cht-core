@@ -183,11 +183,9 @@ describe('registration', () => {
           birth_date: '2017-03-31T01:15:09.000Z',
         },
       };
-      const getPatientContactUuid = sinon
-        .stub(utils, 'getPatientContactUuid')
-        .callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
-      const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
         rows: [
           {
             doc: {
