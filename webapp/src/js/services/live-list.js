@@ -39,6 +39,8 @@ angular.module('inboxServices').factory('LiveListConfig',
     // Configure LiveList service
     return function($scope) {
 
+      const HARDCODED_CONTACT_TYPES = ['district_hospital', 'health_center', 'clinic', 'person'];
+      
       var contacts_config = {
         orderBy: function(c1, c2) {
           if (!c1 || !c2) {
@@ -64,9 +66,8 @@ angular.module('inboxServices').factory('LiveListConfig',
           const c1Type = c1.contact_type || c1.type;
           const c2Type = c2.contact_type || c2.type;
           if (c1Type !== c2Type) {
-            const hardcodedTypes = ['district_hospital', 'health_center', 'clinic', 'person'];
-            const c1TypeIndex = hardcodedTypes.indexOf(c1Type);
-            const c2TypeIndex = hardcodedTypes.indexOf(c2Type);
+            const c1TypeIndex = HARDCODED_CONTACT_TYPES.indexOf(c1Type);
+            const c2TypeIndex = HARDCODED_CONTACT_TYPES.indexOf(c2Type);
             if (c1TypeIndex !== c2TypeIndex) {
               return c2TypeIndex - c1TypeIndex;
             }

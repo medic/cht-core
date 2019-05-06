@@ -78,10 +78,16 @@ angular.module('inboxServices').factory('PlaceHierarchy',
         if (settings.place_hierarchy_types) {
           return settings.place_hierarchy_types;
         }
+        // By default exclude people and clinics (the lowest level)
+        // for performance reasons
         return ContactTypes.getPlaceTypes().then(types => {
-          return types
-            .filter(type => type.id !== 'clinic') // By default exclude people and clinics (the lowest level) to increase performance.
-            .map(type => type.id);
+          const ids = [];
+          types.forEach(type => {
+            if (type.parents) {
+              ids.push(...type.parents);
+            }
+          });
+          return ids;
         });
       });
     };

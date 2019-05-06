@@ -118,8 +118,8 @@
               date="task.date"
               overdue="task.isLate"
               hide-time="true"
-              heading="contactsContentCtrl.selectedContact.doc.type === 'clinic' ? (task.contact && task.contact.name) : task.title"
-              summary="contactsContentCtrl.selectedContact.doc.type === 'clinic' ? task.title : ''"
+              heading="contactsContentCtrl.selectedContact.children.length ? (task.contact && task.contact.name) : task.title"
+              summary="contactsContentCtrl.selectedContact.children.length ? task.title : ''"
               warning="task.priorityLabel"
             />
           </ul>
@@ -150,8 +150,8 @@
                 route="'reports'"
                 icon="report | formIconName:forms"
                 date="report.reported_date"
-                heading="contactsContentCtrl.selectedContact.doc.type === 'person' ? (report | summary:forms) : report.heading"
-                summary="contactsContentCtrl.selectedContact.doc.type === 'person' ? '' : (report | summary:forms)"
+                heading="contactsContentCtrl.selectedContact.children.length ? report.heading : (report | summary:forms)"
+                summary="contactsContentCtrl.selectedContact.children.length ? (report | summary:forms) : ''"
                 show-status="true"
                 valid="report.valid"
                 verified="report.verified"

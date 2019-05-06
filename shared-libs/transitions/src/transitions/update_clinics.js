@@ -5,6 +5,14 @@ const transitionUtils = require('./utils'),
   NAME = 'update_clinics',
   FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
+const config = require('../config');
+
+const getContactType = doc => {
+  const typeId = doc.contact_type || doc.type;
+  const contactTypes = config.get('contact_types') || [];
+  return contactTypes.find(type => type.id === typeId);
+};
+
 const getContactByRefid = doc => {
   const params = {
     key: ['external', doc.refid],
@@ -20,16 +28,23 @@ const getContactByRefid = doc => {
       }
 
       const result = data.rows[0].doc;
-      if (result.type === 'person') {
-        return lineage.fetchHydratedDoc(result._id);
-      } else {
-        const id = result.contact && result.contact._id;
-        if (!id) {
-          return result.contact || { parent: result };
-        }
-
-        return lineage.fetchHydratedDoc(id);
+      const contactType = getContactType(result);
+      // not a contact
+      if (!contactType) {
+        return callback();
       }
+      // person
+      if (contactType.person) {
+        return lineage.fetchHydratedDoc(result._id);
+      }
+
+      // place
+      const id = result.contact && result.contact._id;
+      if (!id) {
+        return result.contact || { parent: result };
+      }
+
+      return lineage.fetchHydratedDoc(id);
     });
 };
 

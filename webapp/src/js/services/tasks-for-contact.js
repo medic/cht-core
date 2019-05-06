@@ -9,6 +9,7 @@ angular.module('inboxServices').factory('TasksForContact',
   function(
     $log,
     $translate,
+    ContactTypes,
     RulesEngine,
     TranslateFrom
   ) {
@@ -69,10 +70,6 @@ angular.module('inboxServices').factory('TasksForContact',
       });
     };
 
-    var areTasksEnabled = function(docType) {
-      return RulesEngine.enabled && (docType === 'clinic' || docType === 'person');
-    };
-
     const getIdsForTasks = (model) => {
       let contactIds = [];
       if (model.doc.type === 'clinic' && model.children && model.children.persons && model.children.persons.length) {
@@ -99,14 +96,32 @@ angular.module('inboxServices').factory('TasksForContact',
       });
     };
 
+    const areTasksEnabled = type => {
+      if (!RulesEngine.enabled) {
+        return Promise.resolve(false);
+      }
+      // must be either a person type
+      if (type.person) {
+        return Promise.resolve(true);
+      }
+      // ... or a leaf place type
+      return ContactTypes.getAll().then(types => {
+        const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(docType));
+        if (!hasChild) {
+          return true;
+        }
+      });
+    };
+
     /** Listener format : function(newTasks) */
     return (model, listenerName, listener) => {
-      if (!areTasksEnabled(model.doc.type)) {
-        return listener(false);
-      }
-
-      const contactIds = getIdsForTasks(model);
-      getTasks(contactIds, listenerName, listener);
+      return areTasksEnabled(model.type).then(enabled => {
+        if (!enabled) {
+          return listener(false);
+        }
+        const contactIds = getIdsForTasks(model);
+        getTasks(contactIds, listenerName, listener);
+      });
     };
   }
 );

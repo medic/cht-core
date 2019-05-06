@@ -502,6 +502,7 @@ Note: this does not accomodate having a `place` field on your form and will like
 | Key  | Description                         |
 | ---- | ----------------------------------- |
 | name | String used to describe the person. |
+| type | ID of the `contact_type` for the new person. Defaults to 'person' for backwards compatibility. |
 
 #### Optional
 
@@ -531,6 +532,7 @@ Content-Type: application/json
 {
   "name": "Hannah",
   "phone": "+2548277210095",
+  "type": "patient",
   "place": {
     "name": "CHP Area One",
     "type": "health_center",
@@ -550,7 +552,8 @@ Content-Type: application/json
 
 {
  "name": "Samuel",
- "place": "1d83f2b4a27eceb40df9e9f9ad06d137"
+ "place": "1d83f2b4a27eceb40df9e9f9ad06d137",
+ "type": "chp"
 }
 ```
 

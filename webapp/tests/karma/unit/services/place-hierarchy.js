@@ -12,8 +12,8 @@ describe('PlaceHierarchy service', () => {
     settings = {};
     const placeTypes = [
       { id: 'district_hospital' },
-      { id: 'health_center' },
-      { id: 'clinic' }
+      { id: 'health_center', parents: [ 'district_hospital' ] },
+      { id: 'clinic', parents: [ 'health_center' ] }
     ];
     module($provide => {
       $provide.value('Contacts', Contacts);

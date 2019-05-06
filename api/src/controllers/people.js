@@ -1,8 +1,9 @@
-const _ = require('underscore'),
-      db = require('../db'),
-      utils = require('./utils'),
-      places = require('./places'),
-      lineage = require('@medic/lineage')(Promise, db.medic);
+const _ = require('underscore');
+const db = require('../db');
+const config = require('../config');
+const utils = require('./utils');
+const places = require('./places');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 
 const getPerson = id => {
   return lineage.fetchHydratedDoc(id)
@@ -13,14 +14,31 @@ const getPerson = id => {
       throw err;
     })
     .then(doc => {
-      if (doc.type !== 'person') {
+      if (!isAPerson(doc)) {
         throw { code: 404, message: 'Failed to find person.' };
       }
       return doc;
     });
 };
 
-const isAPerson = obj => obj.type === 'person';
+const getContactType = person => {
+  const types = config.get('contact_types') || [];
+  const typeId = person.contact_type || person.type;
+  return types.find(type => type.id === typeId);
+};
+
+const isAPerson = person => {
+  const type = getContactType(person);
+  return type && type.person;
+};
+
+const getDefaultPersonType = () => {
+  const types = config.get('contact_types') || [];
+  // the old hardcoded type was "person" - kept for backwards compatibility
+  if (types.some(type => type.id === 'person')) {
+    return 'person';
+  }
+};
 
 const validatePerson = obj => {
   if (!_.isObject(obj)) {
@@ -50,7 +68,13 @@ const validatePerson = obj => {
  * validate_doc_update. https://github.com/medic/medic/issues/2203
  */
 const createPerson = data => {
-  data.type = 'person';
+  if (!data.type) {
+    const defaultType = getDefaultPersonType();
+    if (defaultType) {
+      data.type = defaultType;
+    }
+    // else validation will fail below
+  }
   const self = module.exports;
   const error = self._validatePerson(data);
   if (error) {
@@ -94,6 +118,7 @@ const getOrCreatePerson = data => {
  */
 module.exports.createPerson = createPerson;
 module.exports.getOrCreatePerson = getOrCreatePerson;
+module.exports.isAPerson = isAPerson;
 
 module.exports._getPerson = getPerson;
 module.exports._validatePerson = validatePerson;

@@ -10,6 +10,15 @@ const _ = require('underscore'),
 // set later to use local time
 later.date.localTime();
 
+const getLeafPlaceTypeIds = () => {
+    const types = config.get('contact_types') || [];
+    const placeTypes = types.filter(type => !type.person);
+    const leafPlaceTypes = placeTypes.filter(type => {
+        return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
+    });
+    return leafPlaceTypes.map(type => type.id);
+};
+
 function isConfigValid(config) {
     return Boolean(
         config.form &&
@@ -111,10 +120,11 @@ module.exports = {
         }
     },
     getClinics: function(options, callback) {
+        const placeTypes = getLeafPlaceTypeIds();
+
         // gets all clinics
-        db.medic.query('medic-client/doc_by_type', {
-            startkey: [ 'clinic' ],
-            endkey: [ 'clinic', {} ],
+        db.medic.query('medic-client/contacts_by_type', {
+            keys: placeTypes,
             include_docs: true
         }, function(err, data) {
             if (err) {

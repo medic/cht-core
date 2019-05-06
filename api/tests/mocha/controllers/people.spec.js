@@ -2,6 +2,7 @@ const controller = require('../../../src/controllers/people'),
       chai = require('chai'),
       places = require('../../../src/controllers/places'),
       cutils = require('../../../src/controllers/utils'),
+      config = require('../../../src/config'),
       db = require('../../../src/db'),
       sinon = require('sinon');
 
@@ -19,21 +20,25 @@ describe('people controller', () => {
     });
 
     it('returns error on wrong doc type', () => {
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'shoe' });
       chai.expect(actual).to.equal('Wrong type, this is not a person.');
     });
 
     it('returns error if missing name property', () => {
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person' });
       chai.expect(actual).to.equal('Person is missing a "name" property.');
     });
 
     it('returns error if name is an integer', () => {
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person', name: 1 });
       chai.expect(actual).to.equal('Property "name" must be a string.');
     });
 
     it('returns error if name is an object', () => {
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person', name: {} });
       chai.expect(actual).to.equal('Property "name" must be a string.');
     });
@@ -59,6 +64,7 @@ describe('people controller', () => {
     });
 
     it('succeeds and returns doc when person type.', () => {
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       sinon.stub(controller._lineage, 'fetchHydratedDoc').resolves({type: 'person'});
       return controller._getPerson('x').then(doc => {
         chai.expect(doc).to.deep.equal({ type: 'person' });
@@ -68,15 +74,6 @@ describe('people controller', () => {
   });
 
   describe('createPerson', () => {
-
-    it('sets contact type before validating', () => {
-      sinon.stub(controller, '_validatePerson').returns();
-      sinon.stub(db.medic, 'post').returns(Promise.resolve());
-      return controller.createPerson({ type: 'shoe', name: 'Kobe' }).then(() => {
-        chai.expect(controller._validatePerson.args[0][0].type).to.equal('person');
-        chai.expect(controller._validatePerson.args[0][0].name).to.equal('Kobe');
-      });
-    });
 
     it('returns error from db insert', done => {
       sinon.stub(controller, '_validatePerson').returns();
@@ -93,6 +90,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: 'x'
       };
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
       controller.createPerson(person).catch(err => {
@@ -107,6 +105,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '123'
       };
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       sinon.stub(places, 'getOrCreatePlace').resolves();
       const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
@@ -119,6 +118,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '2011-10-10T14:48:00-0300'
       };
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       sinon.stub(places, 'getOrCreatePlace').resolves();
       const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
@@ -146,6 +146,7 @@ describe('people controller', () => {
           _id: 'b'
         }
       };
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
       sinon.stub(controller._lineage, 'minifyLineage').returns(minified);
       sinon.stub(db.medic, 'post').resolves();
@@ -164,6 +165,7 @@ describe('people controller', () => {
       const person = {
         name: 'Test'
       };
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];

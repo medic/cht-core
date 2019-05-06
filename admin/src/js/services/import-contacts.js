@@ -3,6 +3,7 @@ angular.module('services').factory('ImportContacts',
     $http,
     $q,
     CleanETag,
+    ContactTypes,
     DB,
     Location
   ) {
@@ -10,19 +11,38 @@ angular.module('services').factory('ImportContacts',
     'use strict';
     'ngInject';
 
+    const getPersonType = contact => {
+      if (contact.type) {
+        // user provided type
+        return $q.resolve(contact.type);
+      }
+      return ContactTypes.getPersonTypes().then(types => {
+        if (types.find(type => type.id === 'person')) {
+          // retained for backwards compatibility
+          return 'person';
+        }
+      });
+    };
+
     var savePerson = function(doc) {
-      var person = {
-        type: 'person',
-        name: doc.contact.name,
-        phone: doc.contact.phone,
-        parent: doc
-      };
-      return DB()
-        .put(person)
-        .then(function(response) {
-          doc.contact.type = 'person';
-          doc.contact._id = response._id;
-          doc.contact._rev = response._rev;
+      return getPersonType(doc.contact)
+        .then(type => {
+          if (!type) {
+            return $q.reject(new Error(`Undefined "type" for person named "${doc.contact.name}"`));
+          }
+          const person = {
+            type: type,
+            name: doc.contact.name,
+            phone: doc.contact.phone,
+            parent: doc
+          };
+          return DB()
+            .put(person)
+            .then(function(response) {
+              doc.contact.type = type;
+              doc.contact._id = response._id;
+              doc.contact._rev = response._rev;
+            });
         });
     };
 

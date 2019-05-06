@@ -16,19 +16,22 @@ describe('TasksForContact service', function() {
     docId = 'dockyMcDocface';
     childPersonId = 'hillary';
 
-    var log = { error: console.error, debug: console.info };
-    module(function($provide) {
-      $provide.value('$log', log);
-    });
-
     rulesEngineListen = sinon.stub();
     stubRulesEngine = function(err, tasks) {
       rulesEngineListen.callsArgWith(2, err, tasks);
     };
     translateFrom = sinon.stub();
+
+    const contactTypes = [
+      { id: 'person', person: true, parents: ['clinic'] },
+      { id: 'clinic', parents: ['health_center'] },
+      { id: 'health_center' },
+    ];
     module(function($provide) {
+      $provide.value('$q', Q);
       $provide.value('RulesEngine', { listen: rulesEngineListen, enabled: true });
       $provide.value('TranslateFrom', translateFrom);
+      $provide.value('ContactTypes', { getAll: sinon.stub().resolves(contactTypes) });
     });
 
     inject(function(_TasksForContact_, _RulesEngine_, _$translate_) {
@@ -278,24 +281,26 @@ describe('TasksForContact service', function() {
         done('callback called too many times!');
       }
       callCount++;
-    });
-    var changesCallback = rulesEngineListen.args[0][2];
+    })
+      .then(() => {
+        var changesCallback = rulesEngineListen.args[0][2];
 
-    // mark #2 resolved
-    changesCallback(null, [{
-      _id: 2,
-      resolved: true,
-      date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-      contact: { _id: docId }
-    }]);
+        // mark #2 resolved
+        changesCallback(null, [{
+          _id: 2,
+          resolved: true,
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: docId }
+        }]);
 
-    // mark #3 deleted
-    changesCallback(null, [{
-      _id: 3,
-      deleted: true,
-      date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-      contact: { _id: docId }
-    }]);
+        // mark #3 deleted
+        changesCallback(null, [{
+          _id: 3,
+          deleted: true,
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: docId }
+        }]);
+      });
   });
 
   it('should translate tasks labels', (done) => {
