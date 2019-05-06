@@ -30,13 +30,13 @@ angular.module('inboxControllers').controller('AboutCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.url = $window.location.hostname;
-    $scope.userCtx = Session.userCtx();
+    ctrl.url = $window.location.hostname;
+    ctrl.userCtx = Session.userCtx();
 
-    $scope.debugOptionEnabled = $scope.url.indexOf('localhost') >= 0;
+    ctrl.debugOptionEnabled = ctrl.url.indexOf('localhost') >= 0;
 
     ResourceIcons.getDocResources('partners').then(partners => {
-      $scope.partners = partners;
+      ctrl.partners = partners;
     });
 
     const formatRev = rev => rev.split('-')[0];
@@ -53,7 +53,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
     };
 
     const updateAndroidDataUsage = () => {
-      $scope.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
+      ctrl.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
     };
 
     // get local ddoc version
@@ -63,7 +63,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
         if (version) {
           ctrl.setVersion(version);
         }
-        $scope.clientDdocVersion = formatRev(info._rev);
+        ctrl.clientDdocVersion = formatRev(info._rev);
       })
       .catch(function(err) {
         $log.error('Could not access local _design/medic-client', err);
@@ -72,14 +72,14 @@ angular.module('inboxControllers').controller('AboutCtrl',
     // get remote ddoc version
     DB({ remote: true }).allDocs({ key: '_design/medic-client' })
       .then(function(info) {
-        $scope.ddocVersion = formatRev(info.rows[0].value.rev);
+        ctrl.ddocVersion = formatRev(info.rows[0].value.rev);
       })
       .catch(function(err) {
-        $translate('app.version.unknown').then(text => $scope.ddocVersion = text);
+        $translate('app.version.unknown').then(text => ctrl.ddocVersion = text);
         $log.debug('Could not access remote _design/medic', err);
       });
 
-    $scope.reload = function() {
+    ctrl.reload = function() {
       $window.location.reload(false);
     };
     $scope.enableDebugModel = {
@@ -97,7 +97,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
 
     DB().info()
       .then(function(result) {
-        $scope.dbInfo = result;
+        ctrl.dbInfo = result;
       })
       .catch(function (err) {
         $log.error('Failed to fetch DB info', err);
