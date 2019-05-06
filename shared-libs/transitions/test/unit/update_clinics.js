@@ -1,15 +1,16 @@
-const sinon = require('sinon'),
-  assert = require('chai').assert,
-  dbPouch = require('../../src/db'),
-  transition = require('../../src/transitions/update_clinics'),
-  config = require('../../src/config'),
-  utils = require('../../src/lib/utils'),
-  phone = '+34567890123';
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const db = require('../../src/db');
+const config = require('../../src/config');
+const transition = require('../../src/transitions/update_clinics');
+const utils = require('../../src/lib/utils');
+const phone = '+34567890123';
 
 let lineageStub;
 
 describe('update clinic', () => {
   beforeEach(() => {
+    sinon.stub(config, 'get').returns([ { id: 'clinic' } ]);
     lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
   });
 
@@ -73,7 +74,7 @@ describe('update clinic', () => {
       },
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ id: contact._id }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ id: contact._id }] });
     lineageStub.resolves(contact);
 
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -89,7 +90,7 @@ describe('update clinic', () => {
       from: 'WRONG',
       content_type: 'xml'
     };
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert(!doc.contact);
@@ -103,7 +104,7 @@ describe('update clinic', () => {
       refid: '1000',
       content_type: 'xml'
     };
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert(!doc.contact);
@@ -150,7 +151,8 @@ describe('update clinic', () => {
       },
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ doc: contact }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
+    lineageStub.returns(Promise.resolve(contact));
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
@@ -200,7 +202,7 @@ describe('update clinic', () => {
       name: 'zenith',
       phone: '+12345',
     };
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ doc: clinic }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: clinic }] });
     lineageStub.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
@@ -221,7 +223,7 @@ describe('update clinic', () => {
         type: 'data_record',
       },
     };
-    const view = sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
+    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
     return transition.onMatch(change).then(() => {
       assert.equal(view.args[0][1].key[0], 'external');
       assert.equal(view.args[0][1].key[1], '123');
@@ -235,7 +237,7 @@ describe('update clinic', () => {
         type: 'data_record',
       },
     };
-    const view = sinon.stub(dbPouch.medic, 'query').resolves({ rows: [] });
+    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
     return transition.onMatch(change).then(() => {
       assert.equal(view.args[0][1].key, '123');
     });
@@ -247,7 +249,7 @@ describe('update clinic', () => {
       type: 'data_record',
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
     lineageStub.withArgs('someID').rejects('some error');
 
     return transition.onMatch({ doc: doc }).catch(err => {
@@ -261,7 +263,7 @@ describe('update clinic', () => {
       type: 'data_record',
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);
       assert(!doc.contact);
@@ -277,7 +279,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     sinon.stub(config, 'get').withArgs('forms').returns({ 'other': {} });
 
     return transition.onMatch({ doc }).then(changed => {
@@ -296,7 +298,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
     sinon.stub(utils, 'translate').returns('translated');
     sinon.stub(utils, 'getLocale').returns('locale');
@@ -319,7 +321,7 @@ describe('update clinic', () => {
       content_type: 'xml'
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
 
     return transition.onMatch({ doc }).then(changed => {
       assert(!changed);
@@ -335,7 +337,7 @@ describe('update clinic', () => {
       form: 'someForm',
     };
 
-    sinon.stub(dbPouch.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': { public_form: true } });
 
     return transition.onMatch({ doc }).then(changed => {

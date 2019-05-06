@@ -13,6 +13,7 @@ const getContactType = doc => {
   return contactTypes.find(type => type.id === typeId);
 };
 
+<<<<<<< HEAD
 const getContactByRefid = doc => {
   const params = {
     key: ['external', doc.refid],
@@ -31,7 +32,7 @@ const getContactByRefid = doc => {
       const contactType = getContactType(result);
       // not a contact
       if (!contactType) {
-        return callback();
+        return;
       }
       // person
       if (contactType.person) {
