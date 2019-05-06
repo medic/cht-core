@@ -5,8 +5,7 @@ const _ = require('underscore'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
   registrationUtils = require('@medic/registration-utils'),
-  logger = require('./logger'),
-  XFORM_CONTENT_TYPE = 'xml';
+  logger = require('./logger');
 
 /*
  * Get desired locale
@@ -316,5 +315,5 @@ module.exports = {
 
   getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
 
-  XFORM_CONTENT_TYPE
+  isXFormReport: doc => doc && doc.content_type === 'xml'
 };

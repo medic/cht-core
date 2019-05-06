@@ -142,7 +142,7 @@ module.exports = {
       doc.type === 'data_record' &&
         self.getRegistrationConfig(self.getConfig(), doc.form) &&
         !transitionUtils.hasRun(info, NAME) &&
-        ((doc && doc.content_type === utils.XFORM_CONTENT_TYPE) || // xform submission
+        (utils.isXFormReport(doc) || // xform submission
         (form && utils.getClinicPhone(doc)) || // json submission by known submitter
           (form && form.public_form)) // json submission to public form
     );
