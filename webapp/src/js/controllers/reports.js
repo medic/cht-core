@@ -22,6 +22,7 @@ angular
     LiveList,
     MarkRead,
     Modal,
+    PlaceHierarchy,
     ReportViewModelGenerator,
     Search,
     SearchFilters,
@@ -52,21 +53,26 @@ angular
 
     var lineage = lineageFactory();
 
-    // Load the places hierarchy as the user is scrolling through the list
-    // Initially, don't load/display any
+    // Render the facilities hierarchy as the user is scrolling through the list
+    // Initially, don't load/render any
     $scope.totalFacilitiesDisplayed = 0;
+    $scope.facilities = [];
 
+    // Load the facilities hierarchy and render one district hospital 
+    // when the user clicks on the filter dropdown
     $scope.monitorFacilityDropdown = () => {
-      $document[0].querySelector('#facilityDropdown')
-                  .addEventListener('click', () => {
-        $scope.$apply(function() {
+      PlaceHierarchy()
+        .then(function(hierarchy) {
+          $scope.facilities = hierarchy;
           $scope.totalFacilitiesDisplayed += 1;
+        })
+        .catch(function(err) {
+          $log.error('Error loading facilities', err);
         });
-      });
 
       $document[0].querySelector('#facilityDropdown span.dropdown-menu > ul')
                   .addEventListener('scroll', (event) => {
-        // visible height + pixel scrolled >= total height 
+        // visible height + pixel scrolled >= total height - 100
         if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
           $scope.$apply(function() {
             $scope.totalFacilitiesDisplayed += 1;
@@ -453,7 +459,7 @@ angular
         if (!$scope.loading && $scope.moreItems) {
           query({ skip: true });
         }
-      });
+      });console.log('start', (new Date).getTime());
     };
 
     if (!$state.params.id) {
