@@ -130,23 +130,23 @@ describe('reminders', () => {
 
   it('getClinics calls db view and hydrates docs', done => {
       sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-          rows: [
-              {
-                  doc: {
-                      id: 'xxx'
-                  }
-              }
-          ]
+          rows: [ { doc: { id: 'xxx' } } ]
       });
+      sinon.stub(config, 'get').returns([
+          { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
+          { id: 'clinic', parents: [ 'health_center' ] },            // queried
+          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
+          { id: 'district_hospital' }
+      ]);
       sinon.stub(reminders._lineage, 'hydrateDocs').resolves([{ id: 'xxx', contact: 'maria' }]);
 
-      reminders.getClinics({
-          reminder: {}
-      }, function(err, clinics) {
+      reminders.getClinics({ reminder: {} }, function(err, clinics) {
           assert(_.isArray(clinics));
           assert.equal(clinics.length, 1);
           assert.deepEqual(clinics, [{ id: 'xxx', contact: 'maria' }]);
           assert.equal(db.medic.query.callCount, 1);
+          assert.equal(db.medic.query.args[0][0], 'medic-client/contacts_by_type');
+          assert.deepEqual(db.medic.query.args[0][1].keys, [ 'clinic' ]);
           assert.equal(reminders._lineage.hydrateDocs.callCount, 1);
           assert.deepEqual(reminders._lineage.hydrateDocs.args[0], [[{ id: 'xxx' }]]);
           done();
