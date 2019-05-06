@@ -52,24 +52,24 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       ]
     };
 
-    $scope.getTranslationKey = function(key, plural) {
+    ctrl.getTranslationKey = function(key, plural) {
       return TRANSLATION_KEYS[key][ (plural ? 1 : 0) ];
     };
 
-    $scope.expandClinic = function(id) {
-      if ($scope.expandedClinic === id) {
-        $scope.expandedClinic = null;
+    ctrl.expandClinic = function(id) {
+      if (ctrl.expandedClinic === id) {
+        ctrl.expandedClinic = null;
       } else {
-        $scope.expandedClinic = id;
+        ctrl.expandedClinic = id;
       }
     };
 
-    $scope.expandRecord = function(id) {
+    ctrl.expandRecord = function(id) {
       if (!id) {
         return;
       }
-      if ($scope.expandedRecord === id) {
-        $scope.expandedRecord = null;
+      if (ctrl.expandedRecord === id) {
+        ctrl.expandedRecord = null;
       } else {
         $timeout(function() {
           ctrl.loadingRecord = id;
@@ -80,8 +80,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
           .then(function(formatted) {
             $timeout(function() {
               ctrl.loadingRecord = false;
-              $scope.formattedRecord = formatted[0];
-              $scope.expandedRecord = id;
+              ctrl.formattedRecord = formatted[0];
+              ctrl.expandedRecord = id;
             });
           })
           .catch(function(err) {
@@ -91,12 +91,12 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       }
     };
 
-    $scope.setTimeUnit = function(time) {
+    ctrl.setTimeUnit = function(time) {
       $scope.filters.time_unit = time;
       setDistrict();
     };
 
-    $scope.setTimeQuantity = function(num) {
+    ctrl.setTimeQuantity = function(num) {
       $scope.filters.quantity = num;
       setDistrict();
     };
@@ -135,7 +135,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       return d.y;
     };
 
-    $scope.pieChartOptions = {
+    ctrl.pieChartOptions = {
       chart: {
         type: 'pieChart',
         height: 220,
@@ -158,7 +158,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       }
     };
 
-    $scope.miniPieChartOptions = {
+    ctrl.miniPieChartOptions = {
       chart: {
         type: 'pieChart',
         height: 40,
@@ -185,7 +185,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       ctrl.loadingTotals = true;
       var dates = reportingUtils.getDates($scope.filters);
       DB()
-        .get(placeId || $scope.place._id)
+        .get(placeId || ctrl.place._id)
         .then(function(place) {
           return $q.all([
             ChildFacility(place),
@@ -195,20 +195,20 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
               var facilities = results[0];
               var reports = results[1];
 
-              $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
+              ctrl.totals = reportingUtils.getTotals(facilities, reports, dates);
               var rows = getRows(place.type, facilities, reports, dates);
               if (place.type === 'health_center') {
-                $scope.clinics = rows;
+                ctrl.clinics = rows;
               } else {
                 ctrl.facilities = rows;
               }
-              $scope.chart = [
+              ctrl.chart = [
                 { key: 'valid', y: $scope.totals.complete },
                 { key: 'missing', y: $scope.totals.not_submitted },
                 { key: 'invalid', y: $scope.totals.incomplete }
               ];
               $scope.filters.district = findDistrict(place);
-              $scope.place = place;
+              ctrl.place = place;
               ctrl.loadingTotals = false;
             });
         })
