@@ -13,6 +13,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     ContactSchema,
     Enketo,
     LineageModelGenerator,
+    Selectors,
     Snackbar
   ) {
 
@@ -22,7 +23,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        enketoStatus: state.enketoStatus
+        enketoStatus: Selectors.getEnketoStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -176,7 +178,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       });
 
     $scope.save = function() {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         $log.debug('Attempted to call contacts-edit:$scope.save more than once');
         return;
       }

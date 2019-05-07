@@ -5,7 +5,7 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
   'use strict';
   return {
     restrict: 'E',
-    templateUrl: 'templates/partials/content_row_list_item.html',
+    templateUrl: 'templates/directives/content_row_list_item.html',
     scope: {
       // string: (required) the _id of the doc
       id: '=',

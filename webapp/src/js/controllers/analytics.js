@@ -2,24 +2,32 @@ var _ = require('underscore');
 
 angular.module('inboxControllers').controller('AnalyticsCtrl',
   function (
+    $ngRedux,
     $scope,
     $state,
     $stateParams,
     $timeout,
+    Actions,
     AnalyticsModules,
     Tour
   ) {
     'use strict';
     'ngInject';
 
+    var ctrl = this;
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        setSelected: actions.setSelected
+      };
+    };
+    var unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
+
     $scope.analyticsModules = [];
 
     $scope.loading = true;
 
-    $scope.setSelectedModule = function(module) {
-      $scope.selected = module;
-    };
-    $scope.setSelectedModule();
+    ctrl.setSelected(null);
     $scope.clearSelected();
 
     AnalyticsModules().then(function(modules) {
@@ -32,7 +40,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
           return;
         }
       } else {
-        $scope.setSelectedModule(_.findWhere(modules, {
+        ctrl.setSelected(_.findWhere(modules, {
           state: $state.current.name
         }));
       }
@@ -52,5 +60,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     $scope.loadContact = function(id) {
       $state.go('reports.detail', { query: 'contact:' + id });
     };
+
+    $scope.$on('$destroy', unsubscribe);
   }
 );

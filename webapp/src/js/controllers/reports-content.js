@@ -13,7 +13,8 @@ var _ = require('underscore');
       $timeout,
       Actions,
       Changes,
-      MessageState
+      MessageState,
+      Selectors
     ) {
 
       'ngInject';
@@ -21,13 +22,19 @@ var _ = require('underscore');
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: state.selectMode
+          selectMode: Selectors.getSelectMode(state),
+          selected: Selectors.getSelected(state),
+          summaries: Selectors.getSelectedSummaries(state),
+          validChecks: Selectors.getSelectedValidChecks(state)
         };
       };
       var mapDispatchToTarget = function(dispatch) {
         var actions = Actions(dispatch);
         return {
-          clearCancelCallback: actions.clearCancelCallback
+          clearCancelCallback: actions.clearCancelCallback,
+          setSelected: actions.setSelected,
+          updateSelectedItem: actions.updateSelectedItem,
+          setFirstSelectedFormattedProperty: actions.setFirstSelectedFormattedProperty
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -66,17 +73,18 @@ var _ = require('underscore');
         if (!ctrl.selectMode) {
           return;
         }
+
+        var id = selection._id;
         if (selection.report || selection.expanded) {
-          selection.expanded = !selection.expanded;
+          ctrl.updateSelectedItem(id, { expanded: !selection.expanded });
         } else {
-          selection.loading = true;
-          $scope.refreshReportSilently(selection._id)
+          ctrl.updateSelectedItem(id, { loading: true });
+          $scope.refreshReportSilently(id)
             .then(function() {
-              selection.loading = false;
-              selection.expanded = true;
+              ctrl.updateSelectedItem(id, { loading: false, expanded: true });
             })
             .catch(function(err) {
-              selection.loading = false;
+              ctrl.updateSelectedItem(id, { loading: false });
               $log.error('Error fetching doc for expansion', err);
             });
         }
@@ -96,9 +104,9 @@ var _ = require('underscore');
       var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
-          return $scope.selected &&
-            $scope.selected.length &&
-            _.some($scope.selected, function(item) {
+          return ctrl.selected &&
+            ctrl.selected.length &&
+            _.some(ctrl.selected, function(item) {
               return item._id === change.id;
             });
         },
@@ -108,15 +116,15 @@ var _ = require('underscore');
               $scope.deselectReport(change.doc);
             });
           } else {
-            var selected = $scope.selected;
+            var selected = ctrl.selected;
             $scope.refreshReportSilently(change.doc)
               .then(function() {
                 if(selected[0].formatted.verified !== change.doc.verified ||
                    ('oldVerified' in selected[0].formatted &&
                     selected[0].formatted.oldVerified !== change.doc.verified)) {
-                  $scope.selected = selected;
+                  ctrl.setSelected(selected);
                   $timeout(function() {
-                    $scope.selected[0].formatted.verified = change.doc.verified;
+                    ctrl.setFirstSelectedFormattedProperty({ verified: change.doc.verified });
                   });
                 }
               });
@@ -130,11 +138,10 @@ var _ = require('underscore');
       });
 
       $scope.$on('VerifiedReport', function(e, valid) {
-        var oldVerified = $scope.selected[0].formatted.verified;
+        var oldVerified = ctrl.selected[0].formatted.verified;
         var newVerified = oldVerified === valid ? undefined : valid;
 
-        $scope.selected[0].formatted.verified = newVerified;
-        $scope.selected[0].formatted.oldVerified = oldVerified;
+        ctrl.setFirstSelectedFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
 
         $scope.setSubActionBarStatus(newVerified);
       });

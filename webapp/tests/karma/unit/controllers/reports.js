@@ -4,6 +4,7 @@ describe('ReportsCtrl controller', () => {
 
   let createController,
       scope,
+      actions,
       report,
       get,
       post,
@@ -18,9 +19,12 @@ describe('ReportsCtrl controller', () => {
       liveListInit,
       liveListReset;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject(($rootScope, $controller) => {
+  beforeEach(inject(($rootScope, $controller, $ngRedux, Actions) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();
@@ -39,6 +43,8 @@ describe('ReportsCtrl controller', () => {
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
     scope.setLoadingSubActionBar = sinon.stub();
+
+    actions = Actions($ngRedux.dispatch);
 
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
@@ -118,11 +124,12 @@ describe('ReportsCtrl controller', () => {
     get.returns(Promise.resolve({ _id: 'def', name: 'hello', phone: phone }));
     post.returns(Promise.resolve());
     createController();
-    scope.setSelected({ doc: {
+    const report = { doc: {
       _id: 'abc',
       form: 'P',
       contact: { _id: 'def' }
-    }});
+    }};
+    scope.setSelected(report);
     setTimeout(() => { // timeout to let the DB query finish
       chai.expect(scope.setRightActionBar.callCount).to.equal(1);
       chai.expect(scope.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
@@ -132,13 +139,14 @@ describe('ReportsCtrl controller', () => {
 
   describe('verifying reports', () => {
     it('unverified report to verified - valid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
-      scope.selected[0] = {
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', form: 'P' }
-      };
+      }]);
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -147,18 +155,20 @@ describe('ReportsCtrl controller', () => {
           name: 'hello',
           form: 'P',
           verified: true,
+          _rev: '1'
         }]);
       });
     });
 
     it('unverified report to verified - invalid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
-      scope.selected[0] = {
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', form: 'P' }
-      };
+      }]);
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -166,19 +176,21 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: false
+          verified: false,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified valid to verified invalid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
-      scope.selected[0] = {
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
-      };
+      }]);
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -186,19 +198,21 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: false
+          verified: false,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified invalid to unverified', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
-      scope.selected[0] = {
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
-      };
+      }]);
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -206,19 +220,21 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: undefined
+          verified: undefined,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified invalid to verified valid', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
-      scope.selected[0] = {
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
-      };
+      }]);
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -226,19 +242,21 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: true
+          verified: true,
+          _rev: '1'
         }]);
       });
     });
 
     it('verified valid to unverified', () => {
+      get.returns(Promise.resolve({ _rev: '1' }));
       post.returns(Promise.resolve());
 
       createController();
-      scope.selected[0] = {
+      actions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
-      };
+      }]);
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -246,7 +264,8 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           form: 'P',
-          verified: undefined
+          verified: undefined,
+          _rev: '1'
         }]);
       });
     });

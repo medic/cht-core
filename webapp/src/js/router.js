@@ -34,6 +34,7 @@
         views: {
           content: {
             controller: 'MessagesContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/messages_content.html'
           }
         }
@@ -79,6 +80,7 @@
         views: {
           content: {
             controller: 'ReportsContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/reports_content.html'
           }
         }
@@ -160,6 +162,7 @@
         views: {
           content: {
             controller: 'ContactsDeceasedCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_deceased.html'
           }
         }
@@ -172,6 +175,7 @@
         views: {
           content: {
             controller: 'ContactsContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_content.html'
           }
         }

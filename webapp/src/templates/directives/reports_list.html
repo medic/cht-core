@@ -1,7 +1,7 @@
 <div id="reports-list" class="col-sm-4 inbox-items left-pane">
   <div class="selection-count" ng-show="$ctrl.selectMode">
-    <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
-    <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
+    <span ng-show="$ctrl.selected.length === 1" translate>select.mode.count.singular</span>
+    <span ng-show="$ctrl.selected.length !== 1" translate translate-values="{ number: {{$ctrl.selected.length || 0}} }">select.mode.count.plural</span>
   </div>
   <ul class="unfiltered" ng-show="(!loading || appending) && !filtered"></ul>
   <ul class="filtered" ng-show="(!loading || appending) && filtered"></ul>

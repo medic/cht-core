@@ -111,7 +111,16 @@ describe('ContactViewModelGenerator service', () => {
   });
 
   function waitForModelToLoad(model) {
-    return model.reportLoader.then(() => model);
+    return service
+            .loadChildren(model)
+            .then(children => {
+              model.children = children;
+              return service.loadReports(model);
+            })
+            .then(reports => {
+              model.reports = reports;
+              return model;
+            });
   }
 
   describe('Place', () => {
@@ -121,7 +130,7 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch(null, []);
       stubGetDataRecords(null, []);
       stubDbQueryChildren(null, doc._id, childrenArray);
-      return service(doc._id)
+      return service.getContact(doc._id)
         .then(waitForModelToLoad);
     };
 
@@ -184,7 +193,7 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch(null, []);
       stubGetDataRecords(null, []);
       stubDbQueryChildren(null, doc._id, [childPerson]);
-      return service(doc._id)
+      return service.getContact(doc._id)
         .then(waitForModelToLoad)
         .then(model => {
           assert.equal(model.children.persons.length, 1);
@@ -250,7 +259,7 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(null, childContactPerson, [ parentDoc ]);
       stubSearch(null, []);
       stubGetDataRecords(null, []);
-      return service(childContactPerson._id);
+      return service.getContact(childContactPerson._id);
     };
 
     describe('isPrimaryContact flag', () => {
@@ -276,10 +285,10 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(null, doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubDbQueryChildren(null, doc._id, childrenArray);
-      return service(doc._id);
+      return service.getContact(doc._id);
     };
 
-    it('sets the returned reports as selected', () => {      
+    it('sets the returned reports as selected', () => {
       sinon.stub(Session, 'isOnlineOnly').returns(true);
       stubSearch(null, [ { _id: 'ab' } ]);
       stubGetDataRecords(null, []);
@@ -448,7 +457,7 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch(null, []);
       stubGetDataRecords(null, []);
       stubDbQueryChildren(null, doc._id, []);
-      return service(doc._id);
+      return service.getContact(doc._id);
     };
 
     it('should reflect self muted state when muted', () => {

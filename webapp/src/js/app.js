@@ -27,10 +27,13 @@ require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
-var uiRouter = require('@uirouter/angularjs').default;
+const uiRouter = require('@uirouter/angularjs').default;
 
 require('ng-redux');
-var reducers = require('./reducers');
+const reduxThunk = require('redux-thunk').default;
+const cloneDeep = require('lodash/cloneDeep');
+const objectPath = require('object-path');
+const lineage = require('@medic/lineage')();
 
 require('moment');
 require('moment/locale/bm');
@@ -43,16 +46,59 @@ require('moment/locale/sw');
 
 require('./services');
 require('./actions');
+require('./reducers');
+require('./selectors');
 require('./controllers');
 require('./filters');
 require('./directives');
 require('./enketo/main');
 
-var bootstrapper = require('./bootstrapper');
-var router = require('./router');
-var _ = require('underscore');
+const bootstrapper = require('./bootstrapper');
+const router = require('./router');
+const _ = require('underscore');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
+};
+
+const minifySelected = selected => {
+  const pathsToMinify = ['doc', 'formatted'];
+  const lineageDocs = objectPath.get(selected, 'lineage', []);
+  const docsToMinify = pathsToMinify
+    .map(path => objectPath.get(selected, path))
+    .filter(doc => doc)
+    .concat(lineageDocs);
+
+  docsToMinify.forEach(lineage.minify);
+};
+const makeLoggable = object => {
+  if (Array.isArray(object.selected)) {
+    object.selected.forEach(minifySelected);
+  } else {
+    minifySelected(object.selected);
+  }
+};
+const reduxLoggerConfig = {
+  actionTransformer: function(action) {
+    const loggableAction = cloneDeep(action);
+    makeLoggable(loggableAction.payload);
+    try {
+      JSON.stringify(loggableAction);
+    } catch(error) {
+      loggableAction.payload = 'Payload is not serializable';
+    }
+    return loggableAction;
+  },
+  stateTransformer: function(state) {
+    let loggableState = cloneDeep(state);
+    makeLoggable(loggableState);
+    try {
+      JSON.stringify(loggableState);
+    } catch(error) {
+      loggableState = 'State is not serializable';
+    }
+    return loggableState;
+  },
+  collapsed: true
 };
 
 (function() {
@@ -79,7 +125,8 @@ _.templateSettings = {
     $ngReduxProvider,
     $stateProvider,
     $translateProvider,
-    $urlRouterProvider
+    $urlRouterProvider,
+    Reducers
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
@@ -98,12 +145,12 @@ _.templateSettings = {
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
 
-    var middlewares = [];
+    var middlewares = [reduxThunk];
     if (isDevelopment) {
       var reduxLogger = require('redux-logger');
-      middlewares.push(reduxLogger.createLogger({ collapsed: true }));
+      middlewares.push(reduxLogger.createLogger(reduxLoggerConfig));
     }
-    $ngReduxProvider.createStoreWith(reducers, middlewares);
+    $ngReduxProvider.createStoreWith(Reducers, middlewares);
   });
 
   angular.module('inboxApp').constant('APP_CONFIG', {

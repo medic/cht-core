@@ -264,28 +264,19 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    return function(id, options) {
-      return LineageModelGenerator.contact(id, options)
-        .then(function(model) {
-          setPrimaryContact(model);
-          setSchemaFields(model);
-          setMutedState(model);
+    return {
+      getContact: function(id, options) {
+        return LineageModelGenerator.contact(id, options)
+          .then(function(model) {
+            setPrimaryContact(model);
+            setSchemaFields(model);
+            setMutedState(model);
 
-          model.loadingChildren = true;
-          model.loadingReports = true;
-          model.reportLoader = loadChildren(model, options)
-            .then(children => {
-              model.children = children;
-              model.loadingChildren = false;
-              return loadReports(model);
-            })
-            .then(reports => {
-              model.reports = reports;
-              model.loadingReports = false;
-            });
-
-          return model;
-        });
+            return model;
+          });
+      },
+      loadChildren: loadChildren,
+      loadReports: loadReports
     };
   }
 );
