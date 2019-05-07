@@ -869,7 +869,12 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
+    'build-service-worker',
+  ]);
+
+  grunt.registerTask('build-service-worker', 'Build the service worker', [
     'generate-service-worker',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -982,17 +987,11 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'exec:blank-link-check',
     'eslint',
-    'eslint-sw',
     // 'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', [
     'exec:eslint'
-  ]);
-
-  grunt.registerTask('eslint-sw', 'Runs eslint on the generated service worker', [
-    'generate-service-worker',
-    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
