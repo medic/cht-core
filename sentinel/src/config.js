@@ -14,7 +14,8 @@ const DEFAULT_CONFIG = {
   loglevel: 'info',
 };
 
-let config = DEFAULT_CONFIG;
+let config = DEFAULT_CONFIG,
+    transitionsLib;
 
 const loadTranslations = () => {
   const options = {
@@ -44,7 +45,7 @@ const initFeed = () => {
         initConfig();
       } else if (change.id.startsWith('messages-')) {
         logger.info('Detected translations change - reloading');
-        loadTranslations();
+        loadTranslations().then(() => initTransitionLib());
       }
     })
     .on('error', err => {
@@ -66,12 +67,17 @@ const initConfig = () => {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
       );
+      initTransitionLib();
       require('./transitions').loadTransitions();
     })
     .catch(err => {
       logger.error('%o', err);
       throw new Error('Error loading configuration');
     });
+};
+
+const initTransitionLib = () => {
+  transitionsLib = require('@medic/transitions')(db, config, translations, logger);
 };
 
 module.exports = {
@@ -88,4 +94,6 @@ module.exports = {
     initFeed();
     return loadTranslations().then(initConfig);
   },
+  initTransitionLib: initTransitionLib,
+  getTransitionsLib: () => transitionsLib
 };

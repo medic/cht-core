@@ -57,7 +57,11 @@ angular.module('inboxServices').factory('ResourceIcons',
 
     const getHtml = (name, docId) => {
       const image = getHtmlContent(name, docId);
-      return `<span class="${CSS_CLASS[DOC_IDS.indexOf(docId)]}" title="${name}">${image}</span>`;
+      // Handle title attribute for branding doc specially
+      // https://github.com/medic/medic/issues/5531
+      const className = CSS_CLASS[DOC_IDS.indexOf(docId)];
+      const titleAttribute = docId === DOC_IDS[1] ? 'data-title' : 'title';
+      return `<span class="${className}" ${titleAttribute}="${name}">${image}</span>`;
     };
 
     const updateDom = ($elem, doc) => {
@@ -65,11 +69,9 @@ angular.module('inboxServices').factory('ResourceIcons',
       const css = CSS_CLASS[DOC_IDS.indexOf(doc)];
       $elem.find(`.${css}`).each((i, child) => {
         const $this = $(child);
-        $this.html(getHtmlContent($this.attr('title'), doc));
+        const name = $this.attr('data-title') || $this.attr('title');
+        $this.html(getHtmlContent(name, doc));
       });
-      if (document.getElementById('app') && doc === 'branding') {
-        document.getElementById('app').innerHTML = cache[doc].doc.title;
-      }
     };
 
     const updateResources = docId => {

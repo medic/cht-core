@@ -180,6 +180,24 @@ Returns the settings in JSON format.
 
 Request different types of data in various formats.
 
+Each of the export endpoints except contacts and feedback supports a parameter which returns date formatted in human readable form (ISO 8601). Setting this parameter to false or leaving it out will return dates formatted as an epoch timestamp.
+
+To set this parameter for a GET request use:
+
+```
+http://admin:pass@localhost:5988/api/v2/export/messages?options[humanReadable]=true
+```
+
+To set this parameter for a POST request submit this as the request body:
+
+```json
+{
+  "options": {
+    "humanReadable": true
+  }
+}
+```
+
 ## GET /api/v2/export/reports
 
 It uses the [search shared library](shared-libs/search) to ensure identical results in the export and the front-end. It also only supports exporting CSV so we can efficiently stream infinitely large exports.

@@ -1,12 +1,4 @@
-const moment = require('moment');
 const db = require('../../db');
-
-const formatDate = date => {
-  if (!date) {
-    return '';
-  }
-  return moment(date).valueOf();
-};
 
 const safeStringify = obj => {
   try {
@@ -17,8 +9,16 @@ const safeStringify = obj => {
 };
 
 module.exports = {
+  getDocs: ids => {
+    return db.medicUsersMeta.allDocs({ keys: ids, include_docs: true })
+      .then(result => result.rows.map(row => row.doc));
+  },
   getDocIds: (options) => {
-    return db.medic.query('medic-admin/feedback', options)
+    options.include_docs = false; 
+    options.endkey = 'feedback-';
+    options.startkey = 'feedback-\ufff0';
+    options.descending = true;
+    return db.medicUsersMeta.allDocs(options)
       .then(result => result.rows.map(row => row.id));
   },
   map: () => {
@@ -34,7 +34,7 @@ module.exports = {
       getRows: doc => {
         return [[
           doc._id,
-          formatDate(doc.meta.time),
+          doc.meta.time,
           doc.meta.user.name,
           doc.meta.version,
           doc.meta.url,

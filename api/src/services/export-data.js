@@ -1,6 +1,4 @@
-const { Readable } = require('stream'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic);
+const { Readable } = require('stream');
 
 const BATCH = 100;
 
@@ -34,8 +32,6 @@ const csvLineToString = (csvLine) => {
   return joinLine(escapedCsvLine);
 };
 
-const echo = param => param;
-
 class SearchResultReader extends Readable {
 
   constructor(type, filters, searchOptions, readableOptions) {
@@ -55,9 +51,8 @@ class SearchResultReader extends Readable {
   _read() {
     if (!this.getRows) {
       return this.mapper.map(this.filters, this.options)
-        .then(({ header, getRows, hydrate }) => {
+        .then(({ header, getRows }) => {
           this.getRows = getRows;
-          this.hydrate = hydrate || echo;
           this.push(joinLine(header));
         });
     }
@@ -71,19 +66,13 @@ class SearchResultReader extends Readable {
 
         this.options.skip += this.options.limit;
 
-        return db.medic.allDocs({
-          keys: ids,
-          include_docs: true
-        })
-        .then(result => result.rows.map(row => row.doc))
-        .then(lineage.hydrateDocs)
-        .then(this.hydrate)
-        .then(docs => {
-          const lines = docs.map(doc => {
-            return this.getRows(doc).map(csvLineToString).join('');
+        return this.mapper.getDocs(ids)
+          .then(docs => {
+            const lines = docs.map(doc => {
+              return this.getRows(doc).map(csvLineToString).join('');
+            });
+            this.push(lines.join(''));
           });
-          this.push(lines.join(''));
-        });
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
@@ -94,5 +83,5 @@ class SearchResultReader extends Readable {
 module.exports = {
   export: (type, filters, options) => new SearchResultReader(type, filters, options),
   isSupported: type => !!MAPPERS[type],
-  _lineage: lineage
+  _mapper: type => MAPPERS[type]
 };

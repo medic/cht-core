@@ -2,7 +2,7 @@
 
   <div class="form-group" ng-class="{'has-error': errors.id}">
     <label for="id"><span translate>analytics.target.id</span> *</label>
-    <input id="id" type="text" class="form-control" ng-model="target.id" />
+    <input id="id" type="text" class="form-control" ng-model="target.id" ng-readonly="editing"/>
     <span class="help-block" ng-if="errors.id" translate>{{errors.id}}</span>
   </div>
 

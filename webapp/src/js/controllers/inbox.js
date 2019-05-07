@@ -107,10 +107,6 @@ var _ = require('underscore'),
       Debug.set(false);
     }
 
-    ResourceIcons.getAppTitle().then(title => {
-      document.title = title;
-    });
-
     $scope.replicationStatus = {
       disabled: false,
       lastSuccess: {},
@@ -161,6 +157,20 @@ var _ = require('underscore'),
       }
 
       updateReplicationStatus(status);
+    });
+
+    const setAppTitle = () => {
+      ResourceIcons.getAppTitle().then(title => {
+        document.title = title;
+        $('.header-logo').attr('title', `${title} | ${APP_CONFIG.version}`);
+      });
+    };
+    setAppTitle();
+
+    Changes({
+      key: 'branding-icon',
+      filter: change => change.id === 'branding',
+      callback: () => setAppTitle()
     });
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);

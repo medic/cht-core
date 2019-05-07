@@ -376,7 +376,7 @@ var _ = require('underscore'),
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export('contacts', $scope.filters);
+          Export('contacts', $scope.filters, { humanReadable: true });
         },
       };
       var type;
