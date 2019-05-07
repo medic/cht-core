@@ -1,6 +1,6 @@
 {
-  "name": "@medic/message-utils",
-  "version": "1.0.2",
+  "name": "@garethbowen/message-utils",
+  "version": "1.0.2-beta.1",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test"

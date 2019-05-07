@@ -1,6 +1,6 @@
 {
-  "name": "@medic/bulk-docs-utils",
-  "version": "1.0.0",
+  "name": "@garethbowen/bulk-docs-utils",
+  "version": "1.0.0-beta.1",
   "description": "Common utility functions for bulk docs operations",
   "main": "src/bulk-docs-utils.js",
   "scripts": {
