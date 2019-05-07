@@ -10,6 +10,8 @@ chai.assert.equal = function() {
   }
 };
 
+chai.assert.checkDeepProperties = chai.assert.shallowDeepEqual;
+
 window.KarmaUtils = {
   restore: function() {
     for (var i = 0; i < arguments.length; i++) {
@@ -41,6 +43,20 @@ window.KarmaUtils = {
         return db;
       };
     };
+  },
+  setupMockStore: function(initialState) {
+    angular.module('inboxApp').config(function($ngReduxProvider, Reducers) {
+      'ngInject';
+      $ngReduxProvider.createStoreWith(Reducers, [ReduxThunk.default], [], initialState); // eslint-disable-line no-undef
+    });
+    // If actual DB is run it causes a full page refresh which causes karma to error
+    module(function ($provide) {
+      'ngInject';
+      $provide.value('DB', function() {});
+      $provide.value('Session', {
+        userCtx: () => { return {}; }
+      });
+    });
   }
 };
 

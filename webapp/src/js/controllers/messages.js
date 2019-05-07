@@ -4,22 +4,39 @@ angular
   .module('inboxControllers')
   .controller('MessagesCtrl', function(
     $log,
+    $ngRedux,
     $scope,
     $state,
     $stateParams,
     $timeout,
+    Actions,
     Changes,
     Export,
     MessageContacts,
     MessageListUtils,
+    Selectors,
     Tour
   ) {
     'use strict';
     'ngInject';
 
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        selected: Selectors.getSelected(state)
+      };
+    };
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        setSelected: actions.setSelected
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
     $scope.allLoaded = false;
     $scope.messages = [];
-    $scope.selected = null;
+    ctrl.setSelected(null);
     $scope.loading = true;
 
     var setMessages = function(options) {
@@ -29,7 +46,7 @@ angular
         var selectedChanged = MessageListUtils.mergeUpdated(
           $scope.messages,
           options.messages,
-          $scope.selected && $scope.selected.id
+          ctrl.selected && ctrl.selected.id
         );
         if (selectedChanged) {
           $scope.$broadcast('UpdateContactConversation', { silent: true });
@@ -63,8 +80,8 @@ angular
     };
 
     $scope.setSelected = function(doc) {
-      var refreshing = ($scope.selected && $scope.selected.id) === doc.id;
-      $scope.selected = doc;
+      var refreshing = (ctrl.selected && ctrl.selected.id) === doc.id;
+      ctrl.setSelected(doc);
       $scope.settingSelected(refreshing);
     };
 
@@ -91,7 +108,7 @@ angular
       });
 
     $scope.$on('ClearSelected', function() {
-      $scope.selected = null;
+      ctrl.setSelected(null);
     });
 
     var changeListener = Changes({
@@ -120,7 +137,10 @@ angular
 
     setActionBarData();
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      unsubscribe();
+      changeListener.unsubscribe();
+    });
 
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);

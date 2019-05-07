@@ -1,18 +1,19 @@
 describe('ContactsContentCtrl', () => {
   'use strict';
 
-  let assert = chai.assert,
+  let actions,
       controller,
       stateParams,
       scope,
       state,
-      contactViewModelGenerator,
+      getContact,
       tasksForContact,
       changes,
       changesCallback,
       changesFilter,
       contactChangeFilter = sinon.stub(),
       debounce,
+      getSelected,
       timeout;
 
   const childPerson = {
@@ -29,7 +30,7 @@ describe('ContactsContentCtrl', () => {
     children: { persons: [ ] }
   };
 
-  const stubContactViewModelGenerator = (doc, childArray) => {
+  const stubGetContact = (doc, childArray) => {
     const childRows = childArray.map(child => {
       return { id: child._id, doc: child };
     });
@@ -38,8 +39,8 @@ describe('ContactsContentCtrl', () => {
       children: { persons: childRows }
     };
 
-    contactViewModelGenerator.returns(Promise.resolve());
-    contactViewModelGenerator.withArgs(doc._id)
+    getContact.returns(Promise.resolve());
+    getContact.withArgs(doc._id)
       .returns(Promise.resolve(model));
   };
 
@@ -57,7 +58,7 @@ describe('ContactsContentCtrl', () => {
       'Auth': () => {
         return Promise.resolve();
       },
-      'ContactViewModelGenerator': contactViewModelGenerator,
+      'ContactViewModelGenerator': { getContact: getContact },
       'TasksForContact': tasksForContact,
       'UserSettings': KarmaUtils.promiseService(null, ''),
       'ContactChangeFilter': contactChangeFilter,
@@ -65,12 +66,17 @@ describe('ContactsContentCtrl', () => {
     });
   };
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject((_$rootScope_, $controller, _$timeout_) => {
+  beforeEach(inject((_$rootScope_, $controller, _$timeout_, $ngRedux, Actions, Selectors) => {
+    actions = Actions($ngRedux.dispatch);
+
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = selected => scope.selected = selected;
+    scope.setSelected = selected => actions.setSelected(selected);
     scope.clearSelected = sinon.stub();
     scope.settingSelected = sinon.stub();
     state = {
@@ -83,12 +89,16 @@ describe('ContactsContentCtrl', () => {
     timeout = _$timeout_;
     controller = $controller;
 
-    contactViewModelGenerator = sinon.stub();
+    getContact = sinon.stub();
     tasksForContact = sinon.stub();
     changes = (options) => {
       changesFilter = options.filter;
       changesCallback = options.callback;
       return {unsubscribe: () => {}};
+    };
+
+    getSelected = () => {
+      return Selectors.getSelected($ngRedux.getState());
     };
 
     debounce = (func) => {
@@ -101,23 +111,20 @@ describe('ContactsContentCtrl', () => {
   describe('Tasks', () => {
     const runTasksTest = childrenArray => {
       stateParams = { id: doc._id };
-      stubContactViewModelGenerator(doc, childrenArray);
-      return createController().setupPromise.then(() => {
-        timeout.flush();
-        assert(scope.selected, 'selected should be set on the scope');
-        return scope.selected;
-      });
+      stubGetContact(doc, childrenArray);
+      return createController().setupPromise.then(timeout.flush);
     };
 
     it('displays tasks for selected contact', () => {
       const task = { _id: 'aa', contact: { _id: doc._id } };
       stubTasksForContact([ task ]);
-      return runTasksTest([]).then(selected => {
+      return runTasksTest([]).then(() => {
+        const selected = getSelected();
         chai.assert.equal(tasksForContact.callCount, 1);
         chai.assert.equal(tasksForContact.args[0][0], doc._id);
         chai.assert.equal(tasksForContact.args[0][1], doc.type);
         chai.assert.equal(tasksForContact.args[0][2].length, 0);
-        chai.assert.sameMembers(selected.tasks, [ task ]);
+        chai.assert.deepEqual(selected.tasks, [ task ]);
         chai.assert(selected.areTasksEnabled);
       });
     });
@@ -136,12 +143,13 @@ describe('ContactsContentCtrl', () => {
         }
       ];
       stubTasksForContact(tasks);
-      return runTasksTest([ childPerson ]).then(selected => {
+      return runTasksTest([ childPerson ]).then(() => {
+        const selected = getSelected();
         chai.assert.equal(tasksForContact.callCount, 1);
         chai.assert.equal(tasksForContact.args[0][0], doc._id);
         chai.assert.equal(tasksForContact.args[0][1], doc.type);
         chai.assert.sameMembers(tasksForContact.args[0][2], [ childPerson._id ]);
-        chai.assert.sameMembers(selected.tasks, tasks);
+        chai.assert.deepEqual(selected.tasks, tasks);
         chai.assert(selected.areTasksEnabled);
       });
     });
@@ -164,11 +172,8 @@ describe('ContactsContentCtrl', () => {
 
     const runChangeFeedProcessTest = () => {
       stateParams = { id: doc._id};
-      stubContactViewModelGenerator(doc,  []);
-      return createController().setupPromise.then(() => {
-        assert(scope.selected, 'selected should be set on the scope');
-        return scope.selected;
-      });
+      stubGetContact(doc,  []);
+      return createController().setupPromise;
     };
 
     const stubContactChangeFilter = (config) => {
@@ -190,8 +195,8 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(changesFilter(change), true);
         return changesCallback(change).then(() => {
           chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-          chai.assert.equal(contactViewModelGenerator.callCount, 2);
-          chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
+          chai.assert.equal(getContact.callCount, 2);
+          chai.assert.equal(getContact.getCall(1).args[0], doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
         });
       });
@@ -205,7 +210,7 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(changesFilter(change), true);
         changesCallback(change);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-        chai.assert.equal(contactViewModelGenerator.callCount, 1);
+        chai.assert.equal(getContact.callCount, 1);
         chai.assert.equal(state.go.callCount, 1);
         chai.assert.equal(state.go.getCall(0).args[1].id, doc.parent._id);
       });
@@ -217,7 +222,7 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(changesFilter(change), true);
         changesCallback(changes);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-        chai.assert.equal(contactViewModelGenerator.callCount, 1);
+        chai.assert.equal(getContact.callCount, 1);
         chai.assert.equal(scope.clearSelected.callCount, 1);
       });
     });
@@ -229,8 +234,8 @@ describe('ContactsContentCtrl', () => {
         return changesCallback(change).then(() => {
           chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
           chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
-          chai.assert.equal(contactViewModelGenerator.callCount, 2);
-          chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
+          chai.assert.equal(getContact.callCount, 2);
+          chai.assert.equal(getContact.getCall(1).args[0], doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
         });
       });
@@ -244,8 +249,8 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
           chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
           chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
-          chai.assert.equal(contactViewModelGenerator.callCount, 2);
-          chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
+          chai.assert.equal(getContact.callCount, 2);
+          chai.assert.equal(getContact.getCall(1).args[0], doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
         });
       });
@@ -258,7 +263,7 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
         chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
         chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
-        chai.assert.equal(contactViewModelGenerator.callCount, 1);
+        chai.assert.equal(getContact.callCount, 1);
         chai.assert.equal(scope.clearSelected.callCount, 0);
       });
     });

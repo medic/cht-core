@@ -13,6 +13,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Geolocation,
     GetReportContent,
     LineageModelGenerator,
+    Selectors,
     Snackbar,
     Telemetry,
     XmlForm
@@ -28,7 +29,9 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        enketoStatus: state.enketoStatus
+        enketoStatus: Selectors.getEnketoStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -144,7 +147,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       });
 
     $scope.save = function() {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         $log.debug('Attempted to call reports-add:$scope.save more than once');
         return;
       }
@@ -157,7 +160,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
-      var model = $scope.selected[0];
+      var model = ctrl.selected[0];
       var reportId = model.doc && model.doc._id;
       var formInternalId = model.formInternalId;
 

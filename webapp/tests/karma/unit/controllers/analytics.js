@@ -3,15 +3,19 @@ describe('AnalyticsCtrl controller', function() {
   'use strict';
 
   var createController,
+      getSelected,
       AnalyticsModules,
       $rootScope,
       scope,
       stateGo,
       stateIs;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject(function(_$rootScope_, $controller) {
+  beforeEach(inject(function(_$rootScope_, $controller, $ngRedux, Selectors) {
     $rootScope = _$rootScope_;
     AnalyticsModules = sinon.stub();
     stateGo = sinon.stub();
@@ -19,6 +23,7 @@ describe('AnalyticsCtrl controller', function() {
     scope = $rootScope.$new();
     scope.filterModel = { };
     scope.clearSelected = function() {};
+    getSelected = () => Selectors.getSelected($ngRedux.getState());
     createController = function(startState) {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,
@@ -48,7 +53,7 @@ describe('AnalyticsCtrl controller', function() {
     createController('targets');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.selected).to.equal(undefined);
+      chai.expect(getSelected()).to.equal(undefined);
       done();
     });
   });
@@ -62,7 +67,7 @@ describe('AnalyticsCtrl controller', function() {
     createController('targets');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.selected.state).to.equal('targets');
+      chai.expect(getSelected().state).to.equal('targets');
       done();
     });
   });
