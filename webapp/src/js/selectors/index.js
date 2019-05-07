@@ -7,6 +7,8 @@ const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
 const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
 const getEnketoError = state => getGlobalState(state).enketoStatus.error;
+const getFacilities = state => getGlobalState(state).facilities;
+const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
 const getLoadingSelectedChildren = state => getGlobalState(state).loadingSelectedChildren;
 const getLoadingSelectedReports = state => getGlobalState(state).loadingSelectedReports;
@@ -15,6 +17,7 @@ const getSelectMode = state => getGlobalState(state).selectMode;
 const getSelected = state => getGlobalState(state).selected;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
+const getVersion = state => getGlobalState(state).version;
 
 const getSelectedSummaries = reselect.createSelector(
   getSelected,
@@ -39,6 +42,13 @@ const getSelectedValidChecks = reselect.createSelector(
 const getContactsState = state => state.contacts;
 const getLoadingSummary = state => getContactsState(state).loadingSummary;
 
+// Messages
+const getMessagesState = state => state.messages;
+const getMessagesError = state => getMessagesState(state).error;
+
+// Reports
+const getReportsState = state => state.reports;
+
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getCancelCallback,
@@ -46,6 +56,8 @@ angular.module('inboxServices').constant('Selectors', {
   getEnketoEditedStatus,
   getEnketoSavingStatus,
   getEnketoError,
+  getFacilities,
+  getIsAdmin,
   getLoadingContent,
   getLoadingSelectedChildren,
   getLoadingSelectedReports,
@@ -56,7 +68,13 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedValidChecks,
   getShowActionBar,
   getShowContent,
+  getVersion,
 
   getContactsState,
-  getLoadingSummary
+  getLoadingSummary,
+
+  getMessagesState,
+  getMessagesError,
+
+  getReportsState
 });

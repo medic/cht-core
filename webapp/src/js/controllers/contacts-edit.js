@@ -174,7 +174,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         ctrl.setLoadingContent(false);
       })
       .catch(function(err) {
-        $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
+        ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
         ctrl.setLoadingContent(false);
         $scope.contentError = true;
         $log.error('Error loading contact form.', err);

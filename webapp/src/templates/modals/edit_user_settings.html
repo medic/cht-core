@@ -10,10 +10,10 @@
 
   <form action="" method="POST">
 
-    <div class="form-group" ng-class="{'has-error': errors.name}">
+    <div class="form-group" ng-class="{'has-error': editUserCtrl.errors.name}">
       <label for="name" translate>User Name</label> *
       <input id="name" type="text" class="form-control" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
-      <span class="help-block">{{errors.name}}</span>
+      <span class="help-block">{{editUserCtrl.errors.name}}</span>
     </div>
 
     <div class="form-group">

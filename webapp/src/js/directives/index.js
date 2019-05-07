@@ -14,6 +14,7 @@
   require('./facility-filter');
   require('./form-type-filter');
   require('./freetext-filter');
+  require('./header');
   require('./messages-list');
   require('./modal');
   require('./navigation');

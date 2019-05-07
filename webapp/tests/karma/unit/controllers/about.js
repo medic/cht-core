@@ -10,13 +10,19 @@ describe('AboutCtrl controller', () => {
   let Debug;
   let Session;
   let ResourceIcons;
+  let getVersion;
+  let setVersion;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject((_$rootScope_, $controller) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, GlobalActions, Selectors) => {
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
-    scope.version = 3;
+    ({ setVersion } = GlobalActions($ngRedux.dispatch));
+    getVersion = () => Selectors.getVersion($ngRedux.getState());
     $interval = sinon.stub().callsArg(0);
     Session = { userCtx: sinon.stub() };
     DB = {
@@ -45,6 +51,7 @@ describe('AboutCtrl controller', () => {
     Debug.get.returns('debug stuff');
     DB.allDocs.resolves({ rows: [{ value: { rev: '23-aaaa' }}] });
     DB.get.resolves({ _id: '_design/medic-client', deploy_info: { version: 4 }, _rev: '4465-dfsadsada' });
+    setVersion(3);
     createController();
 
     return Promise.resolve().then(() => {
@@ -57,7 +64,7 @@ describe('AboutCtrl controller', () => {
       chai.expect(scope.enableDebugModel).to.deep.equal({ val: 'debug stuff' });
       chai.expect(scope.ddocVersion).to.equal('23');
       chai.expect(scope.clientDdocVersion).to.equal('4465');
-      chai.expect(scope.version).to.equal(4);
+      chai.expect(getVersion()).to.equal(4);
     });
   });
 
@@ -65,30 +72,31 @@ describe('AboutCtrl controller', () => {
     DB.get
       .withArgs('_design/medic-client')
       .resolves({ _id: '_design/medic-client', deploy_info: { version: '4-beta', base_version: '4' }, _rev: '4465-0' });
+    setVersion(3);
     createController();
 
     return Promise.resolve().then(() => {
-      chai.expect(scope.version).to.equal('4-beta (~4)');
+      chai.expect(getVersion()).to.equal('4-beta (~4)');
     });
   });
 
   it('displays package version if ddoc not found', () => {
     DB.get.withArgs('_design/medic-client').rejects();
-    scope.version = 'some version';
+    setVersion('some version');
     createController();
 
     return Promise.resolve().then(() => {
-      chai.expect(scope.version).to.equal('some version');
+      chai.expect(getVersion()).to.equal('some version');
     });
   });
 
   it('displays package version if ddoc does not have info', () => {
     DB.get.withArgs('_design/medic-client').resolves({ _id: '_design/medic-client', deploy_info: undefined });
-    scope.version = 'some version';
+    setVersion('some version');
     createController();
 
     return Promise.resolve().then(() => {
-      chai.expect(scope.version).to.equal('some version');
+      chai.expect(getVersion()).to.equal('some version');
     });
   });
 

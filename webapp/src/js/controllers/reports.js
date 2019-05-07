@@ -42,9 +42,9 @@ angular
       return {
         addSelected: globalActions.addSelected,
         removeSelected: globalActions.removeSelected,
+        setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setSelected: globalActions.setSelected,
-        setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty
+        setSelected: globalActions.setSelected
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -57,6 +57,8 @@ angular
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
     ctrl.setSelected([]);
+    ctrl.appending = false;
+    ctrl.error = false;
     $scope.filters = {
       search: $stateParams.query,
     };
@@ -227,15 +229,15 @@ angular
     var query = function(opts) {
       const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
-        $scope.error = false;
-        $scope.errorSyntax = false;
+        ctrl.error = false;
+        ctrl.errorSyntax = false;
         ctrl.loading = true;
         if (ctrl.selected.length && $scope.isMobile()) {
           $scope.selectReport();
         }
       }
       if (options.skip) {
-        $scope.appending = true;
+        ctrl.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
@@ -246,9 +248,9 @@ angular
         .then(function(data) {
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
           ctrl.loading = false;
-          $scope.appending = false;
-          $scope.error = false;
-          $scope.errorSyntax = false;
+          ctrl.appending = false;
+          ctrl.error = false;
+          ctrl.errorSyntax = false;
           if (
             !$state.params.id &&
             !$scope.isMobile() &&
@@ -267,7 +269,7 @@ angular
           initScroll();
         })
         .catch(function(err) {
-          $scope.error = true;
+          ctrl.error = true;
           ctrl.loading = false;
           if (
             $scope.filters.search &&
@@ -275,7 +277,7 @@ angular
             err.reason.toLowerCase().indexOf('bad query syntax') !== -1
           ) {
             // invalid freetext filter query
-            $scope.errorSyntax = true;
+            ctrl.errorSyntax = true;
           }
           $log.error('Error loading messages', err);
         });

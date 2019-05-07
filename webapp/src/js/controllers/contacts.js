@@ -61,6 +61,8 @@ var _ = require('underscore'),
 
     LiveList.$init($scope, 'contacts', 'contact-search');
 
+    ctrl.appending = false;
+    ctrl.error = false;
     ctrl.loading = true;
     ctrl.setSelected(null);
     $scope.filters = {};
@@ -90,11 +92,11 @@ var _ = require('underscore'),
 
       if (!options.silent) {
         ctrl.loading = true;
-        $scope.error = false;
+        ctrl.error = false;
       }
 
       if (options.paginating) {
-        $scope.appending = true;
+        ctrl.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
@@ -141,10 +143,10 @@ var _ = require('underscore'),
             additionalListItem =
               !$scope.filters.search &&
               !$scope.filters.simprintsIdentities &&
-              (additionalListItem || !$scope.appending) &&
+              (additionalListItem || !ctrl.appending) &&
               homeIndex === -1;
 
-            if (!$scope.appending) {
+            if (!ctrl.appending) {
               if (homeIndex !== -1) {
                 // move it to the top
                 contacts.splice(homeIndex, 1);
@@ -181,14 +183,14 @@ var _ = require('underscore'),
 
           _initScroll();
           ctrl.loading = false;
-          $scope.appending = false;
+          ctrl.appending = false;
           $scope.hasContacts = liveList.count() > 0;
           setActionBarData();
         })
         .catch(function(err) {
-          $scope.error = true;
+          ctrl.error = true;
           ctrl.loading = false;
-          $scope.appending = false;
+          ctrl.appending = false;
           $log.error('Error searching for contacts', err);
         });
     };

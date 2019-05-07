@@ -78,18 +78,22 @@ var _ = require('underscore'),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state)
+        showContent: Selectors.getShowContent(state),
+        version: Selectors.getVersion(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
       var globalActions = GlobalActions(dispatch);
       return {
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setFacilities: globalActions.setFacilities,
+        setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setSelectMode: globalActions.setSelectMode,
         setShowActionBar: globalActions.setShowActionBar,
-        setShowContent: globalActions.setShowContent
+        setShowContent: globalActions.setShowContent,
+        setVersion: globalActions.setVersion
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -204,18 +208,11 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    $scope.error = false;
-    $scope.errorSyntax = false;
-    $scope.appending = false;
-    $scope.facilities = [];
-    $scope.people = [];
-    $scope.filterQuery = { value: null };
-    $scope.version = APP_CONFIG.version;
+    ctrl.setVersion(APP_CONFIG.version);
     $scope.actionBar = {};
     $scope.tours = [];
-    $scope.baseUrl = Location.path;
-    $scope.adminUrl = Location.adminPath;
-    $scope.isAdmin = Session.isAdmin();
+    ctrl.adminUrl = Location.adminPath;
+    ctrl.setIsAdmin(Session.isAdmin());
 
     if (
       $window.medicmobile_android &&
@@ -244,12 +241,6 @@ var _ = require('underscore'),
 
     $scope.isMobile = function() {
       return $('#mobile-detection').css('display') === 'inline';
-    };
-
-    $scope.setFilterQuery = function(query) {
-      if (query) {
-        $scope.filterQuery.value = query;
-      }
     };
 
     $scope.$on('HideContent', function() {
@@ -363,7 +354,7 @@ var _ = require('underscore'),
     var updateAvailableFacilities = function() {
       PlaceHierarchy()
         .then(function(hierarchy) {
-          $scope.facilities = hierarchy;
+          ctrl.setFacilities(hierarchy);
         })
         .catch(function(err) {
           $log.error('Error loading facilities', err);
@@ -569,6 +560,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
+        controllerAs: 'sendMessageCtrl',
         model: {
           to: target.attr('data-send-to'),
         },
@@ -670,6 +662,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/feedback.html',
         controller: 'FeedbackCtrl',
+        controllerAs: 'feedbackCtrl'
       });
     };
 

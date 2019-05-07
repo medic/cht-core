@@ -17,7 +17,6 @@ angular.module('inboxDirectives').component('mmReportsList', {
   bindings: {
     appending: '<',
     error: '<',
-    errorSyntax: '<',
     filtered: '<',
     hasReports: '<',
     loading: '<',

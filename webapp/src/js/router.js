@@ -10,6 +10,7 @@
       .state('error', {
         url: '/error/:code',
         controller: 'ErrorCtrl',
+        controllerAs: 'errorCtrl',
         templateUrl: 'templates/partials/error.html'
       })
 
@@ -246,6 +247,7 @@
       .state('about', {
         url: '/about',
         controller: 'AboutCtrl',
+        controllerAs: 'aboutCtrl',
         templateUrl: 'templates/partials/about.html'
       })
 

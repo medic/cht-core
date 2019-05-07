@@ -24,6 +24,8 @@ var passwordTester = require('simple-password-tester'),
     ) {
       'ngInject';
 
+      const ctrl = this;
+
       $scope.cancel = function() {
         $uibModalInstance.dismiss();
       };
@@ -62,7 +64,7 @@ var passwordTester = require('simple-password-tester'),
         if (!$scope.editUserModel[fieldName]) {
           Translate.fieldIsRequired(fieldDisplayName)
             .then(function(value) {
-              $scope.errors[fieldName] = value;
+              ctrl.errors[fieldName] = value;
             });
           return false;
         }
@@ -72,7 +74,7 @@ var passwordTester = require('simple-password-tester'),
       var validateConfirmPasswordMatches = function() {
         if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
           $translate('Passwords must match').then(function(value) {
-            $scope.errors.password = value;
+            ctrl.errors.password = value;
           });
           return false;
         }
@@ -83,13 +85,13 @@ var passwordTester = require('simple-password-tester'),
         var password = $scope.editUserModel.password || '';
         if (password.length < PASSWORD_MINIMUM_LENGTH) {
           $translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
-            $scope.errors.password = value;
+            ctrl.errors.password = value;
           });
           return false;
         }
         if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
           $translate('password.weak').then(function(value) {
-            $scope.errors.password = value;
+            ctrl.errors.password = value;
           });
           return false;
         }
@@ -144,7 +146,7 @@ var passwordTester = require('simple-password-tester'),
 
       // Submit function if template is update_password.html
       $scope.updatePassword = function() {
-        $scope.errors = {};
+        ctrl.errors = {};
         $scope.setProcessing();
         if (validatePasswordFields()) {
           var updates = { password: $scope.editUserModel.password };
@@ -157,12 +159,12 @@ var passwordTester = require('simple-password-tester'),
             .catch(function(err) {
               if (err.status === -1) { //Offline Status
                 $translate('online.action.message').then(function(value) {
-                  $scope.errors.currentPassword = value;
+                  ctrl.errors.currentPassword = value;
                   $scope.setError();
                 });
               } else if (err.status === 401) {
                 $translate('password.incorrect').then(function(value) {
-                  $scope.errors.currentPassword = value;
+                  ctrl.errors.currentPassword = value;
                   $scope.setError();
                 });
               } else {
@@ -181,7 +183,7 @@ var passwordTester = require('simple-password-tester'),
       // #edit-user-settings is the limited set of edits that any user can do to itself.
       $scope.editUserSettings = function() {
         $scope.setProcessing();
-        $scope.errors = {};
+        ctrl.errors = {};
         computeFields();
 
         changedUpdates($scope.editUserModel).then(function(updates) {

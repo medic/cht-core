@@ -139,6 +139,18 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      function setFacilities(facilities) {
+        dispatch(createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
+      }
+
+      function setVersion(version) {
+        dispatch(createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
+      }
+
+      function setIsAdmin(isAdmin) {
+        dispatch(createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -150,6 +162,9 @@ angular.module('inboxServices').factory('GlobalActions',
         setLoadingSubActionBar,
         setShowActionBar,
         setShowContent,
+        setFacilities,
+        setVersion,
+        setIsAdmin,
         // Global selected actions
         setSelected,
         updateSelected,

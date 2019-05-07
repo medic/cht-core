@@ -8,9 +8,9 @@
   on-submit="submit()"
 >
   <form action="" method="POST">
-    <div class="form-group" ng-class="{ 'has-error': error.message }">
+    <div class="form-group" ng-class="{ 'has-error': feedbackCtrl.error.message }">
       <textarea ng-model="model.message" class="form-control" translate translate-attr-placeholder="Bug description"></textarea>
-      <span class="help-block" ng-show="error.message">{{error.message}}</span>
+      <span class="help-block" ng-show="feedbackCtrl.error.message">{{feedbackCtrl.error.message}}</span>
     </div>
   </form>
 </mm-modal>
