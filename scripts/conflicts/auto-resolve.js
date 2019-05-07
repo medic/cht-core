@@ -66,26 +66,26 @@ const resolveConflictLoop = (docId, conflictRev) => DB
     }
 
     // Make sure mine and theirs are the right way around
-    const mine = results.find(r = r.ok._rev !== conflictRev).ok;
-    const theirs = results.find(r = r.ok._rev === conflictRev).ok;
+    const mine = results.find(r => r.ok._rev !== conflictRev).ok;
+    const theirs = results.find(r => r.ok._rev === conflictRev).ok;
 
     const [resolvedCount, unresolvedConflicts] = resolve(mine, theirs);
 
     if (verbose) {
       console.log('\n====');
-      console.log(conflictedDoc.id);
+      console.log(docId);
       console.log(unresolvedConflicts);
     }
 
     if (unresolvedConflicts.length === 0) {
-      console.log(`${verbose ? '' : conflictedDoc.id} resolved ${resolvedCount} issues, merging`);
+      console.log(`${verbose ? '' : docId} resolved ${resolvedCount} issues, merging`);
       theirs._deleted = true;
       return DB.bulkDocs([mine, theirs])
         .then(results => {
           console.log('Merged', results);
         });
     } else {
-      console.log(`${verbose ? '' : conflictedDoc.id} managed to resolve ${resolvedCount} conflicts, ${unresolvedConflicts.length} remain, skipping...`);
+      console.log(`${verbose ? '' : docId} managed to resolve ${resolvedCount} conflicts, ${unresolvedConflicts.length} remain, skipping...`);
     }
   });
 

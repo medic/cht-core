@@ -1,10 +1,14 @@
-const {validTranslations, validDirectory} = require('../lib/validate');
+const {validTranslations, validDirectory, validatePlaceHolders} = require('../lib/validate');
 const valid = validTranslations;
+const path = require('path');
 
 describe('validate', () => {
 
-  console = { log: jest.fn() };
-  
+  console = {
+    log: jest.fn(),
+    error: jest.fn()
+  };
+
   test('translation file exists', () => {
     expect(valid('tests/messages-en.properties')).toBeFalsy();
   });
@@ -18,11 +22,18 @@ describe('validate', () => {
     expect(valid('tests/translations/good-en.properties')).toBeTruthy();
   });
 
-  test('bad translation content', () => {
-    expect(valid('tests/translations/bad-en.properties')).toBeFalsy();
-  });
-
   test('directory', () => {
     expect(validDirectory('tests/translations')).toBeTruthy();
   });
+
+  test('successful matching translation placeholders', () => {
+    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'matching-placeholders'));
+    expect(console.error).toHaveBeenCalledTimes(0);
+  });
+
+  test('error on non-matching translation placeholders', () => {
+    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'non-matching-placeholders'));
+    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
+  });
+
 });

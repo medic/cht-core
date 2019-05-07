@@ -10,7 +10,8 @@ const { UNIT_TEST_ENV } = process.env;
 if (UNIT_TEST_ENV) {
   const DBS_TO_STUB = [
     'medic',
-    'users'
+    'users',
+    'medicUsersMeta'
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -52,9 +53,17 @@ if (UNIT_TEST_ENV) {
       return PouchDB.fetch(url, opts);
     },
   });
+  const DBUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, {
+    fetch: (url, opts) => {
+      opts.headers.set('X-Medic-Service', 'api');
+      return PouchDB.fetch(url, opts);
+    },
+  });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
   DB.setMaxListeners(0);
   module.exports.medic = DB;
+  module.exports.medicUsersMeta = DBUsersMeta;
+  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`);
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name

@@ -1,16 +1,15 @@
 /*
  * Publish the ddoc from the testing db to staging.
  */
-const https = require('https'),
-      http = require('http'),
-      {
-        UPLOAD_URL,
-        TRAVIS_BUILD_NUMBER,
-        TRAVIS_TAG,
-        TRAVIS_BRANCH
-      } = process.env,
-      releaseName = TRAVIS_TAG || TRAVIS_BRANCH;
-
+const {
+  UPLOAD_URL,
+  TRAVIS_BUILD_NUMBER,
+  BUILDS_SERVER,
+  STAGING_SERVER,
+  TRAVIS_TAG,
+  TRAVIS_BRANCH
+} = process.env;
+const releaseName = TRAVIS_TAG || TRAVIS_BRANCH;
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
@@ -19,8 +18,8 @@ if (!releaseName) {
   process.exit(0);
 }
 
-const testingDb = new PouchDB(`${UPLOAD_URL}/_couch/builds_testing`);
-const stagingDb = new PouchDB(`${UPLOAD_URL}/_couch/builds`);
+const testingDb = new PouchDB(`${UPLOAD_URL}/${BUILDS_SERVER}`);
+const stagingDb = new PouchDB(`${UPLOAD_URL}/${STAGING_SERVER}`);
 
 const testingDocId = `medic:medic:test-${TRAVIS_BUILD_NUMBER}`;
 const stagingDocId = `medic:medic:${releaseName}`;
@@ -46,7 +45,7 @@ const prepare = doc => {
         return doc;
       }
       throw err;
-    })
+    });
 };
 
 const publish = doc => {

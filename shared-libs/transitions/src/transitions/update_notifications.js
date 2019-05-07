@@ -122,5 +122,6 @@ module.exports = {
           });
       });
     });
-  }
+  },
+  asynchronousOnly: true
 };
