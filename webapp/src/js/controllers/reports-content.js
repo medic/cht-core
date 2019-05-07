@@ -79,15 +79,15 @@ var _ = require('underscore');
 
         var id = selection._id;
         if (selection.report || selection.expanded) {
-          ctrl.updateSelectedItem(id, { expanded: !selection.expanded });
+          ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
         } else {
-          ctrl.updateSelectedItem(id, { loading: true });
+          ctrl.updateSelectedReportItem(id, { loading: true });
           $scope.refreshReportSilently(id)
             .then(function() {
-              ctrl.updateSelectedItem(id, { loading: false, expanded: true });
+              ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
             })
             .catch(function(err) {
-              ctrl.updateSelectedItem(id, { loading: false });
+              ctrl.updateSelectedReportItem(id, { loading: false });
               $log.error('Error fetching doc for expansion', err);
             });
         }
