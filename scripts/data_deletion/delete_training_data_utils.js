@@ -63,7 +63,7 @@ var deleteDocs = function(dryrun, db, docs) {
       console.log(result);
       return result;
     })
-    .catch(function(err) {
+    .catch(function() {
       console.log('Ignoring error in deleteDoc, because db times out all the time anyway.');
       return docsWithDeleteField;
     });

@@ -31,6 +31,21 @@ function doMocking(overwrites = {}) {
 }
 
 describe('Resource Extraction', () => {
+  describe('getDestinationDirectory', () => {
+    const testScenario = (env, expected) => resourceExtraction.__with__({
+      env,
+      __dirname: '/__dirname',
+    })(() => {
+      const actual = resourceExtraction.getDestinationDirectory();
+      expect(actual).to.eq(expected);
+    });
+
+    it('default', () => testScenario({}, '/__dirname/extracted-resources'));
+    it('explicit via env', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo' }, '/foo'));
+    it('default in production', () => testScenario({ NODE_ENV: 'production' }, '/tmp/extracted-resources'));
+    it('explit and production', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo', NODE_ENV: 'production' }, '/foo'));
+  });
+
   it('attachments written to disk', done => {
     const expected = { content: { toString: () => 'foo' } };
     doMocking(expected);
@@ -73,25 +88,6 @@ describe('Resource Extraction', () => {
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[1];
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
-        done();
-      });
-  });
-
-  it('service worker hydrated', done => {
-    const expected = {
-      content: { toString: () => 'APP_PREFIX' },
-      attachments: {
-        'js/service-worker.js': { digest: 'current' },
-      }
-    };
-    doMocking(expected);
-    resourceExtraction.run()
-      .then(() => {
-        expect(mockFs.writeFile.callCount).to.eq(1);
-
-        const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-        expect(actualOutputPath).to.include('src/extracted-resources/js/service-worker.js');
-        expect(actualContent).to.include('/_design/medic/_rewrite');
         done();
       });
   });

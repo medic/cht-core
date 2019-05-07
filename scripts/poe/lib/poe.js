@@ -2,7 +2,7 @@ const {save, mmVersion, error} = require('./utils');
 const queryString = require('querystring');
 const post = require('./post');
 const {readStream} = require('./read');
-const {validTranslations, validDirectory} = require('./validate');
+const {validTranslations, validDirectory, validatePlaceHolders} = require('./validate');
 const slack = require('./slack')(process.env.SLACK_WEBHOOK_URL);
 
 const upload = async (opts) => {
@@ -34,7 +34,7 @@ const upload = async (opts) => {
 
 const download = async (opts) => {
   if(validDirectory(opts.file)) {
-    const dir =`${process.cwd()}/${opts.file}`;
+    const dir = `${process.cwd()}/${opts.file}`;
     delete opts.file;
     const langs = opts.language === 'all' ? await languages(opts) : [opts.language];
     const downloads = langs.map(async (lang) => {
@@ -54,10 +54,13 @@ const download = async (opts) => {
       }
       const file = `messages-${lang}.properties`;
       console.log(`\t${lang} saved to ${dir}/${file}`);
-      save(result.url, `${dir}/${file}`);
+      await save(result.url, `${dir}/${file}`);
       return response;
     });
     await Promise.all(downloads);
+    if (!validatePlaceHolders(langs, dir)) {
+      throw new Error('Invalid placeholders!');
+    }
   }
 };
 

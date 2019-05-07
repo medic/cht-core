@@ -1,3 +1,4 @@
+/* eslint-disable angular/one-dependency-per-line */
 (function() {
   const redux = require('redux');
   const global = require('./global');

@@ -1,8 +1,10 @@
+const config = require('../../src/config');
+config.initTransitionLib();
+
 var _ = require('underscore'),
     moment = require('moment'),
     sinon = require('sinon'),
     assert = require('chai').assert,
-    config = require('../../src/config'),
     reminders = require('../../src/schedule/reminders'),
     db = require('../../src/db');
 

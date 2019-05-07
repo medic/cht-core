@@ -2,6 +2,8 @@
  * Delete data for a group of CHPs within the branch.
  */
 
+ /* eslint-disable no-unused-vars */
+
 'use strict';
 
 var PouchDB = require('pouchdb');
