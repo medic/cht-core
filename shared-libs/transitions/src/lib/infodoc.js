@@ -91,7 +91,7 @@ const updateTransition = (change, transition, ok) => {
   };
 };
 
-const updateTransitions = change => {
+const saveTransitions = change => {
   return findInfoDoc(db.sentinel, change)
     .then(doc => {
       doc.transitions = change.info.transitions || {};
@@ -171,5 +171,5 @@ module.exports = {
     updateTransition(change, transition, ok),
   bulkGet: bulkGet,
   bulkUpdate: bulkUpdate,
-  updateTransitions: updateTransitions
+  saveTransitions: saveTransitions
 };

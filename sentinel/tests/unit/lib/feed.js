@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const db = require('../../../src/db');
-const feed = require('../../../src/lib/feed'),
-      tombstoneUtils = require('@medic/tombstone-utils');
+const feed = require('../../../src/lib/feed');
+const tombstoneUtils = require('@medic/tombstone-utils');
 
 describe('feed', () => {
 

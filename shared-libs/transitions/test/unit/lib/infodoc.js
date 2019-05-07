@@ -304,7 +304,7 @@ describe('infodoc', () => {
         });
     });
 
-    it('updateTransitions should update infodoc', () => {
+    it('saveTransitions should update infodoc', () => {
       const info = { _id: 'some-info', doc_id: 'some' };
       const change = {
         id: 'some',
@@ -322,7 +322,7 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return infodoc.updateTransitions(change).then(() => {
+      return infodoc.saveTransitions(change).then(() => {
         assert.equal(db.sentinel.get.callCount, 1);
         assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
         assert.equal(db.sentinel.put.callCount, 1);
@@ -330,7 +330,7 @@ describe('infodoc', () => {
       });
     });
 
-    it('updateTransitions should catch save errors', () => {
+    it('saveTransitions should catch save errors', () => {
       const info = { _id: 'some-info', doc_id: 'some' };
       const change = {
         id: 'some',
@@ -348,7 +348,7 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').rejects({ some: 'err' });
 
-      return infodoc.updateTransitions(change).then(() => {
+      return infodoc.saveTransitions(change).then(() => {
         assert.equal(db.sentinel.get.callCount, 1);
         assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
         assert.equal(db.sentinel.put.callCount, 1);

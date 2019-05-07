@@ -243,7 +243,7 @@ const finalize = ({ change, results }, callback) => {
     }
 
     logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    infodoc.updateTransitions(change).then(() => callback(err, result));
+    infodoc.saveTransitions(change).then(() => callback(err, result));
   });
 };
 

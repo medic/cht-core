@@ -86,7 +86,7 @@ describe('processDocs', () => {
     sinon.stub(infodoc, 'bulkUpdate').resolves();
     sinon.stub(transitions, 'applyTransition');
     sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
-    sinon.stub(infodoc, 'updateTransitions').resolves();
+    sinon.stub(infodoc, 'saveTransitions').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -118,8 +118,8 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '2', from: 2 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
 
-      chai.expect(infodoc.updateTransitions.callCount).to.equal(1);
-      chai.expect(infodoc.updateTransitions.calledWithMatch({ id: '1' })).to.equal(true);
+      chai.expect(infodoc.saveTransitions.callCount).to.equal(1);
+      chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
     });
   });
 
@@ -148,7 +148,7 @@ describe('processDocs', () => {
       .withArgs(sinon.match({ _id: '2' })).callsArgWith(1, { error: 'error' })
       .withArgs(sinon.match({ _id: '3' })).callsArgWith(1, null, { ok: true })
       .withArgs(sinon.match({ _id: '4' })).callsArgWith(1, { error: 'error' });
-    sinon.stub(infodoc, 'updateTransitions').resolves();
+    sinon.stub(infodoc, 'saveTransitions').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -184,8 +184,8 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '4', from: 4 })).to.equal(true);
 
-      chai.expect(infodoc.updateTransitions.callCount).to.equal(1);
-      chai.expect(infodoc.updateTransitions.calledWithMatch({ id: '1' })).to.equal(true);
+      chai.expect(infodoc.saveTransitions.callCount).to.equal(1);
+      chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
 
     });
   });
