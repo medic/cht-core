@@ -11,11 +11,11 @@ angular
     $state,
     $stateParams,
     $timeout,
-    Actions,
     AddReadStatus,
     Changes,
     DB,
     Export,
+    GlobalActions,
     LiveList,
     MarkRead,
     Modal,
@@ -28,24 +28,26 @@ angular
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state)
+        selected: Selectors.getSelected(state),
+        showContent: Selectors.getShowContent(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
-        addSelected: actions.addSelected,
-        removeSelected: actions.removeSelected,
-        setSelected: actions.setSelected,
-        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty
+        addSelected: globalActions.addSelected,
+        removeSelected: globalActions.removeSelected,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelected: globalActions.setSelected,
+        setFirstSelectedDocProperty: globalActions.setFirstSelectedDocProperty
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
 
@@ -227,7 +229,7 @@ angular
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
-        $scope.loading = true;
+        ctrl.loading = true;
         if (ctrl.selected.length && $scope.isMobile()) {
           $scope.selectReport();
         }
@@ -243,7 +245,7 @@ angular
         .then(updateLiveList)
         .then(function(data) {
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
-          $scope.loading = false;
+          ctrl.loading = false;
           $scope.appending = false;
           $scope.error = false;
           $scope.errorSyntax = false;
@@ -266,7 +268,7 @@ angular
         })
         .catch(function(err) {
           $scope.error = true;
-          $scope.loading = false;
+          ctrl.loading = false;
           if (
             $scope.filters.search &&
             err.reason &&
@@ -286,11 +288,11 @@ angular
         $state.go('reports.detail', { id: null }, { notify: false });
         clearSelection();
       }
-      if ($scope.isMobile() && $scope.showContent) {
+      if ($scope.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }
-      $scope.loading = true;
+      ctrl.loading = true;
       if (
         $scope.filters.search ||
         ($scope.filters.forms &&
@@ -340,7 +342,7 @@ angular
 
     $scope.$on('VerifyReport', function(e, valid) {
       if (ctrl.selected[0].doc.form) {
-        $scope.setLoadingSubActionBar(true);
+        ctrl.setLoadingSubActionBar(true);
 
         if (ctrl.selected[0].doc.contact) {
           var minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
@@ -362,14 +364,14 @@ angular
           .finally(() => {
             $scope.$broadcast('VerifiedReport', valid);
 
-            $scope.setLoadingSubActionBar(false);
+            ctrl.setLoadingSubActionBar(false);
           });
       }
     });
 
     var initScroll = function() {
       scrollLoader.init(function() {
-        if (!$scope.loading && $scope.moreItems) {
+        if (!ctrl.loading && $scope.moreItems) {
           query({ skip: true });
         }
       });
@@ -409,7 +411,7 @@ angular
       $scope.search();
     } else {
       // otherwise wait for loading to complete
-      $scope.loading = true;
+      ctrl.loading = true;
       $scope.$on('formLoadingComplete', function() {
         $scope.search();
         var doc =

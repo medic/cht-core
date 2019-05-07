@@ -6,6 +6,7 @@
 
   require('./actionbar');
   require('./auth');
+  require('./contacts-list');
   require('./content-row');
   require('./date-filter');
   require('./enketo');
@@ -22,5 +23,6 @@
   require('./sender');
   require('./show-muted-modal');
   require('./status-filter');
+  require('./tasks-list');
 
 }());

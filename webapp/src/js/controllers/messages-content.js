@@ -15,8 +15,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
-    Actions,
     Changes,
+    GlobalActions,
     LineageModelGenerator,
     MarkRead,
     MessageContacts,
@@ -29,21 +29,23 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
+        loadingContent: Selectors.getLoadingContent(state),
         selected: Selectors.getSelected(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
-        addSelectedMessage: actions.addSelectedMessage,
-        removeSelectedMessage: actions.removeSelectedMessage,
-        updateSelected: actions.updateSelected
+        addSelectedMessage: globalActions.addSelectedMessage,
+        removeSelectedMessage: globalActions.removeSelectedMessage,
+        setLoadingContent: globalActions.setLoadingContent,
+        updateSelected: globalActions.updateSelected
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.send = {
       message: ''
@@ -95,7 +97,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       options = options || {};
       if (!id) {
         $scope.error = false;
-        $scope.loadingContent = false;
+        ctrl.setLoadingContent(false);
         $scope.clearSelected();
         return;
       }
@@ -130,7 +132,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           $timeout(scrollToUnread);
         })
         .catch(function(err) {
-          $scope.loadingContent = false;
+          ctrl.setLoadingContent(false);
           $scope.error = true;
           $log.error('Error fetching contact conversation', err);
         });
@@ -142,13 +144,13 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         var skip = options.skip && ctrl.selected.messages.length;
         if (skip) {
           $timeout(function() {
-            $scope.loadingMoreContent = true;
+            ctrl.loadingMoreContent = true;
           });
         }
 
         MessageContacts.conversation(selectedId, skip)
           .then(function(conversation) {
-            $scope.loadingMoreContent = false;
+            ctrl.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');

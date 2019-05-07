@@ -23,6 +23,7 @@
       .state('messages', {
         url: '/messages?tour',
         controller: 'MessagesCtrl',
+        controllerAs: 'messagesCtrl',
         templateUrl: 'templates/partials/messages.html'
       })
       .state('messages.detail', {
@@ -34,7 +35,7 @@
         views: {
           content: {
             controller: 'MessagesContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'messagesContentCtrl',
             templateUrl: 'templates/partials/messages_content.html'
           }
         }
@@ -44,6 +45,7 @@
       .state('reports', {
         url: '/reports?tour&query',
         controller: 'ReportsCtrl',
+        controllerAs: 'reportsCtrl',
         templateUrl: 'templates/partials/reports.html'
       })
       .state('reports.add', {
@@ -54,7 +56,7 @@
         views: {
           content: {
             controller: 'ReportsAddCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'reportsAddCtrl',
             templateUrl: 'templates/partials/reports_add.html'
           }
         }
@@ -67,7 +69,7 @@
         views: {
           content: {
             controller: 'ReportsAddCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'reportsAddCtrl',
             templateUrl: 'templates/partials/reports_add.html'
           }
         }
@@ -80,7 +82,7 @@
         views: {
           content: {
             controller: 'ReportsContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'reportsContentCtrl',
             templateUrl: 'templates/partials/reports_content.html'
           }
         }
@@ -90,6 +92,7 @@
       .state('analytics', {
         url: '/analytics?tour',
         controller: 'AnalyticsCtrl',
+        controllerAs: 'analyticsCtrl',
         templateUrl: 'templates/partials/analytics.html'
       })
       .state('analytics.reporting', {
@@ -97,6 +100,7 @@
         views: {
           content: {
             controller: 'AnalyticsReportingCtrl',
+            controllerAs: 'analyticsReportingCtrl',
             templateUrl: 'templates/partials/analytics/reporting.html'
           }
         }
@@ -110,6 +114,7 @@
         views: {
           detail: {
             controller: 'AnalyticsReportingDetailCtrl',
+            controllerAs: 'analyticsReportingDetailCtrl',
             templateUrl: 'templates/partials/analytics/reporting_detail.html'
           }
         }
@@ -119,6 +124,7 @@
         views: {
           content: {
             controller: 'AnalyticsTargetsCtrl',
+            controllerAs: 'analyticsTargetsCtrl',
             templateUrl: 'templates/partials/analytics/targets.html'
           }
         }
@@ -128,6 +134,7 @@
       .state('contacts', {
         url: '/contacts?tour',
         controller: 'ContactsCtrl',
+        controllerAs: 'contactsCtrl',
         templateUrl: 'templates/partials/contacts.html'
       })
       .state('contacts.add', {
@@ -135,7 +142,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -149,7 +156,7 @@
         views: {
           content: {
             controller: 'ContactsReportCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsReportCtrl',
             templateUrl: 'templates/partials/contacts_report.html'
           }
         }
@@ -162,7 +169,7 @@
         views: {
           content: {
             controller: 'ContactsDeceasedCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsDeceasedCtrl',
             templateUrl: 'templates/partials/contacts_deceased.html'
           }
         }
@@ -175,7 +182,7 @@
         views: {
           content: {
             controller: 'ContactsContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsContentCtrl',
             templateUrl: 'templates/partials/contacts_content.html'
           }
         }
@@ -189,7 +196,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -202,7 +209,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'contactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -212,6 +219,7 @@
       .state('tasks', {
         url: '/tasks?tour',
         controller: 'TasksCtrl',
+        controllerAs: 'tasksCtrl',
         templateUrl: 'templates/partials/tasks.html'
       })
       .state('tasks.detail', {
@@ -222,7 +230,7 @@
         views: {
           content: {
             controller: 'TasksContentCtrl',
-            controllerAs: '$ctrl',
+            controllerAs: 'tasksContentCtrl',
             templateUrl: 'templates/partials/tasks_content.html'
           }
         }

@@ -9,9 +9,9 @@ angular
     $state,
     $stateParams,
     $timeout,
-    Actions,
     Changes,
     Export,
+    GlobalActions,
     MessageContacts,
     MessageListUtils,
     Selectors,
@@ -20,24 +20,24 @@ angular
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         selected: Selectors.getSelected(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
-        setSelected: actions.setSelected
+        setSelected: globalActions.setSelected
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.allLoaded = false;
     $scope.messages = [];
     ctrl.setSelected(null);
-    $scope.loading = true;
+    ctrl.loading = true;
 
     var setMessages = function(options) {
       options = options || {};
@@ -60,12 +60,12 @@ angular
     var updateConversations = function(options) {
       options = options || {};
       if (!options.changes) {
-        $scope.loading = true;
+        ctrl.loading = true;
       }
       return MessageContacts.list().then(function(messages) {
         options.messages = messages;
         setMessages(options);
-        $scope.loading = false;
+        ctrl.loading = false;
       });
     };
 

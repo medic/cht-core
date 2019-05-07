@@ -12,13 +12,14 @@ var _ = require('underscore'),
     $state,
     $stateParams,
     $translate,
-    Actions,
     Auth,
     Changes,
     ContactSchema,
     ContactSummary,
+    ContactsActions,
     Export,
     GetDataRecords,
+    GlobalActions,
     LiveList,
     Search,
     SearchFilters,
@@ -33,32 +34,34 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         selected: Selectors.getSelected(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      const contactsActions = ContactsActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setSelected: actions.setSelected,
-        updateSelected: actions.updateSelected,
-        loadSelectedChildren: actions.loadSelectedChildren,
-        loadSelectedReports: actions.loadSelectedReports,
-        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
-        setLoadingSelectedReports: actions.setLoadingSelectedReports
+        clearCancelCallback: globalActions.clearCancelCallback,
+        setSelected: globalActions.setSelected,
+        updateSelected: globalActions.updateSelected,
+        loadSelectedChildren: globalActions.loadSelectedChildren,
+        loadSelectedReports: globalActions.loadSelectedReports,
+        setLoadingSelectedChildren: globalActions.setLoadingSelectedChildren,
+        setLoadingSelectedReports: globalActions.setLoadingSelectedReports,
+        setLoadingSummary: contactsActions.setLoadingSummary
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var liveList = LiveList.contacts;
 
     LiveList.$init($scope, 'contacts', 'contact-search');
 
-    $scope.loading = true;
+    ctrl.loading = true;
     ctrl.setSelected(null);
     $scope.filters = {};
     var defaultTypeFilter = {};
@@ -72,7 +75,7 @@ var _ = require('underscore'),
 
     var _initScroll = function() {
       scrollLoader.init(function() {
-        if (!$scope.loading && $scope.moreItems) {
+        if (!ctrl.loading && $scope.moreItems) {
           _query({
             paginating: true,
             reuseExistingDom: true,
@@ -86,7 +89,7 @@ var _ = require('underscore'),
       options.limit = options.limit || 50;
 
       if (!options.silent) {
-        $scope.loading = true;
+        ctrl.loading = true;
         $scope.error = false;
       }
 
@@ -177,14 +180,14 @@ var _ = require('underscore'),
           liveList.set(mergedList, !!options.reuseExistingDom);
 
           _initScroll();
-          $scope.loading = false;
+          ctrl.loading = false;
           $scope.appending = false;
           $scope.hasContacts = liveList.count() > 0;
           setActionBarData();
         })
         .catch(function(err) {
           $scope.error = true;
-          $scope.loading = false;
+          ctrl.loading = false;
           $scope.appending = false;
           $log.error('Error searching for contacts', err);
         });
@@ -238,7 +241,7 @@ var _ = require('underscore'),
       } else {
         title = ContactSchema.get(ctrl.selected.doc.type).label;
       }
-      $scope.loadingSummary = true;
+      ctrl.setLoadingSummary(true);
       return $q
         .all([
           $translate(title),
@@ -268,7 +271,7 @@ var _ = require('underscore'),
                 Settings()
               ])
               .then(function(results) {
-                $scope.loadingSummary = false;
+                ctrl.setLoadingSummary(false);
                 var summary = results[0];
                 ctrl.updateSelected({ summary: summary });
                 var options = { doc: ctrl.selected.doc, contactSummary: summary.context };
@@ -332,7 +335,7 @@ var _ = require('underscore'),
         clearSelection();
       }
 
-      $scope.loading = true;
+      ctrl.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;
         liveList = LiveList['contact-search'];
@@ -359,7 +362,7 @@ var _ = require('underscore'),
 
     $scope.simprintsEnabled = Simprints.enabled();
     $scope.simprintsIdentify = function() {
-      $scope.loading = true;
+      ctrl.loading = true;
       Simprints.identify().then(function(identities) {
         $scope.filters.simprintsIdentities = identities;
         $scope.search();

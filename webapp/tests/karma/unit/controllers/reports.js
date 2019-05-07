@@ -4,7 +4,7 @@ describe('ReportsCtrl controller', () => {
 
   let createController,
       scope,
-      actions,
+      globalActions,
       report,
       get,
       post,
@@ -24,7 +24,7 @@ describe('ReportsCtrl controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(($rootScope, $controller, $ngRedux, Actions) => {
+  beforeEach(inject(($rootScope, $controller, $ngRedux, GlobalActions) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();
@@ -44,7 +44,7 @@ describe('ReportsCtrl controller', () => {
     scope.settingSelected = () => {};
     scope.setLoadingSubActionBar = sinon.stub();
 
-    actions = Actions($ngRedux.dispatch);
+    globalActions = GlobalActions($ngRedux.dispatch);
 
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
@@ -143,7 +143,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.setSelected([{
+      globalActions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', form: 'P' }
       }]);
@@ -165,7 +165,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.setSelected([{
+      globalActions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', form: 'P' }
       }]);
@@ -187,7 +187,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.setSelected([{
+      globalActions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       }]);
@@ -209,7 +209,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.setSelected([{
+      globalActions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       }]);
@@ -231,7 +231,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.setSelected([{
+      globalActions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       }]);
@@ -253,7 +253,7 @@ describe('ReportsCtrl controller', () => {
       post.returns(Promise.resolve());
 
       createController();
-      actions.setSelected([{
+      globalActions.setSelected([{
         _id: 'abc',
         doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       }]);

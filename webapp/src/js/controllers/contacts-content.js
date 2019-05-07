@@ -10,12 +10,12 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $stateParams,
     $timeout,
     $translate,
-    Actions,
     Auth,
     Changes,
     ContactChangeFilter,
     ContactViewModelGenerator,
     Debounce,
+    GlobalActions,
     Selectors,
     Snackbar,
     TasksForContact,
@@ -26,21 +26,23 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         selected: Selectors.getSelected(state),
+        loadingContent: Selectors.getLoadingContent(state),
         loadingSelectedChildren: Selectors.getLoadingSelectedChildren(state),
-        loadingSelectedReports: Selectors.getLoadingSelectedReports(state)
+        loadingSelectedReports: Selectors.getLoadingSelectedReports(state),
+        loadingSummary: Selectors.getLoadingSummary(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
-        updateSelected: actions.updateSelected
+        updateSelected: globalActions.updateSelected
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var taskEndDate,
         reportStartDate,

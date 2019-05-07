@@ -13,7 +13,7 @@ var _ = require('underscore');
       $timeout,
       $translate,
       $window,
-      Actions,
+      GlobalActions,
       LiveList,
       RulesEngine,
       Selectors,
@@ -22,19 +22,20 @@ var _ = require('underscore');
     ) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           selected: Selectors.getSelected(state)
         };
       };
-      var mapDispatchToTarget = function(dispatch) {
-        var actions = Actions(dispatch);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
         return {
-          setSelected: actions.setSelected
+          setSelected: globalActions.setSelected,
+          setShowContent: globalActions.setShowContent
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
@@ -47,7 +48,7 @@ var _ = require('underscore');
           task.title = TranslateFrom(task.title, task);
         }
         $scope.setTitle(TranslateFrom(task.title, task));
-        $scope.setShowContent(true);
+        ctrl.setShowContent(true);
       };
 
       $scope.setSelected = function(id) {
@@ -79,11 +80,11 @@ var _ = require('underscore');
       $scope.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
       $scope.tasksDisabled = !RulesEngine.enabled;
-      $scope.loading = true;
+      ctrl.loading = true;
 
       RulesEngine.complete.then(function() {
         $timeout(function() {
-          $scope.loading = false;
+          ctrl.loading = false;
         });
       });
 

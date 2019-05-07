@@ -20,7 +20,6 @@ var _ = require('underscore'),
     $translate,
     $window,
     APP_CONFIG,
-    Actions,
     Auth,
     Changes,
     CheckDate,
@@ -31,6 +30,7 @@ var _ = require('underscore'),
     Debug,
     Enketo,
     Feedback,
+    GlobalActions,
     JsonForms,
     Language,
     LiveListConfig,
@@ -77,14 +77,19 @@ var _ = require('underscore'),
         cancelCallback: Selectors.getCancelCallback(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selectMode: Selectors.getSelectMode(state)
+        selectMode: Selectors.getSelectMode(state),
+        showContent: Selectors.getShowContent(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setSelectMode: actions.setSelectMode
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setLoadingContent: globalActions.setLoadingContent,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectMode: globalActions.setSelectMode,
+        setShowActionBar: globalActions.setShowActionBar,
+        setShowContent: globalActions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -149,7 +154,7 @@ var _ = require('underscore'),
 
       updateReplicationStatus(status);
     });
-    
+
     const setAppTitle = () => {
       ResourceIcons.getAppTitle().then(title => {
         document.title = title;
@@ -197,8 +202,8 @@ var _ = require('underscore'),
     LiveListConfig($scope);
     CheckDate();
 
-    $scope.loadingContent = false;
-    $scope.loadingSubActionBar = false;
+    ctrl.setLoadingContent(false);
+    ctrl.setLoadingSubActionBar(false);
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
@@ -306,9 +311,9 @@ var _ = require('underscore'),
      * Unset the selected item without navigation
      */
     $scope.unsetSelected = function() {
-      $scope.setShowContent(false);
-      $scope.loadingContent = false;
-      $scope.showActionBar = false;
+      ctrl.setShowContent(false);
+      ctrl.setLoadingContent(false);
+      ctrl.setShowActionBar(false);
       $scope.setTitle();
       $scope.$broadcast('ClearSelected');
     };
@@ -327,10 +332,10 @@ var _ = require('underscore'),
     };
 
     $scope.settingSelected = function(refreshing) {
-      $scope.loadingContent = false;
+      ctrl.setLoadingContent(false);
       $timeout(function() {
-        $scope.setShowContent(true);
-        $scope.showActionBar = true;
+        ctrl.setShowContent(true);
+        ctrl.setShowActionBar(true);
         if (!refreshing) {
           $timeout(function() {
             $('.item-body').scrollTop(0);
@@ -339,25 +344,13 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.setShowContent = function(showContent) {
-      if (showContent && ctrl.selectMode) {
-        // when in select mode we never show the RHS on mobile
-        return;
-      }
-      $scope.showContent = showContent;
-    };
-
     $scope.setTitle = function(title) {
       $scope.title = title;
     };
 
     $scope.setLoadingContent = function(id) {
-      $scope.loadingContent = id;
-      $scope.setShowContent(true);
-    };
-
-    $scope.setLoadingSubActionBar = function(loadingSubActionBar) {
-      $scope.loadingSubActionBar = loadingSubActionBar;
+      ctrl.setLoadingContent(id);
+      ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {

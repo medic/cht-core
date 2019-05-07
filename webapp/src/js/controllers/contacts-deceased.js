@@ -17,7 +17,8 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state),
+        loadingContent: Selectors.getLoadingContent(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
