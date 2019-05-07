@@ -2,10 +2,12 @@ const { expect } = require('chai');
 const URL = require('url');
 const utils = require('../utils');
 
+/* global caches fetch Response navigator */
+
 const getCachedRequests = async () => {
   const cacheDetails = await browser.executeAsyncScript(async () => {
     const callback = arguments[arguments.length - 1];
-    const cacheNames = await caches.keys()
+    const cacheNames = await caches.keys();
     const cache = await caches.open(cacheNames[0]);
     const cachedRequests = await cache.keys();
     const cachedRequestSummary = cachedRequests.map(req => ({ url: req.url }));
@@ -22,7 +24,7 @@ const getCachedRequests = async () => {
 
 const stubAllCachedRequests = () => browser.executeAsyncScript(async () => {
   const callback = arguments[arguments.length - 1];
-  const cacheNames = await caches.keys()
+  const cacheNames = await caches.keys();
   const cache = await caches.open(cacheNames[0]);
   const cachedRequests = await cache.keys();
   await Promise.all(cachedRequests.map(request => cache.put(request, new Response('cache'))));
