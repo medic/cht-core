@@ -132,7 +132,7 @@ var contactTypeRequest = function(filters, sortByLastVisitedDate) {
 
   if (sortByLastVisitedDate) {
     request.map = row => {
-      const [muted, dead] = row.value.split(' ');
+      const [ muted, dead ] = row.value.split(' ');
       row.sort = muted + ' ' + dead;
       return row;
     };

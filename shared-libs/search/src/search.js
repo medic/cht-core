@@ -41,7 +41,7 @@ module.exports = function(Promise, DB) {
     _.each(responses, function(response) {
       intersection = _.reject(intersection, function(row) {
         const existent = _.findWhere(response, { id: row.id });
-        if (existent && existent.sort) {
+        if (existent && 'sort' in existent) {
           row.sort = existent.sort + ' ' + (row.sort || row.value);
         }
         return !existent;
