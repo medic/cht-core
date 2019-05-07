@@ -287,8 +287,7 @@ angular.module('inboxServices').factory('LiveList',
   function(
     $timeout,
     ContactTypes,
-    ResourceIcons,
-    Settings
+    ResourceIcons
   ) {
     'ngInject';
 
@@ -373,20 +372,18 @@ angular.module('inboxServices').factory('LiveList',
         throw new Error('LiveList not configured for: ' + listName);
       }
 
-      Settings().then(settings => {
-        idx.lastUpdate = new Date();
-        idx.list = items.sort(idx.orderBy);
-        const newDom = {};
-        for (let i = 0; i < items.length; ++i) {
-          const item = items[i];
-          const useCache = reuseExistingDom && idx.dom[item._id] && !idx.dom[item._id].invalidateCache;
-          const li = useCache ? idx.dom[item._id] : listItemFor(idx, item, settings);
-          newDom[item._id] = li;
-        }
-        idx.dom = newDom;
+      idx.lastUpdate = new Date();
+      idx.list = items.sort(idx.orderBy);
+      const newDom = {};
+      for (let i = 0; i < items.length; ++i) {
+        const item = items[i];
+        const useCache = reuseExistingDom && idx.dom[item._id] && !idx.dom[item._id].invalidateCache;
+        const li = useCache ? idx.dom[item._id] : listItemFor(idx, item, contactTypes);
+        newDom[item._id] = li;
+      }
+      idx.dom = newDom;
 
-        _refresh(listName);
-      });
+      _refresh(listName);
     }
 
     function _initialised(listName) {

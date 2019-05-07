@@ -97,7 +97,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     const runChangeFeedProcessTest = () => {
-      stateParams = { id: doc._id};
+      stateParams = { id: doc._id };
       stubGetContact(doc,  []);
       return createController().setupPromise;
     };

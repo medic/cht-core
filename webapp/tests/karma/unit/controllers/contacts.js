@@ -225,7 +225,6 @@ describe('Contacts controller', () => {
         })
         .catch(() => {
           assert.checkDeepProperties(getSelected(), { doc: district, error: true });
-          assert.deepEqual(scope.selected.error, true);
           assert.equal(scope.setRightActionBar.callCount, 2);
           assert.deepEqual(scope.setRightActionBar.args[1], []);
         });

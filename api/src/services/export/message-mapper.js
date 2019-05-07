@@ -2,8 +2,8 @@ const _ = require('underscore'),
       db = require('../../db'),
       config = require('../../config'),
       dateFormat = require('./date-format'),
-      messageUtils = require('@medic/message-utils'),
-      registrationUtils = require('@garethbowen/registration-utils'),
+      messageUtils = require('@garethbowen/message-utils'),
+      registrationUtils = require('@medic/registration-utils'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
 const normalizeResponse = doc => {
