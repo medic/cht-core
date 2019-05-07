@@ -29,7 +29,11 @@ module.exports = {
       startkey: [ 'translations', false ],
       endkey: [ 'translations', true ],
       include_docs: true
-    }).then(translations => {
+    }).then(result => {
+      const translations = result.rows.map(function (e) {
+        return e.doc;
+      });
+    console.log(translations);
       return Promise.all(translations.map(translationRecord => {
         if (translationRecord.values) {
             return getAttachment(translationRecord._id)

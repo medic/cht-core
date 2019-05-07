@@ -65,14 +65,3 @@ module.exports = {
     });
   }
 };
- () => {
-    return settingsService.get().then(settings => {
-      if (!settings.translations || !settings.translations.length) {
-        return;
-      }
-      return updateDocs(settings).then(() => {
-        return settingsService.update({ translations: null, locales: null });
-      });
-    });
-  }
-};
