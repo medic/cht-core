@@ -1,10 +1,19 @@
-const sinon = require('sinon'),
-  assert = require('chai').assert,
-  db = require('../../../src/db'),
-  transition = require('../../../src/transitions/update_scheduled_reports'),
-  transitionUtils = require('../../../src/transitions/utils');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const db = require('../../../src/db');
+const config = require('../../../src/config');
+const transition = require('../../../src/transitions/update_scheduled_reports');
+const transitionUtils = require('../../../src/transitions/utils');
 
 describe('update_scheduled_reports', () => {
+
+  beforeEach(() => {
+    sinon.stub(config, 'get').returns([
+      { id: 'person', parents: ['clinic'], person: true },
+      { id: 'clinic', parents: ['health_center'] },
+      { id: 'health_center' }
+    ]);
+  });
   afterEach(() => sinon.restore());
 
   describe('filter', () => {
@@ -170,7 +179,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
-        contact: { parent: { _id: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
           week: 9,
           year: 2018
@@ -195,7 +204,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
-        contact: { parent: { _id: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
           month: 9,
           year: 2018
@@ -245,7 +254,7 @@ describe('update_scheduled_reports', () => {
         doc: {
           _id: 'abc',
           form: 'z',
-          contact: { parent: { _id: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: 'clinic' } },
           fields: {
             year: 2013,
             month: 4,
@@ -317,7 +326,7 @@ describe('update_scheduled_reports', () => {
           _id: 'xyz',
           _rev: '1-kkkk',
           form: 'z',
-          contact: { parent: { _id: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: 'clinic' } },
           fields: {
             month: 4,
             year: 2013,
@@ -412,7 +421,7 @@ describe('update_scheduled_reports', () => {
           _id: 'xyz',
           _rev: '1-kkkk',
           form: 'z',
-          contact: { parent: { _id: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: 'clinic' } },
           fields: {
             month: 4,
             year: 2013,

@@ -1,7 +1,25 @@
 const db = require('../db');
+const config = require('../config');
 const logger = require('../lib/logger');
 const transitionUtils = require('./utils');
 const NAME = 'update_scheduled_reports';
+
+const getLeafPlaceTypeIds = () => {
+  const types = config.get('contact_types') || [];
+  const placeTypes = types.filter(type => !type.person);
+  const leafPlaceTypes = placeTypes.filter(type => {
+    return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
+  });
+  return leafPlaceTypes.map(type => type.id);
+};
+
+const getLeafPlace = contact => {
+  const leafPlaceTypeIds = getLeafPlaceTypeIds();
+  while (contact && !leafPlaceTypeIds.includes(contact.contact_type || contact.type)) {
+    contact = contact.parent;
+  }
+  return contact;
+};
 
 module.exports = {
   filter: (doc, info = {}) => {
@@ -51,7 +69,8 @@ module.exports = {
   // also includes changed doc
   //
   _getDuplicates: doc => {
-    const parentId = doc.contact && doc.contact.parent && doc.contact.parent._id;
+    const leafPlaceParent = getLeafPlace(doc.contact);
+    const parentId = leafPlaceParent && leafPlaceParent._id;
     if (!parentId) {
       return Promise.resolve();
     }
