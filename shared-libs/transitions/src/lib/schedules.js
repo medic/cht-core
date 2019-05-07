@@ -7,7 +7,7 @@ const config = require('../config'),
       utils = require('../lib/utils'),
       logger = require('../lib/logger'),
       messages = require('../lib/messages'),
-      messageUtils = require('@medic/message-utils'),
+      messageUtils = require('@garethbowen/message-utils'),
       mutingUtils = require('../lib/muting_utils');
 
 module.exports = {

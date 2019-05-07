@@ -3,7 +3,7 @@ const db = require('../db'),
   _ = require('underscore'),
   logger = require('../logger');
 
-const utils = require('@medic/bulk-docs-utils')({
+const utils = require('@garethbowen/bulk-docs-utils')({
   Promise: Promise,
   DB: db.medic,
 });

@@ -1,6 +1,6 @@
 const _ = require('underscore'),
   phoneNumber = require('@medic/phone-number'),
-  messageUtils = require('@medic/message-utils'),
+  messageUtils = require('@garethbowen/message-utils'),
   utils = require('./utils'),
   config = require('../config'),
   history = require('./history'),

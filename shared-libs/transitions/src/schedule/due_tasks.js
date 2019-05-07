@@ -7,7 +7,7 @@ const async = require('async'),
   config = require('../config'),
   db = require('../db'),
   lineage = require('@medic/lineage')(Promise, db.medic),
-  messageUtils = require('@medic/message-utils');
+  messageUtils = require('@garethbowen/message-utils');
 
 const getPatient = (patientShortcodeId, callback) => {
   utils.getPatientContactUuid(patientShortcodeId, (err, uuid) => {

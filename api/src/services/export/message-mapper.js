@@ -3,7 +3,7 @@ const _ = require('underscore'),
       config = require('../../config'),
       dateFormat = require('./date-format'),
       messageUtils = require('@medic/message-utils'),
-      registrationUtils = require('@medic/registration-utils'),
+      registrationUtils = require('@garethbowen/registration-utils'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
 const normalizeResponse = doc => {

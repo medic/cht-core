@@ -1,7 +1,7 @@
 const sinon = require('sinon'),
       chai = require('chai'),
       service = require('../../../../src/services/export/message-mapper'),
-      messageUtils = require('@medic/message-utils'),
+      messageUtils = require('@garethbowen/message-utils'),
       registrationUtils = require('@medic/registration-utils'),
       db = require('../../../../src/db'),
       config = require('../../../../src/config');
