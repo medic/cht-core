@@ -14,6 +14,7 @@ const {
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
 const couchConfig = (() => {
   if (!COUCH_URL) {
@@ -355,7 +356,6 @@ module.exports = function(grunt) {
       // run ~4x faster. For some reason. Maybe cpu core related.
       'eslint': {
         cmd: () => {
-          const cmd = './node_modules/.bin/eslint --color';
           const paths = [
             'Gruntfile.js',
             'admin/**/*.js',
@@ -378,12 +378,13 @@ module.exports = function(grunt) {
             'shared-libs/transitions/src/lib/pupil/**',
           ];
 
-          return [cmd]
+          return [ESLINT_COMMAND]
             .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
             .concat(paths.map(glob => `"${glob}"`))
             .join(' ');
         }
       },
+      'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -953,9 +954,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'install-dependencies',
+    'static-analysis',
     'build',
     'build-admin',
-    'static-analysis',
     'install-dependencies',
     'mochaTest:api-integration',
     'unit',
@@ -980,12 +981,18 @@ module.exports = function(grunt) {
 
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'exec:blank-link-check',
-    'exec:eslint',
+    'eslint',
+    'eslint-sw',
     // 'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', [
     'exec:eslint'
+  ]);
+
+  grunt.registerTask('eslint-sw', 'Runs eslint on the generated service worker', [
+    'generate-service-worker',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
