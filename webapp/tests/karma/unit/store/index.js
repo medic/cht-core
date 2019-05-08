@@ -253,4 +253,92 @@ describe('Store', function() {
     chai.expect(state.selected).to.not.equal(initialState.selected);
     chai.expect(state).to.deep.equal({ selected: [item2] });
   });
+
+  describe('set tasks', () => {
+    it('should work when no tasks', () => {
+      const initialState = {
+        selected: {
+          doc: { _id: '1' },
+          children: {
+            persons: []
+          }
+        }
+      };
+
+      setupStore(initialState);
+      actions.loadSelectedTasks(false, []);
+
+      const state = getState();
+      chai.expect(state).to.not.equal(initialState);
+      chai.expect(state.selected).to.not.equal(initialState.selected);
+      chai.expect(state.selected.children).to.not.equal(initialState.selected.children);
+      chai.expect(state.selected.areTasksEnabled).to.equal(false);
+      chai.expect(state.selected.tasks).to.deep.equal([]);
+    });
+
+    it('should set tasks', () => {
+      const initialState = {
+        selected: {
+          doc: { _id: '1' },
+          children: {
+            persons: []
+          }
+        }
+      };
+
+      const tasks = [
+        { id: 'task1' },
+        { id: 'task2' },
+        { id: 'task3' }
+      ];
+
+      setupStore(initialState);
+      actions.loadSelectedTasks(true, tasks);
+
+      const state = getState();
+      chai.expect(state).to.not.equal(initialState);
+      chai.expect(state.selected).to.not.equal(initialState.selected);
+      chai.expect(state.selected.children).to.not.equal(initialState.selected.children);
+      chai.expect(state.selected.areTasksEnabled).to.equal(true);
+      chai.expect(state.selected.tasks).to.deep.equal(tasks);
+    });
+
+    it('should count children\'s tasks', () => {
+      const initialState = {
+        selected: {
+          doc: { _id: '1' },
+          children: {
+            persons: [
+              { id: 'person1' },
+              { id: 'person2' },
+              { id: 'person3' }
+            ]
+          }
+        }
+      };
+
+      const tasks = [
+        { id: 'task1', doc: { contact: { _id: 'person1' }} },
+        { id: 'task2', doc: { contact: { _id: 'person2' }} },
+        { id: 'task3', doc: { contact: { _id: 'person1' }} },
+        { id: 'task4', doc: {} },
+        { id: 'task5', doc: { contact: { name: 'test' } } },
+      ];
+
+      setupStore(initialState);
+      actions.loadSelectedTasks(true, tasks);
+
+      const state = getState();
+      chai.expect(state).to.not.equal(initialState);
+      chai.expect(state.selected).to.not.equal(initialState.selected);
+      chai.expect(state.selected.children).to.not.equal(initialState.selected.children);
+      chai.expect(state.selected.areTasksEnabled).to.equal(true);
+      chai.expect(state.selected.tasks).to.deep.equal(tasks);
+      chai.expect(state.selected.children.persons).to.deep.equal([
+        { id: 'person1', taskCount: 2 },
+        { id: 'person2', taskCount: 1 },
+        { id: 'person3', taskCount: 0 }
+      ]);
+    });
+  });
 });

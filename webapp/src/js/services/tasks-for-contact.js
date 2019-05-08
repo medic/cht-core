@@ -8,7 +8,9 @@ var _ = require('underscore'),
 angular.module('inboxServices').factory('TasksForContact',
   function(
     $log,
-    RulesEngine
+    $translate,
+    RulesEngine,
+    TranslateFrom
   ) {
     'use strict';
     'ngInject';
@@ -51,22 +53,39 @@ angular.module('inboxServices').factory('TasksForContact',
       });
     };
 
+    const translate = (value, task) => {
+      if (_.isString(value)) {
+        // new translation key style
+        return $translate.instant(value, task);
+      }
+      // old message array style
+      return TranslateFrom(value, task);
+    };
+
+    const translateLabels = tasks => {
+      tasks.forEach(function(task) {
+        task.title = translate(task.title, task);
+        task.priorityLabel = translate(task.priorityLabel, task);
+      });
+    };
+
     var areTasksEnabled = function(docType) {
       return RulesEngine.enabled && (docType === 'clinic' || docType === 'person');
     };
 
-    var getIdsForTasks = function(docId, docType, childrenPersonIds) {
-      var contactIds = [docId];
-      if (docType === 'clinic' && childrenPersonIds && childrenPersonIds.length) {
-        contactIds = contactIds.concat(childrenPersonIds);
+    const getIdsForTasks = (model) => {
+      let contactIds = [];
+      if (model.doc.type === 'clinic' && model.children && model.children.persons && model.children.persons.length) {
+        contactIds = model.children.persons.map(child => child.id);
       }
+      contactIds.push(model.doc._id);
       return contactIds;
     };
 
     var getTasks = function(contactIds, listenerName, listener) {
       var taskList = [];
       RulesEngine.listen(listenerName, 'task', function(err, tasks) {
-        if (err) {
+        if (err || !tasks.length) {
           return $log.error('Error getting tasks', err);
         }
         var newTasks = _.filter(tasks, function(task) {
@@ -75,18 +94,19 @@ angular.module('inboxServices').factory('TasksForContact',
         addLateStatus(newTasks);
         mergeTasks(taskList, newTasks);
         sortTasks(taskList);
+        translateLabels(taskList);
         listener(true, taskList);
       });
     };
 
     /** Listener format : function(areTasksEnabled, newTasks) */
-    return function(docId, docType, childrenPersonIds, listenerName, listener) {
-      if (!areTasksEnabled(docType)) {
+    return (model, listenerName, listener) => {
+      if (!areTasksEnabled(model.doc.type)) {
         return listener(false, []);
       }
-      var contactIds = getIdsForTasks(docId, docType, childrenPersonIds);
+
+      const contactIds = getIdsForTasks(model);
       getTasks(contactIds, listenerName, listener);
     };
-
   }
 );

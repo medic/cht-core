@@ -142,7 +142,8 @@ const reduxLoggerConfig = {
     $compileProvider.aHrefSanitizationWhitelist(
       /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
     );
-    var isDevelopment = window.location.hostname === 'localhost';
+    var isDevelopment = window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1';
     $compileProvider.debugInfoEnabled(isDevelopment);
 
     var middlewares = [reduxThunk];

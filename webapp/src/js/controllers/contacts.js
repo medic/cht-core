@@ -26,6 +26,7 @@ var _ = require('underscore'),
     Session,
     Settings,
     Simprints,
+    TasksForContact,
     Tour,
     TranslateFrom,
     UserSettings,
@@ -48,6 +49,7 @@ var _ = require('underscore'),
         updateSelected: actions.updateSelected,
         loadSelectedChildren: actions.loadSelectedChildren,
         loadSelectedReports: actions.loadSelectedReports,
+        loadSelectedTasks: actions.loadSelectedTasks,
         setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
         setLoadingSelectedReports: actions.setLoadingSelectedReports
       };
@@ -226,6 +228,12 @@ var _ = require('underscore'),
                      settings.muting.unmute_forms.includes(formId));
     };
 
+    const getTasks = () => {
+      return Auth('can_view_tasks')
+        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', ctrl.loadSelectedTasks))
+        .catch(() => void $log.debug('Not authorized to view tasks'));
+    };
+
     $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedChildren(true);
@@ -265,7 +273,8 @@ var _ = require('underscore'),
             .then(function() {
               return $q.all([
                 ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
-                Settings()
+                Settings(),
+                getTasks()
               ])
               .then(function(results) {
                 $scope.loadingSummary = false;
