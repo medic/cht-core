@@ -33,6 +33,7 @@
     };
 
     function errorHandler(exception, cause) {
+      $log.error(exception, cause);
       // Resolve the dependency at runtime to avoid circular dependency
       Feedback = Feedback || $injector.get('Feedback');
 
