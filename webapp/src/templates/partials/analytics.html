@@ -1,20 +1,20 @@
 <div class="filters">
   <div class="inner">
-    <ng-include src="'templates/partials/analytics_filters.html'"></ng-include>
+    <mm-analytics-filters analytics-modules="analyticsCtrl.analyticsModules"></mm-analytics-filters>
   </div>
 </div>
 
 <div class="inner" data-page="reporting_rates" ng-cloak ui-view="content">
   <div class="page reporting">
-    <ul class="mm-navigation-menu" ng-show="analyticsModules.length">
-      <li ng-repeat="module in analyticsModules">
+    <ul class="mm-navigation-menu" ng-show="analyticsCtrl.analyticsModules.length">
+      <li ng-repeat="module in analyticsCtrl.analyticsModules">
         <a ui-sref="{{module.state}}">
           <span>{{module.label | translate}}</span>
         </a>
       </li>
     </ul>
     <div class="loader" ng-show="analyticsCtrl.loading"></div>
-    <div class="item-content empty-selection" ng-show="!analyticsCtrl.loading && !analyticsModules.length">
+    <div class="item-content empty-selection" ng-show="!analyticsCtrl.loading && !analyticsCtrl.analyticsModules.length">
       <div translate>analytics.unconfigured</div>
     </div>
   </div>

@@ -23,7 +23,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     };
     const unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
 
-    $scope.analyticsModules = [];
+    ctrl.analyticsModules = [];
 
     ctrl.loading = true;
 
@@ -46,7 +46,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
       }
 
       ctrl.loading = false;
-      $scope.analyticsModules = modules;
+      ctrl.analyticsModules = modules;
     });
 
     if ($stateParams.tour) {

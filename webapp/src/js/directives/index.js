@@ -5,6 +5,7 @@
   angular.module('inboxDirectives', ['ngSanitize']);
 
   require('./actionbar');
+  require('./analytics-filters');
   require('./auth');
   require('./contacts-filters');
   require('./contacts-list');
