@@ -144,13 +144,13 @@
           <div class="action-header cell">
             <h3 translate>Tasks</h3>
             <span class="table-filter">
-              <a ng-click="setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
-              <a ng-click="setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
-              <a ng-click="setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !tasksTimeWindowWeeks}" translate>view.all</a>
+              <a ng-click="contactsContentCtrl.setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: contactsContentCtrl.tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
+              <a ng-click="contactsContentCtrl.setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: contactsContentCtrl.tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
+              <a ng-click="contactsContentCtrl.setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !contactsContentCtrl.tasksTimeWindowWeeks}" translate>view.all</a>
             </span>
           </div>
           <ul>
-            <mm-content-row ng-repeat="task in contactsContentCtrl.selectedContact.tasks | filter:filterTasks as filteredTasks"
+            <mm-content-row ng-repeat="task in contactsContentCtrl.selectedContact.tasks | filter:contactsContentCtrl.filterTasks as filteredTasks"
               id="task._id"
               route="'tasks'"
               icon="task.icon"
@@ -164,8 +164,8 @@
           </ul>
           <div class="row" ng-show="!filteredTasks.length">
             <div class="cell col">
-              <span ng-show="!tasksTimeWindowWeeks" translate>tasks.none</span>
-              <span ng-show="tasksTimeWindowWeeks" translate translate-values="{WEEKS: tasksTimeWindowWeeks}" translate-interpolation="messageformat">tasks.none.n.weeks</span>
+              <span ng-show="!contactsContentCtrl.tasksTimeWindowWeeks" translate>tasks.none</span>
+              <span ng-show="contactsContentCtrl.tasksTimeWindowWeeks" translate translate-values="{WEEKS: contactsContentCtrl.tasksTimeWindowWeeks}" translate-interpolation="messageformat">tasks.none.n.weeks</span>
             </div>
           </div>
         </div>
@@ -176,15 +176,15 @@
           <div class="action-header cell">
             <h3 translate>Reports</h3>
             <span class="table-filter">
-              <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
-              <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
-              <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
+              <a ng-click="contactsContentCtrl.setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: contactsContentCtrl.reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
+              <a ng-click="contactsContentCtrl.setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: contactsContentCtrl.reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
+              <a ng-click="contactsContentCtrl.setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !contactsContentCtrl.reportsTimeWindowMonths}" translate>view.all</a>
             </span>
           </div>
           <div class="loader" ng-if="contactsContentCtrl.loadingSelectedContactReports"></div>
           <div ng-if="!contactsContentCtrl.loadingSelectedContactReports">
             <ul>
-              <mm-content-row ng-repeat="report in contactsContentCtrl.selectedContact.reports | filter:filterReports as filteredReports track by report._id"
+              <mm-content-row ng-repeat="report in contactsContentCtrl.selectedContact.reports | filter:contactsContentCtrl.filterReports as filteredReports track by report._id"
                 id="report._id"
                 route="'reports'"
                 icon="report | formIconName:forms"
@@ -198,8 +198,8 @@
             </ul>
             <div class="row" ng-show="!filteredReports.length">
               <div class="cell col">
-                <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
-                <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
+                <span ng-show="!contactsContentCtrl.reportsTimeWindowMonths" translate>reports.none</span>
+                <span ng-show="contactsContentCtrl.reportsTimeWindowMonths" translate translate-values="{MONTHS: contactsContentCtrl.reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
               </div>
             </div>
           </div>
