@@ -1,7 +1,6 @@
 angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
   function (
     $log,
-    $scope,
     $timeout,
     RulesEngine,
     TargetGenerator
@@ -12,8 +11,8 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
 
     const ctrl = this;
 
-    $scope.targets = [];
-    $scope.targetsDisabled = !RulesEngine.enabled;
+    ctrl.targets = [];
+    ctrl.targetsDisabled = !RulesEngine.enabled;
     ctrl.loading = true;
 
     TargetGenerator(function(err, targets) {
@@ -22,7 +21,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
       }
       // timeout to force digest
       $timeout(function() {
-        $scope.targets = targets;
+        ctrl.targets = targets;
         ctrl.loading = false;
       });
     });
