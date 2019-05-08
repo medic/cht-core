@@ -70,6 +70,12 @@ define( function( require, exports, module ) {
     // Replace any markdown-style links containing HTML with hrefs which are
     // generated when the link is clicked.
     function applyLiveLinkHtml( $el ) {
+        // The html may include form inputs with values set via javascript,
+        // explicitly set value attributes otherwise call html() won't include them
+        $el.find('input').each(function () {
+          $(this).attr('value', $(this).val());
+        });
+
         var html = $el.html();
 
         html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
