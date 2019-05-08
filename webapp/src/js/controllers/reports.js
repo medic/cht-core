@@ -5,7 +5,6 @@ const _ = require('underscore'),
 angular
   .module('inboxControllers')
   .controller('ReportsCtrl', function(
-    $document,
     $log,
     $ngRedux,
     $scope,
@@ -70,13 +69,10 @@ angular
           $log.error('Error loading facilities', err);
         });
 
-      $document[0].querySelector('#facilityDropdown span.dropdown-menu > ul')
-                  .addEventListener('scroll', (event) => {
+      $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
         // visible height + pixel scrolled >= total height - 100
         if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
-          $scope.$apply(function() {
-            $scope.totalFacilitiesDisplayed += 1;
-          });
+          $timeout(() => $scope.totalFacilitiesDisplayed += 1);
         }
       });
     };
