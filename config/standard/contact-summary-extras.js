@@ -185,28 +185,28 @@ var isFacilityDelivery = function(r) {
          r.fields.delivery_code.toLowerCase() === 'f';
 };
 
-var isNonFacilityDelivery = function(r) {
+function isNonFacilityDelivery(r) {
   return r &&
          deliveryForms.indexOf(r.form) &&
          r.fields &&
          r.fields.delivery_code &&
          r.fields.delivery_code.toLowerCase() !== 'f';
-};
+}
 
-var getBirthDate = function(r) {
+function getBirthDate(r) {
   var rawDate = r &&
       (r.birth_date || r.fields.birth_date || r.reported_date);
   return new Date(rawDate);
-};
+}
 
-var getPNCperiod = function(deliveryReport) {
+function getPNCperiod(deliveryReport) {
   // Find PNC period based on delivery date, not reported date
   var start = getBirthDate(deliveryReport);
   return {
     start: start,
     end: addDate(start, DAYS_IN_PNC),
   };
-};
+}
 
 var isHighRiskPregnancy = function(pregnancy) {
   // Pregnancy is high risk:
