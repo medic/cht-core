@@ -109,6 +109,7 @@ require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
 require('../../../webapp/src/js/actions');
+require('../../../webapp/src/js/selectors');
 require('../../../webapp/src/js/reducers');
 
 angular.module('adminApp', [
