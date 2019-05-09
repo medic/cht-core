@@ -1,6 +1,8 @@
-const PouchDB = require('pouchdb-core'),
-  logger = require('./logger'),
-  environment = require('./environment');
+const request = require('request');
+const PouchDB = require('pouchdb-core');
+const logger = require('./logger');
+const environment = require('./environment');
+
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -65,6 +67,20 @@ if (UNIT_TEST_ENV) {
   module.exports.medicUsersMeta = DBUsersMeta;
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`);
   module.exports.users = new PouchDB(getDbUrl('/_users'));
+
+  /**
+   * Returns a promise which resolves the server information from CouchDB
+   */
+  module.exports.info = () => {
+    return new Promise((resolve, reject) => {
+      request(environment.serverUrl, (err, response, body) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(JSON.parse(body));
+      });
+    });
+  };
 
   // Get the DB with the given name
   module.exports.get = name => new PouchDB(getDbUrl(name));

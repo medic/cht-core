@@ -167,12 +167,17 @@ app.use(compression({
 //       https://github.com/medic/medic/issues/4089
 
 app.get('/', function(req, res) {
-  if (req.headers.accept === 'application/json') {
-    // couchdb request - let it go
-    proxy.web(req, res);
-  } else {
-    res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
-  }
+  res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
+});
+
+app.get('/dbinfo', (req, res) => {
+  db.info()
+    .then(info => {
+      res.json(info);
+    })
+    .catch(err => {
+      serverUtils.serverError(err, req, res);
+    });
 });
 
 app.get(appPrefix, (req, res) => {
