@@ -49,7 +49,7 @@ var _ = require('underscore'),
         updateSelected: actions.updateSelected,
         loadSelectedChildren: actions.loadSelectedChildren,
         loadSelectedReports: actions.loadSelectedReports,
-        loadSelectedTasks: actions.loadSelectedTasks,
+        receiveSelectedTasks: actions.receiveSelectedTasks,
         setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
         setLoadingSelectedReports: actions.setLoadingSelectedReports
       };
@@ -230,7 +230,7 @@ var _ = require('underscore'),
 
     const getTasks = () => {
       return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', ctrl.loadSelectedTasks))
+        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', ctrl.receiveSelectedTasks))
         .catch(() => $log.debug('Not authorized to view tasks'));
     };
 

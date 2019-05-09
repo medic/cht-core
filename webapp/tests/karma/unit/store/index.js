@@ -266,7 +266,7 @@ describe('Store', function() {
       };
 
       setupStore(initialState);
-      actions.loadSelectedTasks(false, []);
+      actions.receiveSelectedTasks(false, []);
 
       const state = getState();
       chai.expect(state).to.not.equal(initialState);
@@ -293,7 +293,7 @@ describe('Store', function() {
       ];
 
       setupStore(initialState);
-      actions.loadSelectedTasks(true, tasks);
+      actions.receiveSelectedTasks(true, tasks);
 
       const state = getState();
       chai.expect(state).to.not.equal(initialState);
@@ -326,7 +326,7 @@ describe('Store', function() {
       ];
 
       setupStore(initialState);
-      actions.loadSelectedTasks(true, tasks);
+      actions.receiveSelectedTasks(true, tasks);
 
       const state = getState();
       chai.expect(state).to.not.equal(initialState);

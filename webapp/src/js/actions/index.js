@@ -121,7 +121,7 @@ angular.module('inboxServices').factory('Actions',
         return dispatch(createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
       }
 
-      function loadSelectedTasks(areTasksEnabled, tasks) {
+      function receiveSelectedTasks(areTasksEnabled, tasks) {
         dispatch(createMultiValueAction(actionTypes.RECEIVE_SELECTED_TASKS, { tasks, areTasksEnabled }));
       }
 
@@ -140,7 +140,7 @@ angular.module('inboxServices').factory('Actions',
         setLoadingSelectedReports,
         loadSelectedChildren,
         loadSelectedReports,
-        loadSelectedTasks,
+        receiveSelectedTasks,
         // Messages-specific selected actions
         addSelectedMessage,
         removeSelectedMessage,

@@ -263,7 +263,7 @@ describe('Contacts controller', () => {
         assert.equal(tasksForContact.callCount, 1);
         assert.deepEqual(tasksForContact.args[0][0].doc, getSelected().doc);
         assert.equal(tasksForContact.args[0][1], 'ContactsCtrl');
-        assert.equal(tasksForContact.args[0][2], actions.loadSelectedTasks);
+        assert.equal(tasksForContact.args[0][2], actions.receiveSelectedTasks);
       });
     });
   });
