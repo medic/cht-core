@@ -746,7 +746,6 @@ var _ = require('underscore'),
         );
       },
       callback: function(change) {
-        console.error(JSON.stringify(change));
         if (change.id === 'service-worker-meta') {
           UpdateServiceWorker(showUpdateReady);
         } else {
