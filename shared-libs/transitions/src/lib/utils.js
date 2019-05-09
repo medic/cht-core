@@ -289,7 +289,7 @@ module.exports = {
 
   getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
 
-  isXFormReport: doc => doc && doc.content_type === 'xml',
+  isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
 
   // given a report, returns whether it should be accepted as a valid form submission
   // a report is accepted if
@@ -298,10 +298,8 @@ module.exports = {
   // - it's an SMS form submitted by a known contact
   isValidSubmission: doc => {
     const form = doc && module.exports.getForm(doc.form);
-    return Boolean(
-      module.exports.isXFormReport(doc) || // xform submission
-      (form && form.public_form) || // json submission to public form
-      (form && module.exports.getClinicPhone(doc)) // json submission by known submitter
-    );
+    return module.exports.isXFormReport(doc) || // xform submission
+           (form && form.public_form) || // json submission to public form
+           (form && module.exports.getClinicPhone(doc)); // json submission by known submitter
   }
 };

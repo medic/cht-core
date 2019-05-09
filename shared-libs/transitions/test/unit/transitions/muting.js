@@ -62,13 +62,9 @@ describe('Muting transition', () => {
       transitionUtils.hasRun.returns(false);
       sinon.stub(utils, 'isValidSubmission').returns(false);
 
-      chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { a: 'b'}})).to.equal(false);
+      chai.expect(transition.filter({ type: 'data_record', form: 'formC'})).to.equal(false);
       chai.expect(transition.filter({ type: 'data_record', form: 'formA'})).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formA', fields: { patient_id: 'a' } })).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formB', fields: { place_id: 'a' } })).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { patient_id: 'a' } })).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formD', fields: { place_id: 'a' } })).to.equal(false);
-      chai.expect(utils.isValidSubmission.callCount).to.equal(6);
+      chai.expect(utils.isValidSubmission.callCount).to.equal(2);
     });
 
     it('should return true for valid docs and valid submissions', () => {
@@ -76,13 +72,9 @@ describe('Muting transition', () => {
       transitionUtils.hasRun.returns(false);
       sinon.stub(utils, 'isValidSubmission').returns(true);
 
-      chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { a: 'b'}})).to.equal(true);
+      chai.expect(transition.filter({ type: 'data_record', form: 'formC'})).to.equal(true);
       chai.expect(transition.filter({ type: 'data_record', form: 'formA'})).to.equal(true);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formA', fields: { patient_id: 'a' } })).to.equal(true);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formB', fields: { place_id: 'a' } })).to.equal(true);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { patient_id: 'a' } })).to.equal(true);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formD', fields: { place_id: 'a' } })).to.equal(true);
-      chai.expect(utils.isValidSubmission.callCount).to.equal(6);
+      chai.expect(utils.isValidSubmission.callCount).to.equal(2);
     });
 
     it('should return false for invalid contacts', () => {

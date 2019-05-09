@@ -20,7 +20,7 @@ describe('functional transitions', () => {
 
   it('transitions are only executed once if successful', done => {
     configGet.withArgs('transitions').returns({ conditional_alerts: {} });
-    configGet.withArgs('forms').returns({ V: { public_form: true }});
+    configGet.withArgs('forms').returns({ V: { }});
     configGet.withArgs('alerts').returns({
       V: {
         form: 'V',
@@ -41,6 +41,9 @@ describe('functional transitions', () => {
       doc: {
         type: 'data_record',
         form: 'V',
+        contact: {
+          phone: '12345'
+        }
       },
       info: {},
     };
@@ -72,7 +75,7 @@ describe('functional transitions', () => {
 
   it('transitions are only executed again if first run failed', done => {
     configGet.withArgs('transitions').returns({ conditional_alerts: {} });
-    configGet.withArgs('forms').returns({ V: { public_form: true }});
+    configGet.withArgs('forms').returns({ V: { }});
     configGet.withArgs('alerts').returns({
       V: {
         form: 'V',
@@ -94,6 +97,9 @@ describe('functional transitions', () => {
       doc: {
         type: 'data_record',
         form: 'V',
+        contact: {
+          phone: '12345'
+        }
       },
       info: {},
     };
@@ -110,6 +116,9 @@ describe('functional transitions', () => {
           type: 'data_record',
           form: 'V',
           fields: { last_menstrual_period: 15 },
+          contact: {
+            phone: '12345'
+          }
         },
         info: {},
       };
@@ -143,7 +152,7 @@ describe('functional transitions', () => {
         condition: 'doc.fields.last_menstrual_period == 15',
       },
     });
-    configGet.withArgs('forms').returns({ V: { public_form: true }});
+    configGet.withArgs('forms').returns({ V: { }});
 
     sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
@@ -160,6 +169,9 @@ describe('functional transitions', () => {
         from: '123456798',
         fields: {},
         reported_date: new Date(),
+        contact: {
+          phone: '12345'
+        }
       },
       info: {},
     };
@@ -233,7 +245,7 @@ describe('functional transitions', () => {
         },
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
-      configGet.withArgs('forms').returns({ V: { public_form: true }});
+      configGet.withArgs('forms').returns({ V: { }});
 
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
@@ -266,7 +278,7 @@ describe('functional transitions', () => {
         },
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
-      configGet.withArgs('forms').returns({ V: { public_form: true }});
+      configGet.withArgs('forms').returns({ V: { }});
 
       sinon.stub(db.sentinel, 'get')
         .resolves({})
@@ -280,6 +292,9 @@ describe('functional transitions', () => {
         form: 'V',
         from: '123456',
         type: 'data_record',
+        contact: {
+          phone: '12345'
+        },
         reported_date: new Date('2018-01-01').valueOf()
       };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
@@ -314,7 +329,7 @@ describe('functional transitions', () => {
         },
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
-      configGet.withArgs('forms').returns({ V: { public_form: true }});
+      configGet.withArgs('forms').returns({ V: { }});
 
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
@@ -326,6 +341,9 @@ describe('functional transitions', () => {
         form: 'V',
         from: '123456',
         type: 'data_record',
+        contact: {
+          phone: '12345'
+        },
         reported_date: new Date('2018-01-01').valueOf()
       };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
@@ -387,7 +405,7 @@ describe('functional transitions', () => {
           join_responses: false
         }
       }]);
-      configGet.withArgs('forms').returns({ V: { public_form: true }, P: { public_form: true }});
+      configGet.withArgs('forms').returns({ V: { }, P: { }});
 
       const docs = [
         {
@@ -419,7 +437,7 @@ describe('functional transitions', () => {
           id: 'random form with contact',
           form: 'C',
           type: 'data_record',
-          contact: { _id: 'contact3' },
+          contact: { _id: 'contact3', parent: { _id: 'clinic' } },
           from: 'phone3',
           reported_date: new Date().valueOf()
         },
@@ -427,7 +445,7 @@ describe('functional transitions', () => {
           id: 'will have errors',
           form: 'P',
           type: 'data_record',
-          contact: { _id: 'contact3' },
+          contact: { _id: 'contact3', parent: { _id: 'clinic' } },
           from: 'phone3',
           fields: { random_field: 225 },
           reported_date: new Date().valueOf()
@@ -457,7 +475,14 @@ describe('functional transitions', () => {
         return Promise.resolve({ rows });
       };
 
-      sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => Promise.resolve(docs));
+      sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => {
+        docs.forEach(doc => {
+          if (doc.contact && doc.contact._id === contact3._id) {
+            doc.contact = contact3;
+          }
+        });
+        return Promise.resolve(docs);
+      });
       sinon.stub(db.sentinel, 'allDocs').callsFake(bulkGetInfoDocs);
       sinon.stub(db.medic, 'allDocs').callsFake(bulkGetInfoDocs);
       sinon.stub(db.sentinel, 'bulkDocs').resolves();
