@@ -49,6 +49,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       message: ''
     };
 
+    const userCtx = Session.userCtx();
+
     var checkScroll = function() {
       if (this.scrollTop === 0 && !$scope.allLoaded) {
         updateConversation({ skip: true });
@@ -158,7 +160,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
                 angular.extend(match, updated);
               } else {
                 ctrl.addSelectedMessage(updated);
-                if (updated.doc.sent_by === Session.userCtx().name) {
+                if (updated.doc.sent_by === userCtx.name) {
                   scrollToBottom = true;
                 }
               }

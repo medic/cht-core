@@ -377,7 +377,7 @@ angular.module('inboxServices').factory('LiveList',
         return false;
       }
 
-      return !!indexes[listName].dom[item._id];
+      return !!indexes[listName].dom[item._id || item];
     }
 
     function _insert(listName, newItem, skipDomAppend, removedDomElement) {
@@ -425,6 +425,7 @@ angular.module('inboxServices').factory('LiveList',
 
     function _remove(listName, removedItem) {
       var idx = indexes[listName];
+      const removedItemId = removedItem._id || removedItem;
 
       if (!idx.list) {
         return;
@@ -433,14 +434,14 @@ angular.module('inboxServices').factory('LiveList',
       var i = idx.list.length,
           removeIndex = null;
       while (i-- > 0 && removeIndex === null) {
-        if(idx.list[i]._id === removedItem._id) {
+        if(idx.list[i]._id === removedItemId) {
           removeIndex = i;
         }
       }
       if (removeIndex !== null) {
         idx.list.splice(removeIndex, 1);
-        const removed = idx.dom[removedItem._id];
-        delete idx.dom[removedItem._id];
+        const removed = idx.dom[removedItemId];
+        delete idx.dom[removedItemId];
 
         $(idx.selector).children().eq(removeIndex).remove();
         return removed;
@@ -478,21 +479,6 @@ angular.module('inboxServices').factory('LiveList',
       }
 
       delete idx.selected;
-    }
-
-    function _containsDeleteStub(listName, doc) {
-      // determines if array2 is included in array1
-      var arrayIncludes = function(array1, array2) {
-        return array2.every(function(elem) {
-          return array1.indexOf(elem) !== -1;
-        });
-      };
-      // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
-      // _conflicts, _attachments can be part of the _changes request result
-      var stubProps = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
-      return arrayIncludes(stubProps, Object.keys(doc)) &&
-             !!doc._deleted &&
-             _contains(listName, doc);
     }
 
     function _setScope(listName, scope) {
@@ -560,7 +546,6 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
-        containsDeleteStub: _.partial(_containsDeleteStub, name),
         setScope: _.partial(_setScope, name)
       };
 

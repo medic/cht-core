@@ -113,6 +113,10 @@ angular.module('inboxServices').factory('Actions',
         });
       }
 
+      function setLastChangedDoc(value) {
+        return dispatch(createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
+      }
+
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -136,7 +140,8 @@ angular.module('inboxServices').factory('Actions',
         removeSelected,
         updateSelectedItem,
         setFirstSelectedDocProperty,
-        setFirstSelectedFormattedProperty
+        setFirstSelectedFormattedProperty,
+        setLastChangedDoc
       };
     };
   }

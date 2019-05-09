@@ -7,10 +7,12 @@ var uuid = require('uuid/v4'),
 angular.module('inboxServices').service('Enketo',
   function(
     $log,
+    $ngRedux,
     $q,
     $timeout,
     $translate,
     $window,
+    Actions,
     AddAttachment,
     ContactSummary,
     DB,
@@ -40,6 +42,15 @@ angular.module('inboxServices').service('Enketo',
     this.getCurrentForm = function() {
       return currentForm;
     };
+
+    const self = this;
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setLastChangedDoc: actions.setLastChangedDoc
+      };
+    };
+    $ngRedux.connect(null, mapDispatchToTarget)(self);
 
     var init = function() {
       ZScore()
@@ -554,6 +565,7 @@ angular.module('inboxServices').service('Enketo',
               doc.geolocation = geolocation;
             });
           }
+          self.setLastChangedDoc(docs[0]);
           return docs;
         })
         .then(saveDocs)

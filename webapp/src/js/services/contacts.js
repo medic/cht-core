@@ -22,8 +22,8 @@ angular.module('inboxServices').factory('Contacts',
             })
             .catch(callback);
         },
-        invalidate: function(doc) {
-          return doc.type === type;
+        invalidate: function(change) {
+          return change.doc && change.doc.type === type;
         }
       });
     });
