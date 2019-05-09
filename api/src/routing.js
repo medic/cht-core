@@ -171,13 +171,8 @@ app.get('/', function(req, res) {
 });
 
 app.get('/dbinfo', (req, res) => {
-  db.info()
-    .then(info => {
-      res.json(info);
-    })
-    .catch(err => {
-      serverUtils.serverError(err, req, res);
-    });
+  req.url = '/';
+  proxy.web(req, res);
 });
 
 app.get(appPrefix, (req, res) => {
