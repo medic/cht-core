@@ -23,7 +23,6 @@ angular
     Search,
     SearchFilters,
     Selectors,
-    Session,
     Tour
   ) {
     'use strict';
@@ -348,7 +347,7 @@ angular
 
         var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedDocProperty({ verified: verified });
-        ctrl.setLastChangedDoc(doc);
+        ctrl.setLastChangedDoc(ctrl.selected[0].doc);
 
         DB()
           .get(ctrl.selected[0].doc._id)
@@ -517,7 +516,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc && change.doc.form || change.deleted && liveList.contains(change.id);
+        return change.doc && change.doc.form || liveList.contains(change.id);
       },
     });
 

@@ -142,8 +142,7 @@ describe('Contacts controller', () => {
     actions = Actions($ngRedux.dispatch);
     const stubbedActions = {
       loadSelectedChildren: sinon.stub().returns(Promise.resolve()),
-      loadSelectedReports: sinon.stub().returns(Promise.resolve()),
-      setUpdateOnChange: sinon.stub()
+      loadSelectedReports: sinon.stub().returns(Promise.resolve())
     };
     getSelected = () => {
       return Selectors.getSelected($ngRedux.getState());

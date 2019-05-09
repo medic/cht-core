@@ -10,6 +10,7 @@ angular.module('inboxServices').factory('Selectors', function () {
   const getLoadingSelectedReports = state => state.loadingSelectedReports;
   const getSelectMode = state => state.selectMode;
   const getSelected = state => state.selected;
+  const getLastChangedDoc = state => state.lastChangedDoc;
 
   const getSelectedSummaries = reselect.createSelector(
     getSelected,
@@ -41,6 +42,7 @@ angular.module('inboxServices').factory('Selectors', function () {
     getSelectMode,
     getSelected,
     getSelectedSummaries,
-    getSelectedValidChecks
+    getSelectedValidChecks,
+    getLastChangedDoc
   };
 });

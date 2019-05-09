@@ -24,6 +24,7 @@ angular.module('inboxServices').factory('Changes',
     $timeout,
     Actions,
     DB,
+    Selectors,
     Session
   ) {
 
@@ -33,7 +34,9 @@ angular.module('inboxServices').factory('Changes',
     var RETRY_MILLIS = 5000;
 
     const self = this;
-    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
+    const mapStateToTarget = (state) => ({
+      lastChangedDoc: Selectors.getLastChangedDoc(state),
+    });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
       return {

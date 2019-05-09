@@ -6,7 +6,8 @@ describe('Changes service', function() {
       changesCalls,
       log,
       dispatch,
-      getState;
+      getState,
+      session;
 
   var onProvider = function(db) {
     return {
@@ -29,6 +30,7 @@ describe('Changes service', function() {
       error: sinon.stub()
     };
 
+    session = { isOnlineOnly: sinon.stub(), userCtx: sinon.stub().returns({ name: 'user' }) };
 
     module('inboxApp');
     module(function ($provide) {
@@ -50,6 +52,7 @@ describe('Changes service', function() {
           };
         };
       });
+      $provide.value('Session', session);
       $provide.value('$timeout', function(fn) {
         return fn();
       });

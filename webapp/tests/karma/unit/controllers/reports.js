@@ -24,7 +24,7 @@ describe('ReportsCtrl controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(($rootScope, $controller) => {
+  beforeEach(inject(($rootScope, $controller, $ngRedux, Actions) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();

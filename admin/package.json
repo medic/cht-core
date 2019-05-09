@@ -24,6 +24,7 @@
     "font-awesome": "^4.7.0",
     "gsm": "^0.1.4",
     "jquery": "3.2.x",
+    "lodash": "^4.17.11",
     "messageformat": "^2.0.4",
     "moment": "^2.22.2",
     "ng-redux": "^4.1.0",

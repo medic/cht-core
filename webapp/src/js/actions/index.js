@@ -114,7 +114,7 @@ angular.module('inboxServices').factory('Actions',
       }
 
       function setLastChangedDoc(value) {
-        return createSingleValueAction('SET_LAST_CHANGED_DOC', 'lastChangedDoc', value);
+        return dispatch(createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
       }
 
       return {

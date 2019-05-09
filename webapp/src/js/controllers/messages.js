@@ -15,7 +15,6 @@ angular
     MessageContacts,
     MessageListUtils,
     Selectors,
-    Session,
     Tour
   ) {
     'use strict';
@@ -24,16 +23,13 @@ angular
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state),
-        updateOnChange: state.updateOnChange
-
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
-        setSelected: actions.setSelected,
-        setUpdateOnChange: actions.setUpdateOnChange
+        setSelected: actions.setSelected
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

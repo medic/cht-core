@@ -14,7 +14,6 @@
     loadingSelectedReports: false,
     selectMode: false,
     selected: null,
-    refreshList: false,
     lastChangedDoc: false
   };
 
@@ -101,7 +100,7 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
-      case 'SET_LAST_CHANGED_DOC':
+      case actionTypes.SET_LAST_CHANGED_DOC:
         return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
       default:
         return state;

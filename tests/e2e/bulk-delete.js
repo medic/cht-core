@@ -71,7 +71,7 @@ describe('Bulk delete reports', () => {
   afterEach(utils.afterEach);
 
   it('reports', () => {
-    commonElements.goToReports();
+    commonElements.goToReports(true);
     reports.waitForReportToAppear();
     reports.startSelectMode(savedUuids);
     reports.stopSelectMode(savedUuids);

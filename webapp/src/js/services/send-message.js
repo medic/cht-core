@@ -18,14 +18,13 @@ angular
     'ngInject';
 
     const self = this;
-    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const actions = Actions(dispatch);
       return {
         setLastChangedDoc: actions.setLastChangedDoc
       };
     };
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
+    $ngRedux.connect(null, mapDispatchToTarget)(self);
 
     var identity = function(i) {
       return !!i;
