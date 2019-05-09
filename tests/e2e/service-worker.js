@@ -84,7 +84,7 @@ describe('Service worker cache', () => {
   it('confirm fetch yields cached result', async () => {
     const expectCachedState = async (expectCached, path, headers = {}) => {
       const result = await doFetch(path, headers);
-      expect(result.body === 'cache').to.eq(expectCached, path);
+      expect(result.body === 'cache').to.eq(expectCached, JSON.stringify({ path, headers }, null, 2));
     };
 
     try {
@@ -98,7 +98,7 @@ describe('Service worker cache', () => {
       await expectCachedState(true, '/xslt/openrosa2xmlmodel.xsl', { 'Accept': 'application/json, text/plain, */*' });
 
       // no part of syncing is cached
-      await expectCachedState(false, '/', { 'Accept': 'application/json' });
+      await expectCachedState(false, '/dbinfo', { 'Accept': 'application/json' });
       await expectCachedState(false, '/medic/_changes?style=all_docs&limit=100');
       
       // confirm no additional requests were added into the cache
