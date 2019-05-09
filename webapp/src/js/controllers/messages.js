@@ -121,7 +121,9 @@ angular
           return false;
         }
         return (
-          change.doc.kujua_message || change.doc.sms_message || change.deleted
+          (change.doc && change.doc.kujua_message) ||
+          (change.doc && change.doc.sms_message) ||
+          change.deleted
         );
       },
     });

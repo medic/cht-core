@@ -8,8 +8,8 @@ angular.module('inboxServices').factory('ContactChangeFilter',
     'ngInject';
     'use strict';
 
-    var isValidInput = function(change, contact) {
-      return !!(change && change.doc && contact && contact.doc);
+    var isValidInput = function(object) {
+      return !!(object && object.doc);
     };
 
     var isContact = function(change) {
@@ -67,15 +67,18 @@ angular.module('inboxServices').factory('ContactChangeFilter',
 
     return {
       matchContact: function(change, contact) {
-        return isValidInput(change, contact) && contact.doc._id === change.doc._id;
+        return isValidInput(contact) &&
+               contact.doc._id === change.id;
       },
       isRelevantReport: function(change, contact) {
-        return isValidInput(change, contact) &&
+        return isValidInput(change) &&
+               isValidInput(contact) &&
                isReport(change) &&
                (matchReportSubject(change, contact) || matchChildReportSubject(change, contact));
       },
       isRelevantContact: function(change, contact) {
-        return isValidInput(change, contact) &&
+        return isValidInput(change) &&
+               isValidInput(contact) &&
                isContact(change) &&
                (isAncestor(change, contact) || isChild(change, contact) || wasChild(change, contact));
       },

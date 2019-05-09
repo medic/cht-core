@@ -42,7 +42,8 @@ angular
         addSelected: actions.addSelected,
         removeSelected: actions.removeSelected,
         setSelected: actions.setSelected,
-        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty
+        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty,
+        setLastChangedDoc: actions.setLastChangedDoc
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -192,12 +193,9 @@ angular
     };
 
     $scope.deselectReport = function(report) {
-      removeSelected(report._id);
-      $(
-        '#reports-list li[data-record-id="' +
-          report._id +
-          '"] input[type="checkbox"]'
-      ).prop('checked', false);
+      const reportId = report._id || report;
+      removeSelected(reportId);
+      $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
       $scope.settingSelected(true);
     };
 
@@ -349,6 +347,7 @@ angular
 
         var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedDocProperty({ verified: verified });
+        ctrl.setLastChangedDoc(ctrl.selected[0].doc);
 
         DB()
           .get(ctrl.selected[0].doc._id)
@@ -509,7 +508,7 @@ angular
       key: 'reports-list',
       callback: function(change) {
         if (change.deleted) {
-          liveList.remove(change.doc);
+          liveList.remove(change.id);
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
@@ -517,7 +516,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc.form || liveList.containsDeleteStub(change.doc);
+        return change.doc && change.doc.form || liveList.contains(change.id);
       },
     });
 

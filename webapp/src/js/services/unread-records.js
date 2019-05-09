@@ -67,8 +67,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       });
   };
 
-  return function(callback) {
-
+  const service = (callback) => {
     // wait for db.info to avoid uncaught exceptions: #3754
     DB().info().then(function() {
 
@@ -79,7 +78,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       Changes({
         key: 'read-status-medic',
         filter: function(change) {
-          return change.doc.type === 'data_record';
+          return change.doc && change.doc.type === 'data_record';
         },
         callback: function(change) {
           changeHandler(change, callback);
@@ -95,6 +94,9 @@ angular.module('inboxServices').factory('UnreadRecords', function(
         }
       });
     });
+
+    service.count = () => getCount(callback);
   };
 
+  return service;
 });

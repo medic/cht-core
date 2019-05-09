@@ -13,7 +13,8 @@
     loadingSelectedChildren: false,
     loadingSelectedReports: false,
     selectMode: false,
-    selected: null
+    selected: null,
+    lastChangedDoc: false
   };
 
   angular.module('inboxServices').constant('Reducers', function(state, action) {
@@ -99,6 +100,8 @@
           selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
           loadingSelectedReports: false
         });
+      case actionTypes.SET_LAST_CHANGED_DOC:
+        return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
       default:
         return state;
     }

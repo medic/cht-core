@@ -14,7 +14,11 @@ describe('Contacts Edit controller', () => {
 
   beforeEach(inject((_$rootScope_, $controller) => {
     contactForm = { forEdit: sinon.stub(), forCreate: sinon.stub() };
-    actions = { setCancelCallback: sinon.stub() };
+    actions = {
+      setCancelCallback: sinon.stub(),
+      setEnketoSavingStatus: sinon.stub(),
+      setEnketoError: sinon.stub(),
+    };
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();

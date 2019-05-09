@@ -53,10 +53,10 @@ describe('ReportsCtrl controller', () => {
       reports: {
         initialised: () => true,
         setSelected: sinon.stub(),
-        containsDeleteStub: sinon.stub(),
         remove: sinon.stub(),
         count: sinon.stub(),
-        set: sinon.stub()
+        set: sinon.stub(),
+        contains: sinon.stub()
       },
       'report-search': {
         set: sinon.stub()
@@ -285,25 +285,22 @@ describe('ReportsCtrl controller', () => {
       return Promise.resolve().then(() => {
         const change = { doc: { form: 'something' } };
         chai.expect(!!changesFilter(change)).to.equal(true);
-        chai.expect(LiveList.reports.containsDeleteStub.callCount).to.equal(0);
       });
     });
 
-    it('filters contained tombstones', () => {
+    it('filters deletions', () => {
       createController();
-
+      LiveList.reports.contains.returns(true);
       return Promise.resolve().then(() => {
-        const change = { doc: { type: 'this is not a form' } };
-        LiveList.reports.containsDeleteStub.returns(true);
+        const change = { deleted: true, id: 'some_id' };
         chai.expect(!!changesFilter(change)).to.equal(true);
-        chai.expect(LiveList.reports.containsDeleteStub.callCount).to.equal(1);
-        chai.expect(LiveList.reports.containsDeleteStub.args[0]).to.deep.equal([ change.doc ]);
+        chai.expect(LiveList.reports.contains.callCount).to.equal(1);
+        chai.expect(LiveList.reports.contains.args[0]).to.deep.equal(['some_id']);
       });
     });
 
     it('filters everything else', () => {
       createController();
-      LiveList.reports.containsDeleteStub.returns(false);
 
       return Promise.resolve().then(() => {
         chai.expect(!!changesFilter({ doc: { some: 'thing' } })).to.equal(false);
@@ -314,9 +311,9 @@ describe('ReportsCtrl controller', () => {
       createController();
 
       return Promise.resolve().then(() => {
-        changesCallback({ deleted: true, doc: { _id: 'id' } });
+        changesCallback({ deleted: true, id: 'id' });
         chai.expect(LiveList.reports.remove.callCount).to.equal(1);
-        chai.expect(LiveList.reports.remove.args[0]).to.deep.equal([ { _id: 'id' } ]);
+        chai.expect(LiveList.reports.remove.args[0]).to.deep.equal(['id']);
         chai.expect(Search.callCount).to.equal(0);
       });
     });
