@@ -459,7 +459,7 @@ angular.module('inboxServices').service('Enketo',
 
       return XmlForm(doc.form)
         .then(function(form) {
-          return getFormAttachment(form.id);
+          return getFormAttachment(form._id);
         })
         .then(function(form) {
           doc.fields = EnketoTranslation.reportRecordToJs(record, form);

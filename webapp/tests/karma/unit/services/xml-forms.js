@@ -72,6 +72,51 @@ describe('XmlForms service', () => {
     });
   });
 
+  it('returns forms that have an xml file extension', done => {
+    const given = [
+      {
+        id: 'form-1',
+        doc: {
+          internalId: 'one',
+          _attachments: {
+            'image': { something: true },
+            'form.xml': { something: true }
+          },
+        },
+      },
+      {
+        id: 'form-2',
+        doc: {
+          internalId: 'two',
+          _attachments: {
+            'image': { something: true },
+            'xml': { something: true }
+          },
+        },
+      },
+      {
+        id: 'form-3',
+        doc: {
+          internalId: 'three',
+          _attachments: {
+            'image': { something: true },
+            'notxml': { something: true }
+          },
+        },
+      }
+    ];
+    dbQuery.returns(Promise.resolve({ rows: given }));
+    UserContact.returns(Promise.resolve());
+    const service = $injector.get('XmlForms');
+    service('test', (err, actual) => {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual.length).to.equal(2);
+      chai.expect(actual[0]).to.deep.equal(given[0].doc);
+      chai.expect(actual[1]).to.deep.equal(given[1].doc);
+      done();
+    });
+  });
+
   it('returns errors from db.query', done => {
     dbQuery.returns(Promise.reject('boom'));
     const service = $injector.get('XmlForms');

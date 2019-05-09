@@ -63,7 +63,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     var render = function(contact, options) {
       $scope.setSelected(contact, options);
       setCancelCallback();
-      return XmlForm($state.params.formId, { include_docs: true })
+      return XmlForm($state.params.formId)
         .then(function(form) {
           var instanceData = {
             source: 'contact',
@@ -71,9 +71,9 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           };
           ctrl.setEnketoEditedStatus(false);
           return Enketo
-            .render('#contact-report', form.id, instanceData, markFormEdited)
+            .render('#contact-report', form._id, instanceData, markFormEdited)
             .then(function(formInstance) {
-              $scope.setTitle(TranslateFrom(form.doc.title));
+              $scope.setTitle(TranslateFrom(form.title));
               $scope.form = formInstance;
               ctrl.loadingForm = false;
             })
