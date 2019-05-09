@@ -85,16 +85,16 @@ angular.module('inboxServices').factory('TasksForContact',
     var getTasks = function(contactIds, listenerName, listener) {
       var taskList = [];
       RulesEngine.listen(listenerName, 'task', function(err, tasks) {
-        if (err || !tasks.length) {
+        if (err) {
           return $log.error('Error getting tasks', err);
         }
         var newTasks = _.filter(tasks, function(task) {
           return task.contact && _.contains(contactIds, task.contact._id);
         });
         addLateStatus(newTasks);
+        translateLabels(newTasks);
         mergeTasks(taskList, newTasks);
         sortTasks(taskList);
-        translateLabels(taskList);
         listener(true, taskList);
       });
     };

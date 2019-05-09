@@ -231,7 +231,7 @@ var _ = require('underscore'),
     const getTasks = () => {
       return Auth('can_view_tasks')
         .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', ctrl.loadSelectedTasks))
-        .catch(() => void $log.debug('Not authorized to view tasks'));
+        .catch(() => $log.debug('Not authorized to view tasks'));
     };
 
     $scope.setSelected = function(selected, options) {

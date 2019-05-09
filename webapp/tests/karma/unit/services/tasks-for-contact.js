@@ -111,31 +111,50 @@ describe('TasksForContact service', function() {
   });
 
   it('displays tasks for selected clinic and child persons', function(done) {
-    var tasks = [
+    const tasks = [
       {
         _id: 'taskForParent',
         date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
         contact: { _id: docId }
       },
       {
-        _id: 'taskForChild',
+        _id: 'taskForChild1',
         date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-        contact: { _id: childPersonId }
+        contact: { _id: 'child1' }
+      },
+      {
+        _id: 'taskForChild2',
+        date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+        contact: { _id: 'child2' }
+      },
+      {
+        _id: 'taskForChild1-bis',
+        date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+        contact: { _id: 'child1' }
+      },
+      {
+        _id: 'taskForRandom',
+        date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+        contact: { _id: 'person' }
+      },
+      {
+        _id: 'taskWithoutContact',
+        date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
       }
     ];
 
     const model = {
       doc: { _id: docId, type: 'clinic' },
-      children: { persons: [{ id: childPersonId, doc: { _id: childPersonId } }] }
+      children: { persons: [{ id: 'child1' }, { id: 'child2' }] }
     };
     stubRulesEngine(null, tasks);
-    service(model, 'listenerName',
-      function(areTasksEnabled, newTasks) {
-        chai.assert.equal(rulesEngineListen.callCount, 1);
-        chai.assert(areTasksEnabled);
-        chai.assert.sameMembers(newTasks, tasks);
-        done();
-      });
+    service(model, 'listenerName', (areTasksEnabled, newTasks) => {
+      chai.assert.equal(rulesEngineListen.callCount, 1);
+      chai.assert(areTasksEnabled);
+      chai.assert.equal(newTasks.length, 4);
+      chai.assert.sameMembers(newTasks, tasks.slice(0, 4));
+      done();
+    });
   });
 
   it('does not display tasks for child persons if selected doc is a person', function(done) {
@@ -153,7 +172,7 @@ describe('TasksForContact service', function() {
     ];
     const model = {
       doc: { _id: docId, type: 'person' },
-      children: { persons: [{ id: childPersonId, doc: { _id: childPersonId } }] }
+      children: { persons: [{ id: childPersonId }] }
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName',
@@ -175,7 +194,7 @@ describe('TasksForContact service', function() {
     ];
     const model = {
       doc: { _id: docId, type: 'clinic' },
-      children: { persons: [{ id: childPersonId, doc: { _id: childPersonId } }] }
+      children: { persons: [{ id: childPersonId }] }
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName',
@@ -326,13 +345,13 @@ describe('TasksForContact service', function() {
       chai.assert.sameMembers(newTasks, tasks);
       chai.assert.equal(translate.instant.callCount, 2);
       chai.assert.deepEqual(translate.instant.args, [
-        ['high?', tasks[1]],
         ['title1', tasks[0]],
+        ['high?', tasks[1]]
       ]);
       chai.assert.equal(translateFrom.callCount, 2);
       chai.assert.deepEqual(translateFrom.args, [
-        [{ some: 'title' }, tasks[1]],
         [{ some: 'thing' }, tasks[0]],
+        [{ some: 'title' }, tasks[1]]
       ]);
       done();
     });
