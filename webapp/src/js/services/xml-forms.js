@@ -22,7 +22,6 @@ angular.module('inboxServices').factory('XmlForms',
     };
 
     const getForms = function() {
-      // TODO change to doc by type
       const options = {
         include_docs: true,
         key: ['form']
