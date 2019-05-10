@@ -1,22 +1,16 @@
 const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('TasksActions',
-  function() {
+  function(
+    ActionUtils
+  ) {
     'use strict';
-
-    function createSingleValueAction(type, valueName, value) {
-      const action = {
-        type,
-        payload: {}
-      };
-      action.payload[valueName] = value;
-      return action;
-    }
+    'ngInject';
 
     return function(dispatch) {
 
       function setSelectedTask(selected) {
-        dispatch(createSingleValueAction(actionTypes.SET_SELECTED_TASK, 'selected', selected));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_TASK, 'selected', selected));
       }
 
       return {

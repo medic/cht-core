@@ -2,24 +2,16 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
+    ActionUtils,
     Selectors
   ) {
     'use strict';
     'ngInject';
 
-    function createSingleValueAction(type, valueName, value) {
-      const action = {
-        type,
-        payload: {}
-      };
-      action.payload[valueName] = value;
-      return action;
-    }
-
     return function(dispatch) {
 
       function createSetCancelCallbackAction(value) {
-        return createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
+        return ActionUtils.createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
       }
 
       function clearCancelCallback() {
@@ -31,7 +23,7 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       function createSetEnketoStatusAction(value) {
-        return createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
+        return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
       }
 
       function setEnketoError(error) {
@@ -47,27 +39,27 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       function setFacilities(facilities) {
-        dispatch(createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
       }
 
       function setIsAdmin(isAdmin) {
-        dispatch(createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
 
       function setLoadingContent(loading) {
-        dispatch(createSingleValueAction(actionTypes.SET_LOADING_CONTENT, 'loadingContent', loading));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_CONTENT, 'loadingContent', loading));
       }
 
       function setLoadingSubActionBar(loading) {
-        dispatch(createSingleValueAction(actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading));
       }
 
       function setSelectMode(selectMode) {
-        dispatch(createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
       }
 
       function setShowActionBar(showActionBar) {
-        dispatch(createSingleValueAction(actionTypes.SET_SHOW_ACTION_BAR, 'showActionBar', showActionBar));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SHOW_ACTION_BAR, 'showActionBar', showActionBar));
       }
 
       function setShowContent(showContent) {
@@ -77,12 +69,12 @@ angular.module('inboxServices').factory('GlobalActions',
             // when in select mode we never show the RHS on mobile
             return;
           }
-          dispatch(createSingleValueAction(actionTypes.SET_SHOW_CONTENT, 'showContent', showContent));
+          dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SHOW_CONTENT, 'showContent', showContent));
         });
       }
 
       function setVersion(version) {
-        dispatch(createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
       }
 
       return {

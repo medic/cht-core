@@ -1,22 +1,16 @@
 const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('AnalyticsActions',
-  function() {
+  function(
+    ActionUtils
+  ) {
     'use strict';
-
-    function createSingleValueAction(type, valueName, value) {
-      const action = {
-        type,
-        payload: {}
-      };
-      action.payload[valueName] = value;
-      return action;
-    }
+    'ngInject';
 
     return function(dispatch) {
 
       function setSelectedAnalytics(selected) {
-        dispatch(createSingleValueAction(actionTypes.SET_SELECTED_ANALYTICS, 'selected', selected));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_ANALYTICS, 'selected', selected));
       }
 
       return {
