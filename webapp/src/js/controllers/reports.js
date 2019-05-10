@@ -45,6 +45,7 @@ angular
         addSelectedReport: reportsActions.addSelectedReport,
         removeSelectedReport: reportsActions.removeSelectedReport,
         setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
+        setLastChangedDoc: globalActions.setLastChangedDoc,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setSelectedReports: reportsActions.setSelectedReports
       };
@@ -198,12 +199,9 @@ angular
     };
 
     $scope.deselectReport = function(report) {
-      removeSelectedReport(report._id);
-      $(
-        '#reports-list li[data-record-id="' +
-          report._id +
-          '"] input[type="checkbox"]'
-      ).prop('checked', false);
+      const reportId = report._id || report;
+      removeSelectedReport(reportId);
+      $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
       $scope.settingSelected(true);
     };
 
@@ -355,6 +353,7 @@ angular
 
         var verified = ctrl.selectedReports[0].doc.verified === valid ? undefined : valid;
         ctrl.setFirstSelectedReportDocProperty({ verified: verified });
+        ctrl.setLastChangedDoc(ctrl.selectedReports[0].doc);
 
         DB()
           .get(ctrl.selectedReports[0].doc._id)
@@ -515,7 +514,7 @@ angular
       key: 'reports-list',
       callback: function(change) {
         if (change.deleted) {
-          liveList.remove(change.doc);
+          liveList.remove(change.id);
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
@@ -523,7 +522,7 @@ angular
         }
       },
       filter: function(change) {
-        return change.doc.form || liveList.containsDeleteStub(change.doc);
+        return change.doc && change.doc.form || liveList.contains(change.id);
       },
     });
 

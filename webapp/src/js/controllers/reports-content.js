@@ -100,10 +100,6 @@ var _ = require('underscore');
         }
       };
 
-      $scope.labelIsIDorName = (label) => {
-        return label.endsWith('.patient_id') || label.endsWith('.patient_uuid') || label.endsWith('.patient_name');
-      };
-
       var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
@@ -116,15 +112,15 @@ var _ = require('underscore');
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.deselectReport(change.doc);
+              $scope.deselectReport(change.id);
             });
           } else {
             var selectedReports = ctrl.selectedReports;
-            $scope.refreshReportSilently(change.doc)
+            $scope.refreshReportSilently(change.id)
               .then(function() {
-                if(selectedReports[0].formatted.verified !== change.doc.verified ||
-                   ('oldVerified' in selectedReports[0].formatted &&
-                    selectedReports[0].formatted.oldVerified !== change.doc.verified)) {
+                if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
+                   (change.doc && ('oldVerified' in selectedReports[0].formatted &&
+                    selectedReports[0].formatted.oldVerified !== change.doc.verified))) {
                   ctrl.setSelectedReports(selectedReports);
                   $timeout(function() {
                     ctrl.setFirstSelectedReportFormattedProperty({ verified: change.doc.verified });

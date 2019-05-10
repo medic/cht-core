@@ -75,4 +75,5 @@ module.exports = {
       });
     });
   },
+  asynchronousOnly: true
 };

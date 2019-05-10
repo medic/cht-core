@@ -1,10 +1,11 @@
-var _ = require('underscore'),
-    async = require('async'),
-    config = require('../config'),
-    messages = config.getTransitionsLib().messages,
-    later = require('later'),
-    moment = require('moment'),
-    db = require('../db');
+const _ = require('underscore'),
+      async = require('async'),
+      config = require('../config'),
+      messages = config.getTransitionsLib().messages,
+      later = require('later'),
+      moment = require('moment'),
+      db = require('../db'),
+      lineage = require('@medic/lineage')(Promise, db.medic);
 
 // set later to use local time
 later.date.localTime();
@@ -12,7 +13,7 @@ later.date.localTime();
 function isConfigValid(config) {
     return Boolean(
         config.form &&
-        config.message &&
+        (config.message || config.translation_key) &&
         (config.text_expression || config.cron)
     );
 }
@@ -80,7 +81,7 @@ module.exports = {
         // if it's already been sent, it will have a matching task with the right form/ts
         send = !_.findWhere(clinic.tasks, {
             form: reminder.form,
-            ts: ts.toISOString()
+            timestamp: ts.toISOString()
         });
 
         // if send, check for mute on reminder, and clinic has sent_forms for the reminder
@@ -127,7 +128,10 @@ module.exports = {
                 return module.exports.canSend(options, clinic);
             });
 
-            callback(err, clinics);
+            lineage
+              .hydrateDocs(clinics)
+              .then(clinics => callback(null, clinics))
+              .catch(callback);
         });
     },
     sendReminder: function(options, callback) {
@@ -145,9 +149,10 @@ module.exports = {
         const task = messages.addMessage(clinic, reminder, 'clinic', context);
         if (task) {
             task.form = reminder.form;
-            task.ts = moment.toISOString();
+            task.timestamp = moment.toISOString();
             task.type = 'reminder';
         }
+        lineage.minify(clinic);
         db.medic.put(clinic, callback);
     },
     sendReminders: function(options, callback) {
@@ -155,7 +160,7 @@ module.exports = {
             if (err) {
                 callback(err);
             } else {
-                async.each(clinics, function(clinic, callback) {
+                async.eachSeries(clinics, function(clinic, callback) {
                     var opts = _.extend({}, options, {
                         clinic: clinic
                     });
@@ -190,7 +195,7 @@ module.exports = {
             floor = now.clone().startOf('hour').subtract(1, 'day'),
             form = options.reminder && options.reminder.form;
 
-        db.medic.query('medic/sent_reminders', {
+        db.medic.query('medic-sms/sent_reminders', {
             descending: true,
             limit: 1,
             startkey: [form, now.toISOString()],
@@ -209,5 +214,6 @@ module.exports = {
                 }
             }
         });
-    }
+    },
+    _lineage: lineage
 };

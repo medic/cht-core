@@ -7,6 +7,7 @@ const getDoc = () => {
 };
 
 describe('Settings API', () => {
+  afterAll(done => utils.revertSettings().then(done));
 
   describe('old api', () => {
 

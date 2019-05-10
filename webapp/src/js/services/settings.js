@@ -29,8 +29,8 @@
               callback(err);
             });
         },
-        invalidate: function(doc) {
-          return doc._id === SETTINGS_ID;
+        invalidate: function(change) {
+          return change.id === SETTINGS_ID;
         }
       });
 

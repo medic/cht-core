@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      <div class="card children persons">
+      <div class="card children persons" ng-if="selected.doc.type !== 'person'">
         <div class="action-header cell">
           <div ng-show="contactsContentCtrl.selectedContact.doc.type !== 'clinic'" class="col-xs-12">
             <h3 translate>People</h3>
