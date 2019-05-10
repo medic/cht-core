@@ -316,7 +316,7 @@ describe('login controller', () => {
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ });
       return controller.post(req, res).then(() => {
-        chai.expect(cookie.callCount).to.equal(3);
+        chai.expect(cookie.callCount).to.equal(2);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
       });
