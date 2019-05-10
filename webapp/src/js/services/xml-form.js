@@ -13,32 +13,40 @@ angular.module('inboxServices').factory('XmlForm',
              .some(name => name === 'xml' || name.endsWith('.xml'));
     };
 
-    return function(internalId) {
+    const getById = internalId => {
       const formId = `form:${internalId}`;
-      return DB().get(formId)
+      return DB().get(formId);
+    };
+
+    const getByView = internalId => {
+      return DB().query('medic-client/doc_by_type', { key: [ 'form' ], include_docs: true })
+        .then(result => result.rows.filter(row => row.doc.internalId === internalId))
+        .then(rows => {
+          if (!rows.length) {
+            return $q.reject(new Error(`No form found for internalId "${internalId}"`));
+          }
+          if (rows.length > 1) {
+            return $q.reject(new Error(`Multiple forms found for internalId: "${internalId}"`));
+          }
+          return rows[0].doc;
+        });
+    };
+
+    return function(internalId) {
+      return getById(internalId)
+        .catch(err => {
+          if (err.status === 404) {
+            // fallback for backwards compatibility
+            return getByView(internalId);
+          }
+          throw err;
+        })
         .then(doc => {
           if (!valid(doc)) {
-            return $q.reject(new Error(`The form doc with "${formId}" doesn't have an xform attachment`));
+            return $q.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
           }
-          console.log(doc);
           return doc;
         });
-
-      // const options = {
-      //   include_docs: true,
-      //   key: internalId
-      // };
-      // return DB()
-      //   .query('medic-client/forms', options)
-      //   .then(function(result) {
-      //     if (!result.rows.length) {
-      //       throw new Error('No form found for internalId: ' + internalId);
-      //     }
-      //     if (result.rows.length > 1) {
-      //       throw new Error('Multiple forms found for internalId: ' + internalId);
-      //     }
-      //     return result.rows[0].doc;
-      //   });
     };
   }
 );
