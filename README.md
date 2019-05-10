@@ -1,6 +1,6 @@
 # Medic Mobile
 
-These instructions should help you get setup to run or develop on Medic Mobile's Community Health Application Framework. For latest changes and release announcements see our [change log](Changes.md).
+These instructions should help you get setup to run or develop on Medic Mobile's Community Health Application Framework. For latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
 
 If you are interested in building community health applications using this framework a good place to start is the guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
