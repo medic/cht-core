@@ -230,7 +230,7 @@ const expectTransitions = (infodoc, ...transitions) => {
 const chw1Lineage = { _id: contacts[3]._id,  parent: contacts[3].parent };
 const chw2Lineage = { _id: contacts[4]._id,  parent: contacts[4].parent };
 
-describe('public_form', () => {
+describe('Transitions public_form', () => {
   beforeAll(done => utils.saveDocs(contacts).then(done));
   beforeEach(done => utils.saveDocs(patients).then(done));
   afterAll(done => utils.revertDb().then(done));
