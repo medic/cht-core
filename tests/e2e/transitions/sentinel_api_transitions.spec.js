@@ -365,7 +365,7 @@ describe('transitions', () => {
         ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => Promise.all([
         waitForChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
@@ -659,7 +659,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => Promise.all([
         waitForChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -775,7 +775,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => Promise.all([
         waitForChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
