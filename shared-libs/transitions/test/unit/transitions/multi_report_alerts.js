@@ -40,11 +40,13 @@ describe('multi report alerts', () => {
   const reports = [
     { _id: 'docA', form: 'A', contact: { _id: 'contactA' } },
     { _id: 'docB', form: 'B', contact: { _id: 'contactB' } },
+    { _id: 'docC', form: 'A' }
   ];
 
   const hydratedReports = [
     { _id: 'docA', form: 'A', contact: { _id: 'contactA', phone: '+234567'} },
-    { _id: 'docB', form: 'B', contact: { _id: 'contactB', phone: '+345678'} }
+    { _id: 'docB', form: 'B', contact: { _id: 'contactB', phone: '+345678'} },
+    { _id: 'docC', form: 'A' }
   ];
 
   it('filter validation', () => {
@@ -142,11 +144,12 @@ describe('multi report alerts', () => {
   it('filters reports by form if forms is present in config', () => {
     sinon.stub(config, 'get').returns([_.extend({forms: ['A']} , alertConfig)]);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
-    sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve([hydratedReports[0]]));
+    sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve([hydratedReports[0], hydratedReports[2]]));
     return transition.onMatch({ doc: doc }).then(() => {
       assert.equal(transition._lineage.hydrateDocs.callCount, 1);
-      assert.equal(transition._lineage.hydrateDocs.args[0][0].length, 1);
+      assert.equal(transition._lineage.hydrateDocs.args[0][0].length, 2);
       assert.equal(transition._lineage.hydrateDocs.args[0][0][0]._id, reports[0]._id);
+      assert.equal(transition._lineage.hydrateDocs.args[0][0][1]._id, reports[2]._id);
     });
   });
 
@@ -181,8 +184,8 @@ describe('multi report alerts', () => {
 
   const assertMessage = (messageArgs, recipient, message, alertName, num_reports_threshold, time_window_in_days) => {
     const templateContext = {
-      new_reports: [doc, ...hydratedReports],
-      num_counted_reports: [doc, ...hydratedReports].length,
+      new_reports: [doc, ...hydratedReports.slice(0, 2)],
+      num_counted_reports: [doc, ...hydratedReports.slice(0, 2)].length,
       alert_name: alertName,
       num_reports_threshold: num_reports_threshold,
       time_window_in_days: time_window_in_days
@@ -203,18 +206,104 @@ describe('multi report alerts', () => {
     sinon.stub(config, 'get').returns([alertConfig]);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     stubFetchHydratedDocs();
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     sinon.stub(messages, 'addError');
-    sinon.stub(messages, 'addMessage');
+    sinon.spy(messages, 'addMessage');
 
     return transition.onMatch({ doc: doc }).then(docNeedsSaving => {
       assert.equal(messages.addError.getCalls().length, 0);
 
       assert.equal(messages.addMessage.getCalls().length, alertConfig.recipients.length);
       assertMessages(messages.addMessage, alertConfig);
-      // assert.equal(doc.tasks[0].type, 'alert');
+      assert.equal(doc.tasks[0].type, 'alert');
       assert.equal(doc.tasks[0].alert_name, alertConfig.name);
-      // assert.deepEqual(doc.tasks[0].counted_reports, [ doc._id, ...reports.map(report => report._id) ]);
+      assert.deepEqual(doc.tasks[0].counted_reports, [ doc._id, ...reports.slice(0, 2).map(report => report._id) ]);
+      assert.equal(utils.isValidSubmission.callCount, reports.length);
+      assert.deepEqual(utils.isValidSubmission.args, hydratedReports.map(report => [report]));
+      assert(docNeedsSaving);
+    });
+  });
 
+  it('should not count invalid submissions below threshold', () => {
+    const doc = {
+      _id: 'doc',
+      reported_date: 12345,
+      form: 'A',
+      contact: {
+        _id: 'contact',
+        phone: '+123456'
+      }
+    };
+
+    const reports = [
+      { _id: 'docA', form: 'A', contact: { _id: 'contactA' } },
+      { _id: 'docB', form: 'B' },
+      { _id: 'docC', form: 'A' },
+      { _id: 'docD', form: 'A' }
+    ];
+
+    const hydratedReports = [
+      { _id: 'docA', form: 'A', contact: { _id: 'contactA', phone: '+234567'} },
+      { _id: 'docB', form: 'B' },
+      { _id: 'docC', form: 'A' },
+      { _id: 'docD', form: 'A' }
+    ];
+
+    sinon.stub(config, 'get').returns([alertConfig]);
+    sinon.stub(utils, 'getReportsWithinTimeWindow').resolves(reports);
+    sinon.stub(transition._lineage, 'hydrateDocs').resolves(hydratedReports);
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
+    sinon.stub(messages, 'addError');
+    sinon.spy(messages, 'addMessage');
+
+    return transition.onMatch({ doc: doc }).then(docNeedsSaving => {
+      assert.equal(messages.addError.callCount, 0);
+      assert.equal(messages.addMessage.callCount, 0);
+      assert.equal(utils.isValidSubmission.callCount, reports.length);
+      assert.deepEqual(utils.isValidSubmission.args, hydratedReports.map(report => [report]));
+      assert(!docNeedsSaving);
+    });
+  });
+
+  it('should not count invalid submissions above threshold', () => {
+    const doc = {
+      _id: 'doc',
+      reported_date: 12345,
+      form: 'A',
+      contact: {
+        _id: 'contact',
+        phone: '+123456'
+      }
+    };
+
+    const reports = [
+      { _id: 'docA', form: 'A', contact: { _id: 'contactA' } },
+      { _id: 'docB', form: 'B' },
+      { _id: 'docC', form: 'A' },
+      { _id: 'docD', form: 'A', contact: { _id: 'contactB' } }
+    ];
+
+    const hydratedReports = [
+      { _id: 'docA', form: 'A', contact: { _id: 'contactA', phone: '+234567'} },
+      { _id: 'docB', form: 'B' },
+      { _id: 'docC', form: 'A' },
+      { _id: 'docD', form: 'A', contact: { _id: 'contactB', phone: '+11111' }  }
+    ];
+
+    sinon.stub(config, 'get').returns([alertConfig]);
+    sinon.stub(utils, 'getReportsWithinTimeWindow').resolves(reports);
+    sinon.stub(transition._lineage, 'hydrateDocs').resolves(hydratedReports);
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
+    sinon.stub(messages, 'addError');
+    sinon.spy(messages, 'addMessage');
+
+    return transition.onMatch({ doc: doc }).then(docNeedsSaving => {
+      assert.equal(messages.addError.callCount, 0);
+      assert.equal(messages.addMessage.callCount, 1);
+      assert.equal(doc.tasks.length, 1);
+      assert.deepEqual(doc.tasks[0].counted_reports, [doc._id, 'docA', 'docD']);
+      assert.equal(utils.isValidSubmission.callCount, reports.length);
+      assert.deepEqual(utils.isValidSubmission.args, hydratedReports.map(report => [report]));
       assert(docNeedsSaving);
     });
   });
@@ -241,7 +330,7 @@ describe('multi report alerts', () => {
   it('adds multiple messages when multiple recipients are evaled', () => {
     alertConfig.recipients = [ 'new_report.contact.phone' ];
     sinon.stub(config, 'get').returns([alertConfig]);
-
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
@@ -263,7 +352,7 @@ describe('multi report alerts', () => {
     const recipient = 'new_report.contact.phonekkk'; // field doesn't exist
     alertConfig.recipients = [recipient];
     sinon.stub(config, 'get').returns([alertConfig]);
-
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
@@ -281,7 +370,7 @@ describe('multi report alerts', () => {
     const recipient = 'ssdfds';
     alertConfig.recipients = [recipient];
     sinon.stub(config, 'get').returns([alertConfig]);
-
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
@@ -299,7 +388,7 @@ describe('multi report alerts', () => {
     const recipient = '0623456789';
     alertConfig.recipients = [recipient];
     sinon.stub(config, 'get').returns([alertConfig]);
-
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
@@ -344,6 +433,7 @@ describe('multi report alerts', () => {
       }
     ];
     sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReportsWithOneAlreadyMessaged));
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
 
     sinon.stub(messages, 'addError');
     sinon.stub(messages, 'addMessage');
@@ -361,6 +451,7 @@ describe('multi report alerts', () => {
     sinon.stub(config, 'get').returns([alertConfig]);
 
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
     sinon.stub(messages, 'addMessage');
@@ -385,6 +476,7 @@ describe('multi report alerts', () => {
     sinon.stub(config, 'get').returns([alertConfig]);
 
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
     sinon.stub(messages, 'addMessage');
@@ -428,6 +520,7 @@ describe('multi report alerts', () => {
     }];
     sinon.stub(config, 'get').returns(twoAlerts);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
     sinon.stub(messages, 'addMessage');
@@ -471,6 +564,7 @@ describe('multi report alerts', () => {
     assert.equal(reports.filter(report => report.form === 'B').length, 1);
 
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
     stubFetchHydratedDocs();
     sinon.stub(messages, 'addError');
     sinon.stub(messages, 'addMessage');
@@ -489,6 +583,7 @@ describe('multi report alerts', () => {
     const secondBatch = [...Array(50).keys()].map(report);
 
     const hdStub = sinon.stub(transition._lineage, 'hydrateDocs');
+    sinon.stub(utils, 'isValidSubmission').returns(true);
     hdStub.onCall(0).returns(Promise.resolve(firstBatch));
     hdStub.onCall(1).returns(Promise.resolve(secondBatch));
     const grwtwStub = sinon.stub(utils, 'getReportsWithinTimeWindow');
