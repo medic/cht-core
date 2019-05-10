@@ -167,7 +167,13 @@ app.use(compression({
 //       https://github.com/medic/medic/issues/4089
 
 app.get('/', function(req, res) {
-  res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
+  if (req.headers.accept === 'application/json') {
+    // CouchDB request for /dbinfo from previous versions
+    // Required for service compatibility during upgrade.
+    proxy.web(req, res);
+  } else {
+    res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
+  }
 });
 
 app.get('/dbinfo', (req, res) => {
