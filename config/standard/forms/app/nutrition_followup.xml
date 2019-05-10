@@ -53,8 +53,20 @@
           <text id="/nutrition_followup/measurements/n:label">
             <value>Please remember to fill out the nutrition exit form.</value>
           </text>
+          <text id="/nutrition_followup/measurements/n_14:label">
+            <value>interpretation: &lt; -3SD [Severely Wasted]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_15:label">
+            <value>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_16:label">
+            <value>interpretation: -2SD to 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_17:label">
+            <value>interpretation: &gt;2SD [Overweight]</value>
+          </text>
           <text id="/nutrition_followup/measurements/nn3:label">
-            <value>WFH: <output value=" /nutrition_followup/measurements/wfh "/></value>
+            <value>Weight for height: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/measurements/weight:jr:constraintMsg">
             <value>Weight should be between 0.8 kg and 68.5 kg</value>
@@ -62,20 +74,8 @@
           <text id="/nutrition_followup/measurements/weight:label">
             <value>Weight (kgs)</value>
           </text>
-          <text id="/nutrition_followup/measurements/wfh_note:label">
-            <value>interpretation: <output value=" /nutrition_followup/measurements/wfh_message "/></value>
-          </text>
           <text id="/nutrition_followup/measurements:label">
             <value>Measurements</value>
-          </text>
-          <text id="/nutrition_followup/patient_id:label">
-            <value>Child ID</value>
-          </text>
-          <text id="/nutrition_followup/patient_name:label">
-            <value>Child Name</value>
-          </text>
-          <text id="/nutrition_followup/patient_uuid:label">
-            <value>Patient UUID</value>
           </text>
           <text id="/nutrition_followup/summary/n_1:label">
             <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</value>
@@ -90,20 +90,20 @@
             <value>Height: <output value=" /nutrition_followup/measurements/height "/> cm</value>
           </text>
           <text id="/nutrition_followup/summary/n_5:label">
-            <value>Weight for height z-score: <output value=" /nutrition_followup/measurements/wfh "/></value>
+            <value>Weight for height z-score: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value>To be exited from <output value=" /nutrition_followup/treatment_program "/> treatment program: <output value=" /nutrition_followup/measurements/exit "/></value></text>
         </translation>
         <translation lang="es">
           <text id="/nutrition_followup/attend_visit/no:label">
-            <value>-</value>
+            <value>No</value>
           </text>
           <text id="/nutrition_followup/attend_visit/yes:label">
-            <value>-</value>
+            <value>Sí</value>
           </text>
           <text id="/nutrition_followup/attend_visit:label">
-            <value>-</value>
+            <value>¿Asistió <output value=" /nutrition_followup/patient_name "/> a la visita?</value>
           </text>
           <text id="/nutrition_followup/inputs/contact/_id:label">
             <value>-</value>
@@ -112,96 +112,89 @@
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/no:label">
-            <value>-</value>
+            <value>No</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/yes:label">
-            <value>-</value>
+            <value>Sí</value>
           </text>
           <text id="/nutrition_followup/measurements/exit:label">
-            <value>-</value>
+            <value>¿Desea salir de <output value=" /nutrition_followup/patient_name "/> del programa de tratamiento <output value=" /nutrition_followup/treatment_program "/> hoy?</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/female:label">
-            <value>-</value>
+            <value>Hembra</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/male:label">
-            <value>-</value>
+            <value>Masculino</value>
           </text>
           <text id="/nutrition_followup/measurements/gender:label">
-            <value>-</value>
+            <value>Género</value>
           </text>
           <text id="/nutrition_followup/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/height:label">
-            <value>-</value>
+            <value>Altura (cm)</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:label">
-            <value>-</value>
+            <value>Medida de muac</value>
           </text>
           <text id="/nutrition_followup/measurements/n:label">
-            <value>-</value>
+            <value>Por favor recuerde llenar el formulario de salida de nutrición.</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_14:label">
+            <value>interpretación: &lt;-3SD [muy malgastada]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_15:label">
+            <value>interpretación: -3SD a &lt;-2SD [moderadamente desperdiciada]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_16:label">
+            <value>interpretación: -2SD a 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_17:label">
+            <value>interpretación:&gt; 2SD [Sobrepeso]</value>
           </text>
           <text id="/nutrition_followup/measurements/nn3:label">
-            <value>-</value>
+            <value>peso por altura: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/weight:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/measurements/wfh_note:label">
-            <value>-</value>
+            <value>Peso (kg)</value>
           </text>
           <text id="/nutrition_followup/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_uuid:label">
-            <value>-</value>
+            <value>Mediciones</value>
           </text>
           <text id="/nutrition_followup/summary/n_1:label">
-            <value>-</value>
+            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_followup/summary/n_2:label">
-            <value>-</value>
+            <value>Género: <output value=" /nutrition_followup/measurements/gender "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_3:label">
-            <value>-</value>
+            <value>peso <output value=" /nutrition_followup/measurements/weight "/> kg</value>
           </text>
           <text id="/nutrition_followup/summary/n_4:label">
-            <value>-</value>
+            <value>Altura: <output value=" /nutrition_followup/measurements/height "/> cm</value>
           </text>
           <text id="/nutrition_followup/summary/n_5:label">
-            <value>-</value>
+            <value>Peso para la altura z-score: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/summary:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/treatment_program:label">
-            <value>-</value>
-          </text>
+            <value>Para salir del programa de tratamiento <output value=" /nutrition_followup/treatment_program "/>: <output value=" /nutrition_followup/measurements/exit "/></value></text>
         </translation>
         <translation lang="fr">
           <text id="/nutrition_followup/attend_visit/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/nutrition_followup/attend_visit/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/nutrition_followup/attend_visit:label">
-            <value>-</value>
+            <value>Est-ce que <output value=" /nutrition_followup/patient_name "/> a assisté à la visite?</value>
           </text>
           <text id="/nutrition_followup/inputs/contact/_id:label">
             <value>Quel est l'identifiant du patient?</value>
@@ -210,96 +203,89 @@
             <value>Patient</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/nutrition_followup/measurements/exit:label">
-            <value>-</value>
+            <value>Voulez-vous quitter le programme de traitement <output value=" /nutrition_followup/patient_name "/> du programme de traitement <output value=" /nutrition_followup/treatment_program "/> aujourd'hui?</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/female:label">
-            <value>-</value>
+            <value>Femelle</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/male:label">
-            <value>-</value>
+            <value>Mâle</value>
           </text>
           <text id="/nutrition_followup/measurements/gender:label">
-            <value>-</value>
+            <value>Le sexe</value>
           </text>
           <text id="/nutrition_followup/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/height:label">
-            <value>-</value>
+            <value>Hauteur (cm)</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:label">
-            <value>-</value>
+            <value>Mesure MUAC</value>
           </text>
           <text id="/nutrition_followup/measurements/n:label">
-            <value>-</value>
+            <value>S'il vous plaît n'oubliez pas de remplir le formulaire de sortie de la nutrition.</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_14:label">
+            <value>interprétation: &lt;-3SD [gravement gaspillé]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_15:label">
+            <value>interprétation: -3SD à &lt;-2SD [modérément gaspillé]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_16:label">
+            <value>interprétation: -2SD à 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_17:label">
+            <value>interprétation:&gt; 2SD [Embonpoint]</value>
           </text>
           <text id="/nutrition_followup/measurements/nn3:label">
-            <value>-</value>
+            <value>poids pour taille: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/weight:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/measurements/wfh_note:label">
-            <value>-</value>
+            <value>poids (kg)</value>
           </text>
           <text id="/nutrition_followup/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_uuid:label">
-            <value>-</value>
+            <value>Des mesures</value>
           </text>
           <text id="/nutrition_followup/summary/n_1:label">
-            <value>-</value>
+            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_followup/summary/n_2:label">
-            <value>-</value>
+            <value>Le sexe: <output value=" /nutrition_followup/measurements/gender "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_3:label">
-            <value>-</value>
+            <value>poids <output value=" /nutrition_followup/measurements/weight "/> kg</value>
           </text>
           <text id="/nutrition_followup/summary/n_4:label">
-            <value>-</value>
+            <value>Hauteur: <output value=" /nutrition_followup/measurements/height "/> cm</value>
           </text>
           <text id="/nutrition_followup/summary/n_5:label">
-            <value>-</value>
+            <value>Poids pour la taille z-score: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/summary:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/treatment_program:label">
-            <value>-</value>
-          </text>
+            <value>À quitter du programme de traitement <output value=" /nutrition_followup/treatment_program "/>: <output value=" /nutrition_followup/measurements/exit "/></value></text>
         </translation>
         <translation lang="hi">
           <text id="/nutrition_followup/attend_visit/no:label">
-            <value>-</value>
+            <value>नहीं</value>
           </text>
           <text id="/nutrition_followup/attend_visit/yes:label">
-            <value>-</value>
+            <value>हाँ</value>
           </text>
           <text id="/nutrition_followup/attend_visit:label">
-            <value>-</value>
+            <value>क्या <output value=" /nutrition_followup/patient_name "/> यात्रा में शामिल हुए?</value>
           </text>
           <text id="/nutrition_followup/inputs/contact/_id:label">
             <value>मरीज का नाम क्या है?</value>
@@ -308,96 +294,89 @@
             <value>मरीज</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/no:label">
-            <value>-</value>
+            <value>नहीं</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/yes:label">
-            <value>-</value>
+            <value>हाँ</value>
           </text>
           <text id="/nutrition_followup/measurements/exit:label">
-            <value>-</value>
+            <value>क्या आप आज <output value=" /nutrition_followup/treatment_program "/> उपचार कार्यक्रम से <output value=" /nutrition_followup/patient_name "/> से बाहर निकलना चाहते हैं?</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/female:label">
-            <value>-</value>
+            <value>महिला</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/male:label">
-            <value>-</value>
+            <value>पुरुष</value>
           </text>
           <text id="/nutrition_followup/measurements/gender:label">
-            <value>-</value>
+            <value>लिंग</value>
           </text>
           <text id="/nutrition_followup/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/height:label">
-            <value>-</value>
+            <value>ऊंचाई (सेंटिमीटर)</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:label">
-            <value>-</value>
+            <value>MUAC माप</value>
           </text>
           <text id="/nutrition_followup/measurements/n:label">
-            <value>-</value>
+            <value>कृपया पोषण निकास फ़ॉर्म को भरना याद रखें।</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_14:label">
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से बर्बाद]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_15:label">
+            <value>व्याख्या: करने के लिए -3SD &lt;-2SD [मामूली व्यर्थ]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_16:label">
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_17:label">
+            <value>व्याख्या:&gt; 2SD [अधिक वजन]</value>
           </text>
           <text id="/nutrition_followup/measurements/nn3:label">
-            <value>-</value>
+            <value>वजन ऊंचाई के लिए: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/weight:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/measurements/wfh_note:label">
-            <value>-</value>
+            <value>वजन (किलोग्राम)</value>
           </text>
           <text id="/nutrition_followup/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_uuid:label">
-            <value>-</value>
+            <value>माप</value>
           </text>
           <text id="/nutrition_followup/summary/n_1:label">
-            <value>-</value>
+            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_followup/summary/n_2:label">
-            <value>-</value>
+            <value>लिंग: <output value=" /nutrition_followup/measurements/gender "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_3:label">
-            <value>-</value>
+            <value>वजन <output value=" /nutrition_followup/measurements/weight "/> किलो</value>
           </text>
           <text id="/nutrition_followup/summary/n_4:label">
-            <value>-</value>
+            <value>ऊंचाई: <output value=" /nutrition_followup/measurements/height "/> सेमी</value>
           </text>
           <text id="/nutrition_followup/summary/n_5:label">
-            <value>-</value>
+            <value>ऊंचाई के लिए वजन z-score: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/summary:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/treatment_program:label">
-            <value>-</value>
-          </text>
+            <value><output value=" /nutrition_followup/treatment_program "/> उपचार कार्यक्रम से बाहर निकलने के लिए: <output value=" /nutrition_followup/measurements/exit "/></value></text>
         </translation>
         <translation lang="id">
           <text id="/nutrition_followup/attend_visit/no:label">
-            <value>-</value>
+            <value>Tidak</value>
           </text>
           <text id="/nutrition_followup/attend_visit/yes:label">
-            <value>-</value>
+            <value>iya nih</value>
           </text>
           <text id="/nutrition_followup/attend_visit:label">
-            <value>-</value>
+            <value>Apakah <output value=" /nutrition_followup/patient_name "/> menghadiri kunjungan?</value>
           </text>
           <text id="/nutrition_followup/inputs/contact/_id:label">
             <value>Apa nama pasien?</value>
@@ -406,96 +385,89 @@
             <value>Pasien</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/no:label">
-            <value>-</value>
+            <value>Tidak</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/yes:label">
-            <value>-</value>
+            <value>iya nih</value>
           </text>
           <text id="/nutrition_followup/measurements/exit:label">
-            <value>-</value>
+            <value>Apakah Anda ingin keluar dari <output value=" /nutrition_followup/patient_name "/> dari program perawatan <output value=" /nutrition_followup/treatment_program "/> hari ini?</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/female:label">
-            <value>-</value>
+            <value>Wanita</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/male:label">
-            <value>-</value>
+            <value>Pria</value>
           </text>
           <text id="/nutrition_followup/measurements/gender:label">
-            <value>-</value>
+            <value>Jenis kelamin</value>
           </text>
           <text id="/nutrition_followup/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/height:label">
-            <value>-</value>
+            <value>Tinggi (cm)</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:label">
-            <value>-</value>
+            <value>Pengukuran MUAC</value>
           </text>
           <text id="/nutrition_followup/measurements/n:label">
-            <value>-</value>
+            <value>Harap ingat untuk mengisi formulir keluar nutrisi.</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_14:label">
+            <value>interpretasi: &lt;-3SD [Sangat Terbuang]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_15:label">
+            <value>interpretasi: -3SD hingga &lt;-2SD [Sedang Terbuang]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_16:label">
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_17:label">
+            <value>interpretasi:&gt; 2SD [Kegemukan]</value>
           </text>
           <text id="/nutrition_followup/measurements/nn3:label">
-            <value>-</value>
+            <value>berat untuk tinggi: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/weight:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/measurements/wfh_note:label">
-            <value>-</value>
+            <value>Berat (kg)</value>
           </text>
           <text id="/nutrition_followup/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_uuid:label">
-            <value>-</value>
+            <value>Pengukuran</value>
           </text>
           <text id="/nutrition_followup/summary/n_1:label">
-            <value>-</value>
+            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_followup/summary/n_2:label">
-            <value>-</value>
+            <value>Jenis kelamin: <output value=" /nutrition_followup/measurements/gender "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_3:label">
-            <value>-</value>
+            <value>berat <output value=" /nutrition_followup/measurements/weight "/> kg</value>
           </text>
           <text id="/nutrition_followup/summary/n_4:label">
-            <value>-</value>
+            <value>Tinggi: <output value=" /nutrition_followup/measurements/height "/> cm</value>
           </text>
           <text id="/nutrition_followup/summary/n_5:label">
-            <value>-</value>
+            <value>Berat untuk tinggi z-score: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/summary:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/treatment_program:label">
-            <value>-</value>
-          </text>
+            <value>Untuk keluar dari program perawatan <output value=" /nutrition_followup/treatment_program "/>: <output value=" /nutrition_followup/measurements/exit "/></value></text>
         </translation>
         <translation lang="ne">
           <text id="/nutrition_followup/attend_visit/no:label">
-            <value>-</value>
+            <value>होइन</value>
           </text>
           <text id="/nutrition_followup/attend_visit/yes:label">
-            <value>-</value>
+            <value>हो</value>
           </text>
           <text id="/nutrition_followup/attend_visit:label">
-            <value>-</value>
+            <value>के <output value=" /nutrition_followup/patient_name "/> भ्रमण गर्यो?</value>
           </text>
           <text id="/nutrition_followup/inputs/contact/_id:label">
             <value>-</value>
@@ -504,90 +476,83 @@
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/no:label">
-            <value>-</value>
+            <value>होइन</value>
           </text>
           <text id="/nutrition_followup/measurements/exit/yes:label">
-            <value>-</value>
+            <value>हो</value>
           </text>
           <text id="/nutrition_followup/measurements/exit:label">
-            <value>-</value>
+            <value>के तपाईँ <output value=" /nutrition_followup/patient_name "/> बाट <output value=" /nutrition_followup/treatment_program "/> उपचार कार्यक्रमबाट आज बाहिर निस्कन चाहनुहुन्छ?</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/female:label">
-            <value>-</value>
+            <value>महिला</value>
           </text>
           <text id="/nutrition_followup/measurements/gender/male:label">
-            <value>-</value>
+            <value>नर</value>
           </text>
           <text id="/nutrition_followup/measurements/gender:label">
-            <value>-</value>
+            <value>लिङ्ग</value>
           </text>
           <text id="/nutrition_followup/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/height:label">
-            <value>-</value>
+            <value>ऊँचाई (सेमी)</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/muac:label">
-            <value>-</value>
+            <value>MUAC माप</value>
           </text>
           <text id="/nutrition_followup/measurements/n:label">
-            <value>-</value>
+            <value>कृपया पोषण निकास फारम भर्न सम्झनुहोस्।</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_14:label">
+            <value>व्याख्या: &lt;-3 एसडी [अत्यधिक बर्बाद भयो]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_15:label">
+            <value>व्याख्या: -3 एसडी देखि &lt;-2 एसडी [सामान्य बर्बाद भयो]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_16:label">
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
+          </text>
+          <text id="/nutrition_followup/measurements/n_17:label">
+            <value>व्याख्या:&gt; 2 एसडी [अधिक वजन]</value>
           </text>
           <text id="/nutrition_followup/measurements/nn3:label">
-            <value>-</value>
+            <value>वजनको लागि वजन: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_followup/measurements/weight:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/measurements/wfh_note:label">
-            <value>-</value>
+            <value>वजन (किलोग्राम)</value>
           </text>
           <text id="/nutrition_followup/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/patient_uuid:label">
-            <value>-</value>
+            <value>माप</value>
           </text>
           <text id="/nutrition_followup/summary/n_1:label">
-            <value>-</value>
+            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /nutrition_followup/patient_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_followup/summary/n_2:label">
-            <value>-</value>
+            <value>लिङ्ग: <output value=" /nutrition_followup/measurements/gender "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_3:label">
-            <value>-</value>
+            <value>वजन <output value=" /nutrition_followup/measurements/weight "/> किलो</value>
           </text>
           <text id="/nutrition_followup/summary/n_4:label">
-            <value>-</value>
+            <value>ऊँचाई: <output value=" /nutrition_followup/measurements/height "/> सेमी</value>
           </text>
           <text id="/nutrition_followup/summary/n_5:label">
-            <value>-</value>
+            <value>उचाईको लागि वजन z-score: <output value=" /nutrition_followup/wfh "/></value>
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/summary:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_followup/treatment_program:label">
-            <value>-</value>
-          </text>
+            <value><output value=" /nutrition_followup/treatment_program "/> उपचार कार्यक्रमबाट बाहिर निस्कन: <output value=" /nutrition_followup/measurements/exit "/></value></text>
         </translation>
       </itext>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-04-08 14-34">
+        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-05-10 09-48">
           <inputs>
             <meta>
               <location>
@@ -617,15 +582,17 @@
           <patient_id/>
           <attend_visit>yes</attend_visit>
           <treatment_program/>
+          <wfh/>
           <measurements>
             <gender/>
             <weight/>
             <height/>
             <muac/>
-            <wfh/>
             <nn3/>
-            <wfh_message/>
-            <wfh_note/>
+            <n_14/>
+            <n_15/>
+            <n_16/>
+            <n_17/>
             <exit/>
             <n/>
           </measurements>
@@ -657,15 +624,17 @@
       <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_followup/patient_id" type="string"/>
       <bind nodeset="/nutrition_followup/attend_visit" relevant=" /nutrition_followup/inputs/source  = 'task'" type="select1"/>
       <bind calculate="instance('contact-summary')/context/treatment_program" nodeset="/nutrition_followup/treatment_program" type="string"/>
+      <bind calculate="round(z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight ), 1)" nodeset="/nutrition_followup/wfh" type="string"/>
       <bind nodeset="/nutrition_followup/measurements" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/measurements/gender" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/weight:jr:constraintMsg')" nodeset="/nutrition_followup/measurements/weight" required="true()" type="decimal"/>
       <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/height:jr:constraintMsg')" nodeset="/nutrition_followup/measurements/height" required="true()" type="decimal"/>
       <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/muac:jr:constraintMsg')" nodeset="/nutrition_followup/measurements/muac" required="false()" type="decimal"/>
-      <bind calculate="round(z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight ), 1)" nodeset="/nutrition_followup/measurements/wfh" type="string"/>
       <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" relevant=" /nutrition_followup/measurements/weight  != '' and  /nutrition_followup/measurements/height  != ''" type="string"/>
-      <bind calculate="if( /nutrition_followup/measurements/wfh  = &quot;&quot;, &quot;&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt; -2 and  /nutrition_followup/measurements/wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /nutrition_followup/measurements/wfh  &lt;= 2 and  /nutrition_followup/measurements/wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /nutrition_followup/measurements/wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/nutrition_followup/measurements/wfh_message" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/wfh_note" readonly="true()" relevant=" /nutrition_followup/measurements/weight  != '' and  /nutrition_followup/measurements/height  != ''" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/n_14" readonly="true()" relevant=" /nutrition_followup/wfh  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/n_15" readonly="true()" relevant=" /nutrition_followup/wfh  &lt; -2 and  /nutrition_followup/wfh  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/n_16" readonly="true()" relevant=" /nutrition_followup/wfh  &lt;= 2 and  /nutrition_followup/wfh  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_followup/measurements/n_17" readonly="true()" relevant=" /nutrition_followup/wfh  &gt; 2" type="string"/>
       <bind nodeset="/nutrition_followup/measurements/exit" required="true()" type="select1"/>
       <bind nodeset="/nutrition_followup/measurements/n" readonly="true()" relevant=" /nutrition_followup/measurements/exit  = 'yes'" type="string"/>
       <bind nodeset="/nutrition_followup/summary" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
@@ -735,8 +704,17 @@
       <input ref="/nutrition_followup/measurements/nn3">
         <label ref="jr:itext('/nutrition_followup/measurements/nn3:label')"/>
       </input>
-      <input ref="/nutrition_followup/measurements/wfh_note">
-        <label ref="jr:itext('/nutrition_followup/measurements/wfh_note:label')"/>
+      <input ref="/nutrition_followup/measurements/n_14">
+        <label ref="jr:itext('/nutrition_followup/measurements/n_14:label')"/>
+      </input>
+      <input ref="/nutrition_followup/measurements/n_15">
+        <label ref="jr:itext('/nutrition_followup/measurements/n_15:label')"/>
+      </input>
+      <input ref="/nutrition_followup/measurements/n_16">
+        <label ref="jr:itext('/nutrition_followup/measurements/n_16:label')"/>
+      </input>
+      <input ref="/nutrition_followup/measurements/n_17">
+        <label ref="jr:itext('/nutrition_followup/measurements/n_17:label')"/>
       </input>
       <select1 ref="/nutrition_followup/measurements/exit">
         <label ref="jr:itext('/nutrition_followup/measurements/exit:label')"/>

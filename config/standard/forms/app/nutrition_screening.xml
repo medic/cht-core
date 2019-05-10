@@ -5,15 +5,6 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/nutrition_screening/age_in_days:label">
-            <value>Age in days</value>
-          </text>
-          <text id="/nutrition_screening/child_name:label">
-            <value>Child Name</value>
-          </text>
-          <text id="/nutrition_screening/dob:label">
-            <value>Date of Birth</value>
-          </text>
           <text id="/nutrition_screening/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
@@ -33,7 +24,7 @@
             <value>Height should be between 45 cm and 120 cm</value>
           </text>
           <text id="/nutrition_screening/measurements/height:label">
-            <value>Height (cms)</value>
+            <value>Height (cm)</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:jr:constraintMsg">
             <value>MUAC should be between 5 and 30 cm</value>
@@ -45,127 +36,121 @@
             <value>Weight should be between 0.8 kg and 68.5 kg</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:label">
-            <value>Weight (kgs)</value>
+            <value>Weight (kg)</value>
           </text>
           <text id="/nutrition_screening/measurements:label">
             <value>Measurements</value>
           </text>
-          <text id="/nutrition_screening/patient_id:label">
-            <value>Child ID</value>
-          </text>
-          <text id="/nutrition_screening/patient_uuid:label">
-            <value>Patient UUID</value>
-          </text>
           <text id="/nutrition_screening/summary/n_10:label">
-            <value>interpretation: -3SD to &lt;-2SD [Moderately Stunted]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_11:label">
-            <value>interpretation: -2SD to 2SD [Normal]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_12:label">
-            <value>interpretation: &gt;2SD [High]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_14:label">
-            <value>interpretation: &lt; -3SD [Severely Wasted]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_15:label">
-            <value>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_16:label">
-            <value>interpretation: -2SD to 2SD [Normal]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_17:label">
-            <value>interpretation: &gt;2SD [Overweight]</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_21:label">
-            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_22:label">
-            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_23:label">
-            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_24:label">
-            <value>Gender: <output value=" /nutrition_screening/measurements/gender "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_25:label">
-            <value>Measurements&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_26:label">
-            <value>Weight: <output value=" /nutrition_screening/measurements/weight "/> kg</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_27:label">
-            <value>Height: <output value=" /nutrition_screening/measurements/height "/> cm</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_28:label">
-            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_29:label">
-            <value>Weight for age</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_30:label">
             <value>z-score: <output value=" /nutrition_screening/wfa "/></value>
           </text>
-          <text id="/nutrition_screening/summary/n_32:label">
-            <value>Height for age</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_33:label">
-            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_35:label">
-            <value>Weight for height</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_36:label">
-            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_38:label">
-            <value>Treatment enrollment</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_39:label">
-            <value>Enrolled into a treatment program: <output value=" /nutrition_screening/treatment/enroll "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_3:label">
+          <text id="/nutrition_screening/summary/n_11:label">
             <value>interpretation: &lt; -3SD [Severely Malnourished]</value>
           </text>
-          <text id="/nutrition_screening/summary/n_40:label">
-            <value>Facility of admission: <output value=" /nutrition_screening/treatment/facility "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_41:label">
-            <value>Facility referral: <output value=" /nutrition_screening/treatment/other_facility "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_42:label">
-            <value>Program: <output value=" /nutrition_screening/treatment/program "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_43:label">
-            <value>Target weight: <output value=" /nutrition_screening/treatment/target_weight "/> kg</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_44:label">
-            <value>Target MUAC: <output value=" /nutrition_screening/treatment/target_muac "/> cm</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_45:label">
-            <value>Reason for non-enrollment: <output value=" /nutrition_screening/summary/c_reason "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_46:label">
-            <value>Additional notes:</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_47:label">
-            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
-          </text>
-          <text id="/nutrition_screening/summary/n_4:label">
+          <text id="/nutrition_screening/summary/n_12:label">
             <value>interpretation: -3SD to &lt; -2SD [Moderately Malnourished]</value>
           </text>
-          <text id="/nutrition_screening/summary/n_5:label">
+          <text id="/nutrition_screening/summary/n_13:label">
             <value>interpretation: -2SD to 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/summary/n_6:label">
+          <text id="/nutrition_screening/summary/n_14:label">
             <value>interpretation: &gt;2SD [Overweight]</value>
           </text>
-          <text id="/nutrition_screening/summary/n_7:label">
+          <text id="/nutrition_screening/summary/n_15:label">
             <value>interpretation: &gt;3SD [Obese]</value>
           </text>
-          <text id="/nutrition_screening/summary/n_9:label">
+          <text id="/nutrition_screening/summary/n_16:label">
+            <value>Height for age</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_17:label">
+            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_18:label">
             <value>interpretation: &lt; -3SD [Severely Stunted]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_19:label">
+            <value>interpretation: -3SD to &lt;-2SD [Moderately Stunted]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_1:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_20:label">
+            <value>interpretation: -2SD to 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_21:label">
+            <value>interpretation: &gt;2SD [High]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_22:label">
+            <value>Weight for height</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_23:label">
+            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_24:label">
+            <value>interpretation: &lt; -3SD [Severely Wasted]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_25:label">
+            <value>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_26:label">
+            <value>interpretation: -2SD to 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_27:label">
+            <value>interpretation: &gt;2SD [Overweight]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_28:label">
+            <value>Treatment enrollment</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_29:label">
+            <value>Enrolled into a treatment program: <output value=" /nutrition_screening/treatment/enroll "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_2:label">
+            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_30:label">
+            <value>Facility of admission: <output value=" /nutrition_screening/c_facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_31:label">
+            <value>Facility referral: <output value=" /nutrition_screening/treatment/other_facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_32:label">
+            <value>Program: <output value=" /nutrition_screening/c_program "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_33:label">
+            <value>Target weight: <output value=" /nutrition_screening/treatment/target_weight "/> kg</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_34:label">
+            <value>Target MUAC: <output value=" /nutrition_screening/treatment/target_muac "/> cm</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_36:label">
+            <value>Reason for non-enrollment: <output value=" /nutrition_screening/c_reason "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_37:label">
+            <value>Additional notes:</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_38:label">
+            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_3:label">
+            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_4:label">
+            <value>Gender: <output value=" /nutrition_screening/measurements/gender "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_5:label">
+            <value>Measurements&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_6:label">
+            <value>Weight: <output value=" /nutrition_screening/measurements/weight "/> kg</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_7:label">
+            <value>Height: <output value=" /nutrition_screening/measurements/height "/> cm</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_8:label">
+            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_9:label">
+            <value>Weight for age</value>
           </text>
           <text id="/nutrition_screening/treatment/additional_notes:label">
             <value>Additional notes</value>
@@ -174,7 +159,7 @@
             <value>MUAC &lt; 11.5 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_124:label">
-            <value>MUAC to 11.5 cm to 12.4 cm</value>
+            <value>MUAC of 11.5 cm to 12.4 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_complications:label">
             <value>MUAC &lt; 11.5 cm with complications</value>
@@ -186,13 +171,13 @@
             <value>+++ oedema</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3:label">
-            <value>Weight for Height Z score &lt; -3</value>
+            <value>Weight for height z-score &lt; -3</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_-2:label">
-            <value>Weight for Height Z score ≥ -3 to &lt; -2</value>
+            <value>Weight for height z-score ≥ -3 to &lt; -2</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_complications:label">
-            <value>Weight for Height Z score &lt; -3 with complications</value>
+            <value>Weight for height z-score &lt; -3 with complications</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria:label">
             <value>Admission criteria</value>
@@ -225,7 +210,7 @@
             <value>Yes</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll:label">
-            <value>Do you want to enroll(child name) into a treatment program?</value>
+            <value>Do you want to enroll into a treatment program?</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/clinic:label">
             <value>At your clinic</value>
@@ -236,65 +221,65 @@
           <text id="/nutrition_screening/treatment/facility:label">
             <value>Facility of admission</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_10:label">
-            <value>interpretation: -3SD to &lt;-2SD [Moderately Stunted]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_11:label">
-            <value>interpretation: -2SD to 2SD [Normal]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_12:label">
-            <value>interpretation: &gt;2SD [High]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_13:label">
-            <value>weight for height: <output value=" /nutrition_screening/wfh "/></value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_14:label">
-            <value>interpretation: &lt; -3SD [Severely Wasted]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_15:label">
-            <value>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_16:label">
-            <value>interpretation: -2SD to 2SD [Normal]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_17:label">
-            <value>interpretation: &gt;2SD [Overweight]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_18:label">
-            <value>OTP admission criteria should be '+ or ++Oedema' or 'MUAC &lt; 11.5cm' or 'Weight for Height Z score &lt;-3'</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_19:label">
-            <value>SFP admission criteria should be 'MUAC between 11.5 to 12.4cm' or 'Weight for Height Z score ≥ -3 to &lt; -2'</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_1:label">
-            <value>z-score measurements</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_20:label">
-            <value>SC admission criteria should be '+++ Oedema' or 'MUAC &lt; 11.5cm with complications' or 'Weight for Height Z score &lt;-3 with complications'</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_2:label">
-            <value>weight for age: <output value=" /nutrition_screening/wfa "/></value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_3:label">
-            <value>interpretation: &lt; -3SD [Severely Malnourished]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_4:label">
-            <value>interpretation: -3SD to &lt; -2SD [Moderately Malnourished]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_5:label">
-            <value>interpretation: -2SD to 2SD [Normal]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_6:label">
-            <value>interpretation: &gt;2SD [Overweight]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_7:label">
-            <value>interpretation: &gt;3SD [Obese]</value>
-          </text>
-          <text id="/nutrition_screening/treatment/n_8:label">
+          <text id="/nutrition_screening/treatment/n_hfa:label">
             <value>height for age: <output value=" /nutrition_screening/hfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_9:label">
+          <text id="/nutrition_screening/treatment/n_hfa_high:label">
+            <value>interpretation: &gt;2SD [High]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_hfa_m_stunted:label">
+            <value>interpretation: -3SD to &lt;-2SD [Moderately Stunted]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_hfa_s_stunted:label">
             <value>interpretation: &lt; -3SD [Severely Stunted]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_hfa_stunted:label">
+            <value>interpretation: -2SD to 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_otp:label">
+            <value>OTP admission criteria should be '+ or ++Oedema' or 'MUAC &lt; 11.5cm' or 'Weight for Height Z score &lt;-3'</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_sc:label">
+            <value>SC admission criteria should be '+++ Oedema' or 'MUAC &lt; 11.5cm with complications' or 'Weight for Height Z score &lt;-3 with complications'</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_sfp:label">
+            <value>SFP admission criteria should be 'MUAC between 11.5 to 12.4cm' or 'Weight for Height Z score ≥ -3 to &lt; -2'</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfa:label">
+            <value>weight for age: <output value=" /nutrition_screening/wfa "/></value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfa_m_malnourished:label">
+            <value>interpretation: -3SD to &lt; -2SD [Moderately Malnourished]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfa_normal:label">
+            <value>interpretation: -2SD to 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfa_obese:label">
+            <value>interpretation: &gt;3SD [Obese]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfa_overweight:label">
+            <value>interpretation: &gt;2SD [Overweight]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfa_s_malnourished:label">
+            <value>interpretation: &lt; -3SD [Severely Malnourished]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfh:label">
+            <value>weight for height: <output value=" /nutrition_screening/wfh "/></value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfh_m_wasted:label">
+            <value>interpretation: -3SD to &lt;-2SD [Moderately Wasted]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfh_normal:label">
+            <value>interpretation: -2SD to 2SD [Normal]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfh_overwweight:label">
+            <value>interpretation: &gt;2SD [Overweight]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_wfh_s_wasted:label">
+            <value>interpretation: &lt; -3SD [Severely Wasted]</value>
+          </text>
+          <text id="/nutrition_screening/treatment/n_zscore:label">
+            <value>z-score measurements</value>
           </text>
           <text id="/nutrition_screening/treatment/other_facility:label">
             <value>Name of facility</value>
@@ -321,7 +306,7 @@
             <value>Nutrition status check</value>
           </text>
           <text id="/nutrition_screening/treatment/reason:label">
-            <value>Reasons for non-enrollment</value>
+            <value>Reason for non-enrollment</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:jr:constraintMsg">
             <value>MUAC should be between 5 and 30 cm</value>
@@ -340,15 +325,6 @@
           </text>
         </translation>
         <translation lang="es">
-          <text id="/nutrition_screening/age_in_days:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/child_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/dob:label">
-            <value>-</value>
-          </text>
           <text id="/nutrition_screening/inputs/contact/_id:label">
             <value>-</value>
           </text>
@@ -356,337 +332,319 @@
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/female:label">
-            <value>-</value>
+            <value>Hembra</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/male:label">
-            <value>-</value>
+            <value>Masculino</value>
           </text>
           <text id="/nutrition_screening/measurements/gender:label">
-            <value>-</value>
+            <value>Género</value>
           </text>
           <text id="/nutrition_screening/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/height:label">
-            <value>-</value>
+            <value>Altura (cm)</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:label">
-            <value>-</value>
+            <value>Medida de muac</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:label">
-            <value>-</value>
+            <value>Peso (kg)</value>
           </text>
           <text id="/nutrition_screening/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/c_reason:label">
-            <value>-</value>
+            <value>Mediciones</value>
           </text>
           <text id="/nutrition_screening/summary/n_10:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfa "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_11:label">
-            <value>-</value>
+            <value>interpretación: &lt;-3SD [desnutrida severa]</value>
           </text>
           <text id="/nutrition_screening/summary/n_12:label">
-            <value>-</value>
+            <value>interpretación: -3SD a &lt;-2SD [malnutridos moderados]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_13:label">
+            <value>interpretación: -2SD a 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_14:label">
-            <value>-</value>
+            <value>interpretación:&gt; 2SD [Sobrepeso]</value>
           </text>
           <text id="/nutrition_screening/summary/n_15:label">
-            <value>-</value>
+            <value>interpretación:&gt; 3SD [Obeso]</value>
           </text>
           <text id="/nutrition_screening/summary/n_16:label">
-            <value>-</value>
+            <value>Altura para la edad</value>
           </text>
           <text id="/nutrition_screening/summary/n_17:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_18:label">
+            <value>interpretación: &lt;-3SD [severamente atrofiado]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_19:label">
+            <value>Interpretación: -3SD a &lt;-2SD [moderadamente atrofiado]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_1:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_20:label">
+            <value>interpretación: -2SD a 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_21:label">
-            <value>-</value>
+            <value>interpretación:&gt; 2SD [Alta]</value>
           </text>
           <text id="/nutrition_screening/summary/n_22:label">
-            <value>-</value>
+            <value>Peso para la altura</value>
           </text>
           <text id="/nutrition_screening/summary/n_23:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_24:label">
-            <value>-</value>
+            <value>interpretación: &lt;-3SD [muy malgastada]</value>
           </text>
           <text id="/nutrition_screening/summary/n_25:label">
-            <value>-</value>
+            <value>interpretación: -3SD a &lt;-2SD [moderadamente desperdiciada]</value>
           </text>
           <text id="/nutrition_screening/summary/n_26:label">
-            <value>-</value>
+            <value>interpretación: -2SD a 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_27:label">
-            <value>-</value>
+            <value>interpretación:&gt; 2SD [Sobrepeso]</value>
           </text>
           <text id="/nutrition_screening/summary/n_28:label">
-            <value>-</value>
+            <value>Inscripción en el tratamiento</value>
           </text>
           <text id="/nutrition_screening/summary/n_29:label">
-            <value>-</value>
+            <value>Inscrito en un programa de tratamiento: <output value=" /nutrition_screening/treatment/enroll "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_2:label">
+            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_30:label">
-            <value>-</value>
+            <value>Facilidad de admisión: <output value=" /nutrition_screening/treatment/facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_31:label">
+            <value>Remisión de instalaciones: <output value=" /nutrition_screening/treatment/other_facility "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_32:label">
-            <value>-</value>
+            <value>programa: <output value=" /nutrition_screening/treatment/program "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_33:label">
-            <value>-</value>
+            <value>Peso objetivo <output value=" /nutrition_screening/treatment/target_weight "/> kg</value>
           </text>
-          <text id="/nutrition_screening/summary/n_35:label">
-            <value>-</value>
+          <text id="/nutrition_screening/summary/n_34:label">
+            <value>MUAC objetivo <output value=" /nutrition_screening/treatment/target_muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_36:label">
-            <value>-</value>
+            <value>Razones para no inscribirse: <output value=" /nutrition_screening/c_reason "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_37:label">
+            <value>Notas adicionales</value>
           </text>
           <text id="/nutrition_screening/summary/n_38:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_39:label">
-            <value>-</value>
+            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_3:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_40:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_41:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_42:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_43:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_44:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_45:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_46:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_47:label">
-            <value>-</value>
+            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
           </text>
           <text id="/nutrition_screening/summary/n_4:label">
-            <value>-</value>
+            <value>Género: <output value=" /nutrition_screening/measurements/gender "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_5:label">
-            <value>-</value>
+            <value>Mediciones&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_6:label">
-            <value>-</value>
+            <value>peso <output value=" /nutrition_screening/measurements/weight "/> kg</value>
           </text>
           <text id="/nutrition_screening/summary/n_7:label">
-            <value>-</value>
+            <value>Altura: <output value=" /nutrition_screening/measurements/height "/> cm</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_8:label">
+            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_9:label">
-            <value>-</value>
+            <value>peso por edad</value>
           </text>
           <text id="/nutrition_screening/treatment/additional_notes:label">
-            <value>-</value>
+            <value>Notas adicionales</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115:label">
-            <value>-</value>
+            <value>MUAC &lt; 11.5 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_124:label">
-            <value>-</value>
+            <value>MUAC de 11.5 cm a 12.4 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_complications:label">
-            <value>-</value>
+            <value>MUAC &lt;11.5 cm con complicaciones.</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_1_2:label">
-            <value>-</value>
+            <value>edema + o ++</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_3:label">
-            <value>-</value>
+            <value>edema +++</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3:label">
-            <value>-</value>
+            <value>Peso para la altura puntuación z &lt;-3</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_-2:label">
-            <value>-</value>
+            <value>Peso para la altura puntuación z ≥ -3 a &lt;-2</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_complications:label">
-            <value>-</value>
+            <value>Peso para la talla z-score &lt;-3 con complicaciones</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria:label">
-            <value>-</value>
+            <value>Criterios de admisión</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/defaulter:label">
-            <value>-</value>
+            <value>Devuelto por defecto</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/new_case:label">
-            <value>-</value>
+            <value>Nuevo caso</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/otp:label">
-            <value>-</value>
+            <value>Transferencia del programa terapéutico ambulatorio</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/relapse:label">
-            <value>-</value>
+            <value>Recaída / Readmisión</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sc:label">
-            <value>-</value>
+            <value>Traslado desde el centro de estabilización</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sfp:label">
-            <value>-</value>
+            <value>Transferencia del Programa de Alimentación Suplementaria</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type:label">
-            <value>-</value>
+            <value>Tipo de ingreso</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/no:label">
-            <value>-</value>
+            <value>No</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/yes:label">
-            <value>-</value>
+            <value>Sí</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll:label">
-            <value>-</value>
+            <value>¿Quieres inscribirte en un programa de tratamiento?</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/clinic:label">
-            <value>-</value>
+            <value>En tu clinica</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/other_clinic:label">
-            <value>-</value>
+            <value>Referencia a otra clínica</value>
           </text>
           <text id="/nutrition_screening/treatment/facility:label">
-            <value>-</value>
+            <value>Facilidad de admisión.</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_10:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa:label">
+            <value>Altura por edad: <output value=" /nutrition_screening/hfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_11:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_high:label">
+            <value>interpretación:&gt; 2SD [Alta]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_12:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_m_stunted:label">
+            <value>Interpretación: -3SD a &lt;-2SD [moderadamente atrofiado]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_13:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_s_stunted:label">
+            <value>interpretación: &lt;-3SD [severamente atrofiado]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_14:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_stunted:label">
+            <value>interpretación: -2SD a 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_15:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_otp:label">
+            <value>Los criterios de admisión de la PTO deben ser '+ o ++ Edema' o 'MUAC &lt;11.5cm' o 'Peso para la talla Z de puntuación &lt;-3'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_16:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sc:label">
+            <value>Los criterios de admisión SC deben ser '+++ Edema' o 'MUAC &lt;11.5cm con complicaciones' o 'Peso para la talla Z puntuación &lt;-3 con complicaciones'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_17:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sfp:label">
+            <value>Los criterios de admisión de SFP deben ser 'MUAC entre 11.5 a 12.4cm' o 'Peso para la talla Z de la escala ≥ -3 a &lt;-2'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_18:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa:label">
+            <value>peso por edad: <output value=" /nutrition_screening/wfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_19:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_m_malnourished:label">
+            <value>interpretación: -3SD a &lt;-2SD [malnutridos moderados]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_1:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_normal:label">
+            <value>interpretación: -2SD a 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_20:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_obese:label">
+            <value>interpretación:&gt; 3SD [Obeso]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_2:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_overweight:label">
+            <value>interpretación:&gt; 2SD [Sobrepeso]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_3:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_s_malnourished:label">
+            <value>interpretación: &lt;-3SD [desnutrida severa]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_4:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh:label">
+            <value>peso por altura: <output value=" /nutrition_screening/wfh "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_5:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_m_wasted:label">
+            <value>interpretación: -3SD a &lt;-2SD [moderadamente desperdiciada]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_6:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_normal:label">
+            <value>interpretación: -2SD a 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_7:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_overwweight:label">
+            <value>interpretación:&gt; 2SD [Sobrepeso]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_8:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_s_wasted:label">
+            <value>interpretación: &lt;-3SD [muy malgastada]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_9:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_zscore:label">
+            <value>mediciones de puntuación z</value>
           </text>
           <text id="/nutrition_screening/treatment/other_facility:label">
-            <value>-</value>
+            <value>Nombre de la instalación</value>
           </text>
           <text id="/nutrition_screening/treatment/program/OTP:label">
-            <value>-</value>
+            <value>Programa terapéutico ambulatorio (OTP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SC:label">
-            <value>-</value>
+            <value>Centro de Estabilización (SC)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SFP:label">
-            <value>-</value>
+            <value>Programa de Alimentación Suplementaria (SFP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program:label">
-            <value>-</value>
+            <value>Programa de tratamiento de admisión.</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/chronic_malnutrition:label">
-            <value>-</value>
+            <value>Desnutricion cronica</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/false_positive:label">
-            <value>-</value>
+            <value>Falso positivo</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/status_check:label">
-            <value>-</value>
+            <value>Verificación del estado nutricional</value>
           </text>
           <text id="/nutrition_screening/treatment/reason:label">
-            <value>-</value>
+            <value>Razones para no inscribirse</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:label">
-            <value>-</value>
+            <value>MUAC objetivo (cm)</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:label">
-            <value>-</value>
+            <value>Peso objetivo (kg)</value>
           </text>
           <text id="/nutrition_screening/treatment:label">
-            <value>-</value>
+            <value>Interpretación</value>
           </text>
         </translation>
         <translation lang="fr">
-          <text id="/nutrition_screening/age_in_days:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/child_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/dob:label">
-            <value>-</value>
-          </text>
           <text id="/nutrition_screening/inputs/contact/_id:label">
             <value>Quel est l'identifiant du patient?</value>
           </text>
@@ -694,337 +652,319 @@
             <value>Patient</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/female:label">
-            <value>-</value>
+            <value>Femelle</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/male:label">
-            <value>-</value>
+            <value>Mâle</value>
           </text>
           <text id="/nutrition_screening/measurements/gender:label">
-            <value>-</value>
+            <value>Le sexe</value>
           </text>
           <text id="/nutrition_screening/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/height:label">
-            <value>-</value>
+            <value>Hauteur (cm)</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:label">
-            <value>-</value>
+            <value>Mesure MUAC</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:label">
-            <value>-</value>
+            <value>poids (kg)</value>
           </text>
           <text id="/nutrition_screening/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/c_reason:label">
-            <value>-</value>
+            <value>Des mesures</value>
           </text>
           <text id="/nutrition_screening/summary/n_10:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfa "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_11:label">
-            <value>-</value>
+            <value>interprétation: &lt;-3SD [gravement malnutri]</value>
           </text>
           <text id="/nutrition_screening/summary/n_12:label">
-            <value>-</value>
+            <value>interprétation: -3SD à &lt;-2SD [Modérément mal nourris]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_13:label">
+            <value>interprétation: -2SD à 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_14:label">
-            <value>-</value>
+            <value>interprétation:&gt; 2SD [Embonpoint]</value>
           </text>
           <text id="/nutrition_screening/summary/n_15:label">
-            <value>-</value>
+            <value>interprétation:&gt; 3SD [Obèse]</value>
           </text>
           <text id="/nutrition_screening/summary/n_16:label">
-            <value>-</value>
+            <value>Taille pour l'âge</value>
           </text>
           <text id="/nutrition_screening/summary/n_17:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_18:label">
+            <value>interprétation: &lt;-3SD [sévèrement stunté]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_19:label">
+            <value>interprétation: -3SD à &lt;-2SD [Modérément retardé]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_1:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_20:label">
+            <value>interprétation: -2SD à 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_21:label">
-            <value>-</value>
+            <value>interprétation:&gt; 2SD [Elevé]</value>
           </text>
           <text id="/nutrition_screening/summary/n_22:label">
-            <value>-</value>
+            <value>Poids pour la taille</value>
           </text>
           <text id="/nutrition_screening/summary/n_23:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_24:label">
-            <value>-</value>
+            <value>interprétation: &lt;-3SD [gravement gaspillé]</value>
           </text>
           <text id="/nutrition_screening/summary/n_25:label">
-            <value>-</value>
+            <value>interprétation: -3SD à &lt;-2SD [modérément gaspillé]</value>
           </text>
           <text id="/nutrition_screening/summary/n_26:label">
-            <value>-</value>
+            <value>interprétation: -2SD à 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_27:label">
-            <value>-</value>
+            <value>interprétation:&gt; 2SD [Embonpoint]</value>
           </text>
           <text id="/nutrition_screening/summary/n_28:label">
-            <value>-</value>
+            <value>Inscription au traitement</value>
           </text>
           <text id="/nutrition_screening/summary/n_29:label">
-            <value>-</value>
+            <value>Inscrit à un programme de traitement: <output value=" /nutrition_screening/treatment/enroll "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_2:label">
+            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_30:label">
-            <value>-</value>
+            <value>Facilité d'admission: <output value=" /nutrition_screening/treatment/facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_31:label">
+            <value>Centre de référence: <output value=" /nutrition_screening/treatment/other_facility "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_32:label">
-            <value>-</value>
+            <value>programme: <output value=" /nutrition_screening/treatment/program "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_33:label">
-            <value>-</value>
+            <value>Poids cible <output value=" /nutrition_screening/treatment/target_weight "/> kg</value>
           </text>
-          <text id="/nutrition_screening/summary/n_35:label">
-            <value>-</value>
+          <text id="/nutrition_screening/summary/n_34:label">
+            <value>MUAC cible <output value=" /nutrition_screening/treatment/target_muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_36:label">
-            <value>-</value>
+            <value>Raisons de la non-inscription: <output value=" /nutrition_screening/c_reason "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_37:label">
+            <value>Notes complémentaires</value>
           </text>
           <text id="/nutrition_screening/summary/n_38:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_39:label">
-            <value>-</value>
+            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_3:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_40:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_41:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_42:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_43:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_44:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_45:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_46:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_47:label">
-            <value>-</value>
+            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
           </text>
           <text id="/nutrition_screening/summary/n_4:label">
-            <value>-</value>
+            <value>Le sexe: <output value=" /nutrition_screening/measurements/gender "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_5:label">
-            <value>-</value>
+            <value>Des mesures&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_6:label">
-            <value>-</value>
+            <value>poids <output value=" /nutrition_screening/measurements/weight "/> kg</value>
           </text>
           <text id="/nutrition_screening/summary/n_7:label">
-            <value>-</value>
+            <value>Hauteur: <output value=" /nutrition_screening/measurements/height "/> cm</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_8:label">
+            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_9:label">
-            <value>-</value>
+            <value>poids pour l'âge</value>
           </text>
           <text id="/nutrition_screening/treatment/additional_notes:label">
-            <value>-</value>
+            <value>Notes complémentaires</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115:label">
-            <value>-</value>
+            <value>MUAC &lt; 11.5 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_124:label">
-            <value>-</value>
+            <value>MUAC de 11,5 cm à 12,4 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_complications:label">
-            <value>-</value>
+            <value>MUAC &lt;11,5 cm avec complications</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_1_2:label">
-            <value>-</value>
+            <value>œdème + ou ++</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_3:label">
-            <value>-</value>
+            <value>œdème +++</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3:label">
-            <value>-</value>
+            <value>Poids pour la taille z-score &lt;-3</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_-2:label">
-            <value>-</value>
+            <value>Poids pour la taille Score z ≥ -3 à &lt;-2</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_complications:label">
-            <value>-</value>
+            <value>Poids pour la taille z-score &lt;-3 avec complications</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria:label">
-            <value>-</value>
+            <value>Critères d'admission</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/defaulter:label">
-            <value>-</value>
+            <value>Défaillant retourné</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/new_case:label">
-            <value>-</value>
+            <value>Nouveau cas</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/otp:label">
-            <value>-</value>
+            <value>Transfert du programme thérapeutique ambulatoire</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/relapse:label">
-            <value>-</value>
+            <value>Rechute / Réadmission</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sc:label">
-            <value>-</value>
+            <value>Transfert du centre de stabilisation</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sfp:label">
-            <value>-</value>
+            <value>Transfert du programme d'alimentation supplémentaire</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type:label">
-            <value>-</value>
+            <value>Type d'admission</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll:label">
-            <value>-</value>
+            <value>Voulez-vous vous inscrire à un programme de traitement?</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/clinic:label">
-            <value>-</value>
+            <value>À votre clinique</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/other_clinic:label">
-            <value>-</value>
+            <value>Renvoi à une autre clinique</value>
           </text>
           <text id="/nutrition_screening/treatment/facility:label">
-            <value>-</value>
+            <value>Facilité d'admission</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_10:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa:label">
+            <value>taille pour l'âge: <output value=" /nutrition_screening/hfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_11:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_high:label">
+            <value>interprétation:&gt; 2SD [Elevé]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_12:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_m_stunted:label">
+            <value>interprétation: -3SD à &lt;-2SD [Modérément retardé]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_13:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_s_stunted:label">
+            <value>interprétation: &lt;-3SD [sévèrement stunté]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_14:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_stunted:label">
+            <value>interprétation: -2SD à 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_15:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_otp:label">
+            <value>Les critères d'admission d'OTP doivent être 'œdème + ou ++' ou 'MUAC &lt;11,5 cm' ou 'Poids pour la taille Z score &lt;-3'.</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_16:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sc:label">
+            <value>Les critères d'admission SC doivent être '+++ Œdème' ou 'MUAC &lt;11,5 cm avec complications' ou 'Poids pour la taille Z score &lt;-3 avec complications'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_17:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sfp:label">
+            <value>Les critères d'admission au SFP doivent être les suivants: "MUAC entre 11,5 et 12,4 cm" ou "Poids pour la taille Z score ≥ -3 à &lt;-2".</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_18:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa:label">
+            <value>poids pour l'âge: <output value=" /nutrition_screening/wfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_19:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_m_malnourished:label">
+            <value>interprétation: -3SD à &lt;-2SD [Modérément mal nourris]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_1:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_normal:label">
+            <value>interprétation: -2SD à 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_20:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_obese:label">
+            <value>interprétation:&gt; 3SD [Obèse]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_2:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_overweight:label">
+            <value>interprétation:&gt; 2SD [Embonpoint]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_3:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_s_malnourished:label">
+            <value>interprétation: &lt;-3SD [gravement malnutri]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_4:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh:label">
+            <value>poids pour taille: <output value=" /nutrition_screening/wfh "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_5:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_m_wasted:label">
+            <value>interprétation: -3SD à &lt;-2SD [modérément gaspillé]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_6:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_normal:label">
+            <value>interprétation: -2SD à 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_7:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_overwweight:label">
+            <value>interprétation:&gt; 2SD [Embonpoint]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_8:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_s_wasted:label">
+            <value>interprétation: &lt;-3SD [gravement gaspillé]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_9:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_zscore:label">
+            <value>mesures z-score</value>
           </text>
           <text id="/nutrition_screening/treatment/other_facility:label">
-            <value>-</value>
+            <value>Nom de l'établissement</value>
           </text>
           <text id="/nutrition_screening/treatment/program/OTP:label">
-            <value>-</value>
+            <value>Programme thérapeutique ambulatoire (ANP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SC:label">
-            <value>-</value>
+            <value>Centre de stabilisation (SC)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SFP:label">
-            <value>-</value>
+            <value>Programme d'alimentation supplémentaire (SFP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program:label">
-            <value>-</value>
+            <value>Programme de traitement d'admission</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/chronic_malnutrition:label">
-            <value>-</value>
+            <value>Malnutrition chronique</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/false_positive:label">
-            <value>-</value>
+            <value>Faux positif</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/status_check:label">
-            <value>-</value>
+            <value>Vérification de l'état nutritionnel</value>
           </text>
           <text id="/nutrition_screening/treatment/reason:label">
-            <value>-</value>
+            <value>Raisons de la non-inscription</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:label">
-            <value>-</value>
+            <value>MUAC cible (cm)</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:label">
-            <value>-</value>
+            <value>Poids cible (kg)</value>
           </text>
           <text id="/nutrition_screening/treatment:label">
-            <value>-</value>
+            <value>Interprétation</value>
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/nutrition_screening/age_in_days:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/child_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/dob:label">
-            <value>-</value>
-          </text>
           <text id="/nutrition_screening/inputs/contact/_id:label">
             <value>मरीज का नाम क्या है?</value>
           </text>
@@ -1032,337 +972,319 @@
             <value>मरीज</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/female:label">
-            <value>-</value>
+            <value>महिला</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/male:label">
-            <value>-</value>
+            <value>पुरुष</value>
           </text>
           <text id="/nutrition_screening/measurements/gender:label">
-            <value>-</value>
+            <value>लिंग</value>
           </text>
           <text id="/nutrition_screening/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/height:label">
-            <value>-</value>
+            <value>ऊंचाई (सेंटिमीटर)</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:label">
-            <value>-</value>
+            <value>MUAC माप</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:label">
-            <value>-</value>
+            <value>वजन (किलोग्राम)</value>
           </text>
           <text id="/nutrition_screening/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/c_reason:label">
-            <value>-</value>
+            <value>माप</value>
           </text>
           <text id="/nutrition_screening/summary/n_10:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfa "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_11:label">
-            <value>-</value>
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से कुपोषित]</value>
           </text>
           <text id="/nutrition_screening/summary/n_12:label">
-            <value>-</value>
+            <value>व्याख्या: -3SD से &lt;-2SD [मध्यम रूप से कुपोषित]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_13:label">
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
           </text>
           <text id="/nutrition_screening/summary/n_14:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 2SD [अधिक वजन]</value>
           </text>
           <text id="/nutrition_screening/summary/n_15:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 3SD [मोटापा]</value>
           </text>
           <text id="/nutrition_screening/summary/n_16:label">
-            <value>-</value>
+            <value>उम्र के लिए ऊँचाई</value>
           </text>
           <text id="/nutrition_screening/summary/n_17:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_18:label">
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से टूटी हुई]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_19:label">
+            <value>व्याख्या: -3SD से &lt;-2SD [मध्यम रूप से अटका]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_1:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_20:label">
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
           </text>
           <text id="/nutrition_screening/summary/n_21:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 2SD [उच्च]</value>
           </text>
           <text id="/nutrition_screening/summary/n_22:label">
-            <value>-</value>
+            <value>ऊंचाई के लिए वजन</value>
           </text>
           <text id="/nutrition_screening/summary/n_23:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_24:label">
-            <value>-</value>
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से बर्बाद]</value>
           </text>
           <text id="/nutrition_screening/summary/n_25:label">
-            <value>-</value>
+            <value>व्याख्या: करने के लिए -3SD &lt;-2SD [मामूली व्यर्थ]</value>
           </text>
           <text id="/nutrition_screening/summary/n_26:label">
-            <value>-</value>
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
           </text>
           <text id="/nutrition_screening/summary/n_27:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 2SD [अधिक वजन]</value>
           </text>
           <text id="/nutrition_screening/summary/n_28:label">
-            <value>-</value>
+            <value>उपचार नामांकन</value>
           </text>
           <text id="/nutrition_screening/summary/n_29:label">
-            <value>-</value>
+            <value>एक उपचार कार्यक्रम में प्रवेश किया: <output value=" /nutrition_screening/treatment/enroll "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_2:label">
+            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_30:label">
-            <value>-</value>
+            <value>प्रवेश की सुविधा: <output value=" /nutrition_screening/treatment/facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_31:label">
+            <value>सुविधा रेफरल: <output value=" /nutrition_screening/treatment/other_facility "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_32:label">
-            <value>-</value>
+            <value>कार्यक्रम: <output value=" /nutrition_screening/treatment/program "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_33:label">
-            <value>-</value>
+            <value>लक्ष्य वजन <output value=" /nutrition_screening/treatment/target_weight "/> किलो</value>
           </text>
-          <text id="/nutrition_screening/summary/n_35:label">
-            <value>-</value>
+          <text id="/nutrition_screening/summary/n_34:label">
+            <value>लक्ष्य MUAC <output value=" /nutrition_screening/treatment/target_muac "/> सेमी</value>
           </text>
           <text id="/nutrition_screening/summary/n_36:label">
-            <value>-</value>
+            <value>नामांकन न करने के कारण: <output value=" /nutrition_screening/c_reason "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_37:label">
+            <value>अतिरिक्त नोट्स</value>
           </text>
           <text id="/nutrition_screening/summary/n_38:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_39:label">
-            <value>-</value>
+            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_3:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_40:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_41:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_42:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_43:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_44:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_45:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_46:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_47:label">
-            <value>-</value>
+            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
           </text>
           <text id="/nutrition_screening/summary/n_4:label">
-            <value>-</value>
+            <value>लिंग: <output value=" /nutrition_screening/measurements/gender "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_5:label">
-            <value>-</value>
+            <value>माप&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_6:label">
-            <value>-</value>
+            <value>वजन <output value=" /nutrition_screening/measurements/weight "/> किलो</value>
           </text>
           <text id="/nutrition_screening/summary/n_7:label">
-            <value>-</value>
+            <value>ऊंचाई: <output value=" /nutrition_screening/measurements/height "/> सेमी</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_8:label">
+            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_9:label">
-            <value>-</value>
+            <value>उम्र के लिए वजन</value>
           </text>
           <text id="/nutrition_screening/treatment/additional_notes:label">
-            <value>-</value>
+            <value>अतिरिक्त नोट्स</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115:label">
-            <value>-</value>
+            <value>MUAC &lt;11.5 सेमी</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_124:label">
-            <value>-</value>
+            <value>11.5 सेमी से 12.4 सेमी का MUAC</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_complications:label">
-            <value>-</value>
+            <value>MUAC &lt;11.5 सेमी जटिलताओं के साथ</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_1_2:label">
-            <value>-</value>
+            <value>+ या ++ एडिमा</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_3:label">
-            <value>-</value>
+            <value>+++ edema</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3:label">
-            <value>-</value>
+            <value>ऊंचाई z- स्कोर के लिए वजन &lt;-3</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_-2:label">
-            <value>-</value>
+            <value>ऊंचाई z- स्कोर to -3 से &lt;-2 के लिए वजन</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_complications:label">
-            <value>-</value>
+            <value>जटिलताओं के साथ ऊंचाई जेड-स्कोर &lt;-3 के लिए वजन</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria:label">
-            <value>-</value>
+            <value>प्रवेश का मानदंड</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/defaulter:label">
-            <value>-</value>
+            <value>डिफाल्टर लौट आया</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/new_case:label">
-            <value>-</value>
+            <value>नया केस</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/otp:label">
-            <value>-</value>
+            <value>आउट पेशेंट चिकित्सीय कार्यक्रम से स्थानांतरण</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/relapse:label">
-            <value>-</value>
+            <value>पलटा / पुनः भर्ती</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sc:label">
-            <value>-</value>
+            <value>स्थिरीकरण केंद्र से स्थानांतरण</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sfp:label">
-            <value>-</value>
+            <value>अनुपूरक फीडिंग कार्यक्रम से स्थानांतरण</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type:label">
-            <value>-</value>
+            <value>प्रवेश का प्रकार</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/no:label">
-            <value>-</value>
+            <value>नहीं</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/yes:label">
-            <value>-</value>
+            <value>हाँ</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll:label">
-            <value>-</value>
+            <value>क्या आप एक उपचार कार्यक्रम में दाखिला लेना चाहते हैं?</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/clinic:label">
-            <value>-</value>
+            <value>अपने क्लीनिक पर</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/other_clinic:label">
-            <value>-</value>
+            <value>दूसरे क्लिनिक में रैफर किया गया</value>
           </text>
           <text id="/nutrition_screening/treatment/facility:label">
-            <value>-</value>
+            <value>प्रवेश की सुविधा</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_10:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa:label">
+            <value>उम्र के लिए ऊंचाई: <output value=" /nutrition_screening/hfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_11:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_high:label">
+            <value>व्याख्या:&gt; 2SD [उच्च]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_12:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_m_stunted:label">
+            <value>व्याख्या: -3SD से &lt;-2SD [मध्यम रूप से अटका]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_13:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_s_stunted:label">
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से टूटी हुई]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_14:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_stunted:label">
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_15:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_otp:label">
+            <value>OTP प्रवेश मानदंड '+ या ++ एडिमा' या 'MUAC &lt;11.5cm' या 'ऊँचाई Z स्कोर के लिए भार &lt;-3' होना चाहिए</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_16:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sc:label">
+            <value>SC प्रवेश मानदंड '+++ एडिमा' या 'MUAC &lt;11.5 सेमी जटिलताओं के साथ' या 'वजन के लिए वजन Z स्कोर &lt;-3 जटिलताओं के साथ' होना चाहिए।</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_17:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sfp:label">
+            <value>SFP प्रवेश मानदंड '11.5 से 12.4cm के बीच MUAC' या 'ऊँचाई Z स्कोर के लिए भार' -3 से &lt;-2 'होना चाहिए</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_18:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa:label">
+            <value>उम्र के लिए वजन: <output value=" /nutrition_screening/wfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_19:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_m_malnourished:label">
+            <value>व्याख्या: -3SD से &lt;-2SD [मध्यम रूप से कुपोषित]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_1:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_normal:label">
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_20:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_obese:label">
+            <value>व्याख्या:&gt; 3SD [मोटापा]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_2:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_overweight:label">
+            <value>व्याख्या:&gt; 2SD [अधिक वजन]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_3:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_s_malnourished:label">
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से कुपोषित]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_4:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh:label">
+            <value>वजन ऊंचाई के लिए: <output value=" /nutrition_screening/wfh "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_5:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_m_wasted:label">
+            <value>व्याख्या: करने के लिए -3SD &lt;-2SD [मामूली व्यर्थ]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_6:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_normal:label">
+            <value>व्याख्या: -2SD से 2SD [सामान्य]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_7:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_overwweight:label">
+            <value>व्याख्या:&gt; 2SD [अधिक वजन]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_8:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_s_wasted:label">
+            <value>व्याख्या: &lt;-3SD [गंभीर रूप से बर्बाद]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_9:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_zscore:label">
+            <value>z- स्कोर माप</value>
           </text>
           <text id="/nutrition_screening/treatment/other_facility:label">
-            <value>-</value>
+            <value>सुविधा का नाम</value>
           </text>
           <text id="/nutrition_screening/treatment/program/OTP:label">
-            <value>-</value>
+            <value>आउट पेशेंट चिकित्सीय कार्यक्रम (OTP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SC:label">
-            <value>-</value>
+            <value>स्थिरीकरण केंद्र (SC)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SFP:label">
-            <value>-</value>
+            <value>अनुपूरक भक्षण कार्यक्रम (SFP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program:label">
-            <value>-</value>
+            <value>प्रवेश उपचार कार्यक्रम</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/chronic_malnutrition:label">
-            <value>-</value>
+            <value>जीर्ण कुपोषण</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/false_positive:label">
-            <value>-</value>
+            <value>सकारात्मक झूठी</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/status_check:label">
-            <value>-</value>
+            <value>पोषण की स्थिति की जाँच</value>
           </text>
           <text id="/nutrition_screening/treatment/reason:label">
-            <value>-</value>
+            <value>नामांकन न करने के कारण</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:label">
-            <value>-</value>
+            <value>लक्ष्य MUAC (सेमी)</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:label">
-            <value>-</value>
+            <value>लक्ष्य वजन (किलो)</value>
           </text>
           <text id="/nutrition_screening/treatment:label">
-            <value>-</value>
+            <value>व्याख्या</value>
           </text>
         </translation>
         <translation lang="id">
-          <text id="/nutrition_screening/age_in_days:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/child_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/dob:label">
-            <value>-</value>
-          </text>
           <text id="/nutrition_screening/inputs/contact/_id:label">
             <value>Apa nama pasien?</value>
           </text>
@@ -1370,337 +1292,319 @@
             <value>Pasien</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/female:label">
-            <value>-</value>
+            <value>Wanita</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/male:label">
-            <value>-</value>
+            <value>Pria</value>
           </text>
           <text id="/nutrition_screening/measurements/gender:label">
-            <value>-</value>
+            <value>Jenis kelamin</value>
           </text>
           <text id="/nutrition_screening/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/height:label">
-            <value>-</value>
+            <value>Tinggi (cm)</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:label">
-            <value>-</value>
+            <value>Pengukuran MUAC</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:label">
-            <value>-</value>
+            <value>Berat (kg)</value>
           </text>
           <text id="/nutrition_screening/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/c_reason:label">
-            <value>-</value>
+            <value>Pengukuran</value>
           </text>
           <text id="/nutrition_screening/summary/n_10:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfa "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_11:label">
-            <value>-</value>
+            <value>interpretasi: &lt;-3SD [Malnutrisi Berat]</value>
           </text>
           <text id="/nutrition_screening/summary/n_12:label">
-            <value>-</value>
+            <value>interpretasi: -3SD hingga &lt;-2SD [Kurang gizi]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_13:label">
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_14:label">
-            <value>-</value>
+            <value>interpretasi:&gt; 2SD [Kegemukan]</value>
           </text>
           <text id="/nutrition_screening/summary/n_15:label">
-            <value>-</value>
+            <value>interpretasi:&gt; 3SD [Obese]</value>
           </text>
           <text id="/nutrition_screening/summary/n_16:label">
-            <value>-</value>
+            <value>Tinggi untuk usia</value>
           </text>
           <text id="/nutrition_screening/summary/n_17:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_18:label">
+            <value>interpretasi: &lt;-3SD [Sangat terhambat]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_19:label">
+            <value>interpretasi: -3SD hingga &lt;-2SD [Cukup terhambat]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_1:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_20:label">
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_21:label">
-            <value>-</value>
+            <value>interpretasi:&gt; 2SD [Tinggi]</value>
           </text>
           <text id="/nutrition_screening/summary/n_22:label">
-            <value>-</value>
+            <value>Berat untuk tinggi</value>
           </text>
           <text id="/nutrition_screening/summary/n_23:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_24:label">
-            <value>-</value>
+            <value>interpretasi: &lt;-3SD [Sangat Terbuang]</value>
           </text>
           <text id="/nutrition_screening/summary/n_25:label">
-            <value>-</value>
+            <value>interpretasi: -3SD hingga &lt;-2SD [Sedang Terbuang]</value>
           </text>
           <text id="/nutrition_screening/summary/n_26:label">
-            <value>-</value>
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
           </text>
           <text id="/nutrition_screening/summary/n_27:label">
-            <value>-</value>
+            <value>interpretasi:&gt; 2SD [Kegemukan]</value>
           </text>
           <text id="/nutrition_screening/summary/n_28:label">
-            <value>-</value>
+            <value>Pendaftaran pengobatan</value>
           </text>
           <text id="/nutrition_screening/summary/n_29:label">
-            <value>-</value>
+            <value>Terdaftar dalam program perawatan: <output value=" /nutrition_screening/treatment/enroll "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_2:label">
+            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_30:label">
-            <value>-</value>
+            <value>Fasilitas penerimaan: <output value=" /nutrition_screening/treatment/facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_31:label">
+            <value>Referensi fasilitas: <output value=" /nutrition_screening/treatment/other_facility "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_32:label">
-            <value>-</value>
+            <value>Program: <output value=" /nutrition_screening/treatment/program "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_33:label">
-            <value>-</value>
+            <value>Berat Target <output value=" /nutrition_screening/treatment/target_weight "/> kg</value>
           </text>
-          <text id="/nutrition_screening/summary/n_35:label">
-            <value>-</value>
+          <text id="/nutrition_screening/summary/n_34:label">
+            <value>Target MUAC <output value=" /nutrition_screening/treatment/target_muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_36:label">
-            <value>-</value>
+            <value>Alasan tidak mendaftar: <output value=" /nutrition_screening/c_reason "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_37:label">
+            <value>Catatan tambahan</value>
           </text>
           <text id="/nutrition_screening/summary/n_38:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_39:label">
-            <value>-</value>
+            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_3:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_40:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_41:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_42:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_43:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_44:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_45:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_46:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_47:label">
-            <value>-</value>
+            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
           </text>
           <text id="/nutrition_screening/summary/n_4:label">
-            <value>-</value>
+            <value>Jenis kelamin: <output value=" /nutrition_screening/measurements/gender "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_5:label">
-            <value>-</value>
+            <value>pengukuran&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_6:label">
-            <value>-</value>
+            <value>berat <output value=" /nutrition_screening/measurements/weight "/> kg</value>
           </text>
           <text id="/nutrition_screening/summary/n_7:label">
-            <value>-</value>
+            <value>Tinggi: <output value=" /nutrition_screening/measurements/height "/> cm</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_8:label">
+            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_9:label">
-            <value>-</value>
+            <value>berat untuk usia</value>
           </text>
           <text id="/nutrition_screening/treatment/additional_notes:label">
-            <value>-</value>
+            <value>Catatan tambahan</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115:label">
-            <value>-</value>
+            <value>MUAC &lt; 11.5 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_124:label">
-            <value>-</value>
+            <value>MUAC dari 11,5 cm hingga 12,4 cm</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_complications:label">
-            <value>-</value>
+            <value>MUAC &lt;11,5 cm dengan komplikasi</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_1_2:label">
-            <value>-</value>
+            <value>+ atau ++ edema</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_3:label">
-            <value>-</value>
+            <value>+++ edema</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3:label">
-            <value>-</value>
+            <value>Berat untuk tinggi z-skor &lt;-3</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_-2:label">
-            <value>-</value>
+            <value>Berat untuk tinggi z-skor ≥ -3 hingga &lt;-2</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_complications:label">
-            <value>-</value>
+            <value>Berat untuk tinggi z-skor &lt;-3 dengan komplikasi</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria:label">
-            <value>-</value>
+            <value>Kriteria penerimaan</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/defaulter:label">
-            <value>-</value>
+            <value>Penggugat yang dikembalikan</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/new_case:label">
-            <value>-</value>
+            <value>Kasus baru</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/otp:label">
-            <value>-</value>
+            <value>Transfer dari Program Terapi Rawat Jalan</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/relapse:label">
-            <value>-</value>
+            <value>Relaps / Penerimaan</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sc:label">
-            <value>-</value>
+            <value>Transfer dari Pusat Stabilisasi</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sfp:label">
-            <value>-</value>
+            <value>Transfer dari Program Pemberian Makanan Tambahan</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type:label">
-            <value>-</value>
+            <value>Jenis penerimaan</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/no:label">
-            <value>-</value>
+            <value>Tidak</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/yes:label">
-            <value>-</value>
+            <value>iya nih</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll:label">
-            <value>-</value>
+            <value>Apakah Anda ingin mendaftar ke program perawatan?</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/clinic:label">
-            <value>-</value>
+            <value>Di klinik Anda</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/other_clinic:label">
-            <value>-</value>
+            <value>Rujukan ke klinik lain</value>
           </text>
           <text id="/nutrition_screening/treatment/facility:label">
-            <value>-</value>
+            <value>Fasilitas penerimaan</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_10:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa:label">
+            <value>tinggi untuk usia: <output value=" /nutrition_screening/hfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_11:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_high:label">
+            <value>interpretasi:&gt; 2SD [Tinggi]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_12:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_m_stunted:label">
+            <value>interpretasi: -3SD hingga &lt;-2SD [Cukup terhambat]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_13:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_s_stunted:label">
+            <value>interpretasi: &lt;-3SD [Sangat terhambat]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_14:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_stunted:label">
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_15:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_otp:label">
+            <value>Kriteria penerimaan OTP harus '+ atau ++ Edema' atau 'MUAC &lt;11.5cm' atau 'Skor Berat untuk Tinggi Z &lt;-3'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_16:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sc:label">
+            <value>Kriteria penerimaan SC harus '+++ Edema' atau 'MUAC &lt;11.5cm dengan komplikasi' atau 'Skor Z untuk ketinggian Z &lt;-3 dengan komplikasi</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_17:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sfp:label">
+            <value>Kriteria penerimaan SFP harus 'MUAC antara 11,5 hingga 12,4 cm' atau 'skor Berat untuk Tinggi Z ≥ -3 hingga &lt;-2'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_18:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa:label">
+            <value>berat untuk usia: <output value=" /nutrition_screening/wfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_19:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_m_malnourished:label">
+            <value>interpretasi: -3SD hingga &lt;-2SD [Kurang gizi]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_1:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_normal:label">
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_20:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_obese:label">
+            <value>interpretasi:&gt; 3SD [Obese]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_2:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_overweight:label">
+            <value>interpretasi:&gt; 2SD [Kegemukan]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_3:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_s_malnourished:label">
+            <value>interpretasi: &lt;-3SD [Malnutrisi Berat]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_4:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh:label">
+            <value>berat untuk tinggi: <output value=" /nutrition_screening/wfh "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_5:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_m_wasted:label">
+            <value>interpretasi: -3SD hingga &lt;-2SD [Sedang Terbuang]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_6:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_normal:label">
+            <value>interpretasi: -2SD hingga 2SD [Normal]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_7:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_overwweight:label">
+            <value>interpretasi:&gt; 2SD [Kegemukan]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_8:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_s_wasted:label">
+            <value>interpretasi: &lt;-3SD [Sangat Terbuang]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_9:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_zscore:label">
+            <value>pengukuran z-skor</value>
           </text>
           <text id="/nutrition_screening/treatment/other_facility:label">
-            <value>-</value>
+            <value>Nama fasilitas</value>
           </text>
           <text id="/nutrition_screening/treatment/program/OTP:label">
-            <value>-</value>
+            <value>Program Terapi Rawat Jalan (OTP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SC:label">
-            <value>-</value>
+            <value>Pusat Stabilisasi (SC)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SFP:label">
-            <value>-</value>
+            <value>Program Pemberian Makanan Tambahan (SFP)</value>
           </text>
           <text id="/nutrition_screening/treatment/program:label">
-            <value>-</value>
+            <value>Program perawatan masuk</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/chronic_malnutrition:label">
-            <value>-</value>
+            <value>Malnutrisi kronis</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/false_positive:label">
-            <value>-</value>
+            <value>Salah positif</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/status_check:label">
-            <value>-</value>
+            <value>Pemeriksaan status gizi</value>
           </text>
           <text id="/nutrition_screening/treatment/reason:label">
-            <value>-</value>
+            <value>Alasan tidak mendaftar</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:label">
-            <value>-</value>
+            <value>Target MUAC (cm)</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:label">
-            <value>-</value>
+            <value>Berat Target (kg)</value>
           </text>
           <text id="/nutrition_screening/treatment:label">
-            <value>-</value>
+            <value>Interpretasi</value>
           </text>
         </translation>
         <translation lang="ne">
-          <text id="/nutrition_screening/age_in_days:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/child_name:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/dob:label">
-            <value>-</value>
-          </text>
           <text id="/nutrition_screening/inputs/contact/_id:label">
             <value>-</value>
           </text>
@@ -1708,330 +1612,321 @@
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/female:label">
-            <value>-</value>
+            <value>महिला</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/male:label">
-            <value>-</value>
+            <value>नर</value>
           </text>
           <text id="/nutrition_screening/measurements/gender:label">
-            <value>-</value>
+            <value>लिङ्ग</value>
           </text>
           <text id="/nutrition_screening/measurements/height:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/height:label">
-            <value>-</value>
+            <value>ऊँचाई (सेमी)</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/muac:label">
-            <value>-</value>
+            <value>MUAC माप</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/weight:label">
-            <value>-</value>
+            <value>वजन (किलोग्राम)</value>
           </text>
           <text id="/nutrition_screening/measurements:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/c_reason:label">
-            <value>-</value>
+            <value>माप</value>
           </text>
           <text id="/nutrition_screening/summary/n_10:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfa "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_11:label">
-            <value>-</value>
+            <value>व्याख्या: &lt;-3 एसडी [अत्यधिक माक्र्सित]</value>
           </text>
           <text id="/nutrition_screening/summary/n_12:label">
-            <value>-</value>
+            <value>व्याख्या: -3 एसडी &lt;&lt;एसडीडी [मातृभाषी पोषण गर्ने]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_13:label">
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
           </text>
           <text id="/nutrition_screening/summary/n_14:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 2 एसडी [अधिक वजन]</value>
           </text>
           <text id="/nutrition_screening/summary/n_15:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 3 एसडी [Obese]</value>
           </text>
           <text id="/nutrition_screening/summary/n_16:label">
-            <value>-</value>
+            <value>उमेरको लागि ऊँचाई</value>
           </text>
           <text id="/nutrition_screening/summary/n_17:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/hfa "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_18:label">
+            <value>व्याख्या: &lt;-3 एसडी [गंभीर रूप देखि चुपके]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_19:label">
+            <value>व्याख्या: -3 एसडी &lt;-2 एसडी [मध्य स्टंट गरिएको]</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_1:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_20:label">
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
           </text>
           <text id="/nutrition_screening/summary/n_21:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 2 एसडी [उच्च]</value>
           </text>
           <text id="/nutrition_screening/summary/n_22:label">
-            <value>-</value>
+            <value>उचाईको लागि वजन</value>
           </text>
           <text id="/nutrition_screening/summary/n_23:label">
-            <value>-</value>
+            <value>z-score: <output value=" /nutrition_screening/wfh "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_24:label">
-            <value>-</value>
+            <value>व्याख्या: &lt;-3 एसडी [अत्यधिक बर्बाद भयो]</value>
           </text>
           <text id="/nutrition_screening/summary/n_25:label">
-            <value>-</value>
+            <value>व्याख्या: -3 एसडी देखि &lt;-2 एसडी [सामान्य बर्बाद भयो]</value>
           </text>
           <text id="/nutrition_screening/summary/n_26:label">
-            <value>-</value>
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
           </text>
           <text id="/nutrition_screening/summary/n_27:label">
-            <value>-</value>
+            <value>व्याख्या:&gt; 2 एसडी [अधिक वजन]</value>
           </text>
           <text id="/nutrition_screening/summary/n_28:label">
-            <value>-</value>
+            <value>उपचार नामांकन</value>
           </text>
           <text id="/nutrition_screening/summary/n_29:label">
-            <value>-</value>
+            <value>एक उपचार कार्यक्रममा नामाकरण गरिएको: <output value=" /nutrition_screening/treatment/enroll "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_2:label">
+            <value>&lt;h4&gt;<output value=" /nutrition_screening/child_name "/>&lt;/h4&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_30:label">
-            <value>-</value>
+            <value>प्रवेश सुविधा: <output value=" /nutrition_screening/treatment/facility "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_31:label">
+            <value>सुविधा सन्दर्भ: <output value=" /nutrition_screening/treatment/other_facility "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_32:label">
-            <value>-</value>
+            <value>कार्यक्रम: <output value=" /nutrition_screening/treatment/program "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_33:label">
-            <value>-</value>
+            <value>लक्षित वजन <output value=" /nutrition_screening/treatment/target_weight "/> किलोग्राम</value>
           </text>
-          <text id="/nutrition_screening/summary/n_35:label">
-            <value>-</value>
+          <text id="/nutrition_screening/summary/n_34:label">
+            <value>लक्षित MUAC <output value=" /nutrition_screening/treatment/target_muac "/> सेमी</value>
           </text>
           <text id="/nutrition_screening/summary/n_36:label">
-            <value>-</value>
+            <value>गैर नामांकनको कारण: <output value=" /nutrition_screening/c_reason "/></value>
+          </text>
+          <text id="/nutrition_screening/summary/n_37:label">
+            <value>थप नोटहरू</value>
           </text>
           <text id="/nutrition_screening/summary/n_38:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_39:label">
-            <value>-</value>
+            <value><output value=" /nutrition_screening/treatment/additional_notes "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_3:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_40:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_41:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_42:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_43:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_44:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_45:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_46:label">
-            <value>-</value>
-          </text>
-          <text id="/nutrition_screening/summary/n_47:label">
-            <value>-</value>
+            <value>Date of birth: <output value=" /nutrition_screening/dob "/> (<output value=" /nutrition_screening/age_in_days "/> days old)</value>
           </text>
           <text id="/nutrition_screening/summary/n_4:label">
-            <value>-</value>
+            <value>लिङ्ग: <output value=" /nutrition_screening/measurements/gender "/></value>
           </text>
           <text id="/nutrition_screening/summary/n_5:label">
-            <value>-</value>
+            <value>माप&lt;i class="fa fa-stethoscope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/nutrition_screening/summary/n_6:label">
-            <value>-</value>
+            <value>वजन <output value=" /nutrition_screening/measurements/weight "/> किलो</value>
           </text>
           <text id="/nutrition_screening/summary/n_7:label">
-            <value>-</value>
+            <value>ऊँचाई: <output value=" /nutrition_screening/measurements/height "/> सेमी</value>
+          </text>
+          <text id="/nutrition_screening/summary/n_8:label">
+            <value>MUAC: <output value=" /nutrition_screening/measurements/muac "/> cm</value>
           </text>
           <text id="/nutrition_screening/summary/n_9:label">
-            <value>-</value>
+            <value>उमेरको लागि वजन</value>
           </text>
           <text id="/nutrition_screening/treatment/additional_notes:label">
-            <value>-</value>
+            <value>थप नोटहरू</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115:label">
-            <value>-</value>
+            <value>MUAC &lt;11.5 सेमी</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_124:label">
-            <value>-</value>
+            <value>11.5 सेन्टिमिटरसम्म 12.4 सेन्टीमिटरको MUAC</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/muac_115_complications:label">
-            <value>-</value>
+            <value>MUAC &lt;11.5 सेमी जटिलता संग</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_1_2:label">
-            <value>-</value>
+            <value>+ वा ++ edema</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/oedema_3:label">
-            <value>-</value>
+            <value>+++ edema</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3:label">
-            <value>-</value>
+            <value>उचाई Z-score को लागी वजन &lt;-3</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_-2:label">
-            <value>-</value>
+            <value>उचाइ Z-स्कोर ≥ -3 को लागि वजन &lt;-2 सम्म</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria/wfh_-3_complications:label">
-            <value>-</value>
+            <value>उचाइ Z-score को लागि वजन &lt;-3 जटिलहरु संग</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_criteria:label">
-            <value>-</value>
+            <value>प्रवेश मापदण्ड</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/defaulter:label">
-            <value>-</value>
+            <value>फिर्ता विफलता</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/new_case:label">
-            <value>-</value>
+            <value>नयाँ मामला</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/otp:label">
-            <value>-</value>
+            <value>आउटपेटेंट चिकित्सीय कार्यक्रमबाट स्थान्तरण गर्नुहोस्</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/relapse:label">
-            <value>-</value>
+            <value>छुट / दर्ता</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sc:label">
-            <value>-</value>
+            <value>स्थिरीकरण केन्द्रबाट स्थान्तरण गर्नुहोस्</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type/sfp:label">
-            <value>-</value>
+            <value>पूरक फिडिंग कार्यक्रमबाट स्थान्तरण गर्नुहोस्</value>
           </text>
           <text id="/nutrition_screening/treatment/admission_type:label">
-            <value>-</value>
+            <value>प्रवेशको प्रकार</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/no:label">
-            <value>-</value>
+            <value>होइन</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll/yes:label">
-            <value>-</value>
+            <value>हो</value>
           </text>
           <text id="/nutrition_screening/treatment/enroll:label">
-            <value>-</value>
+            <value>के तपाइँ एक उपचार कार्यक्रममा नामाकरण गर्न चाहनुहुन्छ?</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/clinic:label">
-            <value>-</value>
+            <value>तपाईंको क्लिनिकमा</value>
           </text>
           <text id="/nutrition_screening/treatment/facility/other_clinic:label">
-            <value>-</value>
+            <value>अर्को क्लिनिकलाई सन्दर्भ गर्नुहोस्</value>
           </text>
           <text id="/nutrition_screening/treatment/facility:label">
-            <value>-</value>
+            <value>प्रवेश सुविधा</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_10:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa:label">
+            <value>उमेरको लागि उचाई: <output value=" /nutrition_screening/hfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_11:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_high:label">
+            <value>व्याख्या:&gt; 2 एसडी [उच्च]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_12:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_m_stunted:label">
+            <value>व्याख्या: -3 एसडी &lt;-2 एसडी [मध्य स्टंट गरिएको]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_13:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_s_stunted:label">
+            <value>व्याख्या: &lt;-3 एसडी [गंभीर रूप देखि चुपके]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_14:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_hfa_stunted:label">
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_15:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_otp:label">
+            <value>OTP प्रवेश मापदण्ड '+ वा ++ एडमामा' वा 'MUAC &lt;11.5 सेमी' वा 'वजनको उचाइ Z स्कोर &lt;-3' हुनुपर्छ।</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_16:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sc:label">
+            <value>एससी प्रवेश मापदण्ड जटिलता संग '+++ एडमामा' वा 'MUAC &lt;11.5 सेमी हुनु पर्छ' वा 'ऊँचाई Z को लागि वजन स्कोर &lt;-3 जटिलता संग'</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_17:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_sfp:label">
+            <value>एसएफपी प्रवेश मापदंड 'MUAC को बीच 11.5 देखि 12.4 सेमी' या 'वजन को ऊँचाई Z स्कोर ≥ -3 देखि &lt;-2' सम्म हुनु पर्छ।</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_18:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa:label">
+            <value>वजनको लागि उमेर: <output value=" /nutrition_screening/wfa "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_19:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_m_malnourished:label">
+            <value>व्याख्या: -3 एसडी &lt;&lt;एसडीडी [मातृभाषी पोषण गर्ने]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_1:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_normal:label">
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_20:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_obese:label">
+            <value>व्याख्या:&gt; 3 एसडी [Obese]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_2:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_overweight:label">
+            <value>व्याख्या:&gt; 2 एसडी [अधिक वजन]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_3:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfa_s_malnourished:label">
+            <value>व्याख्या: &lt;-3 एसडी [अत्यधिक माक्र्सित]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_4:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh:label">
+            <value>वजनको लागि वजन: <output value=" /nutrition_screening/wfh "/></value>
           </text>
-          <text id="/nutrition_screening/treatment/n_5:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_m_wasted:label">
+            <value>व्याख्या: -3 एसडी देखि &lt;-2 एसडी [सामान्य बर्बाद भयो]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_6:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_normal:label">
+            <value>व्याख्या: -2 एसडी देखि 2 एसडी [सामान्य]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_7:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_overwweight:label">
+            <value>व्याख्या:&gt; 2 एसडी [अधिक वजन]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_8:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_wfh_s_wasted:label">
+            <value>व्याख्या: &lt;-3 एसडी [अत्यधिक बर्बाद भयो]</value>
           </text>
-          <text id="/nutrition_screening/treatment/n_9:label">
-            <value>-</value>
+          <text id="/nutrition_screening/treatment/n_zscore:label">
+            <value>z-score माप</value>
           </text>
           <text id="/nutrition_screening/treatment/other_facility:label">
-            <value>-</value>
+            <value>सुविधाको नाम</value>
           </text>
           <text id="/nutrition_screening/treatment/program/OTP:label">
-            <value>-</value>
+            <value>आउटपेंटेन्ट चिकित्सीय कार्यक्रम (ओटीपी)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SC:label">
-            <value>-</value>
+            <value>स्थिरीकरण केन्द्र (एससी)</value>
           </text>
           <text id="/nutrition_screening/treatment/program/SFP:label">
-            <value>-</value>
+            <value>पूरक फिडिंग कार्यक्रम (एस एफ पी)</value>
           </text>
           <text id="/nutrition_screening/treatment/program:label">
-            <value>-</value>
+            <value>प्रवेश उपचार कार्यक्रम</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/chronic_malnutrition:label">
-            <value>-</value>
+            <value>पुरानो कुपोषण</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/false_positive:label">
-            <value>-</value>
+            <value>झूटा सकारात्मक</value>
           </text>
           <text id="/nutrition_screening/treatment/reason/status_check:label">
-            <value>-</value>
+            <value>पोषण स्थिति जाँच</value>
           </text>
           <text id="/nutrition_screening/treatment/reason:label">
-            <value>-</value>
+            <value>गैर नामांकनको कारण</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_muac:label">
-            <value>-</value>
+            <value>लक्षित MUAC (सेमी)</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/nutrition_screening/treatment/target_weight:label">
-            <value>-</value>
+            <value>लक्षित वजन (किलोग्राम)</value>
           </text>
           <text id="/nutrition_screening/treatment:label">
-            <value>-</value>
+            <value>व्याख्या</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-04-08 12-35">
+        <nutrition_screening delimiter="#" id="nutrition_screening" prefix="J1!nutrition_screening!" version="2019-05-10 10-16">
           <inputs>
             <meta>
               <location>
@@ -2064,6 +1959,9 @@
           <wfa/>
           <hfa/>
           <wfh/>
+          <c_reason/>
+          <c_program/>
+          <c_facility/>
           <measurements>
             <gender/>
             <weight/>
@@ -2071,6 +1969,38 @@
             <muac/>
           </measurements>
           <treatment>
+            <n_zscore/>
+            <n_wfa/>
+            <n_wfa_s_malnourished/>
+            <n_wfa_m_malnourished/>
+            <n_wfa_normal/>
+            <n_wfa_overweight/>
+            <n_wfa_obese/>
+            <n_hfa/>
+            <n_hfa_s_stunted/>
+            <n_hfa_m_stunted/>
+            <n_hfa_stunted/>
+            <n_hfa_high/>
+            <n_wfh/>
+            <n_wfh_s_wasted/>
+            <n_wfh_m_wasted/>
+            <n_wfh_normal/>
+            <n_wfh_overwweight/>
+            <enroll/>
+            <reason/>
+            <admission_type/>
+            <admission_criteria/>
+            <program/>
+            <n_otp/>
+            <n_sfp/>
+            <n_sc/>
+            <facility/>
+            <target_weight/>
+            <target_muac/>
+            <other_facility/>
+            <additional_notes/>
+          </treatment>
+          <summary>
             <n_1/>
             <n_2/>
             <n_3/>
@@ -2088,21 +2018,9 @@
             <n_15/>
             <n_16/>
             <n_17/>
-            <enroll/>
-            <reason/>
-            <admission_type/>
-            <admission_criteria/>
-            <program/>
             <n_18/>
             <n_19/>
             <n_20/>
-            <facility/>
-            <target_weight/>
-            <target_muac/>
-            <other_facility/>
-            <additional_notes/>
-          </treatment>
-          <summary>
             <n_21/>
             <n_22/>
             <n_23/>
@@ -2113,34 +2031,13 @@
             <n_28/>
             <n_29/>
             <n_30/>
-            <n_3/>
-            <n_4/>
-            <n_5/>
-            <n_6/>
-            <n_7/>
+            <n_31/>
             <n_32/>
             <n_33/>
-            <n_9/>
-            <n_10/>
-            <n_11/>
-            <n_12/>
-            <n_35/>
+            <n_34/>
             <n_36/>
-            <n_14/>
-            <n_15/>
-            <n_16/>
-            <n_17/>
+            <n_37/>
             <n_38/>
-            <n_39/>
-            <n_40/>
-            <n_41/>
-            <n_42/>
-            <n_43/>
-            <n_44/>
-            <c_reason/>
-            <n_45/>
-            <n_46/>
-            <n_47/>
           </summary>
           <meta tag="hidden">
             <instanceID/>
@@ -2165,78 +2062,80 @@
       <bind calculate="round(z-score('weight-for-age',  /nutrition_screening/measurements/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/measurements/weight ), 1)" nodeset="/nutrition_screening/wfa" type="string"/>
       <bind calculate="round(z-score('height-for-age',  /nutrition_screening/measurements/gender ,  /nutrition_screening/age_in_days ,  /nutrition_screening/measurements/height ), 1)" nodeset="/nutrition_screening/hfa" type="string"/>
       <bind calculate="round(z-score('weight-for-height',  /nutrition_screening/measurements/gender ,  /nutrition_screening/measurements/height ,  /nutrition_screening/measurements/weight ), 1)" nodeset="/nutrition_screening/wfh" type="string"/>
+      <bind calculate="jr:choice-name( /nutrition_screening/treatment/reason , ' /nutrition_screening/treatment/reason ')" nodeset="/nutrition_screening/c_reason" type="string"/>
+      <bind calculate="jr:choice-name( /nutrition_screening/treatment/program , ' /nutrition_screening/treatment/program ')" nodeset="/nutrition_screening/c_program" type="string"/>
+      <bind calculate="jr:choice-name( /nutrition_screening/treatment/facility , ' /nutrition_screening/treatment/facility ')" nodeset="/nutrition_screening/c_facility" type="string"/>
       <bind nodeset="/nutrition_screening/measurements/gender" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/weight:jr:constraintMsg')" nodeset="/nutrition_screening/measurements/weight" required="true()" type="decimal"/>
       <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/height:jr:constraintMsg')" nodeset="/nutrition_screening/measurements/height" required="true()" type="decimal"/>
       <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/muac:jr:constraintMsg')" nodeset="/nutrition_screening/measurements/muac" relevant=" /nutrition_screening/age_in_days  &gt;= 180" required="false()" type="decimal"/>
-      <bind nodeset="/nutrition_screening/treatment/n_1" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_2" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_3" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_4" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -2 and  /nutrition_screening/wfa  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_5" readonly="true()" relevant=" /nutrition_screening/wfa  &lt;= 2 and  /nutrition_screening/wfa  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_6" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 2 and  /nutrition_screening/wfa  &lt;= 3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_7" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_8" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_9" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_10" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -2 and  /nutrition_screening/hfa  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_11" readonly="true()" relevant=" /nutrition_screening/hfa  &lt;= 2 and  /nutrition_screening/hfa  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_12" readonly="true()" relevant=" /nutrition_screening/hfa  &gt; 2" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_13" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_14" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_15" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -2 and  /nutrition_screening/wfh  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_16" readonly="true()" relevant=" /nutrition_screening/wfh  &lt;= 2 and  /nutrition_screening/wfh  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_17" readonly="true()" relevant=" /nutrition_screening/wfh  &gt; 2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_zscore" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfa" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfa_s_malnourished" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfa_m_malnourished" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -2 and  /nutrition_screening/wfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfa_normal" readonly="true()" relevant=" /nutrition_screening/wfa  &lt;= 2 and  /nutrition_screening/wfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfa_overweight" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 2 and  /nutrition_screening/wfa  &lt;= 3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfa_obese" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_hfa" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_hfa_s_stunted" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_hfa_m_stunted" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -2 and  /nutrition_screening/hfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_hfa_stunted" readonly="true()" relevant=" /nutrition_screening/hfa  &lt;= 2 and  /nutrition_screening/hfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_hfa_high" readonly="true()" relevant=" /nutrition_screening/hfa  &gt; 2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfh" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfh_s_wasted" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfh_m_wasted" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -2 and  /nutrition_screening/wfh  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfh_normal" readonly="true()" relevant=" /nutrition_screening/wfh  &lt;= 2 and  /nutrition_screening/wfh  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_wfh_overwweight" readonly="true()" relevant=" /nutrition_screening/wfh  &gt; 2" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/enroll" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/reason" relevant=" /nutrition_screening/treatment/enroll  = 'no'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/admission_type" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
       <bind nodeset="/nutrition_screening/treatment/admission_criteria" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select"/>
       <bind nodeset="/nutrition_screening/treatment/program" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
-      <bind nodeset="/nutrition_screening/treatment/n_18" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'OTP'" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_19" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SFP'" type="string"/>
-      <bind nodeset="/nutrition_screening/treatment/n_20" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SC'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_otp" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'OTP'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_sfp" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SFP'" type="string"/>
+      <bind nodeset="/nutrition_screening/treatment/n_sc" readonly="true()" relevant=" /nutrition_screening/treatment/program  = 'SC'" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/facility" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_weight:jr:constraintMsg')" nodeset="/nutrition_screening/treatment/target_weight" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
       <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_muac:jr:constraintMsg')" nodeset="/nutrition_screening/treatment/target_muac" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="decimal"/>
       <bind nodeset="/nutrition_screening/treatment/other_facility" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" required="true()" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/additional_notes" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_21" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_1" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_2" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_3" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_4" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_5" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_6" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_7" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_8" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_9" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_10" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_11" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_12" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -2 and  /nutrition_screening/wfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_13" readonly="true()" relevant=" /nutrition_screening/wfa  &lt;= 2 and  /nutrition_screening/wfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_14" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 2 and  /nutrition_screening/wfa  &lt;= 3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_15" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_16" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_17" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_18" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_19" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -2 and  /nutrition_screening/hfa  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_20" readonly="true()" relevant=" /nutrition_screening/hfa  &lt;= 2 and  /nutrition_screening/hfa  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_21" readonly="true()" relevant=" /nutrition_screening/hfa  &gt; 2" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_22" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_23" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_24" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_25" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_26" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_27" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_24" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_25" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -2 and  /nutrition_screening/wfh  &gt;= -3" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_26" readonly="true()" relevant=" /nutrition_screening/wfh  &lt;= 2 and  /nutrition_screening/wfh  &gt;= -2" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_27" readonly="true()" relevant=" /nutrition_screening/wfh  &gt; 2" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_28" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_29" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_30" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_3" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_4" readonly="true()" relevant=" /nutrition_screening/wfa  &lt; -2 and  /nutrition_screening/wfa  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_5" readonly="true()" relevant=" /nutrition_screening/wfa  &lt;= 2 and  /nutrition_screening/wfa  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_6" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 2 and  /nutrition_screening/wfa  &lt;= 3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_7" readonly="true()" relevant=" /nutrition_screening/wfa  &gt; 3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_32" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_33" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_9" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_10" readonly="true()" relevant=" /nutrition_screening/hfa  &lt; -2 and  /nutrition_screening/hfa  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_11" readonly="true()" relevant=" /nutrition_screening/hfa  &lt;= 2 and  /nutrition_screening/hfa  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_12" readonly="true()" relevant=" /nutrition_screening/hfa  &gt; 2" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_35" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_36" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_14" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_15" readonly="true()" relevant=" /nutrition_screening/wfh  &lt; -2 and  /nutrition_screening/wfh  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_16" readonly="true()" relevant=" /nutrition_screening/wfh  &lt;= 2 and  /nutrition_screening/wfh  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_17" readonly="true()" relevant=" /nutrition_screening/wfh  &gt; 2" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_38" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_39" readonly="true()" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_40" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_41" readonly="true()" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_42" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_43" readonly="true()" relevant=" /nutrition_screening/treatment/target_weight  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_44" readonly="true()" relevant=" /nutrition_screening/treatment/target_muac  != ''" type="string"/>
-      <bind calculate="jr:choice-name( /nutrition_screening/treatment/reason , ' /nutrition_screening/treatment/reason ')" nodeset="/nutrition_screening/summary/c_reason" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_45" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'no'" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_46" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
-      <bind nodeset="/nutrition_screening/summary/n_47" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_30" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_31" readonly="true()" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_32" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_33" readonly="true()" relevant=" /nutrition_screening/treatment/target_weight  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_34" readonly="true()" relevant=" /nutrition_screening/treatment/target_muac  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_36" readonly="true()" relevant=" /nutrition_screening/treatment/enroll  = 'no'" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_37" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
+      <bind nodeset="/nutrition_screening/summary/n_38" readonly="true()" relevant=" /nutrition_screening/treatment/additional_notes  != ''" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/nutrition_screening/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -2286,56 +2185,56 @@
     </group>
     <group appearance="field-list" ref="/nutrition_screening/treatment">
       <label ref="jr:itext('/nutrition_screening/treatment:label')"/>
-      <input ref="/nutrition_screening/treatment/n_1">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_1:label')"/>
+      <input ref="/nutrition_screening/treatment/n_zscore">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_zscore:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_2">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_2:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfa">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfa:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_3">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_3:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfa_s_malnourished">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfa_s_malnourished:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_4">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_4:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfa_m_malnourished">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfa_m_malnourished:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_5">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_5:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfa_normal">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfa_normal:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_6">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_6:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfa_overweight">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfa_overweight:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_7">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_7:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfa_obese">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfa_obese:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_8">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_8:label')"/>
+      <input ref="/nutrition_screening/treatment/n_hfa">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_hfa:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_9">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_9:label')"/>
+      <input ref="/nutrition_screening/treatment/n_hfa_s_stunted">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_hfa_s_stunted:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_10">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_10:label')"/>
+      <input ref="/nutrition_screening/treatment/n_hfa_m_stunted">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_hfa_m_stunted:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_11">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_11:label')"/>
+      <input ref="/nutrition_screening/treatment/n_hfa_stunted">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_hfa_stunted:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_12">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_12:label')"/>
+      <input ref="/nutrition_screening/treatment/n_hfa_high">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_hfa_high:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_13">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_13:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfh">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfh:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_14">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_14:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfh_s_wasted">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfh_s_wasted:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_15">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_15:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfh_m_wasted">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfh_m_wasted:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_16">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_16:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfh_normal">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfh_normal:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_17">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_17:label')"/>
+      <input ref="/nutrition_screening/treatment/n_wfh_overwweight">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_wfh_overwweight:label')"/>
       </input>
       <select1 ref="/nutrition_screening/treatment/enroll">
         <label ref="jr:itext('/nutrition_screening/treatment/enroll:label')"/>
@@ -2440,14 +2339,14 @@
           <value>SC</value>
         </item>
       </select1>
-      <input ref="/nutrition_screening/treatment/n_18">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_18:label')"/>
+      <input ref="/nutrition_screening/treatment/n_otp">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_otp:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_19">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_19:label')"/>
+      <input ref="/nutrition_screening/treatment/n_sfp">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_sfp:label')"/>
       </input>
-      <input ref="/nutrition_screening/treatment/n_20">
-        <label ref="jr:itext('/nutrition_screening/treatment/n_20:label')"/>
+      <input ref="/nutrition_screening/treatment/n_sc">
+        <label ref="jr:itext('/nutrition_screening/treatment/n_sc:label')"/>
       </input>
       <select1 ref="/nutrition_screening/treatment/facility">
         <label ref="jr:itext('/nutrition_screening/treatment/facility:label')"/>
@@ -2474,35 +2373,11 @@
       </input>
     </group>
     <group appearance="field-list summary" ref="/nutrition_screening/summary">
-      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_21">
-        <label ref="jr:itext('/nutrition_screening/summary/n_21:label')"/>
+      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_1">
+        <label ref="jr:itext('/nutrition_screening/summary/n_1:label')"/>
       </input>
-      <input ref="/nutrition_screening/summary/n_22">
-        <label ref="jr:itext('/nutrition_screening/summary/n_22:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_23">
-        <label ref="jr:itext('/nutrition_screening/summary/n_23:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_24">
-        <label ref="jr:itext('/nutrition_screening/summary/n_24:label')"/>
-      </input>
-      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_25">
-        <label ref="jr:itext('/nutrition_screening/summary/n_25:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_26">
-        <label ref="jr:itext('/nutrition_screening/summary/n_26:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_27">
-        <label ref="jr:itext('/nutrition_screening/summary/n_27:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_28">
-        <label ref="jr:itext('/nutrition_screening/summary/n_28:label')"/>
-      </input>
-      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_29">
-        <label ref="jr:itext('/nutrition_screening/summary/n_29:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_30">
-        <label ref="jr:itext('/nutrition_screening/summary/n_30:label')"/>
+      <input ref="/nutrition_screening/summary/n_2">
+        <label ref="jr:itext('/nutrition_screening/summary/n_2:label')"/>
       </input>
       <input ref="/nutrition_screening/summary/n_3">
         <label ref="jr:itext('/nutrition_screening/summary/n_3:label')"/>
@@ -2510,7 +2385,7 @@
       <input ref="/nutrition_screening/summary/n_4">
         <label ref="jr:itext('/nutrition_screening/summary/n_4:label')"/>
       </input>
-      <input ref="/nutrition_screening/summary/n_5">
+      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_5">
         <label ref="jr:itext('/nutrition_screening/summary/n_5:label')"/>
       </input>
       <input ref="/nutrition_screening/summary/n_6">
@@ -2519,13 +2394,10 @@
       <input ref="/nutrition_screening/summary/n_7">
         <label ref="jr:itext('/nutrition_screening/summary/n_7:label')"/>
       </input>
-      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_32">
-        <label ref="jr:itext('/nutrition_screening/summary/n_32:label')"/>
+      <input ref="/nutrition_screening/summary/n_8">
+        <label ref="jr:itext('/nutrition_screening/summary/n_8:label')"/>
       </input>
-      <input ref="/nutrition_screening/summary/n_33">
-        <label ref="jr:itext('/nutrition_screening/summary/n_33:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_9">
+      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_9">
         <label ref="jr:itext('/nutrition_screening/summary/n_9:label')"/>
       </input>
       <input ref="/nutrition_screening/summary/n_10">
@@ -2537,11 +2409,8 @@
       <input ref="/nutrition_screening/summary/n_12">
         <label ref="jr:itext('/nutrition_screening/summary/n_12:label')"/>
       </input>
-      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_35">
-        <label ref="jr:itext('/nutrition_screening/summary/n_35:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_36">
-        <label ref="jr:itext('/nutrition_screening/summary/n_36:label')"/>
+      <input ref="/nutrition_screening/summary/n_13">
+        <label ref="jr:itext('/nutrition_screening/summary/n_13:label')"/>
       </input>
       <input ref="/nutrition_screening/summary/n_14">
         <label ref="jr:itext('/nutrition_screening/summary/n_14:label')"/>
@@ -2549,41 +2418,71 @@
       <input ref="/nutrition_screening/summary/n_15">
         <label ref="jr:itext('/nutrition_screening/summary/n_15:label')"/>
       </input>
-      <input ref="/nutrition_screening/summary/n_16">
+      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_16">
         <label ref="jr:itext('/nutrition_screening/summary/n_16:label')"/>
       </input>
       <input ref="/nutrition_screening/summary/n_17">
         <label ref="jr:itext('/nutrition_screening/summary/n_17:label')"/>
       </input>
-      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_38">
+      <input ref="/nutrition_screening/summary/n_18">
+        <label ref="jr:itext('/nutrition_screening/summary/n_18:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_19">
+        <label ref="jr:itext('/nutrition_screening/summary/n_19:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_20">
+        <label ref="jr:itext('/nutrition_screening/summary/n_20:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_21">
+        <label ref="jr:itext('/nutrition_screening/summary/n_21:label')"/>
+      </input>
+      <input appearance="h2 blue" ref="/nutrition_screening/summary/n_22">
+        <label ref="jr:itext('/nutrition_screening/summary/n_22:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_23">
+        <label ref="jr:itext('/nutrition_screening/summary/n_23:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_24">
+        <label ref="jr:itext('/nutrition_screening/summary/n_24:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_25">
+        <label ref="jr:itext('/nutrition_screening/summary/n_25:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_26">
+        <label ref="jr:itext('/nutrition_screening/summary/n_26:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_27">
+        <label ref="jr:itext('/nutrition_screening/summary/n_27:label')"/>
+      </input>
+      <input appearance="h1 yellow" ref="/nutrition_screening/summary/n_28">
+        <label ref="jr:itext('/nutrition_screening/summary/n_28:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_29">
+        <label ref="jr:itext('/nutrition_screening/summary/n_29:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_30">
+        <label ref="jr:itext('/nutrition_screening/summary/n_30:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_31">
+        <label ref="jr:itext('/nutrition_screening/summary/n_31:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_32">
+        <label ref="jr:itext('/nutrition_screening/summary/n_32:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_33">
+        <label ref="jr:itext('/nutrition_screening/summary/n_33:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_34">
+        <label ref="jr:itext('/nutrition_screening/summary/n_34:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_36">
+        <label ref="jr:itext('/nutrition_screening/summary/n_36:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_37">
+        <label ref="jr:itext('/nutrition_screening/summary/n_37:label')"/>
+      </input>
+      <input ref="/nutrition_screening/summary/n_38">
         <label ref="jr:itext('/nutrition_screening/summary/n_38:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_39">
-        <label ref="jr:itext('/nutrition_screening/summary/n_39:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_40">
-        <label ref="jr:itext('/nutrition_screening/summary/n_40:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_41">
-        <label ref="jr:itext('/nutrition_screening/summary/n_41:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_42">
-        <label ref="jr:itext('/nutrition_screening/summary/n_42:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_43">
-        <label ref="jr:itext('/nutrition_screening/summary/n_43:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_44">
-        <label ref="jr:itext('/nutrition_screening/summary/n_44:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_45">
-        <label ref="jr:itext('/nutrition_screening/summary/n_45:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_46">
-        <label ref="jr:itext('/nutrition_screening/summary/n_46:label')"/>
-      </input>
-      <input ref="/nutrition_screening/summary/n_47">
-        <label ref="jr:itext('/nutrition_screening/summary/n_47:label')"/>
       </input>
     </group>
   </h:body>
