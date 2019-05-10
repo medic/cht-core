@@ -490,7 +490,7 @@ describe('Transitions public_form', () => {
         // mute_known_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts',);
+        expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
         expect(doc.contact).toEqual(chw2Lineage);
         expect(doc.tasks.length).toEqual(1);
         expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
