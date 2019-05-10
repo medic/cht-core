@@ -16,21 +16,46 @@ angular.module('inboxServices').factory('XmlForms',
 
     const listeners = {};
 
+    const valid = doc => {
+      return Object.keys(doc._attachments || {})
+             .some(name => name === 'xml' || name.endsWith('.xml'));
+    };
+
     const getForms = function() {
       // TODO change to doc by type
+      const options = {
+        include_docs: true,
+        key: ['form']
+      };
       return DB()
-        .query('medic-client/forms', { include_docs: true })
+        .query('medic-client/doc_by_type', options)
         .then(function(res) {
           return res.rows
-            .filter(function(row) {
-              return Object.keys(row.doc._attachments || {})
-                .some(name => name === 'xml' || name.endsWith('.xml'));
-            })
+            .filter(row => valid(row.doc))
             .map(row => row.doc);
         });
     };
-
+    
     let init = getForms();
+
+    const getById = internalId => {
+      const formId = `form:${internalId}`;
+      return DB().get(formId);
+    };
+
+    const getByView = internalId => {
+      return init
+        .then(docs => docs.filter(doc => doc.internalId === internalId))
+        .then(docs => {
+          if (!docs.length) {
+            return $q.reject(new Error(`No form found for internalId "${internalId}"`));
+          }
+          if (docs.length > 1) {
+            return $q.reject(new Error(`Multiple forms found for internalId: "${internalId}"`));
+          }
+          return docs[0];
+        });
+    };
 
     const evaluateExpression = function(expression, doc, user, contactSummary) {
       const context = {
@@ -130,47 +155,68 @@ angular.module('inboxServices').factory('XmlForms',
       }
     });
 
-    /**
-     * @name String to uniquely identify the callback to stop duplicate registration
-     *
-     * @options (optional) Object for filtering. Possible values:
-     *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
-     *     Undefined will ignore this filter.
-     *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
-     * it should be shown or not shown.
-     * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "can_edit_stuff"}`
-     * Using ignoreContext = true will ignore that filter.
-     *   - doc (Object) : when the context filter is on, the doc to pass to the forms context expression to
-     *     determine if the form is applicable.
-     * E.g. for context above, `{type: "district_hospital"}` passes,
-     * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
-     * See tests for more examples.
-     *
-     * @callback Invoked when complete and again when results have changed.
-     */
-    return function(name, options, callback) {
-      if (!callback) {
-        callback = options;
-        options = {};
+    return {
+
+      get: internalId => {
+        return getById(internalId)
+          .catch(err => {
+            if (err.status === 404) {
+              // fallback for backwards compatibility
+              return getByView(internalId);
+            }
+            throw err;
+          })
+          .then(doc => {
+            // TODO filter here too
+            if (!valid(doc)) {
+              return $q.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
+            }
+            return doc;
+          });
+      },
+
+      /**
+       * @name String to uniquely identify the callback to stop duplicate registration
+       *
+       * @options (optional) Object for filtering. Possible values:
+       *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
+       *     Undefined will ignore this filter.
+       *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
+       * it should be shown or not shown.
+       * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "can_edit_stuff"}`
+       * Using ignoreContext = true will ignore that filter.
+       *   - doc (Object) : when the context filter is on, the doc to pass to the forms context expression to
+       *     determine if the form is applicable.
+       * E.g. for context above, `{type: "district_hospital"}` passes,
+       * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
+       * See tests for more examples.
+       *
+       * @callback Invoked when complete and again when results have changed.
+       */
+      list: function(name, options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+        const listener = listeners[name] = {
+          options: options,
+          callback: callback
+        };
+        init
+          .then(function(forms) {
+            UserContact()
+              .then(function(user) {
+                return filterAll(forms, listener.options, user);
+              })
+              .then(function(results) {
+                listener.callback(null, results);
+              })
+              .catch(function(err) {
+                $log.error('Error fetching user contact', err);
+              });
+          })
+          .catch(callback);
       }
-      const listener = listeners[name] = {
-        options: options,
-        callback: callback
-      };
-      init
-        .then(function(forms) {
-          UserContact()
-            .then(function(user) {
-              return filterAll(forms, listener.options, user);
-            })
-            .then(function(results) {
-              listener.callback(null, results);
-            })
-            .catch(function(err) {
-              $log.error('Error fetching user contact', err);
-            });
-        })
-        .catch(callback);
     };
   }
 );

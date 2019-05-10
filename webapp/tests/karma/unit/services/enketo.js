@@ -100,7 +100,7 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
 
-    XmlForm.resolves({ id: 'abc' });
+    XmlForm.resolves({ _id: 'abc' });
     GlobalActions = { setLastChangedDoc: sinon.stub() };
 
     module(function($provide) {
@@ -127,7 +127,7 @@ describe('Enketo service', () => {
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
       $provide.value('AddAttachment', AddAttachment);
-      $provide.value('XmlForm', XmlForm);
+      $provide.value('XmlForms', { get: XmlForm });
       $provide.value('ZScore', () => Promise.resolve(sinon.stub()));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('GlobalActions', () => GlobalActions);

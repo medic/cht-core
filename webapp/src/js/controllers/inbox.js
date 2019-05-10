@@ -418,7 +418,7 @@ var _ = require('underscore'),
               icon: jsonForm.icon,
             };
           });
-          XmlForms(
+          XmlForms.list(
             'FormsFilter',
             { contactForms: false, ignoreContext: true },
             function(err, xForms) {

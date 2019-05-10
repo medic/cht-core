@@ -13,7 +13,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     Snackbar,
     Telemetry,
     TranslateFrom,
-    XmlForm
+    XmlForms
   ) {
 
     'use strict';
@@ -63,7 +63,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     var render = function(contact, options) {
       $scope.setSelected(contact, options);
       setCancelCallback();
-      return XmlForm($state.params.formId)
+      return XmlForms.get($state.params.formId)
         .then(function(form) {
           var instanceData = {
             source: 'contact',

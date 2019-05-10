@@ -35,7 +35,7 @@ describe('TasksContentCtrl', () => {
         $q: Q,
         Enketo: { render: render },
         DB: sinon.stub(),
-        XmlForm: XmlForm,
+        XmlForms: { get: XmlForm },
         Telemetry: { record: sinon.stub() }
       });
     };
@@ -53,7 +53,7 @@ describe('TasksContentCtrl', () => {
         content: 'nothing'
       }]
     };
-    XmlForm.resolves({ id: 'myform', doc: { title: 'My Form' } });
+    XmlForm.resolves({ _id: 'myform', title: 'My Form' });
     createController();
     watchCallback();
     expect($scope.formId).to.equal('A');

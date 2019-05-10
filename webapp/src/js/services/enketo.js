@@ -28,7 +28,7 @@ angular.module('inboxServices').service('Enketo',
     TranslateFrom,
     UserContact,
     XSLT,
-    XmlForm,
+    XmlForms,
     ZScore
   ) {
     'use strict';
@@ -457,7 +457,7 @@ angular.module('inboxServices').service('Enketo',
 
       docsToStore.unshift(doc);
 
-      return XmlForm(doc.form)
+      return XmlForms.get(doc.form)
         .then(function(form) {
           return getFormAttachment(form._id);
         })

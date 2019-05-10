@@ -178,7 +178,7 @@ describe('Contacts controller', () => {
         Tour: () => {},
         TranslateFrom: key => `TranslateFrom:${key}`,
         UserSettings: userSettings,
-        XmlForms: xmlForms,
+        XmlForms: { list: xmlForms },
       });
     };
   }));
