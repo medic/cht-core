@@ -38,6 +38,7 @@ const markForOutbound = (change) => {
 
       return db.sentinel.put({
         _id: taskId,
+        type: 'task:outbound',
         created: Date.now(),
         doc_id: change.doc._id,
         queue: toQueue

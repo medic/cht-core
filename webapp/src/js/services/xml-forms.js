@@ -40,7 +40,12 @@ angular.module('inboxServices').factory('XmlForms',
         user: user,
         summary: contactSummary
       };
-      return $parse(expression)(XmlFormsContextUtils, context);
+      // TODO: move one outer so we can log the form that is having problems
+      try {
+        return $parse(expression)(XmlFormsContextUtils, context);
+      } catch (err) {
+        $log.error(`Parse failed, let's work out what to put here`);
+      }
     };
 
     var filterAll = function(forms, options, user) {
