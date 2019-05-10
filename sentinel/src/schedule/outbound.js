@@ -1,4 +1,5 @@
 const objectPath = require('object-path'),
+      urlJoin = require('url-join'),
       request = require('request-promise-native'),
       vm = require('vm');
 
@@ -85,7 +86,7 @@ const map = (doc, conf) => {
 const send = (payload, conf) => {
   const sendOptions = {
     method: 'POST',
-    url: conf.destination.base_url + conf.destination.path,
+    url: urlJoin(conf.destination.base_url, conf.destination.path),
     body: payload,
     json: true
   };
@@ -117,7 +118,7 @@ const send = (payload, conf) => {
           login: authConf.username,
           password: authConf.password
         },
-        url: conf.destination.base_url + authConf.path,
+        url: urlJoin(conf.destination.base_url, authConf.path),
         json: true
       };
 
@@ -193,6 +194,11 @@ const execute = () => {
             // Failed
             logger.error(`Failed to push ${doc._id} to ${conf.key}: ${err.message}`);
             logger.error(err);
+            // TODO: add some kind of count or log to the task so we can more
+            // easily see which ones aren't working
+            // ... or is the date enough?
+
+
             // Don't remove it from the queue so it will be tried again next time
           });
       }), Promise.resolve())
