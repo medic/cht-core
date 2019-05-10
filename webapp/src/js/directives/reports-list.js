@@ -7,7 +7,7 @@ angular.module('inboxDirectives').component('mmReportsList', {
     const mapStateToTarget = function(state) {
       return {
         selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state)
+        selectedReports: Selectors.getSelectedReports(state)
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

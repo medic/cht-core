@@ -11,9 +11,9 @@ angular
     $timeout,
     Changes,
     Export,
-    GlobalActions,
     MessageContacts,
     MessageListUtils,
+    MessagesActions,
     Selectors,
     Tour
   ) {
@@ -23,20 +23,20 @@ angular
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state)
+        selectedMessage: Selectors.getSelectedMessage(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
-      const globalActions = GlobalActions(dispatch);
+      const messagesActions = MessagesActions(dispatch);
       return {
-        setSelected: globalActions.setSelected
+        setSelectedMessage: messagesActions.setSelectedMessage
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.allLoaded = false;
     $scope.messages = [];
-    ctrl.setSelected(null);
+    ctrl.setSelectedMessage(null);
     ctrl.loading = true;
 
     var setMessages = function(options) {
@@ -46,7 +46,7 @@ angular
         var selectedChanged = MessageListUtils.mergeUpdated(
           $scope.messages,
           options.messages,
-          ctrl.selected && ctrl.selected.id
+          ctrl.selectedMessage && ctrl.selectedMessage.id
         );
         if (selectedChanged) {
           $scope.$broadcast('UpdateContactConversation', { silent: true });
@@ -80,8 +80,8 @@ angular
     };
 
     $scope.setSelected = function(doc) {
-      var refreshing = (ctrl.selected && ctrl.selected.id) === doc.id;
-      ctrl.setSelected(doc);
+      var refreshing = (ctrl.selectedMessage && ctrl.selectedMessage.id) === doc.id;
+      ctrl.setSelectedMessage(doc);
       $scope.settingSelected(refreshing);
     };
 
@@ -108,7 +108,7 @@ angular
       });
 
     $scope.$on('ClearSelected', function() {
-      ctrl.setSelected(null);
+      ctrl.setSelectedMessage(null);
     });
 
     var changeListener = Changes({

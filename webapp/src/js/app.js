@@ -90,7 +90,10 @@ const createReduxLoggerConfig = Selectors => ({
   },
   stateTransformer: function(state) {
     let loggableState = cloneDeep(state);
-    makeSelectedLoggable(Selectors.getSelected(loggableState));
+    ['Analytics', 'Contact', 'Message', 'Reports', 'Task'].forEach(module => {
+      const fnName = 'getSelected' + module;
+      makeSelectedLoggable(Selectors[fnName](loggableState));
+    });
     try {
       JSON.stringify(loggableState);
     } catch(error) {

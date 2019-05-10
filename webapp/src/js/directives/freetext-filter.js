@@ -11,8 +11,7 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state)
+          selectMode: Selectors.getSelectMode(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
@@ -20,6 +19,9 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'freetextFilterCtrl',
+    bindToController: {
+      selected: '<'
+    },
     link: function(scope) {
       SearchFilters.freetext(scope.search);
     }

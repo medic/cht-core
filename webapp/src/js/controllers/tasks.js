@@ -17,6 +17,7 @@ var _ = require('underscore');
       LiveList,
       RulesEngine,
       Selectors,
+      TasksActions,
       Tour,
       TranslateFrom
     ) {
@@ -25,13 +26,14 @@ var _ = require('underscore');
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
-          selected: Selectors.getSelected(state)
+          selectedTask: Selectors.getSelectedTask(state)
         };
       };
       const mapDispatchToTarget = function(dispatch) {
         const globalActions = GlobalActions(dispatch);
+        const tasksActions = TasksActions(dispatch);
         return {
-          setSelected: globalActions.setSelected,
+          setSelectedTask: tasksActions.setSelectedTask,
           setShowContent: globalActions.setShowContent
         };
       };
@@ -39,7 +41,7 @@ var _ = require('underscore');
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
-        ctrl.setSelected(task);
+        ctrl.setSelectedTask(task);
         if (_.isString(task.title)) {
           // new translation key style
           task.title = $translate.instant(task.title, task);
@@ -59,7 +61,7 @@ var _ = require('underscore');
         }
         var task = _.findWhere(LiveList.tasks.getList(), { _id: id });
         if (task) {
-          var refreshing = (ctrl.selected && ctrl.selected._id) === id;
+          var refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
           $scope.settingSelected(refreshing);
           setSelectedTask(task);
         }
@@ -70,13 +72,13 @@ var _ = require('underscore');
       };
 
       $scope.$on('ClearSelected', function() {
-        ctrl.setSelected(null);
+        ctrl.setSelectedTask(null);
       });
 
       $timeout(function() {
         LiveList.tasks.refresh();
       });
-      ctrl.setSelected(null);
+      ctrl.setSelectedTask(null);
       ctrl.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
       $scope.tasksDisabled = !RulesEngine.enabled;
@@ -90,8 +92,8 @@ var _ = require('underscore');
 
       LiveList.tasks.notifyChange = function(task) {
         $scope.hasTasks = LiveList.tasks.count() > 0;
-        if (ctrl.selected && task._id === ctrl.selected._id ||
-            (!ctrl.selected && task._id === $state.params.id)) {
+        if (ctrl.selectedTask && task._id === ctrl.selectedTask._id ||
+            (!ctrl.selectedTask && task._id === $state.params.id)) {
           setSelectedTask(task);
         }
       };

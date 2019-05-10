@@ -38,7 +38,7 @@ var _ = require('underscore'),
     const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
-        selected: Selectors.getSelected(state)
+        selectedContact: Selectors.getSelectedContact(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
@@ -46,13 +46,13 @@ var _ = require('underscore'),
       const contactsActions = ContactsActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
-        setSelected: globalActions.setSelected,
-        updateSelected: globalActions.updateSelected,
-        loadSelectedChildren: globalActions.loadSelectedChildren,
-        loadSelectedReports: globalActions.loadSelectedReports,
-        setLoadingSelectedChildren: globalActions.setLoadingSelectedChildren,
-        setLoadingSelectedReports: globalActions.setLoadingSelectedReports,
-        setLoadingSummary: contactsActions.setLoadingSummary
+        loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
+        loadSelectedContactReports: contactsActions.loadSelectedContactReports,
+        setLoadingSelectedContactChildren: contactsActions.setLoadingSelectedContactChildren,
+        setLoadingSelectedContactReports: contactsActions.setLoadingSelectedContactReports,
+        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
+        setSelectedContact: contactsActions.setSelectedContact,
+        updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -64,7 +64,7 @@ var _ = require('underscore'),
     ctrl.appending = false;
     ctrl.error = false;
     ctrl.loading = true;
-    ctrl.setSelected(null);
+    ctrl.setSelectedContact(null);
     $scope.filters = {};
     var defaultTypeFilter = {};
     var usersHomePlace;
@@ -233,57 +233,57 @@ var _ = require('underscore'),
 
     $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedChildren(true);
-      ctrl.setLoadingSelectedReports(true);
-      ctrl.setSelected(selected);
+      ctrl.setLoadingSelectedContactChildren(true);
+      ctrl.setLoadingSelectedContactReports(true);
+      ctrl.setSelectedContact(selected);
       ctrl.clearCancelCallback();
       var title = '';
-      if (ctrl.selected.doc.type === 'person') {
+      if (ctrl.selectedContact.doc.type === 'person') {
         title = 'contact.profile';
       } else {
-        title = ContactSchema.get(ctrl.selected.doc.type).label;
+        title = ContactSchema.get(ctrl.selectedContact.doc.type).label;
       }
-      ctrl.setLoadingSummary(true);
+      ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
           $translate(title),
-          getActionBarDataForChild(ctrl.selected.doc.type),
-          getCanEdit(ctrl.selected.doc),
+          getActionBarDataForChild(ctrl.selectedContact.doc.type),
+          getCanEdit(ctrl.selectedContact.doc),
         ])
         .then(function(results) {
           $scope.setTitle(results[0]);
           if (results[1]) {
-            ctrl.updateSelected({ doc: { child: results[1] }});
+            ctrl.updateSelectedContact({ doc: { child: results[1] }});
           }
           var canEdit = results[2];
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [ctrl.selected.doc],
-            sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
+            selected: [ctrl.selectedContact.doc],
+            sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
           });
 
-          return ctrl.loadSelectedChildren(options)
-            .then(ctrl.loadSelectedReports)
+          return ctrl.loadSelectedContactChildren(options)
+            .then(ctrl.loadSelectedContactReports)
             .then(function() {
               return $q.all([
-                ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
+                ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
                 Settings()
               ])
               .then(function(results) {
-                ctrl.setLoadingSummary(false);
+                ctrl.setContactsLoadingSummary(false);
                 var summary = results[0];
-                ctrl.updateSelected({ summary: summary });
-                var options = { doc: ctrl.selected.doc, contactSummary: summary.context };
+                ctrl.updateSelectedContact({ summary: summary });
+                var options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
                   var showUnmuteModal = function(formId) {
-                    return ctrl.selected.doc &&
-                          ctrl.selected.doc.muted &&
+                    return ctrl.selectedContact.doc &&
+                          ctrl.selectedContact.doc.muted &&
                           !isUnmuteForm(results[1], formId);
                   };
                   var formSummaries =
@@ -297,15 +297,15 @@ var _ = require('underscore'),
                       };
                     });
                   var canDelete =
-                    !ctrl.selected.children ||
-                    ((!ctrl.selected.children.places ||
-                      ctrl.selected.children.places.length === 0) &&
-                      (!ctrl.selected.children.persons ||
-                        ctrl.selected.children.persons.length === 0));
+                    !ctrl.selectedContact.children ||
+                    ((!ctrl.selectedContact.children.places ||
+                      ctrl.selectedContact.children.places.length === 0) &&
+                      (!ctrl.selectedContact.children.persons ||
+                        ctrl.selectedContact.children.persons.length === 0));
                   $scope.setRightActionBar({
-                    selected: [ctrl.selected.doc],
+                    selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
-                    sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
+                    sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
                     canEdit: canEdit,
                     canDelete: canDelete,
                   });
@@ -316,7 +316,7 @@ var _ = require('underscore'),
         .catch(function(e) {
           $log.error('Error setting selected contact');
           $log.error(e);
-          ctrl.updateSelected({ error: true });
+          ctrl.updateSelectedContact({ error: true });
           $scope.setRightActionBar();
         });
     };
@@ -326,7 +326,7 @@ var _ = require('underscore'),
     });
 
     const clearSelection = () => {
-      ctrl.setSelected(null);
+      ctrl.setSelectedContact(null);
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
     };

@@ -14,31 +14,33 @@ var _ = require('underscore');
       Changes,
       GlobalActions,
       MessageState,
+      ReportsActions,
       Selectors
     ) {
 
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           loadingContent: Selectors.getLoadingContent(state),
           selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state),
-          summaries: Selectors.getSelectedSummaries(state),
-          validChecks: Selectors.getSelectedValidChecks(state)
+          selectedReports: Selectors.getSelectedReports(state),
+          summaries: Selectors.getSelectedReportsSummaries(state),
+          validChecks: Selectors.getSelectedReportsValidChecks(state)
         };
       };
-      var mapDispatchToTarget = function(dispatch) {
-        var globalActions = GlobalActions(dispatch);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        const reportsActions = ReportsActions(dispatch);
         return {
           clearCancelCallback: globalActions.clearCancelCallback,
-          setSelected: globalActions.setSelected,
-          updateSelectedItem: globalActions.updateSelectedItem,
-          setFirstSelectedFormattedProperty: globalActions.setFirstSelectedFormattedProperty
+          setSelectedReports: reportsActions.setSelectedReports,
+          updateSelectedReportItem: reportsActions.updateSelectedReportItem,
+          setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.selectReport($stateParams.id);
       ctrl.clearCancelCallback();
@@ -77,15 +79,15 @@ var _ = require('underscore');
 
         var id = selection._id;
         if (selection.report || selection.expanded) {
-          ctrl.updateSelectedItem(id, { expanded: !selection.expanded });
+          ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
         } else {
-          ctrl.updateSelectedItem(id, { loading: true });
+          ctrl.updateSelectedReportItem(id, { loading: true });
           $scope.refreshReportSilently(id)
             .then(function() {
-              ctrl.updateSelectedItem(id, { loading: false, expanded: true });
+              ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
             })
             .catch(function(err) {
-              ctrl.updateSelectedItem(id, { loading: false });
+              ctrl.updateSelectedReportItem(id, { loading: false });
               $log.error('Error fetching doc for expansion', err);
             });
         }
@@ -105,9 +107,9 @@ var _ = require('underscore');
       var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
-          return ctrl.selected &&
-            ctrl.selected.length &&
-            _.some(ctrl.selected, function(item) {
+          return ctrl.selectedReports &&
+            ctrl.selectedReports.length &&
+            _.some(ctrl.selectedReports, function(item) {
               return item._id === change.id;
             });
         },
@@ -117,15 +119,15 @@ var _ = require('underscore');
               $scope.deselectReport(change.doc);
             });
           } else {
-            var selected = ctrl.selected;
+            var selectedReports = ctrl.selectedReports;
             $scope.refreshReportSilently(change.doc)
               .then(function() {
-                if(selected[0].formatted.verified !== change.doc.verified ||
-                   ('oldVerified' in selected[0].formatted &&
-                    selected[0].formatted.oldVerified !== change.doc.verified)) {
-                  ctrl.setSelected(selected);
+                if(selectedReports[0].formatted.verified !== change.doc.verified ||
+                   ('oldVerified' in selectedReports[0].formatted &&
+                    selectedReports[0].formatted.oldVerified !== change.doc.verified)) {
+                  ctrl.setSelectedReports(selectedReports);
                   $timeout(function() {
-                    ctrl.setFirstSelectedFormattedProperty({ verified: change.doc.verified });
+                    ctrl.setFirstSelectedReportFormattedProperty({ verified: change.doc.verified });
                   });
                 }
               });
@@ -139,10 +141,10 @@ var _ = require('underscore');
       });
 
       $scope.$on('VerifiedReport', function(e, valid) {
-        var oldVerified = ctrl.selected[0].formatted.verified;
+        var oldVerified = ctrl.selectedReports[0].formatted.verified;
         var newVerified = oldVerified === valid ? undefined : valid;
 
-        ctrl.setFirstSelectedFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
+        ctrl.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
 
         $scope.setSubActionBarStatus(newVerified);
       });

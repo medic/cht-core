@@ -1,7 +1,7 @@
 describe('ContactsContentCtrl', () => {
   'use strict';
 
-  let globalActions,
+  let contactsActions,
       controller,
       stateParams,
       scope,
@@ -71,12 +71,12 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, _$timeout_, $ngRedux, GlobalActions, Selectors) => {
-    globalActions = GlobalActions($ngRedux.dispatch);
+  beforeEach(inject((_$rootScope_, $controller, _$timeout_, $ngRedux, ContactsActions, Selectors) => {
+    contactsActions = ContactsActions($ngRedux.dispatch);
 
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = selected => globalActions.setSelected(selected);
+    scope.setSelected = selected => contactsActions.setSelectedContact(selected);
     scope.clearSelected = sinon.stub();
     scope.settingSelected = sinon.stub();
     state = {
@@ -98,7 +98,7 @@ describe('ContactsContentCtrl', () => {
     };
 
     getSelected = () => {
-      return Selectors.getSelected($ngRedux.getState());
+      return Selectors.getSelectedContact($ngRedux.getState());
     };
 
     debounce = (func) => {
