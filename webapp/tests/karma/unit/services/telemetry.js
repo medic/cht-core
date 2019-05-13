@@ -8,6 +8,7 @@ describe('Telemetry service', () => {
     $window,
     $log,
     DB,
+    XmlForms,
     storageGetItem,
     storageSetItem,
     storageRemoveItem,
@@ -41,14 +42,16 @@ describe('Telemetry service', () => {
     DB = {
       info: sinon.stub(),
       put: sinon.stub(),
-      get: sinon.stub(),
-      query: sinon.stub()
+      get: sinon.stub()
     };
+
+    XmlForms = { list: sinon.stub() };
 
     module($provide => {
       $provide.value('$q', Q);
       $provide.value('$window', $window);
       $provide.value('$log', $log);
+      $provide.value('XmlForms', XmlForms);
       $provide.factory('DB', KarmaUtils.mockDB(DB));
       $provide.value('Session', {
         userCtx: () => {
@@ -151,18 +154,12 @@ describe('Telemetry service', () => {
           version: '3.0.0'
         }
       });
-      DB.query.withArgs('medic-client/forms', {include_docs: true}).resolves({
-        rows: [
-          {
-            id: 'form:anc_followup',
-            key: 'anc_followup',
-            doc: {
-              _id: 'form:anc_followup',
-              _rev: '1-abc'
-            }
-          }
-        ]
-      });
+      XmlForms.list.resolves([
+        {
+          _id: 'anc_followup',
+          _rev: '1-abc'
+        }
+      ]);
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
@@ -239,9 +236,7 @@ describe('Telemetry service', () => {
           version: '3.0.0'
         }
       });
-      DB.query.withArgs('medic-client/forms', {include_docs: true}).resolves({
-        rows: []
-      });
+      XmlForms.list.resolves([]);
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';

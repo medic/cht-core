@@ -9,7 +9,7 @@ describe('TasksContentCtrl', () => {
       ctrl,
       createController,
       render,
-      XmlForm;
+      XmlForms;
 
   beforeEach(() => {
     module('inboxApp');
@@ -19,7 +19,7 @@ describe('TasksContentCtrl', () => {
   beforeEach(inject(($controller, $ngRedux, TasksActions, Selectors) => {
     tasksActions = TasksActions($ngRedux.dispatch);
     render = sinon.stub();
-    XmlForm = sinon.stub();
+    XmlForms = { get: sinon.stub() };
     $scope = {
       $on: () => {},
       $watch: (prop, cb) => {
@@ -35,14 +35,14 @@ describe('TasksContentCtrl', () => {
         $q: Q,
         Enketo: { render: render },
         DB: sinon.stub(),
-        XmlForms: { get: XmlForm },
+        XmlForms: XmlForms,
         Telemetry: { record: sinon.stub() }
       });
     };
   }));
 
   afterEach(() => {
-    KarmaUtils.restore(render, XmlForm);
+    KarmaUtils.restore(render, XmlForms);
   });
 
   it('loads form when task has one action and no fields', done => {
@@ -53,7 +53,7 @@ describe('TasksContentCtrl', () => {
         content: 'nothing'
       }]
     };
-    XmlForm.resolves({ _id: 'myform', title: 'My Form' });
+    XmlForms.get.resolves({ _id: 'myform', title: 'My Form' });
     createController();
     watchCallback();
     expect($scope.formId).to.equal('A');

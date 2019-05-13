@@ -156,6 +156,11 @@ angular.module('inboxServices').factory('XmlForms',
 
     return {
 
+      /**
+       * Returns a doc containing an xform with the given internal identifier if the user is allowed to see it.
+       *
+       * @param The value of the desired doc's internalId field.
+       */
       get: internalId => {
         return getById(internalId)
           .catch(err => {
@@ -175,9 +180,25 @@ angular.module('inboxServices').factory('XmlForms',
       },
 
       /**
-       * @name String to uniquely identify the callback to stop duplicate registration
+       * Returns a Promise which resolves an array of docs which contain an
+       * xform the user is allow to complete.
        *
-       * @options (optional) Object for filtering. Possible values:
+       * @params options Described in the "listen" function below.
+       */
+      list: function(options) {
+        return $q.all([ init, UserContact() ]).then(([ forms, user ]) => {
+          return filterAll(forms, options || {}, user);
+        });
+      },
+
+      /**
+       * Invokes the given callback with an array of docs containing xforms
+       * which the user is allowed to complete. Listens for changes and invokes
+       * the callback again when needed.
+       *
+       * @param name String to uniquely identify the callback to stop duplicate registration
+       *
+       * @param options (optional) Object for filtering. Possible values:
        *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
        *     Undefined will ignore this filter.
        *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
@@ -190,9 +211,9 @@ angular.module('inboxServices').factory('XmlForms',
        * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
        * See tests for more examples.
        *
-       * @callback Invoked when complete and again when results have changed.
+       * @param callback Invoked when complete and again when results have changed.
        */
-      list: function(name, options, callback) {
+      listen: function(name, options, callback) {
         if (!callback) {
           callback = options;
           options = {};
@@ -203,7 +224,7 @@ angular.module('inboxServices').factory('XmlForms',
         };
         init
           .then(function(forms) {
-            UserContact()
+            UserContact() // TODO pull out into init??
               .then(function(user) {
                 return filterAll(forms, listener.options, user);
               })

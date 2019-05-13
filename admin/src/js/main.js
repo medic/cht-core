@@ -115,6 +115,7 @@ require('../../../webapp/src/js/services/user');
 require('../../../webapp/src/js/actions');
 require('../../../webapp/src/js/selectors');
 require('../../../webapp/src/js/reducers');
+require('../../../webapp/src/js/services/xml-forms');
 
 angular.module('adminApp', [
   'ngRoute',
