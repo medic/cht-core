@@ -212,7 +212,7 @@ describe('Message mapper', () => {
           ]
         };
 
-        return service.map().then(({ getRows }) => {
+        return service.map({}, {humanReadable: false}).then(({ getRows }) => {
           const result = getRows(record);
           chai.expect(result.length).to.equal(2);
           chai.expect(result[0]).to.deep.equal([
@@ -266,7 +266,7 @@ describe('Message mapper', () => {
           }
         };
 
-        return service.map().then(({ getRows }) => {
+        return service.map({}, {humanReadable: false}).then(({ getRows }) => {
           const result = getRows(record);
           chai.expect(result.length).to.equal(1);
           chai.expect(result[0]).to.deep.equal([
@@ -326,7 +326,7 @@ describe('Message mapper', () => {
           }]
         };
 
-        return service.map().then(({ getRows }) => {
+        return service.map({}, {humanReadable: false}).then(({ getRows }) => {
           const result = getRows(record);
           chai.expect(result.length).to.equal(2);
           chai.expect(result[0]).to.deep.equal([
@@ -417,7 +417,7 @@ describe('Message mapper', () => {
 
         config.get.returns({ config: 1 });
 
-        return service.map().then(({ getRows }) => {
+        return service.map({}, {humanReadable: false}).then(({ getRows }) => {
           const result = getRows(record);
 
           chai.expect(config.translate.callCount).to.equal(1);

@@ -1,24 +1,12 @@
-/*
- * Transitions runner.  Set up the changes listener and apply each transition
- * serially to a change.
- */
-
 const _ = require('underscore'),
   async = require('async'),
-  utils = require('../lib/utils'),
-  feed = require('../lib/feed'),
   db = require('../db'),
   lineage = require('@medic/lineage')(Promise, db.medic),
+  utils = require('../lib/utils'),
   logger = require('../lib/logger'),
   config = require('../config'),
   infodoc = require('../lib/infodoc'),
-  metadata = require('../lib/metadata'),
-  tombstoneUtils = require('@medic/tombstone-utils'),
-  PROCESSING_DELAY = 50, // ms
-  PROGRESS_REPORT_INTERVAL = 500, // items
-  transitions = [];
-
-let changesFeed;
+  uuid = require('uuid');
 
 /*
  * Add new transitions here to make them available for configuration and execution.
@@ -49,42 +37,10 @@ const AVAILABLE_TRANSITIONS = [
   'muting'
 ];
 
-let processed = 0;
+const transitions = [];
 
-const changeQueue = async.queue((task, callback) =>
-  processChange(task, () => _.delay(callback, PROCESSING_DELAY))
-);
-
+// applies all loaded transitions over a change
 const processChange = (change, callback) => {
-  if (!change) {
-    return callback();
-  }
-  logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
-  if (processed > 0 && processed % PROGRESS_REPORT_INTERVAL === 0) {
-    logger.info(
-      `transitions: ${processed} items processed (since sentinel started)`
-    );
-  }
-  if (change.deleted) {
-    // don't run transitions on deleted docs, but do clean up
-    return Promise
-      .all([
-        infodoc.delete(change),
-        deleteReadDocs(change)
-      ])
-      .catch(err => {
-        logger.error('Error cleaning up deleted doc: %o', err);
-      })
-      .then(() => tombstoneUtils.processChange(Promise, db.medic, change, logger))
-      .then(() => {
-        processed++;
-        return metadata
-          .update(change.seq)
-          .then(() => callback());
-      })
-      .catch(callback);
-  }
-
   lineage
     .fetchHydratedDoc(change.id)
     .then(doc => {
@@ -96,60 +52,76 @@ const processChange = (change, callback) => {
         if (change.doc.transitions) {
           delete change.doc.transitions;
         }
-        module.exports.applyTransitions(change, () => {
-          processed++;
-          metadata
-            .update(change.seq)
-            .then(() => callback())
-            .catch(err => {
-              callback(err);
-            });
-        });
+        applyTransitions(change, callback);
       });
     })
     .catch(err => {
       logger.error('transitions: fetch failed for %s : %o', change.id, err);
-      return callback();
+      return callback(err);
     });
 };
 
-const deleteReadDocs = change => {
-  // we don't know if the deleted doc was a report or a message so
-  // attempt to delete both
-  const possibleReadDocIds = ['report', 'message'].map(
-    type => `read:${type}:${change.id}`
-  );
+// given a collection of docs this function will:
+// - add _id properties to the docs that are missing them
+// - deep clone the docs, to keep the original version of them safe
+// - hydrate the docs and generate info docs
+// - run loaded transitions over all docs
+// - save docs, either updated or their original version
+// - returns db.save result like a bulkDocs call.
+const processDocs = docs => {
+  if (!transitions.length) {
+    return db.medic.bulkDocs(docs);
+  }
 
-  return db.allDbs().then(dbs => {
-    const userDbs = dbs.filter(db => db.indexOf('medic-user-') === 0);
-    return userDbs.reduce((p, userDb) => {
-      return p.then(() => {
-        const metaDb = db.get(userDb);
-        return metaDb.allDocs({ keys: possibleReadDocIds }).then(results => {
-          const row = results.rows.find(row => !row.error);
-          if (!row) {
-            return;
-          }
+  let changes;
+  docs.forEach(doc => doc._id = doc._id || uuid());
+  const clonedDocs = JSON.parse(JSON.stringify(docs));
 
-          return metaDb.remove(row.id, row.value.rev).catch(err => {
-            // ignore 404s or 409s - the doc was probably deleted client side already
-            if (err && err.status !== 404 && err.status !== 409) {
-              throw err;
+  return lineage
+    .hydrateDocs(clonedDocs)
+    .then(hydratedDocs => {
+      changes = hydratedDocs.map(doc => ({ id: doc._id, doc: doc, seq: null }));
+      return infodoc.bulkGet(changes);
+    })
+    .then(infoDocs => {
+      changes.forEach(change => {
+        change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
+      });
+      return infodoc.bulkUpdate(infoDocs);
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        const operations = changes.map(change => callback => {
+          applyTransitions(change, (err, result) => {
+            if (err || result) {
+              return callback(null, err || result);
             }
+
+            // doc was not changed by any transition, so we save the original doc
+            change.doc = docs.find(doc => doc._id === change.id);
+            saveDoc(change, (err, result) => {
+              callback(null, err || result);
+            });
           });
         });
+        async.series(operations, (err, results) => {
+          return err ? reject(err) : resolve(results);
+        });
       });
-    }, Promise.resolve());
-
-  });
+    })
+    .catch(err => {
+      logger.error('Error when running transitions over docs', err);
+      return db.medic.bulkDocs(docs);
+    });
 };
 
 /*
  * Load transitions using `require` based on what is in AVAILABLE_TRANSITIONS
  * constant and what is enabled in the `transitions` property in the settings
  * data.  Log warnings on failure.
+ * Using synchronous param, only loads transitions that are NOT marked to only be executed asynchronously.
  */
-const loadTransitions = () => {
+const loadTransitions = (synchronous = false) => {
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
   let loadError = false;
@@ -167,7 +139,7 @@ const loadTransitions = () => {
     }
 
     try {
-      self._loadTransition(transition);
+      self._loadTransition(transition, synchronous);
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
@@ -184,18 +156,23 @@ const loadTransitions = () => {
   });
 
   if (loadError) {
-    logger.error(
-      'Transitions are disabled until the above configuration errors are fixed.'
-    );
-    module.exports._detach();
-  } else {
-    module.exports._attach();
+    // empty transitions list
+    // Sentinel detaches from the changes feed when transitions are misconfigured,
+    // but API continues and should not run partial transitions
+    transitions.splice(0, transitions.length);
+    throw new Error('Transitions are disabled until the above configuration errors are fixed.');
   }
 };
 
-const loadTransition = key => {
+const loadTransition = (key, synchronous) => {
   logger.info(`Loading transition "${key}"`);
   const transition = require('./' + key);
+
+  if (synchronous && transition.asynchronousOnly) {
+    logger.info(`Skipping asynchronous transition "${key}"`);
+    return;
+  }
+
   if (transition.init) {
     transition.init();
   }
@@ -219,9 +196,7 @@ const canRun = ({ key, change, transition }) => {
       return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
     }
     logger.debug(
-      `isRevSame tested true on transition ${key} for seq ${change.seq} doc ${
-        change.id
-      }`
+      `isRevSame tested true on transition ${key} for doc ${change.id} seq ${change.seq}`
     );
     return false;
   };
@@ -235,10 +210,10 @@ const canRun = ({ key, change, transition }) => {
    */
   return Boolean(
     change &&
-      !change.deleted &&
-      doc &&
-      !isRevSame(doc, info) &&
-      transition.filter(doc, info)
+    !change.deleted &&
+    doc &&
+    !isRevSame(doc, info) &&
+    transition.filter(doc, info)
   );
 };
 
@@ -259,20 +234,20 @@ const finalize = ({ change, results }, callback) => {
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
+  saveDoc(change, callback);
+};
+
+const saveDoc = (change, callback) => {
   lineage.minify(change.doc);
-  db.medic.put(change.doc, err => {
+  db.medic.put(change.doc, (err, result) => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
-      logger.error(
-        `error saving changes on doc ${change.id} seq ${
-          change.seq
-        }: ${JSON.stringify(err)}`
-      );
+      logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
     } else {
       logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
     }
-    return callback();
+    return callback(err, result);
   });
 };
 
@@ -285,10 +260,15 @@ const finalize = ({ change, results }, callback) => {
  * change/write.
  */
 const applyTransition = ({ key, change, transition }, callback) => {
+  if (!canRun({ key, change, transition })) {
+    logger.debug(
+      `canRun test failed on transition ${transition.key} for doc ${change.id} seq ${change.seq}`
+    );
+    return callback();
+  }
+
   logger.debug(
-    `calling transition.onMatch for doc ${change.id} seq ${
-      change.seq
-    } and transition ${key}`
+    `calling transition.onMatch for doc ${change.id} and transition ${key} seq ${change.seq}`
   );
 
   /*
@@ -300,9 +280,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
     .onMatch(change)
     .then(changed => {
       logger.debug(
-        `finished transition ${key} for seq ${change.seq} doc ${
-          change.id
-        } is ` + changed ? 'changed' : 'unchanged'
+        `finished transition ${key} doc ${change.id} is ${changed ? 'changed' : 'unchanged'} seq ${change.seq}`
       );
       if (!changed) {
         return changed;
@@ -319,11 +297,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
         code: `${key}_error'`,
         message: `Transition error on ${key}: ${message}`,
       });
-      logger.error(
-        `transition ${key} errored on doc ${change.id} seq ${
-          change.seq
-        }: ${JSON.stringify(err)}`
-      );
+      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
       if (!err.changed) {
         return false;
       }
@@ -342,15 +316,7 @@ const applyTransitions = (change, callback) => {
         change: change,
         transition: transition.module,
       };
-      if (!canRun(opts)) {
-        logger.debug(
-          `canRun test failed on transition ${transition.key} for seq ${
-            change.seq
-          } doc ${change.id}`
-        );
-        return;
-      }
-      return _.partial(applyTransition, opts, _);
+      return _.partial(module.exports.applyTransition, opts, _);
     })
     .filter(transition => !!transition);
 
@@ -360,40 +326,7 @@ const applyTransitions = (change, callback) => {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) =>
-    finalize(
-      {
-        change: change,
-        results: results,
-      },
-      callback
-    )
-  );
-};
-
-const detach = () => {
-  if (changesFeed) {
-    changesFeed.cancel();
-    changesFeed = null;
-  }
-};
-
-/*
- *  Setup changes feed listener.
- */
-const attach = () => {
-  if (!changesFeed) {
-    logger.info('transitions: processing enabled');
-    return metadata
-      .getProcessedSeq()
-      .catch(err => {
-        logger.error('transitions: error fetching processed seq: %o', err);
-      })
-      .then(seq => {
-        logger.info(`transitions: fetching changes feed, starting from ${seq}`);
-        changesFeed = feed.followFeed(seq, changeQueue);
-      });
-  }
+  async.series(operations, (err, results) => finalize({ change, results }, callback));
 };
 
 const availableTransitions = () => {
@@ -402,10 +335,6 @@ const availableTransitions = () => {
 
 module.exports = {
   _loadTransition: loadTransition,
-  _changeQueue: changeQueue,
-  _attach: attach,
-  _detach: detach,
-  _deleteReadDocs: deleteReadDocs,
   _lineage: lineage,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,
@@ -413,4 +342,7 @@ module.exports = {
   finalize: finalize,
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
+  processChange: processChange,
+  processDocs: processDocs,
+  _transitions: () => transitions
 };

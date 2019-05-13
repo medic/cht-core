@@ -82,8 +82,8 @@ angular.module('inboxServices').factory('ZScore',
       filter: function(change) {
         return change.id === CONFIGURATION_DOC_ID;
       },
-      callback: function(change) {
-        tables = change.doc && change.doc.charts;
+      callback: function() {
+        init();
       }
     });
 

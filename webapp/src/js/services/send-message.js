@@ -6,14 +6,25 @@ var _ = require('underscore'),
 angular
   .module('inboxServices')
   .factory('SendMessage', function(
+    $ngRedux,
     $q,
     DB,
     ExtractLineage,
+    GlobalActions,
     Settings,
     UserSettings
   ) {
     'use strict';
     'ngInject';
+
+    const self = this;
+    const mapDispatchToTarget = (dispatch) => {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setLastChangedDoc: globalActions.setLastChangedDoc
+      };
+    };
+    $ngRedux.connect(null, mapDispatchToTarget)(self);
 
     var identity = function(i) {
       return !!i;
@@ -29,6 +40,7 @@ angular
         kujua_message: true,
         type: 'data_record',
         sent_by: (user && user.name) || 'unknown',
+        _id: uuid()
       };
     };
 
@@ -164,6 +176,7 @@ angular
           doc.tasks = explodedRecipients.map(function(recipient) {
             return createTask(settings, recipient, message, user);
           });
+          self.setLastChangedDoc(doc);
           return doc;
         })
         .then(function(doc) {

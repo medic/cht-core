@@ -19,20 +19,13 @@ describe('ContactChangeFilter service', () => {
 
   describe('matchContact', () => {
     it('returns true for same ID', () => {
-      const change = { doc: { _id: '123' } };
+      const change = { id: '123' };
       const contact = { doc: { _id: '123' } };
       chai.expect(service.matchContact(change, contact)).to.equal(true);
     });
 
     it('returns false for different ID', () => {
-      const change = { doc: { _id: '456' } };
-      const contact = { doc: { _id: '123' } };
-
-      chai.expect(service.matchContact(change, contact)).to.equal(false);
-    });
-
-    it('returns false for missing ID', () => {
-      const change = { doc: { } };
+      const change = { id: '456' };
       const contact = { doc: { _id: '123' } };
 
       chai.expect(service.matchContact(change, contact)).to.equal(false);

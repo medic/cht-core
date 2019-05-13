@@ -70,7 +70,6 @@ describe('Contacts controller', () => {
           return false;
         },
         contains: deadListContains,
-        containsDeleteStub: sinon.stub(),
         setScope: sinon.stub()
       };
     };
@@ -777,7 +776,6 @@ describe('Contacts controller', () => {
             changesFilter({ doc: { type: 'district_hospital' } }),
             true
           );
-          assert.equal(contactsLiveList.containsDeleteStub.callCount, 0);
         });
     });
 
@@ -788,7 +786,6 @@ describe('Contacts controller', () => {
           assert.isNotOk(changesFilter({ doc: {} }));
           assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
           assert.isNotOk(changesFilter({ doc: { type: '' } }));
-          assert.equal(contactsLiveList.containsDeleteStub.callCount, 3);
         });
     });
 
@@ -829,14 +826,19 @@ describe('Contacts controller', () => {
         });
     });
 
-    it('filtering returns true for contained tombstones', () => {
-      contactsLiveList.containsDeleteStub.returns(true);
+    it('filtering returns true for contained deletions', () => {
+      isAdmin = false;
+      deadListContains.returns(true);
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(changesFilter({ doc: {} }), true);
+          assert.equal(changesFilter({ deleted: true, id: 'some_id' }), true);
+          assert.equal(deadListContains.callCount, 1);
+          assert.deepEqual(deadListContains.args[0], ['some_id']);
         });
     });
+
+    // test for empty doc!
   });
 
   describe('last visited date', function() {
@@ -1037,7 +1039,7 @@ describe('Contacts controller', () => {
       const deletedReport = {
         type: 'data_record',
         form: 'home_visit',
-        fields: { visited_contact_uuid: 'deleted' },
+        fields: { visited_contact_uuid: 'something' },
         _deleted: true,
       };
       const irrelevantReports = [
@@ -1053,23 +1055,27 @@ describe('Contacts controller', () => {
           form: 'home_visit',
           fields: { visited_contact_uuid: 'something' },
         },
+        {
+          type: 'data_record',
+          form: 'home_visit',
+          fields: { visited_contact_uuid: 'irrelevant' },
+          _deleted: true
+        }
       ];
 
       deadListContains.returns(false);
-      deadListContains.withArgs({ _id: 'something' }).returns(true);
+      deadListContains.withArgs('something').returns(true);
 
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(!!changesFilter({ doc: relevantReport }), true);
-          assert.equal(!!changesFilter({ doc: irrelevantReports[0] }), false);
-          assert.equal(!!changesFilter({ doc: irrelevantReports[1] }), false);
-          assert.equal(!!changesFilter({ doc: irrelevantReports[2] }), false);
-          assert.equal(!!changesFilter({ doc: irrelevantReports[3] }), false);
-          assert.equal(
-            !!changesFilter({ doc: deletedReport, deleted: true }),
-            false
-          );
+          assert.equal(!!changesFilter({ doc: relevantReport, id: 'relevantReport' }), true);
+          assert.equal(!!changesFilter({ doc: irrelevantReports[0], id: 'irrelevant1' }), false);
+          assert.equal(!!changesFilter({ doc: irrelevantReports[1], id: 'irrelevant2' }), false);
+          assert.equal(!!changesFilter({ doc: irrelevantReports[2], id: 'irrelevant3' }), false);
+          assert.equal(!!changesFilter({ doc: irrelevantReports[3], id: 'irrelevant4' }), false);
+          assert.equal(!!changesFilter({ doc: irrelevantReports[4], id: 'irrelevant5' }), false);
+          assert.equal(!!changesFilter({ doc: deletedReport, deleted: true }), true);
         });
     });
 
@@ -1116,7 +1122,7 @@ describe('Contacts controller', () => {
       ];
 
       deadListContains.returns(false);
-      deadListContains.withArgs({ _id: 'something' }).returns(true);
+      deadListContains.withArgs('something').returns(true);
 
       return createController()
         .getSetupPromiseForTesting()
@@ -1158,7 +1164,7 @@ describe('Contacts controller', () => {
       describe('uhc visits enabled', () => {
         beforeEach(() => {
           auth.resolves();
-          deadListContains.withArgs({ _id: 4 }).returns(true);
+          deadListContains.withArgs(4).returns(true);
         });
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', () => {
@@ -1328,7 +1334,7 @@ describe('Contacts controller', () => {
       describe('uhc visits disabled', () => {
         beforeEach(() => {
           auth.rejects();
-          deadListContains.withArgs({ _id: 4 }).returns(true);
+          deadListContains.withArgs(4).returns(true);
         });
 
         describe('alpha default sorting', () => {

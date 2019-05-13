@@ -31,16 +31,15 @@
     }
   };
 
-  var getDbInfo = function() {
+  const getDbInfo = function() {
     // parse the URL to determine the remote and local database names
-    var url = window.location.href;
-    var protocolLocation = url.indexOf('//') + 2;
-    var hostLocation = url.indexOf('/', protocolLocation) + 1;
-    var dbNameLocation = url.indexOf('/', hostLocation);
-    var dbName = url.slice(hostLocation, dbNameLocation);
+    const location = window.location;
+    const dbName = 'medic';
+    const port = location.port ? ':' + location.port : '';
+    const remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
     return {
       name: dbName,
-      remote: url.slice(0, dbNameLocation)
+      remote: remoteDB
     };
   };
 
@@ -128,7 +127,8 @@
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
     var userCtx = getUserCtx();
-    if (!userCtx) {
+    const hasForceLoginCookie = document.cookie.includes('login=force');
+    if (!userCtx || hasForceLoginCookie) {
       var err = new Error('User must reauthenticate');
       err.status = 401;
       return redirectToLogin(dbInfo, err, callback);
@@ -192,4 +192,5 @@
       });
 
   };
+
 }());

@@ -12,6 +12,7 @@ const initialState = {
   },
   facilities: [],
   isAdmin: false,
+  lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
   selectMode: false,
@@ -54,6 +55,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { facilities: action.payload.facilities });
     case actionTypes.SET_IS_ADMIN:
       return Object.assign({}, state, { isAdmin: action.payload.isAdmin });
+    case actionTypes.SET_LAST_CHANGED_DOC:
+      return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
     case actionTypes.SET_LOADING_CONTENT:
       return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
     case actionTypes.SET_LOADING_SUB_ACTION_BAR:

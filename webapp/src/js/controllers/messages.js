@@ -124,7 +124,9 @@ angular
           return false;
         }
         return (
-          change.doc.kujua_message || change.doc.sms_message || change.deleted
+          (change.doc && change.doc.kujua_message) ||
+          (change.doc && change.doc.sms_message) ||
+          change.deleted
         );
       },
     });
@@ -133,7 +135,7 @@ angular
       ctrl.setLeftActionBar({
         hasResults: $scope.messages.length > 0,
         exportFn: function() {
-          Export('messages', $scope.filters);
+          Export('messages', $scope.filters, { humanReadable: true });
         },
       });
     };

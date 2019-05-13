@@ -377,7 +377,7 @@ var _ = require('underscore'),
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export('contacts', $scope.filters);
+          Export('contacts', $scope.filters, { humanReadable: true });
         },
       };
       var type;
@@ -462,14 +462,15 @@ var _ = require('underscore'),
     };
 
     var isRelevantVisitReport = function(doc) {
-      var isRelevantDelete = doc._deleted && isSortedByLastVisited();
+      var isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
       return (
+        doc &&
         $scope.lastVisitedDateExtras &&
         doc.type === 'data_record' &&
         doc.form &&
         doc.fields &&
         doc.fields.visited_contact_uuid &&
-        (liveList.contains({ _id: doc.fields.visited_contact_uuid }) ||
+        (liveList.contains(doc.fields.visited_contact_uuid) ||
           isRelevantDelete)
       );
     };
@@ -478,8 +479,8 @@ var _ = require('underscore'),
       key: 'contacts-list',
       callback: function(change) {
         const limit = liveList.count();
-        if (change.deleted && change.doc.type !== 'data_record') {
-          liveList.remove(change.doc);
+        if (change.deleted) {
+          liveList.remove(change.id);
         }
 
         if (change.doc) {
@@ -504,8 +505,8 @@ var _ = require('underscore'),
       },
       filter: function(change) {
         return (
-          ContactSchema.getTypes().indexOf(change.doc.type) !== -1 ||
-          liveList.containsDeleteStub(change.doc) ||
+          (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
+          (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc)
         );
       },

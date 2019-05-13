@@ -20,7 +20,6 @@ const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
 const BATCH_SIZE = 100; // batch size for db operations.
-const WAIT_BETWEEN_BATCHES_SEC = 5;
 const HTTP_TIMEOUT_SEC = 120;
 
 const dbUrl = process.env.COUCH_URL;
@@ -198,16 +197,6 @@ const fixReport = (registrationReport, visitFormConfig) => {
 
 const saveDocs = docs => {
   return db.bulkDocs(docs);
-};
-
-const wait = (timerName) => {
-  console.log('start wait', timerName);
-  return new Promise(resolve => {
-    setTimeout(() => {
-      console.log('end wait', timerName);
-      resolve();
-    }, WAIT_BETWEEN_BATCHES_SEC * 1000);
-  });
 };
 
 // todo pass the result along, otherwise using this func is complicated.

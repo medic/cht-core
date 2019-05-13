@@ -80,15 +80,15 @@ var _ = require('underscore');
 
         var id = selection._id;
         if (selection.report || selection.expanded) {
-          ctrl.updateSelectedItem(id, { expanded: !selection.expanded });
+          ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
         } else {
-          ctrl.updateSelectedItem(id, { loading: true });
+          ctrl.updateSelectedReportItem(id, { loading: true });
           $scope.refreshReportSilently(id)
             .then(function() {
-              ctrl.updateSelectedItem(id, { loading: false, expanded: true });
+              ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
             })
             .catch(function(err) {
-              ctrl.updateSelectedItem(id, { loading: false });
+              ctrl.updateSelectedReportItem(id, { loading: false });
               $log.error('Error fetching doc for expansion', err);
             });
         }
@@ -99,10 +99,6 @@ var _ = require('underscore');
           $event.stopPropagation();
           $scope.deselectReport(report);
         }
-      };
-
-      $scope.labelIsIDorName = (label) => {
-        return label.endsWith('.patient_id') || label.endsWith('.patient_uuid') || label.endsWith('.patient_name');
       };
 
       var changeListener = Changes({
@@ -117,15 +113,15 @@ var _ = require('underscore');
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.deselectReport(change.doc);
+              $scope.deselectReport(change.id);
             });
           } else {
             var selectedReports = ctrl.selectedReports;
-            $scope.refreshReportSilently(change.doc)
+            $scope.refreshReportSilently(change.id)
               .then(function() {
-                if(selectedReports[0].formatted.verified !== change.doc.verified ||
-                   ('oldVerified' in selectedReports[0].formatted &&
-                    selectedReports[0].formatted.oldVerified !== change.doc.verified)) {
+                if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
+                   (change.doc && ('oldVerified' in selectedReports[0].formatted &&
+                    selectedReports[0].formatted.oldVerified !== change.doc.verified))) {
                   ctrl.setSelectedReports(selectedReports);
                   $timeout(function() {
                     ctrl.setFirstSelectedReportFormattedProperty({ verified: change.doc.verified });

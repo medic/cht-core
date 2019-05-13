@@ -46,6 +46,10 @@ describe('bootstrapper', () => {
     document = { cookie: '' };
     window = {
       location: {
+        protocol: 'http:',
+        hostname: 'localhost',
+        port: '5988',
+        pathname: '/medic/_design/medic/_rewrite/#/messages',
         href: 'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
       },
       navigator: {

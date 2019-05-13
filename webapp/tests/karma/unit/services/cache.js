@@ -125,8 +125,8 @@ describe('Cache service', function() {
         }
         count++;
       },
-      invalidate: function(doc) {
-        return doc._id === newDoc._id;
+      invalidate: function(change) {
+        return change.id === newDoc._id;
       }
     });
     cache(function(err, results) {
@@ -156,8 +156,8 @@ describe('Cache service', function() {
         }
         count++;
       },
-      invalidate: function(doc) {
-        return doc._id !== newDoc._id;
+      invalidate: function(change) {
+        return change.id !== newDoc._id;
       }
     });
     cache(function(err, results) {

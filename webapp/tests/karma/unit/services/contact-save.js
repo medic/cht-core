@@ -7,6 +7,7 @@ describe('ContactSave service', () => {
   let get;
   let EnketoTranslation;
   let ExtractLineage;
+  let GlobalActions;
 
   beforeEach(() => {
     EnketoTranslation = {
@@ -16,6 +17,7 @@ describe('ContactSave service', () => {
     ExtractLineage = sinon.stub();
     bulkDocs = sinon.stub();
     get = sinon.stub();
+    GlobalActions = { setLastChangedDoc: sinon.stub() };
 
     module('inboxApp');
     module($provide => {
@@ -26,6 +28,7 @@ describe('ContactSave service', () => {
       }));
       $provide.value('EnketoTranslation', EnketoTranslation);
       $provide.value('ExtractLineage', ExtractLineage);
+      $provide.value('GlobalActions', () => GlobalActions);
     });
     inject(_ContactSave_ => {
       service = _ContactSave_;
@@ -66,6 +69,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
+        assert.equal(GlobalActions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(GlobalActions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
@@ -103,6 +108,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
+        assert.equal(GlobalActions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(GlobalActions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
@@ -151,6 +158,9 @@ describe('ContactSave service', () => {
         assert.equal(savedDocs[2].parent.extracted, true);
 
         assert.equal(ExtractLineage.callCount, 3);
+
+        assert.equal(GlobalActions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(GlobalActions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 

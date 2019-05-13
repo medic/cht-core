@@ -21,28 +21,18 @@ _.templateSettings = {
 };
 
 const safePath = requested => {
-  const appPrefix = path.join('/', environment.db, '_design', environment.ddoc, '_rewrite');
-  const dirPrefix = path.join(appPrefix, '/');
+  const root = '/';
 
   if (!requested) {
-    // no redirect path - return root
-    return appPrefix;
+    return root;
   }
-
   try {
     requested = url.resolve('/', requested);
   } catch (e) {
     // invalid url - return the default
-    return appPrefix;
+    return root;
   }
-
   const parsed = url.parse(requested);
-
-  if (parsed.path !== appPrefix && parsed.path.indexOf(dirPrefix) !== 0) {
-    // path is not relative to the couch app
-    return appPrefix;
-  }
-
   return parsed.path + (parsed.hash || '');
 };
 
@@ -127,12 +117,14 @@ const setLocaleCookie = (res, locale) => {
 
 const getRedirectUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
-  // For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
-  // One `e2e` is problematic
-  const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
-    environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
-
-  return path.join('/', environment.db, '_design', designDoc, '_rewrite');
+  // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
+  let url;
+  if (auth.hasAllPermissions(userCtx, 'can_configure') && environment.db !== 'medic-test') {
+    url = '/admin/';
+  } else {
+    url = '/';
+  }
+  return url;
 };
 
 const setCookies = (req, res, sessionRes) => {
@@ -147,6 +139,8 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
+      // Delete login=force cookie
+      res.clearCookie('login');
       return auth.getUserSettings(userCtx).then(({ language }={}) => {
         if (language) {
           setLocaleCookie(res, language);
@@ -197,6 +191,10 @@ module.exports = {
       .then(userCtx => {
         // already logged in
         setUserCtxCookie(res, userCtx);
+        var hasForceLoginCookie = cookie.get(req, 'login') === 'force';
+        if (hasForceLoginCookie) {
+          throw new Error('Force login');
+        }
         res.redirect(redirect);
       })
       .catch(() => {
