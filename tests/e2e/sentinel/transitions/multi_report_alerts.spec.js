@@ -2,9 +2,17 @@ const utils = require('../../../utils'),
       sentinelUtils = require('../utils'),
       uuid = require('uuid');
 
+const contact = {
+  _id: 'person',
+  type: 'person',
+  phone: 'phone',
+  reported_date: new Date().getTime()
+};
+
 describe('multi_report_alerts', () => {
+  beforeAll(done => utils.saveDoc(contact).then(done));
   afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  afterEach(done => utils.revertDb([contact._id], true).then(done));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -18,14 +26,15 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: 'FORM'
       }],
-      forms: { FORM: { public_form: true } }
+      forms: { FORM: { } }
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'FROM',
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person' }
     };
 
     return utils
@@ -50,14 +59,15 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { NOT_FORM: { public_form: true } }
+      forms: { NOT_FORM: { } }
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'NOT_FORM',
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person' }
     };
 
     return utils
@@ -82,7 +92,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { public_form: true } }
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -90,7 +100,8 @@ describe('multi_report_alerts', () => {
       type: 'data_record',
       form: 'FORM',
       from: '0123456789',
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person' }
     };
 
     return utils
@@ -125,15 +136,28 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { public_form: true } }
+      forms: { FORM: { } }
     };
+
+    const contacts = [{
+      _id: 'contact1',
+      type: 'person',
+      phone: '+251 11 551 1211',
+      reported_date: new Date().getTime()
+    }, {
+      _id: 'contact2',
+      type: 'person',
+      phone: '+256 41 9867538',
+      reported_date: new Date().getTime()
+    }];
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
       from: '+251 11 551 1211',
-      reported_date: new Date().getTime() - 100
+      reported_date: new Date().getTime() - 100,
+      contact: { _id: 'contact1' }
     };
 
     const doc2 = {
@@ -141,11 +165,13 @@ describe('multi_report_alerts', () => {
       type: 'data_record',
       form: 'FORM',
       from: '+256 41 9867538',
-      reported_date: new Date().getTime() + 100
+      reported_date: new Date().getTime() + 100,
+      contact: { _id: 'contact2' }
     };
 
     return utils
       .updateSettings(settings, true)
+      .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -191,26 +217,28 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { public_form: true } }
+      forms: { FORM: { } }
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      sent_by: '0123456789',
-      home_phone: '01010101',
-      reported_date: new Date().getTime() - 100
+      sent_by: '+256 41 9867538',
+      home_phone: '+256 41 9867539',
+      reported_date: new Date().getTime() - 100,
+      contact: { _id: 'person' }
     };
 
     const doc2 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      sent_by: '987654321',
-      home_phone: '12121212',
+      sent_by: '+256 41 9867530',
+      home_phone: '+256 41 9867531',
       magic: true,
-      reported_date: new Date().getTime() + 100
+      reported_date: new Date().getTime() + 100,
+      contact: { _id: 'person' }
     };
 
     return utils
@@ -239,11 +267,11 @@ describe('multi_report_alerts', () => {
         expect(updated.tasks.length).toEqual(2);
 
         expect(updated.tasks[0].messages[0].message).toEqual('multi_report_magic');
-        expect(updated.tasks[0].messages[0].to).toEqual('987654321');
+        expect(updated.tasks[0].messages[0].to).toEqual('+256 41 9867530');
         expect(updated.tasks[0].state).toEqual('pending');
 
         expect(updated.tasks[1].messages[0].message).toEqual('multi_report_magic');
-        expect(updated.tasks[1].messages[0].to).toEqual('12121212');
+        expect(updated.tasks[1].messages[0].to).toEqual('+256 41 9867531');
         expect(updated.tasks[1].state).toEqual('pending');
       });
   });
@@ -260,23 +288,25 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { public_form: true } }
+      forms: { FORM: { } }
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '0123456789',
-      reported_date: new Date().getTime() - 25 * 60 * 60 * 1000
+      from: 'phone',
+      reported_date: new Date().getTime() - 25 * 60 * 60 * 1000,
+      contact: { _id: 'person' }
     };
 
     const doc2 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '987654321',
-      reported_date: new Date().getTime() + 100
+      from: 'phone',
+      reported_date: new Date().getTime() + 100,
+      contact: { _id: 'person' }
     };
 
     return utils
@@ -336,7 +366,7 @@ describe('multi_report_alerts', () => {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '+256 41 9867538',
+      from: '+256 41 9767538',
       reported_date: new Date().getTime() - 8000
     };
 
@@ -344,7 +374,7 @@ describe('multi_report_alerts', () => {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '+256 41 9867539',
+      from: '+256 41 9767539',
       reported_date: new Date().getTime() - 7000
     };
 

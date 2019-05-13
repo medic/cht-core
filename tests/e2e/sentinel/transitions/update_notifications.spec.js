@@ -78,7 +78,7 @@ describe('update_notifications', () => {
         on_form: 'on',
         off_form: 'off'
       },
-      forms: { not_off: { public_form: true } }
+      forms: { not_off: { } }
     };
 
     const doc = {
@@ -88,7 +88,8 @@ describe('update_notifications', () => {
       fields: {
         patient_uuid: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person' }
     };
 
     return utils
