@@ -192,7 +192,7 @@ To import the standard configuration:
 
 1. Install medic-conf: `npm install -g medic-conf`
 2. Navigate to the configuration you want to import: `cd config/standard`
-3. Import the config: `medic-conf --url http://username:password@localhost:5984`
+3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
 
