@@ -6,7 +6,7 @@
 # COUCH_URL: url for accessing your couch db instance,
 #   e.g. http://admin:pass@localhost:5984/medic
 # COUCH_NODE_NAME: node name of couch on local host,
-#   e.g. couchdb@localhost
+#   e.g. couchdb@127.0.0.1
 #
 # Alternatively, these values can be set as normal environment variables.
 
