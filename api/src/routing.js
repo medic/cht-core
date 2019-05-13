@@ -37,6 +37,7 @@ const _ = require('underscore'),
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
+  sentinelPrefix = `/${environment.db}-sentinel/`,
   appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
   adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/',
   serverUtils = require('./server-utils'),
@@ -200,7 +201,7 @@ app.all('/medic/*', (req, res, next) => {
   } else {
     proxy.web(req, res);
   }
-}); 
+});
 
 app.all('/admin*', (req, res) => {
   const originalUrl = req.url;
@@ -609,6 +610,13 @@ app.get('/service-worker.js', (req, res) => {
 app.get('/empty.manifest', (req, res) => {
   writeHeaders(req, res, [['Content-Type', 'text/cache-manifest; charset=utf-8']]);
   res.send('CACHE MANIFEST\n\nNETWORK:\n*\n');
+});
+
+app.all(`${sentinelPrefix}*`, (req, res, next) => {
+  auth
+    .check(req, 'can_access_sentinel_db')
+    .then(() => next())
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 /**
