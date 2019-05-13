@@ -814,4 +814,84 @@ describe('transitions', () => {
         });
       });
   });
+
+  it('should run async and sync transitions over the same doc successfully', () => {
+    const settings = {
+      transitions: {
+        update_clinics: true,
+        accept_patient_reports: true,
+        multi_report_alerts: true
+      },
+      forms: {
+        IMM: {
+          meta: { label: { en: 'IMM' }, code: 'IMM'},
+          fields: {
+            patient_id: {
+              labels: { short: { translation_key: 'patient_id' }},
+              position: 1,
+              type: 'string',
+              length: [5, 13],
+              required: true
+            },
+            count: {
+              labels: { short: { translation_key: 'count' }},
+              position: 1,
+              type: 'string',
+              length: [1],
+              required: false
+            }
+          }
+        }
+      },
+      patient_reports: [{
+        form: 'IMM',
+        messages: [{
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'patient_reports msg'
+          }],
+        }]
+      }],
+      multi_report_alerts: [{
+        name: 'test',
+        is_report_counted: 'function(r, l) { return true }',
+        num_reports_threshold: 1,
+        message: 'multi_report_alerts msg',
+        recipients: ['new_report.from'],
+        time_window_in_days: 1,
+        forms: ['IMM']
+      }]
+    };
+
+    const messages = [{
+      id: 'imm1',
+      from: 'phone1',
+      content: 'IMM patient1 1'
+    }];
+
+    let docId;
+
+    return utils
+      .updateSettings(settings, false)
+      .then(() => Promise.all([
+        waitForChanges(messages),
+        utils.request(getPostOpts('/api/sms', { messages: messages })),
+      ]))
+      .then(([changes]) => {
+        docId = changes[0].id;
+      })
+      .then(() => sentinelUtils.waitForSentinel(docId))
+      .then(() => Promise.all([
+        utils.getDoc(docId),
+        sentinelUtils.getInfoDoc(docId)
+      ]))
+      .then(([doc, info]) => {
+        expect(doc.tasks.length).toEqual(2);
+        expect(doc.tasks[0].messages[0].message).toEqual('patient_reports msg');
+        expect(doc.tasks[1].messages[0].message).toEqual('multi_report_alerts msg');
+
+        expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'multi_report_alerts');
+      });
+  });
 });
