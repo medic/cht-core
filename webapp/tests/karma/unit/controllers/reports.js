@@ -172,10 +172,10 @@ describe('ReportsCtrl controller', () => {
         post.returns(Promise.resolve());
 
         createController();
-        scope.selected[0] = {
+        actions.setSelected([{
           _id: 'abc',
           doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
-        };
+        }]);
         scope.$broadcast('VerifyReport', setTo);
         return Q.resolve(() => {
           chai.expect(modal.callCount).to.eq(confirm !== undefined ? 1 : 0);

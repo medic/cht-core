@@ -30,16 +30,15 @@ angular
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
-      return {
-        enketoEdited: Selectors.getEnketoEditedStatus(state),
-        selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state)
-      };
-    };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const ctrl = this;
+    const mapStateToTarget = state => ({
+      enketoEdited: Selectors.getEnketoEditedStatus(state),
+      selectMode: Selectors.getSelectMode(state),
+      selected: Selectors.getSelected(state)
+    });
+    
+    const mapDispatchToTarget = function(dispatch) {
+      const actions = Actions(dispatch);
       return {
         addSelected: actions.addSelected,
         removeSelected: actions.removeSelected,
@@ -48,7 +47,7 @@ angular
         setLastChangedDoc: actions.setLastChangedDoc
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
 
@@ -344,34 +343,7 @@ angular
       }
 
       $scope.setLoadingSubActionBar(true);
-      const doc = $scope.selected[0].doc;
 
-      const promptUserToConfirmVerification = () => {
-        const verificationTranslationKey = valid ? 'reports.verify.valid' : 'reports.verify.invalid';
-        return Modal({
-          templateUrl: 'templates/modals/verify_confirm.html',
-          controller: 'VerifyReportModalCtrl',
-          model: {
-            proposedVerificationState: $translate.instant(verificationTranslationKey),
-          },
-        })
-        .then(() => true)
-        .catch(() => false);
-      };
-
-      const shouldReportBeVerified = function (canUserEdit) {
-        // verify if all verifications are allowed
-        if (canUserEdit) {
-          return true;
-        }
-        
-        // don't verify if user can't edit and this is an edit
-        const docHasExistingResult = doc.verified !== undefined;
-        if (docHasExistingResult) {
-          return false;
-        }
-
-      const doc = $scope.selected[0].doc;
       const promptUserToConfirmVerification = () => {
         const verificationTranslationKey = reportIsValid ? 'reports.verify.valid' : 'reports.verify.invalid';
         return Modal({
@@ -386,42 +358,54 @@ angular
       };
 
       const shouldReportBeVerified = function (canUserEdit) {
-        // verify if all verifications are allowed
+        // verify if user verifications are allowed
         if (canUserEdit) {
           return true;
         }
         
         // don't verify if user can't edit and this is an edit
-        const docHasExistingResult = doc.verified !== undefined;
+        const docHasExistingResult = ctrl.selected[0].doc.verified !== undefined;
         if (docHasExistingResult) {
           return false;
         }
 
-        // verify if this is not an edit and the user accepts a prompt
+        // verify if this is not an edit and the user accepts  prompt
         return promptUserToConfirmVerification();
       };
 
       const writeVerificationToDoc = function() {
-        if (doc.contact) {
-          doc.contact = lineage.minifyLineage(doc.contact);
+        const selectedDoc = ctrl.selected[0].doc;
+        if (selectedDoc.contact) {
+          const minifiedContact = lineage.minifyLineage(selectedDoc.contact);
+          ctrl.setFirstSelectedDocProperty({ contact: minifiedContact });
         }
 
-        const clearVerification = doc.verified === reportIsValid;
+        const clearVerification = selectedDoc.verified === reportIsValid;
         if (clearVerification) {
-          doc.verified = undefined;
-          doc.verified_date = undefined;
+          ctrl.setFirstSelectedDocProperty({
+            verified: undefined,
+            verified_date: undefined,
+          });
         } else {
-          doc.verified = reportIsValid;
-          doc.verified_date = Date.now();  
+          ctrl.setFirstSelectedDocProperty({
+            verified: reportIsValid,
+            verified_date: Date.now(),
+          });
         }
+        ctrl.setLastChangedDoc(selectedDoc);
 
         return DB()
-          .post(doc)
+          .get(selectedDoc._id)
+          .then(function(existingRecord) {
+            ctrl.setFirstSelectedDocProperty({ _rev: existingRecord._rev });
+            return DB().post(ctrl.selected[0].doc);
+          })
           .catch(function(err) {
             $log.error('Error verifying message', err);
           })
-          .finally(() => {
+          .finally(function () {
             $scope.$broadcast('VerifiedReport', reportIsValid);
+            $scope.setLoadingSubActionBar(false);
           });
       };
 
