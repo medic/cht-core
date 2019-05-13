@@ -65,20 +65,22 @@ angular.module('inboxServices').factory('XmlForms',
       return $parse(expression)(XmlFormsContextUtils, context);
     };
 
-    const filterAll = function(forms, options, user) {
-      // clone the forms list so we don't affect future filtering
-      forms = forms.slice();
-      const promises = forms.map(form => filter(form, options, user));
-      return $q.all(promises)
-        .then(function(resolutions) {
-          // always splice in reverse...
-          for (let i = resolutions.length - 1; i >= 0; i--) {
-            if (!resolutions[i]) {
-              forms.splice(i, 1);
+    const filterAll = function(forms, options) {
+      return UserContact().then(user => {
+        // clone the forms list so we don't affect future filtering
+        forms = forms.slice();
+        const promises = forms.map(form => filter(form, options, user));
+        return $q.all(promises)
+          .then(function(resolutions) {
+            // always splice in reverse...
+            for (let i = resolutions.length - 1; i >= 0; i--) {
+              if (!resolutions[i]) {
+                forms.splice(i, 1);
+              }
             }
-          }
-          return forms;
-        });
+            return forms;
+          });
+      });
     };
 
     const filter = function(form, options, user) {
@@ -171,7 +173,6 @@ angular.module('inboxServices').factory('XmlForms',
             throw err;
           })
           .then(doc => {
-            // TODO filter here too
             if (!valid(doc)) {
               return $q.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
             }
@@ -186,9 +187,7 @@ angular.module('inboxServices').factory('XmlForms',
        * @params options Described in the "listen" function below.
        */
       list: function(options) {
-        return $q.all([ init, UserContact() ]).then(([ forms, user ]) => {
-          return filterAll(forms, options || {}, user);
-        });
+        return init.then(forms => filterAll(forms, options || {}));
       },
 
       /**
@@ -219,22 +218,12 @@ angular.module('inboxServices').factory('XmlForms',
           options = {};
         }
         const listener = listeners[name] = {
-          options: options,
+          options: options || {},
           callback: callback
         };
         init
-          .then(function(forms) {
-            UserContact() // TODO pull out into init??
-              .then(function(user) {
-                return filterAll(forms, listener.options, user);
-              })
-              .then(function(results) {
-                listener.callback(null, results);
-              })
-              .catch(function(err) {
-                $log.error('Error fetching user contact', err);
-              });
-          })
+          .then(forms => filterAll(forms, listener.options))
+          .then(results => listener.callback(null, results))
           .catch(callback);
       }
     };
