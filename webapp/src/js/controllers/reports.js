@@ -374,13 +374,12 @@ angular
       };
 
       const writeVerificationToDoc = function() {
-        const selectedDoc = ctrl.selected[0].doc;
-        if (selectedDoc.contact) {
-          const minifiedContact = lineage.minifyLineage(selectedDoc.contact);
+        if (ctrl.selected[0].doc.contact) {
+          const minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
           ctrl.setFirstSelectedDocProperty({ contact: minifiedContact });
         }
 
-        const clearVerification = selectedDoc.verified === reportIsValid;
+        const clearVerification = ctrl.selected[0].doc.verified === reportIsValid;
         if (clearVerification) {
           ctrl.setFirstSelectedDocProperty({
             verified: undefined,
@@ -392,10 +391,10 @@ angular
             verified_date: Date.now(),
           });
         }
-        ctrl.setLastChangedDoc(selectedDoc);
+        ctrl.setLastChangedDoc(ctrl.selected[0].doc);
 
         return DB()
-          .get(selectedDoc._id)
+          .get(ctrl.selected[0].doc._id)
           .then(function(existingRecord) {
             ctrl.setFirstSelectedDocProperty({ _rev: existingRecord._rev });
             return DB().post(ctrl.selected[0].doc);
