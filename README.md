@@ -212,6 +212,17 @@ To import the standard configuration:
 
 Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic) to the [staging server](https://staging.dev.medicmobile.org).
 
+## Applying Standard Sonfig. 
+
+Our Standard applcation configuration is stored in the repo under config. This can be applied to control the person, place, and forms generation. This is an optional step but provides some functionality the default config does not. 
+
+1. Install [Medic Conf](https://github.com/medic/medic-conf)
+1. Change directory to the <medic-repo>/config/standard
+1. Ensure the app/api is running. Specifically on localhost for these instructions. 
+1. Run `medic-conf --local` to upload the standard config to your localhost.
+
+
+
 ## Contributing
 
 At Medic Mobile we are the technical steward of the [Community Health Toolkit](https://communityhealthtoolkit.org). We welcome and appreciate contributions, and support new developers to use the tools whenever possible. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). For more info check out our [contributor guidelines](CONTRIBUTING.md).
