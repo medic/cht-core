@@ -87,7 +87,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         XmlForms.get(action.form)
           .then(function(formDoc) {
             ctrl.setEnketoEditedStatus(false);
-            return Enketo.render('#task-report', formDoc._id, action.content, markFormEdited)
+            return Enketo.render('#task-report', formDoc, action.content, markFormEdited)
               .then(function(formInstance) {
                 $scope.form = formInstance;
                 $scope.loadingForm = false;

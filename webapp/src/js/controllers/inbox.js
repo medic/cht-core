@@ -437,7 +437,7 @@ var _ = require('underscore'),
             }
           );
           // get the forms for the Add Report menu
-          XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+          XmlForms.listen('AddReportMenu', { contactForms: false }, function(err, xForms) {
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }

@@ -1,6 +1,5 @@
 angular.module('inboxServices').factory('XmlForms',
   function(
-    $log,
     $parse,
     $q,
     Auth,
@@ -16,9 +15,10 @@ angular.module('inboxServices').factory('XmlForms',
 
     const listeners = {};
 
-    const valid = doc => {
-      return Object.keys(doc._attachments || {})
-             .some(name => name === 'xml' || name.endsWith('.xml'));
+    const findXFormAttachmentName = doc => {
+      return doc &&
+             doc._attachments &&
+             Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
     };
 
     const getForms = function() {
@@ -30,7 +30,7 @@ angular.module('inboxServices').factory('XmlForms',
         .query('medic-client/doc_by_type', options)
         .then(function(res) {
           return res.rows
-            .filter(row => valid(row.doc))
+            .filter(row => findXFormAttachmentName(row.doc))
             .map(row => row.doc);
         });
     };
@@ -173,12 +173,19 @@ angular.module('inboxServices').factory('XmlForms',
             throw err;
           })
           .then(doc => {
-            if (!valid(doc)) {
+            if (!findXFormAttachmentName(doc)) {
               return $q.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
             }
             return doc;
           });
       },
+
+      /**
+       * Returns the name of the xform attachment.
+       *
+       * @param The document find the xform attachment for
+       */
+      findXFormAttachmentName: findXFormAttachmentName,
 
       /**
        * Returns a Promise which resolves an array of docs which contain an

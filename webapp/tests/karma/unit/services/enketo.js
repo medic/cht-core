@@ -6,6 +6,7 @@ describe('Enketo service', () => {
   /** @return a mock form ready for putting in #dbContent */
   const mockEnketoDoc = formInternalId => {
     return {
+      _id: `form:${formInternalId}`,
       internalId: formInternalId,
       _attachments: { xml: { something: true } },
     };
@@ -86,7 +87,6 @@ describe('Enketo service', () => {
       AddAttachment = sinon.stub(),
       EnketoForm = sinon.stub(),
       EnketoPrepopulationData = sinon.stub(),
-      XmlForm = sinon.stub(),
       Search = sinon.stub(),
       LineageModelGenerator = { contact: sinon.stub() };
 
@@ -100,7 +100,6 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
 
-    XmlForm.resolves({ _id: 'abc' });
     GlobalActions = { setLastChangedDoc: sinon.stub() };
 
     module(function($provide) {
@@ -127,7 +126,10 @@ describe('Enketo service', () => {
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
       $provide.value('AddAttachment', AddAttachment);
-      $provide.value('XmlForms', { get: XmlForm });
+      $provide.value('XmlForms', {
+        get: sinon.stub().resolves({ _id: 'abc' }),
+        findXFormAttachmentName: sinon.stub().resolves('mydoc')
+      });
       $provide.value('ZScore', () => Promise.resolve(sinon.stub()));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('GlobalActions', () => GlobalActions);
@@ -162,7 +164,6 @@ describe('Enketo service', () => {
 
     it('return error when form initialisation fails', function(done) {
       UserContact.resolves({ contact_id: '123' });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment.resolves('xml');
       transform
         .onFirstCall().resolves('<div>my form</div>')
@@ -170,13 +171,14 @@ describe('Enketo service', () => {
       EnketoPrepopulationData.resolves('<xml></xml>');
       const expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
-      service.render($('<div></div>'), 'ok')
-        .then(() => {
+      service
+        .render($('<div></div>'), mockEnketoDoc('myform'))
+        .then(function() {
           done(new Error('Should throw error'));
         })
         .catch(function(actual) {
-          expect(enketoInit.callCount).to.equal(1);
-          expect(actual.message).to.equal(JSON.stringify(expected));
+          chai.expect(enketoInit.callCount).to.equal(1);
+          chai.expect(actual.message).to.equal(JSON.stringify(expected));
           done();
         });
     });
