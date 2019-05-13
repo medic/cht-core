@@ -4,7 +4,7 @@ function(doc) {
   if (idx !== -1) {
     var dead = !!doc.date_of_death;
     var muted = !!doc.muted;
-    var order = muted + ' ' +  dead + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
+    var order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
     emit([ doc.type ], order);
   }
 }

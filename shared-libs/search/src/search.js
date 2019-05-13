@@ -39,18 +39,17 @@ module.exports = function(Promise, DB) {
     var intersection = responses.pop();
     intersection = _.uniq(intersection, 'id');
     _.each(responses, function(response) {
-      intersection = _.reject(intersection, function(row) {
+      intersection = intersection.filter(row => {
         const existent = _.findWhere(response, { id: row.id });
         if (existent && 'sort' in existent) {
           row.sort = existent.sort + ' ' + (row.sort || row.value);
         }
-        return !existent;
+        return existent;
       });
     });
 
     return intersection;
   };
-
   // Queries view as specified by request object coming from GenerateSearchQueries.
   // request = {view, union: true, paramSets: [params1, ...] }
   // or

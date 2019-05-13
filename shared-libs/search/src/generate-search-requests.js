@@ -132,8 +132,8 @@ var contactTypeRequest = function(filters, sortByLastVisitedDate) {
 
   if (sortByLastVisitedDate) {
     request.map = row => {
-      const [ muted, dead ] = row.value.split(' ');
-      row.sort = muted + ' ' + dead;
+      const [ dead, muted ] = row.value.split(' ');
+      row.sort = dead + ' ' + muted;
       return row;
     };
   }

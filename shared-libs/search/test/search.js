@@ -333,13 +333,13 @@ describe('Search service', function() {
       });
       DB.query.onCall(1).resolves({
         rows: [
-          { id: 'e', value: 12 },
-          { id: 'b', value: 13 },
-          { id: 'g', value: 18 },
-          { id: 'f', value: 19 },
-          { id: 'c', value: 20 },
-          { id: 'd', value: 21 },
-          { id: 'a', value: 22 }
+          { id: 'e', value: 1557755132000 },
+          { id: 'b', value: 1557755132001 },
+          { id: 'g', value: 1557755132002 },
+          { id: 'f', value: 1557755132003 },
+          { id: 'c', value: 1557755132004 },
+          { id: 'd', value: 1557755132005 },
+          { id: 'a', value: 1557755132006 }
         ]
       });
 
@@ -347,13 +347,13 @@ describe('Search service', function() {
         chai.expect(result).to.deep.equal({
           docIds: ['b', 'c', 'a', 'e', 'd', 'g', 'f'],
           queryResultsCache: [
-            { id: 'e', value: 12, sort: 'true false 12' },
-            { id: 'b', value: 13, sort: 'false false 13' },
-            { id: 'g', value: 18, sort: 'true true 18' },
-            { id: 'f', value: 19, sort: 'true true 19' },
-            { id: 'c', value: 20, sort: 'false false 20' },
-            { id: 'd', value: 21, sort: 'true false 21' },
-            { id: 'a', value: 22, sort: 'false false 22' }
+            { id: 'e', value: 1557755132000, sort: 'true false 1557755132000' },
+            { id: 'b', value: 1557755132001, sort: 'false false 1557755132001' },
+            { id: 'g', value: 1557755132002, sort: 'true true 1557755132002' },
+            { id: 'f', value: 1557755132003, sort: 'true true 1557755132003' },
+            { id: 'c', value: 1557755132004, sort: 'false false 1557755132004' },
+            { id: 'd', value: 1557755132005, sort: 'true false 1557755132005' },
+            { id: 'a', value: 1557755132006, sort: 'false false 1557755132006' }
           ]
         });
         chai.expect(DB.query.callCount).to.equal(2);
