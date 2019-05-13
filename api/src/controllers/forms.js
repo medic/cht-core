@@ -67,9 +67,10 @@ const getFormAttachment = form => {
   return getFormDocs()
     .then(docs => docs.find(doc => doc.internalId === form))
     .then(doc => {
-      const name = Object.keys(doc._attachments || {})
+      const attachments = (doc && doc._attachments) || {};
+      const name = Object.keys(attachments)
         .find(name => name === 'xml' || name.endsWith('.xml'));
-      return doc._attachments && doc._attachments[name];
+      return attachments[name];
     });
 };
 

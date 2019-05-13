@@ -8,7 +8,6 @@ describe('Telemetry service', () => {
     $window,
     $log,
     DB,
-    XmlForms,
     storageGetItem,
     storageSetItem,
     storageRemoveItem,
@@ -42,16 +41,14 @@ describe('Telemetry service', () => {
     DB = {
       info: sinon.stub(),
       put: sinon.stub(),
-      get: sinon.stub()
+      get: sinon.stub(),
+      query: sinon.stub()
     };
-
-    XmlForms = { list: sinon.stub() };
 
     module($provide => {
       $provide.value('$q', Q);
       $provide.value('$window', $window);
       $provide.value('$log', $log);
-      $provide.value('XmlForms', XmlForms);
       $provide.factory('DB', KarmaUtils.mockDB(DB));
       $provide.value('Session', {
         userCtx: () => {
@@ -154,12 +151,19 @@ describe('Telemetry service', () => {
           version: '3.0.0'
         }
       });
-      XmlForms.list.resolves([
-        {
-          _id: 'anc_followup',
-          _rev: '1-abc'
-        }
-      ]);
+      DB.query.resolves({
+        rows: [
+          {
+            id: 'form:anc_followup',
+            key: 'anc_followup',
+            doc: {
+              _id: 'form:anc_followup',
+              _rev: '1-abc',
+              internalId: 'anc_followup'
+            }
+          }
+        ]
+      });
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
@@ -202,6 +206,9 @@ describe('Telemetry service', () => {
             height: 1024,
           },
         });
+        chai.expect(DB.query.callCount).to.equal(1);
+        chai.expect(DB.query.args[0][0]).to.equal('medic-client/doc_by_type');
+        chai.expect(DB.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
       });
     });
 
@@ -236,7 +243,7 @@ describe('Telemetry service', () => {
           version: '3.0.0'
         }
       });
-      XmlForms.list.resolves([]);
+      DB.query.resolves({ rows: [] });
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';

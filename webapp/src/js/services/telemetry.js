@@ -8,8 +8,7 @@ angular
     $q,
     $window,
     DB,
-    Session,
-    XmlForms
+    Session
   ) {
     'use strict';
     'ngInject';
@@ -102,14 +101,15 @@ angular
 
     var generateMetadataSection = function() {
       return $q.all([
-        DB().get('_design/medic-client'),
-        XmlForms.list()
-      ]).then(([ddoc, formDocs]) => {
+          DB().get('_design/medic-client'),
+          DB().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
+      ]).then(([ddoc, formResults]) => {
         const date = moment(getLastAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
-        const forms = formDocs.reduce((idToVersion, doc) => {
-          idToVersion[doc._id] = doc._rev;
-          return idToVersion;
+        const forms = formResults.rows.reduce((keyToVersion, row) => {
+          keyToVersion[row.doc.internalId] = row.doc._rev;
+
+          return keyToVersion;
         }, {});
 
         return {
