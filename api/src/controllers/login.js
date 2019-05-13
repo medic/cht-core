@@ -141,8 +141,10 @@ const setCookies = (req, res, sessionRes) => {
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
       res.clearCookie('login');
-      return auth.getUserSettings(userCtx).then(settings => {
-        setLocaleCookie(res, settings.language);
+      return auth.getUserSettings(userCtx).then(({ language }={}) => {
+        if (language) {
+          setLocaleCookie(res, language);
+        }
         res.status(302).send(getRedirectUrl(userCtx));
       });
     })

@@ -1,7 +1,8 @@
 # Medic Mobile
 
-These instructions should help you get setup to run or develop on Medic Mobile.
-For latest changes and release announcements see our [change log](Changes.md).
+These instructions should help you get setup to run or develop on Medic Mobile's Community Health Application Framework. For latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
+
+If you are interested in building community health applications using this framework a good place to start is the guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
 ## Overview
 
@@ -89,7 +90,7 @@ Create a `.env` file in the app directory with the following contents
 
 ```shell
 COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@localhost
+COUCH_NODE_NAME=couchdb@127.0.0.1
 ```
 
 Then do an initial deploy of the webapp:
@@ -121,7 +122,7 @@ If `npm start` is not to your taste for whatever reason, the apps can be deploye
 ```shell
 cd sentinel
 npm ci
-export COUCH_NODE_NAME=couchdb@localhost
+export COUCH_NODE_NAME=couchdb@127.0.0.1
 export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
@@ -132,7 +133,7 @@ Then run either `node ./server.js` from the sentinel directory or `grunt dev-sen
 ```shell
 cd api
 npm ci
-export COUCH_NODE_NAME=couchdb@localhost
+export COUCH_NODE_NAME=couchdb@127.0.0.1
 export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
@@ -191,7 +192,7 @@ To import the standard configuration:
 
 1. Install medic-conf: `npm install -g medic-conf`
 2. Navigate to the configuration you want to import: `cd config/standard`
-3. Import the config: `medic-conf --url http://username:password@localhost:5984`
+3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
 

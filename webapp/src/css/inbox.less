@@ -280,8 +280,10 @@ body {
 }
 
 .header .dropdown-menu .sync-status {
-  .in_progress,
-  .not_required {
+  .no-click {
+    color: @label-color;
+  }
+  .success {
     color: @ok-color;
   }
   .required {
