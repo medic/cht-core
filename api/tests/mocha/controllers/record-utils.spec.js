@@ -31,7 +31,7 @@ describe('record-utils', () => {
 
   it('create json returns error if missing _meta property', done => {
     const body = { name: 'bob' };
-    try {  
+    try {
       controller.createRecordByJSON(body);
     } catch(e) {
       chai.expect(e.publicMessage).to.equal('Missing _meta property.');
@@ -47,8 +47,7 @@ describe('record-utils', () => {
     });
     chai.expect(actual.type).to.equal('data_record');
     chai.expect(actual.from).to.equal('+123');
-    chai.expect(actual.errors.length).to.equal(1);
-    chai.expect(actual.errors[0].code).to.equal('sys.facility_not_found');
+    chai.expect(actual.errors.length).to.equal(0);
     chai.expect(actual.sms_message.type).to.equal('sms_message');
     chai.expect(actual.sms_message.message).to.equal('test');
     chai.expect(actual.sms_message.form).to.equal('TEST');
