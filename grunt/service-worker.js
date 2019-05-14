@@ -37,7 +37,6 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
     },
     ignoreUrlParametersMatching: [/redirect/],
-    templateFilePath: path.join(__dirname, 'service-worker.tmpl'),
     stripPrefixMulti: {
       [staticDirectoryPath]: '',
       [path.join(apiSrcDirectoryPath, 'public')]: '',

@@ -168,11 +168,17 @@ app.use(compression({
 
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
-    // couchdb request - let it go
+    // CouchDB request for /dbinfo from previous versions
+    // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
     res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
   }
+});
+
+app.get('/dbinfo', (req, res) => {
+  req.url = '/';
+  proxy.web(req, res);
 });
 
 app.get(appPrefix, (req, res) => {
