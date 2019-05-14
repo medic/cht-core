@@ -213,23 +213,24 @@ describe('outbound', () => {
           auth: {
             type: 'Basic',
             username: 'admin',
-            password: 'pass'
+            password_key: 'test-config'
           },
           base_url: 'http://test',
           path: '/foo'
         }
       };
 
-      request.resolves();
+      request.onCall(0).resolves('pass');
+      request.onCall(1).resolves();
 
       return outbound._send(payload, conf)
         .then(() => {
-          assert.equal(request.callCount, 1);
-          assert.equal(request.args[0][0].method, 'POST');
-          assert.equal(request.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.args[0][0].body, {some: 'data'});
-          assert.equal(request.args[0][0].json, true);
-          assert.deepEqual(request.args[0][0].auth, {
+          assert.equal(request.callCount, 2);
+          assert.equal(request.args[1][0].method, 'POST');
+          assert.equal(request.args[1][0].url, 'http://test/foo');
+          assert.deepEqual(request.args[1][0].body, {some: 'data'});
+          assert.equal(request.args[1][0].json, true);
+          assert.deepEqual(request.args[1][0].auth, {
             username: 'admin',
             password: 'pass',
             sendImmediately: true
@@ -247,7 +248,7 @@ describe('outbound', () => {
           auth: {
             type: 'muso-sih',
             username: 'admin',
-            password: 'pass',
+            password_key: 'test-config',
             path: '/login'
           },
           base_url: 'http://test',
@@ -255,28 +256,29 @@ describe('outbound', () => {
         }
       };
 
-      request.onCall(0).resolves({
+      request.onCall(0).resolves('pass');
+      request.onCall(1).resolves({
         statut: 200,
         message: 'Requête traitée avec succès.',
         data: {
           username_token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
         }
       });
-      request.onCall(1).resolves();
+      request.onCall(2).resolves();
 
       return outbound._send(payload, conf)
         .then(() => {
-          assert.equal(request.callCount, 2);
+          assert.equal(request.callCount, 3);
 
-          assert.equal(request.args[0][0].form.login, 'admin');
-          assert.equal(request.args[0][0].form.password, 'pass');
-          assert.equal(request.args[0][0].url, 'http://test/login');
+          assert.equal(request.args[1][0].form.login, 'admin');
+          assert.equal(request.args[1][0].form.password, 'pass');
+          assert.equal(request.args[1][0].url, 'http://test/login');
 
-          assert.equal(request.args[1][0].method, 'POST');
-          assert.equal(request.args[1][0].url, 'http://test/foo');
-          assert.deepEqual(request.args[1][0].body, {some: 'data'});
-          assert.equal(request.args[1][0].json, true);
-          assert.equal(request.args[1][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
+          assert.equal(request.args[2][0].method, 'POST');
+          assert.equal(request.args[2][0].url, 'http://test/foo');
+          assert.deepEqual(request.args[2][0].body, {some: 'data'});
+          assert.equal(request.args[2][0].json, true);
+          assert.equal(request.args[2][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
         });
     });
     it('should error is Muso SIH custom auth fails to return a 200', () => {
@@ -290,7 +292,7 @@ describe('outbound', () => {
           auth: {
             type: 'muso-sih',
             username: 'admin',
-            password: 'wrong pass',
+            password_key: 'test-config',
             path: '/login'
           },
           base_url: 'http://test',
@@ -298,12 +300,11 @@ describe('outbound', () => {
         }
       };
 
-      request.onCall(0).resolves({
+      request.onCall(0).resolves('wrong pass');
+      request.onCall(1).resolves({
         statut: 404,
         message: 'Login/Mot de passe Incorrect !'
       });
-
-      request.onCall(1).resolves();
 
       return outbound._send(payload, conf)
         .then(() => {

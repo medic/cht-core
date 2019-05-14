@@ -65,8 +65,7 @@ script:
 
 stages:
   - compile
-  # TODO: re-enable this and get it working..
-  # - test
+  - test
   - publish
 
 jobs:
