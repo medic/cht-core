@@ -518,7 +518,7 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[1].errors[0].code, 'sys.facility_not_found');
         assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks', 'errors']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
-        assert.equal(infodocSaves.length, 2);
+        assert.equal(infodocSaves.length, 1);
         assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
         assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
 
