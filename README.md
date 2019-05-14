@@ -143,7 +143,7 @@ Then run either `node ./server.js` from the api directory or `grunt dev-api` fro
 
 Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:5988/medic/login).
 
-### Working on local environment with real devices 
+### Testing locally with devices 
 
 Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Community Health Application Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
 
