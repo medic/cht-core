@@ -15,6 +15,17 @@ const arrayinate = object => Object.keys(object).map(k => {
   return object[k];
 });
 
+const credential = key =>
+    request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
+      .catch(err => {
+        if (err.statusCode === 404) {
+          logger.error(`CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`);
+        }
+
+        // Throw it regardless so the process gets halted, we just error above for higher specificity
+        throw err;
+      });
+
 // Returns a list of tuples of [queueDoc, actualDoc]
 const queued = () =>
   db.sentinel.allDocs({
@@ -103,36 +114,40 @@ const send = (payload, conf) => {
     }
 
     if (authConf.type.toLowerCase() === 'basic') {
-      sendOptions.auth = {
-        username: authConf.username,
-        password: authConf.password,
-        sendImmediately: true
-      };
-      return Promise.resolve();
+      return credential(authConf['password_key'])
+        .then(password => {
+          sendOptions.auth = {
+            username: authConf.username,
+            password: password,
+            sendImmediately: true
+          };
+        });
     }
 
     if (authConf.type.toLowerCase() === 'muso-sih') {
-      const authOptions = {
-        method: 'POST',
-        form: {
-          login: authConf.username,
-          password: authConf.password
-        },
-        url: urlJoin(conf.destination.base_url, authConf.path),
-        json: true
-      };
-
-      return request(authOptions)
-        .then(result => {
-          // No that's not a spelling mistake, this API is sometimes French!
-          if (result.statut !== 200) {
-            logger.error('Non-200 status from Muso auth', result);
-            throw new Error(`Got ${result.statut} when requesting auth`);
-          }
-
-          sendOptions.qs = {
-            token: result.data.username_token
+      return credential(authConf['password_key'])
+        .then(password => {
+          const authOptions = {
+            method: 'POST',
+            form: {
+              login: authConf.username,
+              password: password
+            },
+            url: urlJoin(conf.destination.base_url, authConf.path)
           };
+
+          return request(authOptions)
+            .then(result => {
+              // No that's not a spelling mistake, this API is sometimes French!
+              if (result.statut !== 200) {
+                logger.error('Non-200 status from Muso auth', result);
+                throw new Error(`Got ${result.statut} when requesting auth`);
+              }
+
+              sendOptions.qs = {
+                token: result.data.username_token
+              };
+            });
         });
     }
 
