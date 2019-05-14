@@ -70,20 +70,6 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
 
       // boolean: (optional) whether to display the "muted" text along with contact name
       displayMuted: '='
-    },
-    controller: function($ngRedux, $scope, Selectors) {
-      'ngInject';
-
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
-        return {
-          selected: Selectors.getSelectedContact(state)
-        };
-      };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
-
-      $scope.$on('$destroy', unsubscribe);
-    },
-    controllerAs: '$ctrl'
+    }
   };
 });
