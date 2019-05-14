@@ -67,7 +67,7 @@ describe('mark_for_outbound', () => {
       },
       outbound: {
         test: {
-          relevantTo: `doc.type === 'something else'`
+          relevant_to: `doc.type === 'something else'`
         }
       }
     };
@@ -90,7 +90,7 @@ describe('mark_for_outbound', () => {
       },
       outbound: {
         test: {
-          relevantTo: `doc.type === 'data_record' && doc.form === 'test'`
+          relevant_to: `doc.type === 'data_record' && doc.form === 'test'`
         }
       }
     };
@@ -112,10 +112,10 @@ describe('mark_for_outbound', () => {
       },
       outbound: {
         test: {
-          relevantTo: `doc.type === 'data_record' && doc.form === 'test'`
+          relevant_to: `doc.type === 'data_record' && doc.form === 'test'`
         },
         test2: {
-          relevantTo: 'doc.secondTime'
+          relevant_to: 'doc.secondTime'
         }
       }
     };
