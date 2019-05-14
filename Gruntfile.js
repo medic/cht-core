@@ -591,7 +591,7 @@ module.exports = function(grunt) {
         ],
       },
       'admin-js': {
-        files: ['admin/src/js/**/*'],
+        files: ['admin/src/js/**/*', 'webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
           'couch-compile:secondary',
@@ -634,9 +634,6 @@ module.exports = function(grunt) {
           'replace:update-app-constants',
           'generate-service-worker',
           'couch-compile:primary',
-          'browserify:admin',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
           'deploy',
         ],
       },
