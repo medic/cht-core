@@ -198,9 +198,9 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 ## Configuring Medic
 
-We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
+This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 
 
-This app is highly configurable and can be modified to suit your needs. Read the guide for developing community health applications if you would like to customize your application further.
+We include the "standard" configuration in this repo, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -209,7 +209,7 @@ To import the standard configuration:
 1. Install medic-conf: `npm install -g medic-conf`
 2. Navigate to the configuration you want to import: `cd <medic-repo>/config/standard`
 1. Ensure the app/api is running. Specifically on localhost for these instructions. 
-3. Import the config: `medic-conf --url http://username:password@localhost:5984`
+3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
 
