@@ -281,7 +281,7 @@ describe('Transitions public_form', () => {
         // temp_unknown_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info);
+        expectTransitions(info, 'update_clinics');
         expect(doc.contact).not.toBeDefined();
         expect(doc.errors.length).toEqual(1);
         expect(doc.tasks.length).toEqual(0);
@@ -297,7 +297,7 @@ describe('Transitions public_form', () => {
         // death_unknown_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info);
+        expectTransitions(info, 'update_clinics');
         expect(doc.contact).not.toBeDefined();
         expect(doc.tasks.length).toEqual(0);
         expect(doc.scheduled_tasks).not.toBeDefined();
@@ -317,7 +317,7 @@ describe('Transitions public_form', () => {
         // mute_unknown_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info);
+        expectTransitions(info, 'update_clinics');
         expect(doc.contact).not.toBeDefined();
         expect(doc.errors.length).toEqual(1);
         expect(doc.tasks.length).toEqual(0);
@@ -464,7 +464,7 @@ describe('Transitions public_form', () => {
         // temp_unknown_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info);
+        expectTransitions(info, 'update_clinics');
         expect(doc.contact).not.toBeDefined();
         expect(doc.errors.length).toEqual(1);
         expect(doc.tasks.length).toEqual(0);
@@ -480,7 +480,7 @@ describe('Transitions public_form', () => {
         // death_unknown_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info);
+        expectTransitions(info, 'update_clinics');
         expect(doc.contact).not.toBeDefined();
         expect(doc.tasks.length).toEqual(0);
         expect(doc.scheduled_tasks).not.toBeDefined();
@@ -500,7 +500,7 @@ describe('Transitions public_form', () => {
         // mute_unknown_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
         info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info);
+        expectTransitions(info, 'update_clinics');
         expect(doc.contact).not.toBeDefined();
         expect(doc.errors.length).toEqual(1);
         expect(doc.tasks.length).toEqual(0);

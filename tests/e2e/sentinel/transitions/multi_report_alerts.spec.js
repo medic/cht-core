@@ -401,7 +401,9 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc_unknown._id))
       .then(() => sentinelUtils.getInfoDoc(doc_unknown._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.update_clinics).toBeDefined();
+        expect(info.transitions.multi_report_alerts).not.toBeDefined();
       })
       .then(() => utils.getDoc(doc_unknown._id))
       .then(updated => {
@@ -411,7 +413,9 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
       .then(() => sentinelUtils.getInfoDoc(doc_unknown2._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.update_clinics).toBeDefined();
+        expect(info.transitions.multi_report_alerts).not.toBeDefined();
       })
       .then(() => utils.getDoc(doc_unknown2._id))
       .then(updated => {
