@@ -332,6 +332,7 @@ describe('Store', function() {
       chai.expect(state).to.not.equal(initialState);
       chai.expect(state.selected).to.not.equal(initialState.selected);
       chai.expect(state.selected.children).to.not.equal(initialState.selected.children);
+      chai.expect(state.selected.children.persons).to.not.equal(initialState.selected.children.persons);
       chai.expect(state.selected.areTasksEnabled).to.equal(true);
       chai.expect(state.selected.tasks).to.deep.equal(tasks);
       chai.expect(state.selected.children.persons).to.deep.equal([
@@ -339,6 +340,10 @@ describe('Store', function() {
         { id: 'person2', taskCount: 1 },
         { id: 'person3', taskCount: 0 }
       ]);
+      state.selected.children.persons.forEach((person, idx) => {
+        chai.expect(person).to.not.equal(initialState.selected.children.persons[idx]);
+        chai.expect(person).to.not.deep.equal(initialState.selected.children.persons[idx]);
+      });
     });
   });
 });
