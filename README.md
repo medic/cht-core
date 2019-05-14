@@ -198,30 +198,22 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 ## Configuring Medic
 
-We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard).
+We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
+
+This app is highly configurable and can be modified to suit your needs. Read the guide for developing community health applications if you would like to customize your application further.
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
 To import the standard configuration:
 
 1. Install medic-conf: `npm install -g medic-conf`
-2. Navigate to the configuration you want to import: `cd config/standard`
-3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
+2. Navigate to the configuration you want to import: `cd <medic-repo>/config/standard`
+1. Ensure the app/api is running. Specifically on localhost for these instructions. 
+3. Import the config: `medic-conf --url http://username:password@localhost:5984`
 
 ## Automated Deployment on Travis
 
 Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic) to the [staging server](https://staging.dev.medicmobile.org).
-
-## Applying Standard Sonfig. 
-
-Our Standard applcation configuration is stored in the repo under config. This can be applied to control the person, place, and forms generation. This is an optional step but provides some functionality the default config does not. 
-
-1. Install [Medic Conf](https://github.com/medic/medic-conf)
-1. Change directory to the <medic-repo>/config/standard
-1. Ensure the app/api is running. Specifically on localhost for these instructions. 
-1. Run `medic-conf --local` to upload the standard config to your localhost.
-
-
 
 ## Contributing
 
