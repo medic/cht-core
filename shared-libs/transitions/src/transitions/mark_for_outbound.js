@@ -15,7 +15,7 @@ const configuredFor = doc => {
   const pushes = arrayinate(config.get(CONFIGURED_PUSHES) || {});
 
   return pushes.filter(conf => {
-    return conf.relevantTo && vm.runInNewContext(conf.relevantTo, {doc: doc});
+    return conf.relevant_to && vm.runInNewContext(conf.relevant_to, {doc: doc});
   });
 };
 
