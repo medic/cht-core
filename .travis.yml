@@ -12,6 +12,8 @@ services:
   - docker
 
 env:
+  matrix:
+    - TEST_SUITE=integration NODE_VERSION=8
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost

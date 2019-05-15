@@ -1095,8 +1095,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'exec:start-webdriver',
-    'protractor:e2e-tests',
+    // 'exec:start-webdriver',
+    // 'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
