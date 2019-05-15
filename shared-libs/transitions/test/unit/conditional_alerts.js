@@ -131,7 +131,7 @@ describe('conditional alerts', () => {
     sinon.stub(transition, '_getConfig').returns({
       '0': {
         form: 'STCK',
-        condition: 'STCK(0).s1_avail == 0',
+        condition: 'STCK(1).s1_avail <= STCK(0).s1_used',
         message: 'out of units',
         recipient: '+5555555'
       },
@@ -144,16 +144,19 @@ describe('conditional alerts', () => {
     });
 
     sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
-      reported_date: 1390427075750,
       doc: {
-        s1_avail: 0
+        reported_date: 1390427075750,
+        form: 'STCK',
+        s1_avail: 5
       }
     }]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
 
     var doc = {
-      form: 'STCK'
+      reported_date: 1390427075751,
+      form: 'STCK',
+      s1_used: 6
     };
     return transition.onMatch({ doc: doc }).then(changed => {
       assert.equal(messageFn.callCount, 1);
@@ -218,19 +221,15 @@ describe('conditional alerts', () => {
         s1_used: 4,
         reported_date: 2,
       }
-    }, {
-      key: 'somekey',
-      doc: {
-        s1_avail: 3,
-        s1_used: 5,
-        reported_date: 3,
-      }
     }]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
 
     var doc = {
-      form: 'STCK'
+      form: 'STCK',
+      s1_avail: 3,
+      s1_used: 5,
+      reported_date: 3,
     };
     return transition.onMatch({ doc: doc }).then(changed => {
       assert.equal(messageFn.callCount, 1);
@@ -255,13 +254,6 @@ describe('conditional alerts', () => {
     sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
       key: 'something',
       doc: {
-        s1_avail: 3,
-        s1_used: 5,
-        reported_date: 3,
-      }
-    }, {
-      key: 'something',
-      doc: {
         s1_avail: 9,
         s1_used: 2,
         reported_date: 1,
@@ -277,7 +269,10 @@ describe('conditional alerts', () => {
 
     var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
-      form: 'STCK'
+      form: 'STCK',
+      s1_avail: 3,
+      s1_used: 5,
+      reported_date: 4,
     };
     return transition.onMatch({ doc: doc }).then(changed => {
       assert.equal(messageFn.callCount, 1);
@@ -286,6 +281,34 @@ describe('conditional alerts', () => {
       assert.equal(messageFn.args[0][2], '+5555555');
       assert.equal(changed, true);
 
+    });
+  });
+
+  it('form reports includes the report that triggered the transition', () => {
+
+    sinon.stub(transition, '_getConfig').returns({
+      '0': {
+        form: 'STCK',
+        condition: 'STCK(0).s1_avail < STCK(0).s1_used',
+        message: 'low on units',
+        recipient: '+5555555'
+      }
+    });
+
+    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([]);
+
+    var messageFn = sinon.spy(messages, 'addMessage');
+    var doc = {
+      form: 'STCK',
+      s1_avail: 3,
+      s1_used: 4
+    };
+    return transition.onMatch({ doc: doc }).then(changed => {
+      assert.equal(messageFn.callCount, 1);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].message, 'low on units');
+      assert.equal(messageFn.args[0][2], '+5555555');
+      assert.equal(changed, true);
     });
   });
 });

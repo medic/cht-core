@@ -19,20 +19,15 @@ const evaluateCondition = (doc, alert) => {
   if (alert.condition.indexOf(alert.form) === -1) {
     return runCondition(alert.condition, context);
   }
-  return utils.getReportsWithSameClinicAndForm({
-    doc: doc,
-    formName: alert.form
-  })
-    .then(rows => {
-      rows = _.sortBy(rows, function(row) {
-        return row.doc.reported_date;
-      });
-      context[alert.form] = function(i) {
-        const row = rows[rows.length - 1 - i];
-        return row ? row.doc : row;
-      };
-      return runCondition(alert.condition, context);
-    });
+  return utils.getReportsWithSameClinicAndForm({ doc: doc, formName: alert.form })
+    .then(rows => rows.map(row => row.doc))
+    .then(docs => docs.sort((lhs, rhs) => lhs.reported_date > rhs.reported_date))
+    .then(docs => {
+      docs.push(doc);
+      return docs;
+    })
+    .then(docs => context[alert.form] = i => docs[docs.length - 1 - i])
+    .then(() => runCondition(alert.condition, context));
 };
 
 module.exports = {
