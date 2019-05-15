@@ -966,7 +966,7 @@ module.exports = function(grunt) {
     'mmcss',
     'mmjs',
     'enketo-xslt',
-    'minify',
+    // 'minify',
     'build-common',
   ]);
 
