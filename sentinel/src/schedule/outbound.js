@@ -20,6 +20,10 @@ process.env.COUCH_NODE_NAME = 'couchdb@127.0.0.1';
 
 const credential = key =>
     request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
+      // This API gives weird psuedo-JSON results:
+      //   "password"\n
+      // Should be just `password`
+      .then(result => result.match(/^"(.+)"\n?$/)[1])
       .catch(err => {
         if (err.statusCode === 404) {
           logger.error(`CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`);
@@ -136,7 +140,8 @@ const send = (payload, conf) => {
               login: authConf.username,
               password: password
             },
-            url: urlJoin(conf.destination.base_url, authConf.path)
+            url: urlJoin(conf.destination.base_url, authConf.path),
+            json: true
           };
 
           return request(authOptions)

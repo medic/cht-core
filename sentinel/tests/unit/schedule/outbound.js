@@ -220,7 +220,7 @@ describe('outbound', () => {
         }
       };
 
-      request.onCall(0).resolves('pass');
+      request.onCall(0).resolves('"pass"\n');
       request.onCall(1).resolves();
 
       return outbound._send(payload, conf)
@@ -256,7 +256,7 @@ describe('outbound', () => {
         }
       };
 
-      request.onCall(0).resolves('pass');
+      request.onCall(0).resolves('"pass"\n');
       request.onCall(1).resolves({
         statut: 200,
         message: 'Requête traitée avec succès.',
@@ -300,7 +300,7 @@ describe('outbound', () => {
         }
       };
 
-      request.onCall(0).resolves('wrong pass');
+      request.onCall(0).resolves('"wrong pass"\n');
       request.onCall(1).resolves({
         statut: 404,
         message: 'Login/Mot de passe Incorrect !'
