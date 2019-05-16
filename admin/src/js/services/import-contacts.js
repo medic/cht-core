@@ -12,34 +12,40 @@ angular.module('services').factory('ImportContacts',
     'ngInject';
 
     const getPersonType = contact => {
-      if (contact.type) {
-        // user provided type
-        return $q.resolve(contact.type);
-      }
       return ContactTypes.getPersonTypes().then(types => {
+        const provided = contact.contact_type || contact.type;
+        if (provided) {
+          const type = types.find(type => type.id === provided);
+          if (type) {
+            return provided;
+          }
+          return $q.reject(new Error(`Unknown type "${provided}"" for person named "${contact.name}"`));
+        }
         if (types.find(type => type.id === 'person')) {
           // retained for backwards compatibility
           return 'person';
         }
+        return $q.reject(new Error(`Undefined type for person named "${contact.name}"`));
       });
     };
 
     var savePerson = function(doc) {
       return getPersonType(doc.contact)
         .then(type => {
-          if (!type) {
-            return $q.reject(new Error(`Undefined "type" for person named "${doc.contact.name}"`));
-          }
           const person = {
-            type: type,
             name: doc.contact.name,
             phone: doc.contact.phone,
             parent: doc
           };
+          if (type === 'person') {
+            person.type = type;
+          } else {
+            person.type = 'contact';
+            person.contact_type = type;
+          }
           return DB()
             .put(person)
             .then(function(response) {
-              doc.contact.type = type;
               doc.contact._id = response._id;
               doc.contact._rev = response._rev;
             });

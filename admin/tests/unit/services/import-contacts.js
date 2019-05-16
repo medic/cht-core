@@ -11,7 +11,7 @@ describe('ImportContacts service', function() {
     put = sinon.stub();
     module('adminApp');
 
-    const types = [ { id: 'person' } ];
+    const types = [ { id: 'person' }, { id: 'chp' } ];
 
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ put: put }));
@@ -173,7 +173,7 @@ describe('ImportContacts service', function() {
     put.onCall(1).returns(Promise.resolve({ }));
     put.onCall(2).returns(Promise.resolve({ _id: 4, _rev: 1 }));
     put.onCall(3).returns(Promise.resolve({ }));
-    var contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: 'chp' } };
+    var contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: 'contact', contact_type: 'chp' } };
     var contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
 
     service([contact1, contact2], true)
@@ -183,22 +183,21 @@ describe('ImportContacts service', function() {
         // save first place
         chai.expect(put.args[0][0]._id).to.equal(1);
         chai.expect(put.args[0][0].contact.name).to.equal('john');
-        chai.expect(put.args[0][0].contact.type).to.equal('chp');
+        chai.expect(put.args[0][0].contact.type).to.equal('contact');
+        chai.expect(put.args[0][0].contact.contact_type).to.equal('chp');
         chai.expect(put.args[0][0].contact.phone).to.equal('+123');
 
         // save second place
         chai.expect(put.args[1][0]).to.deep.equal(contact2);
 
         // save contact
-        chai.expect(put.args[2][0].type).to.equal('chp');
+        chai.expect(put.args[2][0].type).to.equal('contact');
+        chai.expect(put.args[2][0].contact_type).to.equal('chp');
         chai.expect(put.args[2][0].name).to.equal('john');
         chai.expect(put.args[2][0].phone).to.equal('+123');
         chai.expect(put.args[2][0].parent._id).to.equal(1);
 
         // updated place with contact
-        chai.expect(put.args[3][0].contact.type).to.equal('chp');
-        chai.expect(put.args[3][0].contact.name).to.equal('john');
-        chai.expect(put.args[3][0].contact.phone).to.equal('+123');
         chai.expect(put.args[3][0].contact._id).to.equal(4);
         chai.expect(put.args[3][0].contact._rev).to.equal(1);
         done();

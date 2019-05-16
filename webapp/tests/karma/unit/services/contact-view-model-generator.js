@@ -229,11 +229,13 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
-    it('child places and persons get displayed separately', () => {
+    it('deceased people are marked and counted', () => {
       return runPlaceTest([childContactPerson, deceasedChildPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 2);
         assert.deepEqual(model.children[0].contacts[0].doc, childContactPerson);
         assert.deepEqual(model.children[0].contacts[1].doc, deceasedChildPerson);
+        assert.equal(model.children[0].contacts[1].deceased, true);
+        assert.equal(model.children[0].deceasedCount, 1);
       });
     });
 

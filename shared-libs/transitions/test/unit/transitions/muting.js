@@ -44,7 +44,8 @@ describe('Muting transition', () => {
 
   describe('filter', () => {
     it('should return false for invalid docs', () => {
-      config.get.returns({ mute_forms: ['formA', 'formB'], unmute_forms: ['formC', 'formD'] });
+      config.get.withArgs('muting').returns({ mute_forms: ['formA', 'formB'], unmute_forms: ['formC', 'formD'] });
+      config.get.withArgs('contact_types').returns([]);
       transitionUtils.hasRun.returns(false);
 
       chai.expect(transition.filter()).to.equal(false);
@@ -78,6 +79,7 @@ describe('Muting transition', () => {
     });
 
     it('should return false for invalid contacts', () => {
+      config.get.withArgs('contact_types').returns([{ id: 'person' }, { id: 'clinic' } ]);
       mutingUtils.isMutedInLineage.returns(false);
       chai.expect(transition.filter({ muted: false }, {})).to.equal(false);
       chai.expect(transition.filter({ muted: false, type: 'something' }, {})).to.equal(false);
@@ -91,6 +93,7 @@ describe('Muting transition', () => {
     });
 
     it('should return true for valid contacts', () => {
+      config.get.withArgs('contact_types').returns([{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]);
       mutingUtils.isMutedInLineage.returns(true);
       chai.expect(transition.filter({ muted: false, type: 'person' }, {})).to.equal(true);
       chai.expect(transition.filter({ muted: false, type: 'clinic' }, {})).to.equal(true);

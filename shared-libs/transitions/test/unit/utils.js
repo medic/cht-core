@@ -18,14 +18,14 @@ describe('utils', () => {
     const result = [{_id: 'someRowId'}];
 
     db.medic.query
-      .withArgs('medic/reports_by_form_and_clinic', {
+      .withArgs('medic/reports_by_form_and_parent', {
         startkey: [formName, clinicId],
         endkey: [formName, clinicId],
         include_docs: true
       })
       .resolves({ rows: result });
 
-    return utils.getReportsWithSameClinicAndForm({
+    return utils.getReportsWithSameParentAndForm({
       formName: formName,
       doc: {
         contact: {

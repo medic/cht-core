@@ -36,7 +36,7 @@ const isDeniedByAlphas = (from, denyWithAlphas) => {
 };
 
 module.exports = {
-  addMessage: (doc, messageConfig, recipient = 'clinic', context = {}) => {
+  addMessage: (doc, messageConfig, recipient = 'reporting_unit', context = {}) => {
     doc.tasks = doc.tasks || [];
     const content = {
       translationKey: messageConfig.translation_key,
@@ -145,7 +145,7 @@ module.exports = {
     } else {
       reply = errors[0].message || errors[0];
     }
-    module.exports.addMessage(doc, { message: reply }, 'clinic');
+    module.exports.addMessage(doc, { message: reply });
   },
   addError: function(doc, error, context) {
     if (_.isString(error)) {

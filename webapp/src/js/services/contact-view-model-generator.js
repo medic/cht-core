@@ -195,19 +195,22 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return Object.keys(groups).map(typeId => {
         return {
           contacts: groups[typeId],
-          type: types.find(type => type.id === typeId)
+          type: types.find(type => type.id === typeId),
+          deceasedCount: 0
         };
       });
     };
 
-    const markDeceased = (model, children) => {
-      children.forEach(child => {
-        if (child.doc.date_of_death) {
-          model.deceasedCount++;
-          child.deceased = true;
-        }
+    const markDeceased = (model, childModels) => {
+      childModels.forEach(group => {
+        group.contacts.forEach(child => {
+          if (child.doc.date_of_death) {
+            group.deceasedCount++;
+            child.deceased = true;
+          }
+        });
       });
-      return children;
+      return childModels;
     };
 
     const loadChildren = function(model, options) {
@@ -215,9 +218,9 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return ContactTypes.getAll().then(types => {
         return getChildren(model, types, options)
           .then(children => addPrimaryContact(model.doc, children))
-          .then(children => markDeceased(model, children))
           .then(children => groupChildrenByType(children))
           .then(groups => buildChildModels(groups, types))
+          .then(childModels => markDeceased(model, childModels))
           .then(childModels => sortChildren(model, childModels));
       });
     };
@@ -305,8 +308,6 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
             setType(model, types);
             setPrimaryContact(model);
             setMutedState(model);
-
-            model.deceasedCount = 0;
 
             return model;
           });

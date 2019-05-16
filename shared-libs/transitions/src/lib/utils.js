@@ -71,7 +71,7 @@ const addError = (doc, error) => {
   doc.errors.push(error);
 };
 
-const getReportsWithSameClinicAndForm = (options={}) => {
+const getReportsWithSameParentAndForm = (options={}) => {
   const formName = options.formName;
   if (!formName) {
     return Promise.reject('Missing required argument `formName` for match query.');
@@ -85,7 +85,7 @@ const getReportsWithSameClinicAndForm = (options={}) => {
     return Promise.reject('Missing required argument `parentId` for match query.');
   }
 
-  return db.medic.query('medic/reports_by_form_and_clinic', {
+  return db.medic.query('medic/reports_by_form_and_parent', {
     startkey: [formName, parentId],
     endkey: [formName, parentId],
     include_docs: true,
@@ -148,7 +148,7 @@ module.exports = {
   getLocale: getLocale,
   addError: addError,
   getReportsWithinTimeWindow: getReportsWithinTimeWindow,
-  getReportsWithSameClinicAndForm: getReportsWithSameClinicAndForm,
+  getReportsWithSameParentAndForm: getReportsWithSameParentAndForm,
   setTaskState: taskUtils.setTaskState,
   setTasksStates: setTasksStates,
   /*

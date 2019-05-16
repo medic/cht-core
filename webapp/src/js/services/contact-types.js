@@ -17,6 +17,8 @@ angular.module('inboxServices').service('ContactTypes', function(
 
   return {
 
+    HARDCODED_TYPES: HARDCODED_TYPES,
+
     /**
      * Returns a Promise to resolve the configured contact type identified by the given id.
      */

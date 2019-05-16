@@ -118,17 +118,17 @@ describe('reminders', () => {
       });
   });
 
-  it('sendReminders calls getClinics', done => {
-      const getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, []);
+  it('sendReminders calls getLeafPlaces', done => {
+      const getLeafPlaces = sinon.stub(reminders, 'getLeafPlaces').callsArgWith(1, null, []);
 
       reminders.sendReminders({}, function(err) {
-          assert(getClinics.called);
+          assert(getLeafPlaces.called);
           assert.equal(err, null);
           done();
       });
   });
 
-  it('getClinics calls db view and hydrates docs', done => {
+  it('getLeafPlaces calls db view and hydrates docs', done => {
       sinon.stub(db.medic, 'query').callsArgWith(2, null, {
           rows: [ { doc: { id: 'xxx' } } ]
       });
@@ -140,7 +140,7 @@ describe('reminders', () => {
       ]);
       sinon.stub(reminders._lineage, 'hydrateDocs').resolves([{ id: 'xxx', contact: 'maria' }]);
 
-      reminders.getClinics({ reminder: {} }, function(err, clinics) {
+      reminders.getLeafPlaces({ reminder: {} }, function(err, clinics) {
           assert(_.isArray(clinics));
           assert.equal(clinics.length, 1);
           assert.deepEqual(clinics, [{ id: 'xxx', contact: 'maria' }]);
@@ -153,7 +153,7 @@ describe('reminders', () => {
       });
   });
 
-  it('getClinics ignores clinics with matching sent_reminders', done => {
+  it('getLeafPlaces ignores clinics with matching sent_reminders', done => {
       const now = moment().startOf('hour');
 
       sinon.stub(db.medic, 'query').callsArgWith(2, null, {
@@ -199,7 +199,7 @@ describe('reminders', () => {
           ]
       });
 
-      reminders.getClinics({
+      reminders.getLeafPlaces({
           reminder:{
               moment: now,
               form: 'XXX'
@@ -221,7 +221,7 @@ describe('reminders', () => {
               id: 'yyy'
           }
       ];
-      sinon.stub(reminders, 'getClinics').callsArgWith(1, null, clinics);
+      sinon.stub(reminders, 'getLeafPlaces').callsArgWith(1, null, clinics);
       const sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
       reminders.sendReminders({}, function() {
           assert.equal(sendReminder.callCount, 2);

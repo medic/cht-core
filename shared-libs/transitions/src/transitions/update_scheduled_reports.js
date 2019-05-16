@@ -13,12 +13,19 @@ const getLeafPlaceTypeIds = () => {
   return leafPlaceTypes.map(type => type.id);
 };
 
-const getLeafPlace = contact => {
-  const leafPlaceTypeIds = getLeafPlaceTypeIds();
-  while (contact && !leafPlaceTypeIds.includes(contact.contact_type || contact.type)) {
-    contact = contact.parent;
+/**
+ * Returns the ID of the parent iff that parent is a leaf type.
+ */
+const getParentId = contact => {
+  const parentType = contact &&
+                     contact.parent &&
+                     (contact.parent.contact_type || contact.parent.type);
+  if (parentType) {
+    const leafPlaceTypeIds = getLeafPlaceTypeIds();
+    if (leafPlaceTypeIds.includes(parentType)) {
+      return contact.parent._id;
+    }
   }
-  return contact;
 };
 
 module.exports = {
@@ -69,8 +76,7 @@ module.exports = {
   // also includes changed doc
   //
   _getDuplicates: doc => {
-    const leafPlaceParent = getLeafPlace(doc.contact);
-    const parentId = leafPlaceParent && leafPlaceParent._id;
+    const parentId = getParentId(doc.contact);
     if (!parentId) {
       return Promise.resolve();
     }
@@ -91,7 +97,7 @@ module.exports = {
         parentId,
         {},
       ];
-      view = 'medic/reports_by_form_year_week_clinic_id_reported_date';
+      view = 'medic/reports_by_form_year_week_parent_reported_date';
     } else if (doc.fields.month || doc.fields.month_num) {
       options.startkey = [
         doc.form,
@@ -106,7 +112,7 @@ module.exports = {
         parentId,
         {},
       ];
-      view = 'medic/reports_by_form_year_month_clinic_id_reported_date';
+      view = 'medic/reports_by_form_year_month_parent_reported_date';
     } else {
       return Promise.resolve();
     }

@@ -142,7 +142,7 @@ describe('update_scheduled_reports', () => {
       type: 'data_record',
       form: 'form',
       fields: { year: 2018, month: 2},
-      contact: { _id: 'person', parent: { _id: 'clinic', type: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
       reported_date: new Date().getTime()
     };
 
@@ -151,7 +151,7 @@ describe('update_scheduled_reports', () => {
       type: 'data_record',
       form: 'form',
       fields: { year: 2018, month_num: 3 },
-      contact: { _id: 'person2', parent: { _id: 'clinic', type: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: { _id: 'person2', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
       reported_date: new Date().getTime()
     };
 
@@ -160,7 +160,7 @@ describe('update_scheduled_reports', () => {
       type: 'data_record',
       form: 'form',
       fields: { year: 2018, week: 22 },
-      contact: { _id: 'person', parent: { _id: 'clinic', type: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
       reported_date: new Date().getTime()
     };
 
@@ -169,7 +169,7 @@ describe('update_scheduled_reports', () => {
       type: 'data_record',
       form: 'form',
       fields: { year: 2018, week_number: 43 },
-      contact: { _id: 'person', parent: { _id: 'clinic', type: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
       reported_date: new Date().getTime()
     };
 

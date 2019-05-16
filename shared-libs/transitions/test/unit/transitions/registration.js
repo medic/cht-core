@@ -214,7 +214,8 @@ describe('registration', () => {
 
       transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
-        saveDoc.args[0][0].type.should.equal('patient');
+        saveDoc.args[0][0].type.should.equal('contact');
+        saveDoc.args[0][0].contact_type.should.equal('patient');
         done();
       });
     });

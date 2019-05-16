@@ -483,8 +483,6 @@ module.exports = {
       patientShortcode = doc.patient_id,
       patientNameField = getPatientNameField(options.params);
 
-    const contactType = options.params.contact_type || 'person';
-
     utils.getPatientContactUuid(
       patientShortcode,
       (err, patientContactId) => {
@@ -514,10 +512,15 @@ module.exports = {
               created_by: contact && contact._id,
               parent: contact && contact.parent,
               reported_date: doc.reported_date,
-              type: contactType,
               patient_id: patientShortcode,
               source_id: doc._id,
             };
+            if (options.params.contact_type) {
+              patient.type = 'contact';
+              patient.contact_type = options.params.contact_type;
+            } else {
+              patient.type = 'person';
+            }
             // include the DOB if it was generated on report
             if (doc.birth_date) {
               patient.date_of_birth = doc.birth_date;

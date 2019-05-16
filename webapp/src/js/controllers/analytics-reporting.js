@@ -18,12 +18,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
     };
 
     const getTopLevelPlaces = () => {
-      return ContactTypes.getPlaceTypes()
-        .then(placeTypes => {
-          return placeTypes
-            .filter(type => !type.parents || type.parents.length === 0)
-            .map(type => type.id);
-        })
+      return ContactTypes.getChildren()
+        .then(placeTypes => placeTypes.map(type => type.id))
         .then(typeIds => Contacts(typeIds));
     };
 

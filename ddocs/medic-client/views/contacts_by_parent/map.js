@@ -6,7 +6,7 @@ function(doc) {
       doc.type === 'person') {
     var parentId = doc.parent && doc.parent._id;
     if (parentId) {
-      emit([parentId, doc.type]);
+      emit([parentId, doc.contact_type || doc.type]);
     }
   }
 }

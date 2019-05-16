@@ -312,7 +312,7 @@ describe('Contacts controller', () => {
     it('no New Place button if no child type', () => {
       contactTypes.getChildren.resolves([]);
       return testRightActionBar({ doc: person }, true, actionBarArgs => {
-        assert.equal(actionBarArgs.selected[0].child, undefined);
+        assert.deepEqual(actionBarArgs.childTypes, []);
         // But the other buttons are there!
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');

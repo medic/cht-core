@@ -10,6 +10,7 @@ var _ = require('underscore');
 */
 angular.module('inboxServices').factory('PlaceHierarchy',
   function(
+    Changes,
     ContactTypes,
     Contacts,
     Settings
@@ -73,29 +74,53 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       return firstNonStubNode(hierarchy);
     };
 
-    const getContactTypes = () => {
-      return Settings().then(settings => {
-        if (settings.place_hierarchy_types) {
-          return settings.place_hierarchy_types;
-        }
-        // By default exclude people and clinics (the lowest level)
-        // for performance reasons
-        return ContactTypes.getPlaceTypes().then(types => {
-          const ids = [];
-          types.forEach(type => {
-            if (type.parents) {
-              ids.push(...type.parents);
-            }
-          });
-          return ids;
+    const contactTypes = Settings().then(settings => {
+      if (settings.place_hierarchy_types) {
+        return settings.place_hierarchy_types;
+      }
+      // By default exclude people and clinics (the lowest level)
+      // for performance reasons
+      return ContactTypes.getPlaceTypes().then(types => {
+        const ids = [];
+        types.forEach(type => {
+          if (type.parents) {
+            ids.push(...type.parents);
+          }
         });
+        
+        registerChangesListener(ids);
+        return ids;
+      });
+    });
+
+    const registerChangesListener = typeIds => {
+      Changes({
+        key: 'place-hierarchy',
+        filter: change => typeIds.includes(change.doc.contact_type || change.doc.type),
+        callback: () => hierarchy = init().catch(err => notify(err))
       });
     };
 
-    return function() {
-      return getContactTypes()
+    const notify = (err, hierarchy) => {
+      Object.keys(listeners).forEach(key => listeners[key](err, hierarchy));
+      return hierarchy;
+    };
+
+    const listeners = {};
+    const init = () => {
+      return contactTypes
         .then(Contacts)
-        .then(buildHierarchy);
+        .then(buildHierarchy)
+        .then(hierarchy => notify(null, hierarchy));
+    };
+
+    let hierarchy = init();
+
+    return function(name, listener) {
+      return hierarchy
+        .then(result => listener(null, result))
+        .catch(err => listener(err))
+        .then(() => listeners[name] = listener);
     };
   }
 );

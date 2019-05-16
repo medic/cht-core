@@ -72,6 +72,7 @@ const PAGE_SIZE = 50;
     var defaultTypeFilter = {};
     var usersHomePlace;
     var additionalListItem = false;
+    let childPlaces = [];
 
     $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
@@ -190,7 +191,7 @@ const PAGE_SIZE = 50;
           ctrl.loading = false;
           ctrl.appending = false;
           $scope.hasContacts = liveList.count() > 0;
-          getChildren().then(setActionBarData);
+          setActionBarData();
         })
         .catch(function(err) {
           ctrl.error = true;
@@ -270,6 +271,12 @@ const PAGE_SIZE = 50;
       return $translate(title).catch(() => title);
     };
 
+    // Don't allow deletion if this contact has any children
+    const canDelete = selected => {
+      return !selected.children ||
+             Object.keys(selected.children).every(key => !selected.children[key].length);
+    };
+
     $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedContact();
@@ -332,18 +339,12 @@ const PAGE_SIZE = 50;
                       showUnmuteModal: showUnmuteModal(xForm.internalId)
                     };
                   });
-                  const canDelete =
-                    !ctrl.selectedContact.children ||
-                    ((!ctrl.selectedContact.children.places ||
-                      ctrl.selectedContact.children.places.length === 0) &&
-                      (!ctrl.selectedContact.children.persons ||
-                        ctrl.selectedContact.children.persons.length === 0));
                   $scope.setRightActionBar({
                     selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
                     sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
                     canEdit,
-                    canDelete,
+                    canDelete: canDelete(ctrl.selectedContact),
                     childTypes,
                   });
                 });
@@ -422,7 +423,7 @@ const PAGE_SIZE = 50;
       return p.then(children => children.filter(child => !child.person));
     };
 
-    var setActionBarData = function(childPlaces) {
+    var setActionBarData = function() {
       $scope.setLeftActionBar({
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
@@ -467,7 +468,7 @@ const PAGE_SIZE = 50;
         getUserHomePlaceSummary(),
         canViewLastVisitedDate(),
         Settings()
-       ])
+      ])
       .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
         usersHomePlace = homePlaceSummary;
         $scope.lastVisitedDateExtras = viewLastVisitedDate;
@@ -477,13 +478,14 @@ const PAGE_SIZE = 50;
         }
         return getChildren();
       })
-      .then(childTypes => {
+      .then(children => {
+        childPlaces = children;
         defaultTypeFilter = {
           types: {
-            selected: childTypes.map(type => type.id)
+            selected: childPlaces.map(type => type.id)
           }
         };
-        setActionBarData(childTypes);
+        setActionBarData();
         return $scope.search();
       });
 

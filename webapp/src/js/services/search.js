@@ -147,6 +147,7 @@ var _ = require('underscore'),
             //   search:contacts:search                     <-- text search of contacts
             //   search:contacts:types                      <-- default viewing of contact list
             Telemetry.record(telemetryKey, timing);
+
             if (docIds && docIds.length) {
               docIds.forEach(function(docId) {
                 if (searchResults.docIds.indexOf(docId) === -1) {

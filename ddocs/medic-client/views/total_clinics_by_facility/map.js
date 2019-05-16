@@ -1,9 +1,7 @@
 function(doc) {
-  if (doc.type === 'clinic') {
-
-    var districtId = doc.parent && doc.parent.parent && doc.parent.parent._id,
-        healthCenterId = doc.parent && doc.parent._id;
-
+  var districtId = doc.parent && doc.parent.parent && doc.parent.parent._id;
+  if (doc.type === 'clinic' || (doc.type === 'contact' && districtId)) {
+    var healthCenterId = doc.parent && doc.parent._id;
     emit([ districtId, healthCenterId, doc._id, 0 ]);
     if (doc.contact && doc.contact._id) {
       emit([ districtId, healthCenterId, doc._id, 1 ], { _id: doc.contact._id });

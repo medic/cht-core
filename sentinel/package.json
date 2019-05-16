@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@garethbowen/message-utils": "^1.0.2-beta.1",
-    "@garethbowen/transitions": "^1.0.0-beta.4",
+    "@garethbowen/transitions": "^1.0.0-beta.5",
     "@medic/lineage": "^1.0.0",
     "@medic/phone-number": "^1.0.0",
     "@medic/registration-utils": "^1.1.0",

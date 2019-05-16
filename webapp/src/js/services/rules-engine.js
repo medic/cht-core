@@ -186,7 +186,7 @@ var nools = require('nools'),
           key: 'rules-engine',
           callback: updateFacts,
           filter: function(change) {
-            return change.doc.form || ContactTypes.includes().indexOf(change.doc);
+            return change.doc.form || ContactTypes.includes(change.doc);
           }
         });
       };

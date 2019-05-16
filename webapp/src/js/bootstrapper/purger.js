@@ -190,38 +190,44 @@ module.exports = function(DB, userCtx, initialReplication) {
     return registrationUtils.getSubjectIds(contact).includes(id);
   };
 
+  const getContactTypeIds= () => {
+    return DB.get('settings')
+      .then(doc => doc.settings.contact_types || [])
+      .then(types => types.map(type => type.id));
+  };
+
   const reportsByContact = () => {
     // TODO: in the future this is a great place for a quick-indexing mango query
-    return DB.allDocs({include_docs: true})
-      .then(results => {
-        const {
-          contacts,
-          reportsByContactId
-        } = results.rows.reduce((acc, row) => {
-          const doc = row.doc;
-          if (doc.type === 'data_record') {
-            const relevantContactId = getContactId(doc);
+    return getContactTypeIds().then(contactTypeIds => {
+      return DB.allDocs({include_docs: true})
+        .then(results => {
+          const {
+            contacts,
+            reportsByContactId
+          } = results.rows.reduce((acc, row) => {
+            const doc = row.doc;
+            if (doc.type === 'data_record') {
+              const relevantContactId = getContactId(doc);
 
-            if (!acc.reportsByContactId[relevantContactId]) {
-              acc.reportsByContactId[relevantContactId] = [doc];
-            } else {
-              acc.reportsByContactId[relevantContactId].push(doc);
+              if (!acc.reportsByContactId[relevantContactId]) {
+                acc.reportsByContactId[relevantContactId] = [doc];
+              } else {
+                acc.reportsByContactId[relevantContactId].push(doc);
+              }
+            } else if (contactTypeIds.includes(doc.contact_type || doc.type)) {
+              acc.contacts.push(doc);
             }
-          }
 
-          if (['district_hospital', 'health_center', 'clinic', 'person', 'contact'].includes(doc.type)) {
-            acc.contacts.push(doc);
-          }
+            return acc;
+          }, {contacts: [], reportsByContactId: {}});
 
-          return acc;
-        }, {contacts: [], reportsByContactId: {}});
-
-        return Object.keys(reportsByContactId)
-          .map(id => ({
-            contact: contacts.find(c => contactHasId(c, id)),
-            reports: reportsByContactId[id]
-          }));
-      });
+          return Object.keys(reportsByContactId)
+            .map(id => ({
+              contact: contacts.find(c => contactHasId(c, id)),
+              reports: reportsByContactId[id]
+            }));
+        });
+    });
   };
 
   const purge = (fnStr, userCtx) => {

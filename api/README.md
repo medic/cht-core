@@ -532,7 +532,8 @@ Content-Type: application/json
 {
   "name": "Hannah",
   "phone": "+2548277210095",
-  "type": "patient",
+  "type": "contact",
+  "contact_type": "patient",
   "place": {
     "name": "CHP Area One",
     "type": "health_center",
@@ -553,7 +554,8 @@ Content-Type: application/json
 {
  "name": "Samuel",
  "place": "1d83f2b4a27eceb40df9e9f9ad06d137",
- "type": "chp"
+ "type": "contact",
+ "contact_type": "chp"
 }
 ```
 
