@@ -311,4 +311,53 @@ describe('conditional alerts', () => {
       assert.equal(changed, true);
     });
   });
+
+
+  it('form reports only includes one copy of the report that triggered the transition', () => {
+
+    sinon.stub(transition, '_getConfig').returns({
+      '0': {
+        form: 'STCK',
+        condition: 'STCK(0).avail < STCK(1).avail',
+        message: 'low on units',
+        recipient: '+5555555'
+      }
+    });
+    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([
+      {
+        key: 'a',
+        doc: {
+          _id: 'a',
+          form: 'STCK',
+          reported_date: 1,
+          avail: 6
+        }
+      },
+      {
+        key: 'b',
+        doc: {
+          _id: 'b',
+          form: 'STCK',
+          reported_date: 2,
+          avail: 7
+        }
+      }
+    ]);
+
+    var messageFn = sinon.spy(messages, 'addMessage');
+    var doc = {
+      _id: 'a',
+      form: 'STCK',
+      reported_date: 1,
+      avail: 8 // different avail should end up replacing the old 'a' doc
+    };
+    return transition.onMatch({ doc: doc }).then(changed => {
+      assert.equal(messageFn.callCount, 1);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].message, 'low on units');
+      assert.equal(messageFn.args[0][2], '+5555555');
+      assert.equal(changed, true);
+    });
+  });
+
 });
