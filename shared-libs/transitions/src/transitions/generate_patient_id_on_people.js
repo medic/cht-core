@@ -7,7 +7,7 @@ module.exports = {
       // already has a patient id
       return;
     }
-    const typeId = doc.contact_type || doc.type;
+    const typeId = (doc.type === 'contact' && doc.contact_type) || doc.type;
     const contactTypes = config.get('contact_types') || [];
     const type = contactTypes.find(type => type.id === typeId);
     return type && type.person;

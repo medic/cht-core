@@ -21,14 +21,23 @@ const getPerson = id => {
     });
 };
 
-const getContactType = person => {
+const getContactType = typeId => {
   const types = config.get('contact_types') || [];
-  const typeId = person.contact_type || person.type;
   return types.find(type => type.id === typeId);
 };
 
 const isAPerson = person => {
-  const type = getContactType(person);
+  let type;
+  if (person.type === 'person') {
+    // backwards compatibility mode
+    type = getContactType('person');
+  } else if (person.type === 'contact') {
+    // configurable hierarchy mode
+    type = getContactType(person.contact_type);
+  } else {
+    // invalid type
+    return false;
+  }
   return type && type.person;
 };
 

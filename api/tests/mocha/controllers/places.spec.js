@@ -74,25 +74,44 @@ describe('places controller', () => {
 
   describe('validatePlace', () => {
 
-    it('returns error on string argument.', done => {
+    it('returns error on string argument', done => {
       controller._validatePlace('x').catch(err => {
         chai.expect(err.message).to.equal('Place must be an object.');
         done();
       });
     });
 
-    it('returns error on number argument.', done => {
+    it('returns error on number argument', done => {
       controller._validatePlace(42).catch(err => {
         chai.expect(err.message).to.equal('Place must be an object.');
         done();
       });
     });
 
-    it('returns error when doc is wrong type.', done => {
+    it('returns error when doc is wrong type', done => {
       examplePlace._id = 'xyz';
       examplePlace.type = 'food';
       controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message, 'Wrong type).to.equal(object xyz is not a place.');
+        chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
+        done();
+      });
+    });
+
+    it('returns error when doc is person', done => {
+      examplePlace._id = 'xyz';
+      examplePlace.type = 'person';
+      controller._validatePlace(examplePlace).catch(err => {
+        chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
+        done();
+      });
+    });
+
+    it('returns error when doc type is not "contact"', done => {
+      examplePlace._id = 'xyz';
+      examplePlace.type = 'shoe';
+      examplePlace.contact_type = 'clinic';
+      controller._validatePlace(examplePlace).catch(err => {
+        chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
         done();
       });
     });

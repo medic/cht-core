@@ -25,6 +25,12 @@ describe('people controller', () => {
       chai.expect(actual).to.equal('Wrong type, this is not a person.');
     });
 
+    it('returns error on wrong doc contact_type', () => {
+      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      const actual = controller._validatePerson({ type: 'contact', contact_type: 'shoe' });
+      chai.expect(actual).to.equal('Wrong type, this is not a person.');
+    });
+
     it('returns error if missing name property', () => {
       sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person' });

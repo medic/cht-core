@@ -29,6 +29,9 @@ const getContactType = place => {
 };
 
 const isAPlace = place => {
+  if (place.contact_type && place.type !== 'contact') {
+    return false;
+  }
   const type = getContactType(place);
   return type && !type.person;
 };
