@@ -29,7 +29,23 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     'ngInject';
     'use strict';
 
+    const MUTED_COMPARATOR = (lhs, rhs) => {
+      const lhsMuted = !!lhs.doc.muted;
+      const rhsMuted = !!rhs.doc.muted;
+
+      if (lhsMuted === rhsMuted) {
+        return 0;
+      }
+
+      return lhsMuted ? 1 : -1;
+    };
+
     var NAME_COMPARATOR = function(lhs, rhs) {
+      const mutedComparator = MUTED_COMPARATOR(lhs, rhs);
+      if (mutedComparator) {
+        return mutedComparator;
+      }
+
       if (!lhs.doc.name && !rhs.doc.name) {
         return 0;
       }
@@ -43,6 +59,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var AGE_COMPARATOR = function(lhs, rhs) {
+      const mutedComparator = MUTED_COMPARATOR(lhs, rhs);
+      if (mutedComparator) {
+        return mutedComparator;
+      }
+
       if (lhs.doc.date_of_birth &&
           rhs.doc.date_of_birth &&
           lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {

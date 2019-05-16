@@ -252,6 +252,60 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
+    describe('muted sorting', () => {
+      it('when selected doc is a clinic, should sort muted persons on the bottom sorted by age', () => {
+        doc.type = 'clinic';
+        const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
+        const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
+        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+
+        return runPlaceTest([childPerson1, mutedChildPerson2, mutedChildPerson1, childPerson2]).then(model => {
+          assert.equal(model.children.persons.length, 5);
+          assert.equal(model.children.persons[0].doc._id, childContactPerson._id); // primary contact on top
+
+          assert.equal(model.children.persons[1].doc._id, childPerson2._id);
+          assert.equal(model.children.persons[2].doc._id, childPerson1._id);
+          assert.equal(model.children.persons[3].doc._id, mutedChildPerson2._id);
+          assert.equal(model.children.persons[4].doc._id, mutedChildPerson1._id);
+        });
+      });
+
+      it('when selected doc is not a clinic, should sort muted persons on the bottom sorted by name', () => {
+        doc.type = 'district_hospital';
+        const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
+        const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
+        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+
+        return runPlaceTest([mutedChildPerson2, mutedChildPerson1, childPerson2, childPerson1]).then(model => {
+          assert.equal(model.children.persons.length, 5);
+          assert.equal(model.children.persons[0].doc._id, childContactPerson._id); // primary contact on top
+
+          assert.equal(model.children.persons[1].doc._id, childPerson1._id);
+          assert.equal(model.children.persons[2].doc._id, childPerson2._id);
+          assert.equal(model.children.persons[3].doc._id, mutedChildPerson1._id);
+          assert.equal(model.children.persons[4].doc._id, mutedChildPerson2._id);
+        });
+      });
+
+      it('should sort muted places to the bottom, alphabetically', () => {
+        doc.type = 'health_center';
+        const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
+        const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
+        const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
+        const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: 'clinic', name: 'muted 2', muted: 124 };
+
+        return runPlaceTest([mutedChildPlace2, mutedChildPlace1, childPlace2, childPlace1]).then(model => {
+          assert.equal(model.children.places.length, 4);
+          assert.equal(model.children.places[0].doc._id, childPlace1._id);
+          assert.equal(model.children.places[1].doc._id, childPlace2._id);
+          assert.equal(model.children.places[2].doc._id, mutedChildPlace1._id);
+          assert.equal(model.children.places[3].doc._id, mutedChildPlace2._id);
+        });
+      });
+    });
+
   });
 
   describe('Person', () => {
