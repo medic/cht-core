@@ -46,18 +46,14 @@ angular.module('inboxServices').factory('LiveListConfig',
             return;
           }
 
-          const c1Dead = !!c1.date_of_death,
-                c2Dead = !!c2.date_of_death;
-          if (c1Dead !== c2Dead) {
-            // sort dead people to the bottom
-            return c1Dead ? 1 : -1;
+          // sort dead people to the bottom
+          if (!!c1.date_of_death !== !!c2.date_of_death) {
+            return c1.date_of_death ? 1 : -1;
           }
 
-          const c1Muted = !!c1.muted,
-                c2Muted = !!c2.muted;
-          if (c1Muted !== c2Muted) {
-            // sort muted people to the bottom
-            return c1Muted ? 1 : -1;
+          // sort muted people to the bottom
+          if (!!c1.muted !== !!c2.muted) {
+            return c1.muted ? 1 : -1;
           }
 
           if (c1.sortByLastVisitedDate) {

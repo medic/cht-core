@@ -304,6 +304,40 @@ describe('ContactViewModelGenerator service', () => {
           assert.equal(model.children.places[3].doc._id, mutedChildPlace2._id);
         });
       });
+
+      it('should propagate muted state to not yet muted children and sort correctly', () => {
+        doc.type = 'district_hospital';
+        doc.muted = 123456;
+        const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
+        const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
+        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+        const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
+        const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
+        const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
+        const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: 'clinic', name: 'muted 2', muted: 124 };
+
+        const children = [
+          childPerson2, childPerson1, mutedChildPerson2, mutedChildPerson1,
+          childPlace2, childPlace1, mutedChildPlace2, mutedChildPlace1
+        ];
+
+        return runPlaceTest(children).then(model => {
+          assert.equal(model.children.persons.length, 5);
+          assert.equal(model.children.persons[0].doc._id, childContactPerson._id); // primary contact on top
+
+          assert.equal(model.children.persons[1].doc._id, mutedChildPerson1._id);
+          assert.equal(model.children.persons[2].doc._id, mutedChildPerson2._id);
+          assert.equal(model.children.persons[3].doc._id, childPerson1._id);
+          assert.equal(model.children.persons[4].doc._id, childPerson2._id);
+
+          assert.equal(model.children.places.length, 4);
+          assert.equal(model.children.places[0].doc._id, mutedChildPlace1._id);
+          assert.equal(model.children.places[1].doc._id, mutedChildPlace2._id);
+          assert.equal(model.children.places[2].doc._id, childPlace1._id);
+          assert.equal(model.children.places[3].doc._id, childPlace2._id);
+        });
+      });
     });
 
   });

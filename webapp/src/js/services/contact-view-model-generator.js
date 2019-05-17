@@ -29,23 +29,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     'ngInject';
     'use strict';
 
-    const MUTED_COMPARATOR = (lhs, rhs) => {
-      const lhsMuted = !!lhs.doc.muted;
-      const rhsMuted = !!rhs.doc.muted;
-
-      if (lhsMuted === rhsMuted) {
-        return 0;
-      }
-
-      return lhsMuted ? 1 : -1;
-    };
-
     var NAME_COMPARATOR = function(lhs, rhs) {
-      const mutedComparator = MUTED_COMPARATOR(lhs, rhs);
-      if (mutedComparator) {
-        return mutedComparator;
-      }
-
       if (!lhs.doc.name && !rhs.doc.name) {
         return 0;
       }
@@ -59,11 +43,6 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var AGE_COMPARATOR = function(lhs, rhs) {
-      const mutedComparator = MUTED_COMPARATOR(lhs, rhs);
-      if (mutedComparator) {
-        return mutedComparator;
-      }
-
       if (lhs.doc.date_of_birth &&
           rhs.doc.date_of_birth &&
           lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
@@ -88,6 +67,13 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return 0;
     };
 
+    const MUTED_COMPARATOR = (nextComparator, lhs, rhs) => {
+      if (!!lhs.doc.muted === !!rhs.doc.muted) {
+        return nextComparator(lhs, rhs);
+      }
+      return lhs.doc.muted ? 1 : -1;
+    };
+
     var setPrimaryContact = function(model) {
       var parent = model.lineage && model.lineage.length && model.lineage[0];
       model.isPrimaryContact = parent &&
@@ -103,6 +89,15 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var setMutedState = function(model) {
       model.doc.muted = ContactMuted(model.doc, model.lineage);
+    };
+
+    // muted state is inherited, but only set when online via Sentinel transition
+    const setChildrenMutedState = (model, children) => {
+      if (model.doc.muted) {
+        children.forEach(child => child.doc.muted = child.doc.muted || model.doc.muted);
+      }
+      return children;
+
     };
 
     var splitContactsByType = function(children) {
@@ -173,11 +168,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var sortChildren = function(model, children) {
       if (children.places) {
-        children.places.sort(NAME_COMPARATOR);
+        children.places.sort(_.partial(MUTED_COMPARATOR, NAME_COMPARATOR));
       }
       if (children.persons) {
         var personComparator = model.doc.type === 'clinic' ? AGE_COMPARATOR : NAME_COMPARATOR;
-        children.persons.sort(personComparator);
+        children.persons.sort(_.partial(MUTED_COMPARATOR, personComparator));
       }
       return sortPrimaryContactToTop(model, children);
     };
@@ -203,6 +198,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       }
 
       return getChildren(model.doc._id, options)
+        .then(children => setChildrenMutedState(model, children))
         .then(splitContactsByType)
         .then(function(children) {
           if (children.places && children.places.length) {
