@@ -4,7 +4,7 @@ const controller = require('../../../src/controllers/record-utils'),
       config = require('../../../src/config'),
       sinon = require('sinon');
 
-describe('record-utils', () => {
+describe.only('record-utils', () => {
 
   afterEach(() => {
     sinon.restore();

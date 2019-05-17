@@ -4,7 +4,7 @@ const sinon = require('sinon'),
       config = require('../../../src/config'),
       recordUtils = require('../../../src/controllers/record-utils');
 
-describe('record-utils-public-forms', () => {
+describe.only('record-utils-public-forms', () => {
 
   afterEach(() => {
     sinon.restore();
