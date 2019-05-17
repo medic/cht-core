@@ -1,5 +1,6 @@
 [
-  {"from": "/",                   "to": "templates/inbox.html"},
-  {"from": "#/*",                 "to": "templates/inbox.html"},
-  {"from": "/#/*",                "to": "templates/inbox.html"}
+  {"from": "/manifest.appcache",  "to": "manifest.appcache"},
+  {"from": "/",                   "to": "upgrade.html"},
+  {"from": "#/*",                 "to": "upgrade.html"},
+  {"from": "/#/*",                "to": "upgrade.html"}
 ]

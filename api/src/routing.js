@@ -181,14 +181,15 @@ app.get('/dbinfo', (req, res) => {
   proxy.web(req, res);
 });
 
-app.get(appPrefix, (req, res) => {
-  if (('deviceID' in req.query) || req.is('application/json')) {
+app.get(appPrefix, (req, res, next) => {
+  const isLegacyInboxPath = req.path.endsWith('/_design/medic/_rewrite/');
+  if (('deviceID' in req.query) || isLegacyInboxPath || req.is('application/json')) {
     // couchdb request - let it go
     return proxy.web(req, res);
+  
   }
-  const parsed = url.parse(req.url);
-  parsed.pathname = '/';
-  res.redirect(url.format(parsed));
+
+  next();
 });
 
 app.all('/medic/*', (req, res, next) => {
@@ -609,12 +610,6 @@ app.get('/service-worker.js', (req, res) => {
   ]);
 
   res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
-});
-
-// To clear the application cache for users upgrading from legacy clients, serve an empty application manifest
-app.get('/empty.manifest', (req, res) => {
-  writeHeaders(req, res, [['Content-Type', 'text/cache-manifest; charset=utf-8']]);
-  res.send('CACHE MANIFEST\n\nNETWORK:\n*\n');
 });
 
 /**
