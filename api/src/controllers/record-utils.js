@@ -147,9 +147,11 @@ const getDataRecord = (formData, options) => {
     if (def.facility_reference) {
       record.refid = getRefID(form, formData);
     }
+
     for (let k of Object.keys(def.fields)) {
       smsparser.merge(form, k.split('.'), record.fields, formData);
     }
+
     var errors = validate.validate(def, formData);
     errors.forEach(function(err) {
       addError(record, err);
@@ -210,21 +212,18 @@ const createByForm = (data, { locale }={}) => {
 };
 
 const createRecordByJSON = data => {
-  const required = ['from', 'form'],
-        optional = ['reported_date', 'locale'];
+  const required = ['form'];
+
   // check required fields are in _meta property
   if (empty(data._meta)) {
     throw new PublicError('Missing _meta property.');
   }
+
   for (let k of required) {
     if (empty(data._meta[k])) {
       throw new PublicError('Missing required field: ' + k);
     }
   }
-  // filter out any unwanted fields
-  data._meta = _.pick(data._meta, required.concat(optional));
-  // no need to pass the content type as nano.request defaults to json.
-  // request({ body: data }, callback);
 
   const options = {
     locale: data._meta.locale,
@@ -240,17 +239,9 @@ const createRecordByJSON = data => {
     throw new PublicError('Form not found: ' + options.form);
   }
 
-  const formData = {};
+  delete data._meta;
 
-  // For now only save string and number fields, ignore the others.
-  // Lowercase all property names.
-  for (var k in data) {
-    if (['string', 'number'].indexOf(typeof data[k]) >= 0) {
-      formData[k.toLowerCase()] = data[k];
-    }
-  }
-
-  return getDataRecord(formData, options);
+  return getDataRecord(data, options);
 };
 
 module.exports = {

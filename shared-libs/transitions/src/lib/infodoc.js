@@ -41,6 +41,7 @@ const getInfoDoc = change => {
         doc.transitions = doc.transitions || change.doc.transitions || {};
         return doc;
       } else {
+        // shouldn't we set the transitions based on change.doc here?
         return createInfoDoc(change.id, 'unknown');
       }
     })

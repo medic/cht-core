@@ -1,8 +1,5 @@
 const _ = require('underscore');
 
-/*
- *  return array of errors or empty array.
- */
 exports.validate = (def, form_data) => {
   const missing_fields = [];
 
@@ -32,35 +29,6 @@ exports.validate = (def, form_data) => {
 
   if (!_.isEmpty(missing_fields)) {
     return [{code: 'sys.missing_fields', fields: missing_fields}];
-  }
-
-  if (def.validations) {
-
-    const errors = [];
-
-    for (let k of Object.keys(def.validations)) {
-      if (typeof def.validations[k] !== 'string') {
-        continue;
-      }
-      const ret = eval(`(${def.validations[k]})()`); // jshint ignore:line
-      if (!ret) {
-        continue;
-      }
-      // assume string/error message if not object
-      if (!_.isObject(ret)) {
-        errors.push({
-          code: 'sys.form_invalid_custom',
-          form: def.meta.code,
-          message: ret
-        });
-      } else {
-        errors.push(ret);
-      }
-    }
-
-    if (errors.length) {
-      return errors;
-    }
   }
 
   return [];

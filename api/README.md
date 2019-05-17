@@ -391,7 +391,7 @@ GET /api/v1/forms/NPYY.json
 
 ## POST /api/v2/records
 
-Create a new record based on a form. This requires a form definition exists on the server side matching the form code.
+Create a new record based on a [JSON form](https://github.com/medic/medic-docs/blob/master/configuration/forms.md#json-forms) that has been configured.
 
 Records can be created one of two ways, parsing the form data yourself and submitting a JSON object or by submitting the raw message string.
 
@@ -422,7 +422,7 @@ All property names will be lowercased.
 | Key                  | Description                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | \_meta.form          | The form code.                                                                                     |
-| \_meta.from          | Reporting phone number.                                                                            |
+| \_meta.from          | Reporting phone number. Optional.                                                                  |
 | \_meta.reported_date | Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
 | \_meta.locale        | Optional locale string. Example: 'fr'                                                              |
 
@@ -460,6 +460,7 @@ Content-Type: application/json
   "visit": "ANC",
   "_meta": {
     "form": "YYYZ",
+    "from": "+5511943348031",
     "reported_date": 1352399720000
   }
 }
