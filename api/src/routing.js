@@ -182,11 +182,13 @@ app.get('/dbinfo', (req, res) => {
 });
 
 app.get(appPrefix, (req, res, next) => {
-  const isLegacyInboxPath = req.path.endsWith('/_design/medic/_rewrite/');
-  if (('deviceID' in req.query) || isLegacyInboxPath || req.is('application/json')) {
+  if (
+    ('deviceID' in req.query) || 
+    req.path.endsWith('/_design/medic/_rewrite/') || // when upgrading from appcache to service-workers
+    req.is('application/json')
+  ) {
     // couchdb request - let it go
     return proxy.web(req, res);
-  
   }
 
   next();

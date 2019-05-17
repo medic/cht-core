@@ -1,6 +1,6 @@
 [
   {"from": "/manifest.appcache",  "to": "manifest.appcache"},
-  {"from": "/",                   "to": "upgrade.html"},
-  {"from": "#/*",                 "to": "upgrade.html"},
-  {"from": "/#/*",                "to": "upgrade.html"}
+  {"from": "/",                   "to": "appcache-upgrade.html"},
+  {"from": "#/*",                 "to": "appcache-upgrade.html"},
+  {"from": "/#/*",                "to": "appcache-upgrade.html"}
 ]
