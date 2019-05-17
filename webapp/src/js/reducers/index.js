@@ -102,25 +102,6 @@
         });
       case actionTypes.SET_LAST_CHANGED_DOC:
         return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
-      case actionTypes.RECEIVE_SELECTED_TASKS: {
-        const getTaskCount = contactId => action.payload.tasks
-          .filter(task => task.doc && task.doc.contact && task.doc.contact._id === contactId)
-          .length;
-
-        const children = Object.assign({}, state.selected.children);
-        if (children.persons) {
-          children.persons = children.persons.map(person =>
-            Object.assign({}, person, { taskCount: getTaskCount(person.id) }));
-        }
-
-        return Object.assign({}, state, {
-          selected: Object.assign({}, state.selected, {
-            tasks: action.payload.tasks,
-            areTasksEnabled: action.payload.areTasksEnabled,
-            children
-          })
-        });
-      }
       default:
         return state;
     }

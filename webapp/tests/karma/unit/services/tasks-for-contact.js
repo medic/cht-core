@@ -51,13 +51,11 @@ describe('TasksForContact service', function() {
     };
     stubRulesEngine(null, [task]);
 
-    service(model, 'listenerName',
-      function(areTasksEnabled, tasks) {
-        chai.assert.equal(rulesEngineListen.callCount, 0);
-        chai.assert(!areTasksEnabled);
-        chai.assert.sameMembers(tasks, []);
-        done();
-      });
+    service(model, 'listenerName', (tasks) => {
+      chai.assert.equal(rulesEngineListen.callCount, 0);
+      chai.assert(!tasks);
+      done();
+    });
   });
 
   it('displays tasks for selected contact person', function(done) {
@@ -68,13 +66,11 @@ describe('TasksForContact service', function() {
       children: { persons: [] }
     };
 
-    service(model, 'listenerName',
-      function(areTasksEnabled, tasks) {
-        chai.assert.equal(rulesEngineListen.callCount, 1);
-        chai.assert(areTasksEnabled);
-        chai.assert.sameMembers(tasks, [ task ]);
-        done();
-      });
+    service(model, 'listenerName', (tasks) => {
+      chai.assert.equal(rulesEngineListen.callCount, 1);
+      chai.assert.sameMembers(tasks, [ task ]);
+      done();
+    });
   });
 
   it('displays tasks for selected contact clinic', function(done) {
@@ -85,13 +81,11 @@ describe('TasksForContact service', function() {
       children: { persons: [] }
     };
 
-    service(model, 'listenerName',
-      function(areTasksEnabled, tasks) {
-        chai.assert.equal(rulesEngineListen.callCount, 1);
-        chai.assert(areTasksEnabled);
-        chai.assert.sameMembers(tasks, [ task ]);
-        done();
-      });
+    service(model, 'listenerName', (tasks) => {
+      chai.assert.equal(rulesEngineListen.callCount, 1);
+      chai.assert.sameMembers(tasks, [ task ]);
+      done();
+    });
   });
 
   it('does not display tasks for other doctypes', function(done) {
@@ -102,12 +96,10 @@ describe('TasksForContact service', function() {
       children: { persons: [] }
     };
 
-    service(model, 'listenerName',
-      function(areTasksEnabled, tasks) {
-        chai.assert(!areTasksEnabled);
-        chai.assert.sameMembers(tasks, []);
-        done();
-      });
+    service(model, 'listenerName', (tasks) => {
+      chai.assert(!tasks);
+      done();
+    });
   });
 
   it('displays tasks for selected clinic and child persons', function(done) {
@@ -148,9 +140,8 @@ describe('TasksForContact service', function() {
       children: { persons: [{ id: 'child1' }, { id: 'child2' }] }
     };
     stubRulesEngine(null, tasks);
-    service(model, 'listenerName', (areTasksEnabled, newTasks) => {
+    service(model, 'listenerName', (newTasks) => {
       chai.assert.equal(rulesEngineListen.callCount, 1);
-      chai.assert(areTasksEnabled);
       chai.assert.equal(newTasks.length, 4);
       chai.assert.sameMembers(newTasks, tasks.slice(0, 4));
       done();
@@ -175,13 +166,11 @@ describe('TasksForContact service', function() {
       children: { persons: [{ id: childPersonId }] }
     };
     stubRulesEngine(null, tasks);
-    service(model, 'listenerName',
-      function(areTasksEnabled, newTasks) {
-        chai.assert.equal(rulesEngineListen.callCount, 1);
-        chai.assert(areTasksEnabled);
-        chai.assert.sameMembers(newTasks, [tasks[0]]);
-        done();
-      });
+    service(model, 'listenerName', (newTasks) => {
+      chai.assert.equal(rulesEngineListen.callCount, 1);
+      chai.assert.sameMembers(newTasks, [tasks[0]]);
+      done();
+    });
   });
 
   it('only displays tasks selected place and child persons', function(done) {
@@ -197,12 +186,10 @@ describe('TasksForContact service', function() {
       children: { persons: [{ id: childPersonId }] }
     };
     stubRulesEngine(null, tasks);
-    service(model, 'listenerName',
-      function(areTasksEnabled, newTasks) {
-        chai.assert.sameMembers(newTasks, []);
-        chai.assert(areTasksEnabled);
-        done();
-      });
+    service(model, 'listenerName', (newTasks) => {
+      chai.assert.sameMembers(newTasks, []);
+      done();
+    });
   });
 
   it('displays tasks in order of date', function(done) {
@@ -223,12 +210,10 @@ describe('TasksForContact service', function() {
       doc: { _id: docId, type: 'clinic' },
       children: { persons: [] }
     };
-    service(model, 'listenerName',
-      function(areTasksEnabled, newTasks) {
-        chai.assert.deepEqual(newTasks, [tasks[1], tasks[0]]);
-        chai.assert(areTasksEnabled);
-        done();
-      });
+    service(model, 'listenerName', (newTasks) => {
+      chai.assert.deepEqual(newTasks, [tasks[1], tasks[0]]);
+      done();
+    });
   });
 
   it('displays only unresolved tasks', function(done) {
@@ -251,12 +236,10 @@ describe('TasksForContact service', function() {
       children: { persons: [] }
     };
     stubRulesEngine(null, tasks);
-    service(model, 'listenerName',
-      function(areTasksEnabled, newTasks) {
-        chai.assert.deepEqual(newTasks, [tasks[1]]);
-        chai.assert(areTasksEnabled);
-        done();
-      });
+    service(model, 'listenerName', (newTasks) => {
+      chai.assert.deepEqual(newTasks, [tasks[1]]);
+      done();
+    });
   });
 
   it('listens for changes from the rules engine', function(done) {
@@ -283,7 +266,7 @@ describe('TasksForContact service', function() {
       doc: { _id: docId, type: 'clinic' },
       children: { persons: [] }
     };
-    service(model, 'listenerName', function(areTasksEnabled, newTasks) {
+    service(model, 'listenerName', (newTasks) => {
       if (callCount === 0) {
         chai.assert.deepEqual(newTasks, tasks);
       } else if (callCount === 1) {
@@ -339,9 +322,8 @@ describe('TasksForContact service', function() {
       children: { persons: [{ id: childPersonId, doc: { _id: childPersonId } }] }
     };
     stubRulesEngine(null, tasks);
-    service(model, 'listenerName', (areTasksEnabled, newTasks) => {
+    service(model, 'listenerName', (newTasks) => {
       chai.assert.equal(rulesEngineListen.callCount, 1);
-      chai.assert(areTasksEnabled);
       chai.assert.sameMembers(newTasks, tasks);
       chai.assert.equal(translate.instant.callCount, 2);
       chai.assert.deepEqual(translate.instant.args, [

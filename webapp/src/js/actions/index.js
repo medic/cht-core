@@ -14,10 +14,6 @@ angular.module('inboxServices').factory('Actions',
       return action;
     }
 
-    function createMultiValueAction(type, keyValuePairs) {
-      return { type, payload: Object.assign({}, keyValuePairs) };
-    }
-
     return function(dispatch) {
 
       function createSetCancelCallbackAction(value) {
@@ -121,10 +117,6 @@ angular.module('inboxServices').factory('Actions',
         return dispatch(createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
       }
 
-      function receiveSelectedTasks(areTasksEnabled, tasks) {
-        dispatch(createMultiValueAction(actionTypes.RECEIVE_SELECTED_TASKS, { tasks, areTasksEnabled }));
-      }
-
       return {
         clearCancelCallback,
         setCancelCallback,
@@ -140,7 +132,6 @@ angular.module('inboxServices').factory('Actions',
         setLoadingSelectedReports,
         loadSelectedChildren,
         loadSelectedReports,
-        receiveSelectedTasks,
         // Messages-specific selected actions
         addSelectedMessage,
         removeSelectedMessage,

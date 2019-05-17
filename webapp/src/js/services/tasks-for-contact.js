@@ -95,14 +95,14 @@ angular.module('inboxServices').factory('TasksForContact',
         translateLabels(newTasks);
         mergeTasks(taskList, newTasks);
         sortTasks(taskList);
-        listener(true, taskList);
+        listener(taskList);
       });
     };
 
-    /** Listener format : function(areTasksEnabled, newTasks) */
+    /** Listener format : function(newTasks) */
     return (model, listenerName, listener) => {
       if (!areTasksEnabled(model.doc.type)) {
-        return listener(false, []);
+        return listener(false);
       }
 
       const contactIds = getIdsForTasks(model);

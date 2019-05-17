@@ -263,7 +263,30 @@ describe('Contacts controller', () => {
         assert.equal(tasksForContact.callCount, 1);
         assert.deepEqual(tasksForContact.args[0][0].doc, getSelected().doc);
         assert.equal(tasksForContact.args[0][1], 'ContactsCtrl');
-        assert.equal(tasksForContact.args[0][2], actions.receiveSelectedTasks);
+      });
+    });
+
+    it('should store tasks in redux store and count tasks by contact', () => {
+      auth.withArgs('can_view_tasks').resolves();
+      let receiveTasksCallback;
+      tasksForContact.callsFake((selected, listenerName, callback) => {
+        receiveTasksCallback = callback;
+      });
+      const tasks = [
+        { doc: { contact: { _id: 'contact1' } } },
+        { other: 4  },
+        { doc: { other: 3 } },
+        { doc: { contact: { _id: 'contact1' } } },
+        { doc: { contact: { _id: 'contact2' } } },
+        { doc: { contact: { _id: 'contact1' } } },
+      ];
+
+      return testContactSelection({ doc: district }).then(() => {
+        assert(auth.withArgs('can_view_tasks').called);
+        assert.equal(tasksForContact.callCount, 1);
+        receiveTasksCallback(tasks);
+        assert.deepEqual(getSelected().tasks, tasks);
+        assert.deepEqual(getSelected().tasksByContact, { 'contact1': 3, 'contact2': 1 });
       });
     });
   });

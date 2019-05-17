@@ -49,7 +49,6 @@ var _ = require('underscore'),
         updateSelected: actions.updateSelected,
         loadSelectedChildren: actions.loadSelectedChildren,
         loadSelectedReports: actions.loadSelectedReports,
-        receiveSelectedTasks: actions.receiveSelectedTasks,
         setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
         setLoadingSelectedReports: actions.setLoadingSelectedReports
       };
@@ -230,8 +229,20 @@ var _ = require('underscore'),
 
     const getTasks = () => {
       return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', ctrl.receiveSelectedTasks))
+        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', receiveTasks))
         .catch(() => $log.debug('Not authorized to view tasks'));
+    };
+
+    const receiveTasks = (tasks) => {
+      const tasksByContact = {};
+      tasks.forEach(task => {
+        if (task.doc && task.doc.contact) {
+          const contactId = task.doc.contact._id;
+          tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
+        }
+      });
+      ctrl.updateSelected({ tasks });
+      ctrl.updateSelected({ tasksByContact });
     };
 
     $scope.setSelected = function(selected, options) {
