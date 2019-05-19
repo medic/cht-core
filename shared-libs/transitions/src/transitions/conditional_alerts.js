@@ -22,18 +22,22 @@ const evaluateCondition = (doc, alert) => {
   return utils.getReportsWithSameClinicAndForm({ doc: doc, formName: alert.form })
     .then(rows => rows.map(row => row.doc))
     .then(docs => {
-      const index = doc._id && docs.findIndex(dbDoc => dbDoc._id === doc._id);
-      if (index) {
-        // firing on update: replace the doc in the db with the current doc
-        // which may have been changed by other transitions
-        docs[index] = doc;
-      } else {
-        // this is a new doc
+      if (!doc._id) {
         docs.push(doc);
+      } else {
+        const index = docs.findIndex(dbDoc => dbDoc._id === doc._id);
+        if (index === -1) {
+          // this is a new doc
+          docs.push(doc);
+        } else {
+          // firing on update: replace the doc in the db with the current doc
+          // which may have been changed by other transitions
+          docs[index] = doc;
+        }
       }
       return docs;
     })
-    .then(docs => docs.sort((lhs, rhs) => lhs.reported_date > rhs.reported_date))
+    .then(docs => docs.sort((lhs, rhs) => lhs.reported_date - rhs.reported_date))
     .then(docs => context[alert.form] = i => docs[docs.length - 1 - i])
     .then(() => runCondition(alert.condition, context));
 };
