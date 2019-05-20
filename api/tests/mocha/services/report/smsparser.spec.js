@@ -4,7 +4,7 @@ const sinon = require('sinon'),
       config = require('../../../../src/config'),
       smsparser = require('../../../../src/services/report/smsparser');
 
-describe.only('sms parser', () => {
+describe('sms parser', () => {
 
   afterEach(() => {
     sinon.restore();

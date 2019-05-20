@@ -1,5 +1,4 @@
-const _ = require('underscore'),
-      moment = require('moment'),
+const moment = require('moment'),
       phoneNumber = require('@medic/phone-number'),
       config = require('../config'),
       smsparser = require('../services/report/smsparser'),
