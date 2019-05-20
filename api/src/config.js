@@ -147,7 +147,6 @@ module.exports = {
           var version = change.doc.map(function (e) {
             return e.base_version;
           });
-          console.log(version);
         } else if (change.id === 'settings') {
           logger.info('Detected settings change - reloading');
           loadSettings().catch(err => {

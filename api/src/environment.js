@@ -17,6 +17,7 @@ if (UNIT_TEST_ENV) {
     host: parsedUrl.hostname,
     db: parsedUrl.path.replace('/', ''),
     ddoc: 'medic',
+    version: 'unknown'
   };
   if (parsedUrl.auth) {
     var index = parsedUrl.auth.indexOf(':');

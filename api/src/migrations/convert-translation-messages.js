@@ -3,7 +3,7 @@ const db = require('../db'),
       DDOC_ID = '_design/medic';
 
 const getAttachment = name => {
-  return db.medic.getAttachment(DDOC_ID, `/translations/${name}.properties/`)
+  return db.medic.getAttachment(DDOC_ID, name)
     .then(attachment => {
       return new Promise((resolve, reject) => {
         properties.parse(attachment.toString('utf8'), (err, values) => {
@@ -25,39 +25,37 @@ module.exports = {
   name: 'convert-translation-messages',
   created: new Date(2018, 11, 8),
   run: () => {
-    return db.medic.query('medic-client/doc_by_type', {
-      startkey: [ 'translations', false ],
-      endkey: [ 'translations', true ],
-      include_docs: true
-    }).then(result => {
-      const translations = result.rows.map(function (e) {
-        return e.doc;
+      return db.medic.query('medic-client/doc_by_type', {
+        startkey: [ 'translations', false ],
+        endkey: [ 'translations', true ],
+        include_docs: true
+      }).then(result => {
+        const translations = result.rows.map(r => r.doc);
+
+        return Promise.all(translations.map(translationRecord => {
+          if (translationRecord.values) {
+              return getAttachment(translationRecord._id)
+                .then(originalTranslation => {
+                  translationRecord.generic = {};
+                  translationRecord.custom = {};
+
+                  if (originalTranslation) {
+                    Object.keys(translationRecord.values).forEach(key => {
+                      if (originalTranslation[key]) {
+                        translationRecord.generic[key] = translationRecord.values[key];
+                      } else {
+                        translationRecord.custom[key] = translationRecord.values[key];
+                      }
+                    });
+                  } else {
+                    translationRecord.custom = translationRecord.values;
+                  }
+
+                  delete translationRecord.values;
+                  return db.medic.put(translationRecord);
+                });
+            }
+        }));
       });
-    console.log(translations);
-      return Promise.all(translations.map(translationRecord => {
-        if (translationRecord.values) {
-            return getAttachment(translationRecord._id)
-              .then(originalTranslation => {
-                translationRecord.generic = {};
-                translationRecord.custom = {};
-
-                if (originalTranslation) {
-                  Object.keys(translationRecord.values).forEach(key => {
-                    if (originalTranslation[key]) {
-                      translationRecord.generic[key] = translationRecord.values[key];
-                    } else {
-                      translationRecord.custom[key] = translationRecord.values[key];
-                    }
-                  });
-                } else {
-                  translationRecord.generic = translationRecord.values;
-                }
-
-                delete translationRecord.values;
-                return db.medic.put(translationRecord);
-              });
-          }
-      }));
-    });
-  }
-};
+    }
+  };

@@ -15,12 +15,21 @@ process
 
 serverChecks.check(environment.serverUrl).then(() => {
   const app = require('./src/routing'),
+    db = require('./src/db'),
     config = require('./src/config'),
     migrations = require('./src/migrations'),
     ddocExtraction = require('./src/ddoc-extraction'),
     translations = require('./src/translations'),
     serverUtils = require('./src/server-utils'),
     apiPort = process.env.API_PORT || 5988;
+
+    const getDeploymentVersion = function() {
+      return db.medic.get('_design/medic')
+        .then(ddoc => {
+          environment.version = ddoc.build_info.base_version;
+        });
+    };
+
 
   Promise.resolve()
     .then(() => logger.info('Extracting ddoc…'))
@@ -39,6 +48,10 @@ serverChecks.check(environment.serverUrl).then(() => {
     .then(() => logger.info('Running db migrations…'))
     .then(migrations.run)
     .then(() => logger.info('Database migrations completed successfully'))
+
+    .then(() => logger.info('Getting version…'))
+    .then(getDeploymentVersion)
+    .then(() => logger.info('App version set successfully'))
 
     .catch(err => {
       logger.error('Fatal error initialising medic-api');
