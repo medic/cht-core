@@ -12,7 +12,7 @@ describe('ImportContacts service', function() {
     module('adminApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ put: put }));
-      $provide.value('Location', { path: 'BASEURL' });
+      $provide.value('Location', { url: 'BASEURL' });
     });
     inject(function($injector, _$rootScope_) {
       $rootScope = _$rootScope_;
@@ -38,7 +38,7 @@ describe('ImportContacts service', function() {
 
   it('returns error when checking for existing contact errors', function(done) {
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/1')
+      .expect('HEAD', 'BASEURL/1')
       .respond(503, 'boom');
     service([{ _id: 1 }], true)
       .then(function() {
@@ -53,7 +53,7 @@ describe('ImportContacts service', function() {
 
   it('returns error when saving contact errors', function(done) {
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/1')
+      .expect('HEAD', 'BASEURL/1')
       .respond(404);
     put.returns(Promise.reject('boom'));
     service([{ _id: 1 }], true)
@@ -72,10 +72,10 @@ describe('ImportContacts service', function() {
 
   it('creates new docs when none found', function(done) {
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/1')
+      .expect('HEAD', 'BASEURL/1')
       .respond(404);
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/2')
+      .expect('HEAD', 'BASEURL/2')
       .respond(404);
     put
       .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
@@ -103,10 +103,10 @@ describe('ImportContacts service', function() {
 
   it('overwrites docs when flagged', function(done) {
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/1')
+      .expect('HEAD', 'BASEURL/1')
       .respond(200, '', { ETag: 'abc' });
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/2')
+      .expect('HEAD', 'BASEURL/2')
       .respond(200, '', { ETag: 'def' });
     put
       .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
@@ -132,10 +132,10 @@ describe('ImportContacts service', function() {
 
   it('leaves docs unchanged when not flagged', function(done) {
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/1')
+      .expect('HEAD', 'BASEURL/1')
       .respond(404);
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/2')
+      .expect('HEAD', 'BASEURL/2')
       .respond(200, '', { ETag: 'def' });
     put
       .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
@@ -160,10 +160,10 @@ describe('ImportContacts service', function() {
 
   it('creates person docs when required', function(done) {
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/1')
+      .expect('HEAD', 'BASEURL/1')
       .respond(404);
     $httpBackend
-      .expect('HEAD', 'BASEURL/_db/2')
+      .expect('HEAD', 'BASEURL/2')
       .respond(404);
     put.onCall(0).returns(Promise.resolve({ _id: 1, _rev: 1 }));
     put.onCall(1).returns(Promise.resolve({ }));
