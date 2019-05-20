@@ -131,7 +131,7 @@ const findValidRegistration = (doc, config, registrations) => {
 
     for (var i = 0; i < registrations.length; i++) {
       var registration = registrations[i];
-      if (registration.scheduled_tasks) {
+      if (registration.scheduled_tasks && registration.scheduled_tasks.length) {
         var scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
         // if the visit was reported prior to the the most recent scheduled task
         // we move to the next registration because the visit does not get
