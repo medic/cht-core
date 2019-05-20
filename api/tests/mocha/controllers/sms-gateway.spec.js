@@ -1,7 +1,7 @@
 const chai = require('chai'),
       controller = require('../../../src/controllers/sms-gateway'),
-      messageUtils = require('../../../src/message-utils'),
       records = require('../../../src/services/records'),
+      messaging = require('../../../src/services/messaging'),
       db = require('../../../src/db'),
       config = require('../../../src/config'),
       sinon = require('sinon');
@@ -26,9 +26,9 @@ describe('sms-gateway controller', () => {
       .onCall(0).returns({ message: 'one' })
       .onCall(1).returns({ message: 'two' })
       .onCall(2).returns({ message: 'three' });
-    const getMessages = sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
-    const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
-    updateMessageTaskStates.callsArgWith(1, null, {});
+    const getMessages = sinon.stub(messaging, 'getMessages').resolves([]);
+    const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
+    updateMessageTaskStates.resolves({});
 
     sinon.stub(db.medic, 'query')
         .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
@@ -64,10 +64,10 @@ describe('sms-gateway controller', () => {
 
   it('post() should update statuses supplied in request', () => {
     // given
-    const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
-    updateMessageTaskStates.callsArgWith(1, null, {});
+    const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
+    updateMessageTaskStates.resolves();
 
-    sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
+    sinon.stub(messaging, 'getMessages').resolves([]);
 
     const req = { body: {
       updates: [
@@ -98,10 +98,10 @@ describe('sms-gateway controller', () => {
 
   it('post() should persist unknown statuses', () => {
     // given
-    const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
-    updateMessageTaskStates.callsArgWith(1, null, {});
+    const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
+    updateMessageTaskStates.resolves();
 
-    sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
+    sinon.stub(messaging, 'getMessages').resolves([]);
 
     const req = { body: {
       updates: [
@@ -122,13 +122,13 @@ describe('sms-gateway controller', () => {
 
   it('post() should provide WO messages in response', () => {
     // given
-    sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, [
+    sinon.stub(messaging, 'getMessages').resolves([
       { id:'1', to:'+1', message:'one' },
       { id:'2', to:'+2', message:'two' },
       { id:'3', to:'+3', message:'three' },
     ]);
-    const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
-    updateMessageTaskStates.callsArgWith(1);
+    const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
+    updateMessageTaskStates.resolves();
 
     const req = { body: {} };
 
@@ -157,9 +157,9 @@ describe('sms-gateway controller', () => {
     sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
     sinon.stub(db.medic, 'query')
       .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
-    sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
-    const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
-    updateMessageTaskStates.callsArgWith(1, null, {});
+    sinon.stub(messaging, 'getMessages').resolves([]);
+    const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
+    updateMessageTaskStates.resolves({});
 
     const req = { body: {
         messages: [

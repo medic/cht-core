@@ -3,8 +3,8 @@
  * @see https://github.com/medic/medic-gateway
  */
 const db = require('../db'),
-      messageUtils = require('../message-utils'),
       records = require('../services/records'),
+      messaging = require('../services/messaging'),
       logger = require('../logger'),
       config = require('../config'),
       // map from the medic-gateway state to the medic app's state
@@ -37,31 +37,18 @@ const markMessagesForwarded = messages => {
     messageId: message.id,
     state: 'forwarded-to-gateway'
   }));
-  return new Promise((resolve, reject) => {
-    messageUtils.updateMessageTaskStates(taskStateChanges, err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(messages);
-      }
-    });
-  });
+  return messaging.updateMessageTaskStates(taskStateChanges);
 };
 
 const getOutgoing = () => {
-  return new Promise((resolve, reject) => {
-    messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
-      (err, pendingMessages) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(pendingMessages.map(message => ({
-          id: message.id,
-          to: message.to,
-          content: message.message,
-        })));
+  return messaging.getMessages({ states: ['pending', 'forwarded-to-gateway'] })
+    .then(pendingMessages => {
+      return pendingMessages.map(message => ({
+        id: message.id,
+        to: message.to,
+        content: message.message,
+      }));
     });
-  });
 };
 
 const runTransitions = docs => {
@@ -76,7 +63,7 @@ const addNewMessages = req => {
   }
 
   messages = messages.filter(message => {
-    if(message.from !== undefined && message.content !== undefined) {
+    if (message.from !== undefined && message.content !== undefined) {
       return true;
     }
     logger.info(`Message missing required field: ${JSON.stringify(message)}`);
@@ -114,14 +101,7 @@ const processTaskStateUpdates = req => {
     return Promise.resolve();
   }
   const taskStateChanges = req.body.updates.map(mapStateFields);
-  return new Promise((resolve, reject) => {
-    messageUtils.updateMessageTaskStates(taskStateChanges, err => {
-      if (err) {
-        return reject(err);
-      }
-      resolve();
-    });
-  });
+  return messaging.updateMessageTaskStates(taskStateChanges);
 };
 
 module.exports = {
@@ -129,11 +109,13 @@ module.exports = {
     return { 'medic-gateway': true };
   },
   post: req => {
-    return Promise.resolve()
-      .then(() => addNewMessages(req))
+    return addNewMessages(req)
       .then(() => processTaskStateUpdates(req))
       .then(getOutgoing)
-      .then(markMessagesForwarded)
-      .then(outgoingMessages => ({ messages: outgoingMessages }));
+      .then(outgoingMessages => {
+        return markMessagesForwarded(outgoingMessages).then(() => {
+          return { messages: outgoingMessages };
+        });
+      });
   },
 };
