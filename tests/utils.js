@@ -403,6 +403,18 @@ module.exports = {
     });
   },
 
+  deleteDocs: ids => {
+    return module.exports.getDocs(ids).then(docs => {
+      docs.forEach(doc => doc._deleted = true);
+      return module.exports.requestOnTestDb({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs },
+        headers: { 'content-type': 'application/json' },
+      });
+    });
+  },
+
   /**
    * Deletes all docs in the database, except some core docs (read the code) and
    * any docs that you specify.
