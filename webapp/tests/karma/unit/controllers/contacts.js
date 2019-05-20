@@ -367,19 +367,9 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('disables deleting for places with child places', () => {
+    it('disables deleting for places with children', () => {
       return testRightActionBar(
-        { doc: district, children: { places: [district] } },
-        true,
-        actionBarArgs => {
-          assert.equal(actionBarArgs.canDelete, false);
-        }
-      );
-    });
-
-    it('disables deleting for places with child people', () => {
-      return testRightActionBar(
-        { doc: district, children: { persons: [person] } },
+        { doc: district, children: [ { contacts: [ district ] } ] },
         true,
         actionBarArgs => {
           assert.equal(actionBarArgs.canDelete, false);
@@ -389,7 +379,17 @@ describe('Contacts controller', () => {
 
     it('enables deleting for leaf nodes', () => {
       return testRightActionBar(
-        { doc: district, children: { persons: [], places: [] } },
+        { doc: district, children: [] },
+        true,
+        actionBarArgs => {
+          assert.equal(actionBarArgs.canDelete, true);
+        }
+      );
+    });
+
+    it('enables deleting for nodes with no children', () => {
+      return testRightActionBar(
+        { doc: district, children: [ { contacts: [] } ] },
         true,
         actionBarArgs => {
           assert.equal(actionBarArgs.canDelete, true);

@@ -207,7 +207,6 @@ describe('reminders', () => {
       }, function(err, clinics) {
           var ids = _.pluck(clinics, 'id');
           assert.deepEqual(['xxx', 'yyy', 'yyz'], ids);
-          assert.equal(clinics.length, 3);
           done();
       });
   });

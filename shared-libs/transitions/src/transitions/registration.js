@@ -90,45 +90,39 @@ const messageRelevant = (msg, doc) => {
 
 module.exports = {
   init: () => {
-    const configs = module.exports.getConfig();
-    configs.forEach(config => {
-      if (config.events) {
-        config.events.forEach(event => {
+    const registrations = module.exports.getConfig();
+    registrations.forEach(registration => {
+      if (registration.events) {
+        registration.events.forEach(event => {
           let params;
           try {
             params = parseParams(event.params);
           } catch (e) {
-            throw new Error(
-              `Configuration error. Unable to parse params for ${config.form}.${
-                event.trigger
-              }: '${event.params}'. Error: ${e}`
-            );
+            throw new Error(`Configuration error. Unable to parse params for ${registration.form}.${event.trigger}: '${event.params}'. Error: ${e}`);
           }
-          if (
-            event.trigger === 'add_patient' &&
-            params.patient_id_field === 'patient_id'
-          ) {
-            throw new Error(
-              'Configuration error. patient_id_field cannot be set to patient_id'
-            );
+          if (event.trigger === 'add_patient') {
+            if (params.patient_id_field === 'patient_id') {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: patient_id_field cannot be set to patient_id`);
+            }
+            const contactTypes = config.get('contact_types') || [];
+            const typeId = params.contact_type || 'person';
+            const contactType = contactTypes.find(type => type.id === typeId);
+            if (!contactType) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with an unknown contact type "${typeId}"`);
+            }
+            if (!contactType.person) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with a place contact type "${typeId}"`);
+            }
           }
           if (
             event.trigger === 'assign_schedule' ||
             event.trigger === 'clear_schedule'
           ) {
             if (!event.params) {
-              throw new Error(
-                `Configuration error. Expecting params to be defined as the name of the schedule(s) for ${
-                  config.form
-                }.${event.trigger}`
-              );
+              throw new Error(`Configuration error. Expecting params to be defined as the name of the schedule(s) for ${registration.form}.${event.trigger}`);
             }
             if (!_.isArray(params)) {
-              throw new Error(
-                `Configuration error. Expecting params to be a string, comma separated list, or an array for ${
-                  config.form
-                }.${event.trigger}: '${event.params}'`
-              );
+              throw new Error(`Configuration error. Expecting params to be a string, comma separated list, or an array for ${registration.form}.${event.trigger}: '${event.params}'`);
             }
           }
         });
@@ -504,6 +498,7 @@ module.exports = {
             if (err) {
               return callback(err);
             }
+
             const contact = _.result(_.first(result.rows), 'doc');
             lineage.minify(contact);
             // create a new patient with this patient_id

@@ -37,6 +37,20 @@ angular.module('inboxServices').factory('LiveListConfig',
         });
     };
 
+    const getContactTypeOrder = contact => {
+      if (contact.type === 'contact') {
+        const idx = ContactTypes.HARDCODED_TYPES.indexOf(contact.contact_type);
+        if (idx !== -1) {
+          // matches a hardcoded type - order by the index
+          return '' + idx;
+        }
+        // order by the name of the type
+        return contact.contact_type;
+      }
+      // backwards compatibility with hardcoded hierarchy
+      return '' + ContactTypes.HARDCODED_TYPES.indexOf(contact.type);
+    };
+
     // Configure LiveList service
     return function($scope) {
 
@@ -62,15 +76,10 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (c1.simprints && c2.simprints) {
             return c2.simprints.confidence - c1.simprints.confidence;
           }
-          const c1Type = c1.contact_type || c1.type;
-          const c2Type = c2.contact_type || c2.type;
+          const c1Type = getContactTypeOrder(c1) || '';
+          const c2Type = getContactTypeOrder(c2) || '';
           if (c1Type !== c2Type) {
-            const c1TypeIndex = ContactTypes.HARDCODED_TYPES.indexOf(c1Type);
-            const c2TypeIndex = ContactTypes.HARDCODED_TYPES.indexOf(c2Type);
-            if (c1TypeIndex !== c2TypeIndex) {
-              return c1TypeIndex - c2TypeIndex;
-            }
-            return c1Type - c2Type;
+            return c1Type < c2Type ? -1 : 1;
           }
 
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
