@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 angular.module('inboxServices').factory('GetSummaries',
   function(
     ContactTypes,
@@ -96,6 +94,7 @@ angular.module('inboxServices').factory('GetSummaries',
           name: doc.name || doc.phone,
           phone: doc.phone,
           type: doc.type,
+          contact_type: doc.contact_type,
           contact: doc.contact && doc.contact._id,
           lineage: getLineage(doc.parent),
           simprints_id: doc.simprints_id,
@@ -107,7 +106,7 @@ angular.module('inboxServices').factory('GetSummaries',
 
     var getRemote = function(ids) {
       return DB().query('medic/doc_summaries_by_id', { keys: ids }).then(function(response) {
-         return _.map(response.rows, function(row) {
+        return response.rows.map(row => {
           row.value._id = row.id;
           return row.value;
         });
@@ -116,12 +115,9 @@ angular.module('inboxServices').factory('GetSummaries',
 
     var getLocal = function(ids) {
       return DB().allDocs({ keys: ids, include_docs: true }).then(function(response) {
-        var summaries = _.map(response.rows, function(row) {
-          return summarise(row.doc);
-        });
-        return summaries.filter(function(summary) {
-          return summary;
-        });
+        return response.rows
+          .map(row => summarise(row.doc))
+          .filter(summary => summary);
       });
     };
 
