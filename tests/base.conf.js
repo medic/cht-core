@@ -37,7 +37,9 @@ class BaseConfig {
         });
       },
       onPrepare: () => {
+        jasmine.getEnv().clearReporters();
         jasmine.getEnv().addReporter(utils.reporter);
+        jasmine.getEnv().addReporter(utils.specReporter);
         browser.waitForAngularEnabled(false);
 
         browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
