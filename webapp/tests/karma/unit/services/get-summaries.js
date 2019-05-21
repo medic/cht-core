@@ -237,6 +237,14 @@ describe('GetSummaries service', () => {
       });
     });
 
+    it('queries allDocs and ignores docs that are missing', () => {
+      includes.returns(false);
+      allDocs.resolves({ rows: [ { key: 'a', error: 'not_found' } ] });
+      return service([ 'a' ]).then(actual => {
+        chai.expect(actual).to.deep.equal([]);
+      });
+    });
+
   });
 
 });

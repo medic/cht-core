@@ -61,6 +61,11 @@ angular.module('inboxServices').factory('GetSummaries',
     // this workaround is no longer needed.
     // https://github.com/medic/medic/issues/4666
     const summarise = doc => {
+      if (!doc) {
+        // happens when the doc with the requested id wasn't found in the DB
+        return;
+      }
+
       if (doc.type === 'data_record' && doc.form) { // report
         return {
           _id: doc._id,
