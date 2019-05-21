@@ -31,7 +31,7 @@ module.exports = {
   },
 
   addHealthCenter: () => {
-    const newHealthCenterButton = element(by.css('[ng-show="actionBar.right.selected[0].child.type"]'));
+    const newHealthCenterButton = element(by.css('[ng-show="actionBarCtrl.selectedContactDoc.child.type"]'));
     helper.waitUntilReady(newHealthCenterButton);
     helper.clickElement(newHealthCenterButton);
     helper.waitUntilReady(element(by.css('[name="/data/health_center"]')));
@@ -78,4 +78,3 @@ module.exports = {
     seachButton.click();
   },
 };
-

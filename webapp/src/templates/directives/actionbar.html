@@ -114,7 +114,7 @@
               <span class="fa fa-check"></span>
               <p translate>reports.verify</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.actionBar.right.type === 'xml'" mm-auth="can_update_reports" ui-sref="reports.edit({ reportId: actionBarCtrl.actionBar.right.selected[0]._id })">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.actionBar.right.type === 'xml'" mm-auth="can_update_reports" ui-sref="reports.edit({ reportId: actionBarCtrl.selectedReportsDocs[0]._id })">
               <span class="fa fa-pencil"></span>
               <p translate>Edit</p>
             </a>
