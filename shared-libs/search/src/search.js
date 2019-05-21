@@ -30,7 +30,7 @@ module.exports = function(Promise, DB) {
       start = options.skip;
       end = start + options.limit;
     }
-    return _.sortBy(rows, 'value').slice(start, end);
+    return _.sortBy(rows, row => 'sort' in row ? row.sort : row.value).slice(start, end);
   };
 
   // Get the intersection of the results of multiple search queries.
@@ -39,14 +39,17 @@ module.exports = function(Promise, DB) {
     var intersection = responses.pop();
     intersection = _.uniq(intersection, 'id');
     _.each(responses, function(response) {
-      intersection = _.reject(intersection, function(row) {
-        return !_.findWhere(response, { id: row.id });
+      intersection = intersection.filter(row => {
+        const existent = _.findWhere(response, { id: row.id });
+        if (existent && 'sort' in existent) {
+          row.sort = existent.sort + ' ' + (row.sort || row.value);
+        }
+        return existent;
       });
     });
 
     return intersection;
   };
-
   // Queries view as specified by request object coming from GenerateSearchQueries.
   // request = {view, union: true, paramSets: [params1, ...] }
   // or

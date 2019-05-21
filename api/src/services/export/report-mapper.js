@@ -2,7 +2,7 @@ const _ = require('underscore'),
       objectPath = require('object-path'),
       db = require('../../db'),
       dateFormat = require('./date-format'),
-      search = require('@medic/search')(Promise, db.medic),
+      search = require('@twd/search')(Promise, db.medic),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
 /**

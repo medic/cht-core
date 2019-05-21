@@ -1,5 +1,5 @@
 const db = require('../../db'),
-      search = require('@medic/search')(Promise, db.medic),
+      search = require('@twd/search')(Promise, db.medic),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
 module.exports = {
