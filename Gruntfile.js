@@ -488,6 +488,17 @@ module.exports = function(grunt) {
             .join(' && ');
         }
       },
+      'npm-ci-production-shared-libs': {
+        cmd: () => {
+          return getSharedLibDirs()
+            .map(
+              lib =>
+                `echo Installing shared library: ${lib} &&
+                  (cd shared-libs/${lib} && npm ci --production)`
+            )
+            .join(' && ');
+        }
+      },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
           .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
@@ -815,7 +826,7 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
-    'exec:npm-ci-shared-libs',
+    'exec:npm-ci-production-shared-libs',
     'exec:npm-ci-modules',
     'copy:libraries-to-patch',
     'exec:apply-patches',
@@ -962,7 +973,6 @@ module.exports = function(grunt) {
     'static-analysis',
     'build',
     'build-admin',
-    'install-dependencies',
     'mochaTest:api-integration',
     'unit',
     'exec:test-standard'
