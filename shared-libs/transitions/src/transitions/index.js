@@ -238,7 +238,7 @@ const finalize = ({ change, results }, callback) => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
-      logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
+      logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
       return callback(err);
     }
 
@@ -297,7 +297,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
         code: `${key}_error'`,
         message: `Transition error on ${key}: ${message}`,
       });
-      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
+      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: %o`, err);
       if (!err.changed) {
         return false;
       }
