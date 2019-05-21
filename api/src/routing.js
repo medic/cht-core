@@ -181,18 +181,7 @@ app.get('/dbinfo', (req, res) => {
   proxy.web(req, res);
 });
 
-app.get(appPrefix, (req, res, next) => {
-  if (
-    ('deviceID' in req.query) || 
-    req.path.endsWith('/_design/medic/_rewrite/') || // when upgrading from appcache to service-workers
-    req.is('application/json')
-  ) {
-    // couchdb request - let it go
-    return proxy.web(req, res);
-  }
-
-  next();
-});
+app.get(appPrefix, (req, res) => proxy.web(req, res));
 
 app.all('/medic/*', (req, res, next) => {
   if (environment.db === 'medic') {
