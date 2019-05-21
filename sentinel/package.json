@@ -58,6 +58,7 @@
     "pouchdb-adapter-http",
     "pouchdb-core",
     "pouchdb-mapreduce",
+    "pouchdb-replication",
     "request",
     "underscore",
     "uuid",
