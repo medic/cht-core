@@ -478,23 +478,12 @@ module.exports = function(grunt) {
         cmd: 'cd api && npm ci',
       },
       'npm-ci-shared-libs': {
-        cmd: () => {
+        cmd: (production = false) => {
           return getSharedLibDirs()
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci)`
-            )
-            .join(' && ');
-        }
-      },
-      'npm-ci-production-shared-libs': {
-        cmd: () => {
-          return getSharedLibDirs()
-            .map(
-              lib =>
-                `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci --production)`
+                  (cd shared-libs/${lib} && npm ci ${production && '--production' || ''})`
             )
             .join(' && ');
         }
@@ -826,7 +815,7 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
-    'exec:npm-ci-production-shared-libs',
+    'exec:npm-ci-shared-libs:production',
     'exec:npm-ci-modules',
     'copy:libraries-to-patch',
     'exec:apply-patches',
