@@ -24,7 +24,8 @@ class BaseConfig {
         }
       },
       jasmineNodeOpts: {
-        print: function() {}
+        // makes default jasmine reporter not display dots for every spec
+        print: () => {}
       },
       beforeLaunch: function() {
         process.on('uncaughtException', function() {
