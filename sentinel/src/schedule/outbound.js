@@ -15,9 +15,6 @@ const arrayinate = object => Object.keys(object).map(k => {
   return object[k];
 });
 
-// FIXME: In live environments this value is configured incorrectly
-process.env.COUCH_NODE_NAME = 'couchdb@127.0.0.1';
-
 const credential = key =>
     request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
       // This API gives weird psuedo-JSON results:
