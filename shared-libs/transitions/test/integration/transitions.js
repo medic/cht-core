@@ -246,7 +246,7 @@ describe('functional transitions', () => {
         assert.isUndefined(result);
         assert.equal(db.sentinel.get.callCount, 1);
         assert.equal(db.sentinel.put.callCount, 1); // initial creation
-        assert.isUndefined(db.sentinel.put.args[0][0].transitions);
+        assert.deepEqual(db.sentinel.put.args[0][0].transitions, {});
         done();
       });
     });
