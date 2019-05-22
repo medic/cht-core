@@ -859,7 +859,8 @@ describe('transitions', () => {
         sentinelUtils.getInfoDoc(docId)
       ]))
       .then(([doc, info]) => {
-        expect(doc.tasks.length).toEqual(2);
+        //expect(doc.tasks.length).toEqual(2);
+        expect(doc.tasks.length).toEqual(5);
         expect(doc.tasks[0].messages[0].message).toEqual('patient_reports msg');
         expect(doc.tasks[1].messages[0].message).toEqual('multi_report_alerts msg');
 
