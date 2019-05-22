@@ -34,7 +34,8 @@ const AVAILABLE_TRANSITIONS = [
   'update_notifications',
   'update_scheduled_reports',
   'resolve_pending',
-  'muting'
+  'muting',
+  'mark_for_outbound'
 ];
 
 const transitions = [];
