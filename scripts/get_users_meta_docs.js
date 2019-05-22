@@ -12,7 +12,7 @@ const argv = minimist(process.argv.slice(2), {
   }
 });
 
-if(argv.h) {
+if(argv.h || !argv.mode || !argv.type) {
   console.log(`Display or save telemetry and feedback docs.
 
 Usage:
@@ -30,8 +30,8 @@ Example:
   process.exit(0);
 }
 
-const mode = argv['mode'];
-const type = argv['type'];
+const mode = argv.mode;
+const type = argv.type;
 const couchUrl = argv['_'][0] || 'http://admin:pass@localhost:5984/medic-users-meta';
 
 const db = PouchDB(couchUrl);
