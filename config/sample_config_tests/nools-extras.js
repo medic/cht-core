@@ -4,3 +4,8 @@ function validateReport(report) {
 function isHealthyDelivery() {
   return true;
 }
+
+module.exports = {
+  validateReport: validateReport, 
+  isHealthyDelivery: isHealthyDelivery,
+};

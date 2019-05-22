@@ -11,33 +11,6 @@ describe('utils', () => {
   });
   afterEach(() => sinon.restore());
 
-  it('getVal supports string keys', () => {
-    const doc = {
-      lmp_date: '8000001'
-    };
-    assert.equal(utils.getVal(doc, 'lmp_date'), '8000001');
-    assert.equal(utils.getVal(doc, 'foo'), undefined);
-    // non-string keys return undefined
-    assert.equal(utils.getVal(doc, 10), undefined);
-
-  });
-
-  it('getVal supports dot notation', () => {
-    const doc = {
-      fields: {
-        baz: '99938388',
-        bim: {
-          bop: 15,
-          bam: [1,2,3]
-        }
-      }
-    };
-    assert.equal(utils.getVal(doc, 'fields.baz'), '99938388');
-    assert.equal(utils.getVal(doc, 'fields.bim.bop'), 15);
-    assert.deepEqual(utils.getVal(doc, 'fields.bim.bam'), [1,2,3]);
-    assert.equal(utils.getVal(doc, 'fields.404'), undefined);
-  });
-
   it('getReportsWithSameClinicAndForm calls through to db view correctly', () => {
 
     const formName = 'someForm';

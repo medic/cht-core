@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+const _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader'),
   lineageFactory = require('@medic/lineage');
 
@@ -11,8 +11,10 @@ angular
     $state,
     $stateParams,
     $timeout,
+    $translate,
     Actions,
     AddReadStatus,
+    Auth,
     Changes,
     DB,
     Export,
@@ -28,16 +30,15 @@ angular
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
-      return {
-        enketoEdited: Selectors.getEnketoEditedStatus(state),
-        selectMode: Selectors.getSelectMode(state),
-        selected: Selectors.getSelected(state)
-      };
-    };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const ctrl = this;
+    const mapStateToTarget = state => ({
+      enketoEdited: Selectors.getEnketoEditedStatus(state),
+      selectMode: Selectors.getSelectMode(state),
+      selected: Selectors.getSelected(state)
+    });
+    
+    const mapDispatchToTarget = function(dispatch) {
+      const actions = Actions(dispatch);
       return {
         addSelected: actions.addSelected,
         removeSelected: actions.removeSelected,
@@ -46,7 +47,7 @@ angular
         setLastChangedDoc: actions.setLastChangedDoc
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
 
@@ -336,34 +337,91 @@ angular
       });
     });
 
-    $scope.$on('VerifyReport', function(e, valid) {
-      if (ctrl.selected[0].doc.form) {
-        $scope.setLoadingSubActionBar(true);
+    $scope.$on('VerifyReport', function(e, reportIsValid) {
+      if (!ctrl.selected[0].doc.form) {
+        return;
+      }
 
+      $scope.setLoadingSubActionBar(true);
+
+      const promptUserToConfirmVerification = () => {
+        const verificationTranslationKey = reportIsValid ? 'reports.verify.valid' : 'reports.verify.invalid';
+        return Modal({
+          templateUrl: 'templates/modals/verify_confirm.html',
+          controller: 'VerifyReportModalCtrl',
+          model: {
+            proposedVerificationState: $translate.instant(verificationTranslationKey),
+          },
+        })
+        .then(() => true)
+        .catch(() => false);
+      };
+
+      const shouldReportBeVerified = function (canUserEdit) {
+        // verify if user verifications are allowed
+        if (canUserEdit) {
+          return true;
+        }
+        
+        // don't verify if user can't edit and this is an edit
+        const docHasExistingResult = ctrl.selected[0].doc.verified !== undefined;
+        if (docHasExistingResult) {
+          return false;
+        }
+
+        // verify if this is not an edit and the user accepts  prompt
+        return promptUserToConfirmVerification();
+      };
+
+      const writeVerificationToDoc = function() {
         if (ctrl.selected[0].doc.contact) {
-          var minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
+          const minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
           ctrl.setFirstSelectedDocProperty({ contact: minifiedContact });
         }
 
-        var verified = ctrl.selected[0].doc.verified === valid ? undefined : valid;
-        ctrl.setFirstSelectedDocProperty({ verified: verified });
+        const clearVerification = ctrl.selected[0].doc.verified === reportIsValid;
+        if (clearVerification) {
+          ctrl.setFirstSelectedDocProperty({
+            verified: undefined,
+            verified_date: undefined,
+          });
+        } else {
+          ctrl.setFirstSelectedDocProperty({
+            verified: reportIsValid,
+            verified_date: Date.now(),
+          });
+        }
         ctrl.setLastChangedDoc(ctrl.selected[0].doc);
 
-        DB()
+        return DB()
           .get(ctrl.selected[0].doc._id)
-          .then(function(doc) {
-            ctrl.setFirstSelectedDocProperty({ _rev: doc._rev });
+          .then(function(existingRecord) {
+            ctrl.setFirstSelectedDocProperty({ _rev: existingRecord._rev });
             return DB().post(ctrl.selected[0].doc);
           })
           .catch(function(err) {
             $log.error('Error verifying message', err);
           })
-          .finally(() => {
-            $scope.$broadcast('VerifiedReport', valid);
-
+          .finally(function () {
+            $scope.$broadcast('VerifiedReport', reportIsValid);
             $scope.setLoadingSubActionBar(false);
           });
-      }
+      };
+
+      $scope.setLoadingSubActionBar(true);
+      Auth('can_edit_verification')
+        .then(() => true)
+        .catch(() => false)
+        .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
+        .then(function(shouldVerify) {
+          if (!shouldVerify) {
+            return;
+          }
+
+          return writeVerificationToDoc();
+        })
+        .catch(err => $log.error(`Error verifying message: ${err}`))
+        .finally(() => $scope.setLoadingSubActionBar(false));
     });
 
     var initScroll = function() {

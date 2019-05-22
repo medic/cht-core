@@ -386,4 +386,17 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: 'aaa' })).to.equal(true);
     });
   });
+
+  it('should add map function to contact type request if sorting by date last visited', () => {
+    const result = service('contacts', { types: { selected: [ 'clinic' ] } }, { sortByLastVisitedDate: true } );
+    chai.expect(result.length).to.equal(2);
+    chai.expect(result[0].view).to.equal('medic-client/contacts_by_type');
+    chai.expect(result[0].params).to.deep.equal({ keys: [ [ 'clinic' ] ]});
+    chai.expect(result[0].map).to.be.ok;
+    const map = result[0].map;
+
+    chai.expect(map({ value: 'true true Maria' })).to.deep.equal({ value: 'true true Maria', sort: 'true true' });
+    chai.expect(map({ value: 'false false Felicia' })).to.deep.equal({ value: 'false false Felicia', sort: 'false false' });
+    chai.expect(map({ value: 'true false Moses' })).to.deep.equal({ value: 'true false Moses', sort: 'true false' });
+  });
 });

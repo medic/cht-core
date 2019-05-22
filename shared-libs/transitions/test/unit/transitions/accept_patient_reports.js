@@ -197,6 +197,29 @@ describe('accept_patient_reports', () => {
       });
     });
 
+    it('handles an empty list of scheduled_tasks', done => {
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-17T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [],
+        },
+      ];
+      const putRegistration = sinon.stub(db.medic, 'put');
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        putRegistration.callCount.should.equal(0);
+        done();
+      });
+    });
+
     // Helpful diagram for the next 5 tests:
     // https://github.com/medic/medic/issues/4694#issuecomment-459460521
     it('does not associate visit to anything since no reminder messages have been sent yet', done => {
