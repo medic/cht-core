@@ -22,6 +22,7 @@
     "@medic/task-utils": "file:../task-utils",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
+    "bikram-sambat-bootstrap": "^1.4.2",
     "google-libphonenumber": "^3.2.1",
     "gsm": "^0.1.4",
     "moment": "^2.22.2",
