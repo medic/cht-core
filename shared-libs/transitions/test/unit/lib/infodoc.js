@@ -6,26 +6,56 @@ const assert = require('chai').assert,
 describe('infodoc', () => {
   afterEach(() => sinon.restore());
 
-  it('gets infodoc from medic and moves it to sentinel', () => {
-    const change = {id: 'messages-en'};
-    const rev = '123';
-    const info = {_id: 'messages-en-info', _rev: rev, transitions: []};
+  describe('legacy info location support', () => {
+    it('moves a medic db located infodoc to sentinel', () => {
+      const change = {id: 'messages-en'};
+      const rev = '123';
+      const info = {_id: 'messages-en-info', _rev: rev, transitions: {}};
 
-    const getSentinelInfo = sinon.stub(db.sentinel, 'get').resolves(null);
-    const getMedicInfo = sinon.stub(db.medic, 'get').resolves(info);
-    const removeLegacyInfo = sinon.stub(db.medic, 'remove').resolves(info);
-    const updateSentinelInfo = sinon.stub(db.sentinel, 'put').resolves({});
+      const getSentinelInfo = sinon.stub(db.sentinel, 'get').resolves(null);
+      const getMedicInfo = sinon.stub(db.medic, 'get').resolves(info);
+      const removeLegacyInfo = sinon.stub(db.medic, 'remove').resolves(info);
+      const updateSentinelInfo = sinon.stub(db.sentinel, 'put').resolves({});
 
-    return infodoc.get(change).then(() => {
-      assert(getSentinelInfo.calledOnce);
-      assert.equal(getSentinelInfo.args[0], info._id);
-      assert(getMedicInfo.calledOnce);
-      assert.equal(getMedicInfo.args[0], info._id);
-      assert(removeLegacyInfo.calledOnce);
-      assert.deepEqual(removeLegacyInfo.args[0], [info._id, rev]);
-      assert.equal(updateSentinelInfo.args[0][0]._id, info._id);
-      assert(!updateSentinelInfo.args[0][0]._rev);
-      assert.deepEqual(updateSentinelInfo.args[0][0].transitions, []);
+      return infodoc.get(change).then(() => {
+        assert(getSentinelInfo.calledOnce);
+        assert.equal(getSentinelInfo.args[0], info._id);
+        assert(getMedicInfo.calledOnce);
+        assert.equal(getMedicInfo.args[0], info._id);
+        assert(removeLegacyInfo.calledOnce);
+        assert.deepEqual(removeLegacyInfo.args[0], [info._id, rev]);
+        assert.equal(updateSentinelInfo.args[0][0]._id, info._id);
+        assert(!updateSentinelInfo.args[0][0]._rev);
+        assert.deepEqual(updateSentinelInfo.args[0][0].transitions, {});
+      });
+    });
+
+    it('creates a new infodoc if none exists', () => {
+      const expectedInfoDoc = {
+        _id: 'messages-en-info',
+        type: 'info',
+        doc_id: 'messages-en',
+        initial_replication_date: 'unknown',
+        transitions: {
+          foo: 'bar'
+        }
+      };
+
+      const change = {id: 'messages-en', doc: {transitions: {foo: 'bar'}}};
+
+      sinon.stub(db.sentinel, 'get').resolves(null);
+      sinon.stub(db.medic, 'get').resolves(null);
+      const updateSentinelInfo = sinon.stub(db.sentinel, 'put').resolves({});
+
+      return infodoc.get(change).then(() => {
+        assert.equal(updateSentinelInfo.callCount, 1);
+        const putDoc = updateSentinelInfo.args[0][0];
+
+        assert(putDoc.latest_replication_date);
+        delete putDoc.latest_replication_date;
+
+        assert.deepEqual(putDoc, expectedInfoDoc);
+      });
     });
   });
 

@@ -37,12 +37,12 @@ const getInfoDoc = change => {
       });
     })
     .then(doc => {
-      if (doc) {
-        doc.transitions = doc.transitions || change.doc.transitions || {};
-        return doc;
-      } else {
-        return createInfoDoc(change.id, 'unknown');
+      if (!doc) {
+        doc = createInfoDoc(change.id, 'unknown');
       }
+
+      doc.transitions = doc.transitions || change.doc.transitions || {};
+      return doc;
     })
     .then(doc => updateInfoDoc(doc, rev));
 };
