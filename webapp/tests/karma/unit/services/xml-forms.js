@@ -9,6 +9,7 @@ describe('XmlForms service', () => {
   let UserContact;
   let getContactType;
   let contextUtils;
+  let error;
 
   const mockEnketoDoc = (formInternalId, docId) => {
     return {
@@ -32,6 +33,7 @@ describe('XmlForms service', () => {
     Auth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
+    error = sinon.stub();
     contextUtils = {};
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -44,6 +46,7 @@ describe('XmlForms service', () => {
       $provide.value('XmlFormsContextUtils', contextUtils);
       $provide.value('ContactTypes', { get: getContactType });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('$log', {error: error});
     });
     inject(_$injector_ => {
       $injector = _$injector_;
@@ -345,6 +348,42 @@ describe('XmlForms service', () => {
       return service.list({ doc: { sex: 'female', type: 'person' } }).then(actual => {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
+      });
+    });
+
+    it('broken custom functions log clean errors and count as filtered', () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            _id: 'form-0',
+            internalId: 'visit',
+            context: {
+              expression: 'contact.sex ==== "female"' // <-- typo!
+            },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            _id: 'form-1',
+            internalId: 'stock-report',
+            context: {
+              expression: 'contact.sex === "female"'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      dbQuery.returns(Promise.resolve({ rows: given }));
+      UserContact.returns(Promise.resolve());
+      const service = $injector.get('XmlForms');
+      return service.list({ doc: { sex: 'female' } }).then(actual => {
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        chai.expect(error.callCount).to.equal(1);
+        chai.expect(error.args[0][0]).to.equal('Unable to evaluate expression for form: form-0');
       });
     });
 
