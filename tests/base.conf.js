@@ -7,6 +7,7 @@ const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browse
 class BaseConfig {
   constructor(testSrcDir, { headless=true }={}) {
     const chromeArgs = [ '--window-size=1024,768' ];
+    utils.setDebug(!headless);
     if (headless) {
       chromeArgs.push('--headless', '--disable-gpu');
     }
@@ -21,6 +22,9 @@ class BaseConfig {
         chromeOptions: {
           args: chromeArgs
         }
+      },
+      jasmineNodeOpts: {
+        print: function() {}
       },
       beforeLaunch: function() {
         process.on('uncaughtException', function() {
@@ -37,7 +41,6 @@ class BaseConfig {
         });
       },
       onPrepare: () => {
-        jasmine.getEnv().clearReporters();
         jasmine.getEnv().addReporter(utils.specReporter);
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
