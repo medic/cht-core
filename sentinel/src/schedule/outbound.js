@@ -214,10 +214,6 @@ const execute = () => {
             // Failed
             logger.error(`Failed to push ${doc._id} to ${conf.key}: ${err.message}`);
             logger.error(err);
-            // TODO: add some kind of count or log to the task so we can more
-            // easily see which ones aren't working
-            // ... or is the date enough?
-
 
             // Don't remove it from the queue so it will be tried again next time
           });
