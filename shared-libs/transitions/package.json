@@ -1,6 +1,6 @@
 {
-  "name": "@garethbowen/transitions",
-  "version": "1.0.4-beta.1",
+  "name": "@medic/transitions",
+  "version": "1.0.5",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test/**/*"
