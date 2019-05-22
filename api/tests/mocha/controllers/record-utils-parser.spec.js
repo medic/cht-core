@@ -10,14 +10,14 @@ describe('record-utils-parser', () => {
     sinon.restore();
   });
 
-  it('assert month is parsed as integer', () => {
+  it('assert month is parsed into a string using a list', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
       from: '+888',
       message: '1!YYYY!facility#2011#11'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(11).to.equal(doc.fields.month);
+    chai.expect('November').to.equal(doc.fields.month);
   });
 
   it('assert unix timestamp parsed', () => {
@@ -77,17 +77,6 @@ describe('record-utils-parser', () => {
       message:'1!YYYZ!foo#bar'
     };
     const doc = recordUtils.createByForm(body);
-    chai.expect(doc.errors.length).to.equal(0);
-  });
-
-  it('autoreply on YYYY form is ignored', () => {
-    sinon.stub(config, 'get').returns(definitions.forms);
-    const body = {
-      from:'+888',
-      message:'1!YYYY!facility#2012#4#1#222#333#444#555#666#777#888#999#111#222#333#444'
-    };
-    const doc = recordUtils.createByForm(body);
-    chai.expect(doc.form).to.equal('YYYY');
     chai.expect(doc.errors.length).to.equal(0);
   });
 
@@ -232,7 +221,7 @@ describe('record-utils-parser', () => {
     };
     const doc = recordUtils.createByForm(body);
     chai.expect(doc.errors[0].code).to.equal('sys.missing_fields');
-    chai.expect(doc.errors[0].fields).to.deep.equal(['year','month']);
+    chai.expect(doc.errors[0].ctx.fields).to.deep.equal(['year','month']);
   });
 
   it('support unstructured message', () => {

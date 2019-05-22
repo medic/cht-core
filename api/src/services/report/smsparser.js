@@ -138,10 +138,6 @@ const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 exports.parseField = (field, raw) => {
   switch (field.type) {
     case 'integer':
-      // keep months integers, not their list value.
-      if (field.validations && field.validations.is_numeric_month === true) {
-        return parseNum(raw);
-      }
       // store list value since it has more meaning.
       // TODO we don't have locale data inside this function so calling
       // translate does not resolve locale.

@@ -1,5 +1,4 @@
-const _ = require('underscore'),
-      moment = require('moment'),
+const moment = require('moment'),
       phoneNumber = require('@medic/phone-number'),
       config = require('../config'),
       smsparser = require('../services/report/smsparser'),
@@ -36,39 +35,26 @@ const getLocale = record => {
  *
  * @param {Object} record - data record
  * @param {String|Object} error - error object or code matching key in messages
- *
- * @returns undefined
  */
 const addError = (record, error) => {
   if (!record || !error) {
     return;
   }
 
-  if (_.isString(error)) {
+  if (typeof error === 'string') {
     error = {
       code: error,
-      message: ''
     };
   }
 
-  if (_.findWhere(record.errors, { code: error.code })) {
-    return;
-  }
-
-  const form = record.form && record.sms_message && record.sms_message.form;
-
   if (!error.message) {
-    error.message = config.translate(error.code, getLocale(record));
+    error.message = config.translate(error.code, getLocale(record), error.ctx);
   }
-
-  // replace placeholder strings
-  error.message = error.message
-    .replace('{{fields}}', error.fields && error.fields.join(', '))
-    .replace('{{form}}', form);
 
   if (!record.errors) {
     record.errors = [];
   }
+
   record.errors.push(error);
 };
 
@@ -79,21 +65,19 @@ const addError = (record, error) => {
  *
  * return unix timestamp integer or undefined
  */
-const parseSentTimestamp = str => {
-  if (typeof str === 'number') {
-    str = String(str);
-  } else if (typeof str !== 'string') {
-    return;
+const parseSentTimestamp = ts => {
+  if (typeof ts === 'number') {
+    return ts;
   }
 
-  const match = str.match(DATE_NUMBER_STRING);
-  if (match) {
-    const ret = new Date(Number(match[1]));
-    return ret.valueOf();
+  if (typeof ts === 'string') {
+    if (ts.match(DATE_NUMBER_STRING)) {
+      return Number(ts);
+    } else {
+      // see if moment can make sense of it
+      return moment(ts).valueOf();
+    }
   }
-
-  // otherwise leave it up to moment lib
-  return moment(str).valueOf();
 };
 
 /**
@@ -137,8 +121,7 @@ const getDataRecord = (formData, options) => {
     sms_message: options
   };
 
-  // try to parse timestamp from gateway
-  const ts = parseSentTimestamp(options.sent_timestamp);
+  const ts = parseSentTimestamp(options.reported_date);
   if (ts) {
     record.reported_date = ts;
   }
@@ -147,9 +130,11 @@ const getDataRecord = (formData, options) => {
     if (def.facility_reference) {
       record.refid = getRefID(form, formData);
     }
+
     for (let k of Object.keys(def.fields)) {
       smsparser.merge(form, k.split('.'), record.fields, formData);
     }
+
     var errors = validate.validate(def, formData);
     errors.forEach(function(err) {
       addError(record, err);
@@ -166,7 +151,7 @@ const getDataRecord = (formData, options) => {
 
   if (!def) {
     if (config.get('forms_only_mode')) {
-      addError(record, 'sys.form_not_found');
+      addError(record, { code: 'sys.form_not_found', ctx: { form: options.form } });
     } else {
       // if form is undefined we treat as a regular message
       record.form = undefined;
@@ -196,7 +181,7 @@ const createByForm = (data, { locale }={}) => {
     type: 'sms_message',
     message: data.message,
     form: smsparser.getFormCode(data.message),
-    sent_timestamp: data.sent_timestamp,
+    reported_date: data.sent_timestamp,
     locale: data.locale || locale,
     from: data.from,
     gateway_ref: data.gateway_ref,
@@ -210,28 +195,22 @@ const createByForm = (data, { locale }={}) => {
 };
 
 const createRecordByJSON = data => {
-  const required = ['from', 'form'],
-        optional = ['reported_date', 'locale'];
+  const required = ['form'];
+
   // check required fields are in _meta property
   if (empty(data._meta)) {
     throw new PublicError('Missing _meta property.');
   }
+
   for (let k of required) {
     if (empty(data._meta[k])) {
       throw new PublicError('Missing required field: ' + k);
     }
   }
-  // filter out any unwanted fields
-  data._meta = _.pick(data._meta, required.concat(optional));
-  // no need to pass the content type as nano.request defaults to json.
-  // request({ body: data }, callback);
 
-  const options = {
-    locale: data._meta.locale,
-    sent_timestamp: data._meta.reported_date,
-    form: smsparser.getFormCode(data._meta.form),
-    from: data._meta.from
-  };
+  const options = data._meta;
+  options.form = options.form.toUpperCase(); // normalise form names
+  delete data._meta;
 
   const formDefinition = getForm(options.form);
 
@@ -240,17 +219,18 @@ const createRecordByJSON = data => {
     throw new PublicError('Form not found: ' + options.form);
   }
 
-  const formData = {};
-
-  // For now only save string and number fields, ignore the others.
-  // Lowercase all property names.
-  for (var k in data) {
-    if (['string', 'number'].indexOf(typeof data[k]) >= 0) {
-      formData[k.toLowerCase()] = data[k];
+  const correctedData = {};
+  Object.keys(data).forEach(k => {
+    if (formDefinition.fields[k]  && formDefinition.fields[k].type === 'date') {
+      // Of the data types we support, date is the only one that can't be natively supported in
+      // JSON. Convert it the same way smsparser does, into ms ts
+      data[k] = moment(data[k]).valueOf();
     }
-  }
 
-  return getDataRecord(formData, options);
+    correctedData[k.toLowerCase()] = data[k];
+  });
+
+  return getDataRecord(correctedData, options);
 };
 
 module.exports = {
