@@ -1,6 +1,21 @@
 <div class="filters">
   <div class="inner">
-    <mm-contacts-filters></mm-contacts-filters>
+    <div class="basic-filters left-pane">
+      <mm-freetext-filter selected="contactsCtrl.selectedContact"></mm-freetext-filter>
+      <mm-simprints-filter
+        simprints-enabled="contactsCtrl.simprintsEnabled"
+        simprints-identify="contactsCtrl.simprintsIdentify"
+      ></mm-simprints-filter>
+      <mm-reset-filter
+        reset-filter-model="contactsCtrl.resetFilterModel"
+        selected="contactsCtrl.selectedContact"
+      ></mm-reset-filter>
+      <mm-sort-filter
+        last-visited-date-extras="contactsCtrl.lastVisitedDateExtras"
+        sort="contactsCtrl.sort"
+        sort-direction="contactsCtrl.sortDirection"
+      ></mm-sort-filter>
+    </div>
     <mm-navigation></mm-navigation>
   </div>
 </div>

@@ -7,7 +7,6 @@
   require('./actionbar');
   require('./analytics-filters');
   require('./auth');
-  require('./contacts-filters');
   require('./contacts-list');
   require('./content-row');
   require('./date-filter');
@@ -26,6 +25,8 @@
   require('./reset-filter');
   require('./sender');
   require('./show-muted-modal');
+  require('./simprints-filter');
+  require('./sort-filter');
   require('./status-filter');
   require('./tasks-list');
 

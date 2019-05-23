@@ -399,7 +399,7 @@ angular
       });
     };
 
-    $scope.resetFilterModel = function() {
+    ctrl.resetFilterModel = function() {
       if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {
         // can't filter when in select mode
         return;

@@ -73,9 +73,9 @@ var _ = require('underscore'),
     var usersHomePlace;
     var additionalListItem = false;
 
-    $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
+    ctrl.sortDirection = ctrl.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
-      return $scope.sortDirection === 'last_visited_date';
+      return ctrl.sortDirection === 'last_visited_date';
     };
 
     var _initScroll = function() {
@@ -120,9 +120,9 @@ var _ = require('underscore'),
       }
 
       var extensions = {};
-      if ($scope.lastVisitedDateExtras) {
+      if (ctrl.lastVisitedDateExtras) {
         extensions.displayLastVisitedDate = true;
-        extensions.visitCountSettings = $scope.visitCountSettings;
+        extensions.visitCountSettings = ctrl.visitCountSettings;
       }
       if (isSortedByLastVisited()) {
         extensions.sortByLastVisitedDate = true;
@@ -350,21 +350,21 @@ var _ = require('underscore'),
       }
     };
 
-    $scope.sort = function(sortDirection) {
-      $scope.sortDirection = sortDirection;
+    ctrl.sort = function(sortDirection) {
+      ctrl.sortDirection = sortDirection;
       liveList.set([]);
       _query();
     };
 
-    $scope.resetFilterModel = function() {
+    ctrl.resetFilterModel = function() {
       $scope.filters = {};
-      $scope.sortDirection = $scope.defaultSortDirection;
+      ctrl.sortDirection = ctrl.defaultSortDirection;
       SearchFilters.reset();
       $scope.search();
     };
 
-    $scope.simprintsEnabled = Simprints.enabled();
-    $scope.simprintsIdentify = function() {
+    ctrl.simprintsEnabled = Simprints.enabled();
+    ctrl.simprintsIdentify = function() {
       ctrl.loading = true;
       Simprints.identify().then(function(identities) {
         $scope.filters.simprintsIdentities = identities;
@@ -442,11 +442,11 @@ var _ = require('underscore'),
       .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
       .then(function(results) {
         usersHomePlace = results[0];
-        $scope.lastVisitedDateExtras = results[1];
+        ctrl.lastVisitedDateExtras = results[1];
         var uhcSettings = (results[2] && results[2].uhc) || {};
         $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
-        if ($scope.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
-          $scope.sortDirection = $scope.defaultSortDirection =
+        if (ctrl.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
+          ctrl.sortDirection = ctrl.defaultSortDirection =
             uhcSettings.contacts_default_sort;
         }
 
@@ -465,7 +465,7 @@ var _ = require('underscore'),
       var isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
       return (
         doc &&
-        $scope.lastVisitedDateExtras &&
+        ctrl.lastVisitedDateExtras &&
         doc.type === 'data_record' &&
         doc.form &&
         doc.fields &&

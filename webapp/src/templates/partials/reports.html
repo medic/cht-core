@@ -1,6 +1,16 @@
 <div class="filters">
   <div class="inner">
-    <mm-reports-filters></mm-reports-filters>
+    <div class="basic-filters left-pane">
+      <mm-form-type-filter selected="reportsCtrl.selectedReports"></mm-form-type-filter>
+      <mm-facility-filter selected="reportsCtrl.selectedReports"></mm-facility-filter>
+      <mm-date-filter selected="reportsCtrl.selectedReports"></mm-date-filter>
+      <mm-status-filter selected="reportsCtrl.selectedReports"></mm-status-filter>
+      <mm-freetext-filter selected="reportsCtrl.selectedReports"></mm-freetext-filter>
+      <mm-reset-filter
+        reset-filter-model="reportsCtrl.resetFilterModel"
+        selected="reportsCtrl.selectedReports"
+      ></mm-reset-filter>
+    </div>
     <mm-navigation></mm-navigation>
   </div>
 </div>

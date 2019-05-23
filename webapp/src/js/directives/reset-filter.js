@@ -1,25 +1,20 @@
-angular.module('inboxDirectives').directive('mmResetFilter', function() {
-  'use strict';
+angular.module('inboxDirectives').component('mmResetFilter', {
+  templateUrl: 'templates/directives/filters/reset.html',
+  controller: function($ngRedux, $scope, Selectors) {
+    'ngInject';
 
-  return {
-    restrict: 'E',
-    templateUrl: 'templates/directives/filters/reset.html',
-    controller: function($ngRedux, $scope, Selectors) {
-      'ngInject';
-
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
-        return {
-          selectMode: Selectors.getSelectMode(state)
-        };
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        selectMode: Selectors.getSelectMode(state)
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
-      $scope.$on('$destroy', unsubscribe);
-    },
-    controllerAs: 'resetFilterCtrl',
-    bindToController: {
-      selected: '<'
-    },
-  };
+    $scope.$on('$destroy', unsubscribe);
+  },
+  bindings: {
+    resetFilterModel: '<',
+    selected: '<'
+  }
 });
