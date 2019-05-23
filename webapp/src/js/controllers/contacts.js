@@ -80,7 +80,7 @@ var _ = require('underscore'),
 
     var _initScroll = function() {
       scrollLoader.init(function() {
-        if (!ctrl.loading && $scope.moreItems) {
+        if (!ctrl.loading && ctrl.moreItems) {
           _query({
             paginating: true,
             reuseExistingDom: true,
@@ -176,7 +176,7 @@ var _ = require('underscore'),
             }
           }
 
-          $scope.moreItems = liveList.moreItems =
+          ctrl.moreItems = liveList.moreItems =
             contacts.length >= options.limit;
 
           const mergedList = options.paginating ?
@@ -187,7 +187,7 @@ var _ = require('underscore'),
           _initScroll();
           ctrl.loading = false;
           ctrl.appending = false;
-          $scope.hasContacts = liveList.count() > 0;
+          ctrl.hasContacts = liveList.count() > 0;
           setActionBarData();
         })
         .catch(function(err) {
@@ -332,7 +332,7 @@ var _ = require('underscore'),
       LiveList['contact-search'].clearSelected();
     };
 
-    $scope.search = function() {
+    ctrl.search = function() {
       if($scope.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
@@ -340,12 +340,12 @@ var _ = require('underscore'),
 
       ctrl.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
-        $scope.filtered = true;
+        ctrl.filtered = true;
         liveList = LiveList['contact-search'];
         liveList.set([]);
         return _query();
       } else {
-        $scope.filtered = false;
+        ctrl.filtered = false;
         return _query();
       }
     };
@@ -360,7 +360,7 @@ var _ = require('underscore'),
       $scope.filters = {};
       ctrl.sortDirection = ctrl.defaultSortDirection;
       SearchFilters.reset();
-      $scope.search();
+      ctrl.search();
     };
 
     ctrl.simprintsEnabled = Simprints.enabled();
@@ -368,13 +368,13 @@ var _ = require('underscore'),
       ctrl.loading = true;
       Simprints.identify().then(function(identities) {
         $scope.filters.simprintsIdentities = identities;
-        $scope.search();
+        ctrl.search();
       });
     };
 
     var setActionBarData = function() {
       var data = {
-        hasResults: $scope.hasContacts,
+        hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
           Export('contacts', $scope.filters, { humanReadable: true });
@@ -444,14 +444,14 @@ var _ = require('underscore'),
         usersHomePlace = results[0];
         ctrl.lastVisitedDateExtras = results[1];
         var uhcSettings = (results[2] && results[2].uhc) || {};
-        $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
+        ctrl.visitCountSettings = getVisitCountSettings(uhcSettings);
         if (ctrl.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
           ctrl.sortDirection = ctrl.defaultSortDirection =
             uhcSettings.contacts_default_sort;
         }
 
         setActionBarData();
-        return $scope.search();
+        return ctrl.search();
       });
 
     this.getSetupPromiseForTesting = function(options) {

@@ -670,7 +670,8 @@ describe('Contacts controller', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
 
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting({ scrollLoaderStub })
         .then(() => {
           lhs = contactsLiveList.getList();
@@ -678,7 +679,7 @@ describe('Contacts controller', () => {
           scope.filters = { search: true };
           searchResults = Array(50).fill(searchResult);
           searchService.returns(Promise.resolve(searchResults));
-          scope.search();
+          ctrl.search();
           assert.deepEqual(searchService.args[1][2], { limit: 50 });
           return Promise.resolve();
         })
@@ -845,15 +846,16 @@ describe('Contacts controller', () => {
     it('does not enable LastVisitedDate features not allowed', function() {
       auth.rejects();
 
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
-          assert.equal(scope.lastVisitedDateExtras, false);
-          assert.deepEqual(scope.visitCountSettings, {});
-          assert.equal(scope.sortDirection, 'alpha');
-          assert.equal(scope.defaultSortDirection, 'alpha');
+          assert.equal(ctrl.lastVisitedDateExtras, false);
+          assert.deepEqual(ctrl.visitCountSettings, {});
+          assert.equal(ctrl.sortDirection, 'alpha');
+          assert.equal(ctrl.defaultSortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -865,24 +867,25 @@ describe('Contacts controller', () => {
             undefined,
           ]);
 
-          scope.sortDirection = 'something';
-          scope.resetFilterModel();
-          assert.equal(scope.sortDirection, 'alpha');
+          ctrl.sortDirection = 'something';
+          ctrl.resetFilterModel();
+          assert.equal(ctrl.sortDirection, 'alpha');
         });
     });
 
     it('enables LastVisitedDate features when allowed', function() {
       auth.resolves();
 
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
-          assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.visitCountSettings, {});
-          assert.equal(scope.sortDirection, 'alpha');
-          assert.equal(scope.defaultSortDirection, 'alpha');
+          assert.equal(ctrl.lastVisitedDateExtras, true);
+          assert.deepEqual(ctrl.visitCountSettings, {});
+          assert.equal(ctrl.sortDirection, 'alpha');
+          assert.equal(ctrl.defaultSortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -911,18 +914,19 @@ describe('Contacts controller', () => {
         },
       });
 
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
 
-          assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.visitCountSettings, {
+          assert.equal(ctrl.lastVisitedDateExtras, true);
+          assert.deepEqual(ctrl.visitCountSettings, {
             monthStartDate: false,
             visitCountGoal: 1,
           });
-          assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(ctrl.sortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -951,18 +955,19 @@ describe('Contacts controller', () => {
         },
       });
 
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
 
-          assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.visitCountSettings, {
+          assert.equal(ctrl.lastVisitedDateExtras, true);
+          assert.deepEqual(ctrl.visitCountSettings, {
             monthStartDate: false,
             visitCountGoal: 1,
           });
-          assert.equal(scope.sortDirection, 'something');
+          assert.equal(ctrl.sortDirection, 'something');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -977,9 +982,9 @@ describe('Contacts controller', () => {
             undefined,
           ]);
 
-          scope.sortDirection = 'somethingElse';
-          scope.resetFilterModel();
-          assert.equal(scope.sortDirection, 'something');
+          ctrl.sortDirection = 'somethingElse';
+          ctrl.resetFilterModel();
+          assert.equal(ctrl.sortDirection, 'something');
         });
     });
 
@@ -995,19 +1000,20 @@ describe('Contacts controller', () => {
         },
       });
 
-      return createController()
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
 
-          assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.visitCountSettings, {
+          assert.equal(ctrl.lastVisitedDateExtras, true);
+          assert.deepEqual(ctrl.visitCountSettings, {
             monthStartDate: 25,
             visitCountGoal: 125,
           });
-          assert.equal(scope.sortDirection, 'last_visited_date');
-          assert.equal(scope.defaultSortDirection, 'last_visited_date');
+          assert.equal(ctrl.sortDirection, 'last_visited_date');
+          assert.equal(ctrl.defaultSortDirection, 'last_visited_date');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -1023,9 +1029,9 @@ describe('Contacts controller', () => {
             undefined,
           ]);
 
-          scope.sortDirection = 'something';
-          scope.resetFilterModel();
-          assert.equal(scope.sortDirection, 'last_visited_date');
+          ctrl.sortDirection = 'something';
+          ctrl.resetFilterModel();
+          assert.equal(ctrl.sortDirection, 'last_visited_date');
         });
     });
 
@@ -1088,10 +1094,12 @@ describe('Contacts controller', () => {
         _deleted: true,
       };
       deadListContains.returns(false);
-      return createController()
+
+      const ctrl = createController();
+      return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          scope.sortDirection = 'last_visited_date';
+          ctrl.sortDirection = 'last_visited_date';
           assert.equal(
             !!changesFilter({ doc: deletedReport, deleted: true }),
             true
@@ -1198,14 +1206,15 @@ describe('Contacts controller', () => {
           });
 
           it('does require refreshing when sorting is `last_visited_date` and visit report is received', () => {
-            return createController()
+            const ctrl = createController();
+            return ctrl
               .getSetupPromiseForTesting()
               .then(() => {
                 Array.apply(null, Array(5)).forEach((k, i) =>
                   contactsLiveList.insert({ _id: i })
                 );
                 assert.equal(searchService.callCount, 1);
-                scope.sortDirection = 'last_visited_date';
+                ctrl.sortDirection = 'last_visited_date';
 
                 return Promise.all([
                   changesCallback({ doc: relevantVisitReport }),
@@ -1253,10 +1262,11 @@ describe('Contacts controller', () => {
           });
 
           it('does not require refreshing when sorting is `alpha` and visit report is received', () => {
-            return createController()
+            const ctrl = createController();
+            return ctrl
               .getSetupPromiseForTesting()
               .then(() => {
-                scope.sortDirection = 'alpha';
+                ctrl.sortDirection = 'alpha';
                 Array.apply(null, Array(5)).forEach((k, i) =>
                   contactsLiveList.insert({ _id: i })
                 );

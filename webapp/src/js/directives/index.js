@@ -20,7 +20,6 @@
   require('./modal');
   require('./navigation');
   require('./report-image');
-  require('./reports-filters');
   require('./reports-list');
   require('./reset-filter');
   require('./sender');
