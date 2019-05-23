@@ -1,5 +1,8 @@
 angular.module('inboxFilters').filter('resourceIcon',
-  function ($sce, ResourceIcons) {
+  function (
+    $sce,
+    ResourceIcons
+  ) {
     'use strict';
     'ngInject';
     return name => {
@@ -7,8 +10,12 @@ angular.module('inboxFilters').filter('resourceIcon',
     };
   }
 );
+
 angular.module('inboxFilters').filter('headerLogo',
-  function($sce, ResourceIcons) {
+  function(
+    $sce,
+    ResourceIcons
+  ) {
     'use strict';
     'ngInject';
     return function(name) {
@@ -16,8 +23,12 @@ angular.module('inboxFilters').filter('headerLogo',
     };
   }
 );
+
 angular.module('inboxFilters').filter('partnerImage',
-  function($sce, ResourceIcons) {
+  function(
+    $sce,
+    ResourceIcons
+  ) {
     'use strict';
     'ngInject';
     return name => {

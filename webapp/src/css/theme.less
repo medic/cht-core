@@ -43,39 +43,6 @@ a {
   }
 }
 
-.form-group.required label::after {
-  content: '*';
-  margin-left: 5px;
-}
-
-.form-actions,
-.form-group,
-.form-footer {
-  .error {
-    color: @error-color;
-    font-weight: bold;
-  }
-}
-.form-footer .error {
-  text-align: right;
-  clear: right;
-}
-.form-actions {
-  line-height: 20px;
-  .success {
-    display: inline-block !important;
-    opacity: 1;
-    transition: all linear 0s;
-    &.ng-hide, &.ng-hide-add.ng-hide-add-active {
-      opacity: 0;
-    }
-    &.ng-hide-add {
-      transition: all linear 1s;
-      opacity: 1;
-    }
-  }
-}
-
 .fa-stack.default {
   font-size: 7px;
   .fa-star {
@@ -159,14 +126,6 @@ a {
     &::after {
       bottom: 2px;
     }
-  }
-}
-
-ol,
-ul {
-  margin: 0;
-  &.horizontal li {
-    display: inline;
   }
 }
 

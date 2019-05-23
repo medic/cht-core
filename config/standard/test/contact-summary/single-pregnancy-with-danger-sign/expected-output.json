@@ -59,8 +59,11 @@
     "use_cases": {
       "anc": false,
       "pnc": false,
-      "imm": false
+      "imm": false,
+      "gmp": false
     },
-    "pregnant": true
+    "pregnant": true,
+    "treatment_program": "",
+    "enrollment_date": ""
   }
 }

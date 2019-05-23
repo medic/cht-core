@@ -3,7 +3,6 @@ var _ = require('underscore');
 angular.module('inboxServices').service('EnketoPrepopulationData',
   function(
     $q,
-    $window,
     EnketoTranslation,
     UserSettings
   ) {

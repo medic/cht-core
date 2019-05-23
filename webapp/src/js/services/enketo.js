@@ -7,10 +7,12 @@ var uuid = require('uuid/v4'),
 angular.module('inboxServices').service('Enketo',
   function(
     $log,
+    $ngRedux,
     $q,
-    $translate,
     $timeout,
+    $translate,
     $window,
+    Actions,
     AddAttachment,
     ContactSummary,
     DB,
@@ -25,8 +27,8 @@ angular.module('inboxServices').service('Enketo',
     SubmitFormBySms,
     TranslateFrom,
     UserContact,
-    XmlForm,
     XSLT,
+    XmlForm,
     ZScore
   ) {
     'use strict';
@@ -40,6 +42,15 @@ angular.module('inboxServices').service('Enketo',
     this.getCurrentForm = function() {
       return currentForm;
     };
+
+    const self = this;
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setLastChangedDoc: actions.setLastChangedDoc
+      };
+    };
+    $ngRedux.connect(null, mapDispatchToTarget)(self);
 
     var init = function() {
       ZScore()
@@ -436,7 +447,7 @@ angular.module('inboxServices').service('Enketo',
         xpath = xpath || xpathPath(elem);
         // replace instance root element node name with form internal ID
         var filename = 'user-file' +
-                       (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^\/]+/, '/' + doc.form));
+                       (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
         AddAttachment(doc, filename, file, type, alreadyEncoded);
       };
 
@@ -554,6 +565,7 @@ angular.module('inboxServices').service('Enketo',
               doc.geolocation = geolocation;
             });
           }
+          self.setLastChangedDoc(docs[0]);
           return docs;
         })
         .then(saveDocs)

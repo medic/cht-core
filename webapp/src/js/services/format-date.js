@@ -4,9 +4,7 @@ var moment = require('moment');
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('FormatDate',
+  angular.module('inboxServices').factory('FormatDate',
     function(
       $log,
       $translate,

@@ -3,11 +3,8 @@ var moment = require('moment');
 (function () {
 
   'use strict';
-  'ngInject';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('CalendarInterval', function() {
+  angular.module('inboxServices').factory('CalendarInterval', function() {
     var normalizeStartDate = function(intervalStartDate) {
       intervalStartDate = parseInt(intervalStartDate);
 

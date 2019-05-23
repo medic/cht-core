@@ -51,7 +51,7 @@ const addError = (record, error) => {
     };
   }
 
-  if (!!_.findWhere(record.errors, { code: error.code })) {
+  if (_.findWhere(record.errors, { code: error.code })) {
     return;
   }
 
@@ -158,10 +158,6 @@ const getDataRecord = (formData, options) => {
 
   if (formData && formData._extra_fields) {
     addError(record, 'extra_fields');
-  }
-
-  if (!def || !def.public_form) {
-    addError(record, 'sys.facility_not_found');
   }
 
   if (typeof options.message === 'string' && !options.message.trim()) {

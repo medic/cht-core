@@ -1,7 +1,13 @@
 const db = require('../../db'),
-      search = require('@medic/search')(Promise, db.medic);
+      search = require('@medic/search')(Promise, db.medic),
+      lineage = require('@medic/lineage')(Promise, db.medic);
 
 module.exports = {
+  getDocs: ids => {
+    return db.medic.allDocs({ keys: ids, include_docs: true })
+      .then(result => result.rows.map(row => row.doc))
+      .then(lineage.hydrateDocs);
+  },
   getDocIds: (options, filters) => {
     return search('contacts', filters, options).then(results => results.docIds);
   },

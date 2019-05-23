@@ -3,8 +3,6 @@ var _ = require('underscore');
 (function() {
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
   var getTo = function(dataRecord, group) {
     var to;
     if (
@@ -69,9 +67,9 @@ var _ = require('underscore');
     return changed;
   };
 
-  inboxServices.factory('EditGroup', [
-    'DB',
+  angular.module('inboxServices').factory('EditGroup',
     function(DB) {
+      'ngInject';
       return function(recordId, group) {
         return DB()
           .get(recordId)
@@ -90,6 +88,6 @@ var _ = require('underscore');
             }
           });
       };
-    },
-  ]);
+    }
+  );
 })();

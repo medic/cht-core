@@ -118,7 +118,7 @@ describe('sms parser compact', () => {
       message: 'ANCR "Sarah "killer bee" Connor" 24 2012-03-12'
     };
     const expectedObj = {
-      name: 'Sarah \"killer bee\" Connor',
+      name: 'Sarah "killer bee" Connor',
       lmp: 24,
       somedate: 1331510400000
     };

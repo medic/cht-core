@@ -5,9 +5,7 @@ var _ = require('underscore'),
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('SetTaskState', function() {
+  angular.module('inboxServices').factory('SetTaskState', function() {
     'ngInject';
 
     return function(task, state, details) {
@@ -15,8 +13,12 @@ var _ = require('underscore'),
     };
   });
 
-  inboxServices.factory('MessageState', ['DB', 'SetTaskState',
-    function(DB, SetTaskState) {
+  angular.module('inboxServices').factory('MessageState',
+    function(
+      DB,
+      SetTaskState
+    ) {
+      'ngInject';
       return {
         any: function(group, state) {
           return _.some(group.rows, function(msg) {
@@ -42,6 +44,6 @@ var _ = require('underscore'),
         }
       };
     }
-  ]);
+  );
 
 }());

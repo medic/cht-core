@@ -9,9 +9,9 @@
     <div translate>{{ errorTranslationKey }}</div>
   </div>
 
-  <div class="col-sm-8 item-content material" ng-show="selected && form && !loadingForm">
+  <div class="col-sm-8 item-content material" ng-show="$ctrl.selected && form && !loadingForm">
     <div class="card">
-      <mm-enketo id="'contact-report'" status="enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
+      <mm-enketo id="'contact-report'" status="$ctrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>
   </div>
 </div>

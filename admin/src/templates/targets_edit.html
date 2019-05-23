@@ -2,16 +2,16 @@
 
   <div class="form-group" ng-class="{'has-error': errors.id}">
     <label for="id"><span translate>analytics.target.id</span> *</label>
-    <input id="id" type="text" class="form-control" ng-model="target.id" />
+    <input id="id" type="text" class="form-control" ng-model="target.id" ng-readonly="editing"/>
     <span class="help-block" ng-if="errors.id" translate>{{errors.id}}</span>
   </div>
 
   <div class="form-horizontal">
     <label translate>analytics.target.name</label>
-    <div class="form-group col-xs-12" ng-repeat="locale in locales track by locale.code">
-      <label class="col-xs-4">{{locale.name}}</label>
+    <div class="form-group col-xs-12" ng-repeat="name in names">
+      <label class="col-xs-4">{{name.locale.name}}</label>
       <div class="col-xs-8">
-        <input type="text" class="form-control" ng-model="locale.content" />
+        <input type="text" class="form-control" ng-model="name.content" />
       </div>
     </div>
   </div>

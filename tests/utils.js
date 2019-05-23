@@ -341,7 +341,11 @@ module.exports = {
         path: options,
       };
     }
-    options.path = '/' + constants.DB_NAME + (options.path || '');
+
+    const pathAndReqType = `${options.path}${options.method}`;
+    if (pathAndReqType !== '/GET') {
+      options.path = '/' + constants.DB_NAME + (options.path || '');
+    }
     return request(options, { debug: debug, notJson: notJson });
   },
 
@@ -381,10 +385,33 @@ module.exports = {
     });
   },
 
+  getDocs: ids => {
+    return module.exports
+      .requestOnTestDb({
+        path: `/_all_docs?include_docs=true`,
+        method: 'POST',
+        body: { keys: ids || []},
+        headers: { 'content-type': 'application/json' },
+      })
+      .then(response => response.rows.map(row => row.doc));
+  },
+
   deleteDoc: id => {
     return module.exports.getDoc(id).then(doc => {
       doc._deleted = true;
       return module.exports.saveDoc(doc);
+    });
+  },
+
+  deleteDocs: ids => {
+    return module.exports.getDocs(ids).then(docs => {
+      docs.forEach(doc => doc._deleted = true);
+      return module.exports.requestOnTestDb({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs },
+        headers: { 'content-type': 'application/json' },
+      });
     });
   },
 
@@ -511,14 +538,10 @@ module.exports = {
     `http://${constants.API_HOST}:${constants.API_PORT}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${
-      constants.DB_NAME
-    }/_design/medic/_rewrite/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${
-      constants.DB_NAME
-    }/_design/medic-admin/_rewrite/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
 
   getLoginUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${

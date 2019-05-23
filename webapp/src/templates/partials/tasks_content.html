@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
     <div translate>No task selected</div>
   </div>
 
@@ -14,40 +14,40 @@
     <div translate>{{ errorTranslationKey }}</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="selected && !form && !loadingContent && !loadingForm && !contentError">
+  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !form && !loadingContent && !loadingForm && !contentError">
     <div class="body">
       <div>
-        <h2>{{selected.title | translateFrom:selected}}</h2>
+        <h2>{{$ctrl.selected.title | translateFrom:selected}}</h2>
         <ul>
           <li>
             <label translate>task.date</label>
-            <p ng-bind-html="selected.date | simpleDate"></p>
+            <p ng-bind-html="$ctrl.selected.date | simpleDate"></p>
           </li>
-          <li ng-if="selected.priority">
+          <li ng-if="$ctrl.selected.priority">
             <label translate>task.priority</label>
-            <p ng-class="{'high-priority': selected.priority === 'high', 'medium-priority': selected.priority === 'medium'}">
+            <p ng-class="{'high-priority': $ctrl.selected.priority === 'high', 'medium-priority': $ctrl.selected.priority === 'medium'}">
               <span class="priority">
                 <i class="fa fa-exclamation-triangle high-priority-icon"></i>
                 <i class="fa fa-info-circle medium-priority-icon"></i>
               </span>
-              {{selected.priorityLabel | translateFrom:selected}}
+              {{$ctrl.selected.priorityLabel | translateFrom:selected}}
             </p>
           </li>
-          <li ng-repeat="field in selected.fields">
+          <li ng-repeat="field in $ctrl.selected.fields">
             <label>{{field.label | translateFrom:selected}}</label>
             <p>{{field.value | translateFrom:selected}}</p>
           </li>
-          <li class="actions" ng-if="selected.actions.length">
-            <a class="btn btn-primary" ng-click="performAction(action)" ng-repeat="action in selected.actions">{{action.label | translateFrom:selected}}</a>
+          <li class="actions" ng-if="$ctrl.selected.actions.length">
+            <a class="btn btn-primary" ng-click="performAction(action)" ng-repeat="action in $ctrl.selected.actions">{{action.label | translateFrom:selected}}</a>
           </li>
         </ul>
       </div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="selected && form && !loadingContent && !loadingForm">
+  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && form && !loadingContent && !loadingForm">
     <div class="body">
-      <mm-enketo id="'task-report'" status="enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
+      <mm-enketo id="'task-report'" status="$ctrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>
   </div>
 </div>

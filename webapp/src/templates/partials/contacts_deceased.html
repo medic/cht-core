@@ -6,11 +6,11 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
     <div translate>No contact selected</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="selected && !loadingContent">
+  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !loadingContent">
     <div class="material">
       <div>
         <div class="card children persons">
@@ -20,7 +20,7 @@
             </div>
           </div>
           <ul>
-            <mm-content-row ng-repeat="child in selected.children.deceased"
+            <mm-content-row ng-repeat="child in $ctrl.selected.children.deceased"
               id="child.doc._id"
               route="'contacts'"
               heading="child.doc.name"

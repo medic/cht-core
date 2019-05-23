@@ -1,25 +1,46 @@
 angular.module('inboxControllers').controller('ContactsEditCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
     $timeout,
     $translate,
+    Actions,
     ContactForm,
     ContactSave,
     ContactSchema,
     Enketo,
     LineageModelGenerator,
+    Selectors,
     Snackbar
   ) {
 
     'use strict';
     'ngInject';
 
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        enketoStatus: Selectors.getEnketoStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state)
+      };
+    };
+    var mapDispatchToTarget = function(dispatch) {
+      var actions = Actions(dispatch);
+      return {
+        setCancelCallback: actions.setCancelCallback,
+        setEnketoEditedStatus: actions.setEnketoEditedStatus,
+        setEnketoSavingStatus: actions.setEnketoSavingStatus,
+        setEnketoError: actions.setEnketoError
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
     $scope.loadingContent = true;
     $scope.setShowContent(true);
-    $scope.setCancelTarget(function() {
+    ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
         $state.go('contacts.detail', { id: null });
       } else {
@@ -99,7 +120,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var markFormEdited = function() {
-      $scope.enketoStatus.edited = true;
+      ctrl.setEnketoEditedStatus(true);
     };
 
     var renderForm = function(form) {
@@ -112,7 +133,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               .addClass('disabled');
           return;
         }
-        $scope.enketoStatus.edited = false;
+        ctrl.setEnketoEditedStatus(false);
         var instanceData = getFormInstanceData();
         if (form.id) {
           return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
@@ -157,15 +178,15 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       });
 
     $scope.save = function() {
-      if ($scope.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         $log.debug('Attempted to call contacts-edit:$scope.save more than once');
         return;
       }
 
       var form = $scope.enketoContact.formInstance;
       var docId = $scope.enketoContact.docId;
-      $scope.enketoStatus.saving = true;
-      $scope.enketoStatus.error = null;
+      ctrl.setEnketoSavingStatus(true);
+      ctrl.setEnketoError(null);
 
       return form.validate()
         .then(function(valid) {
@@ -177,28 +198,29 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
-              $scope.enketoStatus.saving = false;
+              ctrl.setEnketoSavingStatus(false);
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
-              $scope.enketoStatus.edited = false;
+              ctrl.setEnketoEditedStatus(false);
               $state.go('contacts.detail', { id: result.docId });
             })
             .catch(function(err) {
-              $scope.enketoStatus.saving = false;
+              ctrl.setEnketoSavingStatus(false);
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-              $scope.enketoStatus.error = msg;
+                ctrl.setEnketoError(msg);
               });
             });
         })
         .catch(function() {
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
-          $scope.enketoStatus.saving = false;
+          ctrl.setEnketoSavingStatus(false);
           $scope.$apply();
         });
     };
 
     $scope.$on('$destroy', function() {
+      unsubscribe();
       if (!$state.includes('contacts.add')) {
         $scope.setTitle();
         if ($scope.enketoContact && $scope.enketoContact.formInstance) {

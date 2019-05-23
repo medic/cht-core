@@ -2,10 +2,9 @@
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
   var SETTINGS_ID = 'settings';
 
-  inboxServices.factory('Settings',
+  angular.module('inboxServices').factory('Settings',
     function(
       $log,
       $q,
@@ -30,8 +29,8 @@
               callback(err);
             });
         },
-        invalidate: function(doc) {
-          return doc._id === SETTINGS_ID;
+        invalidate: function(change) {
+          return change.id === SETTINGS_ID;
         }
       });
 

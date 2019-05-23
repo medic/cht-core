@@ -5,12 +5,13 @@ var _ = require('underscore'),
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
   var ENTER_KEY_CODE = 13;
 
-  inboxServices.factory('SearchFilters',
-    function($timeout, $translate) {
+  angular.module('inboxServices').factory('SearchFilters',
+    function(
+      $timeout,
+      $translate
+    ) {
       'ngInject';
 
       var isEnter = function(e) {

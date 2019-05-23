@@ -12,8 +12,8 @@ angular.module('inboxServices').factory('LiveListConfig',
     ContactSchema,
     LiveList,
     RulesEngine,
-    relativeDayFilter,
-    TranslateFrom
+    TranslateFrom,
+    relativeDayFilter
   ) {
     'use strict';
     'ngInject';
@@ -27,7 +27,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     };
 
     var renderTemplate = function(scope) {
-      var template = $templateCache.get('templates/partials/content_row_list_item.html');
+      var template = $templateCache.get('templates/directives/content_row_list_item.html');
       return template
         .replace(HTML_BIND_REGEX, function(match, expr, extras) {
           return extras + parse(expr, scope);
@@ -45,6 +45,17 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (!c1 || !c2) {
             return;
           }
+
+          // sort dead people to the bottom
+          if (!!c1.date_of_death !== !!c2.date_of_death) {
+            return c1.date_of_death ? 1 : -1;
+          }
+
+          // sort muted people to the bottom
+          if (!!c1.muted !== !!c2.muted) {
+            return c1.muted ? 1 : -1;
+          }
+
           if (c1.sortByLastVisitedDate) {
             return c1.lastVisitedDate - c2.lastVisitedDate;
           }
@@ -54,12 +65,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (c1.type !== c2.type) {
             return ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type);
           }
-          var c1Dead = !!c1.date_of_death;
-          var c2Dead = !!c2.date_of_death;
-          if (c1Dead !== c2Dead) {
-            // sort dead people to the bottom
-            return c1Dead ? 1 : -1;
-          }
+
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
@@ -343,11 +349,11 @@ angular.module('inboxServices').factory('LiveList',
       return idx.list && idx.list.length;
     }
 
-    /* 
-    reuseExistingDom is a performance optimization wherein live-list can rely on the changes feed to 
-    specifically update dom elements (via update/remove interfaces) making it safe to re-use existing dom 
+    /*
+    reuseExistingDom is a performance optimization wherein live-list can rely on the changes feed to
+    specifically update dom elements (via update/remove interfaces) making it safe to re-use existing dom
     elements for certain scenarios
-    */ 
+    */
     function _set(listName, items, reuseExistingDom) {
       const idx = indexes[listName];
       if (!idx) {
@@ -364,7 +370,7 @@ angular.module('inboxServices').factory('LiveList',
         newDom[item._id] = li;
       }
       idx.dom = newDom;
-      
+
       _refresh(listName);
     }
 
@@ -377,7 +383,7 @@ angular.module('inboxServices').factory('LiveList',
         return false;
       }
 
-      return !!indexes[listName].dom[item._id];
+      return !!indexes[listName].dom[item._id || item];
     }
 
     function _insert(listName, newItem, skipDomAppend, removedDomElement) {
@@ -425,6 +431,7 @@ angular.module('inboxServices').factory('LiveList',
 
     function _remove(listName, removedItem) {
       var idx = indexes[listName];
+      const removedItemId = removedItem._id || removedItem;
 
       if (!idx.list) {
         return;
@@ -433,14 +440,14 @@ angular.module('inboxServices').factory('LiveList',
       var i = idx.list.length,
           removeIndex = null;
       while (i-- > 0 && removeIndex === null) {
-        if(idx.list[i]._id === removedItem._id) {
+        if(idx.list[i]._id === removedItemId) {
           removeIndex = i;
         }
       }
       if (removeIndex !== null) {
         idx.list.splice(removeIndex, 1);
-        const removed = idx.dom[removedItem._id];
-        delete idx.dom[removedItem._id];
+        const removed = idx.dom[removedItemId];
+        delete idx.dom[removedItemId];
 
         $(idx.selector).children().eq(removeIndex).remove();
         return removed;
@@ -478,21 +485,6 @@ angular.module('inboxServices').factory('LiveList',
       }
 
       delete idx.selected;
-    }
-
-    function _containsDeleteStub(listName, doc) {
-      // determines if array2 is included in array1
-      var arrayIncludes = function(array1, array2) {
-        return array2.every(function(elem) {
-          return array1.indexOf(elem) !== -1;
-        });
-      };
-      // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
-      // _conflicts, _attachments can be part of the _changes request result
-      var stubProps = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
-      return arrayIncludes(stubProps, Object.keys(doc)) &&
-             !!doc._deleted &&
-             _contains(listName, doc);
     }
 
     function _setScope(listName, scope) {
@@ -560,7 +552,6 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
-        containsDeleteStub: _.partial(_containsDeleteStub, name),
         setScope: _.partial(_setScope, name)
       };
 

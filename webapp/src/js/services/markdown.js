@@ -1,12 +1,10 @@
-var inboxServices = angular.module('inboxServices');
-
 /**
  * Supports a small subset of MarkDown and converts this to HTML: _, __, *, **, []()
  * Also converts newline characters
  *
  * Not supported: escaping and other MarkDown syntax
  */
-inboxServices.factory('Markdown', [
+angular.module('inboxServices').factory('Markdown',
   function() {
     'use strict';
 
@@ -20,8 +18,8 @@ inboxServices.factory('Markdown', [
       html = html.replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>');
       html = html.replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>');
       html = html.replace(/_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>');
-      html = html.replace(/\*([^*\s]([^\*]*[^*\s])?)\*/gm, '<em>$1</em>');
-      html = html.replace(/\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      html = html.replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>');
+      html = html.replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
       html = html.replace(/\n/gm, '<br />');
 
       // Convert embedded HTML
@@ -59,4 +57,4 @@ inboxServices.factory('Markdown', [
       element: translateElement,
     };
   }
-]);
+);

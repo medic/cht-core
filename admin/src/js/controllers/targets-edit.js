@@ -7,6 +7,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
     $scope,
     $state,
     $stateParams,
+    $translate,
     DB,
     Settings,
     UpdateSettings
@@ -22,18 +23,34 @@ angular.module('controllers').controller('TargetsEditCtrl',
     $scope.saving = false;
     $scope.editing = $stateParams.id;
     $scope.icons = [];
+    $scope.names = [];
 
     Settings()
       .then(function(settings) {
         $scope.locales = _.map(settings.locales, _.clone);
         if ($stateParams.id) {
           $scope.target = _.findWhere(settings.tasks.targets.items, { id: $stateParams.id });
-          $scope.target.name.forEach(function(name) {
-            var locale = _.findWhere($scope.locales, { code: name.locale });
-            if (locale) {
-              locale.content = name.content;
-            }
-          });
+          if (typeof $scope.target.name === 'undefined') {
+            $scope.names = $scope.locales.map(locale => {
+              const translation = $translate.instant($scope.target.translation_key, null, 'no-interpolation', locale.code, null);
+              const content  = translation === $scope.target.translation_key ? '' : translation;
+              return {
+                locale,
+                content
+              };
+            });
+          } else {
+            $scope.names = $scope.locales.map(locale => {
+              const name =
+                $scope.target.name
+                .find(item => item.locale === locale.code);
+              const content = name ? name.content : '';
+              return {
+                locale,
+                content
+              };
+            });
+          }
         }
       })
       .catch(function(err) {
@@ -78,6 +95,17 @@ angular.module('controllers').controller('TargetsEditCtrl',
         });
     };
 
+    const targetExists = (settings) => {
+      if ($scope.editing) {
+        // The ID has been set to read-only
+        return false;
+      }
+      const  items = (settings.tasks && settings.tasks.targets &&
+        settings.tasks.targets.items) || [];
+      const exists = items.some(item => item.id === $scope.target.id);
+      return exists;
+    };
+
     var updateItem = function(settings) {
       var items = (settings.tasks && settings.tasks.targets &&
                    settings.tasks.targets.items) || [];
@@ -116,33 +144,25 @@ angular.module('controllers').controller('TargetsEditCtrl',
       $scope.saving = true;
       $scope.status = 'Submitting';
 
-      if (!$scope.target.name) {
-        $scope.target.name = [];
-      }
-
-      $scope.locales.forEach(function(locale) {
-        var translation = _.findWhere($scope.target.name, { locale: locale.code });
-        if (translation) {
-          translation.content = locale.content;
-        } else if (locale.content) {
-          $scope.target.name.push({
-            locale: locale.code,
-            content: locale.content
-          });
-        }
-      });
-
-      Settings()
-        .then(updateItem)
-        .then(UpdateSettings)
-        .then(function() {
-          $scope.saving = false;
-          $scope.status = 'Saved';
-        })
-        .catch(function(err) {
-          $log.error('Error updating settings', err);
-          $scope.saving = false;
-          $scope.status = 'Save failed';
+      return Settings()
+        .then(settings => {
+          if (targetExists(settings)) {
+            $scope.errors.id = 'analytics.targets.unique.id';
+            $scope.status = 'Failed validation';
+            $scope.saving = false;
+            return;
+          }
+          return updateItem(settings)
+            .then(UpdateSettings)
+            .then(function() {
+              $scope.saving = false;
+              $scope.status = 'Saved';
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.saving = false;
+              $scope.status = 'Save failed';
+            });
         });
     };
 

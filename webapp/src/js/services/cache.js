@@ -2,10 +2,9 @@
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('Cache', ['Changes',
+  angular.module('inboxServices').factory('Cache',
     function(Changes) {
+      'ngInject';
 
       var caches = [];
 
@@ -13,7 +12,7 @@
         key: 'cache',
         callback: function(change) {
           caches.forEach(function(cache) {
-            if (cache.invalidate(change.doc)) {
+            if (cache.invalidate(change)) {
               cache.docs = null;
               cache.pending = false;
             }
@@ -66,6 +65,6 @@
         };
       };
     }
-  ]);
+  );
 
 }()); 

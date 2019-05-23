@@ -17,15 +17,14 @@ var _ = require('underscore'),
  */
 angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
-    $log,
     $q,
     $translate,
     ContactMuted,
     ContactSchema,
     DB,
+    GetDataRecords,
     LineageModelGenerator,
-    Search,
-    GetDataRecords
+    Search
   ) {
     'ngInject';
     'use strict';
@@ -68,6 +67,13 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return 0;
     };
 
+    const MUTED_COMPARATOR = (nextComparator, lhs, rhs) => {
+      if (!!lhs.doc.muted === !!rhs.doc.muted) {
+        return nextComparator(lhs, rhs);
+      }
+      return lhs.doc.muted ? 1 : -1;
+    };
+
     var setPrimaryContact = function(model) {
       var parent = model.lineage && model.lineage.length && model.lineage[0];
       model.isPrimaryContact = parent &&
@@ -83,6 +89,15 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var setMutedState = function(model) {
       model.doc.muted = ContactMuted(model.doc, model.lineage);
+    };
+
+    // muted state is inherited, but only set when online via Sentinel transition
+    const setChildrenMutedState = (model, children) => {
+      if (model.doc.muted) {
+        children.forEach(child => child.doc.muted = child.doc.muted || model.doc.muted);
+      }
+      return children;
+
     };
 
     var splitContactsByType = function(children) {
@@ -153,11 +168,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var sortChildren = function(model, children) {
       if (children.places) {
-        children.places.sort(NAME_COMPARATOR);
+        children.places.sort(_.partial(MUTED_COMPARATOR, NAME_COMPARATOR));
       }
       if (children.persons) {
         var personComparator = model.doc.type === 'clinic' ? AGE_COMPARATOR : NAME_COMPARATOR;
-        children.persons.sort(personComparator);
+        children.persons.sort(_.partial(MUTED_COMPARATOR, personComparator));
       }
       return sortPrimaryContactToTop(model, children);
     };
@@ -183,6 +198,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       }
 
       return getChildren(model.doc._id, options)
+        .then(children => setChildrenMutedState(model, children))
         .then(splitContactsByType)
         .then(function(children) {
           if (children.places && children.places.length) {
@@ -265,28 +281,19 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    return function(id, options) {
-      return LineageModelGenerator.contact(id, options)
-        .then(function(model) {
-          setPrimaryContact(model);
-          setSchemaFields(model);
-          setMutedState(model);
+    return {
+      getContact: function(id, options) {
+        return LineageModelGenerator.contact(id, options)
+          .then(function(model) {
+            setPrimaryContact(model);
+            setSchemaFields(model);
+            setMutedState(model);
 
-          model.loadingChildren = true;
-          model.loadingReports = true;
-          model.reportLoader = loadChildren(model, options)
-            .then(children => {
-              model.children = children;
-              model.loadingChildren = false;
-              return loadReports(model);
-            })
-            .then(reports => {
-              model.reports = reports;
-              model.loadingReports = false;
-            });
-
-          return model;
-        });
+            return model;
+          });
+      },
+      loadChildren: loadChildren,
+      loadReports: loadReports
     };
   }
 );

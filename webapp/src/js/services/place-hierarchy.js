@@ -10,8 +10,8 @@ var _ = require('underscore');
 */
 angular.module('inboxServices').factory('PlaceHierarchy',
   function(
-    Contacts,
     ContactSchema,
+    Contacts,
     Settings
   ) {
 

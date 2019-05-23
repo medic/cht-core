@@ -42,7 +42,7 @@ describe('phone-widget', function() {
   });
 
   function inputSelector(name) {
-    return $('input[name=\"' + name + '\"]');
+    return $('input[name="' + name + '"]');
   }
 
   function proxySelector(name) {

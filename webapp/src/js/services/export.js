@@ -7,11 +7,11 @@ angular.module('inboxServices').factory('Export',
   ) {
     'ngInject';
     'use strict';
-    return function(type, filters) {
+    return function(type, filters, options) {
       if (!KNOWN_TYPES.includes(type)) {
         return $log.error(new Error('Unknown download type: ' + type));
       }
-      const params = filters ? '?' + $.param({ filters: filters }) : '';
+      const params = '?' + $.param({ filters: filters, options: options });
       const url = '/api/v2/export/' + type + params;
       ajaxDownload.download(url);
     };

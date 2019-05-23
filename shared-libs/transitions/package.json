@@ -1,0 +1,31 @@
+{
+  "name": "@medic/transitions",
+  "version": "1.0.6",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test/**/*"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-exclude": "^1.0.12",
+    "mocha": "^5.2.0",
+    "sinon": "^7.1.1",
+    "jsverify": "^0.8.4"
+  },
+  "dependencies": {
+    "@medic/lineage": "^1.0.0",
+    "@medic/message-utils": "^1.0.2",
+    "@medic/phone-number": "^1.0.0",
+    "@medic/registration-utils": "^1.1.0",
+    "@medic/task-utils": "^1.0.0",
+    "async": "^2.6.1",
+    "bikram-sambat": "^1.5.0",
+    "gsm": "^0.1.4",
+    "moment": "^2.22.2",
+    "mustache": "^3.0.1",
+    "object-path": "^0.11.4",
+    "underscore": "^1.9.1"
+  }
+}

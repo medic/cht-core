@@ -3,12 +3,14 @@ var _ = require('underscore'),
 
 angular.module('inboxServices').service('Tour',
   function(
+    $log,
     $q,
     $state,
     $timeout,
     $translate,
     AnalyticsModules,
     Auth,
+    Feedback,
     Session
   ) {
 
@@ -548,6 +550,7 @@ angular.module('inboxServices').service('Tour',
           if (results.length) {
             return {
               order: 4,
+    
               id: 'analytics',
               icon: 'fa-bar-chart-o',
               name: 'Analytics'
@@ -588,7 +591,16 @@ angular.module('inboxServices').service('Tour',
             });
           } else {
             // navigate to the correct page
-            $state.go(route, { tour: name });
+            if (route) {
+              $state.go(route, { tour: name });
+            } else {
+              var message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
+              Feedback.submit(message, false, function(err) {
+                if (err) {
+                  $log.error('Error saving feedback', err);
+                }
+              }); 
+            }
           }
         });
       }

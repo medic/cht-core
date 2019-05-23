@@ -10,15 +10,15 @@ angular
     $q,
     $translate,
     DB,
+    FormatDate,
     Language,
-    Settings,
-    FormatDate
+    Settings
   ) {
     'ngInject';
     'use strict';
 
     var lineage = lineageFactory($q, DB());
-    const patient_fields = ['patient_id', 'patient_uuid', 'patient_name'];
+    const patientFields = ['patient_id', 'patient_uuid', 'patient_name'];
 
     var getRegistrations = function(patientId) {
       var options = {
@@ -94,7 +94,7 @@ angular
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
-            hasUrl: patient_fields.includes(key)
+            hasUrl: patientFields.includes(key)
           });
         }
       });
@@ -314,7 +314,7 @@ angular
           value: value,
           isArray: false,
           generated: true,
-          hasUrl: patient_fields.includes(field)
+          hasUrl: patientFields.includes(field)
         });
 
         doc.fields.headers.unshift({
@@ -425,153 +425,226 @@ angular
       return result;
     };
 
+    const getFields = function(doc, results, values, labelPrefix, depth) {
+      if (depth > 3) {
+        depth = 3;
+      }
+      Object.keys(values).forEach(function(key) {
+        const value = values[key];
+        const label = labelPrefix + '.' + key;
+        if (_.isObject(value)) {
+          results.push({
+            label: label,
+            depth: depth
+          });
+          getFields(doc, results, value, label, depth + 1);
+        } else {
+          const result = {
+            label: label,
+            value: value,
+            depth: depth,
+            hasUrl: patientFields.includes(key)
+          };
+
+          const filePath = 'user-file/' + label.split('.').slice(1).join('/');
+          if (doc &&
+              doc._attachments &&
+              doc._attachments[filePath] &&
+              doc._attachments[filePath].content_type &&
+              doc._attachments[filePath].content_type.startsWith('image/')) {
+            result.imagePath = filePath;
+          }
+
+          results.push(result);
+        }
+      });
+      return results;
+    };
+
+    const getDisplayFields = function(doc) {
+      // calculate fields to display
+      if (!doc.fields) {
+        return [];
+      }
+      const label = 'report.' + doc.form;
+      const fields = getFields(doc, [], doc.fields, label, 0);
+      const hide = doc.hidden_fields || [];
+      hide.push('inputs');
+      return _.reject(fields, function(field) {
+        return _.some(hide, function(h) {
+          const hiddenLabel = label + '.' + h;
+          return hiddenLabel === field.label || field.label.indexOf(hiddenLabel + '.') === 0;
+        });
+      });
+    };
+
+    const formatXmlFields = function(doc) {
+      doc.fields = getDisplayFields(doc);
+    };
+
+    const formatJsonFields = function(doc, settings, language) {
+      if (!doc.form) {
+        return;
+      }
+      const keys = getFormKeys(getForm(settings, doc.form));
+      const labels = getLabels(settings, keys, doc.form, language);
+      doc.fields = fieldsToHtml(
+        settings,
+        keys,
+        labels,
+        doc,
+        language
+      );
+      includeNonFormFields(settings, doc, keys, language);
+    };
+
+    const formatScheduledTasks = function(doc, settings, language, context) {
+      doc.scheduled_tasks_by_group = [];
+      const groups = {};
+      doc.scheduled_tasks.forEach(function(task) {
+        // avoid crash if item is falsey
+        if (!task) {
+          return;
+        }
+
+        const copy = _.clone(task);
+        const content = {
+          translationKey: task.message_key,
+          message: task.message,
+        };
+
+        if (!copy.messages) {
+          // backwards compatibility
+          copy.messages = messages.generate(
+            settings,
+            _.partial(translate, settings, _, _, null, true),
+            doc,
+            content,
+            task.recipient,
+            context
+          );
+
+          if (messages.hasError(copy.messages)) {
+            copy.error = true;
+          }
+        }
+
+        // timestamp is used for sorting in the frontend
+        if (task.timestamp) {
+          copy.timestamp = task.timestamp;
+        } else if (task.due) {
+          copy.timestamp = task.due;
+        }
+
+        // translation key used to identify translatable messages
+        if (task.message_key) {
+          copy.message_key = task.message_key;
+        }
+
+        // setup scheduled groups
+
+        const groupName = getGroupName(task);
+        let group = groups[groupName];
+        if (!group) {
+          const displayName = getGroupDisplayName(settings, task, language);
+          groups[groupName] = group = {
+            group: groupName,
+            name: displayName,
+            type: task.type,
+            number: task.group,
+            rows: [],
+          };
+        }
+        group.rows.push(copy);
+      });
+      Object.keys(groups).forEach(function(key) {
+        doc.scheduled_tasks_by_group.push(groups[key]);
+      });
+    };
+
+    /*
+     * Prepare outgoing messages for render. Reduce messages to organize by
+     * properties: sent_by, from, state and message.  This helps for easier
+     * display especially in the case of bulk sms.
+     *
+     * messages = [
+     *    {
+     *       recipients: [
+     *          {
+     *              to: '+123',
+     *              facility: <facility>,
+     *              timestamp: <timestamp>,
+     *              uuid: <uuid>,
+     *          },
+     *          ...
+     *        ],
+     *        sent_by: 'admin',
+     *        from: '+998',
+     *        state: 'sent',
+     *        message: 'good morning'
+     *    }
+     *  ]
+     */
+    const formatOutgoingMessages = function(doc) {
+      var outgoing_messages = [];
+      var outgoing_messages_recipients = [];
+      doc.tasks.forEach(function(task) {
+        task.messages.forEach(function(msg) {
+          var recipient = {
+            to: msg.to,
+            facility: msg.facility,
+            timestamp: task.timestamp,
+            uuid: msg.uuid,
+          };
+          var done = false;
+          // append recipient to existing
+          outgoing_messages.forEach(function(m) {
+            if (
+              msg.message === m.message &&
+              msg.sent_by === m.sent_by &&
+              msg.from === m.from &&
+              task.state === m.state
+            ) {
+              m.recipients.push(recipient);
+              outgoing_messages_recipients.push(recipient);
+              done = true;
+            }
+          });
+          // create new entry
+          if (!done) {
+            outgoing_messages.push({
+              recipients: [recipient],
+              sent_by: msg.sent_by,
+              from: msg.from,
+              state: task.state,
+              message: msg.message,
+            });
+            outgoing_messages_recipients.push(recipient);
+          }
+        });
+      });
+      doc.outgoing_messages = outgoing_messages;
+      doc.outgoing_messages_recipients = outgoing_messages_recipients;
+    };
+
     /*
      * Take data record document and return nice formated JSON object.
      */
     var makeDataRecordReadable = function(doc, settings, language, context) {
       var formatted = _.clone(doc);
 
-      // adding a fields property for ease of rendering code
-      if (formatted.form && formatted.content_type !== 'xml') {
-        var keys = getFormKeys(getForm(settings, formatted.form));
-        var labels = getLabels(settings, keys, formatted.form, language);
-        formatted.fields = fieldsToHtml(
-          settings,
-          keys,
-          labels,
-          formatted,
-          language
-        );
-        includeNonFormFields(settings, formatted, keys, language);
+      if (formatted.content_type === 'xml') {
+        formatXmlFields(formatted);
+      } else {
+        formatJsonFields(formatted, settings, language);
       }
 
       if (formatted.scheduled_tasks) {
-        formatted.scheduled_tasks_by_group = [];
-        var groups = {};
-        formatted.scheduled_tasks.forEach(function(t) {
-          // avoid crash if item is falsey
-          if (!t) {
-            return;
-          }
-
-          var copy = _.clone(t);
-          var content = {
-            translationKey: t.message_key,
-            message: t.message,
-          };
-
-          if (!copy.messages) {
-            // backwards compatibility
-            copy.messages = messages.generate(
-              settings,
-              _.partial(translate, settings, _, _, null, true),
-              doc,
-              content,
-              t.recipient,
-              context
-            );
-
-            if (messages.hasError(copy.messages)) {
-              copy.error = true;
-            }
-          }
-
-          // timestamp is used for sorting in the frontend
-          if (t.timestamp) {
-            copy.timestamp = t.timestamp;
-          } else if (t.due) {
-            copy.timestamp = t.due;
-          }
-
-          // translation key used to identify translatable messages
-          if (t.message_key) {
-            copy.message_key = t.message_key;
-          }
-
-          // setup scheduled groups
-
-          var groupName = getGroupName(t);
-          var displayName = getGroupDisplayName(settings, t, language);
-          var group = groups[groupName];
-          if (!group) {
-            groups[groupName] = group = {
-              group: groupName,
-              name: displayName,
-              type: t.type,
-              number: t.group,
-              rows: [],
-            };
-          }
-          group.rows.push(copy);
-        });
-        Object.keys(groups).forEach(function(key) {
-          formatted.scheduled_tasks_by_group.push(groups[key]);
-        });
+        formatScheduledTasks(formatted, settings, language, context);
       }
 
-      /*
-       * Prepare outgoing messages for render. Reduce messages to organize by
-       * properties: sent_by, from, state and message.  This helps for easier
-       * display especially in the case of bulk sms.
-       *
-       * messages = [
-       *    {
-       *       recipients: [
-       *          {
-       *              to: '+123',
-       *              facility: <facility>,
-       *              timestamp: <timestamp>,
-       *              uuid: <uuid>,
-       *          },
-       *          ...
-       *        ],
-       *        sent_by: 'admin',
-       *        from: '+998',
-       *        state: 'sent',
-       *        message: 'good morning'
-       *    }
-       *  ]
-       */
       if (formatted.kujua_message) {
-        var outgoing_messages = [],
-          outgoing_messages_recipients = [];
-        _.each(formatted.tasks, function(task) {
-          _.each(task.messages, function(msg) {
-            var recipient = {
-              to: msg.to,
-              facility: msg.facility,
-              timestamp: task.timestamp,
-              uuid: msg.uuid,
-            };
-            var done = false;
-            // append recipient to existing
-            _.each(outgoing_messages, function(m) {
-              if (
-                msg.message === m.message &&
-                msg.sent_by === m.sent_by &&
-                msg.from === m.from &&
-                task.state === m.state
-              ) {
-                m.recipients.push(recipient);
-                outgoing_messages_recipients.push(recipient);
-                done = true;
-              }
-            });
-            // create new entry
-            if (!done) {
-              outgoing_messages.push({
-                recipients: [recipient],
-                sent_by: msg.sent_by,
-                from: msg.from,
-                state: task.state,
-                message: msg.message,
-              });
-              outgoing_messages_recipients.push(recipient);
-            }
-          });
-        });
-        formatted.outgoing_messages = outgoing_messages;
-        formatted.outgoing_messages_recipients = outgoing_messages_recipients;
+        formatOutgoingMessages(formatted);
       }
 
       return formatted;

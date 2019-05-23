@@ -1,4 +1,13 @@
-var targets = [
+var MS_IN_DAY = extras.MS_IN_DAY;
+var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
+var DAYS_IN_PNC = extras.DAYS_IN_PNC;
+var immunizationForms = extras.immunizationForms;
+var postnatalForms = extras.postnatalForms;
+var isFormSubmittedInWindow = extras.isFormSubmittedInWindow;
+var isChildUnder5 = extras.isChildUnder5;
+var isHealthyDelivery = extras.isHealthyDelivery;
+
+module.exports = [
   // Pregnancy related widgets
   // TODO could this target be person-based instead of report based?
   {
@@ -11,9 +20,9 @@ var targets = [
 
     appliesTo: 'reports',
     appliesIf: function(c, r) {
-      if (!isNewestPregnancy(c, r)) return false;
+      if (!extras.isNewestPregnancy(c, r)) return false;
 
-      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c))
+      if (extras.getNewestDeliveryTimestamp(c) < extras.getNewestPregnancyTimestamp(c))
         return true;
 
       var lmp = new Date(r.lmp_date);
@@ -35,15 +44,15 @@ var targets = [
     subtitle_translation_key: 'targets.this_month.subtitle',
 
     appliesTo: 'reports',
-    appliesIf: isNewestPregnancy,
-    emitCustom: function(c, r) {
+    appliesIf: extras.isNewestPregnancy,
+    emitCustom: function(inst, c, r) {
       var instance = createTargetInstance(
         'pregnancy-registrations-this-month',
         r,
         true
       );
       // use contact id to avoid counting multiple pregnancies for same person
-      instance._id = c.contact._id + '-' + 'pregnancy-registrations-this-month';
+      instance._id = c.contact._id + '~' + 'pregnancy-registrations-this-month';
       emitTargetInstance(instance);
     },
     date: 'reported',
@@ -78,9 +87,8 @@ var targets = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(
+      var visits = extras.countANCVisits(
         c.reports,
-        antenatalForms,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
       );
@@ -102,9 +110,8 @@ var targets = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(
+      var visits = extras.countANCVisits(
         c.reports,
-        antenatalForms,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
       );
@@ -125,7 +132,7 @@ var targets = [
     appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
-    passesIf: isFacilityDelivery,
+    passesIf: extras.isFacilityDelivery,
     date: 'now',
   },
 
@@ -144,7 +151,7 @@ var targets = [
 
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isWomanInActivePncPeriod,
+    appliesIf: extras.isWomanInActivePncPeriod,
   },
 
   // PNC: PNC registrations this month
@@ -180,7 +187,7 @@ var targets = [
     appliesIf: function(c, r) {
       return (
         postnatalForms.indexOf(r.form) !== -1 ||
-        (deliveryForms.indexOf(r.form) !== -1 &&
+        (extras.deliveryForms.indexOf(r.form) !== -1 &&
           r.fields.delivery_code &&
           r.fields.delivery_code.toUpperCase() === 'F')
       );
@@ -200,12 +207,12 @@ var targets = [
       "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isWomanInActivePncPeriod,
+    appliesIf: extras.isWomanInActivePncPeriod,
     passesIf: function(c) {
       return !isFormSubmittedInWindow(
         c.reports,
         postnatalForms,
-        getNewestDeliveryTimestamp(c),
+        extras.getNewestDeliveryTimestamp(c),
         now.getTime()
       );
     },
@@ -280,13 +287,13 @@ var targets = [
 
       // PNC: WOMEN WITH 3 PNC VISITS, ALL TIME
       // Women who had 3 PNC visits confirmed during their 6-week PNC period (includes V forms and postnatal visit forms) - all-time
-      var postnatalVisits = countReportsSubmittedInWindow(
+      var postnatalVisits = extras.countReportsSubmittedInWindow(
         c.reports,
         postnatalForms,
         startPNCperiod.getTime(),
         endPNCperiod.getTime()
       );
-      if (isFacilityDelivery(r)) {
+      if (extras.isFacilityDelivery(r)) {
         postnatalVisits++;
       }
 
@@ -347,11 +354,11 @@ var targets = [
       return immunizationForms.indexOf(r.form) !== -1;
     },
     date: 'reported',
-    emitCustom: function(c, r) {
+    emitCustom: function(inst, c, r) {
       var i, instance;
       if (r.form === 'immunization_visit' || r.form === 'imm') {
         // Multiple vaccine doses can be reported in a single XForm (app or collect)
-        var totalDoses = countDoses(r);
+        var totalDoses = extras.countDoses(r);
         for (i = 0; i < totalDoses; i++) {
           instance = createTargetInstance(
             'imm-vaccines-given-this-month',
@@ -388,7 +395,7 @@ var targets = [
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: function(c) {
-      var visits = countReportsSubmittedInWindow(
+      var visits = extras.countReportsSubmittedInWindow(
         c.reports,
         immunizationForms,
         now.getTime() - 92 * MS_IN_DAY,
@@ -437,6 +444,164 @@ var targets = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: isBcgReported,
+    passesIf: extras.isBcgReported,
+  },
+
+  // Nutrition: children under 5 screened for growth monitoring
+  {
+    id: 'nutrition-children-screened-growth-monitoring',
+    translation_key: 'targets.growth_monitoring.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'percent',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'G';
+      });
+    },
+    // date: 'reported',
+  },
+
+  // Nutrition: children under 5 underweight
+  {
+    id: 'nutrition-children-underweight',
+    translation_key: 'targets.underweight.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_screening' && r.fields.zscore.zscore_wfa < -2;
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // children under 5 stunted growth
+  {
+    id: 'children-stunted',
+    translation_key: 'targets.stunted.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_screening' && r.fields.zscore.zscore_hfa < -2;
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // Nutrition: children active MAM
+  {
+    id: 'children-mam',
+    translation_key: 'targets.active_mam.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'treatment_enrollment' && r.fields.zscore && ( (r.fields.zscore.zscore_wfh >= -3 && r.fields.zscore.zscore_wfh < -2) || (r.fields.zscore.muac >= 11.5 && r.fields.zscore.muac < 12.4) );
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // Nutrition: children active SAM
+  {
+    id: 'children-sam',
+    translation_key: 'targets.active_sam.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'treatment_enrollment' && r.fields.zscore && (r.fields.zscore.zscore_wfh < -3 || r.fields.zscore.muac < 11.5);
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // children active OTP
+  {
+    id: 'children-otp',
+    translation_key: 'targets.active_otp.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      var otp = false;
+      var death = false;
+      var off = false;
+      c.reports.forEach(function(r){
+        if (r.form === 'treatment_enrollment'){
+          otp = r.fields.enrollment && r.fields.enrollment.program && r.fields.enrollment.program === 'OTP';
+        } else if (r.form === 'off'){
+          off = r.fields.off && r.fields.off.reason === 'defaulter';
+        } else if (r.form === 'death_confirmation'){
+          death = r.fields.death_report.death === 'yes';
+        }
+      });
+      return otp && !off && !death;
+    },
+    // date: 'reported',
+  },
+
+
+  // children active SFP
+  {
+    id: 'children-sfp',
+    translation_key: 'targets.active_sfp.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      var sfp = false;
+      var death = false;
+      var off = false;
+      c.reports.forEach(function(r){
+        if (r.form === 'treatment_enrollment'){
+          sfp = r.fields.enrollment && r.fields.enrollment.program && r.fields.enrollment.program === 'SFP';
+        } else if (r.form === 'off'){
+          off = r.fields.off && r.fields.off.reason === 'defaulter';
+        } else if (r.form === 'death_confirmation'){
+          death = r.fields.death_report.death === 'yes';
+        }
+      });
+      return sfp && !off && !death;
+    },
+    // date: 'reported',
   },
 ];

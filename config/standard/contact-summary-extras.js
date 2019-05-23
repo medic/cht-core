@@ -35,6 +35,8 @@ var immunizationForms = [
   'IPV1',
   'IPV2',
   'IPV3',
+  'FIPV1',
+  'FIPV2',
   'PCV1',
   'PCV2',
   'PCV3',
@@ -54,6 +56,7 @@ var immunizationForms = [
   'FLU',
   'HA1',
   'HA2',
+  'HB',
   'JE',
   'YF',
   'TY1',
@@ -63,7 +66,9 @@ var immunizationForms = [
   'HPV3',
   'CH1',
   'CH2',
-  'CH3'
+  'CH3',
+  'DPT4',
+  'DPT5'
 ];
 
 var MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
@@ -77,12 +82,15 @@ var IMMUNIZATION_DOSES = [
   ['cholera_3','CH3'],
   ['hep_a_1','HA1'],
   ['hep_a_2','HA2'],
+  ['hep_b','HB'],
   ['hpv_1','HPV1'],
   ['hpv_2','HPV2'],
   ['hpv_3','HPV3'],
   ['ipv_1','IPV1'],
   ['ipv_2','IPV2'],
   ['ipv_3','IPV3'],
+  ['fipv_1', 'FIPV1'],
+  ['fipv_2', 'FIPV2'],
   ['flu','FLU'],
   ['jap_enc','JE'],
   ['meningococcal_1','MN1'],
@@ -110,15 +118,19 @@ var IMMUNIZATION_DOSES = [
   ['typhoid_1','TY1'],
   ['typhoid_2','TY2'],
   ['vitamin_a','VITA'],
-  ['yellow_fever','YF']
+  ['yellow_fever','YF'],
+  ['dpt_4', 'DPT4'],
+  ['dpt_5', 'DPT5']
 ];
 
 var IMMUNIZATION_LIST = [
   'bcg',
   'cholera',
   'hep_a',
+  'hep_b',
   'hpv',
   'ipv',
+  'fipv',
   'flu',
   'jap_enc',
   'meningococcal',
@@ -130,7 +142,8 @@ var IMMUNIZATION_LIST = [
   'rotavirus',
   'typhoid',
   'vitamin_a',
-  'yellow_fever'
+  'yellow_fever',
+  'dpt'
 ];
 
 function count(arr, fn) {
@@ -172,28 +185,28 @@ var isFacilityDelivery = function(r) {
          r.fields.delivery_code.toLowerCase() === 'f';
 };
 
-var isNonFacilityDelivery = function(r) {
+function isNonFacilityDelivery(r) {
   return r &&
          deliveryForms.indexOf(r.form) &&
          r.fields &&
          r.fields.delivery_code &&
          r.fields.delivery_code.toLowerCase() !== 'f';
-};
+}
 
-var getBirthDate = function(r) {
+function getBirthDate(r) {
   var rawDate = r &&
       (r.birth_date || r.fields.birth_date || r.reported_date);
   return new Date(rawDate);
-};
+}
 
-var getPNCperiod = function(deliveryReport) {
+function getPNCperiod(deliveryReport) {
   // Find PNC period based on delivery date, not reported date
   var start = getBirthDate(deliveryReport);
   return {
     start: start,
     end: addDate(start, DAYS_IN_PNC),
   };
-};
+}
 
 var isHighRiskPregnancy = function(pregnancy) {
   // Pregnancy is high risk:
@@ -367,7 +380,98 @@ function getNewestPncPeriod() {
 
 function getSubsequentVisits(r) {
   var subsequentVisits = reports.filter(function(v) {
-    return (v.form === 'pregnancy_visit' || v.form === 'V') && v.reported_date > r.reported_date;
+    return ((v.form === 'pregnancy_visit' && v.fields.visit_confirmed && v.fields.visit_confirmed === 'yes') || v.form === 'V') && v.reported_date > r.reported_date;
   });
   return subsequentVisits;
 }
+
+function getTreatmentEnrollmentDate(){
+  var date = '';
+  reports.forEach(function(r){
+    if (r.form === 'treatment_enrollment'){
+      var d = new Date(0);
+      d.setUTCSeconds(r.reported_date/1000);
+      date = d.toISOString().slice(0, 10);
+    }
+  });
+  return date;
+}
+
+function getTreatmentProgram(){
+  var treatment_program = '';
+  reports.forEach(function(r){
+    if (r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.program){
+      treatment_program = r.fields.enrollment.program;
+    }
+  });
+  return treatment_program;
+}
+
+function getNutritionScreeningReport(){
+  var screening_report = reports.find(function(r){
+    return r.form === 'nutrition_screening';
+  });
+  return screening_report;
+}
+
+function countFollowups(){
+  var count = 0;
+  reports.forEach(function(r){
+    if (r.form === 'nutrition_followup' && r.fields.task === 'visit'){
+      count = count + 1;
+    }
+  });
+  return count;
+}
+
+function getFollowupExitReport(){
+  return reports.find(function(r){
+    return r.form === 'nutrition_followup' && r.fields.task && r.fields.task === 'exit';
+  });
+}
+
+module.exports = {
+  now: now,
+  pregnancyForms: pregnancyForms,
+  antenatalForms: antenatalForms,
+  deliveryForms: deliveryForms,
+  postnatalForms: postnatalForms,
+  immunizationForms: immunizationForms,
+  MS_IN_DAY: MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY: MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC: DAYS_IN_PNC,
+  IMMUNIZATION_DOSES: IMMUNIZATION_DOSES,
+  IMMUNIZATION_LIST: IMMUNIZATION_LIST,
+  count: count,
+  isVaccineInLineage: isVaccineInLineage,
+  isCoveredByUseCaseInLineage: isCoveredByUseCaseInLineage,
+  contains: contains,
+  isCoveredByUseCase: isCoveredByUseCase,
+  isFacilityDelivery: isFacilityDelivery,
+  isNonFacilityDelivery: isNonFacilityDelivery,
+  getBirthDate: getBirthDate,
+  getPNCperiod: getPNCperiod,
+  isHighRiskPregnancy: isHighRiskPregnancy,
+  isHighRiskPostnatal: isHighRiskPostnatal,
+  getDeliveryCode: getDeliveryCode,
+  initImmunizations: initImmunizations,
+  addImmunizations: addImmunizations,
+  countDosesReceived: countDosesReceived,
+  countDosesPossible: countDosesPossible,
+  isSingleDose: isSingleDose,
+  countReportsSubmittedInWindow: countReportsSubmittedInWindow,
+  addDate: addDate,
+  getOldestReport: getOldestReport,
+  isActivePregnancy: isActivePregnancy,
+  getSubsequentDeliveries: getSubsequentDeliveries,
+  getSubsequentPregnancies: getSubsequentPregnancies,
+  getAgeInMonths: getAgeInMonths,
+  getNewestDelivery: getNewestDelivery,
+  getNewestPncPeriod: getNewestPncPeriod,
+  getSubsequentVisits: getSubsequentVisits,
+  getTreatmentEnrollmentDate: getTreatmentEnrollmentDate,
+  getTreatmentProgram: getTreatmentProgram,
+  getNutritionScreeningReport: getNutritionScreeningReport,
+  countFollowups: countFollowups,
+  getFollowupExitReport: getFollowupExitReport,
+};

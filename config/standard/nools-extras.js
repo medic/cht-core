@@ -230,6 +230,20 @@ function countReportsSubmittedInWindow(reports, form, start, end) {
   return reportsFound;
 }
 
+function countANCVisits(reports, start, end){
+  var reportsFound = 0;
+  reports.forEach(function(r) {
+    if (antenatalForms.indexOf(r.form) >= 0) {
+      if (r.reported_date >= start && r.reported_date <= end) {
+        if ((r.form === 'pregnancy_visit' && r.fields.visit_confirmed === 'yes') || r.form === 'V'){
+          reportsFound++;
+        }
+      }
+    }
+  });
+  return reportsFound;
+}
+
 // From medic-sentinel/lib/utils.js
 function isFormCodeSame(formCode, test) {
   return formCode &&
@@ -271,3 +285,33 @@ function countDoses(r) {
   });
   return dosesGiven;
 }
+
+module.exports = {
+  MS_IN_DAY: MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY: MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC: DAYS_IN_PNC,
+  antenatalForms: antenatalForms,
+  deliveryForms: deliveryForms,
+  postnatalForms: postnatalForms,
+  immunizationForms: immunizationForms,
+  immunizationMonths: immunizationMonths,
+  getMostRecentReport: getMostRecentReport,
+  isFormFromArraySubmittedInWindow: isFormFromArraySubmittedInWindow,
+  isCoveredByUseCase: isCoveredByUseCase,
+  isHighRiskPregnancy: isHighRiskPregnancy,
+  isHomeBirth: isHomeBirth,
+  getNewestPregnancyTimestamp: getNewestPregnancyTimestamp,
+  getNewestDeliveryTimestamp: getNewestDeliveryTimestamp,
+  isNewestPregnancy: isNewestPregnancy,
+  isHealthyDelivery: isHealthyDelivery,
+  isWomanInActivePncPeriod: isWomanInActivePncPeriod,
+  isChildUnder5: isChildUnder5,
+  isFormSubmittedInWindow: isFormSubmittedInWindow,
+  countReportsSubmittedInWindow: countReportsSubmittedInWindow,
+  countANCVisits: countANCVisits,
+  isFormCodeSame: isFormCodeSame,
+  isFacilityDelivery: isFacilityDelivery,
+  receivedVaccine: receivedVaccine,
+  isBcgReported: isBcgReported,
+  countDoses: countDoses,
+};

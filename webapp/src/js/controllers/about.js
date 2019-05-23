@@ -3,11 +3,12 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $interval,
     $log,
     $scope,
+    $translate,
     $window,
     DB,
     Debug,
-    Session,
-    ResourceIcons
+    ResourceIcons,
+    Session
   ) {
     'use strict';
     'ngInject';
@@ -21,35 +22,44 @@ angular.module('inboxControllers').controller('AboutCtrl',
       $scope.partners = partners;
     });
 
-    DB({remote: true}).allDocs({ key: '_design/medic' })
-      .then(function(info) {
-        $scope.ddocVersion = info.rows[0].value.rev.split('-')[0];
-      })
-      .catch(function(err) {
-        $log.debug('Couldnt access _design/medic for about section', err);
-        $scope.ddocVersion = 'offline'; // TODO translate?
-      });
+    const formatRev = rev => rev.split('-')[0];
 
-    var getDeployVersion = function(deployInfo) {
-      if (!deployInfo || !deployInfo.version) {
+    const getDeployVersion = function(deployInfo) {
+      const version = deployInfo && deployInfo.version;
+      if (!version) {
         return false;
       }
-
-      if (deployInfo.version === deployInfo.base_version || !deployInfo.base_version) {
-        return deployInfo.version;
+      if (version === deployInfo.base_version || !deployInfo.base_version) {
+        return version;
       }
-
-      return deployInfo.version + ' (~' + deployInfo.base_version + ')';
+      return `${version} (~${deployInfo.base_version})`;
     };
 
-    DB()
-      .get('_design/medic-client')
+    const updateAndroidDataUsage = () => {
+      $scope.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
+    };
+
+    // get local ddoc version
+    DB().get('_design/medic-client')
       .then(function(info) {
-        $scope.version = getDeployVersion(info.deploy_info) || $scope.version;
-        $scope.clientDdocVersion = info._rev.split('-')[0];
+        const version = getDeployVersion(info.deploy_info);
+        if (version) {
+          $scope.version = version;
+        }
+        $scope.clientDdocVersion = formatRev(info._rev);
       })
       .catch(function(err) {
-        $log.error('Couldnt access _design/medic-client for about section', err);
+        $log.error('Could not access local _design/medic-client', err);
+      });
+
+    // get remote ddoc version
+    DB({ remote: true }).allDocs({ key: '_design/medic-client' })
+      .then(function(info) {
+        $scope.ddocVersion = formatRev(info.rows[0].value.rev);
+      })
+      .catch(function(err) {
+        $translate('app.version.unknown').then(text => $scope.ddocVersion = text);
+        $log.debug('Could not access remote _design/medic', err);
       });
 
     $scope.reload = function() {
@@ -61,21 +71,19 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $scope.$watch('enableDebugModel.val', Debug.set);
 
     if ($window.medicmobile_android && typeof $window.medicmobile_android.getDataUsage === 'function') {
-      $scope.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
-
-      var dataUsageUpdate = $interval(function() {
-        $scope.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
-      }, 2000);
-
+      updateAndroidDataUsage();
+      const dataUsageUpdate = $interval(updateAndroidDataUsage, 2000);
       $scope.$on('$destroy', function() {
         $interval.cancel(dataUsageUpdate);
       });
     }
 
-    DB().info().then(function (result) {
-      $scope.dbInfo = result;
-    }).catch(function (err) {
-      $log.error('Failed to fetch DB info', err);
-    });
+    DB().info()
+      .then(function(result) {
+        $scope.dbInfo = result;
+      })
+      .catch(function (err) {
+        $log.error('Failed to fetch DB info', err);
+      });
   }
 );

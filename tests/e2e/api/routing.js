@@ -653,7 +653,7 @@ describe('routing', () => {
         ),
         utils.requestOnTestDb(
           _.defaults(
-            { path: '/_design/medic/_rewrite/' },
+            { path: '/' },
             offlineRequestOptions
           ),
           false,

@@ -22,7 +22,7 @@ describe('server', () => {
   });
 
   describe('response compression', () => {
-    afterAll(() => utils.revertDb());
+    afterAll(utils.afterEach);
 
     const requestWrapper = (options) => {
       _.defaults(options, {

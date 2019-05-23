@@ -4,18 +4,17 @@ const path = require('path');
 function registerServiceWorkerTasks(grunt) {
   grunt.registerMultiTask('generate-service-worker', function() {
     const done = this.async();
-    const { staticDirectoryPath, rootUrl, scriptOutputPath } = this.data;
-    writeServiceWorkerFile(staticDirectoryPath, rootUrl, scriptOutputPath)
+    writeServiceWorkerFile(this.data)
       .then(done)
       .catch(error => {
         grunt.fail.warn(error);
         done();
       });
   });
-};
+}
 
 // Use the swPrecache library to generate a service-worker script
-function writeServiceWorkerFile(staticDirectoryPath, rootUrl, outputPath) {
+function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scriptOutputPath}) {
   const config = {
     cacheId: 'cache',
     claimsClient: true,
@@ -23,18 +22,30 @@ function writeServiceWorkerFile(staticDirectoryPath, rootUrl, outputPath) {
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,css,fonts,img,js,xslt}', '*'),
-      path.join(staticDirectoryPath, 'manfiest.json'),
+      path.join(staticDirectoryPath, '{audio,css,img,js,xslt}', '*'),
+      path.join(staticDirectoryPath, 'manifest.json'),
+
+      // Fonts
+      path.join(staticDirectoryPath, 'fonts', 'fontawesome-webfont.woff2'),
+      path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
+      path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
+      path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
+      path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
-      [rootUrl]: [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
     },
-    stripPrefixMulti: { [staticDirectoryPath]: '' },
+    ignoreUrlParametersMatching: [/redirect/],
+    stripPrefixMulti: {
+      [staticDirectoryPath]: '',
+      [path.join(apiSrcDirectoryPath, 'public')]: '',
+    },
     maximumFileSizeToCacheInBytes: 1048576 * 20,
     verbose: true,
   };
 
-  return swPrecache.write(outputPath, config);
+  return swPrecache.write(scriptOutputPath, config);
 }
 
 module.exports = registerServiceWorkerTasks;

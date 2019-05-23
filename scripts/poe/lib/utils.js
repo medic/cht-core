@@ -1,17 +1,34 @@
 const fs = require('fs');
 const chalk = require('chalk');
-const req = require('request');
-const {promisify} = require('util');
-const get = promisify(req.get);
+const get = require('./get');
 const pkg = require('../../../package.json');
 
 module.exports = {
   capitalize: (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   },
-  save: async (fileUrl, filePath) => {
-    const res = await get({url: fileUrl, encoding: 'utf-8'});
-    return fs.writeFileSync(filePath, res.body);
+  error: (msg) => {
+    console.log(`${chalk.red('Error: ')}${msg}`);
+  },
+  extractPlaceholders: (file) => {
+    const content = fs.readFileSync(file, 'utf8');
+
+    const result = {};
+    content
+      .toString()
+      .split('\n')
+      .forEach((line, index) => {
+        const placeholders = line.match(/{{.+?}}/g);
+        if (placeholders) {
+          placeholders.sort();
+          const key = line.split('=')[0].trim();
+          result[key] = {placeholders, index};
+        }
+      });
+      return result;
+  },
+  log: (msg) => {
+    console.log(msg);
   },
   mkdir: (dir) => {
     if (!fs.existsSync(dir)){
@@ -22,10 +39,17 @@ module.exports = {
   mmVersion: () => {
     return pkg.version;
   },
-  log: (msg) => {
-    console.log(msg);
-  },
-  error: (msg) => {
-    console.log(`${chalk.red('Error: ')}${msg}`);
+  save: async (fileUrl, filePath) => {
+    const res = await get({url: fileUrl, encoding: 'utf-8'});
+    /*
+      - Sort file content alpahabetically in ascending order
+      - Get rid of comments (lines starting with #)
+    */
+    const out = res.body
+      .split('\n')
+      .filter(line => !line.trim().startsWith('#'))
+      .sort()
+      .join('\n');
+    return fs.writeFileSync(filePath, out);
   }
 };

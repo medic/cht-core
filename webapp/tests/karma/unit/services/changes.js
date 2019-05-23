@@ -4,7 +4,10 @@ describe('Changes service', function() {
 
   var service,
       changesCalls,
-      log;
+      log,
+      dispatch,
+      getState,
+      session;
 
   var onProvider = function(db) {
     return {
@@ -27,6 +30,7 @@ describe('Changes service', function() {
       error: sinon.stub()
     };
 
+    session = { isOnlineOnly: sinon.stub(), userCtx: sinon.stub().returns({ name: 'user' }) };
 
     module('inboxApp');
     module(function ($provide) {
@@ -48,13 +52,16 @@ describe('Changes service', function() {
           };
         };
       });
+      $provide.value('Session', session);
       $provide.value('$timeout', function(fn) {
         return fn();
       });
       $provide.value('$log', log);
     });
-    inject(function(_Changes_) {
+    inject(function(_Changes_, $ngRedux, Actions) {
       service = _Changes_;
+      dispatch = Actions($ngRedux.dispatch);
+      getState = $ngRedux.getState;
       service().then(done);
     });
   });
@@ -248,7 +255,7 @@ describe('Changes service', function() {
       }
     });
 
-    done();
+    changesCalls.medic.callbacks.change(expected);
   });
 
   it('re-attaches where it left off if it loses connection', function(done) {
@@ -274,5 +281,119 @@ describe('Changes service', function() {
     changesCalls.medic.callbacks.change(first);
     changesCalls.medic.callbacks.error(new Error('Test error'));
     changesCalls.medic.callbacks.change(second);
+  });
+
+  it('hydrates the change with a doc when it matches the last update when include_docs = false', done => {
+    const changes = [
+      { id: '1' },
+      { id: '2' },
+      { id: '3' },
+      { id: '4' },
+      { id: '5' }
+    ];
+    const docs = [{ _id: '2', data: 1 }, { _id: '5', data: 2 }];
+    let calls = 0;
+    service({
+      key: 'test',
+      filter: () => true,
+      callback: change => {
+        calls++;
+        switch (change.id) {
+          case '1':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getState().lastChangedDoc._id).to.equal('2');
+            break;
+          case '2':
+            chai.expect(change.doc._id).to.equal('2');
+            chai.expect(change.doc.data).to.equal(1);
+            chai.expect(getState().lastChangedDoc).to.equal(false);
+            break;
+          case '3':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getState().lastChangedDoc).to.equal(false);
+            break;
+          case '4':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getState().lastChangedDoc._id).to.equal('5');
+            break;
+          case '5':
+            chai.expect(change.doc._id).to.equal('5');
+            chai.expect(change.doc.data).to.equal(2);
+            chai.expect(getState().lastChangedDoc).to.equal(false);
+            break;
+          default:
+            done('Received invalid change');
+        }
+
+        if (calls === 5) {
+          done();
+        }
+      }
+    });
+
+    dispatch.setLastChangedDoc(docs[0]);
+    changesCalls.medic.callbacks.change(changes[0]);
+    changesCalls.medic.callbacks.change(changes[1]);
+    changesCalls.medic.callbacks.change(changes[2]);
+    dispatch.setLastChangedDoc(docs[1]);
+    changesCalls.medic.callbacks.change(changes[3]);
+    changesCalls.medic.callbacks.change(changes[4]);
+  });
+
+  it('leaves change.doc unchanged when include_docs = true', done => {
+    const changes = [
+      { id: '1', doc: { _id: '1', data: 0 } },
+      { id: '2', doc: { _id: '2', data: 0 } },
+      { id: '3', doc: { _id: '3', data: 0 } },
+      { id: '4', doc: { _id: '4', data: 0 } },
+      { id: '5', doc: { _id: '5', data: 0 } }
+    ];
+    const docs = [{ _id: '2', data: 1 }, { _id: '5', data: 2 }];
+    let calls = 0;
+    service({
+      key: 'test',
+      filter: () => true,
+      callback: change => {
+        calls++;
+        switch (change.id) {
+          case '1':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getState().lastChangedDoc._id).to.equal('2');
+            break;
+          case '2':
+            chai.expect(change.doc._id).to.equal('2');
+            chai.expect(change.doc.data).to.equal(0);
+            chai.expect(getState().lastChangedDoc).to.equal(false);
+            break;
+          case '3':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getState().lastChangedDoc).to.equal(false);
+            break;
+          case '4':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getState().lastChangedDoc._id).to.equal('5');
+            break;
+          case '5':
+            chai.expect(change.doc._id).to.equal('5');
+            chai.expect(change.doc.data).to.equal(0);
+            chai.expect(getState().lastChangedDoc).to.equal(false);
+            break;
+          default:
+            done('Received invalid change');
+        }
+
+        if (calls === 5) {
+          done();
+        }
+      }
+    });
+
+    dispatch.setLastChangedDoc(docs[0]);
+    changesCalls.medic.callbacks.change(changes[0]);
+    changesCalls.medic.callbacks.change(changes[1]);
+    changesCalls.medic.callbacks.change(changes[2]);
+    dispatch.setLastChangedDoc(docs[1]);
+    changesCalls.medic.callbacks.change(changes[3]);
+    changesCalls.medic.callbacks.change(changes[4]);
   });
 });

@@ -1,13 +1,13 @@
 <div class="filters">
   <div class="inner">
     <ng-include src="'templates/partials/reports_filters.html'"></ng-include>
-    <ng-include src="'templates/partials/filters/navigation.html'"></ng-include>
+    <mm-navigation></mm-navigation>
   </div>
 </div>
 
 <div class="inner">
   <div class="inbox page">
-    <ng-include src="'templates/partials/reports_list.html'"></ng-include>
+    <mm-reports-list></mm-reports-list>
     <ui-view name="content"/>
   </div>
 </div>

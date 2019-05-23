@@ -8,11 +8,11 @@ angular
   .module('controllers')
   .controller('EditUserCtrl', function(
     $log,
+    $q,
     $rootScope,
     $scope,
-    $uibModalInstance,
-    $q,
     $translate,
+    $uibModalInstance,
     ContactSchema,
     CreateUser,
     DB,
@@ -291,6 +291,25 @@ angular
       return Object.keys(updates).length;
     };
 
+    var validateEmailAddress = function(){
+      if (!$scope.editUserModel.email){
+        return true;
+      }
+
+      if (!isEmailValid($scope.editUserModel.email)){
+        $translate('email.invalid').then(function(value) {
+          $scope.errors.email = value;
+        });
+        return false;
+      }
+
+      return true;
+    };
+
+    var isEmailValid = function(email){
+      return email.match(/.+@.+/);
+    };
+
     // #edit-user-profile is the admin view, which has additional fields.
     $scope.editUser = function() {
       $scope.setProcessing();
@@ -300,7 +319,8 @@ angular
         validateName() &&
         validateRole() &&
         validateContactAndFacility() &&
-        validatePasswordForEditUser()
+        validatePasswordForEditUser() &&
+        validateEmailAddress()
       ) {
         validateContactIsInPlace()
           .then(function(valid) {
@@ -331,7 +351,7 @@ angular
                 })
                 .catch(function(err) {
                   if (err && err.data && err.data.error && err.data.error.translationKey) {
-                    Translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                    $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
                       $scope.setError(err, value);
                     });           
                   } else {

@@ -34,6 +34,7 @@
         views: {
           content: {
             controller: 'MessagesContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/messages_content.html'
           }
         }
@@ -53,6 +54,7 @@
         views: {
           content: {
             controller: 'ReportsAddCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/reports_add.html'
           }
         }
@@ -65,6 +67,7 @@
         views: {
           content: {
             controller: 'ReportsAddCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/reports_add.html'
           }
         }
@@ -77,6 +80,7 @@
         views: {
           content: {
             controller: 'ReportsContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/reports_content.html'
           }
         }
@@ -131,6 +135,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -144,6 +149,7 @@
         views: {
           content: {
             controller: 'ContactsReportCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_report.html'
           }
         }
@@ -156,6 +162,7 @@
         views: {
           content: {
             controller: 'ContactsDeceasedCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_deceased.html'
           }
         }
@@ -168,6 +175,7 @@
         views: {
           content: {
             controller: 'ContactsContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_content.html'
           }
         }
@@ -181,6 +189,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -193,6 +202,7 @@
         views: {
           content: {
             controller: 'ContactsEditCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
@@ -212,6 +222,7 @@
         views: {
           content: {
             controller: 'TasksContentCtrl',
+            controllerAs: '$ctrl',
             templateUrl: 'templates/partials/tasks_content.html'
           }
         }

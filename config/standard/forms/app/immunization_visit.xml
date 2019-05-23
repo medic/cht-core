@@ -65,6 +65,24 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
           <text id="/immunization_visit/group_chw_info:label">
             <value>Missing Visit Report</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>None</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>Cannot select none if another dose is selected.</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value>Which dose of DPT Booster did <output value=" /immunization_visit/patient_name "/> receive?</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>No</value>
           </text>
@@ -95,6 +113,18 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
           <text id="/immunization_visit/group_hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>No</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>Did <output value=" /immunization_visit/patient_name "/> receive Hepatitis B vaccine?</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -115,27 +145,6 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
           </text>
           <text id="/immunization_visit/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>Inactivated Polio 1</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>Inactivated Polio 2</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>Inactivated Polio 3</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>None</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>Cannot select none if another dose is selected.</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value>Which dose of IPV did <output value=" /immunization_visit/patient_name "/> receive?</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
             <value>No</value>
@@ -290,6 +299,21 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>Fractional IPV 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>Fractional IPV 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>Inactivated Polio 3</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>Birth Polio</value>
           </text>
@@ -326,6 +350,18 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>Cholera 3</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>Fractional Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>Fractional Inactivated Polio 2</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>Flu</value>
           </text>
@@ -343,6 +379,9 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
             <value>HPV 1</value>
@@ -491,17 +530,20 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>Cholera</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>Influenza</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -623,6 +665,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>Received Cholera 3</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>Received DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>Received DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>Received fractional Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>Received fractional Inactivated Polio 2</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>Received Flu</value>
           </text>
@@ -631,6 +685,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
             <value>Received Hepatitis A 2</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
+            <value>Received Hepatitis B</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
             <value>Received HPV 1</value>
@@ -796,6 +853,24 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_chw_info:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>-</value>
           </text>
@@ -826,6 +901,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_hep_a:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>-</value>
           </text>
@@ -845,27 +932,6 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_hpv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
@@ -1021,6 +1087,21 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>-</value>
           </text>
@@ -1057,6 +1138,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>-</value>
           </text>
@@ -1073,6 +1166,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
@@ -1222,16 +1318,19 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
             <value>-</value>
           </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
@@ -1354,6 +1453,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>-</value>
           </text>
@@ -1361,6 +1472,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
             <value>-</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
@@ -1528,6 +1642,24 @@ Appelez: <output value=" /immunization_visit/chw_phone "/> &quot;</value>
           <text id="/immunization_visit/group_chw_info:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value>Quel vaccin DPT Booster a reçu <output value=" /immunization_visit/patient_name "/> ?</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>Non</value>
           </text>
@@ -1558,6 +1690,18 @@ Appelez: <output value=" /immunization_visit/chw_phone "/> &quot;</value>
           <text id="/immunization_visit/group_hep_a:label">
             <value>Hépatite A</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>Non</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>Est-ce que <output value=" /immunization_visit/patient_name "/> a reçu le vaccin Hepatitis B?</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>Hépatite B</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -1578,27 +1722,6 @@ Appelez: <output value=" /immunization_visit/chw_phone "/> &quot;</value>
           </text>
           <text id="/immunization_visit/group_hpv:label">
             <value>HPV</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>IPV 1</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>IPV 2</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>IPV 3</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>Aucun</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value>Quel vaccin IPV a reçu <output value=" /immunization_visit/patient_name "/> ?</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
-            <value>Polio inactivée</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
             <value>Non</value>
@@ -1753,6 +1876,21 @@ Appelez: <output value=" /immunization_visit/chw_phone "/> &quot;</value>
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>Pneumococcique</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>fIPV 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>fIPV 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>IPV 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>IPV 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>IPV 3</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>Polio 0</value>
           </text>
@@ -1789,6 +1927,18 @@ Appelez: <output value=" /immunization_visit/chw_phone "/> &quot;</value>
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>Choléra 3</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>Polio inactivée fractionnée 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>Polio inactivée fractionnée 2</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>Grippe</value>
           </text>
@@ -1806,6 +1956,9 @@ Appelez: <output value=" /immunization_visit/chw_phone "/> &quot;</value>
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
             <value>Hépatite A 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
+            <value>Hépatite B</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
             <value>HPV 1</value>
@@ -1954,17 +2107,20 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>Choléra</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>Grippe</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hépatite A</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hépatite B</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV</value>
-          </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Polio inactivée</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Encéphalite japonaise</value>
@@ -2086,6 +2242,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>Choléra 3 reçu</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>DPT Booster 1 reçu</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>DPT Booster 2 reçu</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>fIPV 1 reçu</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>fIPV 2 reçu</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>Vaccin Grippe reçu</value>
           </text>
@@ -2094,6 +2262,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
             <value>Hépatite A 2 reçu</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
+            <value>Hépatite B reçu</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
             <value>HPV 1 reçu</value>
@@ -2258,6 +2429,24 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_chw_info:label">
             <value>लापता जांच की रिपोर्टों</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>कोई नहीं</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value><output value=" /immunization_visit/patient_name "/> को DPT Booster का कौनसा डोज़ मिला ?</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>नहीं</value>
           </text>
@@ -2288,6 +2477,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>नहीं</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>क्या <output value=" /immunization_visit/patient_name "/> को Hepatitis B टीकाकरण मिला ?</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -2308,27 +2509,6 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>Inactivated Polio 1</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>Inactivated Polio 2</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>Inactivated Polio 3</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>कोई नहीं</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value><output value=" /immunization_visit/patient_name "/> को IPV का कौनसा डोज़ मिला ?</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
             <value>नहीं</value>
@@ -2483,6 +2663,21 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>Fractional IPV 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>Fractional IPV 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>Inactivated Polio 3</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>जन्म पे Polio</value>
           </text>
@@ -2519,6 +2714,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>Cholera 3</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>Fractional Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>Fractional Inactivated Polio 2</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>Flu</value>
           </text>
@@ -2536,6 +2743,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
             <value>HPV 1</value>
@@ -2683,17 +2893,20 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>Cholera</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>Influenza</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -2815,6 +3028,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>Cholera 3 मिला</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>DPT Booster 1 मिला</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>DPT Booster 2 मिला</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>Fractional Inactivated Polio 1 मिला</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>Fractional Inactivated Polio 2 मिला</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>Flu मिला</value>
           </text>
@@ -2823,6 +3048,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
             <value>Hepatitis A 2 मिला</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
+            <value>Hepatitis B मिला</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
             <value>HPV 1 मिला</value>
@@ -2987,6 +3215,24 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_chw_info:label">
             <value>Laporan Kunjungan Hilang</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>Tak satupun</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value>Apa dosis DPT Booster melakukan <output value=" /immunization_visit/patient_name "/> yang diterima?</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>Tidak</value>
           </text>
@@ -3017,6 +3263,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>Tidak</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>Iya</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>Apakah <output value=" /immunization_visit/patient_name "/> menerima vaksin Hepatitis B?</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -3037,27 +3295,6 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>Inactivated Polio 1</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>Inactivated Polio 2</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>Inactivated Polio 3</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>Tak satupun</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value>Apa dosis IPV melakukan <output value=" /immunization_visit/patient_name "/> yang diterima?</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
             <value>Tidak</value>
@@ -3212,6 +3449,21 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>Fractional IPV 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>Fractional IPV 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>Inactivated Polio 3</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>Polio saat lahir</value>
           </text>
@@ -3248,6 +3500,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>Kolera 3</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>Fractional Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>Fractional Inactivated Polio 2</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>Flu</value>
           </text>
@@ -3265,6 +3529,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
             <value>HPV 1</value>
@@ -3414,17 +3681,20 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>Kolera</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>DPT Booster</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>Influenza</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -3546,6 +3816,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>Mendapatkan Kolera 3</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>Mendapatkan DPT Booster 1</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>Mendapatkan DPT Booster 2</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>Mendapatkan Fractional Inactivated Polio 1</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>Mendapatkan Fractional Inactivated Polio 2</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>Mendapatkan Flu</value>
           </text>
@@ -3554,6 +3836,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
             <value>Mendapatkan Hepatitis A 2</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
+            <value>Mendapatkan Hepatitis B</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
             <value>Mendapatkan HPV 1</value>
@@ -3719,6 +4004,24 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_chw_info:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>-</value>
           </text>
@@ -3749,6 +4052,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_hep_a:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>-</value>
           </text>
@@ -3768,27 +4083,6 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_hpv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
@@ -3944,6 +4238,21 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>-</value>
           </text>
@@ -3980,6 +4289,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>-</value>
           </text>
@@ -3996,6 +4317,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
@@ -4145,16 +4469,19 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
             <value>-</value>
           </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
@@ -4277,6 +4604,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>-</value>
           </text>
@@ -4284,6 +4623,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>-</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
@@ -4450,6 +4792,24 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_chw_info:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/DPT5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt/none:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt/g_dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_dpt:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_flu/g_flu/no:label">
             <value>-</value>
           </text>
@@ -4480,6 +4840,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_hep_a:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b/g_hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_hep_b:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv/HPV1:label">
             <value>-</value>
           </text>
@@ -4499,27 +4871,6 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_hpv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/IPV3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv/g_ipv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_visit/group_ipv:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_jap_enc/g_jap_enc/no:label">
@@ -4675,6 +5026,21 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_pneumococcal:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/FIPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_polio/g_polio/IPV3:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio/OPV0:label">
             <value>-</value>
           </text>
@@ -4711,6 +5077,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_review/r_cholera_3:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_review/r_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_fipv_2:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_review/r_flu:label">
             <value>-</value>
           </text>
@@ -4727,6 +5105,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_review/r_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/group_review/r_hep_b:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_review/r_hpv_1:label">
@@ -4876,16 +5257,19 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/cholera:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/dpt:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/flu:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label">
             <value>-</value>
           </text>
-          <text id="/immunization_visit/group_select_vaccines/g_vaccines/ipv:label">
+          <text id="/immunization_visit/group_select_vaccines/g_vaccines/hpv:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
@@ -5008,6 +5392,18 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>-</value>
           </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_4:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_dpt_5:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_fipv_2:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_flu:label">
             <value>-</value>
           </text>
@@ -5015,6 +5411,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>-</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hep_a_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_visit/vaccines_received/received_hep_b:label">
             <value>-</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_hpv_1:label">
@@ -5122,7 +5521,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
         </translation>
       </itext>
       <instance>
-        <immunization_visit delimiter="#" id="immunization_visit" prefix="J1!immunization_visit!" version="2018-11-14_10-15">
+        <immunization_visit delimiter="#" id="immunization_visit" prefix="J1!immunization_visit!" version="2019-02-21_00-32">
           <inputs>
             <meta>
               <location>
@@ -5165,6 +5564,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <received_cholera_3/>
             <received_hep_a_1/>
             <received_hep_a_2/>
+            <received_hep_b/>
             <received_hpv_1/>
             <received_hpv_2/>
             <received_hpv_3/>
@@ -5185,9 +5585,13 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <received_ipv_1/>
             <received_ipv_2/>
             <received_ipv_3/>
+            <received_fipv_1/>
+            <received_fipv_2/>
             <received_penta_1/>
             <received_penta_2/>
             <received_penta_3/>
+            <received_dpt_4/>
+            <received_dpt_5/>
             <received_pneumococcal_1/>
             <received_pneumococcal_2/>
             <received_pneumococcal_3/>
@@ -5217,6 +5621,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <group_hep_a tag="hidden">
             <g_hep_a/>
           </group_hep_a>
+          <group_hep_b tag="hidden">
+            <g_hep_b/>
+          </group_hep_b>
           <group_hpv tag="hidden">
             <g_hpv/>
           </group_hpv>
@@ -5238,12 +5645,12 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <group_polio tag="hidden">
             <g_polio/>
           </group_polio>
-          <group_ipv tag="hidden">
-            <g_ipv/>
-          </group_ipv>
           <group_pentavalent tag="hidden">
             <g_pentavalent/>
           </group_pentavalent>
+          <group_dpt tag="hidden">
+            <g_dpt/>
+          </group_dpt>
           <group_pneumococcal tag="hidden">
             <g_pneumococcal/>
           </group_pneumococcal>
@@ -5281,6 +5688,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <r_cholera_3/>
             <r_hep_a_1/>
             <r_hep_a_2/>
+            <r_hep_b/>
             <r_hpv_1/>
             <r_hpv_2/>
             <r_hpv_3/>
@@ -5301,9 +5709,13 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <r_ipv_1/>
             <r_ipv_2/>
             <r_ipv_3/>
+            <r_fipv_1/>
+            <r_fipv_2/>
             <r_penta_1/>
             <r_penta_2/>
             <r_penta_3/>
+            <r_dpt_4/>
+            <r_dpt_5/>
             <r_pneumococcal_1/>
             <r_pneumococcal_2/>
             <r_pneumococcal_3/>
@@ -5352,6 +5764,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind calculate="if(selected( /immunization_visit/group_cholera/g_cholera ,'CH3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_cholera_3" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_hep_a/g_hep_a ,'HA1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_hep_a_1" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_hep_a/g_hep_a ,'HA2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_hep_a_2" type="string"/>
+      <bind calculate="if( /immunization_visit/group_hep_b/g_hep_b  = 'yes','yes','no')" nodeset="/immunization_visit/vaccines_received/received_hep_b" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_hpv/g_hpv ,'HPV1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_hpv_1" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_hpv/g_hpv ,'HPV2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_hpv_2" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_hpv/g_hpv ,'HPV3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_hpv_3" type="string"/>
@@ -5369,12 +5782,16 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'OPV1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_polio_1" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'OPV2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_polio_2" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'OPV3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_polio_3" type="string"/>
-      <bind calculate="if(selected( /immunization_visit/group_ipv/g_ipv ,'IPV1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_ipv_1" type="string"/>
-      <bind calculate="if(selected( /immunization_visit/group_ipv/g_ipv ,'IPV2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_ipv_2" type="string"/>
-      <bind calculate="if(selected( /immunization_visit/group_ipv/g_ipv ,'IPV3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_ipv_3" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'IPV1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_ipv_1" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'IPV2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_ipv_2" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'IPV3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_ipv_3" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'FIPV1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_fipv_1" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_polio/g_polio ,'FIPV2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_fipv_2" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_penta_1" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_penta_2" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_penta_3" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_dpt/g_dpt ,'DPT4'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_dpt_4" type="string"/>
+      <bind calculate="if(selected( /immunization_visit/group_dpt/g_dpt ,'DPT5'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_dpt_5" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV1'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_pneumococcal_1" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV2'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_pneumococcal_2" type="string"/>
       <bind calculate="if(selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV3'),'yes','no')" nodeset="/immunization_visit/vaccines_received/received_pneumococcal_3" type="string"/>
@@ -5398,6 +5815,8 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind constraint="(not(selected( /immunization_visit/group_cholera/g_cholera ,'none')) and (selected( /immunization_visit/group_cholera/g_cholera ,'CH1') or selected( /immunization_visit/group_cholera/g_cholera ,'CH2') or selected( /immunization_visit/group_cholera/g_cholera ,'CH3'))) or (selected( /immunization_visit/group_cholera/g_cholera ,'none') and not(selected( /immunization_visit/group_cholera/g_cholera ,'CH1') or selected( /immunization_visit/group_cholera/g_cholera ,'CH2') or selected( /immunization_visit/group_cholera/g_cholera ,'CH3')))" jr:constraintMsg="jr:itext('/immunization_visit/group_cholera/g_cholera:jr:constraintMsg')" nodeset="/immunization_visit/group_cholera/g_cholera" required="true()" type="select"/>
       <bind nodeset="/immunization_visit/group_hep_a" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'hep_a')"/>
       <bind constraint="(not(selected( /immunization_visit/group_hep_a/g_hep_a ,'none')) and (selected( /immunization_visit/group_hep_a/g_hep_a ,'HA1') or selected( /immunization_visit/group_hep_a/g_hep_a ,'HA2'))) or (selected( /immunization_visit/group_hep_a/g_hep_a ,'none') and not(selected( /immunization_visit/group_hep_a/g_hep_a ,'HA1') or selected( /immunization_visit/group_hep_a/g_hep_a ,'HA2')))" jr:constraintMsg="jr:itext('/immunization_visit/group_hep_a/g_hep_a:jr:constraintMsg')" nodeset="/immunization_visit/group_hep_a/g_hep_a" required="true()" type="select"/>
+      <bind nodeset="/immunization_visit/group_hep_b" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'hep_b')"/>
+      <bind nodeset="/immunization_visit/group_hep_b/g_hep_b" required="true()" type="select1"/>
       <bind nodeset="/immunization_visit/group_hpv" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'hpv')"/>
       <bind constraint="(not(selected( /immunization_visit/group_hpv/g_hpv ,'none')) and (selected( /immunization_visit/group_hpv/g_hpv ,'HPV1') or selected( /immunization_visit/group_hpv/g_hpv ,'HPV2') or selected( /immunization_visit/group_hpv/g_hpv ,'HPV3'))) or selected( /immunization_visit/group_hpv/g_hpv ,'none') and not(selected( /immunization_visit/group_hpv/g_hpv ,'HPV1') or selected( /immunization_visit/group_hpv/g_hpv ,'HPV2') or selected( /immunization_visit/group_hpv/g_hpv ,'HPV3'))" jr:constraintMsg="jr:itext('/immunization_visit/group_hpv/g_hpv:jr:constraintMsg')" nodeset="/immunization_visit/group_hpv/g_hpv" required="true()" type="select"/>
       <bind nodeset="/immunization_visit/group_flu" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'flu')"/>
@@ -5411,11 +5830,11 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind nodeset="/immunization_visit/group_mmrv" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'mmrv')"/>
       <bind constraint="(not(selected( /immunization_visit/group_mmrv/g_mmrv ,'none')) and (selected( /immunization_visit/group_mmrv/g_mmrv ,'MMRV1') or selected( /immunization_visit/group_mmrv/g_mmrv ,'MMRV2'))) or selected( /immunization_visit/group_mmrv/g_mmrv ,'none') and not(selected( /immunization_visit/group_mmrv/g_mmrv ,'MMRV1') or selected( /immunization_visit/group_mmrv/g_mmrv ,'MMRV2'))" jr:constraintMsg="jr:itext('/immunization_visit/group_mmrv/g_mmrv:jr:constraintMsg')" nodeset="/immunization_visit/group_mmrv/g_mmrv" required="true()" type="select"/>
       <bind nodeset="/immunization_visit/group_polio" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'polio')"/>
-      <bind constraint="(not(selected( /immunization_visit/group_polio/g_polio ,'none')) and (selected( /immunization_visit/group_polio/g_polio ,'OPV0') or selected( /immunization_visit/group_polio/g_polio ,'OPV1') or selected( /immunization_visit/group_polio/g_polio ,'OPV2') or selected( /immunization_visit/group_polio/g_polio ,'OPV3'))) or selected( /immunization_visit/group_polio/g_polio ,'none') and not(selected( /immunization_visit/group_polio/g_polio ,'OPV0') or selected( /immunization_visit/group_polio/g_polio ,'OPV1') or selected( /immunization_visit/group_polio/g_polio ,'OPV2') or selected( /immunization_visit/group_polio/g_polio ,'OPV3'))" jr:constraintMsg="jr:itext('/immunization_visit/group_polio/g_polio:jr:constraintMsg')" nodeset="/immunization_visit/group_polio/g_polio" required="true()" type="select"/>
-      <bind nodeset="/immunization_visit/group_ipv" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'ipv')"/>
-      <bind constraint="(not(selected( /immunization_visit/group_ipv/g_ipv ,'none')) and (selected( /immunization_visit/group_ipv/g_ipv ,'IPV1') or selected( /immunization_visit/group_ipv/g_ipv ,'IPV2') or selected( /immunization_visit/group_ipv/g_ipv ,'IPV3'))) or selected( /immunization_visit/group_ipv/g_ipv ,'none') and not(selected( /immunization_visit/group_ipv/g_ipv ,'IPV1') or selected( /immunization_visit/group_ipv/g_ipv ,'IPV2') or selected( /immunization_visit/group_ipv/g_ipv ,'IPV3'))" jr:constraintMsg="jr:itext('/immunization_visit/group_ipv/g_ipv:jr:constraintMsg')" nodeset="/immunization_visit/group_ipv/g_ipv" required="true()" type="select"/>
+      <bind constraint="(not(selected( /immunization_visit/group_polio/g_polio ,'none')) and (selected( /immunization_visit/group_polio/g_polio ,'OPV0') or selected( /immunization_visit/group_polio/g_polio ,'OPV1') or selected( /immunization_visit/group_polio/g_polio ,'OPV2') or selected( /immunization_visit/group_polio/g_polio ,'OPV3') or selected( /immunization_visit/group_polio/g_polio ,'IPV1') or selected( /immunization_visit/group_polio/g_polio ,'IPV2') or selected( /immunization_visit/group_polio/g_polio ,'IPV3') or selected( /immunization_visit/group_polio/g_polio ,'FIPV1') or selected( /immunization_visit/group_polio/g_polio ,'FIPV2'))) or selected( /immunization_visit/group_polio/g_polio ,'none') and not(selected( /immunization_visit/group_polio/g_polio ,'OPV0') or selected( /immunization_visit/group_polio/g_polio ,'OPV1') or selected( /immunization_visit/group_polio/g_polio ,'OPV2') or selected( /immunization_visit/group_polio/g_polio ,'OPV3') or selected( /immunization_visit/group_polio/g_polio ,'IPV1') or selected( /immunization_visit/group_polio/g_polio ,'IPV2') or selected( /immunization_visit/group_polio/g_polio ,'IPV3') or selected( /immunization_visit/group_polio/g_polio ,'FIPV1') or selected( /immunization_visit/group_polio/g_polio ,'FIPV2'))" jr:constraintMsg="jr:itext('/immunization_visit/group_polio/g_polio:jr:constraintMsg')" nodeset="/immunization_visit/group_polio/g_polio" required="true()" type="select"/>
       <bind nodeset="/immunization_visit/group_pentavalent" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'penta')"/>
       <bind constraint="(not(selected( /immunization_visit/group_pentavalent/g_pentavalent ,'none')) and (selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT1') or selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT2') or selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT3'))) or selected( /immunization_visit/group_pentavalent/g_pentavalent ,'none') and not(selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT1') or selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT2') or selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT3'))" jr:constraintMsg="jr:itext('/immunization_visit/group_pentavalent/g_pentavalent:jr:constraintMsg')" nodeset="/immunization_visit/group_pentavalent/g_pentavalent" required="true()" type="select"/>
+      <bind nodeset="/immunization_visit/group_dpt" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'dpt')"/>
+      <bind constraint="(not(selected( /immunization_visit/group_dpt/g_dpt , 'none')) and (selected( /immunization_visit/group_dpt/g_dpt , 'DPT4') or selected( /immunization_visit/group_dpt/g_dpt , 'DPT5'))) or selected( /immunization_visit/group_dpt/g_dpt , 'none') and not(selected( /immunization_visit/group_dpt/g_dpt , 'DPT4') or selected( /immunization_visit/group_dpt/g_dpt ,'DPT5'))" jr:constraintMsg="jr:itext('/immunization_visit/group_dpt/g_dpt:jr:constraintMsg')" nodeset="/immunization_visit/group_dpt/g_dpt" required="true()" type="select"/>
       <bind nodeset="/immunization_visit/group_pneumococcal" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'pneumococcal')"/>
       <bind constraint="(not(selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'none')) and (selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV4'))) or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'none') and not(selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV4'))" jr:constraintMsg="jr:itext('/immunization_visit/group_pneumococcal/g_pneumococcal:jr:constraintMsg')" nodeset="/immunization_visit/group_pneumococcal/g_pneumococcal" required="true()" type="select"/>
       <bind nodeset="/immunization_visit/group_rotavirus" relevant="selected( /immunization_visit/group_select_vaccines/g_vaccines ,'rotavirus')"/>
@@ -5445,6 +5864,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind nodeset="/immunization_visit/group_review/r_cholera_3" readonly="true()" relevant="selected( /immunization_visit/group_cholera/g_cholera ,'CH3')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_hep_a_1" readonly="true()" relevant="selected( /immunization_visit/group_hep_a/g_hep_a ,'HA1')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_hep_a_2" readonly="true()" relevant="selected( /immunization_visit/group_hep_a/g_hep_a ,'HA2')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_hep_b" readonly="true()" relevant=" /immunization_visit/group_hep_b/g_hep_b  = 'yes'" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_hpv_1" readonly="true()" relevant="selected( /immunization_visit/group_hpv/g_hpv ,'HPV1')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_hpv_2" readonly="true()" relevant="selected( /immunization_visit/group_hpv/g_hpv ,'HPV2')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_hpv_3" readonly="true()" relevant="selected( /immunization_visit/group_hpv/g_hpv ,'HPV3')" type="string"/>
@@ -5462,12 +5882,16 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind nodeset="/immunization_visit/group_review/r_opv_1" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'OPV1')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_opv_2" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'OPV2')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_opv_3" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'OPV3')" type="string"/>
-      <bind nodeset="/immunization_visit/group_review/r_ipv_1" readonly="true()" relevant="selected( /immunization_visit/group_ipv/g_ipv ,'IPV1')" type="string"/>
-      <bind nodeset="/immunization_visit/group_review/r_ipv_2" readonly="true()" relevant="selected( /immunization_visit/group_ipv/g_ipv ,'IPV2')" type="string"/>
-      <bind nodeset="/immunization_visit/group_review/r_ipv_3" readonly="true()" relevant="selected( /immunization_visit/group_ipv/g_ipv ,'IPV3')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_ipv_1" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'IPV1')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_ipv_2" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'IPV2')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_ipv_3" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'IPV3')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_fipv_1" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'FIPV1')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_fipv_2" readonly="true()" relevant="selected( /immunization_visit/group_polio/g_polio ,'FIPV2')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_penta_1" readonly="true()" relevant="selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT1')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_penta_2" readonly="true()" relevant="selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT2')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_penta_3" readonly="true()" relevant="selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT3')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_dpt_4" readonly="true()" relevant="selected( /immunization_visit/group_dpt/g_dpt ,'DPT4')" type="string"/>
+      <bind nodeset="/immunization_visit/group_review/r_dpt_5" readonly="true()" relevant="selected( /immunization_visit/group_dpt/g_dpt ,'DPT5')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_pneumococcal_1" readonly="true()" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN1')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_pneumococcal_2" readonly="true()" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN2')" type="string"/>
       <bind nodeset="/immunization_visit/group_review/r_pneumococcal_3" readonly="true()" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN3')" type="string"/>
@@ -5547,6 +5971,10 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <value>hep_a</value>
         </item>
         <item>
+          <label ref="jr:itext('/immunization_visit/group_select_vaccines/g_vaccines/hep_b:label')"/>
+          <value>hep_b</value>
+        </item>
+        <item>
           <label ref="jr:itext('/immunization_visit/group_select_vaccines/g_vaccines/hpv:label')"/>
           <value>hpv</value>
         </item>
@@ -5575,10 +6003,6 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <value>polio</value>
         </item>
         <item>
-          <label ref="jr:itext('/immunization_visit/group_select_vaccines/g_vaccines/ipv:label')"/>
-          <value>ipv</value>
-        </item>
-        <item>
           <label ref="jr:itext('/immunization_visit/group_select_vaccines/g_vaccines/penta:label')"/>
           <value>penta</value>
         </item>
@@ -5601,6 +6025,10 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
         <item>
           <label ref="jr:itext('/immunization_visit/group_select_vaccines/g_vaccines/yellow_fever:label')"/>
           <value>yellow_fever</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_select_vaccines/g_vaccines/dpt:label')"/>
+          <value>dpt</value>
         </item>
       </select>
     </group>
@@ -5657,6 +6085,20 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <value>none</value>
         </item>
       </select>
+    </group>
+    <group ref="/immunization_visit/group_hep_b">
+      <label ref="jr:itext('/immunization_visit/group_hep_b:label')"/>
+      <select1 ref="/immunization_visit/group_hep_b/g_hep_b">
+        <label ref="jr:itext('/immunization_visit/group_hep_b/g_hep_b:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_hep_b/g_hep_b/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_hep_b/g_hep_b/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
     </group>
     <group ref="/immunization_visit/group_hpv">
       <label ref="jr:itext('/immunization_visit/group_hpv:label')"/>
@@ -5791,29 +6233,27 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           <value>OPV3</value>
         </item>
         <item>
-          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/none:label')"/>
-          <value>none</value>
-        </item>
-      </select>
-    </group>
-    <group ref="/immunization_visit/group_ipv">
-      <label ref="jr:itext('/immunization_visit/group_ipv:label')"/>
-      <select ref="/immunization_visit/group_ipv/g_ipv">
-        <label ref="jr:itext('/immunization_visit/group_ipv/g_ipv:label')"/>
-        <item>
-          <label ref="jr:itext('/immunization_visit/group_ipv/g_ipv/IPV1:label')"/>
+          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/IPV1:label')"/>
           <value>IPV1</value>
         </item>
         <item>
-          <label ref="jr:itext('/immunization_visit/group_ipv/g_ipv/IPV2:label')"/>
+          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/IPV2:label')"/>
           <value>IPV2</value>
         </item>
         <item>
-          <label ref="jr:itext('/immunization_visit/group_ipv/g_ipv/IPV3:label')"/>
+          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/IPV3:label')"/>
           <value>IPV3</value>
         </item>
         <item>
-          <label ref="jr:itext('/immunization_visit/group_ipv/g_ipv/none:label')"/>
+          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/FIPV1:label')"/>
+          <value>FIPV1</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/FIPV2:label')"/>
+          <value>FIPV2</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_polio/g_polio/none:label')"/>
           <value>none</value>
         </item>
       </select>
@@ -5836,6 +6276,24 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
         </item>
         <item>
           <label ref="jr:itext('/immunization_visit/group_pentavalent/g_pentavalent/none:label')"/>
+          <value>none</value>
+        </item>
+      </select>
+    </group>
+    <group ref="/immunization_visit/group_dpt">
+      <label ref="jr:itext('/immunization_visit/group_dpt:label')"/>
+      <select ref="/immunization_visit/group_dpt/g_dpt">
+        <label ref="jr:itext('/immunization_visit/group_dpt/g_dpt:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_dpt/g_dpt/DPT4:label')"/>
+          <value>DPT4</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_dpt/g_dpt/DPT5:label')"/>
+          <value>DPT5</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_visit/group_dpt/g_dpt/none:label')"/>
           <value>none</value>
         </item>
       </select>
@@ -6006,6 +6464,9 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <input appearance="li" ref="/immunization_visit/group_review/r_hep_a_2">
         <label ref="jr:itext('/immunization_visit/group_review/r_hep_a_2:label')"/>
       </input>
+      <input appearance="li" ref="/immunization_visit/group_review/r_hep_b">
+        <label ref="jr:itext('/immunization_visit/group_review/r_hep_b:label')"/>
+      </input>
       <input appearance="li" ref="/immunization_visit/group_review/r_hpv_1">
         <label ref="jr:itext('/immunization_visit/group_review/r_hpv_1:label')"/>
       </input>
@@ -6066,6 +6527,12 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <input appearance="li" ref="/immunization_visit/group_review/r_ipv_3">
         <label ref="jr:itext('/immunization_visit/group_review/r_ipv_3:label')"/>
       </input>
+      <input appearance="li" ref="/immunization_visit/group_review/r_fipv_1">
+        <label ref="jr:itext('/immunization_visit/group_review/r_fipv_1:label')"/>
+      </input>
+      <input appearance="li" ref="/immunization_visit/group_review/r_fipv_2">
+        <label ref="jr:itext('/immunization_visit/group_review/r_fipv_2:label')"/>
+      </input>
       <input appearance="li" ref="/immunization_visit/group_review/r_penta_1">
         <label ref="jr:itext('/immunization_visit/group_review/r_penta_1:label')"/>
       </input>
@@ -6074,6 +6541,12 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       </input>
       <input appearance="li" ref="/immunization_visit/group_review/r_penta_3">
         <label ref="jr:itext('/immunization_visit/group_review/r_penta_3:label')"/>
+      </input>
+      <input appearance="li" ref="/immunization_visit/group_review/r_dpt_4">
+        <label ref="jr:itext('/immunization_visit/group_review/r_dpt_4:label')"/>
+      </input>
+      <input appearance="li" ref="/immunization_visit/group_review/r_dpt_5">
+        <label ref="jr:itext('/immunization_visit/group_review/r_dpt_5:label')"/>
       </input>
       <input appearance="li" ref="/immunization_visit/group_review/r_pneumococcal_1">
         <label ref="jr:itext('/immunization_visit/group_review/r_pneumococcal_1:label')"/>

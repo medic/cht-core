@@ -10,14 +10,13 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
-    $timeout,
-    $window,
     $translate,
+    $window,
     Changes,
     DB,
-    pouchDB,
+    Modal,
     Version,
-    Modal
+    pouchDB
   ) {
 
     'use strict';
@@ -58,7 +57,7 @@ angular.module('controllers').controller('UpgradeCtrl',
           return;
         }
 
-        $scope.allowPrereleaseBuilds = !window.location.href.match(IS_PROD_URL);
+        $scope.allowPrereleaseBuilds = !$window.location.href.match(IS_PROD_URL);
 
         var buildsDb = pouchDB(BUILDS_DB);
 
@@ -127,7 +126,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 
-    $scope.reloadPage = () => window.location.reload();
+    $scope.reloadPage = () => $window.location.reload();
 
     $scope.upgrade = function(version, action) {
       Modal({
@@ -172,12 +171,8 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     Changes({
       key: 'upgrade',
-      filter: function(change) {
-        return change.id === DEPLOY_DOC_ID;
-      },
-      callback: function(change) {
-        $timeout(function() { $scope.deployDoc = change.doc; });
-      }
+      filter: change => change.id === DEPLOY_DOC_ID,
+      callback: () => getCurrentDeployment()
     });
   }
 );

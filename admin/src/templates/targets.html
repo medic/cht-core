@@ -36,7 +36,8 @@
       <div class="row selection" ng-repeat="target in configuration.items track by target.id" ng-click="edit(target.id)">
         <div class="col-xs-1" ng-bind-html="target.icon | resourceIcon"></div>
         <div class="col-xs-4">{{target.id}}</div>
-        <div class="col-xs-4">{{target.name | translateFrom}}</div>
+        <div class="col-xs-4" ng-if="target.translation_key">{{target.translation_key | translate}}</div>
+        <div class="col-xs-4" ng-if="!target.translation_key">{{target.name | translateFrom}}</div>
         <div class="col-xs-2" ng-if="target.type === 'count'" translate>
           analytics.target.type.count
         </div>

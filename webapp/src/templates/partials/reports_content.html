@@ -1,55 +1,55 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent && !selectMode">
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent && !$ctrl.selectMode">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !selected.length">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !$ctrl.selected.length">
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content" ng-show="selectMode || (!loadingContent && selected.length && selected[0].doc.form !== undefined)">
+  <div id="reports-content" class="col-sm-8 item-content" ng-show="$ctrl.selectMode || (!loadingContent && $ctrl.selected.length && $ctrl.selected[0].doc.form !== undefined)">
 
-    <div class="selection-count" ng-show="selectMode && selected.length">
-      <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
-      <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
+    <div class="selection-count" ng-show="$ctrl.selectMode && $ctrl.selected.length">
+      <span ng-show="$ctrl.selected.length === 1" translate>select.mode.count.singular</span>
+      <span ng-show="$ctrl.selected.length !== 1" translate translate-values="{ number: {{$ctrl.selected.length || 0}} }">select.mode.count.plural</span>
     </div>
 
-    <div ng-repeat="selection in selected track by selection._id" ng-init="summary = selection.formatted || selection.summary; valid = selection.summary.valid || (selection.formatted && !selection.formatted.errors.length)" class="body report-body">
+    <div ng-repeat="selection in $ctrl.selected track by selection._id" class="body report-body">
 
       <div class="item-summary" ng-click="toggleExpand(selection)">
-        <span class="icon" ng-bind-html="summary | formIcon:forms"></span>
-        <a class="deselect" ng-show="selectMode" ng-click="deselect(summary, $event)">
+        <span class="icon" ng-bind-html="$ctrl.summaries[$index] | formIcon:forms"></span>
+        <a class="deselect" ng-show="$ctrl.selectMode" ng-click="deselect($ctrl.summaries[$index], $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" ng-hide="valid && summary.verified === undefined">
-            <span ng-if="valid && summary.verified" class="verification-badge verified">
+          <div class="status" ng-hide="$ctrl.validChecks[$index] && $ctrl.summaries[$index].verified === undefined">
+            <span ng-if="$ctrl.validChecks[$index] && $ctrl.summaries[$index].verified" class="verification-badge verified">
               <ng-include src="'templates/partials/svg-icons/report-verify-valid-icon.html'"/>
             </span>
-            <span ng-if="!(valid && summary.verified)" class="verification-badge error">
+            <span ng-if="!($ctrl.validChecks[$index] && $ctrl.summaries[$index].verified)" class="verification-badge error">
               <ng-include src="'templates/partials/svg-icons/report-verify-invalid-icon.html'"/>
             </span>
           </div>
 
-          <div ng-if="summary.subject.type" class="subject">
-              <a class="name" ng-if="summary.subject._id || summary.fields.patient_uuid" ui-sref="contacts.detail({ id: summary.subject._id || summary.fields.patient_uuid })"
-                ng-bind="(summary.subject.type === 'name' && summary.subject.value) || summary.subject.name || ('report.subject.unknown' | translate)">
+          <div ng-if="$ctrl.summaries[$index].subject.type" class="subject">
+              <a class="name" ng-if="$ctrl.summaries[$index].subject._id || $ctrl.summaries[$index].fields.patient_uuid" ui-sref="contacts.detail({ id: $ctrl.summaries[$index].subject._id || $ctrl.summaries[$index].fields.patient_uuid })"
+                ng-bind="($ctrl.summaries[$index].subject.type === 'name' && $ctrl.summaries[$index].subject.value) || $ctrl.summaries[$index].subject.name || ('report.subject.unknown' | translate)">
               </a>
-              <span class="name" ng-if="!summary.subject._id && !summary.fields.patient_uuid"
-                ng-bind="(summary.subject.type === 'name' && summary.subject.value) || summary.subject.name || ('report.subject.unknown' | translate)">
+              <span class="name" ng-if="!$ctrl.summaries[$index].subject._id && !$ctrl.summaries[$index].fields.patient_uuid"
+                ng-bind="($ctrl.summaries[$index].subject.type === 'name' && $ctrl.summaries[$index].subject.value) || $ctrl.summaries[$index].subject.name || ('report.subject.unknown' | translate)">
               </span>
           </div>
-          <mm-sender ng-if="!summary.subject.type" message="selection" hide-lineage="true"></mm-sender>
-          <div>{{summary | title:forms}}</div>
+          <mm-sender ng-if="!$ctrl.summaries[$index].subject.type" message="selection" hide-lineage="true"></mm-sender>
+          <div>{{$ctrl.summaries[$index] | title:forms}}</div>
           <div class="position small-font"
-               ng-if="summary.subject.lineage || selection.lineage || selection.contact.parent || selection.place || (!selection.form && selection.name)"
-               ng-bind-html="summary.subject.lineage || selection.lineage || selection.contact.parent || selection.place | lineage">
+               ng-if="$ctrl.summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place || (!selection.form && selection.name)"
+               ng-bind-html="$ctrl.summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place | lineage">
           </div>
-          <mm-sender ng-if="summary.subject.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>
-          <div class="time small-font" ng-bind-html="summary.reported_date | relativeDate"></div>
+          <mm-sender ng-if="$ctrl.summaries[$index].subject.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>
+          <div class="time small-font" ng-bind-html="$ctrl.summaries[$index].reported_date | relativeDate"></div>
         </div>
       </div>
 
@@ -64,18 +64,14 @@
               {{field.label}}
               <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
             </label>
-            <span ng-if= "field.hasUrl"><a ui-sref="contacts.detail({ id: summary.subject._id || summary.fields.patient_uuid })" ng-bind="field.value"></a></span>
-            <span ng-if= "!field.hasUrl">{{field.value}}</span>
+            <span ng-if="field.hasUrl"><a ui-sref="contacts.detail({ id: $ctrl.summaries[$index].subject._id || $ctrl.summaries[$index].fields.patient_uuid })">{{field.value}}</a></span>
+            <span ng-if="!field.hasUrl">{{field.value}}</span>
           </li>
-          <li ng-if="selection.formatted.form && selection.formatted.content_type === 'xml'" ng-repeat="field in selection.displayFields" class="indent-{{field.depth}}">
+          <li ng-if="selection.formatted.form && selection.formatted.content_type === 'xml'" ng-repeat="field in selection.formatted.fields" class="indent-{{field.depth}}">
             <label translate>{{field.label}}</label>
             <p ng-hide="field.imagePath">
-              <span ng-if="labelIsIDorName(field.label)">
-                <a ui-sref="contacts.detail({ id: summary.subject._id || summary.fields.patient_uuid })" ng-bind="field.value"></a>
-              </span>
-              <span ng-if="!labelIsIDorName(field.label)">
-                {{ field.value }}
-              </span>
+              <span ng-if="field.hasUrl"><a ui-sref="contacts.detail({ id: $ctrl.summaries[$index].subject._id || $ctrl.summaries[$index].fields.patient_uuid })">{{field.value}}</a></span>
+              <span ng-if="!field.hasUrl">{{field.value}}</span>
             </p>
             <report-image ng-if="field.imagePath" report="{{selection.formatted._id}}" path="{{field.imagePath}}"/>
           </li>
@@ -141,7 +137,7 @@
       </div>
     </div>
 
-    <div ng-show="loadingContent && selectMode">
+    <div ng-show="loadingContent && $ctrl.selectMode">
       <div class="loader"></div>
     </div>
 

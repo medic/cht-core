@@ -3,7 +3,9 @@ var uuidV4 = require('uuid/v4');
 
 angular.module('inboxServices').service('ContactSave',
   function(
+    $ngRedux,
     $q,
+    Actions,
     DB,
     EnketoTranslation,
     ExtractLineage
@@ -11,6 +13,16 @@ angular.module('inboxServices').service('ContactSave',
 
     'use strict';
     'ngInject';
+
+    const self = this;
+    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setLastChangedDoc: actions.setLastChangedDoc
+      };
+    };
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
 
     function generateFailureMessage(bulkDocsResult) {
       return _.reduce(bulkDocsResult, function(msg, result) {
@@ -166,6 +178,9 @@ angular.module('inboxServices').service('ContactSave',
           return prepareSubmittedDocsForSave(schema, original, submitted);
         })
         .then(function(preparedDocs) {
+          const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+          self.setLastChangedDoc(primaryDoc|| preparedDocs.preparedDocs[0]);
+
           return DB().bulkDocs(preparedDocs.preparedDocs)
             .then(function(bulkDocsResult) {
               var failureMessage = generateFailureMessage(bulkDocsResult);

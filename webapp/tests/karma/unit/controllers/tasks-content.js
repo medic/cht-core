@@ -1,14 +1,20 @@
 describe('TasksContentCtrl', function() {
-  beforeEach(module('inboxApp'));
-
   var $scope,
+      actions,
+      getEnketoEditedStatus,
       task,
       watchCallback,
       createController,
       render,
       XmlForm;
 
-  beforeEach(function() {
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
+
+  beforeEach(inject(function($controller, $ngRedux, Actions, Selectors) {
+    actions = Actions($ngRedux.dispatch);
     render = sinon.stub();
     XmlForm = sinon.stub();
     $scope = {
@@ -16,26 +22,21 @@ describe('TasksContentCtrl', function() {
       $watch: function(prop, cb) {
         watchCallback = cb;
       },
-      setCancelTarget: function() {},
-      setSelected: function() {
-        $scope.selected = task;
-      },
-      enketoStatus: { edited: true }
+      setSelected: () => actions.setSelected(task)
     };
+    getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
     render.returns(Promise.resolve());
-    inject(function($controller) {
-      createController = function() {
-        $controller('TasksContentCtrl', {
-          $scope: $scope,
-          $q: Q,
-          Enketo: { render: render },
-          DB: sinon.stub(),
-          XmlForm: XmlForm,
-          Telemetry: { record: sinon.stub() }
-        });
-      };
-    });
-  });
+    createController = function() {
+      $controller('TasksContentCtrl', {
+        $scope: $scope,
+        $q: Q,
+        Enketo: { render: render },
+        DB: sinon.stub(),
+        XmlForm: XmlForm,
+        Telemetry: { record: sinon.stub() }
+      });
+    };
+  }));
 
   afterEach(function() {
     KarmaUtils.restore(render, XmlForm);
@@ -59,7 +60,7 @@ describe('TasksContentCtrl', function() {
       chai.expect(render.getCall(0).args[0]).to.equal('#task-report');
       chai.expect(render.getCall(0).args[1]).to.equal('myform');
       chai.expect(render.getCall(0).args[2]).to.equal('nothing');
-      chai.expect($scope.enketoStatus.edited).to.equal(false);
+      chai.expect(getEnketoEditedStatus()).to.equal(false);
       done();
     });
   });

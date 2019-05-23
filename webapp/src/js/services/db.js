@@ -4,15 +4,15 @@
 const DISALLOWED_CHARS = /[^a-z0-9_$()+/-]/g;
 const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
+const USERS_DB_SUFFIX = 'users';
 
 angular.module('inboxServices').factory('DB',
   function(
     $timeout,
-    $window,
     Location,
-    pouchDB,
     POUCHDB_OPTIONS,
-    Session
+    Session,
+    pouchDB
   ) {
 
     'use strict';
@@ -30,40 +30,45 @@ angular.module('inboxServices').factory('DB',
       return username.replace(DISALLOWED_CHARS, match => `(${match.charCodeAt(0)})`);
     };
 
-    const getDbName = (remote, meta) => {
+    const getDbName = (remote, meta, usersMeta) => {
       const parts = [];
       if (remote) {
         parts.push(Location.url);
       } else {
         parts.push(Location.dbName);
       }
-      if (!remote || meta) {
+      if ((!remote || meta) && !usersMeta) {
         parts.push(USER_DB_SUFFIX);
         parts.push(getUsername(remote));
+      } else if (usersMeta) {
+        parts.push(USERS_DB_SUFFIX);
       }
-      if (meta) {
+      if (meta || usersMeta) {
         parts.push(META_DB_SUFFIX);
       }
       return parts.join('-');
     };
 
-    const getParams = (remote, meta) => {
+    const getParams = (remote, meta, usersMeta) => {
       const clone = Object.assign({}, remote ? POUCHDB_OPTIONS.remote : POUCHDB_OPTIONS.local);
       if (remote && meta) {
         // Don't create user DBs remotely, we do this ourselves in /api/services/user-db:create,
         // which is called in routing when a user tries to access the DB
         clone.skip_setup = false;
       }
+      if (remote && usersMeta) {
+        clone.skip_setup = false;
+      }
       return clone;
     };
 
-    const get = ({ remote=isOnlineOnly, meta=false }={}) => {
+    const get = ({ remote=isOnlineOnly, meta=false, usersMeta=false }={}) => {
       if (!Session.userCtx()) {
         return Session.navigateToLogin();
       }
-      const name = getDbName(remote, meta);
+      const name = getDbName(remote, meta, usersMeta);
       if (!cache[name]) {
-        cache[name] = pouchDB(name, getParams(remote, meta));
+        cache[name] = pouchDB(name, getParams(remote, meta, usersMeta));
       }
       return cache[name];
     };

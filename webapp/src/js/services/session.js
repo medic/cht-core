@@ -6,15 +6,13 @@ var COOKIE_NAME = 'userCtx',
 
   'use strict';
 
-  var inboxServices = angular.module('inboxServices');
-
-  inboxServices.factory('Session',
+  angular.module('inboxServices').factory('Session',
     function(
       $http,
       $log,
       $window,
-      ipCookie,
-      Location
+      Location,
+      ipCookie
     ) {
 
       'ngInject';
@@ -38,7 +36,8 @@ var COOKIE_NAME = 'userCtx',
       var logout = function() {
         $http.delete('/_session')
           .catch(function() {
-            // Ignore exception. User can already be logged out.
+            // Set cookie to force login before using app
+            ipCookie('login', 'force', { path: '/' });
           })
           .then(navigateToLogin);
       };

@@ -8,7 +8,6 @@ var TRANSLATIONS = {
     LOAD_APP: 'Loading app…',
     PURGE_INIT: 'Checking data…',
     PURGE_INFO: ({ count, percent }) => `Cleaned ${count} documents (${percent}% complete)…`,
-    PURGE_AFTER: 'Optimizing…',
     LOAD_RULES: 'Loading rules…',
     STARTING_APP: 'Starting app…',
     DOWNLOAD_APP: 'Downloading app…',
@@ -20,7 +19,6 @@ var TRANSLATIONS = {
     LOAD_APP: 'Cargando aplicación…',
     PURGE_INIT: 'Verificación de datos…',
     PURGE_INFO: ({ count, percent }) => `Limpiado ${count} documentos (${percent}% completo)…`,
-    PURGE_AFTER: 'Mejoramiento…',
     LOAD_RULES: 'Cargando reglas…',
     STARTING_APP: 'Aplicación iniciando…',
     DOWNLOAD_APP: 'Descargando aplicación…',
@@ -32,8 +30,8 @@ var TRANSLATIONS = {
     LOAD_APP: 'Inapakia programu…',
     PURGE_INIT: 'Kuangalia takwimu…',
     PURGE_INFO: ({ count, percent }) => `Imesafisha hati ${count} (Asilimia ${percent} imekamilika)…`,
-    PURGE_AFTER: 'Kuboresha…',
     LOAD_RULES: 'Inapakia kanuni…',
+    STARTING_APP: 'Programu yaanza…',
     DOWNLOAD_APP: 'Kupakua programu…',
     ERROR_MESSAGE: 'Kuna hitilafu katika kupakia, tafadhali hakikisha uko kwenye mtandao',
     TRY_AGAIN: 'Jaribu tena',
@@ -47,7 +45,6 @@ var TRANSLATIONS = {
     LOAD_APP: 'एप लोड गर्दै…',
     PURGE_INIT: 'डाटा जाँच गर्दै…',
     PURGE_INFO: ({ count, percent }) => `${count} वटा डकुमेन्ट सफा गरीयो (${percent}% कार्य सम्पन्न)…`,
-    PURGE_AFTER: 'अनुकूलन गर्दै…',
     LOAD_RULES: 'नियमहरू लोड गर्दै…',
     STARTING_APP: 'एप सुरु हुँदैछ…',
     DOWNLOAD_APP: 'ऐप डाउनलोड गर्दै…',
@@ -59,7 +56,6 @@ var TRANSLATIONS = {
     LOAD_APP: 'Chargement de l’application…',
     PURGE_INIT: 'Vérification des données…',
     PURGE_INFO: ({ count, percent }) => `${count} document(s) nettoyé(s) [${percent}% terminé(s)]…`,
-    PURGE_AFTER: 'Optimisation en cours…',
     LOAD_RULES: 'Chargement des paramètres…',
     STARTING_APP: 'App de démarrage…',
     DOWNLOAD_APP: 'Téléchargement de l\'app en cours…',
@@ -71,7 +67,6 @@ var TRANSLATIONS = {
     LOAD_APP: 'एप्लीकेशन लोड हो रही है…',
     PURGE_INIT: 'डेटा की जाँच…',
     PURGE_INFO: ({ count, percent }) => `${count} दस्तावेज साफ किए (${percent}% पूर्ण)…`,
-    PURGE_AFTER: 'ऑप्टिमाइज़िंग…',
     LOAD_RULES: 'नियम लोड हो रहें हैं…',
     STARTING_APP: 'ऐप शुरी की जा रही है…',
     DOWNLOAD_APP: 'एप डाउनलोड हो रही है…',
@@ -106,5 +101,8 @@ module.exports = {
 if (process.env.UNIT_TEST_ENV) {
   module.exports._setTranslationData = function(data) {
     translationData = data || TRANSLATIONS;
+  };
+  module.exports._getTranslationData = function() {
+    return TRANSLATIONS;
   };
 }

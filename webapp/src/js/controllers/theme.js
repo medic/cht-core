@@ -2,12 +2,9 @@
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('ThemeCtrl',
-    [
+  angular.module('inboxControllers').controller('ThemeCtrl',
     function () {
     }
-  ]);
+  );
 
 }());

@@ -16,7 +16,7 @@ const getRequestIds = (query, body) => {
   }
 
   if (query && query.key) {
-    return [ query.key ];
+    return [ JSON.parse(query.key) ]; // PouchDB stringifies before requesting
   }
 };
 
