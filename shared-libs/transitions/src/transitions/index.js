@@ -57,7 +57,7 @@ const processChange = (change, callback) => {
       });
     })
     .catch(err => {
-      logger.error('transitions: fetch failed for %s : %o', change.id, err);
+      logger.error('transitions: processChange failed for %s : %o', change.id, err);
       return callback(err);
     });
 };

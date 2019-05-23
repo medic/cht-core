@@ -77,7 +77,7 @@ const initConfig = () => {
 };
 
 const initTransitionLib = () => {
-  transitionsLib = require('@scdf/transitions')(db, config, translations, logger);
+  transitionsLib = require('@medic/transitions')(db, config, translations, logger);
 };
 
 module.exports = {

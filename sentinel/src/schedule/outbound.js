@@ -15,78 +15,89 @@ const arrayinate = object => Object.keys(object).map(k => {
   return object[k];
 });
 
-const credential = key =>
-    request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
-      // This API gives weird psuedo-JSON results:
-      //   "password"\n
-      // Should be just `password`
-      .then(result => result.match(/^"(.+)"\n?$/)[1])
-      .catch(err => {
-        if (err.statusCode === 404) {
-          logger.error(`CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`);
-        }
+const fetchPassword = key =>
+  request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
+    // This API gives weird psuedo-JSON results:
+    //   "password"\n
+    // Should be just `password`
+    .then(result => result.match(/^"(.+)"\n?$/)[1])
+    .catch(err => {
+      if (err.statusCode === 404) {
+        logger.error(`CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`);
+      }
 
-        // Throw it regardless so the process gets halted, we just error above for higher specificity
-        throw err;
-      });
+      // Throw it regardless so the process gets halted, we just error above for higher specificity
+      throw err;
+    });
 
-// Returns a list of tuples of [queueDoc, actualDoc]
-const queued = () =>
+// Returns a list of tasks with their fully hydrated medic document
+const queuedTasks = () =>
   db.sentinel.allDocs({
     startkey: 'task:outbound:',
     endkey: 'task:outbound:\ufff0',
     include_docs: true
   })
   .then(results => {
-    const queues = results.rows.map(r => r.doc);
+    const outboundTaskDocs = results.rows.map(r => r.doc);
+    const associatedDocIds = outboundTaskDocs.map(q => q.doc_id);
 
     return db.medic.allDocs({
-      keys: queues.map(q => q.doc_id),
+      keys: associatedDocIds,
       include_docs: true
     }).then(results => {
-      const docs = results.rows.map(r => r.doc);
-      return lineage.hydrateDocs(docs);
-    }).then(docs => queues.map((q, idx) => [q, docs[idx]]));
+      const associatedDocs = results.rows.map(r => r.doc);
+      return lineage.hydrateDocs(associatedDocs);
+    }).then(associatedDocs => {
+      // allDocs returns results in order, as does hydrateDocs, so we can just
+      // combine them with the task docs above
+      return outboundTaskDocs.map((t, idx) => ({
+        taskDoc: t,
+        medicDoc: associatedDocs[idx]
+      }));
+    });
   });
 
 // Maps a source document to a destination format using the given push config
-const map = (doc, conf) => {
-  const srcParams = srcData => {
-    if (typeof srcData === 'string') {
+const mapDocumentToOutbound = (doc, config) => {
+  const normaliseSourceConfiguration = sourceConfiguration => {
+    if (typeof sourceConfiguration === 'string') {
       return {
-        path: srcData,
+        path: sourceConfiguration,
         required: true
       };
-    } else {
-      return {
-        path: srcData.path,
-        expr: srcData.expr,
-        required: !srcData.optional
-      };
     }
+
+    return {
+      path: sourceConfiguration.path,
+      expr: sourceConfiguration.expr,
+      required: !sourceConfiguration.optional
+    };
   };
 
   const toReturn = {};
 
-  Object.keys(conf.mapping).forEach(dest => {
+  // Mappings (conf.mapping) are key value pairs where the key is an object path string defining the
+  // resulting destination, and the value is either an object path string defining the source path, or
+  // an object with more in-depth config on how to map the value.
+  Object.keys(config.mapping).forEach(dest => {
     const {
       path, expr, required
-    } = srcParams(conf.mapping[dest]);
+    } = normaliseSourceConfiguration(config.mapping[dest]);
 
     let srcValue;
 
     if (expr) {
       try {
-        srcValue = vm.runInNewContext(expr, {doc: doc});
+        srcValue = vm.runInNewContext(expr, {doc});
       } catch (err) {
-        throw Error(`Mapping error for ${conf.key}/${dest} JS error on source document: ${doc._id}: ${err}`);
+        throw Error(`Mapping error for '${config.key}/${dest}' JS error on source document: ${doc._id}: ${err}`);
       }
     } else {
-      srcValue = objectPath.get({doc: doc}, path);
+      srcValue = objectPath.get({doc}, path);
     }
 
     if (required && srcValue === undefined) {
-      throw Error(`Mapping error for ${conf.key}/${dest}: cannot find ${path} on source document`);
+      throw Error(`Mapping error for '${config.key}/${dest}': cannot find '${path}' on source document`);
     }
 
     if (srcValue) {
@@ -98,16 +109,16 @@ const map = (doc, conf) => {
 };
 
 // Attempts to send a given payload using a given push config
-const send = (payload, conf) => {
+const send = (payload, config) => {
   const sendOptions = {
     method: 'POST',
-    url: urlJoin(conf.destination.base_url, conf.destination.path),
+    url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
     json: true
   };
 
   const auth = () => {
-    const authConf = conf.destination.auth;
+    const authConf = config.destination.auth;
 
     if (!authConf) {
       return Promise.resolve();
@@ -118,7 +129,7 @@ const send = (payload, conf) => {
     }
 
     if (authConf.type.toLowerCase() === 'basic') {
-      return credential(authConf['password_key'])
+      return fetchPassword(authConf['password_key'])
         .then(password => {
           sendOptions.auth = {
             username: authConf.username,
@@ -129,7 +140,7 @@ const send = (payload, conf) => {
     }
 
     if (authConf.type.toLowerCase() === 'muso-sih') {
-      return credential(authConf['password_key'])
+      return fetchPassword(authConf['password_key'])
         .then(password => {
           const authOptions = {
             method: 'POST',
@@ -137,7 +148,7 @@ const send = (payload, conf) => {
               login: authConf.username,
               password: password
             },
-            url: urlJoin(conf.destination.base_url, authConf.path),
+            url: urlJoin(config.destination.base_url, authConf.path),
             json: true
           };
 
@@ -163,9 +174,9 @@ const send = (payload, conf) => {
   return auth().then(() => request(sendOptions));
 };
 
-// Collects pushes to attempt out of the queue, given a global config
-const collect = (config, queue) => {
-  return queue.queue.map(pushName => {
+// Collects push configs to attempt out of the task's queue, given a global config
+const findConfigurationsToPush = (config, taskDoc) => {
+  return taskDoc.queue.map(pushName => {
     return config.find(conf => conf.key === pushName);
   });
 };
@@ -177,13 +188,14 @@ const execute = () => {
     return Promise.resolve();
   }
 
-  return module.exports._queued()
-  .then(queues => {
-    // array of {doc, conf} to be processed
-    const pushes = queues.reduce((pushes, [queue, doc]) => {
+  return queuedTasks()
+  .then(tasks => {
+    const pushes = tasks.reduce((acc, {taskDoc, medicDoc}) => {
       const pushesForDoc =
-        module.exports._collect(pushConfig, queue).map(conf => ({queue, doc, conf}));
-      return pushes.concat(pushesForDoc);
+        findConfigurationsToPush(pushConfig, taskDoc)
+          .map(config => ({taskDoc, medicDoc, config}));
+
+      return acc.concat(pushesForDoc);
     }, []);
 
     // Attempts each push one by one. Written to be simple not efficient.
@@ -192,41 +204,36 @@ const execute = () => {
     // all pushes are complete
     // For now we presume we aren't going to get much traffic against this and
     // will probably only be doing one push per schedule call
-    const dirtyQueues = {};
+    const dirtyTasksByTaskId = {};
     return pushes.reduce(
-      (p, {queue, doc, conf}) => p.then(() => {
-        const payload = module.exports._map(doc, conf);
-        return module.exports._send(payload, conf)
+      (p, {taskDoc, medicDoc, config}) => p.then(() => {
+        const payload = mapDocumentToOutbound(medicDoc, config);
+        return send(payload, config)
           .then(() => {
-            logger.info(`Pushed ${doc._id} to ${conf.key}`);
             // Worked
-            if (!dirtyQueues[queue._id]) {
-              dirtyQueues[queue._id] = queue;
+            logger.info(`Pushed ${medicDoc._id} to ${config.key}`);
+            if (!dirtyTasksByTaskId[taskDoc._id]) {
+              dirtyTasksByTaskId[taskDoc._id] = taskDoc;
             }
 
-            queue.queue.splice(conf.key, 1);
-            if (queue.queue.length === 0) {
+            taskDoc.queue.splice(config.key, 1);
+            if (taskDoc.queue.length === 0) {
               // Done with this queue completely
-              queue._deleted = true;
+              taskDoc._deleted = true;
             }
           })
           .catch(err => {
             // Failed
-            logger.error(`Failed to push ${doc._id} to ${conf.key}: ${err.message}`);
+            logger.error(`Failed to push ${medicDoc._id} to ${config.key}: ${err.message}`);
             logger.error(err);
 
-            // Don't remove it from the queue so it will be tried again next time
+            // Don't remove the entry from the task's queue so it will be tried again next time
           });
       }), Promise.resolve())
-      .then(() => db.sentinel.bulkDocs(Object.values(dirtyQueues)));
+      .then(() => db.sentinel.bulkDocs(Object.values(dirtyTasksByTaskId)));
   });
 };
 
 module.exports = {
-  execute: cb => module.exports._execute().then(() => cb()).catch(cb),
-  _execute: execute,
-  _queued: queued,
-  _collect: collect,
-  _map: map,
-  _send: send
+  execute: cb => execute().then(() => cb()).catch(cb)
 };

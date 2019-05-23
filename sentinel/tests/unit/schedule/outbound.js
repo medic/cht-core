@@ -10,22 +10,23 @@ const outbound = rewire('../../../src/schedule/outbound');
 describe('outbound', () => {
   beforeEach(() => sinon.restore());
 
-  describe('queued', () => {
-    let lineage;
+  describe('queuedTasks', () => {
+    let lineage, restoreLineage;
     beforeEach(() => {
       lineage = sinon.stub();
-      outbound.__set__('lineage', {hydrateDocs: lineage});
+      restoreLineage = outbound.__set__('lineage', {hydrateDocs: lineage});
     });
 
     afterEach(() => {
       sinon.restore();
+      restoreLineage();
     });
 
     it('gets all queues and associated docs', () => {
-      const queue = {
+      const task = {
         _id: 'task:outbound:some_doc_id',
         doc_id: 'some_doc_id',
-        queue: ['some', 'queue']
+        queue: ['some', 'task']
       };
       const doc = {
         _id: 'some_doc_id',
@@ -37,7 +38,7 @@ describe('outbound', () => {
 
       dbSentinelAllDocs.resolves({
         rows: [{
-          doc: queue
+          doc: task
         }]
       });
 
@@ -49,15 +50,15 @@ describe('outbound', () => {
 
       lineage.resolves([doc]);
 
-      return outbound._queued()
+      return outbound.__get__('queuedTasks')()
         .then(results => {
           assert.deepEqual(results, [
-            [queue, doc]
+            {taskDoc: task, medicDoc: doc}
           ]);
         });
     });
   });
-  describe('mapping', () => {
+  describe('mapDocumentToOutbound', () => {
     it('supports simple dest => src mapping', () => {
       const doc = {
         _id: 'test-doc',
@@ -73,7 +74,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.deepEqual(outbound._map(doc, conf), {
+      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
         api_foo: 42,
         bar: 'baaa'
       });
@@ -95,7 +96,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.deepEqual(outbound._map(doc, conf), {
+      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
         when: 42,
         data: {
           the_foo: 'baaaaa'
@@ -118,7 +119,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.throws(() => outbound._map(doc, conf), 'Mapping error for test-config/foo');
+      assert.throws(() => outbound.__get__('mapDocumentToOutbound')(doc, conf), `Mapping error for 'test-config/foo'`);
     });
     it('supports optional path mappings', () => {
       const doc = {
@@ -141,7 +142,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.deepEqual(outbound._map(doc, conf), {
+      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
         bar: 42
       });
     });
@@ -161,21 +162,36 @@ describe('outbound', () => {
           'foo': {expr: 'doc.fields.foo === \'Yes\''},
         }
       };
-      assert.deepEqual(outbound._map(doc, conf), {
+      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
         list_count: 4,
         foo: true
       });
     });
+    it('throws a useful exception if the expression errors', () => {
+      const doc = {
+        _id: 'test-doc',
+      };
+
+      const conf = {
+        key: 'test-config',
+        mapping: {
+          'is_gonna_fail': {expr: 'doc.fields.null.pointer'},
+        }
+      };
+
+      assert.throws(() => outbound.__get__('mapDocumentToOutbound')(doc, conf), `Mapping error for 'test-config/is_gonna_fail' JS error on source document: test-doc:`);
+    });
   });
   describe('push', () => {
-    let request;
+    let request, restoreRequest;
     beforeEach(() => {
       request = sinon.stub();
-      outbound.__set__('request', request);
+      restoreRequest = outbound.__set__('request', request);
     });
 
     afterEach(() => {
       sinon.restore();
+      restoreRequest();
     });
 
     it('should push on minimal configuration', () => {
@@ -193,7 +209,7 @@ describe('outbound', () => {
 
       request.resolves();
 
-      return outbound._send(payload, conf)
+      return outbound.__get__('send')(payload, conf)
         .then(() => {
           assert.equal(request.callCount, 1);
           assert.equal(request.args[0][0].method, 'POST');
@@ -223,7 +239,7 @@ describe('outbound', () => {
       request.onCall(0).resolves('"pass"\n');
       request.onCall(1).resolves();
 
-      return outbound._send(payload, conf)
+      return outbound.__get__('send')(payload, conf)
         .then(() => {
           assert.equal(request.callCount, 2);
           assert.equal(request.args[1][0].method, 'POST');
@@ -266,7 +282,7 @@ describe('outbound', () => {
       });
       request.onCall(2).resolves();
 
-      return outbound._send(payload, conf)
+      return outbound.__get__('send')(payload, conf)
         .then(() => {
           assert.equal(request.callCount, 3);
 
@@ -306,7 +322,7 @@ describe('outbound', () => {
         message: 'Login/Mot de passe Incorrect !'
       });
 
-      return outbound._send(payload, conf)
+      return outbound.__get__('send')(payload, conf)
         .then(() => {
           assert.fail('This send should have errored');
         })
@@ -315,7 +331,7 @@ describe('outbound', () => {
         });
     });
   });
-  describe('collect, which takes a queue for a doc and collects pushes to try', () => {
+  describe('findConfigurationsToPush', () => {
     it('should return empty for no valid pushes', () => {
       const config = [{
         key: 'test-push-1'
@@ -330,7 +346,7 @@ describe('outbound', () => {
       };
 
       assert.deepEqual(
-        outbound._collect(config, queue),
+        outbound.__get__('findConfigurationsToPush')(config, queue),
         []
       );
     });
@@ -349,24 +365,36 @@ describe('outbound', () => {
       };
 
       assert.deepEqual(
-        outbound._collect(config, queue),
+        outbound.__get__('findConfigurationsToPush')(config, queue),
         [{key: 'test-push-1', some: 'more config'}]
       );
     });
   });
-  describe('coordination', () => {
+  describe('execute', () => {
     let configGet,
         dbSentinelBulkDocs,
-        queued, map, send, collect;
+        queuedTasks, mapDocumentToOutbound, send, findConfigurationsToPush;
+
+    let restores = [];
 
     beforeEach(() => {
       configGet = sinon.stub(config, 'get');
       dbSentinelBulkDocs = sinon.stub(db.sentinel, 'bulkDocs');
-      map = sinon.stub(outbound, '_map');
-      queued = sinon.stub(outbound, '_queued');
-      send = sinon.stub(outbound, '_send');
-      collect = sinon.stub(outbound, '_collect');
+
+      queuedTasks = sinon.stub();
+      restores.push(outbound.__set__('queuedTasks', queuedTasks));
+
+      mapDocumentToOutbound = sinon.stub();
+      restores.push(outbound.__set__('mapDocumentToOutbound', mapDocumentToOutbound));
+
+      send = sinon.stub();
+      restores.push(outbound.__set__('send', send));
+
+      findConfigurationsToPush = sinon.stub();
+      restores.push(outbound.__set__('findConfigurationsToPush', findConfigurationsToPush));
     });
+
+    afterEach(() => restores.forEach(restore => restore()));
 
     it('should find docs with outbound queues; collect, map and send them; removing those that are successful', () => {
       const config = {
@@ -380,12 +408,12 @@ describe('outbound', () => {
         some: 'config'
       }];
 
-      const queue1 = {
+      const task1 = {
         _id: 'task:outbound:test-doc-1',
         doc_id: 'test-doc-1',
         queue: ['test-push-1']
       };
-      const queue2 = {
+      const task2 = {
         _id: 'task:outbound:test-doc-2',
         doc_id: 'test-doc-2',
         queue: ['test-push-2']
@@ -398,15 +426,15 @@ describe('outbound', () => {
         _id: 'test-doc-2', some: 'data-2'
       };
 
-      queued.resolves([[queue1, doc1], [queue2, doc2]]);
+      queuedTasks.resolves([{ taskDoc: task1, medicDoc: doc1 }, { taskDoc: task2, medicDoc: doc2 }]);
       configGet.returns(config);
-      collect.returns(collected);
-      map.returns({map: 'called'});
+      findConfigurationsToPush.returns(collected);
+      mapDocumentToOutbound.returns({map: 'called'});
       send.onCall(0).resolves(); // test-doc-1's push succeeds
       send.onCall(1).rejects(); // but test-doc-2's push fails, so...
       dbSentinelBulkDocs.resolves();
 
-      return outbound._execute()
+      return outbound.__get__('execute')()
         .then(() => {
           assert.equal(configGet.callCount, 1);
           assert.equal(dbSentinelBulkDocs.callCount, 1);
