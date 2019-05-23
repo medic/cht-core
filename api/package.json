@@ -78,6 +78,7 @@
     "@medic/view-map-utils",
     "async",
     "bikram-sambat",
+    "bikram-sambat-bootstrap",
     "body-parser",
     "buffer-shims",
     "compression",

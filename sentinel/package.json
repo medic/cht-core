@@ -51,6 +51,7 @@
     "@medic/translation-utils",
     "async",
     "bikram-sambat",
+    "bikram-sambat-bootstrap",
     "epi-week",
     "google-libphonenumber",
     "gsm",
