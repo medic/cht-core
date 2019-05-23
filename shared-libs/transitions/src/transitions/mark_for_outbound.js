@@ -22,7 +22,7 @@ const relevantTo = doc => {
 const markForOutbound = (change) => {
   const toQueue = relevantTo(change.doc).map(conf => conf.key);
 
-  if (toQueue) {
+  if (toQueue.length) {
     return db.sentinel.get(`task:outbound:${change.doc._id}`)
       .then(existingOutboundTask => {
         // TODO: deal with either ignoring or topping up existing queue

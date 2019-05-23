@@ -16,7 +16,7 @@
     "@medic/task-utils": "^1.0.0",
     "@medic/tombstone-utils": "^1.0.0",
     "@medic/translation-utils": "^1.0.1",
-    "@scdf/transitions": "1.5.0",
+    "@scdf/transitions": "^1.5.1",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
     "epi-week": "^0.0.1",
