@@ -1,7 +1,10 @@
 <div class="filters">
   <div class="inner">
     <div class="basic-filters left-pane">
-      <mm-freetext-filter selected="contactsCtrl.selectedContact"></mm-freetext-filter>
+      <mm-freetext-filter
+        search="contactsCtrl.search"
+        selected="contactsCtrl.selectedContact"
+      ></mm-freetext-filter>
       <mm-simprints-filter
         simprints-enabled="contactsCtrl.simprintsEnabled"
         simprints-identify="contactsCtrl.simprintsIdentify"

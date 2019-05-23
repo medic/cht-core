@@ -8,26 +8,27 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
     controller: function($ngRedux, $scope, Selectors) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           facilities: Selectors.getFacilities(state),
           isAdmin: Selectors.getIsAdmin(state),
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'facilityFilterCtrl',
     bindToController: {
+      search: '<',
       selected: '<'
     },
-    link: function(scope) {
+    link: function(scope, e, a, controller) {
       SearchFilters.facility(function(facilities) {
         scope.filters.facilities = facilities;
-        scope.search();
+        controller.search();
       });
     }
   };

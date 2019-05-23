@@ -20,12 +20,13 @@ angular.module('inboxDirectives').directive('mmDateFilter', function(SearchFilte
     },
     controllerAs: 'dateFilterCtrl',
     bindToController: {
+      search: '<',
       selected: '<'
     },
-    link: function(scope) {
+    link: function(scope, e, a, controller) {
       SearchFilters.date(function(date) {
         scope.filters.date = date;
-        scope.search();
+        controller.search();
       });
     }
   };

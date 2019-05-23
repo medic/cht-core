@@ -8,22 +8,23 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
     controller: function($ngRedux, $scope, Selectors) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'freetextFilterCtrl',
     bindToController: {
+      search: '<',
       selected: '<'
     },
-    link: function(scope) {
-      SearchFilters.freetext(scope.search);
+    link: function(s, e, a, controller) {
+      SearchFilters.freetext(controller.search);
     }
   };
 });

@@ -283,7 +283,7 @@ angular
         });
     };
 
-    $scope.search = function() {
+    ctrl.search = function() {
       // clears report selection for any text search or filter selection
       // does not clear selection when someone is editing a form
       if(($scope.filters.search || Object.keys($scope.filters).length > 1) && !ctrl.enketoEdited) {
@@ -406,17 +406,17 @@ angular
       }
       $scope.filters = {};
       SearchFilters.reset();
-      $scope.search();
+      ctrl.search();
     };
 
     if ($scope.forms) {
       // if forms are already loaded
-      $scope.search();
+      ctrl.search();
     } else {
       // otherwise wait for loading to complete
       ctrl.loading = true;
       $scope.$on('formLoadingComplete', function() {
-        $scope.search();
+        ctrl.search();
         var doc =
           ctrl.selectedReports && ctrl.selectedReports[0] && ctrl.selectedReports[0].doc;
         if (doc) {

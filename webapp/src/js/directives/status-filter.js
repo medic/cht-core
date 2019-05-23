@@ -8,25 +8,26 @@ angular.module('inboxDirectives').directive('mmStatusFilter', function(SearchFil
     controller: function($ngRedux, $scope, Selectors) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'statusFilterCtrl',
     bindToController: {
+      search: '<',
       selected: '<'
     },
-    link: function(scope) {
+    link: function(scope, e, a, controller) {
       SearchFilters.status(function(status) {
         scope.filters.valid = status.valid;
         scope.filters.verified = status.verified;
-        scope.search();
+        controller.search();
       });
     }
   };
