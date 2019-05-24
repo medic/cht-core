@@ -8,6 +8,8 @@ const configService = require('../config'),
       logger = require('../lib/logger'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
+const infodoc = configService.getTransitionsLib().infodoc;
+
 const CONFIGURED_PUSHES = 'outbound';
 
 const arrayinate = object => Object.keys(object).map(k => {
@@ -181,6 +183,47 @@ const findConfigurationsToPush = (config, taskDoc) => {
   });
 };
 
+const singlePush = (taskDoc, medicDoc, config) => {
+  const payload = mapDocumentToOutbound(medicDoc, config);
+  return send(payload, config)
+    .then(() => {
+      // Worked, remove entry from queue and add link to info doc
+      logger.info(`Pushed ${medicDoc._id} to ${config.key}`);
+
+      taskDoc.queue.splice(config.key, 1);
+      if (taskDoc.queue.length === 0) {
+        // Done with this queue completely
+        taskDoc._deleted = true;
+      }
+
+      return db.sentinel.put(taskDoc)
+        .then(({rev}) => {
+          // This works because we are running a single push one at a time and we're passing a
+          // shared reference around (so the next singlePush to run against the same task will have
+          // a reference to this same doc with the updated rev). If we refactor this code to be more
+          // efficient we need to be careful to not cause conflicts against the task document.
+          taskDoc._rev = rev;
+        })
+        .then(() => infodoc.get({id: medicDoc._id, doc: medicDoc}))
+        .then(info => {
+          info.completed_tasks = info.completed_tasks || [];
+          info.completed_tasks.push({
+            type: 'outbound',
+            name: config.key,
+            timestamp: Date.now()
+          });
+          return db.sentinel.put(info);
+        });
+    })
+    .catch(err => {
+      // Failed
+      logger.error(`Failed to push ${medicDoc._id} to ${config.key}: ${err.message}`);
+      logger.error(err);
+
+      // Don't remove the entry from the task's queue so it will be tried again next time
+    });
+};
+
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
   const pushConfig = arrayinate(configService.get(CONFIGURED_PUSHES) || {});
@@ -204,33 +247,10 @@ const execute = () => {
     // all pushes are complete
     // For now we presume we aren't going to get much traffic against this and
     // will probably only be doing one push per schedule call
-    const dirtyTasksByTaskId = {};
     return pushes.reduce(
-      (p, {taskDoc, medicDoc, config}) => p.then(() => {
-        const payload = mapDocumentToOutbound(medicDoc, config);
-        return send(payload, config)
-          .then(() => {
-            // Worked
-            logger.info(`Pushed ${medicDoc._id} to ${config.key}`);
-            if (!dirtyTasksByTaskId[taskDoc._id]) {
-              dirtyTasksByTaskId[taskDoc._id] = taskDoc;
-            }
-
-            taskDoc.queue.splice(config.key, 1);
-            if (taskDoc.queue.length === 0) {
-              // Done with this queue completely
-              taskDoc._deleted = true;
-            }
-          })
-          .catch(err => {
-            // Failed
-            logger.error(`Failed to push ${medicDoc._id} to ${config.key}: ${err.message}`);
-            logger.error(err);
-
-            // Don't remove the entry from the task's queue so it will be tried again next time
-          });
-      }), Promise.resolve())
-      .then(() => db.sentinel.bulkDocs(Object.values(dirtyTasksByTaskId)));
+      (p, {taskDoc, medicDoc, config}) => p.then(singlePush(taskDoc, medicDoc, config)),
+      Promise.resolve()
+    );
   });
 };
 

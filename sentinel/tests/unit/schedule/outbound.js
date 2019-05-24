@@ -4,6 +4,12 @@ const sinon = require('sinon');
 const config = require('../../../src/config'),
       db = require('../../../src/db');
 
+// We have to do this before we require outbound below
+const transitionsLib = {
+  infodoc: sinon.stub()
+};
+sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+
 const rewire = require('rewire');
 const outbound = rewire('../../../src/schedule/outbound');
 
@@ -370,43 +376,117 @@ describe('outbound', () => {
       );
     });
   });
-  describe('execute', () => {
-    let configGet,
-        dbSentinelBulkDocs,
-        queuedTasks, mapDocumentToOutbound, send, findConfigurationsToPush;
+  describe('single push', () => {
+    let mapDocumentToOutbound, send, sentinelPut, infodocGet;
 
     let restores = [];
 
     beforeEach(() => {
-      configGet = sinon.stub(config, 'get');
-      dbSentinelBulkDocs = sinon.stub(db.sentinel, 'bulkDocs');
-
-      queuedTasks = sinon.stub();
-      restores.push(outbound.__set__('queuedTasks', queuedTasks));
-
       mapDocumentToOutbound = sinon.stub();
       restores.push(outbound.__set__('mapDocumentToOutbound', mapDocumentToOutbound));
 
       send = sinon.stub();
       restores.push(outbound.__set__('send', send));
 
-      findConfigurationsToPush = sinon.stub();
-      restores.push(outbound.__set__('findConfigurationsToPush', findConfigurationsToPush));
+      sentinelPut = sinon.stub(db.sentinel, 'put');
+
+      infodocGet = sinon.stub(transitionsLib.infodoc, 'get');
     });
 
     afterEach(() => restores.forEach(restore => restore()));
 
-    it('should find docs with outbound queues; collect, map and send them; removing those that are successful', () => {
+    it('should create a outbound push out of the passed parameters, and update the infodoc and task if successful', () => {
+      const config = {
+        key: 'test-push-1',
+        some: 'config'
+      };
+
+      const task = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+
+      const doc = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+
+      const infoDoc = {
+        _id: 'test-doc-1-info',
+        type: 'info'
+      };
+
+      mapDocumentToOutbound.returns({map: 'called'});
+      send.resolves();
+      infodocGet.resolves(infoDoc);
+      sentinelPut.onFirstCall().resolves({rev: '1-abc'});
+      sentinelPut.resolves();
+
+      return outbound.__get__('singlePush')(task, doc, config)
+        .then(() => {
+          assert.equal(task._deleted, true);
+          assert.equal(task._rev, '1-abc');
+          assert.equal(infoDoc.completed_tasks.length, 1);
+          assert.include(infoDoc.completed_tasks[0], {
+            type: 'outbound',
+            name: 'test-push-1'
+          });
+        });
+    });
+
+    it('should not remove the queue entry or update the info doc if it fails', () => {
+      const config = {
+        key: 'test-push-1',
+        some: 'config'
+      };
+
+      const task = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+
+      const doc = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+
+      mapDocumentToOutbound.returns({map: 'called'});
+      send.rejects({message: 'oh no!'});
+
+      return outbound.__get__('singlePush')(task, doc, config)
+        .then(() => {
+          assert.equal(task.queue.length, 1);
+          assert.equal(infodocGet.callCount, 0);
+          assert.equal(sentinelPut.callCount, 0);
+        });
+    });
+  });
+  describe('execute', () => {
+    let configGet, queuedTasks, singlePush;
+
+    let restores = [];
+
+    beforeEach(() => {
+      configGet = sinon.stub(config, 'get');
+
+      queuedTasks = sinon.stub();
+      restores.push(outbound.__set__('queuedTasks', queuedTasks));
+
+      singlePush = sinon.stub();
+      restores.push(outbound.__set__('singlePush', singlePush));
+    });
+
+    afterEach(() => restores.forEach(restore => restore()));
+
+    it('should coordinate finding all queues to process and working through them one by one', () => {
       const config = {
         'test-push-1': {
           some: 'config'
+        },
+        'test-push-2': {
+          other: 'config'
         }
       };
-
-      const collected = [{
-        key: 'test-push-1',
-        some: 'config'
-      }];
 
       const task1 = {
         _id: 'task:outbound:test-doc-1',
@@ -426,22 +506,18 @@ describe('outbound', () => {
         _id: 'test-doc-2', some: 'data-2'
       };
 
-      queuedTasks.resolves([{ taskDoc: task1, medicDoc: doc1 }, { taskDoc: task2, medicDoc: doc2 }]);
       configGet.returns(config);
-      findConfigurationsToPush.returns(collected);
-      mapDocumentToOutbound.returns({map: 'called'});
-      send.onCall(0).resolves(); // test-doc-1's push succeeds
-      send.onCall(1).rejects(); // but test-doc-2's push fails, so...
-      dbSentinelBulkDocs.resolves();
+      queuedTasks.resolves([{ taskDoc: task1, medicDoc: doc1 }, { taskDoc: task2, medicDoc: doc2 }]);
+
+      singlePush.resolves();
 
       return outbound.__get__('execute')()
         .then(() => {
           assert.equal(configGet.callCount, 1);
-          assert.equal(dbSentinelBulkDocs.callCount, 1);
-          // ... only the first doc has changed...
-          assert.equal(dbSentinelBulkDocs.args[0][0][0]._id, 'task:outbound:test-doc-1');
-          assert.equal(dbSentinelBulkDocs.args[0][0][0]._deleted, true);
-          // (test-doc-2 has not been touched and would be tried again next time)
+          assert.equal(singlePush.callCount, 2);
+
+          assert.deepEqual(singlePush.args[0], [task1, doc1, {key: 'test-push-1', some: 'config'}]);
+          assert.deepEqual(singlePush.args[1], [task2, doc2, {key: 'test-push-2', other: 'config'}]);
         });
     });
   });
