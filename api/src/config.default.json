@@ -143,5 +143,8 @@
       "text_expression": "",
       "cron": "0 2 * * *"
     }
-  ]
+  ],
+  "sms": {
+    "outgoing_service": "medic-gateway"
+  }
 }

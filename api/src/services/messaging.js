@@ -2,6 +2,7 @@ const _ = require('underscore');
 const taskUtils = require('@medic/task-utils');
 const db = require('../db');
 const logger = require('../logger');
+const config = require('../config');
 
 const getTaskForMessage = (uuid, doc) => {
   const getTaskFromMessage = tasks =>
@@ -157,4 +158,13 @@ module.exports = {
         });
       });
   },
+  /**
+   * Returns true if the given messaging service id matches what is configured.
+   * We don't want to get into the situation of two services sending the same
+   * message.
+   */
+  isEnabled: id => {
+    const settings = config.get('sms') || {};
+    return settings.outgoing_service === id;
+  }
 };

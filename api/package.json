@@ -27,6 +27,7 @@
     "@medic/transitions": "file:../shared-libs/transitions",
     "@medic/translation-utils": "file:../shared-libs/translation-utils",
     "@medic/view-map-utils": "file:../shared-libs/view-map-utils",
+    "africastalking": "^0.4.0",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
     "bikram-sambat-bootstrap": "^1.4.2",

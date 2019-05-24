@@ -16,6 +16,8 @@ const db = require('../db'),
         FAILED: 'failed',
       };
 
+const ID = 'medic-gateway';
+
 const mapStateFields = update => {
   const result = {
     messageId: update.id
@@ -41,6 +43,9 @@ const markMessagesForwarded = messages => {
 };
 
 const getOutgoing = () => {
+  if (!messaging.isEnabled(ID)) {
+    return [];
+  }
   return messaging.getMessages({ states: ['pending', 'forwarded-to-gateway'] })
     .then(pendingMessages => {
       return pendingMessages.map(message => ({
@@ -70,7 +75,7 @@ const addNewMessages = req => {
   });
 
   const ids = messages.map(m => m.id);
-
+  // TODO most of this should be in the service so AT can use it!
   return db.medic.query('medic-sms/sms-messages', { keys:ids })
     .then(res => res.rows.map(r => r.key))
     .then(seenIds => messages.filter(m => {

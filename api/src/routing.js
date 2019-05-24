@@ -30,6 +30,7 @@ const _ = require('underscore'),
   upgrade = require('./controllers/upgrade'),
   settings = require('./controllers/settings'),
   bulkDocs = require('./controllers/bulk-docs'),
+  africasTalking = require('./controllers/africas-talking'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
   staticResources = /\/(templates|static)\//,
@@ -582,6 +583,9 @@ app.get('/service-worker.js', (req, res) => {
 
   res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
 });
+
+app.post('/api/v1/sms/africastalking/incoming-messages', africasTalking.incomingMessages);
+app.post('/api/v1/sms/africastalking/delivery-reports', africasTalking.deliveryReports);
 
 /**
  * Set cache control on static resources. Must be hacked in to
