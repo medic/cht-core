@@ -181,7 +181,7 @@ app.get('/dbinfo', (req, res) => {
   proxy.web(req, res);
 });
 
-app.get(appPrefix, (req, res) => proxy.web(req, res));
+app.get(appPrefix, (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html')));
 
 app.all('/medic/*', (req, res, next) => {
   if (environment.db === 'medic') {
