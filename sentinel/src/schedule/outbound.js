@@ -8,8 +8,6 @@ const configService = require('../config'),
       logger = require('../lib/logger'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
-const infodoc = configService.getTransitionsLib().infodoc;
-
 const CONFIGURED_PUSHES = 'outbound';
 
 const arrayinate = object => Object.keys(object).map(k => {
@@ -184,6 +182,8 @@ const findConfigurationsToPush = (config, taskDoc) => {
 };
 
 const singlePush = (taskDoc, medicDoc, config) => {
+  const infodoc = configService.getTransitionsLib().infodoc;
+
   const payload = mapDocumentToOutbound(medicDoc, config);
   return send(payload, config)
     .then(() => {

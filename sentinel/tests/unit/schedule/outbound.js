@@ -4,12 +4,6 @@ const sinon = require('sinon');
 const config = require('../../../src/config'),
       db = require('../../../src/db');
 
-// We have to do this before we require outbound below
-const transitionsLib = {
-  infodoc: sinon.stub()
-};
-sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-
 const rewire = require('rewire');
 const outbound = rewire('../../../src/schedule/outbound');
 
@@ -382,6 +376,12 @@ describe('outbound', () => {
     let restores = [];
 
     beforeEach(() => {
+      const transitionsLib = {
+        infodoc: sinon.stub()
+      };
+      sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+      infodocGet = sinon.stub(transitionsLib.infodoc, 'get');
+
       mapDocumentToOutbound = sinon.stub();
       restores.push(outbound.__set__('mapDocumentToOutbound', mapDocumentToOutbound));
 
@@ -389,8 +389,6 @@ describe('outbound', () => {
       restores.push(outbound.__set__('send', send));
 
       sentinelPut = sinon.stub(db.sentinel, 'put');
-
-      infodocGet = sinon.stub(transitionsLib.infodoc, 'get');
     });
 
     afterEach(() => restores.forEach(restore => restore()));
