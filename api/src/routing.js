@@ -33,6 +33,7 @@ const _ = require('underscore'),
   bulkDocs = require('./controllers/bulk-docs'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
+  staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
@@ -607,7 +608,17 @@ app.get('/service-worker.js', (req, res) => {
  * ensure we set the value first.
  */
 proxy.on('proxyReq', function(proxyReq, req, res) {
-  writeHeaders(req, res);
+  if (
+    !staticResources.test(req.url) &&
+    req.url.indexOf(appPrefix) !== -1	
+  ) {	
+    // requesting other application files	
+    writeHeaders(req, res, [], true);	
+  } else {	
+    // everything else	
+    writeHeaders(req, res);	
+  }	
+
   writeParsedBody(proxyReq, req);
 });
 
