@@ -45,32 +45,21 @@ describe('message utils', () => {
     });
 
     it('passes state param', () => {
-      sinon.stub(db.medic, 'query').resolves({ rows: [
-        { key: 'yayaya', value: { sending_due_date: 456 } },
-        { key: 'pending', value: { sending_due_date: 123 } },
-        { key: 'pending', value: { sending_due_date: 789 } }
+      const query = sinon.stub(db.medic, 'query').resolves({ rows: [
+        { key: 'yayaya', value: { id: 'a' } },
+        { key: 'pending', value: { id: 'b' } },
+        { key: 'pending', value: { id: 'c' } }
       ] });
 
-      return service.getMessages({}).then(messages => {
-        chai.expect(messages.length).to.equal(3);
-        chai.expect(messages[0].sending_due_date).to.be.lessThan(messages[1].sending_due_date);
-        chai.expect(messages[1].sending_due_date).to.be.lessThan(messages[2].sending_due_date);
-      });
-    });
-
-    it('passes states param', () => {
-      const getView = sinon.stub(db.medic, 'query').resolves({ rows: [] });
-      return service.getMessages({ states: ['happy', 'angry'] }).then(() => {
-        chai.expect(getView.callCount).to.equal(1);
-        chai.expect(['happy', 'angry']).to.deep.equal(getView.getCall(0).args[1].keys);
-      });
-    });
-
-    it('sorts results', () => {
-      const getView = sinon.stub(db.medic, 'query').resolves({ rows: [] });
-      return service.getMessages({ states: ['happy', 'angry'] }).then(() => {
-        chai.expect(getView.callCount).to.equal(1);
-        chai.expect(['happy', 'angry']).to.deep.equal(getView.getCall(0).args[1].keys);
+      return service.getMessages({ state: 'pending' }).then(messages => {
+        chai.expect(query.callCount).to.equal(1);
+        chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_state');
+        chai.expect(query.args[0][1]).to.deep.equal({
+          limit: 25,
+          startkey: [ 'pending', 0 ],
+          endkey: [ 'pending', '\ufff0' ],
+        });
+        chai.expect(messages).to.deep.equal([ { id: 'a' }, { id: 'b'}, { id: 'c' } ]);
       });
     });
 

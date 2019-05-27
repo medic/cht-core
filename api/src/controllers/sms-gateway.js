@@ -46,7 +46,7 @@ const getOutgoing = () => {
   if (!messaging.isEnabled(ID)) {
     return [];
   }
-  return messaging.getMessages({ states: ['pending', 'forwarded-to-gateway'] })
+  return messaging.getMessages({ state: 'pending-or-forwarded' })
     .then(pendingMessages => {
       return pendingMessages.map(message => ({
         id: message.id,
@@ -76,7 +76,7 @@ const addNewMessages = req => {
 
   const ids = messages.map(m => m.id);
   // TODO most of this should be in the service so AT can use it!
-  return db.medic.query('medic-sms/sms-messages', { keys:ids })
+  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys:ids })
     .then(res => res.rows.map(r => r.key))
     .then(seenIds => messages.filter(m => {
       if (seenIds.includes(m.id)) {

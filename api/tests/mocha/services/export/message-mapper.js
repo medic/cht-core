@@ -27,7 +27,7 @@ describe('Message mapper', () => {
       });
       return service.getDocIds(options).then(result => {
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-sms/tasks_messages', options ]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-sms/messages_by_state', options ]);
         chai.expect(result).to.deep.equal([1, 1, 1, 2]);
       });
     });

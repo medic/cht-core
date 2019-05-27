@@ -2,7 +2,7 @@ const messaging = require('./messaging');
 const ID = 'africas-talking';
 
 const africasTalking = require('africastalking')({
-  apiKey: 'XXXXXXXXXXX',
+  apiKey: '9892f0a4fa88c9ce03ed6b5500e820afa99090caa6eb74e8351bccd961215140',
   username: 'sandbox'
   /*, sandbox: true*/
 });
@@ -38,7 +38,7 @@ module.exports = {
       return Promise.reject(`Africa's talking is not the configured SMS sender`);
     }
     return africasTalking.SMS.send({
-      to: [ 'xxx' ],
+      to: [ '+64274622640' ],
       message: 'hello'
     })
     .then(res => {

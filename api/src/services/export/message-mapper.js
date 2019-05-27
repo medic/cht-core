@@ -141,7 +141,7 @@ module.exports = {
       .then(hydrate);
   },
   getDocIds: (options) => {
-    return db.medic.query('medic-sms/tasks_messages', options)
+    return db.medic.query('medic-sms/messages_by_state', options)
       .then(result => result.rows)
       .then(rows => rows.map(row => row.id));
   },

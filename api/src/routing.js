@@ -320,6 +320,9 @@ app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 
+app.all('/api/v1/sms/africastalking/incoming-messages', africasTalking.incomingMessages);
+app.all('/api/v1/sms/africastalking/delivery-reports', africasTalking.deliveryReports);
+
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
 });
@@ -583,9 +586,6 @@ app.get('/service-worker.js', (req, res) => {
 
   res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
 });
-
-app.post('/api/v1/sms/africastalking/incoming-messages', africasTalking.incomingMessages);
-app.post('/api/v1/sms/africastalking/delivery-reports', africasTalking.deliveryReports);
 
 /**
  * Set cache control on static resources. Must be hacked in to
