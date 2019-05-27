@@ -610,14 +610,14 @@ app.get('/service-worker.js', (req, res) => {
 proxy.on('proxyReq', function(proxyReq, req, res) {
   if (
     !staticResources.test(req.url) &&
-    req.url.indexOf(appPrefix) !== -1	
-  ) {	
-    // requesting other application files	
-    writeHeaders(req, res, [], true);	
-  } else {	
-    // everything else	
-    writeHeaders(req, res);	
-  }	
+    req.url.indexOf(appPrefix) !== -1
+  ) {
+    // requesting other application files
+    writeHeaders(req, res, [], true);
+  } else {
+    // everything else
+    writeHeaders(req, res);
+  }
 
   writeParsedBody(proxyReq, req);
 });
