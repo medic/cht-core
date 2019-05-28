@@ -1481,17 +1481,10 @@ describe('db-doc handler', () => {
           .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(403);
-        expect(results[3].responseBody.error).toEqual('forbidden');
+        results.forEach(result => {
+          expect(result.statusCode).toEqual(403);
+          expect(result.responseBody.error).toEqual('forbidden');
+        });
       });
     });
   });
