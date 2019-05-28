@@ -96,70 +96,54 @@ describe('routing', () => {
     it('API restricts endpoints which need authorization', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_view/someview' },
-              unauthenticatedRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/explain' }, unauthenticatedRequestOptions)
-          )
+          .requestOnTestDb(_.extend({ path: '/explain' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/a/b/c' }, unauthenticatedRequestOptions)
-          )
+          .requestOnTestDb(_.extend({ path: '/a/b/c' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions)
-          )
+          .requestOnTestDb(_.extend({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/PARENT_PLACE/attachment' },
-              unauthenticatedRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend({ path: '/some-new-db' }, unauthenticatedRequestOptions)
-          )
+          .request(_.extend({ path: '/some-new-db' }, unauthenticatedRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/explain' }, unauthenticatedRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/a/b/c' }, unauthenticatedRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(
-          results.every(
-            result =>
-              result.statusCode === 401 &&
-              result.responseBody.error === 'unauthorized'
-          )
-        );
+        expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
       });
     });
 
     it('API allows endpoints which do not need authentication', () => {
       return Promise.all([
-        utils.requestOnTestDb(
-          _.extend({ path: '/login' }, unauthenticatedRequestOptions),
-          false,
-          true
-        ),
-        utils.request(
-          _.extend({ path: '/login/style.css' }, unauthenticatedRequestOptions),
-          { notJson: true }
-        ),
-        utils.request(
-          _.extend({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)
-        ),
+        utils.requestOnTestDb(_.extend({ path: '/login' }, unauthenticatedRequestOptions), false, true),
+        utils.request(_.extend({ path: '/login/style.css' }, unauthenticatedRequestOptions), { notJson: true }),
+        utils.request(_.extend({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
+        utils.requestOnMedicDb(_.extend({ path: '/login' }, unauthenticatedRequestOptions), false, true),
       ]).then(results => {
         expect(results[0].length).toBeTruthy();
         expect(results[1].length).toBeTruthy();
         expect(_.isArray(results[2])).toEqual(true);
+        expect(results[3].length).toBeTruthy();
       });
     });
   });
@@ -168,151 +152,115 @@ describe('routing', () => {
     it('restricts _design/*/_list/*', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_list/test_list/test_view' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_list/test_list/test_view' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '///_design///medic//_list//test_list/test_view' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              {
-                path: `//${
-                  constants.DB_NAME
-                }//_design//medic//_list//test_list/test_view`,
-              },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_list/test_list/test_view' },
-              onlineRequestOptions
-            )
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_design//medic//_list//test_list/test_view` }, offlineRequestOptions))
           .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_design//medic//_list//test_list/test_view` }, offlineRequestOptions))
+          .catch(err => err)
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(404);
-        expect(results[3].responseBody.error).toEqual('not_found');
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online user request
+            expect(result.statusCode).toEqual(404);
+            expect(result.responseBody.error).toEqual('not_found');
+          } else {
+            //offline results
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
     it('restricts _design/*/_show/*', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_show/test' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_show/test' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '///_design///medic//_show//test' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_design//medic//_show//test/` },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_show/test' },
-              onlineRequestOptions
-            )
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_design//medic//_show//test/` }, offlineRequestOptions))
           .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_design//medic//_show//test/` }, offlineRequestOptions))
+          .catch(err => err),
+
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(404);
-        expect(results[3].responseBody.error).toEqual('not_found');
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.statusCode).toEqual(404);
+            expect(result.responseBody.error).toEqual('not_found');
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
     it('restricts _design/*/_view/*', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_view/test' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_view/test' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '///_design///medic//_view//test' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_design//medic//_view//test/` },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_design/medic/_view/test' },
-              onlineRequestOptions
-            )
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(404);
-        expect(results[3].responseBody.error).toEqual('not_found');
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.statusCode).toEqual(404);
+            expect(result.responseBody.error).toEqual('not_found');
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
@@ -325,40 +273,37 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_find' }, offlineRequestOptions, request)
-          )
+          .requestOnTestDb(_.extend({ path: '/_find' }, onlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '///_find//' }, offlineRequestOptions, request)
-          )
+          .requestOnTestDb(_.extend({ path: '/_find' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_find//` },
-              offlineRequestOptions,
-              request
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_find//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_find' }, onlineRequestOptions, request)
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_find//` }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_find' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_find//' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_find//` }, offlineRequestOptions, request))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].docs.length).toBeTruthy();
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.docs.length).toBeTruthy();
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
@@ -371,77 +316,76 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_explain' }, offlineRequestOptions, request)
-          )
+          .requestOnTestDb(_.extend({ path: '/_explain' }, onlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '///_explain//' }, offlineRequestOptions, request)
-          )
+          .requestOnTestDb(_.extend({ path: '/_explain' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_explain//` },
-              offlineRequestOptions,
-              request
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_explain//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_explain' }, onlineRequestOptions, request)
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_explain//` }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_explain' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_explain//' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_explain//` }, offlineRequestOptions, request))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].limit).toEqual(1);
-        expect(results[3].fields).toEqual('all_fields');
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.limit).toEqual(1);
+            expect(result.fields).toEqual('all_fields');
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
     it('restricts _index', () => {
       return Promise.all([
         utils
+          .requestOnTestDb(_.extend({ path: '/_index' }, onlineRequestOptions))
+          .catch(err => err),
+        utils
           .requestOnTestDb(_.extend({ path: '/_index' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '///_index//' }, offlineRequestOptions)
-          )
+          .requestOnTestDb(_.extend({ path: '///_index//' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_index//` },
-              offlineRequestOptions
-            )
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_index//` }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.extend({ path: '/_index' }, onlineRequestOptions))
+          .requestOnMedicDb(_.extend({ path: '/_index' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_index//' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_index//` }, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].total_rows).toEqual(1);
-        expect(results[3].indexes.length).toEqual(1);
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.total_rows).toEqual(1);
+            expect(result.indexes.length).toEqual(1);
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
@@ -453,91 +397,74 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_ensure_full_commit' },
-              offlineRequestOptions,
-              request
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_ensure_full_commit' }, onlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '///_ensure_full_commit//' },
-              offlineRequestOptions,
-              request
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_ensure_full_commit//` },
-              offlineRequestOptions,
-              request
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend(
-              { path: '/_ensure_full_commit' },
-              onlineRequestOptions,
-              request
-            )
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_ensure_full_commit//` }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_ensure_full_commit//` }, offlineRequestOptions, request))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].ok).toEqual(true);
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.ok).toEqual(true);
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
     it('restricts _security', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_security' }, offlineRequestOptions)
-          )
+          .requestOnTestDb(_.extend({ path: '/_security' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '///_security//' }, offlineRequestOptions)
-          )
+          .requestOnTestDb(_.extend({ path: '/_security' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_security//` },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.extend({ path: '///_security//' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_security' }, onlineRequestOptions)
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_security//` }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_security' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_security//' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_security//` }, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toBeFalsy();
+        results.forEach((result, idx) => {
+          if (idx === 0) {
+            // online result
+            expect(result.statusCode).toBeFalsy();
+          } else {
+            // offline result
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          }
+        });
       });
     });
 
@@ -550,33 +477,29 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.extend({ path: '/_purge' }, offlineRequestOptions, request)
-          )
+          .requestOnTestDb(_.extend({ path: '/_purge' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.extend({ path: '///_purge//' }, offlineRequestOptions, request)
-          )
+          .requestOnTestDb(_.extend({ path: '///_purge//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: `//${constants.DB_NAME}//_purge//` },
-              offlineRequestOptions,
-              request
-            )
-          )
+          .request(_.extend({ path: `//${constants.DB_NAME}//_purge//` }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/_purge' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '///_purge//' }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//medic//_purge//` }, offlineRequestOptions, request))
           .catch(err => err)
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
+        results.forEach(result => {
+          // offline result
+          expect(result.statusCode).toEqual(403);
+          expect(result.responseBody.error).toEqual('forbidden');
+        });
       });
     });
 
@@ -588,15 +511,15 @@ describe('routing', () => {
       };
 
       return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)
-        ),
-        utils.requestOnTestDb(
-          _.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)
-        ),
+        utils.requestOnTestDb(_.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)),
       ]).then(results => {
         expect(results[0]).toEqual({});
         expect(results[1]).toEqual({ missing_revs: {} });
+        expect(results[2]).toEqual({});
+        expect(results[3]).toEqual({ missing_revs: {} });
       });
     });
 
@@ -611,57 +534,29 @@ describe('routing', () => {
       return utils
         .requestOnTestDb(_.defaults(request, offlineRequestOptions))
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({
-            ok: true,
-            id: '_local/some_local_id',
-          });
-          return utils.requestOnTestDb(
-            _.defaults(
-              { method: 'GET', path: '/_local/some_local_id' },
-              offlineRequestOptions
-            )
-          );
+          expect(_.omit(result, 'rev')).toEqual({ ok: true, id: '_local/some_local_id' });
+          return utils.requestOnTestDb(_.defaults({ method: 'GET', path: '/_local/some_local_id' }, offlineRequestOptions));
         })
         .then(result => {
-          expect(_.omit(result, '_rev')).toEqual({
-            _id: '_local/some_local_id',
-          });
-          return utils.requestOnTestDb(
-            _.defaults(
-              { method: 'DELETE', path: '/_local/some_local_id' },
-              offlineRequestOptions
-            )
-          );
+          expect(_.omit(result, '_rev')).toEqual({ _id: '_local/some_local_id' });
+          return utils.requestOnTestDb(_.defaults({ method: 'DELETE', path: '/_local/some_local_id' }, offlineRequestOptions));
         })
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({
-            ok: true,
-            id: '_local/some_local_id',
-          });
+          expect(_.omit(result, 'rev')).toEqual({ ok: true, id: '_local/some_local_id' });
         });
     });
 
     it('allows access to the app', () => {
       return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults(
-            { path: '/_design/medic/_rewrite' },
-            offlineRequestOptions
-          ),
-          false,
-          true
-        ),
-        utils.requestOnTestDb(
-          _.defaults(
-            { path: '/' },
-            offlineRequestOptions
-          ),
-          false,
-          true
-        ),
+        utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true),
+        utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions), false, true),
+        utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true),
+        utils.requestOnMedicDb(_.defaults({ path: '/' }, offlineRequestOptions), false, true),
       ]).then(results => {
         expect(results[0].includes('Found. Redirecting to')).toBe(true);
         expect(results[1].includes('DOCTYPE html')).toBe(true);
+        expect(results[2].includes('Found. Redirecting to')).toBe(true);
+        expect(results[3].includes('DOCTYPE html')).toBe(true);
       });
     });
 
@@ -676,6 +571,15 @@ describe('routing', () => {
             .catch(err => err),
           utils
             .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
+            .catch(err => err),
+          utils
+            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions), false, true)
+            .catch(err => err),
+          utils
+            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions), false, true)
+            .catch(err => err),
+          utils
+            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
             .catch(err => err)
         ])
         .then(results => {
@@ -686,43 +590,28 @@ describe('routing', () => {
     it('blocks direct access to CouchDB and to fauxton', () => {
       return Promise.all([
         utils
-          .request(
-            _.extend(
-              { path: '/some-new-db', method: 'PUT' },
-              offlineRequestOptions
-            )
-          )
+          .request(_.extend({ path: '/some-new-db', method: 'PUT' }, offlineRequestOptions))
           .catch(err => err),
         utils
           .request(_.extend({ path: '/_utils' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend({ path: '/_utils/something' }, offlineRequestOptions)
-          )
+          .request(_.extend({ path: '/_utils/something' }, offlineRequestOptions))
           .catch(err => err),
         utils
           .request(_.extend({ path: '//_utils' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
-            _.extend(
-              { path: '//_utils//something/else' },
-              offlineRequestOptions
-            )
-          )
+          .request(_.extend({ path: '//_utils//something/else' }, offlineRequestOptions))
           .catch(err => err),
         utils
           .requestOnTestDb(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
           .catch(err => err),
+        utils
+          .requestOnMedicDb(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
+          .catch(err => err),
       ]).then(results => {
-        expect(
-          results.every(
-            result =>
-              result.statusCode === 401 &&
-              result.responseBody.error === 'unauthorized'
-          )
-        );
+        expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
       });
     });
   });

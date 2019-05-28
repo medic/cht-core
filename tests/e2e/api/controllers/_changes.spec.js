@@ -903,6 +903,17 @@ describe('changes handler', () => {
        });
     });
 
+    it('should forward changes requests from medic to the used database', () => {
+      return utils
+        .requestOnMedicDb(_.defaults({ path: '/_changes' }, { auth: `bob:${password}` }))
+        .then(results => {
+          return assertChangeIds(results,
+            'org.couchdb.user:bob',
+            'fixture:bobville',
+            'fixture:user:bob');
+      });
+    });
+
     it('filters calls with irregular urls which match couchdb endpoint', () => {
       const options = {
         auth: `bob:${password}`,
@@ -922,7 +933,19 @@ describe('changes handler', () => {
             .catch(err => err),
           utils
             .request(_.defaults({ path: `//${constants.DB_NAME}//_changes//dsadada` }, options))
-            .catch(err => err)
+            .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_changes' }, options)),
+          utils.requestOnMedicDb(_.defaults({ path: '//_changes//' }, options)),
+          utils.request(_.defaults({ path: `//medic//_changes` }, options)),
+          utils
+            .requestOnMedicDb(_.defaults({ path: '/_changes/dsad' }, options))
+            .catch(err => err),
+          utils
+            .requestOnMedicDb(_.defaults({ path: '//_changes//dsada' }, options))
+            .catch(err => err),
+          utils
+            .request(_.defaults({ path: `//medic//_changes//dsadada` }, options))
+            .catch(err => err),
         ])
         .then(results => {
           results.forEach(result => {

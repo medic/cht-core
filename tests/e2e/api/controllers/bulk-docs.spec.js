@@ -352,6 +352,125 @@ describe('bulk-docs handler', () => {
     });
   });
 
+  it('filters offline users requests when db name is not medic', () => {
+    const existentDocs = [
+      {
+        _id: 'allowed_contact_1',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'Allowed Contact 1',
+      },
+      {
+        _id: 'allowed_contact_2',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'Allowed Contact 2',
+      },
+      {
+        _id: 'denied_contact_1',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'Denied Contact 1',
+      },
+      {
+        _id: 'denied_contact_2',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'Denied Contact 2',
+      },
+    ];
+
+    const docs = [
+      {
+        _id: 'new_allowed_contact_2',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'New Allowed Contact',
+      },
+      {
+        _id: 'new_denied_contact_2',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'New Denied Contact',
+      },
+      // disallowed update on disallowed doc
+      {
+        _id: 'denied_contact_1',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'Denied Contact 1 updated',
+      },
+      // allowed update on disallowed doc
+      {
+        _id: 'denied_contact_2',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'Denied Contact 2 updated',
+      },
+      // disallowed update on allowed doc
+      {
+        _id: 'allowed_contact_1',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'Allowed Contact 1 updated',
+      },
+      // allowed update on allowed doc
+      {
+        _id: 'allowed_contact_2',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'Allowed Contact 2 updated',
+      },
+      // no _id field disallowed doc
+      {
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'New Denied Contact With no ID',
+      },
+      // no _id field allowed doc
+      {
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'New Allowed Contact With no ID',
+      },
+    ];
+
+    return utils
+      .saveDocs(existentDocs)
+      .then(result => {
+        result.forEach(
+          row => (docs.find(doc => doc._id === row.id)._rev = row.rev)
+        );
+        offlineRequestOptions.body = JSON.stringify({ docs: docs });
+        return utils.requestOnMedicDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result.length).toEqual(8);
+        expect(_.pick(result[0], 'ok', 'id')).toEqual({ ok: true, id: 'new_allowed_contact_2' });
+        expect(_.pick(result[5], 'ok', 'id')).toEqual({ ok: true, id: 'allowed_contact_2' });
+        expect(_.pick(result[7], 'ok')).toEqual({ ok: true });
+
+        expect(result[1]).toEqual({ id: 'new_denied_contact_2', error: 'forbidden' });
+        expect(result[2]).toEqual({ id: 'denied_contact_1', error: 'forbidden' });
+        expect(result[3]).toEqual({ id: 'denied_contact_2', error: 'forbidden' });
+        expect(result[4]).toEqual({ id: 'allowed_contact_1', error: 'forbidden' });
+        expect(result[6]).toEqual({ error: 'forbidden' });
+
+        return Promise.all(result.map(row => utils.getDoc(row.id).catch(err => err)));
+      })
+      .then(results => {
+        expect(results.length).toEqual(8);
+        expect(_.omit(results[0], '_rev')).toEqual(docs[0]);
+        expect(results[1].responseBody.error).toEqual('not_found');
+        expect(_.omit(results[2], '_rev')).toEqual(existentDocs[2]);
+        expect(_.omit(results[3], '_rev')).toEqual(existentDocs[3]);
+        expect(_.omit(results[4], '_rev')).toEqual(existentDocs[0]);
+        expect(_.omit(results[5], '_rev')).toEqual(_.omit(docs[5], '_rev'));
+        expect(results[6].responseBody.error).toEqual('not_found');
+        expect(_.omit(results[7], '_rev', '_id')).toEqual(docs[7]);
+      });
+  });
+
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
     const doc = {
       _id: 'denied_report',
@@ -362,44 +481,25 @@ describe('bulk-docs handler', () => {
     offlineRequestOptions.body = JSON.stringify({ docs: [doc] });
 
     return Promise.all([
+      utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnTestDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)).catch(err => err),
       utils
-        .requestOnTestDb(
-          _.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)
-        )
+        .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs` }, offlineRequestOptions))
         .catch(err => err),
+      utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnTestDb(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions)).catch(err => err),
       utils
-        .requestOnTestDb(
-          _.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)
-        )
+        .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs/something` }, offlineRequestOptions))
         .catch(err => err),
+      utils.requestOnMedicDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnMedicDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)).catch(err => err),
       utils
-        .request(
-          _.defaults(
-            { path: `//${constants.DB_NAME}//_bulk_docs` },
-            offlineRequestOptions
-          )
-        )
+        .request(_.defaults({ path: `//medic//_bulk_docs` }, offlineRequestOptions))
         .catch(err => err),
+      utils.requestOnMedicDb(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnMedicDb(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions)).catch(err => err),
       utils
-        .requestOnTestDb(
-          _.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions)
-        )
-        .catch(err => err),
-      utils
-        .requestOnTestDb(
-          _.defaults(
-            { path: '///_bulk_docs//something' },
-            offlineRequestOptions
-          )
-        )
-        .catch(err => err),
-      utils
-        .request(
-          _.defaults(
-            { path: `//${constants.DB_NAME}//_bulk_docs/something` },
-            offlineRequestOptions
-          )
-        )
+        .request(_.defaults({ path: `//medic//_bulk_docs/something` }, offlineRequestOptions))
         .catch(err => err),
     ]).then(results => {
       expect(

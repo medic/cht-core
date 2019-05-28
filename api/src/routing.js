@@ -3,7 +3,6 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
-  url  = require('url'),
   environment = require('./environment'),
   db = require('./db'),
   path = require('path'),
@@ -183,22 +182,12 @@ app.get('/dbinfo', (req, res) => {
 
 app.get([`/medic/_design/medic/_rewrite/`, appPrefix], (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html')));
 
-app.all('/medic/*', (req, res, next) => {
-  if (environment.db === 'medic') {
-    return next();
+app.all('/+medic/+*', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace('/medic/', `/${environment.db}/`);
   }
-
-  const parsed = url.parse(req.url);
-  const pathNameTokens = parsed.pathname.split('/');
-  pathNameTokens[1] = environment.db;
-  parsed.pathname = pathNameTokens.join('/');
-  req.url = url.format(parsed);
-  if (parsed.pathname.endsWith('login')) {
-    res.redirect(req.url);
-  } else {
-    proxy.web(req, res);
-  }
-}); 
+  next();
+});
 
 app.all('/admin*', (req, res) => {
   const originalUrl = req.url;
