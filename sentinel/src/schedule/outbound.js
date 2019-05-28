@@ -58,7 +58,7 @@ const queuedTasks = () =>
   });
 
 // Maps a source document to a destination format using the given push config
-const mapDocumentToOutbound = (doc, config) => {
+const mapDocumentToPayload = (doc, config) => {
   const normaliseSourceConfiguration = sourceConfiguration => {
     if (typeof sourceConfiguration === 'string') {
       return {
@@ -97,10 +97,11 @@ const mapDocumentToOutbound = (doc, config) => {
     }
 
     if (required && srcValue === undefined) {
-      throw Error(`Mapping error for '${config.key}/${dest}': cannot find '${path}' on source document`);
+      const problem = expr ? 'expr evaluated to undefined' : `cannot find '${path}' on source document`;
+      throw Error(`Mapping error for '${config.key}/${dest}': ${problem}`);
     }
 
-    if (srcValue) {
+    if (srcValue !== undefined) {
       objectPath.set(toReturn, dest, srcValue);
     }
   });
@@ -184,7 +185,7 @@ const findConfigurationsToPush = (config, taskDoc) => {
 const singlePush = (taskDoc, medicDoc, config) => {
   const infodoc = configService.getTransitionsLib().infodoc;
 
-  const payload = mapDocumentToOutbound(medicDoc, config);
+  const payload = mapDocumentToPayload(medicDoc, config);
   return send(payload, config)
     .then(() => {
       // Worked, remove entry from queue and add link to info doc

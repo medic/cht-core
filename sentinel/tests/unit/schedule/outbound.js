@@ -7,7 +7,7 @@ const config = require('../../../src/config'),
 const rewire = require('rewire');
 const outbound = rewire('../../../src/schedule/outbound');
 
-describe('outbound', () => {
+describe('outbound schedule', () => {
   beforeEach(() => sinon.restore());
 
   describe('queuedTasks', () => {
@@ -52,13 +52,16 @@ describe('outbound', () => {
 
       return outbound.__get__('queuedTasks')()
         .then(results => {
+          assert.equal(lineage.callCount, 1);
           assert.deepEqual(results, [
             {taskDoc: task, medicDoc: doc}
           ]);
         });
     });
   });
-  describe('mapDocumentToOutbound', () => {
+  describe('mapDocumentToPayload', () => {
+    const mapDocumentToPayload = outbound.__get__('mapDocumentToPayload');
+
     it('supports simple dest => src mapping', () => {
       const doc = {
         _id: 'test-doc',
@@ -74,7 +77,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf), {
         api_foo: 42,
         bar: 'baaa'
       });
@@ -96,7 +99,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf), {
         when: 42,
         data: {
           the_foo: 'baaaaa'
@@ -119,7 +122,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.throws(() => outbound.__get__('mapDocumentToOutbound')(doc, conf), `Mapping error for 'test-config/foo'`);
+      assert.throws(() => mapDocumentToPayload(doc, conf), `Mapping error for 'test-config/foo'`);
     });
     it('supports optional path mappings', () => {
       const doc = {
@@ -142,7 +145,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf), {
         bar: 42
       });
     });
@@ -151,7 +154,7 @@ describe('outbound', () => {
         _id: 'test-doc',
         fields: {
           a_list: ['a', 'b', 'c', 'd'],
-          foo: 'Yes',
+          foo: 'No',
         }
       };
 
@@ -162,9 +165,9 @@ describe('outbound', () => {
           'foo': {expr: 'doc.fields.foo === \'Yes\''},
         }
       };
-      assert.deepEqual(outbound.__get__('mapDocumentToOutbound')(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf), {
         list_count: 4,
-        foo: true
+        foo: false
       });
     });
     it('throws a useful exception if the expression errors', () => {
@@ -179,7 +182,7 @@ describe('outbound', () => {
         }
       };
 
-      assert.throws(() => outbound.__get__('mapDocumentToOutbound')(doc, conf), `Mapping error for 'test-config/is_gonna_fail' JS error on source document: test-doc:`);
+      assert.throws(() => mapDocumentToPayload(doc, conf), `Mapping error for 'test-config/is_gonna_fail' JS error on source document: test-doc:`);
     });
   });
   describe('push', () => {
@@ -371,7 +374,7 @@ describe('outbound', () => {
     });
   });
   describe('single push', () => {
-    let mapDocumentToOutbound, send, sentinelPut, infodocGet;
+    let mapDocumentToPayload, send, sentinelPut, infodocGet;
 
     let restores = [];
 
@@ -382,8 +385,8 @@ describe('outbound', () => {
       sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
       infodocGet = sinon.stub(transitionsLib.infodoc, 'get');
 
-      mapDocumentToOutbound = sinon.stub();
-      restores.push(outbound.__set__('mapDocumentToOutbound', mapDocumentToOutbound));
+      mapDocumentToPayload = sinon.stub();
+      restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
 
       send = sinon.stub();
       restores.push(outbound.__set__('send', send));
@@ -414,7 +417,7 @@ describe('outbound', () => {
         type: 'info'
       };
 
-      mapDocumentToOutbound.returns({map: 'called'});
+      mapDocumentToPayload.returns({map: 'called'});
       send.resolves();
       infodocGet.resolves(infoDoc);
       sentinelPut.onFirstCall().resolves({rev: '1-abc'});
@@ -448,7 +451,7 @@ describe('outbound', () => {
         _id: 'test-doc-1', some: 'data-1'
       };
 
-      mapDocumentToOutbound.returns({map: 'called'});
+      mapDocumentToPayload.returns({map: 'called'});
       send.rejects({message: 'oh no!'});
 
       return outbound.__get__('singlePush')(task, doc, config)
