@@ -1278,6 +1278,51 @@ describe('db-doc handler', () => {
           expect(results[5].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
         });
     });
+
+    it('GET attachment', () => {
+      return utils
+        .saveDoc({ _id: 'with_attachments' })
+        .then(result =>
+          utils.requestOnMedicDb({
+            path: `/with_attachments/att_name?rev=${result.rev}`,
+            method: 'PUT',
+            body: 'my attachment content',
+            headers: { 'Content-Type': 'text/plain' },
+          })
+        )
+        .then(() => {
+          onlineRequestOptions.path = '/with_attachments/att_name';
+          return utils.requestOnMedicDb(onlineRequestOptions, false, true);
+        })
+        .then(result => {
+          expect(result).toEqual('my attachment content');
+        });
+    });
+
+    it('PUT attachment', () => {
+      return utils
+        .saveDoc({ _id: 'with_attachments' })
+        .then(result => {
+          _.extend(onlineRequestOptions, {
+            path: `/with_attachments/new_attachment?rev=${result.rev}`,
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' },
+            body: 'my new attachment content',
+          });
+
+          return utils.requestOnMedicDb(onlineRequestOptions);
+        })
+        .then(result =>
+          utils.requestOnMedicDb(
+            `/with_attachments/new_attachment?rev=${result.rev}`,
+            false,
+            true
+          )
+        )
+        .then(result => {
+          expect(result).toEqual('my new attachment content');
+        });
+    });
   });
 
   it('restricts calls with irregular urls which match couchdb endpoints', () => {
