@@ -35,6 +35,7 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
+      '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },
     ignoreUrlParametersMatching: [/redirect/],
     stripPrefixMulti: {
