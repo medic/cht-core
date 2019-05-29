@@ -7,13 +7,15 @@ const contacts = [{
   type: 'person',
   name: 'Person',
   patient_id: '12345',
-  reported_date: new Date().getTime()
+  reported_date: new Date().getTime(),
+  phone: 'phone'
 }, {
   _id: 'person2',
   type: 'person',
   name: 'Person',
   patient_id: '98765',
-  reported_date: new Date().getTime()
+  reported_date: new Date().getTime(),
+  phone: 'phone2'
 }];
 
 describe('death_reporting', () => {
@@ -28,7 +30,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { DEAD: { } }
     };
 
     const doc = {
@@ -38,7 +41,8 @@ describe('death_reporting', () => {
       reported_date: new Date().getTime(),
       fields: {
         patient_id: 'person'
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     return utils
@@ -62,7 +66,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { MAYBE_DEAD: { } }
     };
 
     const doc = {
@@ -72,7 +77,8 @@ describe('death_reporting', () => {
       reported_date: new Date().getTime(),
       fields: {
         patient_id: 'person'
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     return utils
@@ -96,7 +102,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { DEAD: { } }
     };
 
     const doc = {
@@ -106,7 +113,8 @@ describe('death_reporting', () => {
       reported_date: new Date().getTime(),
       fields: {
         patient_id: 'other'
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     return utils
@@ -130,7 +138,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
-      }
+      },
+      forms: { DEAD: { } }
     };
 
     const doc = {
@@ -140,7 +149,8 @@ describe('death_reporting', () => {
       reported_date: new Date().getTime(),
       fields: {
         patient_id: '12345'
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     return utils
@@ -170,7 +180,8 @@ describe('death_reporting', () => {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'fields.time_of_death'
-      }
+      },
+      forms: { DEAD: { }, UNDEAD: { } }
     };
 
     const doc = {
@@ -181,7 +192,8 @@ describe('death_reporting', () => {
       fields: {
         patient_id: 'person',
         time_of_death: 123456789
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     const doc2 = {
@@ -192,7 +204,8 @@ describe('death_reporting', () => {
       fields: {
         patient_id: 'person',
         time_of_death: 9876544321
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     const doc3 = {
@@ -202,7 +215,8 @@ describe('death_reporting', () => {
       reported_date: new Date().getTime(),
       fields: {
         patient_id: 'person',
-      }
+      },
+      contact: { _id: 'person2' }
     };
 
     return utils

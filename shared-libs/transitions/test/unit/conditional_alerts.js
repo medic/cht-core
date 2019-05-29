@@ -11,12 +11,23 @@ describe('conditional alerts', () => {
     assert.equal(transition.filter({}), false);
   });
 
+  it('when invalid submission do not pass filter', () => {
+    sinon.stub(transition, '_getConfig').returns([{form: 'STCK'}]);
+    sinon.stub(utils, 'isValidSubmission').returns(false);
+    assert.equal(transition.filter({ form: 'STCK',  type: 'data_record' }), false);
+    assert.equal(utils.isValidSubmission.callCount, 1);
+    assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: 'data_record' }]);
+  });
+
   it('when document type matches pass filter', () => {
     sinon.stub(transition, '_getConfig').returns([{form: 'STCK'}]);
+    sinon.stub(utils, 'isValidSubmission').returns(true);
     assert.equal(transition.filter({
       form: 'STCK',
       type: 'data_record'
     }), true);
+    assert.equal(utils.isValidSubmission.callCount, 1);
+    assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: 'data_record' }]);
   });
 
   it('when no alerts are registered do nothing', () => {
