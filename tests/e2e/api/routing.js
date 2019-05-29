@@ -96,7 +96,7 @@ describe('routing', () => {
     it('API restricts endpoints which need authorization', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(_.extend({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions))
+          .requestOnTestDb(_.extend({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions)) // 403
           .catch(err => err),
         utils
           .requestOnTestDb(_.extend({ path: '/explain' }, unauthenticatedRequestOptions))
@@ -111,7 +111,7 @@ describe('routing', () => {
           .requestOnTestDb(_.extend({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .request(_.extend({ path: '/some-new-db' }, unauthenticatedRequestOptions))
+          .request(_.extend({ path: '/some-new-db' }, unauthenticatedRequestOptions)) // 403
           .catch(err => err),
         utils
           .requestOnMedicDb(_.extend({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions))
@@ -129,7 +129,10 @@ describe('routing', () => {
           .requestOnMedicDb(_.extend({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results.every(result => result.statusCode === 401 || result.statusCode === 403)).toBe(true);
+        results.forEach(result => {
+          expect(result.statusCode).toEqual(401);
+          expect(result.responseBody.error).toEqual('unauthorized');
+        });
       });
     });
 
@@ -179,7 +182,7 @@ describe('routing', () => {
             expect(result.statusCode).toEqual(404);
             expect(result.responseBody.error).toEqual('not_found');
           } else {
-            //offline results
+            // offline user requests
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -214,11 +217,11 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.statusCode).toEqual(404);
             expect(result.responseBody.error).toEqual('not_found');
           } else {
-            // offline result
+            // offline user requests
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -252,11 +255,11 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.statusCode).toEqual(404);
             expect(result.responseBody.error).toEqual('not_found');
           } else {
-            // offline result
+            // offline user requests
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -296,10 +299,10 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.docs.length).toBeTruthy();
           } else {
-            // offline result
+            // offline user request
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -339,11 +342,11 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.limit).toEqual(1);
             expect(result.fields).toEqual('all_fields');
           } else {
-            // offline result
+            // offline user requests
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -377,11 +380,11 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.total_rows).toEqual(1);
             expect(result.indexes.length).toEqual(1);
           } else {
-            // offline result
+            // offline user request
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -420,10 +423,10 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.ok).toEqual(true);
           } else {
-            // offline result
+            // offline user request
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -457,10 +460,10 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
-            // online result
+            // online user request
             expect(result.statusCode).toBeFalsy();
           } else {
-            // offline result
+            // offline user requests
             expect(result.statusCode).toEqual(403);
             expect(result.responseBody.error).toEqual('forbidden');
           }
@@ -496,7 +499,6 @@ describe('routing', () => {
           .catch(err => err)
       ]).then(results => {
         results.forEach(result => {
-          // offline result
           expect(result.statusCode).toEqual(403);
           expect(result.responseBody.error).toEqual('forbidden');
         });
@@ -592,7 +594,10 @@ describe('routing', () => {
             .catch(err => err)
         ])
         .then(results => {
-          expect(results.every(result => result.statusCode === 403 && result.responseBody.error === 'forbidden')).toBe(true);
+          results.forEach(result => {
+            expect(result.statusCode).toEqual(403);
+            expect(result.responseBody.error).toEqual('forbidden');
+          });
         });
     });
 
@@ -617,7 +622,10 @@ describe('routing', () => {
           .request(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
           .catch(err => err)
       ]).then(results => {
-        expect(results.every(result => result.statusCode === 403 && result.responseBody.error === 'forbidden')).toBe(true);
+        results.forEach(result => {
+          expect(result.statusCode).toEqual(403);
+          expect(result.responseBody.error).toEqual('forbidden');
+        });
       });
     });
   });

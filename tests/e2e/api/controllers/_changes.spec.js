@@ -903,7 +903,7 @@ describe('changes handler', () => {
        });
     });
 
-    it('should forward changes requests from medic to the used database', () => {
+    it('should forward changes requests when db name is not medic', () => {
       return utils
         .requestOnMedicDb(_.defaults({ path: '/_changes' }, { auth: `bob:${password}` }))
         .then(results => {

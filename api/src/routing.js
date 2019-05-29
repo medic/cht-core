@@ -235,7 +235,7 @@ const ONLINE_ONLY_ENDPOINTS = [
 
 // block offline users from accessing some unaudited CouchDB endpoints
 ONLINE_ONLY_ENDPOINTS.forEach(url =>
-  app.all(routePrefix + url, authorization.offlineUserFirewall)
+  app.all(routePrefix + url, authorization.checkAuth, authorization.offlineUserFirewall)
 );
 
 var UNAUDITED_ENDPOINTS = [
@@ -635,7 +635,7 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 // block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
 // unauthenticated requests will be redirected to login or given a meaningful error
-app.use(authorization.offlineUserFirewall);
+app.use(authorization.checkAuth, authorization.offlineUserFirewall);
 
 var canEdit = function(req, res) {
   auth
