@@ -120,7 +120,7 @@ angular.module('inboxServices').factory('XmlForms',
 
       if (form.context.expression) {
         try {
-          return evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)
+          return evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
         } catch(err) {
           $log.error(`Unable to evaluate expression for form: ${form._id}`, err);
           return false;
