@@ -26,7 +26,7 @@ describe('sms-gateway controller', () => {
       .onCall(0).returns({ message: 'one' })
       .onCall(1).returns({ message: 'two' })
       .onCall(2).returns({ message: 'three' });
-    const getMessages = sinon.stub(messaging, 'getMessages').resolves([]);
+    const getOutgoingMessages = sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
     const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
     updateMessageTaskStates.resolves({});
 
@@ -48,7 +48,7 @@ describe('sms-gateway controller', () => {
     // when
     return controller.post(req).then(() => {
       // then
-      chai.expect(getMessages.callCount).to.equal(1);
+      chai.expect(getOutgoingMessages.callCount).to.equal(1);
       chai.expect(createRecord.callCount).to.equal(3);
       chai.expect(createRecord.args[0][0]).to.deep.equal({ gateway_ref: '1', from: '+1', message: 'one'   });
       chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
@@ -67,7 +67,7 @@ describe('sms-gateway controller', () => {
     const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
     updateMessageTaskStates.resolves();
 
-    sinon.stub(messaging, 'getMessages').resolves([]);
+    sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
 
     const req = { body: {
       updates: [
@@ -101,7 +101,7 @@ describe('sms-gateway controller', () => {
     const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
     updateMessageTaskStates.resolves();
 
-    sinon.stub(messaging, 'getMessages').resolves([]);
+    sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
 
     const req = { body: {
       updates: [
@@ -122,10 +122,10 @@ describe('sms-gateway controller', () => {
 
   it('post() should provide WO messages in response', () => {
     // given
-    sinon.stub(messaging, 'getMessages').resolves([
-      { id:'1', to:'+1', message:'one' },
-      { id:'2', to:'+2', message:'two' },
-      { id:'3', to:'+3', message:'three' },
+    sinon.stub(messaging, 'getOutgoingMessages').resolves([
+      { id:'1', to:'+1', content:'one' },
+      { id:'2', to:'+2', content:'two' },
+      { id:'3', to:'+3', content:'three' },
     ]);
     const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
     updateMessageTaskStates.resolves();
@@ -157,7 +157,7 @@ describe('sms-gateway controller', () => {
     sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
     sinon.stub(db.medic, 'query')
       .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
-    sinon.stub(messaging, 'getMessages').resolves([]);
+    sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
     const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
     updateMessageTaskStates.resolves({});
 

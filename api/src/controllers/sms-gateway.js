@@ -2,21 +2,20 @@
  * This module implements GET and POST to support medic-gateway's API
  * @see https://github.com/medic/medic-gateway
  */
-const db = require('../db'),
-      records = require('../services/records'),
-      messaging = require('../services/messaging'),
-      logger = require('../logger'),
-      config = require('../config'),
-      // map from the medic-gateway state to the medic app's state
-      STATUS_MAP = {
-        UNSENT: 'received-by-gateway',
-        PENDING: 'forwarded-by-gateway',
-        SENT: 'sent',
-        DELIVERED: 'delivered',
-        FAILED: 'failed',
-      };
+const db = require('../db');
+const messaging = require('../services/messaging');
+const records = require('../services/records');
+const logger = require('../logger');
+const config = require('../config');
 
-const ID = 'medic-gateway';
+// map from the medic-gateway state to the medic app's state
+const STATUS_MAP = {
+  UNSENT:    'received-by-gateway',
+  PENDING:   'forwarded-by-gateway',
+  SENT:      'sent',
+  DELIVERED: 'delivered',
+  FAILED:    'failed',
+};
 
 const mapStateFields = update => {
   const result = {
@@ -43,17 +42,10 @@ const markMessagesForwarded = messages => {
 };
 
 const getOutgoing = () => {
-  if (!messaging.isEnabled(ID)) {
+  if (!messaging.isMedicGatewayEnabled()) {
     return [];
   }
-  return messaging.getMessages({ state: 'pending-or-forwarded' })
-    .then(pendingMessages => {
-      return pendingMessages.map(message => ({
-        id: message.id,
-        to: message.to,
-        content: message.message,
-      }));
-    });
+  return messaging.getOutgoingMessages();
 };
 
 const runTransitions = docs => {
@@ -74,9 +66,9 @@ const addNewMessages = req => {
     logger.info(`Message missing required field: ${JSON.stringify(message)}`);
   });
 
-  const ids = messages.map(m => m.id);
+  const keys = messages.map(m => m.id);
   // TODO most of this should be in the service so AT can use it!
-  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys:ids })
+  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys })
     .then(res => res.rows.map(r => r.key))
     .then(seenIds => messages.filter(m => {
       if (seenIds.includes(m.id)) {

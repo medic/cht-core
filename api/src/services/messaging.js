@@ -1,7 +1,15 @@
 const taskUtils = require('@medic/task-utils');
 const db = require('../db');
+const environment = require('../environment');
 const logger = require('../logger');
 const config = require('../config');
+const africasTalking = require('./africas-talking');
+
+const DB_CHECKING_INTERVAL = 1000*60*5; // Check DB for messages every 5 minutes
+const SMS_SENDING_SERVICES = {
+  'africas-talking': africasTalking
+  // sms-gateway -- ignored because it's a pull not a push service
+};
 
 const getTaskFromMessage = (tasks, uuid) => {
   return tasks && tasks.find(task => {
@@ -38,7 +46,7 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
       if (!task) {
         logger.error(`Message not found: ${change.messageId}`);
       } else {
-        if (taskUtils.setTaskState(task, change.state, change.details)) {
+        if (taskUtils.setTaskState(task, change.state, change.details, change.gateway_ref)) {
           if (!memo[docId]) {
             memo[docId] = [];
           }
@@ -50,24 +58,106 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
   }, {});
 };
 
+const getOutgoingMessageService = () => {
+  const settings = config.get('sms');
+  return settings &&
+         settings.outgoing_service &&
+         SMS_SENDING_SERVICES[settings.outgoing_service];
+};
+
+const checkDbForMessagesToSend = () => {
+  const service = getOutgoingMessageService();
+  if (!service) {
+    return Promise.resolve();
+  }
+  return module.exports.getOutgoingMessages().then(messages => {
+    if (!messages.length) {
+      return;
+    }
+    return sendMessages(service, messages);
+  });
+};
+
+const getPendingMessages = doc => {
+  const tasks = [].concat(doc.tasks || [], doc.scheduled_tasks || []);
+  return tasks.reduce((memo, task) => {
+    if (task.messages) {
+      task.messages.forEach(msg => {
+        if (
+          msg.uuid &&
+          msg.to &&
+          msg.message &&
+          (task.state === 'pending' || task.state === 'forwarded-to-gateway')
+        ) {
+          memo.push({
+            content: msg.message,
+            to: msg.to,
+            id: msg.uuid,
+          });
+        }
+      });
+    }
+    return memo;
+  }, []);
+};
+
+const sendMessages = (service, messages) => {
+  if (!messages.length) {
+    return;
+  }
+  return service.send(messages).then(responses => {
+    const stateUpdates = messages
+      .map((message, i) => {
+        const response = responses[i];
+        if (response.success) {
+          return {
+            messageId: message.id,
+            state: response.state,
+            gateway_ref: response.gateway_ref
+          };
+        }
+      })
+      .filter(update => update); // ignore failed updates
+    if (stateUpdates.length) {
+      return module.exports.updateMessageTaskStates(stateUpdates);
+    }
+  });
+};
+
 module.exports = {
+  
+  /**
+   * Sends pending messages on the doc with the given ID using the
+   * configured outgoing message service.
+   */
+  send: docId => {
+    const service = getOutgoingMessageService();
+    if (!service) {
+      return Promise.resolve();
+    }
+    return db.medic.get(docId).then(doc => {
+      return sendMessages(service, getPendingMessages(doc));
+    });
+  },
+
   /*
    * Returns `options.limit` messages, optionally filtering by state.
    */
-  getMessages: ({limit=25, state}={}) => {
-    if (limit > 1000) {
-      return Promise.reject({ code: 500, message: 'Limit max is 1000' });
-    }
-    const viewOptions = { limit };
-    if (state) {
-      viewOptions.startkey = [ state, 0 ];
-      viewOptions.endkey = [ state, '\ufff0' ];
-    }
+  getOutgoingMessages: () => {
+    const viewOptions = {
+      limit: 100,
+      startkey: [ 'pending-or-forwarded', 0 ],
+      endkey: [ 'pending-or-forwarded', '\ufff0' ],
+    };
     return db.medic.query('medic-sms/messages_by_state', viewOptions)
-      .then(data => data.rows.map(row => row.value));
+      .then(response => response.rows.map(row => row.value));
   },
   /*
-   * taskStateChanges: an Array of: { messageId, state, details }
+   * taskStateChanges: an Array of objects with
+   *   - messageId
+   *   - state
+   *   - details (optional)
+   *   - gateway_ref (optional)
    *
    * These state updates are prone to failing due to update conflicts, so this
    * function will retry up to three times for any updates which fail.
@@ -111,12 +201,18 @@ module.exports = {
       });
   },
   /**
-   * Returns true if the given messaging service id matches what is configured.
-   * We don't want to get into the situation of two services sending the same
-   * message.
+   * Returns true if the configured outgoing messaging service is set
+   * to "medic-gateway". We don't want to get into the situation of
+   * two services sending the same message.
    */
-  isEnabled: id => {
+  isMedicGatewayEnabled: () => {
     const settings = config.get('sms') || {};
-    return settings.outgoing_service === id;
+    return settings.outgoing_service === 'medic-gateway';
   }
 };
+
+if (environment.unitTesting) {
+  module.exports._checkDbForMessagesToSend = checkDbForMessagesToSend;
+} else {
+  setInterval(checkDbForMessagesToSend, DB_CHECKING_INTERVAL);
+}

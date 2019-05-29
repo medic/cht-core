@@ -101,7 +101,7 @@ const processDocs = docs => {
             // doc was not changed by any transition, so we save the original doc
             change.doc = docs.find(doc => doc._id === change.id);
             saveDoc(change, (err, result) => {
-              callback(null, err || result);
+              callback(null, err || result); // TODO does this mean we never reject?!
             });
           });
         });

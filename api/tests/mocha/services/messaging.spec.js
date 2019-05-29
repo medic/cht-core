@@ -2,19 +2,21 @@ const chai = require('chai');
 const sinon = require('sinon');
 const taskUtils = require('@medic/task-utils');
 const db = require('../../../src/db');
+const config = require('../../../src/config');
+const africasTalking = require('../../../src/services/africas-talking');
 const service = require('../../../src/services/messaging');
 
-describe('message utils', () => {
+describe('messaging service', () => {
 
   afterEach(() => {
     sinon.restore();
   });
 
-  describe('getMessages', () => {
+  describe('getOutgoingMessages', () => {
 
     it('returns errors', done => {
       const getView = sinon.stub(db.medic, 'query').returns(Promise.reject('bang'));
-      service.getMessages()
+      service.getOutgoingMessages()
         .then(() => done('expected error to be thrown'))
         .catch(err => {
           chai.expect(err).to.equal('bang');
@@ -23,41 +25,20 @@ describe('message utils', () => {
         });
     });
 
-    it('passes limit param value to view', () => {
-      const getView = sinon.stub(db.medic, 'query').resolves({ rows: [] });
-      return service.getMessages({ limit: 500 }).then(() => {
-        chai.expect(getView.callCount).to.equal(1);
-        // assert query parameters on view call use right limit value
-        chai.expect({ limit: 500 }).to.deep.equal(getView.getCall(0).args[1]);
-      });
-    });
-
-    it('returns 500 error if limit too high', done => {
-      const getView = sinon.stub(db.medic, 'query');
-      service.getMessages({ limit: 9999 })
-        .then(() => done('expected error to be thrown'))
-        .catch(err => {
-          chai.expect(err.code).to.equal(500);
-          chai.expect(err.message).to.equal('Limit max is 1000');
-          chai.expect(getView.callCount).to.equal(0);
-          done();
-        });
-    });
-
-    it('passes state param', () => {
+    it('queries for pending messages', () => {
       const query = sinon.stub(db.medic, 'query').resolves({ rows: [
         { key: 'yayaya', value: { id: 'a' } },
         { key: 'pending', value: { id: 'b' } },
         { key: 'pending', value: { id: 'c' } }
       ] });
 
-      return service.getMessages({ state: 'pending' }).then(messages => {
+      return service.getOutgoingMessages({ state: 'pending' }).then(messages => {
         chai.expect(query.callCount).to.equal(1);
         chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_state');
         chai.expect(query.args[0][1]).to.deep.equal({
-          limit: 25,
-          startkey: [ 'pending', 0 ],
-          endkey: [ 'pending', '\ufff0' ],
+          limit: 100,
+          startkey: [ 'pending-or-forwarded', 0 ],
+          endkey: [ 'pending-or-forwarded', '\ufff0' ],
         });
         chai.expect(messages).to.deep.equal([ { id: 'a' }, { id: 'b'}, { id: 'c' } ]);
       });
@@ -99,12 +80,13 @@ describe('message utils', () => {
         {
           messageId: 'testMessageId2',
           state: 'testState2',
-          details: 'Just because.'
+          details: 'Just because.',
+          gateway_ref: '55997'
         }
       ]).then(() => {
         chai.expect(setTaskState.callCount).to.equal(2);
-        chai.expect(setTaskState.getCall(0).args).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'testState1', undefined]);
-        chai.expect(setTaskState.getCall(1).args).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'testState2', 'Just because.']);
+        chai.expect(setTaskState.getCall(0).args).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'testState1', undefined, undefined]);
+        chai.expect(setTaskState.getCall(1).args).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'testState2', 'Just because.', '55997']);
 
         const doc = bulk.args[0][0][0];
         chai.expect(doc._id).to.equal('testDoc');
@@ -289,16 +271,171 @@ describe('message utils', () => {
         { messageId: 'testMessageId6', state: 'state' }
       ]).then(() => {
         chai.expect(setTaskState.callCount).to.equal(6);
-        chai.expect(setTaskState.args[0]).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined]);
-        chai.expect(setTaskState.args[1]).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined]);
-        chai.expect(setTaskState.args[2]).to.deep.equal([{ messages: [{uuid: 'testMessageId3'}]}, 'state', undefined]);
-        chai.expect(setTaskState.args[3]).to.deep.equal([{ messages: [{uuid: 'testMessageId4'}]}, 'state', undefined]);
-        chai.expect(setTaskState.args[4]).to.deep.equal([{ messages: [{uuid: 'testMessageId5'}]}, 'state', undefined]);
-        chai.expect(setTaskState.args[5]).to.deep.equal([{ messages: [{uuid: 'testMessageId6'}]}, 'state', undefined]);
+        chai.expect(setTaskState.args[0]).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[1]).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[2]).to.deep.equal([{ messages: [{uuid: 'testMessageId3'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[3]).to.deep.equal([{ messages: [{uuid: 'testMessageId4'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[4]).to.deep.equal([{ messages: [{uuid: 'testMessageId5'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[5]).to.deep.equal([{ messages: [{uuid: 'testMessageId6'}]}, 'state', undefined, undefined]);
 
         chai.expect(bulk.args[0][0].length).to.equal(2);
         chai.expect(bulk.args[0][0][0]._id).to.equal('testDoc');
         chai.expect(bulk.args[0][0][1]._id).to.equal('testDoc2');
+      });
+    });
+
+  });
+
+  describe('send', () => {
+
+    it('does nothing if no outgoing message service configured', () => {
+      sinon.stub(db.medic, 'get');
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
+      return service.send('abc').then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(db.medic.get.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing if doc has no pending messages', () => {
+      const doc = {
+        tasks: [{
+          state: 'sent',
+          messages: [{
+            uuid: 'a',
+            to: '+123',
+            message: 'hello',
+          }]
+        }],
+        scheduled_tasks: [{
+          state: 'scheduled',
+          messages: [{
+            uuid: 'a',
+            to: '+123',
+            message: 'hello',
+          }]
+        }]
+      };
+      sinon.stub(db.medic, 'get').resolves(doc);
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      return service.send('abc').then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(db.medic.get.callCount).to.equal(1);
+        chai.expect(db.medic.get.args[0][0]).to.equal('abc');
+      });
+    });
+
+    it('does not update state if sending fails', () => {
+      const doc = {
+        scheduled_tasks: [{
+          state: 'pending',
+          messages: [{
+            uuid: 'a',
+            to: '+123',
+            message: 'hello',
+          }]
+        }]
+      };
+      sinon.stub(db.medic, 'get').resolves(doc);
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      sinon.stub(africasTalking, 'send').resolves([{ success: false }]);
+      sinon.stub(service, 'updateMessageTaskStates');
+      return service.send('abc').then(() => {
+        chai.expect(africasTalking.send.callCount).to.equal(1);
+        chai.expect(africasTalking.send.args[0][0]).to.deep.equal([ { id: 'a', to: '+123', content: 'hello' } ]);
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(0);
+      });
+    });
+
+    it('does not update state if sending fails', () => {
+      const doc = {
+        tasks: [{
+          state: 'pending',
+          messages: [{
+            uuid: 'a',
+            to: '+123',
+            message: 'hello',
+          }]
+        }],
+        scheduled_tasks: [{
+          state: 'pending',
+          messages: [{
+            uuid: 'b',
+            to: '+321',
+            message: 'bye',
+          }]
+        }]
+      };
+      sinon.stub(db.medic, 'get').resolves(doc);
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      sinon.stub(africasTalking, 'send').resolves([
+        { success: true, state: 'sent', gateway_ref: '123' },
+        { success: true, state: 'received_by_gateway', gateway_ref: '456' },
+      ]);
+      sinon.stub(service, 'updateMessageTaskStates');
+      return service.send('abc').then(() => {
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
+        chai.expect(service.updateMessageTaskStates.args[0][0]).to.deep.equal([
+          { messageId: 'a', state: 'sent', gateway_ref: '123' },
+          { messageId: 'b', state: 'received_by_gateway', gateway_ref: '456' },
+        ]);
+      });
+    });
+
+  });
+
+  describe('checkDbForMessagesToSend', () => {
+
+    it('does nothing if no outgoing message service configured', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
+      sinon.stub(service, 'getOutgoingMessages');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing if there are no messages to send', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      sinon.stub(service, 'getOutgoingMessages').resolves([]);
+      sinon.stub(africasTalking, 'send');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(1);
+        chai.expect(africasTalking.send.callCount).to.equal(0);
+      });
+    });
+
+    it('passes the messages to the configured service and ignores failures', () => {
+      const outgoingMessages = [ { id: 'a', to: '+123', content: 'hello' } ];
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      sinon.stub(service, 'getOutgoingMessages').resolves(outgoingMessages);
+      sinon.stub(africasTalking, 'send').resolves([ { success: false } ]);
+      sinon.stub(service, 'updateMessageTaskStates');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(africasTalking.send.callCount).to.equal(1);
+        chai.expect(africasTalking.send.args[0][0]).to.deep.equal(outgoingMessages);
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(0);
+      });
+    });
+
+    it('passes the messages to the configured service and updates state', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      sinon.stub(service, 'getOutgoingMessages').resolves([
+        { id: 'a', to: '+123', content: 'hello' },
+        { id: 'b', to: '+456', content: 'bye' }
+      ]);
+      sinon.stub(africasTalking, 'send').resolves([
+        { success: false },
+        { success: true, state: 'recieved-by-gateway', gateway_ref: 'xyz' },
+      ]);
+      sinon.stub(service, 'updateMessageTaskStates');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
+        chai.expect(service.updateMessageTaskStates.args[0][0]).to.deep.equal([{
+          messageId: 'b',
+          state: 'recieved-by-gateway',
+          gateway_ref: 'xyz',
+        }]);
       });
     });
 
