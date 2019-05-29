@@ -26,7 +26,7 @@
     "@medic/tombstone-utils": "^1.0.0",
     "@medic/translation-utils": "^1.0.1",
     "@medic/view-map-utils": "^1.0.0",
-    "@scdf/transitions": "^1.5.1",
+    "@scdf/transitions": "^1.6.0",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
     "body-parser": "^1.18.3",
