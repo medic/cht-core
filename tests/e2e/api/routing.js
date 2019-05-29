@@ -129,7 +129,7 @@ describe('routing', () => {
           .requestOnMedicDb(_.extend({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
+        expect(results.every(result => result.statusCode === 401 || result.statusCode === 403)).toBe(true);
       });
     });
 

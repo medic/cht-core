@@ -643,7 +643,7 @@ describe('registration', () => {
         //1st doc has cleared schedules
         expect(updated[0].scheduled_tasks).toBeDefined();
         expect(updated[0].scheduled_tasks.length).toEqual(3);
-        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared'));
+        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared')).toBe(true);
 
         //2nd doc has schedules
         expect(updated[1].scheduled_tasks).toBeDefined();
