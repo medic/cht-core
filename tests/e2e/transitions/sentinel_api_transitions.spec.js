@@ -847,7 +847,7 @@ describe('transitions', () => {
     return utils
       .updateSettings(settings, false)
       .then(() => Promise.all([
-        waitForChanges(messages),
+        apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes]) => {
