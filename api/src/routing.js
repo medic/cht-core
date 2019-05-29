@@ -189,14 +189,9 @@ app.all('/+medic/+*', (req, res, next) => {
   next();
 });
 
-app.all('/admin*', (req, res) => {
-  const originalUrl = req.url;
-  if (originalUrl.split('/')[2] === 'fonts') {
-    res.redirect(req.url.slice(6));
-  } else {
-    req.url = `${adminAppPrefix}${originalUrl.slice(7)}`;
-    proxy.web(req, res);
-  }
+app.all('/+admin/+*', (req, res, next) => {
+  req.url = req.url.replace('/admin/', `/${adminAppPrefix}/`);
+  next();
 });
 
 app.get('/favicon.ico', (req, res) => {
