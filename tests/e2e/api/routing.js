@@ -552,13 +552,11 @@ describe('routing', () => {
       return Promise.all([
         utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true),
         utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions), false, true),
-        utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true),
-        utils.requestOnMedicDb(_.defaults({ path: '/' }, offlineRequestOptions), false, true),
+        utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true)
       ]).then(results => {
         expect(results[0].includes('Found. Redirecting to')).toBe(true);
         expect(results[1].includes('DOCTYPE html')).toBe(true);
         expect(results[2].includes('Found. Redirecting to')).toBe(true);
-        expect(results[3].includes('DOCTYPE html')).toBe(true);
       });
     });
 

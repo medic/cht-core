@@ -351,15 +351,9 @@ module.exports = {
 
   requestOnMedicDb: (options, debug, notJson) => {
     if (typeof options === 'string') {
-      options = {
-        path: options,
-      };
+      options = { path: options };
     }
-
-    const pathAndReqType = `${options.path}${options.method}`;
-    if (pathAndReqType !== '/GET') {
-      options.path = `/medic${options.path}`;
-    }
+    options.path = `/medic${options.path || ''}`;
     return request(options, { debug: debug, notJson: notJson });
   },
 
