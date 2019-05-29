@@ -564,22 +564,22 @@ describe('routing', () => {
       return Promise
         .all([
           utils
-            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions), false, true)
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions), false, true)
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions), false, true)
+            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions), false, true)
+            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
+            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
             .catch(err => err),
           utils
             .request(_.extend({ path: `/admin/` }, offlineRequestOptions))
@@ -589,11 +589,10 @@ describe('routing', () => {
             .catch(err => err),
           utils
             .request(_.extend({ path: `/admin/css/main.css` }, offlineRequestOptions))
-            .catch(err => err),
+            .catch(err => err)
         ])
         .then(results => {
-          console.log(require('util').inspect(results, { depth: 100 }));
-          expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized')).toBe(true);
+          expect(results.every(result => result.statusCode === 403 && result.responseBody.error === 'forbidden')).toBe(true);
         });
     });
 
@@ -615,42 +614,86 @@ describe('routing', () => {
           .request(_.extend({ path: '//_utils//something/else' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
-          .catch(err => err),
+          .request(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
+          .catch(err => err)
       ]).then(results => {
-        expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
+        expect(results.every(result => result.statusCode === 403 && result.responseBody.error === 'forbidden')).toBe(true);
       });
     });
   });
 
   describe('legacy endpoints', () => {
-    it('should still route to deprecate apiV0 settings endpoints', () => {
-      const settingsV0Path = '/_design/medic/_rewrite/app_settings/medic';
-      return Promise
-        .all([
-          utils.requestOnTestDb(_.extend({ path: settingsV0Path }, onlineRequestOptions)),
-          utils.requestOnMedicDb(_.extend({ path: settingsV0Path }, onlineRequestOptions)),
-          utils.getDoc('settings')
-        ])
-        .then(([ settingsTest, settingsMedic, settings ]) => {
-          expect(settings.settings).toEqual(settingsTest.settings);
-          expect(settings.settings).toEqual(settingsMedic.settings);
+    afterEach(done => utils.revertSettings().then(done));
 
-          const opts = {
-            method: 'POST',
-            body: JSON.stringify()
+    it('should still route to deprecate apiV0 settings endpoints', () => {
+      let settings;
+      return utils
+        .updateSettings({}) // this test will update settings that we want successfully reverted afterwards
+        .then(() => utils.getDoc('settings'))
+        .then(result => settings = result.settings)
+        .then(() => Promise.all([
+          utils.requestOnTestDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)),
+          utils.requestOnTestDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)),
+          utils.requestOnMedicDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)),
+          utils.requestOnMedicDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)),
+        ]))
+        .then(results => {
+          results.forEach(result => expect(result.settings).toEqual(settings));
+
+          const updateMedicParams = {
+            path: '/_design/medic/_rewrite/update_settings/medic',
+            method: 'PUT',
+            body: JSON.stringify({ medic_api_v0: 'my value 1' }),
+            headers: { 'Content-Type': 'application/json' }
           };
 
-          return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: settingsV0Path, method: 'POST', body: JSON.stringify({ test_api_v0: true }), onlineRequestOptions})),
-            utils.requestOnMedicDb(_.extend({ path: settingsV0Path, method: 'POST', body: JSON.stringify({ medic_api_v0: true }), onlineRequestOptions}))
-          ]);
+          return utils.requestOnMedicDb(_.defaults(updateMedicParams, onlineRequestOptions));
         })
-        .then(responses => {
-          console.log(require('util').inspect(responses, { depth: 100 }));
+        .then(response => {
+          expect(response.success).toBe(true);
+        })
+        .then(() => {
+          const params = {
+            path: '/_design/medic/_rewrite/update_settings/medic',
+            method: 'PUT',
+            body: JSON.stringify({ test_api_v0: 'my value 2' }),
+            headers: { 'Content-Type': 'application/json' }
+          };
+          return utils.requestOnTestDb(_.defaults(params, onlineRequestOptions));
+        })
+        .then(response => {
+          expect(response.success).toBe(true);
+        })
+        .then(() => {
+          const params = {
+            path: '/_design/medic/_rewrite/update_settings/medic',
+            method: 'PUT',
+            body: JSON.stringify({ test_api_v0_offline: 'offline value 2' }),
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+          };
+          return utils.requestOnTestDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
+        })
+        .then(response => {
+          expect(response.statusCode).toEqual(403);
+        })
+        .then(() => {
+          const params = {
+            path: '/_design/medic/_rewrite/update_settings/medic',
+            method: 'PUT',
+            body: JSON.stringify({ medic_api_v0_offline: 'offline value 1' }),
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+          };
+          return utils.requestOnMedicDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
+        })
+        .then(response => {
+          expect(response.statusCode).toEqual(403);
+        })
+        .then(() => utils.getDoc('settings'))
+        .then(settings => {
+          expect(settings.settings.test_api_v0).toEqual('my value 2');
+          expect(settings.settings.medic_api_v0).toEqual('my value 1');
+          expect(settings.settings.test_api_v0_offline).not.toBeDefined();
+          expect(settings.settings.medic_api_v0_offline).not.toBeDefined();
         });
     });
   });

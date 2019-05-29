@@ -184,13 +184,13 @@ app.get([`/medic/_design/medic/_rewrite/`, appPrefix], (req, res) => res.sendFil
 
 app.all('/+medic/+*', (req, res, next) => {
   if (environment.db !== 'medic') {
-    req.url = req.url.replace('/medic/', `/${environment.db}/`);
+    req.url = req.url.replace('/medic/', pathPrefix);
   }
   next();
 });
 
 app.all('/+admin/+*', (req, res, next) => {
-  req.url = req.url.replace('/admin/', `/${adminAppPrefix}/`);
+  req.url = req.url.replace('/admin/', adminAppPrefix);
   next();
 });
 
