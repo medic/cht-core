@@ -580,10 +580,20 @@ describe('routing', () => {
             .catch(err => err),
           utils
             .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
-            .catch(err => err)
+            .catch(err => err),
+          utils
+            .request(_.extend({ path: `/admin/` }, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .request(_.extend({ path: `//admin//` }, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .request(_.extend({ path: `/admin/css/main.css` }, offlineRequestOptions))
+            .catch(err => err),
         ])
         .then(results => {
-          expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
+          console.log(require('util').inspect(results, { depth: 100 }));
+          expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized')).toBe(true);
         });
     });
 
@@ -613,6 +623,35 @@ describe('routing', () => {
       ]).then(results => {
         expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
       });
+    });
+  });
+
+  describe('legacy endpoints', () => {
+    it('should still route to deprecate apiV0 settings endpoints', () => {
+      const settingsV0Path = '/_design/medic/_rewrite/app_settings/medic';
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.extend({ path: settingsV0Path }, onlineRequestOptions)),
+          utils.requestOnMedicDb(_.extend({ path: settingsV0Path }, onlineRequestOptions)),
+          utils.getDoc('settings')
+        ])
+        .then(([ settingsTest, settingsMedic, settings ]) => {
+          expect(settings.settings).toEqual(settingsTest.settings);
+          expect(settings.settings).toEqual(settingsMedic.settings);
+
+          const opts = {
+            method: 'POST',
+            body: JSON.stringify()
+          };
+
+          return Promise.all([
+            utils.requestOnTestDb(_.extend({ path: settingsV0Path, method: 'POST', body: JSON.stringify({ test_api_v0: true }), onlineRequestOptions})),
+            utils.requestOnMedicDb(_.extend({ path: settingsV0Path, method: 'POST', body: JSON.stringify({ medic_api_v0: true }), onlineRequestOptions}))
+          ]);
+        })
+        .then(responses => {
+          console.log(require('util').inspect(responses, { depth: 100 }));
+        });
     });
   });
 });

@@ -13,7 +13,7 @@ class BaseConfig {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
-      specs: [`${testSrcDir}/**/*.js`],
+      specs: [`${testSrcDir}/**/routing.js`],
 
       framework: 'jasmine2',
       capabilities: {
