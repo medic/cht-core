@@ -2,9 +2,9 @@ const sinon = require('sinon'),
       chai = require('chai'),
       definitions = require('../../form-definitions'),
       config = require('../../../src/config'),
-      recordUtils = require('../../../src/controllers/record-utils');
+      records = require('../../../src/services/records');
 
-describe('record-utils-parser', () => {
+describe('record parser', () => {
 
   afterEach(() => {
     sinon.restore();
@@ -16,7 +16,7 @@ describe('record-utils-parser', () => {
       from: '+888',
       message: '1!YYYY!facility#2011#11'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect('November').to.equal(doc.fields.month);
   });
 
@@ -26,7 +26,7 @@ describe('record-utils-parser', () => {
       message: 'foo',
       sent_timestamp:'1352499725000'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(new Date(doc.reported_date).toUTCString())
       .to.equal('Fri, 09 Nov 2012 22:22:05 GMT');
   });
@@ -54,7 +54,7 @@ describe('record-utils-parser', () => {
       ors: 5,
       zinc: 4
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.fields.days_stocked_out).to.deep.equal(days_stocked_out);
     chai.expect(doc.fields.quantity_dispensed).to.deep.equal(quantity_dispensed);
   });
@@ -65,7 +65,7 @@ describe('record-utils-parser', () => {
       from: '+13125551212',
       message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.sms_message.message).to.equal(body.message);
     chai.expect(doc.sms_message.from).to.equal(body.from);
   });
@@ -76,7 +76,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message:'1!YYYZ!foo#bar'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(0);
   });
 
@@ -85,7 +85,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message:'foo bar baz'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(0);
   });
 
@@ -97,7 +97,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message:'foo bar baz'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors[0].code).to.equal('sys.form_not_found');
     chai.expect(doc.errors.length).to.equal(1);
   });
@@ -108,7 +108,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(0);
   });
 
@@ -121,7 +121,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
-    const doc = recordUtils.createByForm(body, { locale: 'fr' });
+    const doc = records.createByForm(body, { locale: 'fr' });
     chai.expect(doc.errors[0].code).to.equal('sys.form_not_found');
     chai.expect(doc.errors[0].message).to.equal('translated');
     chai.expect(doc.errors.length).to.equal(1);
@@ -140,7 +140,7 @@ describe('record-utils-parser', () => {
       from: '+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
-    recordUtils.createByForm(body, { locale: 'fr' });
+    records.createByForm(body, { locale: 'fr' });
     chai.expect(translate.callCount).to.equal(1);
     chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('es');
@@ -156,7 +156,7 @@ describe('record-utils-parser', () => {
       from: '+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
-    recordUtils.createByForm(body);
+    records.createByForm(body);
     chai.expect(translate.callCount).to.equal(1);
     chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('ne');
@@ -172,7 +172,7 @@ describe('record-utils-parser', () => {
       from: '+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
-    recordUtils.createByForm(body);
+    records.createByForm(body);
     chai.expect(translate.callCount).to.equal(1);
     chai.expect(translate.args[0][0]).to.equal('sys.form_not_found');
     chai.expect(translate.args[0][1]).to.equal('en');
@@ -184,7 +184,7 @@ describe('record-utils-parser', () => {
       message: ' '
     };
     sinon.stub(config, 'translate').returns('translated');
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors[0].code).to.equal('sys.empty');
   });
 
@@ -195,7 +195,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message: 'foo'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.form).to.equal(undefined);
   });
 
@@ -207,7 +207,7 @@ describe('record-utils-parser', () => {
       message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4#123',
       sent_timestamp:'1352399720000'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(1);
     chai.expect(doc.errors[0].code).to.equal('extra_fields');
   });
@@ -219,7 +219,7 @@ describe('record-utils-parser', () => {
       from:'+888',
       message: '1!YYYY!foo'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.errors[0].code).to.equal('sys.missing_fields');
     chai.expect(doc.errors[0].ctx.fields).to.deep.equal(['year','month']);
   });
@@ -231,7 +231,7 @@ describe('record-utils-parser', () => {
       from: '+888',
       message: 'hello world! anyone there?'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     // unstructured message has form of null
     chai.expect(doc.form).to.equal(undefined);
     chai.expect(doc.sms_message.message).to.equal('hello world! anyone there?');
@@ -241,7 +241,7 @@ describe('record-utils-parser', () => {
     sinon.stub(config, 'get')
       .withArgs('forms').returns(definitions.forms);
     const body = { from: '+888', message: '' };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.sms_message.message).to.equal('');
   });
 
@@ -253,7 +253,7 @@ describe('record-utils-parser', () => {
       }
     };
     try {
-      recordUtils.createRecordByJSON(body);
+      records.createRecordByJSON(body);
     } catch(e) {
       chai.expect(e.publicMessage).to.equal('Form not found: FOO');
       done();
@@ -272,7 +272,7 @@ describe('record-utils-parser', () => {
         from: '+888'
       }
     };
-    const doc = recordUtils.createRecordByJSON(body);
+    const doc = records.createRecordByJSON(body);
     chai.expect(doc.form).to.equal('YYYY');
     chai.expect(doc.fields.facility_id).to.equal('zanzibar');
     chai.expect(doc.fields.month).to.equal(8);
@@ -288,7 +288,7 @@ describe('record-utils-parser', () => {
         from: '+888'
       }
     };
-    recordUtils.createRecordByJSON(body);
+    records.createRecordByJSON(body);
   });
 
   it('JSON POST: ignore object and null properties', () => {
@@ -307,7 +307,7 @@ describe('record-utils-parser', () => {
         from: '+888'
       }
     };
-    const doc = recordUtils.createRecordByJSON(body);
+    const doc = records.createRecordByJSON(body);
     chai.expect(doc.fields.facility_id).to.equal('zanzibar');
     chai.expect(doc.fields.year).to.equal(2011);
     chai.expect(doc.fields.age).to.equal(undefined);
@@ -326,7 +326,7 @@ describe('record-utils-parser', () => {
         from: '+888'
       }
     };
-    const doc = recordUtils.createRecordByJSON(body);
+    const doc = records.createRecordByJSON(body);
     chai.expect(doc.fields.facility_id).to.equal('zanzibar');
     chai.expect(doc.fields.year).to.equal(2011);
   });
@@ -344,7 +344,7 @@ describe('record-utils-parser', () => {
         from: '+888'
       }
     };
-    const doc = recordUtils.createRecordByJSON(body);
+    const doc = records.createRecordByJSON(body);
     chai.expect(doc.reported_date).to.equal(1421177819013);
     chai.expect(doc.fields.facility_id).to.equal('zanzibar');
     chai.expect(doc.fields.year).to.equal(2011);

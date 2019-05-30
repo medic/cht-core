@@ -1,7 +1,7 @@
 const chai = require('chai'),
       validate = require('../../../src/services/report/validate');
 
-describe('record-utils-validate', () => {
+describe('records validate', () => {
 
   /*
    * check that missing fields are logged as errors.

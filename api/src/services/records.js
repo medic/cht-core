@@ -1,8 +1,8 @@
 const moment = require('moment'),
       phoneNumber = require('@medic/phone-number'),
       config = require('../config'),
-      smsparser = require('../services/report/smsparser'),
-      validate = require('../services/report/validate'),
+      smsparser = require('./report/smsparser'),
+      validate = require('./report/validate'),
       PublicError = require('../public-error'),
       DATE_NUMBER_STRING = /(\d{13,})/;
 
