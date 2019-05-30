@@ -3,7 +3,7 @@ const db = require('../../src/db'),
       assert = require('chai').assert,
       utils = require('../../src/lib/utils'),
       config = require('../../src/config'),
-      registrationUtils = require('@medic/registration-utils');
+      registrationUtils = require('@garethbowen/registration-utils');
 
 describe('utils', () => {
   beforeEach(() => {

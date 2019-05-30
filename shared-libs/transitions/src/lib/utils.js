@@ -4,7 +4,7 @@ const _ = require('underscore'),
   moment = require('moment'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
-  registrationUtils = require('@medic/registration-utils'),
+  registrationUtils = require('@garethbowen/registration-utils'),
   logger = require('./logger');
 
 /*

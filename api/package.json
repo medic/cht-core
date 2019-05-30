@@ -15,11 +15,11 @@
     "toc": "doctoc --github --maxlevel 2 README.md"
   },
   "dependencies": {
+    "@garethbowen/registration-utils": "^1.1.1-beta.1",
     "@medic/bulk-docs-utils": "^1.0.0",
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.2",
     "@medic/phone-number": "^1.0.0",
-    "@medic/registration-utils": "^1.1.0",
     "@medic/search": "^1.1.1",
     "@medic/server-checks": "^1.0.1",
     "@medic/task-utils": "^1.0.0",

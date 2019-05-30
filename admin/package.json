@@ -7,10 +7,10 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
+    "@garethbowen/registration-utils": "^1.1.1-beta.1",
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.2",
     "@medic/phone-number": "^1.0.0",
-    "@medic/registration-utils": "^1.1.0",
     "@uirouter/angularjs": "^0.4.3",
     "angular": "^1.7.5",
     "angular-cookie": "^4.1.0",

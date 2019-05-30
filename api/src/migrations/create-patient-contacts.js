@@ -3,7 +3,7 @@ var _ = require('underscore'),
   db = require('../db'),
   logger = require('../logger'),
   async = require('async'),
-  registrationUtils = require('@medic/registration-utils'),
+  registrationUtils = require('@garethbowen/registration-utils'),
   settingsService = require('../services/settings');
 
 var BATCH_SIZE = 100;

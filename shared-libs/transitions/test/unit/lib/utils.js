@@ -1,6 +1,6 @@
 const { expect } = require('chai'),
       sinon = require('sinon'),
-      registrationUtils = require('@medic/registration-utils'),
+      registrationUtils = require('@garethbowen/registration-utils'),
       taskUtils = require('@medic/task-utils'),
       config = require('../../../src/config'),
       db = require('../../../src/db');

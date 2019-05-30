@@ -4,7 +4,7 @@ var nools = require('nools'),
     FIRST_RUN_COMPLETE_TYPE = '_complete',
     // number of weeks before reported date to assume for start of pregnancy
     KNOWN_TYPES = [ FIRST_RUN_COMPLETE_TYPE, 'task', 'target' ],
-    registrationUtils = require('@medic/registration-utils');
+    registrationUtils = require('@garethbowen/registration-utils');
 
 (function () {
 

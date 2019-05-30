@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    registrationUtils = require('@medic/registration-utils');
+    registrationUtils = require('@garethbowen/registration-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
