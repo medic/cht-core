@@ -165,7 +165,8 @@ describe('Import Records', () => {
         });
         expect(doc.errors.length).to.equal(1);
         expect(doc.errors[0]).to.deep.equal({
-          blah: 'wrong'
+          code: 'sys.missing_fields',
+          message: 'Missing or invalid fields: some_data.'
         });
         return utils.db.remove(doc);
       });

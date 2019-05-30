@@ -49,6 +49,7 @@ const addError = (record, error) => {
 
   if (!error.message) {
     error.message = config.translate(error.code, getLocale(record), error.ctx);
+    delete error.ctx;
   }
 
   if (!record.errors) {
