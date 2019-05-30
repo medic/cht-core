@@ -221,7 +221,6 @@ describe('record parser', () => {
     };
     const doc = records.createByForm(body);
     chai.expect(doc.errors[0].code).to.equal('sys.missing_fields');
-    chai.expect(doc.errors[0].ctx.fields).to.deep.equal(['year','month']);
   });
 
   it('support unstructured message', () => {
