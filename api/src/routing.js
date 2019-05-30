@@ -235,7 +235,7 @@ const ONLINE_ONLY_ENDPOINTS = [
 
 // block offline users from accessing some unaudited CouchDB endpoints
 ONLINE_ONLY_ENDPOINTS.forEach(url =>
-  app.all(routePrefix + url, authorization.checkAuth, authorization.offlineUserFirewall)
+  app.all(routePrefix + url, authorization.offlineUserFirewall)
 );
 
 var UNAUDITED_ENDPOINTS = [
@@ -410,13 +410,11 @@ const changesHandler = require('./controllers/changes').request,
 
 app.get(
   changesPath,
-  authorization.checkAuth,
   onlineUserChangesProxy,
   changesHandler
 );
 app.post(
   changesPath,
-  authorization.checkAuth,
   onlineUserChangesProxy,
   jsonParser,
   changesHandler
@@ -426,10 +424,9 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request,
   allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, authorization.checkAuth, onlineUserProxy, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, allDocsHandler);
 app.post(
   allDocsPath,
-  authorization.checkAuth,
   onlineUserProxy,
   jsonParser,
   allDocsHandler
@@ -439,7 +436,6 @@ app.post(
 const bulkGetHandler = require('./controllers/bulk-get').request;
 app.post(
   routePrefix + '_bulk_get(/*)?',
-  authorization.checkAuth,
   onlineUserProxy,
   jsonParser,
   bulkGetHandler
@@ -449,7 +445,6 @@ app.post(
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
   routePrefix + '_bulk_docs(/*)?',
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
   bulkDocs.request,
@@ -465,7 +460,6 @@ const dbDocHandler = require('./controllers/db-doc'),
 
 app.get(
   ddocPath,
-  authorization.checkAuth,
   onlineUserProxy,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -473,13 +467,11 @@ app.get(
 
 app.get(
   docPath,
-  authorization.checkAuth,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
   dbDocHandler.request
 );
 app.post(
   routePrefix,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser, // request body must be json
   dbDocHandler.request,
@@ -487,7 +479,6 @@ app.post(
 );
 app.put(
   docPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
   dbDocHandler.request,
@@ -495,14 +486,12 @@ app.put(
 );
 app.delete(
   docPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -635,7 +624,7 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 // block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
 // unauthenticated requests will be redirected to login or given a meaningful error
-app.use(authorization.checkAuth, authorization.offlineUserFirewall);
+app.use(authorization.offlineUserFirewall);
 
 var canEdit = function(req, res) {
   auth
