@@ -221,10 +221,16 @@ const createRecordByJSON = data => {
 
   const correctedData = {};
   Object.keys(data).forEach(k => {
-    if (formDefinition.fields[k]  && formDefinition.fields[k].type === 'date') {
-      // Of the data types we support, date is the only one that can't be natively supported in
-      // JSON. Convert it the same way smsparser does, into ms ts
-      data[k] = moment(data[k]).valueOf();
+    if (formDefinition.fields[k]) {
+      if (formDefinition.fields[k].type === 'date') {
+        // Of the data types we support, date is the only one that can't be natively supported in
+        // JSON. Convert it the same way smsparser does, into ms ts
+        data[k] = moment(data[k]).valueOf();
+      } else if (formDefinition.fields[k].type === 'boolean' && [1, 0].includes(data[k])) {
+        // Since in SMS we convert 1 and 0 into true and false we're going to do it here as well for
+        // consistency
+        data[k] = !!data[k];
+      }
     }
 
     correctedData[k.toLowerCase()] = data[k];

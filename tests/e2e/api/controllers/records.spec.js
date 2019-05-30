@@ -21,6 +21,12 @@ describe('Import Records', () => {
             'type': 'integer',
             'required': true
           },
+          'a_boolean': {
+            'type': 'boolean',
+          },
+          'another_boolean': {
+            'type': 'boolean',
+          },
           'an_optional_date': {
             'type': 'date'
           }
@@ -50,6 +56,8 @@ describe('Import Records', () => {
           },
           some_data: 'hello',
           a_number: 42,
+          a_boolean: false,
+          another_boolean: 0,
           an_optional_date: '2018-11-10'
         }
       }))
@@ -69,6 +77,8 @@ describe('Import Records', () => {
         expect(doc.fields).to.deep.equal({
           some_data: 'hello',
           a_number: 42,
+          a_boolean: false,
+          another_boolean: false,
           an_optional_date: moment('2018-11-10').valueOf()
         });
         return utils.db.remove(doc);
