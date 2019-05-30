@@ -582,6 +582,9 @@ describe('routing', () => {
             .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
             .catch(err => err),
           utils
+            .request(_.extend({ path: `/admin` }, offlineRequestOptions))
+            .catch(err => err),
+          utils
             .request(_.extend({ path: `/admin/` }, offlineRequestOptions))
             .catch(err => err),
           utils

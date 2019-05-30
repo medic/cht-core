@@ -182,15 +182,15 @@ app.get('/dbinfo', (req, res) => {
 
 app.get([`/medic/_design/medic/_rewrite/`, appPrefix], (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html')));
 
-app.all('/+medic/+*', (req, res, next) => {
+app.all('/+medic(/*)?', (req, res, next) => {
   if (environment.db !== 'medic') {
-    req.url = req.url.replace('/medic/', pathPrefix);
+    req.url = req.url.replace(/\/medic\/?/, pathPrefix);
   }
   next();
 });
 
-app.all('/+admin/+*', (req, res, next) => {
-  req.url = req.url.replace('/admin/', adminAppPrefix);
+app.all('/+admin(/*)?', (req, res, next) => {
+  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
   next();
 });
 
