@@ -70,14 +70,13 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         mapping: {
           'api_foo': 'doc.foo',
           'bar': 'doc.bar'
         }
       };
 
-      assert.deepEqual(mapDocumentToPayload(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf, 'test-doc'), {
         api_foo: 42,
         bar: 'baaa'
       });
@@ -92,14 +91,13 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         mapping: {
           'when': 'doc.reported_date',
           'data.the_foo': 'doc.fields.foo'
         }
       };
 
-      assert.deepEqual(mapDocumentToPayload(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf, 'test-doc'), {
         when: 42,
         data: {
           the_foo: 'baaaaa'
@@ -116,13 +114,12 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         mapping: {
           'foo': 'doc.fields.foo'
         }
       };
 
-      assert.throws(() => mapDocumentToPayload(doc, conf), `Mapping error for 'test-config/foo'`);
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), `Mapping error for 'test-config/foo': cannot find 'doc.fields.foo' on source document`);
     });
     it('supports optional path mappings', () => {
       const doc = {
@@ -135,7 +132,6 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         mapping: {
           'foo': {
             path: 'doc.fields.foo',
@@ -145,7 +141,7 @@ describe('outbound schedule', () => {
         }
       };
 
-      assert.deepEqual(mapDocumentToPayload(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf, 'test-doc'), {
         bar: 42
       });
     });
@@ -159,13 +155,12 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         mapping: {
           'list_count': {expr: 'doc.fields.a_list.length'},
           'foo': {expr: 'doc.fields.foo === \'Yes\''},
         }
       };
-      assert.deepEqual(mapDocumentToPayload(doc, conf), {
+      assert.deepEqual(mapDocumentToPayload(doc, conf, 'test-doc'), {
         list_count: 4,
         foo: false
       });
@@ -176,13 +171,12 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         mapping: {
           'is_gonna_fail': {expr: 'doc.fields.null.pointer'},
         }
       };
 
-      assert.throws(() => mapDocumentToPayload(doc, conf), `Mapping error for 'test-config/is_gonna_fail' JS error on source document: test-doc:`);
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error/);
     });
   });
   describe('push', () => {
@@ -203,7 +197,6 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         destination: {
           base_url: 'http://test',
           path: '/foo'
@@ -227,7 +220,6 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         destination: {
           auth: {
             type: 'Basic',
@@ -262,7 +254,6 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         destination: {
           auth: {
             type: 'muso-sih',
@@ -306,7 +297,6 @@ describe('outbound schedule', () => {
       };
 
       const conf = {
-        key: 'test-config',
         destination: {
           auth: {
             type: 'muso-sih',
@@ -334,14 +324,16 @@ describe('outbound schedule', () => {
         });
     });
   });
-  describe('findConfigurationsToPush', () => {
-    it('should return empty for no valid pushes', () => {
-      const config = [{
-        key: 'test-push-1'
-      },
-      {
-        key: 'test-push-2'
-      }];
+  describe('getConfigurationsToPush', () => {
+    it('should return empty for no queued pushes', () => {
+      const config = {
+        test1: {
+          some: 'config'
+        },
+        test2: {
+          some: 'more config'
+        }
+      };
 
       const queue = {
         _id: 'task:outbound:some_doc_id',
@@ -349,18 +341,19 @@ describe('outbound schedule', () => {
       };
 
       assert.deepEqual(
-        outbound.__get__('findConfigurationsToPush')(config, queue),
+        outbound.__get__('getConfigurationsToPush')(config, queue),
         []
       );
     });
     it('should return pushes to attempt', () => {
-      const config = [{
-        key: 'test-push-1',
-        some: 'more config'
-      },
-      {
-        key: 'test-push-2'
-      }];
+      const config = {
+        'test-push-1': {
+          some: 'more config'
+        },
+        'test-push-2': {
+          some: 'config'
+        }
+      };
 
       const queue = {
         _id: 'task:outbound:some_doc_id',
@@ -368,8 +361,8 @@ describe('outbound schedule', () => {
       };
 
       assert.deepEqual(
-        outbound.__get__('findConfigurationsToPush')(config, queue),
-        [{key: 'test-push-1', some: 'more config'}]
+        outbound.__get__('getConfigurationsToPush')(config, queue),
+        [['test-push-1', {some: 'more config'}]]
       );
     });
   });
@@ -398,7 +391,6 @@ describe('outbound schedule', () => {
 
     it('should create a outbound push out of the passed parameters, and update the infodoc and task if successful', () => {
       const config = {
-        key: 'test-push-1',
         some: 'config'
       };
 
@@ -423,7 +415,7 @@ describe('outbound schedule', () => {
       sentinelPut.onFirstCall().resolves({rev: '1-abc'});
       sentinelPut.resolves();
 
-      return outbound.__get__('singlePush')(task, doc, config)
+      return outbound.__get__('singlePush')(task, doc, config, 'test-push-1')
         .then(() => {
           assert.equal(task._deleted, true);
           assert.equal(task._rev, '1-abc');
@@ -437,7 +429,6 @@ describe('outbound schedule', () => {
 
     it('should not remove the queue entry or update the info doc if it fails', () => {
       const config = {
-        key: 'test-push-1',
         some: 'config'
       };
 
@@ -454,7 +445,7 @@ describe('outbound schedule', () => {
       mapDocumentToPayload.returns({map: 'called'});
       send.rejects({message: 'oh no!'});
 
-      return outbound.__get__('singlePush')(task, doc, config)
+      return outbound.__get__('singlePush')(task, doc, config, 'test-config-1')
         .then(() => {
           assert.equal(task.queue.length, 1);
           assert.equal(infodocGet.callCount, 0);
@@ -517,8 +508,8 @@ describe('outbound schedule', () => {
           assert.equal(configGet.callCount, 1);
           assert.equal(singlePush.callCount, 2);
 
-          assert.deepEqual(singlePush.args[0], [task1, doc1, {key: 'test-push-1', some: 'config'}]);
-          assert.deepEqual(singlePush.args[1], [task2, doc2, {key: 'test-push-2', other: 'config'}]);
+          assert.deepEqual(singlePush.args[0], [task1, doc1, {some: 'config'}, 'test-push-1']);
+          assert.deepEqual(singlePush.args[1], [task2, doc2, {other: 'config'}, 'test-push-2']);
         });
     });
   });

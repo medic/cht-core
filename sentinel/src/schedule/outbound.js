@@ -10,11 +10,6 @@ const configService = require('../config'),
 
 const CONFIGURED_PUSHES = 'outbound';
 
-const arrayinate = object => Object.keys(object).map(k => {
-  object[k].key = k;
-  return object[k];
-});
-
 const fetchPassword = key =>
   request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
     // This API gives weird psuedo-JSON results:
@@ -58,7 +53,7 @@ const queuedTasks = () =>
   });
 
 // Maps a source document to a destination format using the given push config
-const mapDocumentToPayload = (doc, config) => {
+const mapDocumentToPayload = (doc, config, key) => {
   const normaliseSourceConfiguration = sourceConfiguration => {
     if (typeof sourceConfiguration === 'string') {
       return {
@@ -90,7 +85,7 @@ const mapDocumentToPayload = (doc, config) => {
       try {
         srcValue = vm.runInNewContext(expr, {doc});
       } catch (err) {
-        throw Error(`Mapping error for '${config.key}/${dest}' JS error on source document: ${doc._id}: ${err}`);
+        throw Error(`Mapping error for '${key}/${dest}' JS error on source document: ${doc._id}: ${err}`);
       }
     } else {
       srcValue = objectPath.get({doc}, path);
@@ -98,7 +93,7 @@ const mapDocumentToPayload = (doc, config) => {
 
     if (required && srcValue === undefined) {
       const problem = expr ? 'expr evaluated to undefined' : `cannot find '${path}' on source document`;
-      throw Error(`Mapping error for '${config.key}/${dest}': ${problem}`);
+      throw Error(`Mapping error for '${key}/${dest}': ${problem}`);
     }
 
     if (srcValue !== undefined) {
@@ -176,22 +171,20 @@ const send = (payload, config) => {
 };
 
 // Collects push configs to attempt out of the task's queue, given a global config
-const findConfigurationsToPush = (config, taskDoc) => {
-  return taskDoc.queue.map(pushName => {
-    return config.find(conf => conf.key === pushName);
-  });
+const getConfigurationsToPush = (config, taskDoc) => {
+  return taskDoc.queue.map(pushName => ([pushName, config[pushName]]));
 };
 
-const singlePush = (taskDoc, medicDoc, config) => {
+const singlePush = (taskDoc, medicDoc, config, key) => {
   const infodoc = configService.getTransitionsLib().infodoc;
 
-  const payload = mapDocumentToPayload(medicDoc, config);
+  const payload = mapDocumentToPayload(medicDoc, config, key);
   return send(payload, config)
     .then(() => {
       // Worked, remove entry from queue and add link to info doc
-      logger.info(`Pushed ${medicDoc._id} to ${config.key}`);
+      logger.info(`Pushed ${medicDoc._id} to ${key}`);
 
-      taskDoc.queue.splice(config.key, 1);
+      taskDoc.queue.splice(key, 1);
       if (taskDoc.queue.length === 0) {
         // Done with this queue completely
         taskDoc._deleted = true;
@@ -210,7 +203,7 @@ const singlePush = (taskDoc, medicDoc, config) => {
           info.completed_tasks = info.completed_tasks || [];
           info.completed_tasks.push({
             type: 'outbound',
-            name: config.key,
+            name: key,
             timestamp: Date.now()
           });
           return db.sentinel.put(info);
@@ -218,7 +211,7 @@ const singlePush = (taskDoc, medicDoc, config) => {
     })
     .catch(err => {
       // Failed
-      logger.error(`Failed to push ${medicDoc._id} to ${config.key}: ${err.message}`);
+      logger.error(`Failed to push ${medicDoc._id} to ${key}: ${err.message}`);
       logger.error(err);
 
       // Don't remove the entry from the task's queue so it will be tried again next time
@@ -227,8 +220,8 @@ const singlePush = (taskDoc, medicDoc, config) => {
 
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
-  const pushConfig = arrayinate(configService.get(CONFIGURED_PUSHES) || {});
-  if (!pushConfig.length) {
+  const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
+  if (!Object.keys(configuredPushes).length) {
     return Promise.resolve();
   }
 
@@ -236,8 +229,8 @@ const execute = () => {
   .then(tasks => {
     const pushes = tasks.reduce((acc, {taskDoc, medicDoc}) => {
       const pushesForDoc =
-        findConfigurationsToPush(pushConfig, taskDoc)
-          .map(config => ({taskDoc, medicDoc, config}));
+        getConfigurationsToPush(configuredPushes, taskDoc)
+          .map(([key, config]) => ({taskDoc, medicDoc, config, key}));
 
       return acc.concat(pushesForDoc);
     }, []);
@@ -249,7 +242,7 @@ const execute = () => {
     // For now we presume we aren't going to get much traffic against this and
     // will probably only be doing one push per schedule call
     return pushes.reduce(
-      (p, {taskDoc, medicDoc, config}) => p.then(singlePush(taskDoc, medicDoc, config)),
+      (p, {taskDoc, medicDoc, config, key}) => p.then(singlePush(taskDoc, medicDoc, config, key)),
       Promise.resolve()
     );
   });

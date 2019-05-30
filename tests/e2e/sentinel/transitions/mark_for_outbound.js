@@ -1,3 +1,5 @@
+const { expect } = require('chai');
+
 const utils = require('../../../utils'),
       sentinelUtils = require('../utils'),
       uuid = require('uuid');
@@ -55,7 +57,7 @@ describe('mark_for_outbound', () => {
       .then(() => sentinelUtils.waitForSentinel([report._id]))
       .then(getTasks)
       .then(tasks => {
-        expect(tasks.length).toBe(0);
+        expect(tasks.length).to.equal(0);
       });
   });
 
@@ -78,7 +80,7 @@ describe('mark_for_outbound', () => {
       .then(() => sentinelUtils.waitForSentinel([report._id]))
       .then(getTasks)
       .then(tasks => {
-        expect(tasks.length).toBe(0);
+        expect(tasks.length).to.equal(0);
       });
   });
 
@@ -101,7 +103,13 @@ describe('mark_for_outbound', () => {
       .then(() => sentinelUtils.waitForSentinel([report._id]))
       .then(getTasks)
       .then(tasks => {
-        expect(tasks.length).toBe(1);
+        expect(tasks.length).to.equal(1);
+        expect(tasks[0]).to.include({
+          _id: `task:outbound:${report._id}`,
+          type: 'task:outbound',
+          doc_id: report._id
+        });
+        expect(tasks[0].queue).to.deep.equal(['test']);
       });
   });
   it('does not update an existing task if a report gets edited', () => {
@@ -126,8 +134,8 @@ describe('mark_for_outbound', () => {
       .then(() => sentinelUtils.waitForSentinel([report._id]))
       .then(getTasks)
       .then(tasks => {
-        expect(tasks.length).toBe(1);
-        expect(tasks[0].queue.length).toBe(1);
+        expect(tasks.length).to.equal(1);
+        expect(tasks[0].queue).to.deep.equal(['test']);
       })
       .then(() => utils.getDoc(report._id))
       .then(result => {
@@ -137,8 +145,8 @@ describe('mark_for_outbound', () => {
       })
       .then(getTasks)
       .then(tasks => {
-        expect(tasks.length).toBe(1);
-        expect(tasks[0].queue.length).toBe(1);
+        expect(tasks.length).to.equal(1);
+        expect(tasks[0].queue).to.deep.equal(['test']);
       });
   });
 });
