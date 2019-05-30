@@ -7,7 +7,7 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@garethbowen/registration-utils": "^1.1.1-beta.1",
+    "@garethbowen/registration-utils": "^1.1.1-beta.2",
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.2",
     "@medic/phone-number": "^1.0.0",

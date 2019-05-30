@@ -197,29 +197,21 @@ describe('registrationUtils', () => {
     });
   });
 
-  describe('normalizeFormCode', () => {
+  describe('formCodeMatches', () => {
 
-    const FORM_CODES = [
-      // invalid
-      { given: '   ',                expected: null },
-      { given: '!a!b!c!d',           expected: null },
-      { given: 'some time',          expected: null },
-      { given: '_some!where-',       expected: null },
-      { given: '____test____??1',    expected: null },
-      { given: '$%^&alpha1_-)(&-^',  expected: null },
-
-      // valid
-      { given: 'medic',              expected: 'medic' },
-      { given: 'Medic-Mobile',       expected: 'medic-mobile' },
-      { given: 'Medic_Mobile',       expected: 'medic_mobile' },
-      { given: 'someform123',        expected: 'someform123' },
-      { given: '$%^&alpha1_-)(&^',   expected: 'alpha1_-' },
-      { given: 'क',                  expected: 'क' },
+    const TESTS = [
+      { conf: 'N', docForm: 'F joan', expected: false },
+      { conf: 'medic', docForm: 'medic', expected: true },
+      { conf: 'medic-mobile', docForm: 'Medic-Mobile', expected: true },
+      { conf: 'medic_mobile', docForm: 'Medic_Mobile', expected: true },
+      { conf: 'someform123', docForm: 'someform123', expected: true },
+      { conf: 'alpha1_-', docForm: '$%^&alpha1_-)(&0^', expected: true },
+      { conf: 'क', docForm: 'क', expected: true },
     ];
 
-    FORM_CODES.forEach(({ given, expected }) => {
-      it(`returns "${expected}" for "${given}"`, () => {
-        chai.expect(utils._normalizeFormCode(given)).to.equal(expected);
+    TESTS.forEach(({ conf, docForm, expected }) => {
+      it(`returns "${expected}" for conf="${conf}" and docForm="${docForm}"`, () => {
+        chai.expect(utils._formCodeMatches(conf, docForm)).to.equal(expected);
       });
     });
 

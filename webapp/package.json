@@ -12,7 +12,7 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@garethbowen/registration-utils": "^1.1.1-beta.1",
+    "@garethbowen/registration-utils": "^1.1.1-beta.2",
     "@medic/bulk-docs-utils": "^1.0.0",
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.2",
