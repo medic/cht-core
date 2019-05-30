@@ -198,22 +198,31 @@ describe('registrationUtils', () => {
   });
 
   describe('normalizeFormCode', () => {
-    it('returns false for strings that do not match', () => {
-      chai.expect(utils._normalizeFormCode('   ')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('!a!b!c!d')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('some time')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('_some!where-')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('____test____??1')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('$%^&alpha1_-)(&-^')).to.equal(null);
+
+    const FORM_CODES = [
+      // invalid
+      { given: '   ',                expected: null },
+      { given: '!a!b!c!d',           expected: null },
+      { given: 'some time',          expected: null },
+      { given: '_some!where-',       expected: null },
+      { given: '____test____??1',    expected: null },
+      { given: '$%^&alpha1_-)(&-^',  expected: null },
+
+      // valid
+      { given: 'medic',              expected: 'medic' },
+      { given: 'Medic-Mobile',       expected: 'medic-mobile' },
+      { given: 'Medic_Mobile',       expected: 'medic_mobile' },
+      { given: 'someform123',        expected: 'someform123' },
+      { given: '$%^&alpha1_-)(&^',   expected: 'alpha1_-' },
+      { given: 'क',                  expected: 'क' },
+    ];
+
+    FORM_CODES.forEach(({ given, expected }) => {
+      it(`returns "${expected}" for "${given}"`, () => {
+        chai.expect(utils._normalizeFormCode(given)).to.equal(expected);
+      });
     });
 
-    it('returns alpha+dash+underscore substring that matches, lowercased', () => {
-      chai.expect(utils._normalizeFormCode('medic')).to.equal('medic');
-      chai.expect(utils._normalizeFormCode('Medic-Mobile')).to.equal('medic-mobile');
-      chai.expect(utils._normalizeFormCode('Medic_Mobile')).to.equal('medic_mobile');
-      chai.expect(utils._normalizeFormCode('someform123')).to.equal('someform123');
-      chai.expect(utils._normalizeFormCode('$%^&alpha1_-)(&^')).to.equal('alpha1_-');
-    });
   });
 
   describe('getSubjectIds', () => {

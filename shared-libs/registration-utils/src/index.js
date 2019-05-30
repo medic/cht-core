@@ -1,6 +1,8 @@
+const FORM_CODE_REGEX = /^[^\p{L}\p{N}_-]*([\p{L}\p{N}_-]+)[^\p{L}\p{N}_-]*$/u;
+
 // returns the only continuous alphanumeric + dash + underscore sequence in lower case
-var normalizeFormCode = function(formCode) {
-  var match = formCode.match(/^[^\w-]*([\w-]+)[^\w-]*$/);
+const normalizeFormCode = formCode => {
+  const match = formCode.match(FORM_CODE_REGEX);
   return match && match.length && match[1].toLowerCase();
 };
 
