@@ -5,6 +5,7 @@ var _ = require('underscore'),
 angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
@@ -12,6 +13,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     ChildFacility,
     DB,
     FormatDataRecord,
+    GlobalActions,
+    Selectors,
     Settings
   ) {
 
@@ -19,15 +22,28 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     'ngInject';
 
     const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        filters: Selectors.getFilters(state)
+      };
+    };
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setFilter: globalActions.setFilter
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
     ctrl.error = false;
 
-    $scope.filters.form = $state.params.form;
-    $scope.filters.place = $state.params.place;
+    ctrl.setFilter({ form: $state.params.form });
+    ctrl.setFilter({ place: $state.params.place });
 
     Settings()
       .then(function(settings) {
-        var newSettings = _.findWhere(settings['kujua-reporting'], { code: $scope.filters.form });
-        $scope.filters.reporting_freq = newSettings && newSettings.reporting_freq;
+        var newSettings = _.findWhere(settings['kujua-reporting'], { code: ctrl.filters.form });
+        ctrl.setFilter({ reporting_freq: newSettings && newSettings.reporting_freq });
       })
       .catch(function(err) {
         $log.error('Error fetching settings', err);
@@ -92,12 +108,12 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
 
     ctrl.setTimeUnit = function(time) {
-      $scope.filters.time_unit = time;
+      ctrl.setFilter({ time_unit: time });
       setDistrict();
     };
 
     ctrl.setTimeQuantity = function(num) {
-      $scope.filters.quantity = num;
+      ctrl.setFilter({ quantity: num });
       setDistrict();
     };
 
@@ -183,7 +199,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     var setDistrict = function(placeId) {
       ctrl.error = false;
       ctrl.loadingTotals = true;
-      var dates = reportingUtils.getDates($scope.filters);
+      var dates = reportingUtils.getDates(ctrl.filters);
       DB()
         .get(placeId || ctrl.place._id)
         .then(function(place) {
@@ -207,7 +223,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
                 { key: 'missing', y: $scope.totals.not_submitted },
                 { key: 'invalid', y: $scope.totals.incomplete }
               ];
-              $scope.filters.district = findDistrict(place);
+              ctrl.setFilter({ district: findDistrict(place) });
               ctrl.place = place;
               ctrl.loadingTotals = false;
             });
@@ -242,5 +258,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
           return saved_data;
         });
     };
+
+    $scope.$on('$destroy', unsubscribe);
   }
 );

@@ -38,6 +38,7 @@ var _ = require('underscore'),
     const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
+        filters: Selectors.getFilters(state),
         selectedContact: Selectors.getSelectedContact(state)
       };
     };
@@ -46,6 +47,7 @@ var _ = require('underscore'),
       const contactsActions = ContactsActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        clearFilters: globalActions.clearFilters,
         clearRightActionBar: globalActions.clearRightActionBar,
         loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
         loadSelectedContactReports: contactsActions.loadSelectedContactReports,
@@ -68,7 +70,7 @@ var _ = require('underscore'),
     ctrl.error = false;
     ctrl.loading = true;
     ctrl.setSelectedContact(null);
-    $scope.filters = {};
+    ctrl.clearFilters();
     var defaultTypeFilter = {};
     var usersHomePlace;
     var additionalListItem = false;
@@ -115,8 +117,8 @@ var _ = require('underscore'),
       }
 
       var actualFilter = defaultTypeFilter;
-      if ($scope.filters.search || $scope.filters.simprintsIdentities) {
-        actualFilter = $scope.filters;
+      if (ctrl.filters.search || ctrl.filters.simprintsIdentities) {
+        actualFilter = ctrl.filters;
       }
 
       var extensions = {};
@@ -144,8 +146,8 @@ var _ = require('underscore'),
             });
 
             additionalListItem =
-              !$scope.filters.search &&
-              !$scope.filters.simprintsIdentities &&
+              !ctrl.filters.search &&
+              !ctrl.filters.simprintsIdentities &&
               (additionalListItem || !ctrl.appending) &&
               homeIndex === -1;
 
@@ -155,14 +157,14 @@ var _ = require('underscore'),
                 contacts.splice(homeIndex, 1);
                 contacts.unshift(usersHomePlace);
               } else if (
-                !$scope.filters.search &&
-                !$scope.filters.simprintsIdentities
+                !ctrl.filters.search &&
+                !ctrl.filters.simprintsIdentities
               ) {
                 contacts.unshift(usersHomePlace);
               }
-              if ($scope.filters.simprintsIdentities) {
+              if (ctrl.filters.simprintsIdentities) {
                 contacts.forEach(function(contact) {
-                  var identity = $scope.filters.simprintsIdentities.find(
+                  var identity = ctrl.filters.simprintsIdentities.find(
                     function(identity) {
                       return identity.id === contact.simprints_id;
                     }
@@ -333,13 +335,13 @@ var _ = require('underscore'),
     };
 
     ctrl.search = function() {
-      if($scope.filters.search && !ctrl.enketoEdited) {
+      if(ctrl.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }
 
       ctrl.loading = true;
-      if ($scope.filters.search || $scope.filters.simprintsIdentities) {
+      if (ctrl.filters.search || ctrl.filters.simprintsIdentities) {
         ctrl.filtered = true;
         liveList = LiveList['contact-search'];
         liveList.set([]);
@@ -357,7 +359,7 @@ var _ = require('underscore'),
     };
 
     ctrl.resetFilterModel = function() {
-      $scope.filters = {};
+      ctrl.clearFilters();
       ctrl.sortDirection = ctrl.defaultSortDirection;
       SearchFilters.reset();
       ctrl.search();
@@ -367,7 +369,7 @@ var _ = require('underscore'),
     ctrl.simprintsIdentify = function() {
       ctrl.loading = true;
       Simprints.identify().then(function(identities) {
-        $scope.filters.simprintsIdentities = identities;
+        ctrl.filters.simprintsIdentities = identities;
         ctrl.search();
       });
     };
@@ -377,7 +379,7 @@ var _ = require('underscore'),
         hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export('contacts', $scope.filters, { humanReadable: true });
+          Export('contacts', ctrl.filters, { humanReadable: true });
         },
       };
       var type;

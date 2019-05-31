@@ -1,22 +1,37 @@
 angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
     Contacts,
-    ScheduledForms
+    GlobalActions,
+    ScheduledForms,
+    Selectors
   ) {
 
     'use strict';
     'ngInject';
 
     const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        filters: Selectors.getFilters(state)
+      };
+    };
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setFilters: globalActions.setFilters
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.filters = {
+    ctrl.setFilters({
       time_unit: 'month',
       quantity: 3
-    };
+    });
 
     $q.all([
       ScheduledForms(),
@@ -46,5 +61,6 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
         $log.error('Error initializing analytics reporting controller', err);
       });
 
+    $scope.$on('$destroy', unsubscribe);
   }
 );

@@ -5,16 +5,28 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/freetext.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
       'ngInject';
 
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          filters: Selectors.getFilters(state),
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        return {
+          setFilter: globalActions.setFilter
+        };
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+      ctrl.inputText = '';
+      ctrl.updateFilter = function() {
+        ctrl.setFilter({ search: ctrl.inputText });
+      };
 
       $scope.$on('$destroy', unsubscribe);
     },

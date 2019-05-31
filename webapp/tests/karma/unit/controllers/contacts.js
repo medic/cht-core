@@ -676,7 +676,7 @@ describe('Contacts controller', () => {
         .then(() => {
           lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 11);
-          scope.filters = { search: true };
+          ctrl.filters = { search: true };
           searchResults = Array(50).fill(searchResult);
           searchService.returns(Promise.resolve(searchResults));
           ctrl.search();

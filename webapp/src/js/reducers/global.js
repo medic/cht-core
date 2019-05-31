@@ -11,6 +11,7 @@ const initialState = {
     error: null
   },
   facilities: [],
+  filters: {},
   isAdmin: false,
   lastChangedDoc: false,
   loadingContent: false,
@@ -53,6 +54,12 @@ module.exports = function(state, action) {
       });
     case actionTypes.SET_FACILITIES:
       return Object.assign({}, state, { facilities: action.payload.facilities });
+    case actionTypes.SET_FILTER:
+      return Object.assign({}, state, {
+        filters: Object.assign({}, state.filters, action.payload.filter)
+      });
+    case actionTypes.SET_FILTERS:
+      return Object.assign({}, state, { filters: action.payload.filters });
     case actionTypes.SET_IS_ADMIN:
       return Object.assign({}, state, { isAdmin: action.payload.isAdmin });
     case actionTypes.SET_LAST_CHANGED_DOC:

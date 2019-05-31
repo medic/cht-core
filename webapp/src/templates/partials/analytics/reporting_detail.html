@@ -1,38 +1,38 @@
 <div class="filter" ng-show="analyticsReportingDetailCtrl.place">
   <label translate>analytics.reporting.date_range</label>
   <a class="btn btn-link"
-    ng-class="{ 'disabled': filters.quantity === 1 }"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 1 }"
     ng-click="analyticsReportingDetailCtrl.setTimeQuantity(1)"
     translate="analytics.reporting.last_time_unit"
     translate-values="{
-      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(filters.time_unit) | translate }}'
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit) | translate }}'
     }"
   ></a>
   <a class="btn btn-link"
-    ng-class="{ 'disabled': filters.quantity === 3 }"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 3 }"
     ng-click="analyticsReportingDetailCtrl.setTimeQuantity(3)"
     translate="analytics.reporting.last_time_unit"
     translate-values="{
       quantity: 3,
-      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(filters.time_unit, true) | translate }}'
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit, true) | translate }}'
     }"
   ></a>
   <a class="btn btn-link"
-    ng-class="{ 'disabled': filters.quantity === 6 }"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 6 }"
     ng-click="analyticsReportingDetailCtrl.setTimeQuantity(6)"
     translate="analytics.reporting.last_time_unit"
     translate-values="{
       quantity: 6,
-      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(filters.time_unit, true) | translate }}'
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit, true) | translate }}'
     }"
   ></a>
   <a class="btn btn-link"
-    ng-class="{ 'disabled': filters.quantity === 12 }"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 12 }"
     ng-click="analyticsReportingDetailCtrl.setTimeQuantity(12)"
     translate="analytics.reporting.last_time_unit"
     translate-values="{
       quantity: 12,
-      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(filters.time_unit, true) | translate }}'
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit, true) | translate }}'
     }"
   ></a>
   <div class="btn-group">
@@ -40,7 +40,7 @@
       <span translate>analytics.reporting.change_time_unit</span> <span class="caret"></span>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li><a ng-show="filters.reporting_freq === 'weekly'"
+      <li><a ng-show="analyticsReportingDetailCtrl.filters.reporting_freq === 'weekly'"
         ng-click="analyticsReportingDetailCtrl.setTimeUnit('week')" translate>week</a></li>
       <li><a ng-click="analyticsReportingDetailCtrl.setTimeUnit('month')" translate>month</a></li>
       <li><a ng-click="analyticsReportingDetailCtrl.setTimeUnit('quarter')" translate>quarter</a></li>
@@ -88,7 +88,7 @@
     <div class="col-sm-1" translate>analytics.reporting.reports</div>
     <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
   </div>
-  <a ui-sref="analytics.reporting.detail({ form: filters.form, place: facility.id })" class="row facility" ng-repeat="facility in analyticsReportingDetailCtrl.facilities">
+  <a ui-sref="analytics.reporting.detail({ form: analyticsReportingDetailCtrl.filters.form, place: facility.id })" class="row facility" ng-repeat="facility in analyticsReportingDetailCtrl.facilities">
     <div class="col-sm-4">
       {{facility.name}} ({{facility.clinics.length}})
     </div>

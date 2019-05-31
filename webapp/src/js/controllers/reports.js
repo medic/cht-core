@@ -33,6 +33,7 @@ angular
     const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
+        filters: Selectors.getFilters(state),
         selectMode: Selectors.getSelectMode(state),
         selectedReports: Selectors.getSelectedReports(state),
         selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
@@ -44,7 +45,9 @@ angular
       const reportsActions = ReportsActions(dispatch);
       return {
         addSelectedReport: reportsActions.addSelectedReport,
+        clearFilters: globalActions.clearFilters,
         removeSelectedReport: reportsActions.removeSelectedReport,
+        setFilters: globalActions.setFilters,
         setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
         setLastChangedDoc: globalActions.setLastChangedDoc,
         setLeftActionBar: globalActions.setLeftActionBar,
@@ -65,9 +68,9 @@ angular
     ctrl.setSelectedReports([]);
     ctrl.appending = false;
     ctrl.error = false;
-    $scope.filters = {
+    ctrl.setFilters({
       search: $stateParams.query,
-    };
+    });
     $scope.verifyingReport = false;
 
     var liveList = LiveList.reports;
@@ -243,7 +246,7 @@ angular
         liveList.set([]);
       }
 
-      Search('reports', $scope.filters, options)
+      Search('reports', ctrl.filters, options)
         .then(updateLiveList)
         .then(function(data) {
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
@@ -272,7 +275,7 @@ angular
           ctrl.error = true;
           ctrl.loading = false;
           if (
-            $scope.filters.search &&
+            ctrl.filters.search &&
             err.reason &&
             err.reason.toLowerCase().indexOf('bad query syntax') !== -1
           ) {
@@ -286,7 +289,7 @@ angular
     ctrl.search = function() {
       // clears report selection for any text search or filter selection
       // does not clear selection when someone is editing a form
-      if(($scope.filters.search || Object.keys($scope.filters).length > 1) && !ctrl.enketoEdited) {
+      if((ctrl.filters.search || Object.keys(ctrl.filters).length > 1) && !ctrl.enketoEdited) {
         $state.go('reports.detail', { id: null }, { notify: false });
         clearSelection();
       }
@@ -296,17 +299,17 @@ angular
       }
       ctrl.loading = true;
       if (
-        $scope.filters.search ||
-        ($scope.filters.forms &&
-          $scope.filters.forms.selected &&
-          $scope.filters.forms.selected.length) ||
-        ($scope.filters.facilities &&
-          $scope.filters.facilities.selected &&
-          $scope.filters.facilities.selected.length) ||
-        ($scope.filters.date &&
-          ($scope.filters.date.to || $scope.filters.date.from)) ||
-        ($scope.filters.valid === true || $scope.filters.valid === false) ||
-        ($scope.filters.verified && $scope.filters.verified.length)
+        ctrl.filters.search ||
+        (ctrl.filters.forms &&
+          ctrl.filters.forms.selected &&
+          ctrl.filters.forms.selected.length) ||
+        (ctrl.filters.facilities &&
+          ctrl.filters.facilities.selected &&
+          ctrl.filters.facilities.selected.length) ||
+        (ctrl.filters.date &&
+          (ctrl.filters.date.to || ctrl.filters.date.from)) ||
+        (ctrl.filters.valid === true || ctrl.filters.valid === false) ||
+        (ctrl.filters.verified && ctrl.filters.verified.length)
       ) {
         $scope.filtered = true;
         liveList = LiveList['report-search'];
@@ -404,7 +407,7 @@ angular
         // can't filter when in select mode
         return;
       }
-      $scope.filters = {};
+      ctrl.clearFilters();
       SearchFilters.reset();
       ctrl.search();
     };
@@ -458,7 +461,7 @@ angular
 
     $scope.$on('SelectAll', function() {
       $scope.setLoadingContent(true);
-      Search('reports', $scope.filters, { limit: 500, hydrateContactNames: true })
+      Search('reports', ctrl.filters, { limit: 500, hydrateContactNames: true })
         .then(function(summaries) {
           var selected = summaries.map(function(summary) {
             return {
@@ -489,7 +492,7 @@ angular
       ctrl.setLeftActionBar({
         hasResults: $scope.hasReports,
         exportFn: function(e) {
-          var exportFilters = _.extendOwn({}, $scope.filters);
+          var exportFilters = _.extendOwn({}, ctrl.filters);
           ['forms', 'facilities'].forEach(function(type) {
             if (exportFilters[type]) {
               delete exportFilters[type].options;

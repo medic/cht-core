@@ -135,7 +135,7 @@ angular
       ctrl.setLeftActionBar({
         hasResults: $scope.messages.length > 0,
         exportFn: function() {
-          Export('messages', $scope.filters, { humanReadable: true });
+          Export('messages', {}, { humanReadable: true });
         },
       });
     };

@@ -5,16 +5,23 @@ angular.module('inboxDirectives').directive('mmDateFilter', function(SearchFilte
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/date.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
       'ngInject';
 
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          filters: Selectors.getFilters(state),
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        return {
+          setFilter: globalActions.setFilter
+        };
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
@@ -23,9 +30,9 @@ angular.module('inboxDirectives').directive('mmDateFilter', function(SearchFilte
       search: '<',
       selected: '<'
     },
-    link: function(scope, e, a, controller) {
+    link: function(s, e, a, controller) {
       SearchFilters.date(function(date) {
-        scope.filters.date = date;
+        controller.setFilter({ date });
         controller.search();
       });
     }

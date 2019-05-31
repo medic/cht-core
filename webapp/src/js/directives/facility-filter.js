@@ -5,7 +5,7 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/facility.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
       'ngInject';
 
       const ctrl = this;
@@ -16,7 +16,13 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        return {
+          setFilter: globalActions.setFilter
+        };
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
@@ -25,9 +31,9 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
       search: '<',
       selected: '<'
     },
-    link: function(scope, e, a, controller) {
+    link: function(s, e, a, controller) {
       SearchFilters.facility(function(facilities) {
-        scope.filters.facilities = facilities;
+        controller.setFilter({ facilities });
         controller.search();
       });
     }

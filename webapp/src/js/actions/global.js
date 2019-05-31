@@ -62,6 +62,18 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
       }
 
+      function clearFilters() {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', {}));
+      }
+
+      function setFilter(filter) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTER, 'filter', filter));
+      }
+
+      function setFilters(filters) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', filters));
+      }
+
       function setIsAdmin(isAdmin) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
@@ -103,12 +115,15 @@ angular.module('inboxServices').factory('GlobalActions',
 
       return {
         clearCancelCallback,
+        clearFilters,
         clearRightActionBar,
         setCancelCallback,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
         setFacilities,
+        setFilter,
+        setFilters,
         setIsAdmin,
         setLeftActionBar,
         setLastChangedDoc,

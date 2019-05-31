@@ -9,6 +9,7 @@ const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited
 const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
 const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getFacilities = state => getGlobalState(state).facilities;
+const getFilters = state => getGlobalState(state).filters;
 const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLastChangedDoc = state => getGlobalState(state).lastChangedDoc;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
@@ -67,6 +68,7 @@ angular.module('inboxServices').constant('Selectors', {
   getEnketoSavingStatus,
   getEnketoError,
   getFacilities,
+  getFilters,
   getIsAdmin,
   getLastChangedDoc,
   getLoadingContent,
