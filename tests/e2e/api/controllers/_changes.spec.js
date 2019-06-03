@@ -1184,10 +1184,10 @@ describe('changes handler', () => {
           .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport ]))
           .then(() => Promise.all([
-            requestChanges('chw'),
-            requestChanges('chw-boss'),
-            requestChanges('supervisor'),
-            requestChanges('bob'),
+            requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
+            requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
+            requestChanges('supervisor'), // supervisor > parent_place
+            requestChanges('bob'), // bob > bobbille > parent_place
           ]))
           .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
             assertChangeIds(chwChanges,
@@ -1262,10 +1262,10 @@ describe('changes handler', () => {
           .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport ]))
           .then(() => Promise.all([
-            requestChanges('chw'),
-            requestChanges('chw-boss'),
-            requestChanges('supervisor'),
-            requestChanges('bob'),
+            requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
+            requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
+            requestChanges('supervisor'), // supervisor > parent_place
+            requestChanges('bob'), // bob > bobbille > parent_place
           ]))
           .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
             assertChangeIds(chwChanges,
