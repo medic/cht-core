@@ -10,7 +10,7 @@
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.1",
     "@medic/phone-number": "^1.0.0",
-    "@medic/registration-utils": "^1.1.0",
+    "@medic/registration-utils": "^1.1.1",
     "angular": "^1.7.5",
     "angular-cookie": "^4.1.0",
     "angular-pouchdb": "^5.0.2",
