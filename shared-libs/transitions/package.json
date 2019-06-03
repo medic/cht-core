@@ -1,6 +1,6 @@
 {
   "name": "@medic/transitions",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test/**/*"
