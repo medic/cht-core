@@ -1,6 +1,6 @@
 var lineageFactory = require('@medic/lineage'),
     messageUtils = require('@medic/message-utils'),
-    registrationUtils = require('@garethbowen/registration-utils');
+    registrationUtils = require('@medic/registration-utils');
 
 angular.module('services').factory('MessageQueueUtils',
   function(

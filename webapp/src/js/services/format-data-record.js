@@ -1,7 +1,7 @@
 var _ = require('underscore'),
   messages = require('@medic/message-utils'),
   lineageFactory = require('@medic/lineage'),
-  registrationUtils = require('@garethbowen/registration-utils');
+  registrationUtils = require('@medic/registration-utils');
 
 angular
   .module('inboxServices')

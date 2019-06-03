@@ -1,5 +1,5 @@
 const utils = require('./utils'),
-      registrationUtils = require('@garethbowen/registration-utils');
+      registrationUtils = require('@medic/registration-utils');
 
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
