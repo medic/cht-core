@@ -1,6 +1,6 @@
 {
   "name": "@medic/transitions",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test/**/*"
@@ -18,7 +18,7 @@
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.2",
     "@medic/phone-number": "^1.0.0",
-    "@medic/registration-utils": "^1.1.0",
+    "@medic/registration-utils": "^1.1.1",
     "@medic/task-utils": "^1.0.0",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
