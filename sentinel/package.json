@@ -11,7 +11,7 @@
     "@medic/lineage": "^1.0.0",
     "@medic/message-utils": "^1.0.1",
     "@medic/phone-number": "^1.0.0",
-    "@medic/registration-utils": "^1.1.0",
+    "@medic/registration-utils": "^1.1.1",
     "@medic/server-checks": "^1.0.1",
     "@medic/task-utils": "^1.0.0",
     "@medic/tombstone-utils": "^1.0.0",
