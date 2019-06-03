@@ -163,7 +163,16 @@ const send = (payload, conf) => {
     return Promise.reject(new Error(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`));
   };
 
-  return auth().then(() => request(sendOptions));
+  return auth().then(() => {
+      logger.info('About to send outbound request');
+      logger.info(JSON.stringify(sendOptions, null, 2));
+
+    return request(sendOptions)
+      .then(result => {
+          logger.info('result from outbound request');
+          logger.info(JSON.stringify(result, null, 2));
+      });
+  });
 };
 
 // Collects pushes to attempt out of the queue, given a global config
