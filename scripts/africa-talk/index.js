@@ -1,5 +1,4 @@
-const apikey =
-  "9ec78208f9eb7796bdd5eecc1837556c45f18a39c11aa5077f1717733d492124";
+const apikey = "Add your key here"
 const options = { apiKey: apikey, username: "sandbox", sandbox: true };
 const africa = require("africastalking")(options);
 
