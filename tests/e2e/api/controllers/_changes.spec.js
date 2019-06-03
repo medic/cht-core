@@ -1179,10 +1179,21 @@ describe('changes handler', () => {
             parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
           }
         };
+        const bobReport = {
+          _id: 'bob_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: null },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:bob',
+           parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+          }
+        };
 
         return utils
           .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport ]))
+          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
@@ -1219,7 +1230,8 @@ describe('changes handler', () => {
             assertChangeIds(bobChanges,
               'org.couchdb.user:bob',
               'fixture:bobville',
-              'fixture:user:bob');
+              'fixture:user:bob',
+              'bob_report');
           });
       });
 
@@ -1257,10 +1269,21 @@ describe('changes handler', () => {
             parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
           }
         };
+        const bobReport = {
+          _id: 'bob_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:bob',
+            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+          }
+        };
 
         return utils
           .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport ]))
+          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
@@ -1284,8 +1307,7 @@ describe('changes handler', () => {
               'health_center_patient',
               'health_center_report',
               'clinic_report',
-              'clinic_report_2'
-            );
+              'clinic_report_2');
             assertChangeIds(supervisorChanges,
               'org.couchdb.user:supervisor',
               'fixture:user:supervisor',
@@ -1297,13 +1319,14 @@ describe('changes handler', () => {
               'PARENT_PLACE',
               'health_center_report',
               'clinic_report',
-              'clinic_report_2'
-              );
+              'clinic_report_2',
+              'bob_report');
 
             assertChangeIds(bobChanges,
               'org.couchdb.user:bob',
               'fixture:bobville',
-              'fixture:user:bob');
+              'fixture:user:bob',
+              'bob_report');
           });
       });
     });
