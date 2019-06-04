@@ -37,16 +37,16 @@ angular
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.messages = [];
+    ctrl.messages = [];
     ctrl.setSelectedMessage(null);
     ctrl.loading = true;
 
     var setMessages = function(options) {
       options = options || {};
       if (options.changes) {
-        MessageListUtils.removeDeleted($scope.messages, options.messages);
+        MessageListUtils.removeDeleted(ctrl.messages, options.messages);
         var selectedChanged = MessageListUtils.mergeUpdated(
-          $scope.messages,
+          ctrl.messages,
           options.messages,
           ctrl.selectedMessage && ctrl.selectedMessage.id
         );
@@ -54,7 +54,7 @@ angular
           $scope.$broadcast('UpdateContactConversation', { silent: true });
         }
       } else {
-        $scope.messages = options.messages || [];
+        ctrl.messages = options.messages || [];
       }
       setActionBarData();
     };
@@ -73,7 +73,7 @@ angular
 
     $scope.markConversationRead = function(docs) {
       var ids = _.pluck(docs, '_id');
-      var conversation = _.find($scope.messages, function(message) {
+      var conversation = _.find(ctrl.messages, function(message) {
         return ids.indexOf(message.id) !== -1;
       });
       if (conversation) {
@@ -91,7 +91,7 @@ angular
       .then(function() {
         if (
           !$state.params.id &&
-          $scope.messages.length &&
+          ctrl.messages.length &&
           !$scope.isMobile() &&
           $state.is('messages.detail')
         ) {
@@ -132,7 +132,7 @@ angular
 
     var setActionBarData = function() {
       ctrl.setLeftActionBar({
-        hasResults: $scope.messages.length > 0,
+        hasResults: ctrl.messages.length > 0,
         exportFn: function() {
           Export('messages', {}, { humanReadable: true });
         },
