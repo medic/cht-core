@@ -3,10 +3,12 @@
  * @see https://github.com/medic/medic-gateway
  */
 const db = require('../db');
+const auth = require('../auth');
 const messaging = require('../services/messaging');
 const records = require('../services/records');
 const logger = require('../logger');
 const config = require('../config');
+const serverUtils = require('../server-utils');
 
 // map from the medic-gateway state to the medic app's state
 const STATUS_MAP = {
@@ -45,7 +47,9 @@ const getOutgoing = () => {
   if (!messaging.isMedicGatewayEnabled()) {
     return [];
   }
-  return messaging.getOutgoingMessages();
+  return messaging.getOutgoingMessages().then(messages => {
+    return markMessagesForwarded(messages).then(() => messages);
+  });
 };
 
 const runTransitions = docs => {
@@ -101,18 +105,20 @@ const processTaskStateUpdates = req => {
   return messaging.updateMessageTaskStates(taskStateChanges);
 };
 
+const checkAuth = req => auth.check(req, 'can_access_gateway_api');
+
 module.exports = {
-  get: () => {
-    return { 'medic-gateway': true };
+  get: (req, res) => {
+    return checkAuth(req)
+      .then(() => res.json({ 'medic-gateway': true }))
+      .catch(err => serverUtils.error(err, req, res));
   },
-  post: req => {
-    return addNewMessages(req)
+  post: (req, res) => {
+    return checkAuth(req)
+      .then(() => addNewMessages(req))
       .then(() => processTaskStateUpdates(req))
-      .then(getOutgoing)
-      .then(outgoingMessages => {
-        return markMessagesForwarded(outgoingMessages).then(() => {
-          return { messages: outgoingMessages };
-        });
-      });
+      .then(() => getOutgoing())
+      .then(messages => res.json({ messages }))
+      .catch(err => serverUtils.error(err, req, res));
   },
 };

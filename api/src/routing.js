@@ -320,29 +320,14 @@ app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 
-app.all('/api/v1/sms/africastalking/incoming-messages', africasTalking.incomingMessages);
-app.all('/api/v1/sms/africastalking/delivery-reports', africasTalking.deliveryReports);
+app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
+app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
 
-app.get('/api/sms/', function(req, res) {
-  res.redirect(301, '/api/sms');
-});
-app.get('/api/sms', function(req, res) {
-  auth
-    .check(req, 'can_access_gateway_api')
-    .then(() => res.json(smsGateway.get()))
-    .catch(err => serverUtils.error(err, req, res));
-});
+app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
+app.get('/api/sms', smsGateway.get);
 
-app.post('/api/sms/', function(req, res) {
-  res.redirect(301, '/api/sms');
-});
-app.postJson('/api/sms', function(req, res) {
-  auth
-    .check(req, 'can_access_gateway_api')
-    .then(() => smsGateway.post(req))
-    .then(results => res.json(results))
-    .catch(err => serverUtils.error(err, req, res));
-});
+app.post('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
+app.postJson('/api/sms', smsGateway.post);
 
 app.get('/api/v2/export/:type', exportData.get);
 app.postJson('/api/v2/export/:type', exportData.get);
