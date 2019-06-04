@@ -4,6 +4,7 @@ const _ = require('underscore'),
   http = require('http'),
   path = require('path'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
+const specReporter = require('jasmine-spec-reporter').SpecReporter;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -15,6 +16,7 @@ const db = new PouchDB(
 );
 
 let originalSettings;
+let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -197,7 +199,9 @@ const deleteAll = (except = []) => {
     )
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
-      console.log(`Deleting docs: ${ids}`);
+      if (e2eDebug) {
+        console.log(`Deleting docs: ${ids}`);
+      }
       return module.exports
         .request({
           path: path.join('/', constants.DB_NAME, '_bulk_docs'),
@@ -206,7 +210,9 @@ const deleteAll = (except = []) => {
           headers: { 'content-type': 'application/json' },
         })
         .then(response => {
-          console.log(`Deleted docs: ${JSON.stringify(response)}`);
+          if (e2eDebug) {
+            console.log(`Deleted docs: ${JSON.stringify(response)}`);
+          }
         });
     });
 };
@@ -333,6 +339,13 @@ module.exports = {
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '_');
     },
+  }),
+
+  specReporter: new specReporter({
+    spec: {
+      displayStacktrace: true,
+      displayDuration: true
+    }
   }),
 
   requestOnTestDb: (options, debug, notJson) => {
@@ -552,4 +565,6 @@ module.exports = {
   // @param {Array} usernames - list of users to be deleted
   // @return {Promise}
   deleteUsers: deleteUsers,
+
+  setDebug: debug => e2eDebug = debug
 };
