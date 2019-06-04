@@ -75,7 +75,7 @@ const loadSettings = function() {
 };
 
 const initTransitionLib = () => {
-  transitionsLib = require('@scdf/transitions')(db, settings, translationCache, logger);
+  transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
