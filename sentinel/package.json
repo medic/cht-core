@@ -32,7 +32,9 @@
     "pouchdb-mapreduce": "^7.0.0",
     "pouchdb-replication": "^7.0.0",
     "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
     "underscore": "^1.9.1",
+    "url-join": "^4.0.0",
     "uuid": "^3.3.2",
     "winston": "^3.1.0"
   },
@@ -64,6 +66,7 @@
     "pouchdb-mapreduce",
     "pouchdb-replication",
     "request",
+    "request-promise-native",
     "underscore",
     "uuid",
     "winston"

@@ -1,67 +1,36 @@
 const _ = require('underscore');
 
-/*
- *  return array of errors or empty array.
- */
-exports.validate = (def, form_data) => {
-  const missing_fields = [];
+const _isDefined = obj => !_.isUndefined(obj) && !_.isNull(obj);
 
-  const _isDefined = obj => !_.isUndefined(obj) && !_.isNull(obj);
+exports.validate = (def, formData) => {
+  const errors = [];
+  const missingFields = [];
 
-  _.each(def.fields, (field, k) => {
-    const orig_key = k;
-    let key = k.split('.');
-    let data = form_data;
+  Object.keys(def.fields).forEach(k => {
+    const field = def.fields[k];
+    const value = formData[k];
 
-    while(key.length > 1) {
-      data = data[key.shift()];
-    }
-
-    key = key[0];
-
-    if (field.required) {
-      if (
-        !data ||
-        !_isDefined(data[key]) ||
-        (_.isArray(data[key]) && !_isDefined(data[key][0]))
-      ) {
-        missing_fields.push(orig_key);
-      }
+    if (field.required && (!value || !_isDefined(value))) {
+      missingFields.push(k);
+    } else if (value) {
+      // TODO: validate types
+      // OR, do it elsewhere?
+      // if (field.type === 'integer' && (typeof value !== 'number' || !Number.isInteger(value))) {
+      //   errors.push({code: 'sys.incorrect_type', ctx: {expectedType: 'integer', key: k}});
+      // } else if (field.type === 'string' && typeof value !== 'string') {
+      //   errors.push({code: 'sys.incorrect_type', ctx: {expectedType: 'string', key: k}});
+      // } else if (field.type === 'date' && typeof value !== 'number') {
+      //   // Dates come in as strings probably and are converted into timestamps
+      //   errors.push({code: 'sys.incorrect_type', ctx: {expectedType: 'date', key: k}});
+      // } else if (field.type === 'complex' && value !== 'object') {
+      //   errors.push({code: 'sys.incorrect_type', ctx: {expectedType: 'complex', key: k}});
+      // }
     }
   });
 
-  if (!_.isEmpty(missing_fields)) {
-    return [{code: 'sys.missing_fields', fields: missing_fields}];
+  if (missingFields.length) {
+    errors.push({code: 'sys.missing_fields', ctx: { fields: missingFields }});
   }
 
-  if (def.validations) {
-
-    const errors = [];
-
-    for (let k of Object.keys(def.validations)) {
-      if (typeof def.validations[k] !== 'string') {
-        continue;
-      }
-      const ret = eval(`(${def.validations[k]})()`); // jshint ignore:line
-      if (!ret) {
-        continue;
-      }
-      // assume string/error message if not object
-      if (!_.isObject(ret)) {
-        errors.push({
-          code: 'sys.form_invalid_custom',
-          form: def.meta.code,
-          message: ret
-        });
-      } else {
-        errors.push(ret);
-      }
-    }
-
-    if (errors.length) {
-      return errors;
-    }
-  }
-
-  return [];
+  return errors;
 };
