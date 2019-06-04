@@ -37,7 +37,6 @@ angular
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.allLoaded = false;
     $scope.messages = [];
     ctrl.setSelectedMessage(null);
     ctrl.loading = true;

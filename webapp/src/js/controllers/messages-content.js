@@ -50,14 +50,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.send = {
+    ctrl.send = {
       message: ''
     };
+    ctrl.allLoaded = false;
 
     const userCtx = Session.userCtx();
 
     var checkScroll = function() {
-      if (this.scrollTop === 0 && !$scope.allLoaded) {
+      if (this.scrollTop === 0 && !ctrl.allLoaded) {
         updateConversation({ skip: true });
       }
     };
@@ -128,7 +129,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           var unread = _.filter(conversation, function(message) {
             return !message.read;
           });
-          $scope.firstUnread = _.min(unread, function(message) {
+          ctrl.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;
           });
           ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
@@ -170,9 +171,9 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
                 }
               }
             });
-            $scope.allLoaded = conversation.length < 50;
+            ctrl.allLoaded = conversation.length < 50;
             if (options.skip) {
-              delete $scope.firstUnread;
+              delete ctrl.firstUnread;
             }
             markAllRead();
             $timeout(function() {
@@ -194,7 +195,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
-    $scope.sendMessage = () => {
+    ctrl.sendMessage = () => {
       if (!ctrl.selectedMessage) {
         $log.error('Error sending message', new Error('No facility selected'));
         return;
@@ -205,26 +206,26 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       } else { // unknown sender
         recipient = { doc: { contact: { phone: ctrl.selectedMessage.id } } };
       }
-      SendMessage(recipient, $scope.send.message)
+      SendMessage(recipient, ctrl.send.message)
         .then(() => {
-          $scope.send.message = '';
+          ctrl.send.message = '';
         })
         .catch(err => {
           $log.error('Error sending message', err);
         });
     };
 
-    $scope.addRecipients = function() {
+    ctrl.addRecipients = function() {
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
         controllerAs: 'sendMessageCtrl',
         model: {
           to: ctrl.selectedMessage.id,
-          message: $scope.send.message
+          message: ctrl.send.message
         }
       });
-      $scope.send.message = '';
+      ctrl.send.message = '';
     };
 
     var changeListener = Changes({
