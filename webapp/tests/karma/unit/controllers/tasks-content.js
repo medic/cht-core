@@ -54,7 +54,7 @@ describe('TasksContentCtrl', function() {
     XmlForm.returns(Promise.resolve({ id: 'myform', doc: { title: 'My Form' } }));
     createController();
     watchCallback();
-    chai.expect($scope.formId).to.equal('A');
+    chai.expect(ctrl.formId).to.equal('A');
     setTimeout(function() {
       chai.expect(render.callCount).to.equal(1);
       chai.expect(render.getCall(0).args.length).to.equal(4);
@@ -71,7 +71,7 @@ describe('TasksContentCtrl', function() {
       actions: [{}, {}] // two forms
     };
     createController();
-    chai.expect($scope.formId).to.equal(null);
+    chai.expect(ctrl.formId).to.equal(null);
     chai.expect(ctrl.loadingForm).to.equal(undefined);
     chai.expect(render.callCount).to.equal(0);
     done();
@@ -95,7 +95,7 @@ describe('TasksContentCtrl', function() {
       }]
     };
     createController();
-    chai.expect($scope.formId).to.equal(null);
+    chai.expect(ctrl.formId).to.equal(null);
     chai.expect(ctrl.loadingForm).to.equal(undefined);
     chai.expect(render.callCount).to.equal(0);
     done();
