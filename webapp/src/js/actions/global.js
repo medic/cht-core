@@ -113,6 +113,10 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      function setTitle(title) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_TITLE, 'title', title));
+      }
+
       function setUnreadCount(unreadCount) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
       }
@@ -147,6 +151,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setSelectMode,
         setShowActionBar,
         setShowContent,
+        setTitle,
         setUnreadCount,
         updateUnreadCount,
         setVersion

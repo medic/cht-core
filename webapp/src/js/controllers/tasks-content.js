@@ -38,7 +38,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
-        setEnketoError: globalActions.setEnketoError
+        setEnketoError: globalActions.setEnketoError,
+        setTitle: globalActions.setTitle
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -92,9 +93,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
                 ctrl.form = formInstance;
                 ctrl.loadingForm = false;
                 if (formDoc.doc.translation_key) {
-                  $scope.setTitle($translate.instant(formDoc.doc.translation_key));
+                  ctrl.setTitle($translate.instant(formDoc.doc.translation_key));
                 } else {
-                  $scope.setTitle(TranslateFrom(formDoc.doc.title));
+                  ctrl.setTitle(TranslateFrom(formDoc.doc.title));
                 }
               })
               .then(() => {

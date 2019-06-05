@@ -55,6 +55,7 @@ angular
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setRightActionBar: globalActions.setRightActionBar,
         setSelectedReports: reportsActions.setSelectedReports,
+        setTitle: globalActions.setTitle,
         updateUnreadCount: globalActions.updateUnreadCount
       };
     };
@@ -115,7 +116,7 @@ angular
       var formInternalId = model.formInternalId || model.form;
       var form = _.findWhere($scope.forms, { code: formInternalId });
       var name = (form && form.name) || (form && form.title) || model.form;
-      $scope.setTitle(name);
+      ctrl.setTitle(name);
     };
 
     var setRightActionBar = function() {

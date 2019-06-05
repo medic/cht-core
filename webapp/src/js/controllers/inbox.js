@@ -96,6 +96,7 @@ var _ = require('underscore'),
         setSelectMode: globalActions.setSelectMode,
         setShowActionBar: globalActions.setShowActionBar,
         setShowContent: globalActions.setShowContent,
+        setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
         setVersion: globalActions.setVersion
       };
@@ -318,7 +319,7 @@ var _ = require('underscore'),
       ctrl.setShowContent(false);
       ctrl.setLoadingContent(false);
       ctrl.setShowActionBar(false);
-      $scope.setTitle();
+      ctrl.setTitle();
       $scope.$broadcast('ClearSelected');
     };
 
@@ -346,10 +347,6 @@ var _ = require('underscore'),
           });
         }
       });
-    };
-
-    $scope.setTitle = function(title) {
-      $scope.title = title;
     };
 
     $scope.setLoadingContent = function(id) {

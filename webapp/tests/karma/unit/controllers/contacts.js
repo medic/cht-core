@@ -82,7 +82,6 @@ describe('Contacts controller', () => {
     typeLabel = 'District';
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
-    scope.setTitle = sinon.stub();
     scope.clearSelection = sinon.stub();
     contactSchema = {
       get: sinon.stub(),
@@ -140,7 +139,8 @@ describe('Contacts controller', () => {
     const stubbedGlobalActions = {
       clearRightActionBar: sinon.stub(),
       setLeftActionBar: sinon.stub(),
-      setRightActionBar: sinon.stub()
+      setRightActionBar: sinon.stub(),
+      setTitle: sinon.stub()
     };
     const contactsActions = ContactsActions($ngRedux.dispatch);
     const stubbedContactsActions = {
@@ -196,15 +196,16 @@ describe('Contacts controller', () => {
   }));
 
   it('sets title', () => {
-    return createController()
+    const ctrl = createController();
+    return ctrl
       .getSetupPromiseForTesting()
       .then(() => {
         return scope.setSelected({ doc: district });
       })
       .then(() => {
-        assert(scope.setTitle.called, 'title should be set');
+        assert(ctrl.setTitle.called, 'title should be set');
         assert.equal(
-          scope.setTitle.getCall(0).args[0],
+          ctrl.setTitle.getCall(0).args[0],
           typeLabel + 'translated'
         );
         assert(liveListInit.called);

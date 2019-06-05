@@ -35,7 +35,8 @@ var _ = require('underscore');
         const tasksActions = TasksActions(dispatch);
         return {
           setSelectedTask: tasksActions.setSelectedTask,
-          setShowContent: globalActions.setShowContent
+          setShowContent: globalActions.setShowContent,
+          setTitle: globalActions.setTitle
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -50,7 +51,7 @@ var _ = require('underscore');
           // old message array style
           task.title = TranslateFrom(task.title, task);
         }
-        $scope.setTitle(TranslateFrom(task.title, task));
+        ctrl.setTitle(TranslateFrom(task.title, task));
         ctrl.setShowContent(true);
       };
 

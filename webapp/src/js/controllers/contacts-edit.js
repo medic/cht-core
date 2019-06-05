@@ -36,7 +36,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
         setLoadingContent: globalActions.setLoadingContent,
-        setShowContent: globalActions.setShowContent
+        setShowContent: globalActions.setShowContent,
+        setTitle: globalActions.setTitle
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -68,7 +69,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       }
       $translate.onReady().then(function() {
         return $translate(key);
-      }).then($scope.setTitle);
+      }).then(ctrl.setTitle);
     };
 
     var getFormInstanceData = function() {
@@ -223,7 +224,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $scope.$on('$destroy', function() {
       unsubscribe();
       if (!$state.includes('contacts.add')) {
-        $scope.setTitle();
+        ctrl.setTitle();
         if (ctrl.enketoContact && ctrl.enketoContact.formInstance) {
           Enketo.unload(ctrl.enketoContact.formInstance);
         }

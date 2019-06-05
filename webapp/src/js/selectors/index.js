@@ -18,6 +18,7 @@ const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBa
 const getSelectMode = state => getGlobalState(state).selectMode;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
+const getTitle = state => getGlobalState(state).title;
 const getUnreadCount = state => getGlobalState(state).unreadCount;
 const getVersion = state => getGlobalState(state).version;
 
@@ -79,6 +80,7 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectMode,
   getShowActionBar,
   getShowContent,
+  getTitle,
   getUnreadCount,
   getVersion,
 

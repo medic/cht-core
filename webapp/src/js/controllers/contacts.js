@@ -57,6 +57,7 @@ var _ = require('underscore'),
         setLoadingSelectedContactReports: contactsActions.setLoadingSelectedContactReports,
         setRightActionBar: globalActions.setRightActionBar,
         setSelectedContact: contactsActions.setSelectedContact,
+        setTitle: globalActions.setTitle,
         updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
@@ -256,7 +257,7 @@ var _ = require('underscore'),
           getCanEdit(ctrl.selectedContact.doc),
         ])
         .then(function(results) {
-          $scope.setTitle(results[0]);
+          ctrl.setTitle(results[0]);
           if (results[1]) {
             ctrl.updateSelectedContact({ doc: { child: results[1] }});
           }

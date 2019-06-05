@@ -21,7 +21,6 @@ describe('Contacts Edit controller', () => {
     globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), stubbedGlobalActions);
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
-    scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
     contactSchema = { get: sinon.stub().returns({ fields: { parent: '' }}) };
     var $translate = key => Promise.resolve(key + 'translated');
