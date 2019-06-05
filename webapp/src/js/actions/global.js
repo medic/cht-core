@@ -42,6 +42,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetCancelCallbackAction(cancelCallback));
       }
 
+      function setCurrentTab(currentTab) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_CURRENT_TAB, 'currentTab', currentTab));
+      }
+
       function createSetEnketoStatusAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
       }
@@ -126,6 +130,7 @@ angular.module('inboxServices').factory('GlobalActions',
         clearFilters,
         clearRightActionBar,
         setCancelCallback,
+        setCurrentTab,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,

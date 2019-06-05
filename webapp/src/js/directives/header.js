@@ -8,6 +8,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          currentTab: Selectors.getCurrentTab(state),
           unreadCount: Selectors.getUnreadCount(state)
         };
       };

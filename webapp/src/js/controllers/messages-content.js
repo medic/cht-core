@@ -33,6 +33,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        currentTab: Selectors.getCurrentTab(state),
         loadingContent: Selectors.getLoadingContent(state),
         selectedMessage: Selectors.getSelectedMessage(state)
       };
@@ -237,7 +238,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         }
       },
       filter: function(change) {
-        return $scope.currentTab === 'messages' &&
+        return ctrl.currentTab === 'messages' &&
           ctrl.selectedMessage &&
           _.findWhere(ctrl.selectedMessage.messages, { id: change.id });
       }

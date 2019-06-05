@@ -26,6 +26,7 @@ var _ = require('underscore');
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          currentTab: Selectors.getCurrentTab(state),
           selectedTask: Selectors.getSelectedTask(state)
         };
       };
@@ -103,7 +104,7 @@ var _ = require('underscore');
       };
 
       $scope.$on('query', function() {
-        if ($scope.currentTab !== 'tasks') {
+        if (ctrl.currentTab !== 'tasks') {
           LiveList.tasks.clearSelected();
           delete LiveList.tasks.notifyChange;
           delete LiveList.tasks.notifyError;

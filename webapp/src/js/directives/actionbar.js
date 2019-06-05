@@ -11,6 +11,7 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       var mapStateToTarget = function(state) {
         return {
           actionBar: Selectors.getActionBar(state),
+          currentTab: Selectors.getCurrentTab(state),
           isAdmin: Selectors.getIsAdmin(state),
           loadingContent: Selectors.getLoadingContent(state),
           loadingSubActionBar: Selectors.getLoadingSubActionBar(state),

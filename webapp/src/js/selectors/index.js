@@ -4,6 +4,7 @@ const reselect = require('reselect');
 const getGlobalState = state => state.global;
 const getActionBar = state => getGlobalState(state).actionBar;
 const getCancelCallback = state => getGlobalState(state).cancelCallback;
+const getCurrentTab = state => getGlobalState(state).currentTab;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
 const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
@@ -64,6 +65,7 @@ angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
   getCancelCallback,
+  getCurrentTab,
   getEnketoStatus,
   getEnketoEditedStatus,
   getEnketoSavingStatus,

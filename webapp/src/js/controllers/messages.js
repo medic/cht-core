@@ -24,6 +24,7 @@ angular
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        currentTab: Selectors.getCurrentTab(state),
         selectedMessage: Selectors.getSelectedMessage(state)
       };
     };
@@ -119,7 +120,7 @@ angular
         updateConversations({ changes: true });
       },
       filter: function(change) {
-        if ($scope.currentTab !== 'messages') {
+        if (ctrl.currentTab !== 'messages') {
           return false;
         }
         return (

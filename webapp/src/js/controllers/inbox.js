@@ -76,6 +76,7 @@ var _ = require('underscore'),
     var mapStateToTarget = function(state) {
       return {
         cancelCallback: Selectors.getCancelCallback(state),
+        currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         selectMode: Selectors.getSelectMode(state),
@@ -86,6 +87,7 @@ var _ = require('underscore'),
     var mapDispatchToTarget = function(dispatch) {
       var globalActions = GlobalActions(dispatch);
       return {
+        setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setFacilities: globalActions.setFacilities,
         setIsAdmin: globalActions.setIsAdmin,
@@ -356,7 +358,7 @@ var _ = require('underscore'),
     };
 
     $transitions.onSuccess({}, function(trans) {
-      $scope.currentTab = trans.to().name.split('.')[0];
+      ctrl.setCurrentTab(trans.to().name.split('.')[0]);
       if (!$state.includes('reports')) {
         ctrl.setSelectMode(false);
       }

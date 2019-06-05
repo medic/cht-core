@@ -11,6 +11,7 @@ angular.module('inboxDirectives').directive('mmFreetextFilter', function(SearchF
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          currentTab: Selectors.getCurrentTab(state),
           filters: Selectors.getFilters(state),
           selectMode: Selectors.getSelectMode(state)
         };

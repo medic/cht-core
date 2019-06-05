@@ -5,6 +5,7 @@ const initialState = {
     right: {}
   },
   cancelCallback: null,
+  currentTab: null,
   enketoStatus: {
     edited: false,
     saving: false,
@@ -49,6 +50,8 @@ module.exports = function(state, action) {
       });
     case actionTypes.SET_CANCEL_CALLBACK:
       return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
+    case actionTypes.SET_CURRENT_TAB:
+      return Object.assign({}, state, { currentTab: action.payload.currentTab });
     case actionTypes.SET_ENKETO_STATUS:
       return Object.assign({}, state, {
         enketoStatus: Object.assign({}, state.enketoStatus, action.payload.enketoStatus)

@@ -2,7 +2,7 @@
   <div class="row">
     <div class="inner">
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && actionBarCtrl.selectMode">
+      <div class="col-sm-4 general-actions left-pane" ng-show="actionBarCtrl.currentTab === 'reports' && actionBarCtrl.selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="emit('SelectAll')">
             <span class="fa fa-check-square-o"></span>
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && !actionBarCtrl.selectMode">
+      <div class="col-sm-4 general-actions left-pane" ng-show="actionBarCtrl.currentTab === 'reports' && !actionBarCtrl.selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'contacts'">
+      <div class="col-sm-4 general-actions left-pane" ng-show="actionBarCtrl.currentTab === 'contacts'">
         <div class="actions dropup" mm-auth mm-auth-any="[ actionBarCtrl.isAdmin, actionBarCtrl.actionBar.left.userChildPlace.type && 'can_create_places' ]">
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.actionBar.left.userChildPlace.type" ui-sref="contacts.addChild({ type: actionBarCtrl.actionBar.left.userChildPlace.type, parent_id: actionBarCtrl.actionBar.left.userFacilityId, from: 'list' })" mm-auth="can_create_places">
             <span class="fa-stack">
@@ -64,9 +64,9 @@
         </div>
       </div>
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'messages'">
+      <div class="col-sm-4 general-actions left-pane" ng-show="actionBarCtrl.currentTab === 'messages'">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="currentTab === 'messages'">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="actionBarCtrl.currentTab === 'messages'">
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
           </a>
@@ -77,7 +77,7 @@
         </div>
       </div>
 
-      <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'reports'">
+      <div class="col-sm-8 detail-actions right-pane" ng-show="actionBarCtrl.currentTab === 'reports'">
         <div ng-show="actionBarCtrl.selectMode">
           <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBarCtrl.selectedReportsDocs.length && (!actionBarCtrl.loadingContent) && 'reports.detail' | isState">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBarCtrl.selectedReportsDocs)">
@@ -130,7 +130,7 @@
         </div>
       </div>
 
-      <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'contacts'">
+      <div class="col-sm-8 detail-actions right-pane" ng-show="actionBarCtrl.currentTab === 'contacts'">
         <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBarCtrl.selectedContactDoc && !actionBarCtrl.loadingContent && ('contacts.detail' | isState)">
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': (!actionBarCtrl.actionBar.right.relevantForms || !actionBarCtrl.actionBar.right.relevantForms.length)}">
