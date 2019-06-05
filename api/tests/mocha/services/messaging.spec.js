@@ -5,6 +5,7 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const africasTalking = require('../../../src/services/africas-talking');
 const service = require('../../../src/services/messaging');
+const recordUtils = require('../../../src/controllers/record-utils');
 
 describe('messaging service', () => {
 
@@ -436,6 +437,74 @@ describe('messaging service', () => {
           state: 'recieved-by-gateway',
           gateway_ref: 'xyz',
         }]);
+      });
+    });
+
+  });
+
+  describe('processIncomingMessages', () => {
+
+    it('does nothing when given nothing', () => {
+      const query = sinon.stub(db.medic, 'query');
+      return service.processIncomingMessages().then(() => {
+        chai.expect(query.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing when given no valid messages', () => {
+      const query = sinon.stub(db.medic, 'query').resolves({ rows: [ { key: 'seen' } ] });
+      const given = [ { content: 'abc', from: '+123' } ]; // no id
+      return service.processIncomingMessages(given).then(() => {
+        chai.expect(query.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing when the messages have been seen before', () => {
+      const query = sinon.stub(db.medic, 'query').resolves({ rows: [ { key: 'seen' } ] });
+      const given = [ { id: 'seen', content: 'abc', from: '+123' } ];
+      const createRecord = sinon.stub(recordUtils, 'createByForm');
+      return service.processIncomingMessages(given).then(() => {
+        chai.expect(query.callCount).to.equal(1);
+        chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_gateway_ref');
+        chai.expect(query.args[0][1]).to.deep.equal({ keys: [ 'seen' ] });
+        chai.expect(createRecord.callCount).to.equal(0);
+      });
+    });
+
+    it('saves WT messages to DB', () => {
+      const createRecord = sinon.stub(recordUtils, 'createByForm')
+        .onCall(0).returns({ message: 'one' })
+        .onCall(1).returns({ message: 'two' })
+        .onCall(2).returns({ message: 'three' });
+
+      sinon.stub(db.medic, 'query').resolves({ offset:0, total_rows:0, rows:[] });
+
+      const transitionsLib = {
+        processDocs: sinon.stub().resolves([
+          { ok: true, id: 'id' },
+          { ok: true, id: 'id' },
+          { ok: true, id: 'id' }
+        ])
+      };
+      sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
+
+      const given = [
+        { id:'1', from:'+1', content:'one'   },
+        { id:'2', from:'+2', content:'two'   },
+        { id:'3', from:'+3', content:'three' },
+      ];
+
+      return service.processIncomingMessages(given).then(() => {
+        chai.expect(createRecord.callCount).to.equal(3);
+        chai.expect(createRecord.args[0][0]).to.deep.equal({ gateway_ref: '1', from: '+1', message: 'one'   });
+        chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
+        chai.expect(createRecord.args[2][0]).to.deep.equal({ gateway_ref: '3', from: '+3', message: 'three' });
+        chai.expect(transitionsLib.processDocs.callCount).to.equal(1);
+        chai.expect(transitionsLib.processDocs.args[0]).to.deep.equal([[
+          { message: 'one' },
+          { message: 'two' },
+          { message: 'three' }
+        ]]);
       });
     });
 

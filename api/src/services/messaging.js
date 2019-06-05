@@ -4,6 +4,7 @@ const environment = require('../environment');
 const logger = require('../logger');
 const config = require('../config');
 const africasTalking = require('./africas-talking');
+const recordUtils = require('../controllers/record-utils');
 
 const DB_CHECKING_INTERVAL = 1000*60*5; // Check DB for messages every 5 minutes
 const SMS_SENDING_SERVICES = {
@@ -124,6 +125,51 @@ const sendMessages = (service, messages) => {
   });
 };
 
+const validateRequiredFields = messages => {
+  const requiredFields = [ 'id', 'content', 'from' ];
+  return messages.filter(message => {
+    return requiredFields.every(field => {
+      if (!message[field]) {
+        logger.info(`Message missing required field "${field}": ${JSON.stringify(message)}`);
+      } else {
+        return true;
+      }
+    });
+  });
+};
+
+const removeDuplicateMessages = messages => {
+  if (!messages.length) {
+    return Promise.resolve([]);
+  }
+  const keys = messages.map(message => message.id);
+  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys })
+    .then(res => res.rows.map(row => row.key))
+    .then(seenIds => messages.filter(message => {
+      if (seenIds.includes(message.id)) {
+        logger.info(`Ignoring message (ID already seen): "${message.id}"`);
+      } else {
+        return true;
+      }
+    }));
+};
+
+const validateIncomingMessages = messages => {
+  return removeDuplicateMessages(validateRequiredFields(messages));
+};
+
+const createDocs = messages => {
+  if (!messages.length) {
+    return [];
+  }
+  const docs = messages.map(message => recordUtils.createByForm({
+    from: message.from,
+    message: message.content,
+    gateway_ref: message.id,
+  }));
+  return config.getTransitionsLib().processDocs(docs);
+};
+
 module.exports = {
   
   /**
@@ -138,6 +184,25 @@ module.exports = {
     return db.medic.get(docId).then(doc => {
       return sendMessages(service, getPendingMessages(doc));
     });
+  },
+
+  /**
+   * Stores incoming messages in the database.
+   * @param messages an array of message objects with properties
+   *    - id: unique gateway reference used to prevent double handling
+   *    - from: the phone number of the original sender
+   *    - content: the string message
+   */
+  processIncomingMessages: (messages=[]) => {
+    return validateIncomingMessages(messages)
+      .then(messages => createDocs(messages))
+      .then(results => {
+        const allOk = results.every(result => result.ok);
+        if (!allOk) {
+          logger.error('Failed saving all the new docs: %o', results);
+          throw new Error('Failed saving all the new docs');
+        }
+      });
   },
 
   /*

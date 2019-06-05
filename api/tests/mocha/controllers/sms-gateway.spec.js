@@ -3,9 +3,6 @@ const sinon = require('sinon');
 
 const controller = require('../../../src/controllers/sms-gateway');
 const messaging = require('../../../src/services/messaging');
-const records = require('../../../src/services/records');
-const db = require('../../../src/db');
-const config = require('../../../src/config');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
@@ -45,21 +42,15 @@ describe('sms-gateway controller', () => {
 
   describe('post', () => {
 
-    it('saves WT messages to DB', () => {
+    it('passes incoming messages to service', () => {
       // given
       sinon.stub(auth, 'check').resolves();
-      const createRecord = sinon.stub(records, 'createByForm')
-        .onCall(0).returns({ message: 'one' })
-        .onCall(1).returns({ message: 'two' })
-        .onCall(2).returns({ message: 'three' });
       const getOutgoingMessages = sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
       const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
       updateMessageTaskStates.resolves({});
 
-      sinon.stub(db.medic, 'query')
-          .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
-
       sinon.stub(messaging, 'isMedicGatewayEnabled').returns(true);
+      sinon.stub(messaging, 'processIncomingMessages').resolves();
 
       const req = { body: {
         messages: [
@@ -69,24 +60,16 @@ describe('sms-gateway controller', () => {
         ]
       } };
 
-      const transitionsLib = { processDocs: sinon.stub()};
-      sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-      transitionsLib.processDocs.resolves([{ ok: true, id: 'id' }, { ok: true, id: 'id' }, { ok: true, id: 'id' }]);
-
       // when
       return controller.post(req, res).then(() => {
         // then
         chai.expect(getOutgoingMessages.callCount).to.equal(1);
-        chai.expect(createRecord.callCount).to.equal(3);
-        chai.expect(createRecord.args[0][0]).to.deep.equal({ gateway_ref: '1', from: '+1', message: 'one'   });
-        chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
-        chai.expect(createRecord.args[2][0]).to.deep.equal({ gateway_ref: '3', from: '+3', message: 'three' });
-        chai.expect(transitionsLib.processDocs.callCount).to.equal(1);
-        chai.expect(transitionsLib.processDocs.args[0]).to.deep.equal([[
-          { message: 'one' },
-          { message: 'two' },
-          { message: 'three' }
-        ]]);
+        chai.expect(messaging.processIncomingMessages.callCount).to.equal(1);
+        chai.expect(messaging.processIncomingMessages.args[0][0]).to.deep.equal([
+          { id:'1', from:'+1', content:'one'   },
+          { id:'2', from:'+2', content:'two'   },
+          { id:'3', from:'+3', content:'three' },
+        ]);
       });
     });
 
@@ -97,6 +80,7 @@ describe('sms-gateway controller', () => {
       updateMessageTaskStates.resolves();
 
       sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
+      sinon.stub(messaging, 'processIncomingMessages').resolves();
 
       const req = { body: {
         updates: [
@@ -107,10 +91,6 @@ describe('sms-gateway controller', () => {
           { id:'5', status:'FAILED', reason:'bad' },
         ],
       } };
-
-      const transitionsLib = { processDocs: sinon.stub()};
-      sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-      transitionsLib.processDocs.resolves([]);
 
       // when
       return controller.post(req, res).then(() => {
@@ -132,6 +112,7 @@ describe('sms-gateway controller', () => {
       updateMessageTaskStates.resolves();
 
       sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
+      sinon.stub(messaging, 'processIncomingMessages').resolves();
 
       const req = { body: {
         updates: [
@@ -160,6 +141,7 @@ describe('sms-gateway controller', () => {
         { id:'3', to:'+3', content:'three' },
       ]);
       sinon.stub(messaging, 'isMedicGatewayEnabled').returns(true);
+      sinon.stub(messaging, 'processIncomingMessages').resolves();
       const updateMessageTaskStates = sinon.stub(messaging, 'updateMessageTaskStates');
       updateMessageTaskStates.resolves();
 
@@ -189,23 +171,15 @@ describe('sms-gateway controller', () => {
     it('returns err if something goes wrong', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(messaging, 'isMedicGatewayEnabled').returns(true);
-      sinon.stub(records, 'createByForm').onCall(0).returns({ message: 'one' });
-      // sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
-      sinon.stub(db.medic, 'query')
-        .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
       sinon.stub(messaging, 'getOutgoingMessages').resolves([]);
-      // sinon.stub(messaging, 'updateMessageTaskStates').returns(Promise.reject(new Error('oh no!')));
       sinon.stub(messaging, 'updateMessageTaskStates').returns(Promise.reject(new Error('oh no!')));
+      sinon.stub(messaging, 'processIncomingMessages').resolves();
 
       const req = { body: {
         messages: [
           { id:'1', from:'+1', content:'one'   },
         ]
       } };
-
-      const transitionsLib = { processDocs: sinon.stub()};
-      sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-      transitionsLib.processDocs.resolves([]);
 
       sinon.stub(serverUtils, 'error').resolves();
       return controller.post(req, res).then(() => {
