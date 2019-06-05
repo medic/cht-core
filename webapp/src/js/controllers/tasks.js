@@ -67,7 +67,7 @@ var _ = require('underscore');
         }
       };
 
-      $scope.refreshTaskList = function() {
+      ctrl.refreshTaskList = function() {
         $window.location.reload();
       };
 
@@ -80,8 +80,8 @@ var _ = require('underscore');
       });
       ctrl.setSelectedTask(null);
       ctrl.error = false;
-      $scope.hasTasks = LiveList.tasks.count() > 0;
-      $scope.tasksDisabled = !RulesEngine.enabled;
+      ctrl.hasTasks = LiveList.tasks.count() > 0;
+      ctrl.tasksDisabled = !RulesEngine.enabled;
       ctrl.loading = true;
 
       RulesEngine.complete.then(function() {
@@ -91,7 +91,7 @@ var _ = require('underscore');
       });
 
       LiveList.tasks.notifyChange = function(task) {
-        $scope.hasTasks = LiveList.tasks.count() > 0;
+        ctrl.hasTasks = LiveList.tasks.count() > 0;
         if (ctrl.selectedTask && task._id === ctrl.selectedTask._id ||
             (!ctrl.selectedTask && task._id === $state.params.id)) {
           setSelectedTask(task);
