@@ -109,6 +109,14 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      function setUnreadCount(unreadCount) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
+      }
+
+      function updateUnreadCount(unreadCount) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
+      }
+
       function setVersion(version) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
       }
@@ -134,7 +142,9 @@ angular.module('inboxServices').factory('GlobalActions',
         setSelectMode,
         setShowActionBar,
         setShowContent,
-        setVersion,
+        setUnreadCount,
+        updateUnreadCount,
+        setVersion
       };
     };
   }

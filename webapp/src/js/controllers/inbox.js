@@ -94,6 +94,7 @@ var _ = require('underscore'),
         setSelectMode: globalActions.setSelectMode,
         setShowActionBar: globalActions.setShowActionBar,
         setShowContent: globalActions.setShowContent,
+        setUnreadCount: globalActions.setUnreadCount,
         setVersion: globalActions.setVersion
       };
     };
@@ -384,12 +385,11 @@ var _ = require('underscore'),
       callback: updateAvailableFacilities,
     });
 
-    $scope.unreadCount = {};
     UnreadRecords(function(err, data) {
       if (err) {
         return $log.error('Error fetching read status', err);
       }
-      $scope.unreadCount = data;
+      ctrl.setUnreadCount(data);
     });
 
     /**

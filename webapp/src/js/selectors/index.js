@@ -17,6 +17,7 @@ const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBa
 const getSelectMode = state => getGlobalState(state).selectMode;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
+const getUnreadCount = state => getGlobalState(state).unreadCount;
 const getVersion = state => getGlobalState(state).version;
 
 // Analytics
@@ -76,6 +77,7 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectMode,
   getShowActionBar,
   getShowContent,
+  getUnreadCount,
   getVersion,
 
   getAnalyticsState,

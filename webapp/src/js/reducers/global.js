@@ -19,6 +19,7 @@ const initialState = {
   selectMode: false,
   showActionBar: false,
   showContent: false,
+  unreadCount: {},
   version: null
 };
 
@@ -74,6 +75,12 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
     case actionTypes.SET_SHOW_CONTENT:
       return Object.assign({}, state, { showContent: action.payload.showContent });
+    case actionTypes.SET_UNREAD_COUNT:
+      return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
+    case actionTypes.UPDATE_UNREAD_COUNT:
+      return Object.assign({}, state, {
+        unreadCount: Object.assign({}, state.unreadCount, action.payload.unreadCount)
+      });
     case actionTypes.SET_VERSION:
       return Object.assign({}, state, { version: action.payload.version });
     default:

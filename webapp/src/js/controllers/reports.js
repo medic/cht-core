@@ -37,7 +37,8 @@ angular
         selectMode: Selectors.getSelectMode(state),
         selectedReports: Selectors.getSelectedReports(state),
         selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
-        showContent: Selectors.getShowContent(state)
+        showContent: Selectors.getShowContent(state),
+        unreadCount: Selectors.getUnreadCount(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
@@ -53,7 +54,8 @@ angular
         setLeftActionBar: globalActions.setLeftActionBar,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
         setRightActionBar: globalActions.setRightActionBar,
-        setSelectedReports: reportsActions.setSelectedReports
+        setSelectedReports: reportsActions.setSelectedReports,
+        updateUnreadCount: globalActions.updateUnreadCount
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -98,13 +100,12 @@ angular
       }
       var listModel = _.findWhere(liveList.getList(), { _id: model._id });
       if (listModel && !listModel.read) {
-        $scope.unreadCount.report--;
+        ctrl.updateUnreadCount({ report: ctrl.unreadCount.report - 1 });
         listModel.read = true;
         LiveList.reports.update(listModel);
         LiveList['report-search'].update(listModel);
       }
       MarkRead([model.doc])
-        .then($scope.updateUnreadCount)
         .catch(function(err) {
           $log.error('Error marking read', err);
         });

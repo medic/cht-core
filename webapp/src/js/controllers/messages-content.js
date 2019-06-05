@@ -81,7 +81,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       if (docs.length) {
         $scope.markConversationRead(docs);
         MarkRead(docs)
-          .then($scope.updateUnreadCount)
           .catch(function(err) {
             return $log.error('Error marking all as read', err);
           });
