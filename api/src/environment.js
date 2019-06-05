@@ -3,9 +3,7 @@ const url = require('url'),
       { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
-  module.exports = {
-    unitTesting: true
-  };
+  module.exports = {};
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');

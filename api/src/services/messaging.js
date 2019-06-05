@@ -1,6 +1,5 @@
 const taskUtils = require('@medic/task-utils');
 const db = require('../db');
-const environment = require('../environment');
 const logger = require('../logger');
 const config = require('../config');
 const africasTalking = require('./africas-talking');
@@ -274,9 +273,10 @@ module.exports = {
     const settings = config.get('sms') || {};
     return settings.outgoing_service === 'medic-gateway';
   }
+  
 };
 
-if (environment.unitTesting) {
+if (process.env.UNIT_TEST_ENV) {
   module.exports._checkDbForMessagesToSend = checkDbForMessagesToSend;
 } else {
   setInterval(checkDbForMessagesToSend, DB_CHECKING_INTERVAL);
