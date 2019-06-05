@@ -73,7 +73,7 @@ angular
     ctrl.setFilters({
       search: $stateParams.query,
     });
-    $scope.verifyingReport = false;
+    ctrl.verifyingReport = false;
 
     var liveList = LiveList.reports;
     LiveList.$init($scope, 'reports', 'report-search');
@@ -83,7 +83,7 @@ angular
         updated.forEach(function(report) {
           liveList.update(report);
         });
-        $scope.hasReports = liveList.count() > 0;
+        ctrl.hasReports = liveList.count() > 0;
         liveList.refresh();
         if ($state.params.id) {
           liveList.setSelected($state.params.id);
@@ -130,7 +130,7 @@ angular
       }
       model.verified = doc.verified;
       model.type = doc.content_type;
-      model.verifyingReport = $scope.verifyingReport;
+      model.verifyingReport = ctrl.verifyingReport;
       if (!doc.contact || !doc.contact._id) {
         return ctrl.setRightActionBar(model);
       }
@@ -166,7 +166,7 @@ angular
           ctrl.selectedReports.length &&
           ctrl.selectedReports[0]._id === model.doc._id;
         if (!refreshing) {
-          $scope.verifyingReport = false;
+          ctrl.verifyingReport = false;
         }
 
         model.expanded = true;
@@ -250,7 +250,7 @@ angular
       Search('reports', ctrl.filters, options)
         .then(updateLiveList)
         .then(function(data) {
-          $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+          ctrl.moreItems = liveList.moreItems = data.length >= options.limit;
           ctrl.loading = false;
           ctrl.appending = false;
           ctrl.error = false;
@@ -312,17 +312,17 @@ angular
         (ctrl.filters.valid === true || ctrl.filters.valid === false) ||
         (ctrl.filters.verified && ctrl.filters.verified.length)
       ) {
-        $scope.filtered = true;
+        ctrl.filtered = true;
         liveList = LiveList['report-search'];
       } else {
-        $scope.filtered = false;
+        ctrl.filtered = false;
         liveList = LiveList.reports;
       }
       query();
     };
 
     $scope.$on('ToggleVerifyingReport', function() {
-      $scope.verifyingReport = !$scope.verifyingReport;
+      ctrl.verifyingReport = !ctrl.verifyingReport;
       setRightActionBar();
     });
 
@@ -331,7 +331,7 @@ angular
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $('#reports-list input[type="checkbox"]').prop('checked', false);
-      $scope.verifyingReport = false;
+      ctrl.verifyingReport = false;
     };
 
     $scope.$on('ClearSelected', function() {
@@ -378,7 +378,7 @@ angular
 
     var initScroll = function() {
       scrollLoader.init(function() {
-        if (!ctrl.loading && $scope.moreItems) {
+        if (!ctrl.loading && ctrl.moreItems) {
           query({ skip: true });
         }
       });
@@ -491,7 +491,7 @@ angular
 
     var setActionBarData = function() {
       ctrl.setLeftActionBar({
-        hasResults: $scope.hasReports,
+        hasResults: ctrl.hasReports,
         exportFn: function(e) {
           var exportFilters = _.extendOwn({}, ctrl.filters);
           ['forms', 'facilities'].forEach(function(type) {
@@ -519,7 +519,7 @@ angular
       callback: function(change) {
         if (change.deleted) {
           liveList.remove(change.id);
-          $scope.hasReports = liveList.count() > 0;
+          ctrl.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
           query({ silent: true, limit: Math.max(50, liveList.count()) });
