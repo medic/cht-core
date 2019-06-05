@@ -320,6 +320,44 @@ describe('bulk-docs handler', () => {
       });
   });
 
+  it('filters offline users results when db name is not medic', () => {
+    const docs = [
+      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+    ];
+
+    return utils
+      .saveDocs(docs)
+      .then(results => {
+        results.forEach((row, idx) => docs[idx]._rev = row.rev);
+
+        offlineRequestOptions.body = JSON.stringify({
+          docs: [
+            { id: 'allowed_contact_1' },
+            { id: 'allowed_contact_2', rev: docs[1].rev },
+            { id: 'allowed_contact_2', rev: 'somerev' },
+            { id: 'denied_contact_1' },
+            { id: 'denied_contact_2', rev: docs[2].rev },
+            { id: 'denied_contact_2', rev: 'somerev' },
+          ]
+        });
+
+        return utils.requestOnMedicDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result.results.length).toEqual(2);
+        expect(result.results[0].id).toEqual('allowed_contact_1');
+        expect(result.results[0].docs.length).toEqual(1);
+        expect(result.results[0].docs[0].ok).toEqual(docs[0]);
+
+        expect(result.results[1].id).toEqual('allowed_contact_2');
+        expect(result.results[1].docs.length).toEqual(1);
+        expect(result.results[1].docs[0].ok).toEqual(docs[1]);
+      });
+  });
+
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
     const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
     offlineRequestOptions.body = JSON.stringify({ docs: [{ _id: 'denied_report' }] });
@@ -338,6 +376,18 @@ describe('bulk-docs handler', () => {
           .catch(err => err),
         utils
           .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get/something` }, offlineRequestOptions))
+          .catch(err => err),
+        utils.requestOnMedicDb(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
+        utils.request(_.defaults({ path: `//medic//_bulk_get` }, offlineRequestOptions)),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//medic//_bulk_get/something` }, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {

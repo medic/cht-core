@@ -349,6 +349,14 @@ module.exports = {
     return request(options, { debug: debug, notJson: notJson });
   },
 
+  requestOnMedicDb: (options, debug, notJson) => {
+    if (typeof options === 'string') {
+      options = { path: options };
+    }
+    options.path = `/medic${options.path || ''}`;
+    return request(options, { debug: debug, notJson: notJson });
+  },
+
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({
