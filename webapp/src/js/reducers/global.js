@@ -1,4 +1,3 @@
-const merge = require('lodash/merge');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
   actionBar: {
@@ -51,6 +50,8 @@ module.exports = function(state, action) {
           right: Object.assign({}, state.actionBar.right, { verified: action.payload.verified })
         })
       });
+    case actionTypes.SET_ANDROID_APP_VERSION:
+      return Object.assign({}, state, { androidAppVersion: action.payload.androidAppVersion });
     case actionTypes.SET_CANCEL_CALLBACK:
       return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
     case actionTypes.SET_CURRENT_TAB:

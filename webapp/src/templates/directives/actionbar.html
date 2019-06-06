@@ -25,12 +25,12 @@
 
       <div class="col-sm-4 general-actions left-pane" ng-show="actionBarCtrl.currentTab === 'reports' && !actionBarCtrl.selectMode">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !actionBarCtrl.nonContactForms.length}">
             <span class="fa fa-plus"></span>
             <p translate>Submit Report</p>
           </a>
-          <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-show="nonContactForms.length">
-            <li ng-repeat="form in nonContactForms | orderBy: 'title' track by form.code">
+          <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-show="actionBarCtrl.nonContactForms.length">
+            <li ng-repeat="form in actionBarCtrl.nonContactForms | orderBy: 'title' track by form.code">
               <a ui-sref="reports.add({ formId: form.code })">
                 <span ng-bind-html="form.icon | resourceIcon"></span>
                 <span class="content">{{form.title}}</span>

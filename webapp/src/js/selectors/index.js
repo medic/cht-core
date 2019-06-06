@@ -3,6 +3,7 @@ const reselect = require('reselect');
 // Global
 const getGlobalState = state => state.global;
 const getActionBar = state => getGlobalState(state).actionBar;
+const getAndroidAppVersion = state => getGlobalState(state).androidAppVersion;
 const getCancelCallback = state => getGlobalState(state).cancelCallback;
 const getCurrentTab = state => getGlobalState(state).currentTab;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
@@ -66,6 +67,7 @@ const getSelectedTask = state => getTasksState(state).selected;
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
+  getAndroidAppVersion,
   getCancelCallback,
   getCurrentTab,
   getEnketoStatus,

@@ -19,7 +19,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
     },
     controllerAs: 'headerCtrl',
     bindToController: {
-      adminUrl: '<'
+      adminUrl: '<',
+      canLogOut: '<'
     }
   };
 });

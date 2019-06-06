@@ -25,6 +25,9 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: 'actionBarCtrl'
+    controllerAs: 'actionBarCtrl',
+    bindToController: {
+      nonContactForms: '<'
+    }
   };
 });

@@ -30,6 +30,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
       }
 
+      function setAndroidAppVersion(androidAppVersion) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ANDROID_APP_VERSION, 'androidAppVersion', androidAppVersion));
+      }
+
       function createSetCancelCallbackAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
       }
@@ -137,6 +141,7 @@ angular.module('inboxServices').factory('GlobalActions',
         clearCancelCallback,
         clearFilters,
         clearRightActionBar,
+        setAndroidAppVersion,
         setCancelCallback,
         setCurrentTab,
         setEnketoError,

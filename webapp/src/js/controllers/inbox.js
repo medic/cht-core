@@ -75,6 +75,7 @@ var _ = require('underscore'),
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        androidAppVersion: Selectors.getAndroidAppVersion(state),
         cancelCallback: Selectors.getCancelCallback(state),
         currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
@@ -88,6 +89,7 @@ var _ = require('underscore'),
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
+        setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setFacilities: globalActions.setFacilities,
@@ -205,7 +207,7 @@ var _ = require('underscore'),
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
     RulesEngine.init.catch(function() {}).then(function() {
-      $scope.dbWarmedUp = true;
+      ctrl.dbWarmedUp = true;
 
       var dbWarmed = performance.now();
       Telemetry.record(
@@ -233,18 +235,18 @@ var _ = require('underscore'),
       $window.medicmobile_android &&
       typeof $window.medicmobile_android.getAppVersion === 'function'
     ) {
-      $scope.android_app_version = $window.medicmobile_android.getAppVersion();
+      ctrl.setAndroidAppVersion($window.medicmobile_android.getAppVersion());
     }
 
-    $scope.canLogOut = false;
-    if ($scope.android_app_version) {
+    ctrl.canLogOut = false;
+    if (ctrl.androidAppVersion) {
       Auth('can_log_out_on_android')
         .then(function() {
-          $scope.canLogOut = true;
+          ctrl.canLogOut = true;
         })
         .catch(function() {}); // not permitted to log out
     } else {
-      $scope.canLogOut = true;
+      ctrl.canLogOut = true;
     }
     $scope.logout = function() {
       Modal({
@@ -441,7 +443,7 @@ var _ = require('underscore'),
           return $log.error('Error fetching form definitions', err);
         }
         Enketo.clearXmlCache();
-        $scope.nonContactForms = xForms.map(function(xForm) {
+        ctrl.nonContactForms = xForms.map(function(xForm) {
           return {
             code: xForm.internalId,
             icon: xForm.icon,
