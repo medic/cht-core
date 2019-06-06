@@ -1,16 +1,17 @@
 angular.module('inboxControllers').controller('ContactsMutedModalCtrl',
   function(
-    $scope,
     $uibModalInstance
   ) {
     'use strict';
     'ngInject';
 
-    $scope.submit = function() {
+    const ctrl = this;
+
+    ctrl.submit = function() {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
   }

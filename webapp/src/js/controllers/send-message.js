@@ -153,11 +153,11 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       initPhoneField(phoneField, to);
     });
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
-    $scope.submit = function() {
+    ctrl.submit = function() {
       $scope.setProcessing();
       Settings()
         .then(function(settings) {

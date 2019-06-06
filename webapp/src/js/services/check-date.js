@@ -13,6 +13,7 @@ angular.module('inboxServices').factory('CheckDate',
       Modal({
         templateUrl: 'templates/modals/bad_local_date.html',
         controller: 'CheckDateCtrl',
+        controllerAs: 'checkDateCtrl',
         model: model
       });
     };

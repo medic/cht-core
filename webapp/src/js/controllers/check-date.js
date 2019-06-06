@@ -1,13 +1,14 @@
 angular.module('inboxControllers').controller('CheckDateCtrl',
   function (
-    $scope,
     $uibModalInstance
   ) {
 
     'use strict';
     'ngInject';
 
-    $scope.ok = function() {
+    const ctrl = this;
+
+    ctrl.ok = function() {
       $uibModalInstance.close();
     };
 

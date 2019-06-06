@@ -4,8 +4,8 @@
   title-key="'Edit'"
   submit-key="'save'"
   submitting-key="'saving'"
-  on-cancel="cancel()"
-  on-submit="submit()"
+  on-cancel="editMessageGroupCtrl.cancel()"
+  on-submit="editMessageGroupCtrl.submit()"
 >
   <form action="" method="POST">
 
@@ -28,7 +28,7 @@
 
     </fieldset>
 
-    <a class="btn" ng-click="addTask()">
+    <a class="btn" ng-click="editMessageGroupCtrl.addTask()">
       <i class="fa fa-plus"></i>
       <span translate>Add Message</span>
     </a>

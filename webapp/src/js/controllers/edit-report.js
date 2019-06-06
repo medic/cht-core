@@ -13,6 +13,8 @@ angular.module('inboxControllers').controller('EditReportCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+
     $uibModalInstance.rendered.then(function() {
       Select2Search($('#edit-report [name=facility]'), 'person', {
         allowNew: false,
@@ -24,11 +26,11 @@ angular.module('inboxControllers').controller('EditReportCtrl',
       });
     });
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
-    $scope.saveReport = function() {
+    ctrl.saveReport = function() {
       var docId = $scope.model.report._id;
       var facilityId = $('#edit-report [name=facility]').val();
       if (!docId) {

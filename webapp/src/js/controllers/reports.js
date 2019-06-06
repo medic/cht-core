@@ -343,6 +343,7 @@ angular
       Modal({
         templateUrl: 'templates/modals/edit_report.html',
         controller: 'EditReportCtrl',
+        controllerAs: 'editReportCtrl',
         model: { report: ctrl.selectedReports[0].doc },
       });
     });
@@ -397,6 +398,7 @@ angular
       Modal({
         templateUrl: 'templates/modals/edit_message_group.html',
         controller: 'EditMessageGroupCtrl',
+        controllerAs: 'editMessageGroupCtrl',
         model: {
           report: report,
           group: angular.copy(group),

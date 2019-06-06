@@ -252,6 +252,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/logout_confirm.html',
         controller: 'LogoutConfirmCtrl',
+        controllerAs: 'logoutConfirmCtrl',
         singleton: true,
       });
     };
@@ -303,6 +304,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/navigation_confirm.html',
         controller: 'NavigationConfirmCtrl',
+        controllerAs: 'navigationConfirmCtrl',
         singleton: true,
       }).then(function() {
         ctrl.setEnketoEditedStatus(false);
@@ -454,13 +456,14 @@ var _ = require('underscore'),
     });
 
     Tour.getTours().then(function(tours) {
-      $scope.tours = tours;
+      ctrl.tours = tours;
     });
 
     $scope.openTourSelect = function() {
       return Modal({
         templateUrl: 'templates/modals/tour_select.html',
         controller: 'TourSelectCtrl',
+        controllerAs: 'tourSelectCtrl',
         singleton: true,
       }).catch(function() {}); // modal dismissed is ok
     };
@@ -469,6 +472,7 @@ var _ = require('underscore'),
       return Modal({
         templateUrl: 'templates/modals/guided_setup.html',
         controller: 'GuidedSetupModalCtrl',
+        controllerAs: 'guidedSetupModalCtrl',
         size: 'lg',
       }).catch(function() {}); // modal dismissed is ok
     };
@@ -483,6 +487,7 @@ var _ = require('underscore'),
           return Modal({
             templateUrl: 'templates/modals/user_language.html',
             controller: 'UserLanguageModalCtrl',
+            controllerAs: 'userLanguageModalCtrl'
           }).catch(function() {});
         },
       },
@@ -495,6 +500,7 @@ var _ = require('underscore'),
           return Modal({
             templateUrl: 'templates/modals/welcome.html',
             controller: 'WelcomeModalCtrl',
+            controllerAs: 'welcomeModalCtrl',
             size: 'lg',
           }).catch(function() {});
         },
@@ -587,6 +593,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/delete_doc_confirm.html',
         controller: 'DeleteDocConfirm',
+        controllerAs: 'deleteDocConfirmCtrl',
         model: { doc: doc },
       }).then(function() {
         if (
@@ -610,6 +617,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/bulk_delete_confirm.html',
         controller: 'BulkDeleteConfirm',
+        controllerAs: 'bulkDeleteConfirmCtrl',
         model: { docs: docs },
       });
     };
@@ -683,6 +691,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
+        controllerAs: 'reloadingModalCtrl',
         singleton: true,
       });
       closeDropdowns();
@@ -693,6 +702,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/version_update.html',
         controller: 'ReloadingModalCtrl',
+        controllerAs: 'reloadingModalCtrl',
         singleton: true,
       }).catch(function() {
         $log.debug('Delaying update');

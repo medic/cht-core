@@ -16,6 +16,8 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
     'ngInject';
     'use strict';
 
+    const ctrl = this;
+
     var validate = function() {
       var countryCode = $('#guided-setup [name=default-country-code]').val();
       var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
@@ -29,7 +31,7 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
       return { valid: true };
     };
 
-    $scope.submit = function() {
+    ctrl.submit = function() {
       $scope.setProcessing();
 
       var valid = validate();
@@ -75,7 +77,7 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
         });
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
@@ -114,7 +116,7 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
     };
 
     Languages().then(function(languages) {
-      $scope.enabledLocales = languages;
+      ctrl.enabledLocales = languages;
       $uibModalInstance.rendered.then(function() {
         $('#guided-setup').on('click', '.horizontal-options a', selectOption);
         $('#guided-setup [name=gateway-number]').on('input', updateNumbers);
