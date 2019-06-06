@@ -15,6 +15,7 @@ const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLastChangedDoc = state => getGlobalState(state).lastChangedDoc;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
+const getReplicationStatus = state => getGlobalState(state).replicationStatus;
 const getSelectMode = state => getGlobalState(state).selectMode;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
@@ -77,6 +78,7 @@ angular.module('inboxServices').constant('Selectors', {
   getLastChangedDoc,
   getLoadingContent,
   getLoadingSubActionBar,
+  getReplicationStatus,
   getSelectMode,
   getShowActionBar,
   getShowContent,

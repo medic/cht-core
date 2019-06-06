@@ -9,6 +9,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       const mapStateToTarget = function(state) {
         return {
           currentTab: Selectors.getCurrentTab(state),
+          replicationStatus: Selectors.getReplicationStatus(state),
           unreadCount: Selectors.getUnreadCount(state)
         };
       };

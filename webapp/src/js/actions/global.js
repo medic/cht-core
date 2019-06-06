@@ -129,6 +129,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
       }
 
+      function updateReplicationStatus(replicationStatus) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
@@ -153,8 +157,9 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowContent,
         setTitle,
         setUnreadCount,
-        updateUnreadCount,
-        setVersion
+        setVersion,
+        updateReplicationStatus,
+        updateUnreadCount
       };
     };
   }

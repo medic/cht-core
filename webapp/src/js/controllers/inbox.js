@@ -72,20 +72,21 @@ var _ = require('underscore'),
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         cancelCallback: Selectors.getCancelCallback(state),
         currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state),
         version: Selectors.getVersion(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
@@ -98,10 +99,11 @@ var _ = require('underscore'),
         setShowContent: globalActions.setShowContent,
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
-        setVersion: globalActions.setVersion
+        setVersion: globalActions.setVersion,
+        updateReplicationStatus: globalActions.updateReplicationStatus
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     Session.init();
 
@@ -134,43 +136,42 @@ var _ = require('underscore'),
       }
     };
 
-    $scope.replicationStatus = {
+    ctrl.updateReplicationStatus({
       disabled: false,
-      lastSuccess: {},
       lastTrigger: undefined,
       current: SYNC_STATUS.unknown,
-    };
+    });
 
     DBSync.addUpdateListener(({ state, to, from }) => {
       if (state === 'disabled') {
-        $scope.replicationStatus.disabled = true;
+        ctrl.updateReplicationStatus({ disabled: true });
         return;
       }
       if (state === 'unknown') {
-        $scope.replicationStatus.current = SYNC_STATUS.unknown;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
       const now = Date.now();
-      const lastTrigger = $scope.replicationStatus.lastTrigger;
+      const lastTrigger = ctrl.replicationStatus.lastTrigger;
       const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
       if (state === 'inProgress') {
-        $scope.replicationStatus.current = SYNC_STATUS.inProgress;
-        $scope.replicationStatus.lastTrigger = now;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.inProgress });
+        ctrl.updateReplicationStatus({ lastTrigger: now });
         $log.info(`Replication started after ${delay} seconds since previous attempt`);
         return;
       }
       if (to === 'success') {
-        $scope.replicationStatus.lastSuccess.to = now;
+        ctrl.updateReplicationStatus({ lastSuccessTo: now });
       }
       if (from === 'success') {
-        $scope.replicationStatus.lastSuccess.from = now;
+        ctrl.updateReplicationStatus({ lastSuccessFrom: now });
       }
       if (to === 'success' && from === 'success') {
         $log.info(`Replication succeeded after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.success;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.success });
       } else {
         $log.info(`Replication failed after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.required;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
       }
     });
 

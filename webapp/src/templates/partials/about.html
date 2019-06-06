@@ -38,23 +38,23 @@
         <dt translate>debug.db_info.seq</dt>
         <dd>{{aboutCtrl.dbInfo.update_seq}}</dd>
         <dt translate>replication.last.success.to</dt>
-        <dd ng-if="!replicationStatus.disabled && replicationStatus.lastSuccess.to">
-          {{replicationStatus.lastSuccess.to | simpleDateTime}}
+        <dd ng-if="!aboutCtrl.replicationStatus.disabled && aboutCtrl.replicationStatus.lastSuccessTo">
+          {{aboutCtrl.replicationStatus.lastSuccessTo | simpleDateTime}}
         </dd>
-        <dd ng-if="!replicationStatus.disabled && !replicationStatus.lastSuccess.to" translate>
+        <dd ng-if="!aboutCtrl.replicationStatus.disabled && !aboutCtrl.replicationStatus.lastSuccessTo" translate>
           replication.last.success.unknown
         </dd>
-        <dd ng-if="replicationStatus.disabled" translate>
+        <dd ng-if="aboutCtrl.replicationStatus.disabled" translate>
           replication.disabled
         </dd>
         <dt translate>replication.last.success.from</dt>
-        <dd ng-if="!replicationStatus.disabled && replicationStatus.lastSuccess.from">
-          {{replicationStatus.lastSuccess.from | simpleDateTime}}
+        <dd ng-if="!aboutCtrl.replicationStatus.disabled && aboutCtrl.replicationStatus.lastSuccessFrom">
+          {{aboutCtrl.replicationStatus.lastSuccessFrom | simpleDateTime}}
         </dd>
-        <dd ng-if="!replicationStatus.disabled && !replicationStatus.lastSuccess.from" translate>
+        <dd ng-if="!aboutCtrl.replicationStatus.disabled && !aboutCtrl.replicationStatus.lastSuccessFrom" translate>
           replication.last.success.unknown
         </dd>
-        <dd ng-if="replicationStatus.disabled" translate>
+        <dd ng-if="aboutCtrl.replicationStatus.disabled" translate>
           replication.disabled
         </dd>
       </dl>

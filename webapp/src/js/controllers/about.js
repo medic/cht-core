@@ -19,6 +19,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        replicationStatus: Selectors.getReplicationStatus(state),
         version: Selectors.getVersion(state)
       };
     };

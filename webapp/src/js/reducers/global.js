@@ -1,3 +1,4 @@
+const merge = require('lodash/merge');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
   actionBar: {
@@ -17,6 +18,7 @@ const initialState = {
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
+  replicationStatus: {},
   selectMode: false,
   showActionBar: false,
   showContent: false,
@@ -89,6 +91,10 @@ module.exports = function(state, action) {
       });
     case actionTypes.SET_VERSION:
       return Object.assign({}, state, { version: action.payload.version });
+    case actionTypes.UPDATE_REPLICATION_STATUS:
+      return Object.assign({}, state, {
+        replicationStatus: Object.assign({}, state.replicationStatus, action.payload.replicationStatus)
+      });
     default:
       return state;
   }
