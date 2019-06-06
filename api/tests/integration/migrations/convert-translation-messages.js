@@ -175,6 +175,10 @@ describe('convert-translation-messages migration', function() {
         one: 'first',
         three: 'three',
       },
+      custom: {
+        custom1: 'custom 1',
+        custom2: 'custom 2'
+      },
       values: {
         one: 'first',
         two: 'second',
@@ -193,7 +197,10 @@ describe('convert-translation-messages migration', function() {
         two: '',
         three: '',
         custom1: 'custom 1',
-      }
+      },
+      custom: {
+        custom2: 'custom 2'
+      },
     };
 
     return utils
@@ -245,6 +252,7 @@ describe('convert-translation-messages migration', function() {
           },
           custom: {
             custom1: 'custom one',
+            custom2: 'custom 2'
           }
         },
         {
@@ -258,6 +266,7 @@ describe('convert-translation-messages migration', function() {
             two: '',
             three: '',
             custom1: 'custom 1',
+            custom2: 'custom 2'
           }
         }
       ]));
