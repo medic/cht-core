@@ -2,8 +2,13 @@ const url = require('url'),
       logger = require('./logger'),
       { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
+let currentDeployInfo;
+const deployInfo = newDeployInfo => currentDeployInfo = newDeployInfo !== undefined ? newDeployInfo : currentDeployInfo;
+
 if (UNIT_TEST_ENV) {
-  module.exports = {};
+  module.exports = {
+    deployInfo
+  };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
@@ -17,6 +22,7 @@ if (UNIT_TEST_ENV) {
     host: parsedUrl.hostname,
     db: parsedUrl.path.replace('/', ''),
     ddoc: 'medic',
+    deployInfo: deployInfo
   };
   if (parsedUrl.auth) {
     var index = parsedUrl.auth.indexOf(':');

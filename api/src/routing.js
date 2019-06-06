@@ -294,6 +294,13 @@ app.get('/api/info', function(req, res) {
   res.json({ version: p.version });
 });
 
+app.get('/api/deploy-info', (req, res) => {
+  if (!req.userCtx) {
+    return serverUtils.notLoggedIn(req, res);
+  }
+  res.json(environment.deployInfo());
+});
+
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req)
     .then(status => {

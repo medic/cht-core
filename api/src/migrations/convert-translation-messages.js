@@ -21,39 +21,50 @@ const getAttachment = name => {
     });
 };
 
+const migrateTranslation = translationDoc => {
+  if (!translationDoc.values) {
+    return Promise.resolve();
+  }
+
+  translationDoc.generic = translationDoc.generic || {};
+  translationDoc.custom = translationDoc.custom || {};
+
+  return getAttachment(translationDoc._id)
+    .then(originalTranslation => {
+      if (!originalTranslation) {
+        // copy values, preserving properties that might already exist
+        return Object.assign(translationDoc.custom, translationDoc.values);
+      }
+
+      Object.keys(translationDoc.values).forEach(key => {
+        // deliberately testing the existence of the property rather than the value
+        // in custom languages many translations fields are empty
+        if (key in originalTranslation) {
+          translationDoc.generic[key] = translationDoc.values[key];
+        } else {
+          translationDoc.custom[key] = translationDoc.values[key];
+        }
+      });
+    })
+    .then(() => {
+      delete translationDoc.values;
+      // put instead of _bulk_docs so we don't implement checking for errors in the response
+      return db.medic.put(translationDoc);
+    });
+};
+
 module.exports = {
   name: 'convert-translation-messages',
   created: new Date(2018, 11, 8),
   run: () => {
-    return db.medic.query('medic-client/doc_by_type', {
-      startkey: [ 'translations', false ],
-      endkey: [ 'translations', true ],
-      include_docs: true
-    }).then(translations => {
-      return Promise.all(translations.map(translationRecord => {
-        if (translationRecord.values) {
-            return getAttachment(translationRecord._id)
-              .then(originalTranslation => {
-                translationRecord.generic = {};
-                translationRecord.custom = {};
-
-                if (originalTranslation) {
-                  Object.keys(translationRecord.values).forEach(key => {
-                    if (originalTranslation[key]) {
-                      translationRecord.generic[key] = translationRecord.values[key];
-                    } else {
-                      translationRecord.custom[key] = translationRecord.values[key];
-                    }
-                  });
-                } else {
-                  translationRecord.generic = translationRecord.values;
-                }
-
-                delete translationRecord.values;
-                return db.medic.put(translationRecord);
-              });
-          }
-      }));
-    });
+    return db.medic
+      .query('medic-client/doc_by_type', {
+        startkey: [ 'translations', false ],
+        endkey: [ 'translations', true ],
+        include_docs: true
+      })
+      .then(translations => {
+        return Promise.all(translations.rows.map(row => migrateTranslation(row.doc)));
+      });
   }
 };

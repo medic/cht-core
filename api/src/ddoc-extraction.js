@@ -6,6 +6,7 @@ const _ = require('underscore'),
   SWMETA_DOC_ID = 'service-worker-meta',
   SERVER_DDOC_ID = '_design/medic',
   CLIENT_DDOC_ID = '_design/medic-client';
+const environment = require('./environment');
 
 const getCompiledDdocs = () => db.medic
   .getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
@@ -43,16 +44,16 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
 };
 
 const extractCompiledDdoc = (newDdoc, deploy_info) => {
+  // update the deploy info in the medic-client ddoc
+  if (newDdoc._id === CLIENT_DDOC_ID && (deploy_info || newDdoc.deploy_info)) {
+    newDdoc.deploy_info = deploy_info;
+  }
+
   return db.medic
     .get(newDdoc._id, { attachments: true })
     .then(oldDdoc => {
       // set the rev so we can update if necessary
       newDdoc._rev = oldDdoc && oldDdoc._rev;
-
-      // update the deploy info in the medic-client ddoc
-      if (newDdoc._id === CLIENT_DDOC_ID && (deploy_info || newDdoc.deploy_info)) {
-        newDdoc.deploy_info = deploy_info;
-      }
 
       if (!oldDdoc) {
         // this is a new ddoc - definitely install it
@@ -123,6 +124,7 @@ const extractServiceWorkerMetaDoc = ddoc => {
 };
 
 const extractFromDdoc = ddoc => {
+  environment.deployInfo(ddoc.deploy_info);
   return Promise.all([
     extractFromCompiledDocs(ddoc.deploy_info),
     extractServiceWorkerMetaDoc(ddoc),

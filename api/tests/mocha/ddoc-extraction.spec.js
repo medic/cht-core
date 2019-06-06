@@ -2,10 +2,14 @@ const ddocExtraction = require('../../src/ddoc-extraction'),
       sinon = require('sinon'),
       db = require('../../src/db'),
       chai = require('chai');
+const environment = require('../../src/environment');
 
 require('chai').should();
 
 describe('DDoc extraction', () => {
+  beforeEach(() => {
+    sinon.stub(environment, 'deployInfo');
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -357,6 +361,8 @@ describe('DDoc extraction', () => {
       docs[0]._id.should.equal('_design/medic-client');
       docs[0]._rev.should.equal('2');
       docs[0].deploy_info.should.deep.equal({ version: 2 });
+      environment.deployInfo.callCount.should.equal(1);
+      environment.deployInfo.args[0].should.deep.equal([{ version: 2 }]);
     });
   });
 
@@ -412,6 +418,8 @@ describe('DDoc extraction', () => {
       docs[0]._id.should.equal('_design/medic-client');
       docs[0]._rev.should.equal('2');
       docs[0].deploy_info.should.deep.equal({ version: 2 });
+      environment.deployInfo.callCount.should.equal(1);
+      environment.deployInfo.args[0].should.deep.equal([{ version: 2 }]);
     });
   });
 
@@ -618,6 +626,55 @@ describe('DDoc extraction', () => {
       docs[0]._id.should.equal('_design/medic-client');
       docs[0]._rev.should.equal('2');
       chai.expect(docs[0].deploy_info).to.equal(undefined);
+    });
+  });
+
+  it('should set deploy_info even if oldDdoc does not exist', () => {
+    const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
+
+    const attachment = { docs: [
+        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+      ] };
+    const ddoc = {
+      _id: '_design/medic',
+      deploy_info: 'something',
+      _attachments: {
+        'js/service-worker.js': {
+          revpos: 2730,
+          digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
+          length: 1224,
+          stub: true
+        }
+      }
+    };
+    const appcache = {
+      _id: 'appcache',
+      _rev: '5',
+      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
+    };
+
+    const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .resolves(Buffer.from(JSON.stringify(attachment)));
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
+    const getSettings = get.withArgs('settings').resolves({ });
+    const getClient = get.withArgs('_design/medic-client').rejects({ status: 404 });
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    return ddocExtraction.run().then(() => {
+      getDdoc.callCount.should.equal(1);
+      getDdocAttachment.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
+      getSettings.callCount.should.equal(0);
+      getClient.callCount.should.equal(1);
+      bulk.callCount.should.equal(1);
+      const docs = bulk.args[0][0].docs;
+      chai.expect(docs.length).to.equal(1);
+      docs[0]._id.should.equal('_design/medic-client');
+      chai.expect(docs[0]._rev).to.equal(undefined);
+      chai.expect(docs[0].deploy_info).to.equal('something');
     });
   });
 
