@@ -119,7 +119,6 @@ describe('africas talking service', () => {
     });
 
     // TODO call lib with "from" of configured shortcode
-    // TODO send requests in series or parallel? limit??
   });
 
 });

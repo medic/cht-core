@@ -55,8 +55,6 @@ const generateStateChange = (message, res) => {
 const sendMessage = message => {
   return africasTalking.SMS
     .send({
-      // TODO get international format for phone number
-      // TODO do we ever have multiple recips?
       to: [ message.to ],
       message: message.content
     })
@@ -80,8 +78,16 @@ module.exports = {
    * @return A Promise which resolves an Array of state change objects.
    */
   send: messages => {
-    return Promise.all(messages.map(sendMessage))
-      .then(results => results.filter(result => result));
+    return messages.reduce((promise, message) => {
+      return promise.then(changes => {
+        return sendMessage(message).then(change => {
+          if (change) {
+            changes.push(change);
+          }
+          return changes;
+        });
+      });
+    }, Promise.resolve([]));
   }
 };
 
