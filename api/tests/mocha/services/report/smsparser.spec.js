@@ -115,13 +115,6 @@ describe('sms parser', () => {
     chai.expect(data.month).to.equal(10);
   });
 
-  it('validations is numeric month stays numeric', () => {
-    const doc = { message: '1!YYYY!foo#2011#11#' };
-    const def = definitions.forms.YYYY;
-    const data = smsparser.parse(def, doc);
-    chai.expect(data.month).to.equal(11);
-  });
-
   it('form not found', () => {
     const doc = {
       message:'1!X0X0!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
@@ -144,7 +137,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: null,
       quantity_dispensed: {
         la_6x1: null,
@@ -176,7 +169,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: true,
       quantity_dispensed: {
         la_6x1: 1,
@@ -208,7 +201,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: false,
       quantity_dispensed: {
         la_6x1: 1,
@@ -739,7 +732,7 @@ describe('sms parser', () => {
     chai.expect(actual).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: false,
       quantity_dispensed: {
         la_6x1: 1,
@@ -776,7 +769,7 @@ describe('sms parser', () => {
     chai.expect(actual).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: false,
       quantity_dispensed: {
         la_6x1: 1,
@@ -812,7 +805,7 @@ describe('sms parser', () => {
     chai.expect(actual).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: false,
       quantity_dispensed: {
         la_6x1: 1,
@@ -848,7 +841,7 @@ describe('sms parser', () => {
     chai.expect(actual).to.deep.equal({
       facility_id: 'facility',
       year: 2011,
-      month: 11,
+      month: 'November',
       misoprostol_administered: false,
       quantity_dispensed: {
         la_6x1: undefined,
@@ -884,7 +877,7 @@ describe('sms parser', () => {
     chai.expect(actual).to.deep.equal({
       facility_id: 'fa\\cility#2#3',
       year: undefined,
-      month: undefined,
+      month: null,
       misoprostol_administered: undefined,
       quantity_dispensed: {
         la_6x1: undefined,

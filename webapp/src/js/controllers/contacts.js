@@ -261,7 +261,7 @@ var _ = require('underscore'),
       $scope.loadingSummary = true;
       return $q
         .all([
-          $translate(title),
+          $translate(title).catch(() => title),
           getActionBarDataForChild(ctrl.selected.doc.type),
           getCanEdit(ctrl.selected.doc),
         ])
