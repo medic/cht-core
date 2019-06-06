@@ -76,7 +76,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
         if (body === 'Server error') {
           errorMessage += 'Check medic-api logs for details.';
         } else {
-          errorMessage += `Response body: ${body}`;
+          errorMessage += `Response status: ${res.statusCode}, body: ${body}`;
         }
 
         const err = new Error(errorMessage);

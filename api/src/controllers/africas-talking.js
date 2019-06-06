@@ -38,24 +38,8 @@ module.exports = {
         };
         return messaging.processIncomingMessages([ message ]);
       })
-      .then(() => res.end())
+      .then(() => res.json({ success: true }))
       .catch(err => serverUtils.error(err, req, res));
-
-    // console.log('INCOMING MESSAGE');
-    // console.log(req.path);
-    // console.log(JSON.stringify(req.headers));
-    // console.log(req.body);
-
-/*
-{
-  linkId: '8485a8ef-00bd-4ee4-9ade-a9488110d3a8',
-  text: 'yup',
-  to: '54619',
-  id: '76311226-78da-44fa-bc40-76e3cfe14aae',
-  date: '2019-06-04 09:30:56',
-  from: '+64274622666'
-}
-*/
   },
   deliveryReports: (req, res) => {
     return checkAuth(req)
@@ -67,15 +51,13 @@ module.exports = {
             message: `Unknown status code: "${req.body.status}", gateway message reference: "${req.body.id}"`
           });
         }
-        const update = {
-          messageId: 'TODO',
+        return messaging.updateMessageTaskStates([{
           state: state,
           details: req.body.failureReason,
-          gateway_ref: req.body.id
-        };
-        return messaging.updateMessageTaskStates([ update ]);
+          gatewayRef: req.body.id
+        }]);
       })
-      .then(() => res.end())
+      .then(() => res.json({ success: true }))
       .catch(err => serverUtils.error(err, req, res));
   },
 };

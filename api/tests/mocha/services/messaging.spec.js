@@ -82,7 +82,7 @@ describe('messaging service', () => {
           messageId: 'testMessageId2',
           state: 'testState2',
           details: 'Just because.',
-          gateway_ref: '55997'
+          gatewayRef: '55997'
         }
       ]).then(() => {
         chai.expect(setTaskState.callCount).to.equal(2);
@@ -94,7 +94,45 @@ describe('messaging service', () => {
       });
     });
 
-    it('DOES NOT throw an error if it cant find the message', () => {
+    it('uses gatewayRef to find messageId', () => {
+      const gatewayRef1 = '55993';
+      const gatewayRef2 = '55997';
+      const messageId1 = 'testMessageId1';
+      const messageId2 = 'testMessageId2';
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: [{ key: gatewayRef1, value: messageId1 }, { key: gatewayRef2, value: messageId2 }] })
+        .onCall(1).resolves({ rows: [{ id: messageId1 }, { id: messageId2 }]});
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        {
+          doc: {
+            _id: 'testDoc',
+            tasks: [{ messages: [{ uuid: messageId1, gateway_ref: gatewayRef1 }] }],
+            scheduled_tasks: [{ messages: [{ uuid: messageId2, gateway_ref: gatewayRef2 }] }]
+          }
+        }
+      ]});
+
+      const bulk = sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      const setTaskState = sinon.stub(taskUtils, 'setTaskState').returns(true);
+
+      return service.updateMessageTaskStates([
+        { gatewayRef: gatewayRef1, state: 'testState1', },
+        { gatewayRef: gatewayRef2, state: 'testState2', details: 'Just because.', }
+      ]).then(() => {
+        chai.expect(setTaskState.callCount).to.equal(2);
+        chai.expect(setTaskState.getCall(0).args).to.deep.equal([{ messages: [{ uuid: messageId1, gateway_ref: gatewayRef1 }]}, 'testState1', undefined, gatewayRef1 ]);
+        chai.expect(setTaskState.getCall(1).args).to.deep.equal([{ messages: [{ uuid: messageId2, gateway_ref: gatewayRef2 }]}, 'testState2', 'Just because.', gatewayRef2 ]);
+
+        const doc = bulk.args[0][0][0];
+        chai.expect(doc._id).to.equal('testDoc');
+
+        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.args[0][0]).to.equal('medic-sms/messages_by_gateway_ref');
+        chai.expect(db.medic.query.args[0][1]).to.deep.equal({ keys: [ gatewayRef1, gatewayRef2 ] });
+      });
+    });
+
+    it('DOES NOT throw an error if it cannot find the message', () => {
       sinon.stub(db.medic, 'query').resolves({rows: [
         {id: 'testMessageId1'}]});
 

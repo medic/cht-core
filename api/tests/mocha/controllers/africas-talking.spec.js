@@ -9,7 +9,7 @@ let res;
 
 describe('Africas Talking controller', () => {
 
-  beforeEach(() => res = { end: sinon.stub() });
+  beforeEach(() => res = { json: sinon.stub() });
 
   afterEach(() => sinon.restore());
 
@@ -21,7 +21,7 @@ describe('Africas Talking controller', () => {
       sinon.stub(serverUtils, 'error').returns();
       return controller.incomingMessages(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(res.end.callCount).to.equal(0);
+        chai.expect(res.json.callCount).to.equal(0);
       });
     });
 
@@ -34,7 +34,7 @@ describe('Africas Talking controller', () => {
         chai.expect(messaging.processIncomingMessages.args[0][0]).to.deep.equal([
           { id: '123', from: '+456', content: 'gidday' }
         ]);
-        chai.expect(res.end.callCount).to.equal(1);
+        chai.expect(res.json.callCount).to.equal(1);
       });
     });
 
@@ -48,7 +48,7 @@ describe('Africas Talking controller', () => {
       const req = {};
       return controller.deliveryReports(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(res.end.callCount).to.equal(0);
+        chai.expect(res.json.callCount).to.equal(0);
       });
     });
 
@@ -62,7 +62,7 @@ describe('Africas Talking controller', () => {
           code: 400,
           message: 'Unknown status code: "unknown", gateway message reference: "123"'
         });
-        chai.expect(res.end.callCount).to.equal(0);
+        chai.expect(res.json.callCount).to.equal(0);
       });
     });
 
@@ -73,9 +73,9 @@ describe('Africas Talking controller', () => {
       return controller.deliveryReports(req, res).then(() => {
         chai.expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
         chai.expect(messaging.updateMessageTaskStates.args[0][0]).to.deep.equal([
-          { messageId: 'TODO', state: 'sent', details: 'none', gateway_ref: '123' }
+          { state: 'sent', details: 'none', gatewayRef: '123' }
         ]);
-        chai.expect(res.end.callCount).to.equal(1);
+        chai.expect(res.json.callCount).to.equal(1);
       });
     });
 

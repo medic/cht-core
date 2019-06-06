@@ -46,7 +46,7 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
       if (!task) {
         logger.error(`Message not found: ${change.messageId}`);
       } else {
-        if (taskUtils.setTaskState(task, change.state, change.details, change.gateway_ref)) {
+        if (taskUtils.setTaskState(task, change.state, change.details, change.gatewayRef)) {
           if (!memo[docId]) {
             memo[docId] = [];
           }
@@ -169,6 +169,24 @@ const createDocs = messages => {
   return config.getTransitionsLib().processDocs(docs);
 };
 
+const resolveMissingUuids = changes => {
+  const gatewayRefs = changes
+    .map(change => !change.messageId && change.gatewayRef)
+    .filter(ref => ref);
+  if (!gatewayRefs.length) {
+    // all messages have ids
+    return Promise.resolve();
+  }
+  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys: gatewayRefs }).then(res => {
+    res.rows.forEach(({ key, value }) => {
+      const change = changes.find(({ gatewayRef }) => gatewayRef === key);
+      if (change) {
+        change.messageId = value;
+      }
+    });
+  });
+};
+
 module.exports = {
   
   /**
@@ -218,17 +236,20 @@ module.exports = {
   },
   /*
    * taskStateChanges: an Array of objects with
-   *   - messageId
+   *   - messageId (optional, if gateway_ref provided)
+   *   - gatewayRef (optional, if messageId provided)
    *   - state
    *   - details (optional)
-   *   - gateway_ref (optional)
    *
    * These state updates are prone to failing due to update conflicts, so this
    * function will retry up to three times for any updates which fail.
    */
   updateMessageTaskStates: (taskStateChanges, retriesLeft=3) => {
-    const options = { keys: taskStateChanges.map(change => change.messageId) };
-    return db.medic.query('medic-sms/messages_by_uuid', options)
+    return resolveMissingUuids(taskStateChanges)
+      .then(() => {
+        const keys = taskStateChanges.map(change => change.messageId);
+        return db.medic.query('medic-sms/messages_by_uuid', { keys });
+      })
       .then(results => {
         const uniqueIds = [...new Set(results.rows.map(row => row.id))];
         return db.medic.allDocs({ keys: uniqueIds, include_docs: true });
