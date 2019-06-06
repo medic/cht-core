@@ -1,4 +1,5 @@
 const taskUtils = require('@medic/task-utils');
+const phoneNumber = require('@medic/phone-number');
 const db = require('../db');
 const logger = require('../logger');
 const config = require('../config');
@@ -105,21 +106,9 @@ const sendMessages = (service, messages) => {
   if (!messages.length) {
     return;
   }
-  return service.send(messages).then(responses => {
-    const stateUpdates = messages
-      .map((message, i) => {
-        const response = responses[i];
-        if (response.success) {
-          return {
-            messageId: message.id,
-            state: response.state,
-            gateway_ref: response.gateway_ref
-          };
-        }
-      })
-      .filter(update => update); // ignore failed updates
-    if (stateUpdates.length) {
-      return module.exports.updateMessageTaskStates(stateUpdates);
+  return service.send(messages).then(statusUpdates => {
+    if (statusUpdates.length) {
+      return module.exports.updateMessageTaskStates(statusUpdates);
     }
   });
 };
@@ -232,7 +221,15 @@ module.exports = {
       endkey: [ 'pending-or-forwarded', '\ufff0' ],
     };
     return db.medic.query('medic-sms/messages_by_state', viewOptions)
-      .then(response => response.rows.map(row => row.value));
+      .then(response => response.rows.map(row => {
+        if (row.value.to) {
+          const normalized = phoneNumber.normalize(config.get(), row.value.to);
+          if (normalized) {
+            row.value.to = normalized;
+          }
+        }
+        return row.value;
+      }));
   },
   /*
    * taskStateChanges: an Array of objects with

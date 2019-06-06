@@ -1,6 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const taskUtils = require('@medic/task-utils');
+const phoneNumber = require('@medic/phone-number');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
 const africasTalking = require('../../../src/services/africas-talking');
@@ -45,6 +46,18 @@ describe('messaging service', () => {
       });
     });
 
+    it('normalizes phone numbers', () => {
+      sinon.stub(db.medic, 'query').resolves({ rows: [
+        { key: 'yayaya', value: { id: 'a', to: '123' } },
+      ] });
+      const normalize = sinon.stub(phoneNumber, 'normalize').returns('+64123');
+
+      return service.getOutgoingMessages({ state: 'pending' }).then(messages => {
+        chai.expect(messages).to.deep.equal([ { id: 'a', to: '+64123' } ]);
+        chai.expect(normalize.callCount).to.equal(1);
+        chai.expect(normalize.args[0][1]).to.equal('123');
+      });
+    });
   });
 
   describe('updateMessageTaskStates', () => {
@@ -377,7 +390,7 @@ describe('messaging service', () => {
       };
       sinon.stub(db.medic, 'get').resolves(doc);
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
-      sinon.stub(africasTalking, 'send').resolves([{ success: false }]);
+      sinon.stub(africasTalking, 'send').resolves([]);
       sinon.stub(service, 'updateMessageTaskStates');
       return service.send('abc').then(() => {
         chai.expect(africasTalking.send.callCount).to.equal(1);
@@ -408,8 +421,8 @@ describe('messaging service', () => {
       sinon.stub(db.medic, 'get').resolves(doc);
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
       sinon.stub(africasTalking, 'send').resolves([
-        { success: true, state: 'sent', gateway_ref: '123' },
-        { success: true, state: 'received_by_gateway', gateway_ref: '456' },
+        { messageId: 'a', state: 'sent', gateway_ref: '123' },
+        { messageId: 'b', state: 'received_by_gateway', gateway_ref: '456' },
       ]);
       sinon.stub(service, 'updateMessageTaskStates');
       return service.send('abc').then(() => {
@@ -448,7 +461,7 @@ describe('messaging service', () => {
       const outgoingMessages = [ { id: 'a', to: '+123', content: 'hello' } ];
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
       sinon.stub(service, 'getOutgoingMessages').resolves(outgoingMessages);
-      sinon.stub(africasTalking, 'send').resolves([ { success: false } ]);
+      sinon.stub(africasTalking, 'send').resolves([]);
       sinon.stub(service, 'updateMessageTaskStates');
       return service._checkDbForMessagesToSend().then(() => {
         chai.expect(africasTalking.send.callCount).to.equal(1);
@@ -464,17 +477,23 @@ describe('messaging service', () => {
         { id: 'b', to: '+456', content: 'bye' }
       ]);
       sinon.stub(africasTalking, 'send').resolves([
-        { success: false },
-        { success: true, state: 'recieved-by-gateway', gateway_ref: 'xyz' },
+        { messageId: 'a', state: 'failed' },
+        { messageId: 'b', state: 'recieved-by-gateway', gatewayRef: 'xyz' },
       ]);
       sinon.stub(service, 'updateMessageTaskStates');
       return service._checkDbForMessagesToSend().then(() => {
         chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
-        chai.expect(service.updateMessageTaskStates.args[0][0]).to.deep.equal([{
-          messageId: 'b',
-          state: 'recieved-by-gateway',
-          gateway_ref: 'xyz',
-        }]);
+        chai.expect(service.updateMessageTaskStates.args[0][0]).to.deep.equal([
+          {
+            messageId: 'a',
+            state: 'failed'
+          },
+          {
+            messageId: 'b',
+            state: 'recieved-by-gateway',
+            gatewayRef: 'xyz',
+          }
+        ]);
       });
     });
 
