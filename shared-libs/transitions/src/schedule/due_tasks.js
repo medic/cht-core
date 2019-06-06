@@ -35,15 +35,15 @@ const getTemplateContext = (doc, callback) => {
 
 module.exports = {
   execute: callback => {
-    var now = moment(date.getDate()),
-      overdue = now.clone().subtract(7, 'days');
+    const now = moment(date.getDate());
+    const overdue = now.clone().subtract(7, 'days');
 
     db.medic.query(
-      'medic/due_tasks',
+      'medic-sms/messages_by_state',
       {
         include_docs: true,
-        endkey: now.toISOString(),
-        startkey: overdue.toISOString(),
+        endkey: [ 'scheduled', now.valueOf() ],
+        startkey: [ 'scheduled', overdue.valueOf() ],
       },
       function(err, result) {
         if (err) {

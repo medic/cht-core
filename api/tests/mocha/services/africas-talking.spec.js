@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');
 const lib = { SMS: { send: () => {} } };
 
@@ -16,6 +17,7 @@ describe('africas talking service', () => {
   describe('send', () => {
 
     it('forwards messages to lib', () => {
+      sinon.stub(config, 'get').returns({ reply_to: '98765' });
       sinon.stub(lib.SMS, 'send').resolves({
         SMSMessageData: {
           Message: 'Sent to 1/1 Total Cost: KES 0.8000',
@@ -33,6 +35,7 @@ describe('africas talking service', () => {
         chai.expect(lib.SMS.send.callCount).to.equal(1);
         chai.expect(lib.SMS.send.args[0][0]).to.deep.equal({
           to: [ '+123' ],
+          from: '98765',
           message: 'hello'
         });
         chai.expect(actual).to.deep.equal([{
@@ -41,6 +44,8 @@ describe('africas talking service', () => {
           state: 'sent',
           details: 'Sent'
         }]);
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(config.get.args[0][0]).to.equal('sms');
       });
     });
 

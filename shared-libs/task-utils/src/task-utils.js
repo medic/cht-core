@@ -7,7 +7,7 @@ var matchedLastHistory = function(task, state) {
 };
 
 /**
- * Updates Task state, timestamp, gateway referehce, state details and state history.
+ * Updates Task state, timestamp, gateway reference, state details and state history.
  * @returns {boolean} Returns true if task state or task history is changed, otherwise returns false.
  */
 var setTaskState = function(task, state, details, gatewayRef) {

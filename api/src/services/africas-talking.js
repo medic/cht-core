@@ -1,4 +1,6 @@
 const logger = require('../logger');
+const config = require('../config');
+
 let africasTalking = require('africastalking')({
   apiKey: '9892f0a4fa88c9ce03ed6b5500e820afa99090caa6eb74e8351bccd961215140',
   username: 'sandbox'
@@ -35,6 +37,11 @@ const getRecipient = res => {
 
 const getStatus = recipient => recipient && STATUS_MAP[recipient.statusCode];
 
+const getFromNumber = () => {
+  const settings = config.get('sms');
+  return settings && settings.reply_to;
+};
+
 const generateStateChange = (message, res) => {
   const recipient = getRecipient(res);
   if (!recipient) {
@@ -52,10 +59,11 @@ const generateStateChange = (message, res) => {
   };
 };
 
-const sendMessage = message => {
+const sendMessage = (message, from) => {
   return africasTalking.SMS
     .send({
       to: [ message.to ],
+      from: from,
       message: message.content
     })
     .catch(res => {
@@ -78,9 +86,10 @@ module.exports = {
    * @return A Promise which resolves an Array of state change objects.
    */
   send: messages => {
+    const from = getFromNumber();
     return messages.reduce((promise, message) => {
       return promise.then(changes => {
-        return sendMessage(message).then(change => {
+        return sendMessage(message, from).then(change => {
           if (change) {
             changes.push(change);
           }
