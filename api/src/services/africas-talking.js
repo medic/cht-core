@@ -1,10 +1,6 @@
+const africasTalking = require('africastalking');
 const logger = require('../logger');
 const config = require('../config');
-
-let africasTalking = require('africastalking')({
-  apiKey: '9892f0a4fa88c9ce03ed6b5500e820afa99090caa6eb74e8351bccd961215140',
-  username: 'sandbox'
-});
 
 // Map of sending statuses to Medic statuses
 // https://build.at-labs.io/docs/sms%2Fsending
@@ -27,6 +23,19 @@ const STATUS_MAP = {
   502: { success: false, state: 'failed', detail: 'RejectedByGateway', retry: true },
 };
 
+const getSettings = () => {
+  const settings = config.get('sms');
+  if (!settings ||
+      !settings.africas_talking ||
+      !settings.africas_talking.api_key ||
+      !settings.africas_talking.username
+  ) {
+    // invalid configuration
+    return false;
+  }
+  return settings;
+};
+
 const getRecipient = res => {
   return res &&
          res.SMSMessageData &&
@@ -36,11 +45,6 @@ const getRecipient = res => {
 };
 
 const getStatus = recipient => recipient && STATUS_MAP[recipient.statusCode];
-
-const getFromNumber = () => {
-  const settings = config.get('sms');
-  return settings && settings.reply_to;
-};
 
 const generateStateChange = (message, res) => {
   const recipient = getRecipient(res);
@@ -59,8 +63,8 @@ const generateStateChange = (message, res) => {
   };
 };
 
-const sendMessage = (message, from) => {
-  return africasTalking.SMS
+const sendMessage = (lib, from, message) => {
+  return lib.SMS
     .send({
       to: [ message.to ],
       from: from,
@@ -86,10 +90,16 @@ module.exports = {
    * @return A Promise which resolves an Array of state change objects.
    */
   send: messages => {
-    const from = getFromNumber();
+    // get the settings every call so changes can be made without restarting api
+    const settings = getSettings();
+    if (!settings) {
+      return Promise.reject(new Error('Outgoing message service is misconfigured. Make sure your configuration has "sms.africas_talking.api_key" and "sms.africas_talking.username" specified.'));
+    }
+    const lib = module.exports._getLib(settings.africas_talking);
+    const from = settings.reply_to;
     return messages.reduce((promise, message) => {
       return promise.then(changes => {
-        return sendMessage(message, from).then(change => {
+        return sendMessage(lib, from, message).then(change => {
           if (change) {
             changes.push(change);
           }
@@ -97,9 +107,9 @@ module.exports = {
         });
       });
     }, Promise.resolve([]));
+  },
+
+  _getLib: ({ api_key, username }) => {
+    return africasTalking({ apiKey: api_key, username: username });
   }
 };
-
-if (process.env.UNIT_TEST_ENV) {
-  module.exports._resetLib = lib => africasTalking = lib;
-}

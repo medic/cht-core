@@ -7,7 +7,7 @@ const lib = { SMS: { send: () => {} } };
 describe('africas talking service', () => {
 
   beforeEach(() => {
-    service._resetLib(lib);
+    sinon.stub(service, '_getLib').returns(lib);
   });
 
   afterEach(() => {
@@ -16,8 +16,25 @@ describe('africas talking service', () => {
 
   describe('send', () => {
 
+    it('fails early with bad config', done => {
+      sinon.stub(config, 'get').returns({});
+      const given = [ { uuid: 'a', to: '+123', content: 'hello' } ];
+      service.send(given)
+        .then(() => done(new Error('expected error to be thrown')))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Outgoing message service is misconfigured. Make sure your configuration has "sms.africas_talking.api_key" and "sms.africas_talking.username" specified.');
+          done();
+        });
+    });
+
     it('forwards messages to lib', () => {
-      sinon.stub(config, 'get').returns({ reply_to: '98765' });
+      sinon.stub(config, 'get').returns({
+        reply_to: '98765',
+        africas_talking: {
+          api_key: 'abc',
+          username: 'user'
+        }
+      });
       sinon.stub(lib.SMS, 'send').resolves({
         SMSMessageData: {
           Message: 'Sent to 1/1 Total Cost: KES 0.8000',
@@ -50,6 +67,13 @@ describe('africas talking service', () => {
     });
 
     it('does not return status update for errors that should be retried', () => {
+      sinon.stub(config, 'get').returns({
+        reply_to: '98765',
+        africas_talking: {
+          api_key: 'abc',
+          username: 'user'
+        }
+      });
       sinon.stub(lib.SMS, 'send')
         // success
         .onCall(0).resolves({
@@ -115,6 +139,13 @@ describe('africas talking service', () => {
     });
 
     it('an invalid response is ignored so it will be retried', () => {
+      sinon.stub(config, 'get').returns({
+        reply_to: '98765',
+        africas_talking: {
+          api_key: 'abc',
+          username: 'user'
+        }
+      });
       sinon.stub(lib.SMS, 'send').rejects('Unknown error');
       const given = [ { uuid: 'a', to: '+123', content: 'hello' } ];
       return service.send(given).then(actual => {
@@ -123,7 +154,6 @@ describe('africas talking service', () => {
       });
     });
 
-    // TODO call lib with "from" of configured shortcode
   });
 
 });
