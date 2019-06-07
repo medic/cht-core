@@ -1,0 +1,33 @@
+*** ./webapp/node_modules/messageformat/lib/plurals.js	Sat Oct 26 10:15:00 1985
+--- ./webapp/node_modules/messageformat/lib/plurals2.js	Fri Jun  7 16:10:19 2019
+***************
+*** 23,34 ****
+    return fn;
+  }
+
+  function get(locale, noPluralKeyChecks) {
+    for (var l = locale; l; l = l.replace(/[-_]?[^-_]*$/, '')) {
+      var pf = plurals[l];
+      if (pf) return wrapPluralFunc(l, pf, noPluralKeyChecks)
+    }
+!   throw new Error('Localisation function not found for locale ' + JSON.stringify(locale));
+  }
+
+  function getAll(noPluralKeyChecks) {
+--- 23,38 ----
+    return fn;
+  }
+
++ function defaultPluralFunc() {
++   return 'other';
++ }
++
+  function get(locale, noPluralKeyChecks) {
+    for (var l = locale; l; l = l.replace(/[-_]?[^-_]*$/, '')) {
+      var pf = plurals[l];
+      if (pf) return wrapPluralFunc(l, pf, noPluralKeyChecks)
+    }
+!   return wrapPluralFunc(l, defaultPluralFunc, noPluralKeyChecks);
+  }
+
+  function getAll(noPluralKeyChecks) {
