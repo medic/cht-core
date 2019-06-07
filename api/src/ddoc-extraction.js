@@ -124,7 +124,7 @@ const extractServiceWorkerMetaDoc = ddoc => {
 };
 
 const extractFromDdoc = ddoc => {
-  environment.deployInfo(ddoc.deploy_info);
+  environment.setDeployInfo(ddoc.deploy_info);
   return Promise.all([
     extractFromCompiledDocs(ddoc.deploy_info),
     extractServiceWorkerMetaDoc(ddoc),

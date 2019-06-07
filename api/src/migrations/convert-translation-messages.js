@@ -3,7 +3,7 @@ const db = require('../db'),
       DDOC_ID = '_design/medic';
 
 const getAttachment = name => {
-  return db.medic.getAttachment(DDOC_ID, `/translations/${name}.properties/`)
+  return db.medic.getAttachment(DDOC_ID, `translations/${name}.properties`)
     .then(attachment => {
       return new Promise((resolve, reject) => {
         properties.parse(attachment.toString('utf8'), (err, values) => {

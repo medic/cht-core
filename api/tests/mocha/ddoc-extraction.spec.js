@@ -8,7 +8,7 @@ require('chai').should();
 
 describe('DDoc extraction', () => {
   beforeEach(() => {
-    sinon.stub(environment, 'deployInfo');
+    sinon.stub(environment, 'setDeployInfo');
   });
 
   afterEach(() => {
@@ -361,8 +361,8 @@ describe('DDoc extraction', () => {
       docs[0]._id.should.equal('_design/medic-client');
       docs[0]._rev.should.equal('2');
       docs[0].deploy_info.should.deep.equal({ version: 2 });
-      environment.deployInfo.callCount.should.equal(1);
-      environment.deployInfo.args[0].should.deep.equal([{ version: 2 }]);
+      environment.setDeployInfo.callCount.should.equal(1);
+      environment.setDeployInfo.args[0].should.deep.equal([{ version: 2 }]);
     });
   });
 
@@ -418,8 +418,8 @@ describe('DDoc extraction', () => {
       docs[0]._id.should.equal('_design/medic-client');
       docs[0]._rev.should.equal('2');
       docs[0].deploy_info.should.deep.equal({ version: 2 });
-      environment.deployInfo.callCount.should.equal(1);
-      environment.deployInfo.args[0].should.deep.equal([{ version: 2 }]);
+      environment.setDeployInfo.callCount.should.equal(1);
+      environment.setDeployInfo.args[0].should.deep.equal([{ version: 2 }]);
     });
   });
 

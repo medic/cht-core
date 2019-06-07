@@ -2,13 +2,8 @@ const url = require('url'),
       logger = require('./logger'),
       { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
-let currentDeployInfo;
-const deployInfo = newDeployInfo => currentDeployInfo = newDeployInfo !== undefined ? newDeployInfo : currentDeployInfo;
-
 if (UNIT_TEST_ENV) {
-  module.exports = {
-    deployInfo
-  };
+  module.exports = {};
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
@@ -22,7 +17,6 @@ if (UNIT_TEST_ENV) {
     host: parsedUrl.hostname,
     db: parsedUrl.path.replace('/', ''),
     ddoc: 'medic',
-    deployInfo: deployInfo
   };
   if (parsedUrl.auth) {
     var index = parsedUrl.auth.indexOf(':');
@@ -37,3 +31,9 @@ if (UNIT_TEST_ENV) {
   );
   process.exit(1);
 }
+
+let deployInfo;
+module.exports.setDeployInfo = newDeployInfo => {
+  deployInfo = newDeployInfo;
+};
+module.exports.getDeployInfo = () => deployInfo;

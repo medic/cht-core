@@ -298,7 +298,7 @@ app.get('/api/deploy-info', (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
   }
-  res.json(environment.deployInfo());
+  res.json(environment.getDeployInfo());
 });
 
 app.get('/api/auth/:path', function(req, res) {
