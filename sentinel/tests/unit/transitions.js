@@ -229,6 +229,7 @@ describe('transitions', () => {
   });
 
   it('deleteReadDocs handles missing read doc', () => {
+    db.medicDbName = 'medic';
     const given = { id: 'abc' };
     const metaDb = {
       remove: sinon.stub(),
@@ -241,7 +242,6 @@ describe('transitions', () => {
     };
     sinon.stub(db, 'allDbs').resolves([`${db.medicDbName}-user-gareth-meta`]);
     sinon.stub(db, 'get').returns(metaDb);
-    db.medicDbName = 'medic';
     return transitions
       ._deleteReadDocs(given)
       .then(() => {
@@ -255,6 +255,7 @@ describe('transitions', () => {
   });
 
   it('deleteReadDocs deletes read doc for all users', () => {
+    db.medicDbName = 'medic';
     const given = { id: 'abc' };
     const metaDb = {
       allDocs: sinon.stub().resolves({
@@ -271,7 +272,6 @@ describe('transitions', () => {
       db.medicDbName, // not a user db - must be ignored
     ]);
     const use = sinon.stub(db, 'get').returns(metaDb);
-    db.medicDbName = 'medic';
     return transitions._deleteReadDocs(given).then(() => {
       assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
