@@ -47,7 +47,7 @@ describe('africas talking service', () => {
           }]
         }
       });
-      const given = [ { uuid: 'a', to: '+123', content: 'hello' } ];
+      const given = [ { id: 'a', to: '+123', content: 'hello' } ];
       return service.send(given).then(actual => {
         chai.expect(lib.SMS.send.callCount).to.equal(1);
         chai.expect(lib.SMS.send.args[0][0]).to.deep.equal({
@@ -115,9 +115,9 @@ describe('africas talking service', () => {
           }
         });
       const given = [
-        { uuid: 'a', to: '+123', content: 'hello' },
-        { uuid: 'b', to: '+456', content: 'hello' },
-        { uuid: 'c', to: '+789', content: 'hello' }
+        { id: 'a', to: '+123', content: 'hello' },
+        { id: 'b', to: '+456', content: 'hello' },
+        { id: 'c', to: '+789', content: 'hello' }
       ];
       return service.send(given).then(actual => {
         chai.expect(lib.SMS.send.callCount).to.equal(3);

@@ -56,7 +56,7 @@ const generateStateChange = (message, res) => {
     return;
   }
   return {
-    messageId: message.uuid,
+    messageId: message.id,
     gatewayRef: recipient.messageId,
     state: status.state,
     details: status.detail

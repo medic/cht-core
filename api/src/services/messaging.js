@@ -6,7 +6,7 @@ const config = require('../config');
 const africasTalking = require('./africas-talking');
 const recordUtils = require('../controllers/record-utils');
 
-const DB_CHECKING_INTERVAL = 1000*60*5; // Check DB for messages every 5 minutes
+const DB_CHECKING_INTERVAL = 1000*60; // Check DB for messages every minute
 const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking
   // sms-gateway -- ignored because it's a pull not a push service
@@ -67,11 +67,14 @@ const getOutgoingMessageService = () => {
 };
 
 const checkDbForMessagesToSend = () => {
+  logger.debug('Checking for a configured outgoing message service');
   const service = getOutgoingMessageService();
   if (!service) {
     return Promise.resolve();
   }
+  logger.debug('Checking for pending outgoing messages');
   return module.exports.getOutgoingMessages().then(messages => {
+    logger.info(`Sending ${messages.length} messages`);
     if (!messages.length) {
       return;
     }
@@ -216,7 +219,7 @@ module.exports = {
    */
   getOutgoingMessages: () => {
     const viewOptions = {
-      limit: 100,
+      limit: 25,
       startkey: [ 'pending-or-forwarded', 0 ],
       endkey: [ 'pending-or-forwarded', '\ufff0' ],
     };

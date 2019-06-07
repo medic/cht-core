@@ -38,7 +38,7 @@ describe('messaging service', () => {
         chai.expect(query.callCount).to.equal(1);
         chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_state');
         chai.expect(query.args[0][1]).to.deep.equal({
-          limit: 100,
+          limit: 25,
           startkey: [ 'pending-or-forwarded', 0 ],
           endkey: [ 'pending-or-forwarded', '\ufff0' ],
         });
