@@ -87,6 +87,20 @@ module.exports = function(grunt) {
             from: /@@APP_CONFIG.name/g,
             to: packageJson.name,
           },
+          {
+            from: /@@COUCH_DB_NAME/g,
+            to: url.parse(COUCH_URL).path.replace('/', ''),
+          },
+        ],
+      },
+      'update-admin-app-constants': {
+        src: ['build/ddocs/medic-admin/_attachments/js/main.js'],
+        overwrite: true,
+        replacements: [
+          {
+            from: /@@COUCH_DB_NAME/g,
+            to: url.parse(COUCH_URL).path.replace('/', ''),
+          },
         ],
       },
       'change-ddoc-id-for-testing': {
@@ -637,6 +651,7 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
+          'replace:update-admin-app-constants',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -972,6 +987,7 @@ module.exports = function(grunt) {
     'copy:admin-resources',
     'ngtemplates:adminApp',
     'browserify:admin',
+    'replace:update-admin-app-constants',
     'less:admin',
   ]);
 
