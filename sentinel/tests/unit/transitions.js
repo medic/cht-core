@@ -239,14 +239,14 @@ describe('transitions', () => {
         ]
       }),
     };
-    sinon.stub(db, 'allDbs').resolves(['medic-user-gareth-meta']);
+    sinon.stub(db, 'allDbs').resolves([`${db.medicDbName}-user-gareth-meta`]);
     sinon.stub(db, 'get').returns(metaDb);
     return transitions
       ._deleteReadDocs(given)
       .then(() => {
         assert.equal(db.allDbs.callCount, 1);
         assert.equal(db.get.callCount, 1);
-        assert.deepEqual(db.get.args[0], ['medic-user-gareth-meta']);
+        assert.deepEqual(db.get.args[0], [`${db.medicDbName}-user-gareth-meta`]);
         assert.equal(metaDb.allDocs.callCount, 1);
         assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
         assert.equal(metaDb.remove.callCount, 0);
@@ -265,16 +265,16 @@ describe('transitions', () => {
       remove: sinon.stub().resolves()
     };
     const list = sinon.stub(db, 'allDbs').resolves([
-      'medic-user-gareth-meta',
-      'medic-user-jim-meta',
-      'medic', // not a user db - must be ignored
+      `${db.medicDbName}-user-gareth-meta`,
+      `${db.medicDbName}-user-jim-meta`,
+      db.medicDbName, // not a user db - must be ignored
     ]);
     const use = sinon.stub(db, 'get').returns(metaDb);
     return transitions._deleteReadDocs(given).then(() => {
       assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
-      assert.equal(use.args[0][0], 'medic-user-gareth-meta');
-      assert.equal(use.args[1][0], 'medic-user-jim-meta');
+      assert.equal(use.args[0][0], `${db.medicDbName}-user-gareth-meta`);
+      assert.equal(use.args[1][0], `${db.medicDbName}-user-jim-meta`);
       assert.equal(metaDb.allDocs.callCount, 2);
       assert.equal(metaDb.allDocs.args[0][0].keys.length, 2);
       assert.equal(metaDb.allDocs.args[0][0].keys[0], 'read:report:abc');
