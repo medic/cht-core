@@ -219,9 +219,9 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
                 ctrl.facilities = rows;
               }
               ctrl.chart = [
-                { key: 'valid', y: $scope.totals.complete },
-                { key: 'missing', y: $scope.totals.not_submitted },
-                { key: 'invalid', y: $scope.totals.incomplete }
+                { key: 'valid', y: ctrl.totals.complete },
+                { key: 'missing', y: ctrl.totals.not_submitted },
+                { key: 'invalid', y: ctrl.totals.incomplete }
               ];
               ctrl.setFilter({ district: findDistrict(place) });
               ctrl.place = place;

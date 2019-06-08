@@ -197,7 +197,7 @@ var _ = require('underscore'),
       key: 'sync-status',
       callback: function() {
         if (!DBSync.isSyncInProgress()) {
-          $scope.replicationStatus.current = SYNC_STATUS.required;
+          ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
         }
       },
     });
@@ -227,7 +227,7 @@ var _ = require('underscore'),
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
     ctrl.setVersion(APP_CONFIG.version);
-    $scope.tours = [];
+    ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
 
