@@ -89,7 +89,7 @@ module.exports = function(grunt) {
           },
           {
             from: /@@COUCH_DB_NAME/g,
-            to: url.parse(COUCH_URL).path.replace('/', ''),
+            to: couchConfig.dbName,
           },
         ],
       },
@@ -99,7 +99,7 @@ module.exports = function(grunt) {
         replacements: [
           {
             from: /@@COUCH_DB_NAME/g,
-            to: url.parse(COUCH_URL).path.replace('/', ''),
+            to: couchConfig.dbName,
           },
         ],
       },
