@@ -1,7 +1,9 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const request = require('request-promise-native');
 const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');
+const environment = require('../../../src/environment');
 const lib = { SMS: { send: () => {} } };
 
 describe('africas talking service', () => {
@@ -22,18 +24,17 @@ describe('africas talking service', () => {
       service.send(given)
         .then(() => done(new Error('expected error to be thrown')))
         .catch(err => {
-          chai.expect(err.message).to.equal('Outgoing message service is misconfigured. Make sure your configuration has "sms.africas_talking.api_key" and "sms.africas_talking.username" specified.');
+          chai.expect(err).to.equal('No username configured. Refer to the Africa\'s Talking configuration documentation.');
           done();
         });
     });
 
     it('forwards messages to lib', () => {
+      sinon.stub(environment, 'serverUrl').value('server.com');
+      sinon.stub(request, 'get').resolves('"555"\n');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
-        africas_talking: {
-          api_key: 'abc',
-          username: 'user'
-        }
+        africas_talking: { username: 'user' }
       });
       sinon.stub(lib.SMS, 'send').resolves({
         SMSMessageData: {
@@ -63,16 +64,19 @@ describe('africas talking service', () => {
         }]);
         chai.expect(config.get.callCount).to.equal(1);
         chai.expect(config.get.args[0][0]).to.equal('sms');
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0]).to.equal('server.com/_node/couchdb@localhost/_config/medic-credentials/africastalking.com');
+        chai.expect(service._getLib.callCount).to.equal(1);
+        chai.expect(service._getLib.args[0][0].apiKey).to.equal('555');
+        chai.expect(service._getLib.args[0][0].username).to.equal('user');
       });
     });
 
     it('does not return status update for errors that should be retried', () => {
+      sinon.stub(request, 'get').resolves('"555"\n');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
-        africas_talking: {
-          api_key: 'abc',
-          username: 'user'
-        }
+        africas_talking: { username: 'user' }
       });
       sinon.stub(lib.SMS, 'send')
         // success
@@ -139,12 +143,10 @@ describe('africas talking service', () => {
     });
 
     it('an invalid response is ignored so it will be retried', () => {
+      sinon.stub(request, 'get').resolves('"555"\n');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
-        africas_talking: {
-          api_key: 'abc',
-          username: 'user'
-        }
+        africas_talking: { username: 'user' }
       });
       sinon.stub(lib.SMS, 'send').rejects('Unknown error');
       const given = [ { uuid: 'a', to: '+123', content: 'hello' } ];

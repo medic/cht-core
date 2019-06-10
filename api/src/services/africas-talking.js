@@ -1,4 +1,6 @@
+const request = require('request-promise-native');
 const africasTalking = require('africastalking');
+const environment = require('../environment');
 const logger = require('../logger');
 const config = require('../config');
 
@@ -23,17 +25,33 @@ const STATUS_MAP = {
   502: { success: false, state: 'failed', detail: 'RejectedByGateway', retry: true },
 };
 
+// TODO Pull this function out as a service once this is merged: https://github.com/medic/medic/pull/5686/
+const fetchApiKey = () => {
+  return request.get(`${environment.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com`)
+    // This API gives weird psuedo-JSON results:
+    //   "password"\n
+    // Should be just `password`
+    .then(result => result.match(/^"(.+)"\n?$/)[1])
+    .catch(err => {
+      if (err.statusCode === 404) {
+        throw new Error(`CouchDB config key 'medic-credentials/africastalking.com' has not been populated. Refer to the Africa's Talking configuration documentation.`);
+      }
+
+      // Throw it regardless so the process gets halted, we just error above for higher specificity
+      throw err;
+    });
+};
+
 const getSettings = () => {
   const settings = config.get('sms');
-  if (!settings ||
-      !settings.africas_talking ||
-      !settings.africas_talking.api_key ||
-      !settings.africas_talking.username
-  ) {
+  const username = settings &&
+                   settings.africas_talking &&
+                   settings.africas_talking.username;
+  if (!username) {
     // invalid configuration
-    return false;
+    return Promise.reject('No username configured. Refer to the Africa\'s Talking configuration documentation.');
   }
-  return settings;
+  return fetchApiKey().then(apiKey => ({ apiKey, username, from: settings.reply_to }));
 };
 
 const getRecipient = res => {
@@ -91,25 +109,21 @@ module.exports = {
    */
   send: messages => {
     // get the settings every call so changes can be made without restarting api
-    const settings = getSettings();
-    if (!settings) {
-      return Promise.reject(new Error('Outgoing message service is misconfigured. Make sure your configuration has "sms.africas_talking.api_key" and "sms.africas_talking.username" specified.'));
-    }
-    const lib = module.exports._getLib(settings.africas_talking);
-    const from = settings.reply_to;
-    return messages.reduce((promise, message) => {
-      return promise.then(changes => {
-        return sendMessage(lib, from, message).then(change => {
-          if (change) {
-            changes.push(change);
-          }
-          return changes;
+    return getSettings().then(settings => {
+      const lib = module.exports._getLib(settings);
+      return messages.reduce((promise, message) => {
+        return promise.then(changes => {
+          return sendMessage(lib, settings.from, message).then(change => {
+            if (change) {
+              changes.push(change);
+            }
+            return changes;
+          });
         });
-      });
-    }, Promise.resolve([]));
+      }, Promise.resolve([]));
+    });
   },
 
-  _getLib: ({ api_key, username }) => {
-    return africasTalking({ apiKey: api_key, username: username });
-  }
+  _getLib: ({ apiKey, username }) => africasTalking({ apiKey, username })
+
 };

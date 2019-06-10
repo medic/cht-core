@@ -73,13 +73,15 @@ const checkDbForMessagesToSend = () => {
     return Promise.resolve();
   }
   logger.debug('Checking for pending outgoing messages');
-  return module.exports.getOutgoingMessages().then(messages => {
-    logger.info(`Sending ${messages.length} messages`);
-    if (!messages.length) {
-      return;
-    }
-    return sendMessages(service, messages);
-  });
+  return module.exports.getOutgoingMessages()
+    .then(messages => {
+      logger.info(`Sending ${messages.length} messages`);
+      if (!messages.length) {
+        return;
+      }
+      return sendMessages(service, messages);
+    })
+    .catch(err => logger.error('Error sending outgoing messages: %o', err));
 };
 
 const getPendingMessages = doc => {
