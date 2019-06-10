@@ -1,3 +1,34 @@
+var now = extras.now;
+var MS_IN_DAY = extras.MS_IN_DAY;
+var DAYS_IN_PNC = extras.DAYS_IN_PNC;
+var IMMUNIZATION_LIST = extras.IMMUNIZATION_LIST;
+var isCoveredByUseCaseInLineage = extras.isCoveredByUseCaseInLineage;
+var getTreatmentProgram = extras.getTreatmentProgram;
+var getNewestDelivery = extras.getNewestDelivery;
+var getNewestPncPeriod = extras.getNewestPncPeriod;
+var getDeliveryCode = extras.getDeliveryCode;
+var isFacilityDelivery = extras.isFacilityDelivery;
+var getBirthDate = extras.getBirthDate;
+var isHighRiskPostnatal = extras.isHighRiskPostnatal;
+var addImmunizations = extras.addImmunizations;
+var getMostRecentNutritionEnrollment = extras.getMostRecentNutritionEnrollment;
+var countNutritionFollowups = extras.countNutritionFollowups;
+var isActivePregnancy = extras.isActivePregnancy;
+var getSubsequentVisits = extras.getSubsequentVisits;
+var isHighRiskPregnancy = extras.isHighRiskPregnancy;
+var getSubsequentDeliveries = extras.getSubsequentDeliveries;
+var getOldestReport = extras.getOldestReport;
+var getSubsequentPregnancies = extras.getSubsequentPregnancies;
+var getAgeInMonths = extras.getAgeInMonths;
+var initImmunizations = extras.initImmunizations;
+var isVaccineInLineage = extras.isVaccineInLineage;
+var isSingleDose = extras.isSingleDose;
+var countDosesReceived = extras.countDosesReceived;
+var countDosesPossible = extras.countDosesPossible;
+var countReportsSubmittedInWindow = extras.countReportsSubmittedInWindow;
+var getMostRecentReport = extras.getMostRecentReport;
+var getTreatmentEnrollmentDate = extras.getTreatmentEnrollmentDate;
+
 /* eslint-disable no-global-assign */
 context = {
   use_cases: {
@@ -142,7 +173,7 @@ cards = [
       var fields = [];
       var relevantDelivery, birthdate, relevantVisitsANC, relevantVisitsPNC, visitsANC, visitsPNC, subsequentDeliveries, subsequentPregnancies, nextPregnancy;
       reports.forEach(function (report) {
-        if (isReportValid(report) && pregnancyForms.indexOf(report.form) >= 0) {
+        if (isReportValid(report) && extras.pregnancyForms.indexOf(report.form) >= 0) {
 
           // Ignore pregnancies with no delivery report
           subsequentDeliveries = getSubsequentDeliveries(report);

@@ -1,4 +1,19 @@
-[
+var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
+var DAYS_IN_PNC = extras.DAYS_IN_PNC;
+var MS_IN_DAY = extras.MS_IN_DAY;
+var isFormFromArraySubmittedInWindow = extras.isFormFromArraySubmittedInWindow;
+var isCoveredByUseCase = extras.isCoveredByUseCase;
+var getNewestPregnancyTimestamp = extras.getNewestPregnancyTimestamp;
+var getNewestDeliveryTimestamp = extras.getNewestDeliveryTimestamp;
+var isHighRiskPregnancy = extras.isHighRiskPregnancy;
+var deliveryForms = extras.deliveryForms;
+var antenatalForms = extras.antenatalForms;
+var postnatalForms = extras.postnatalForms;
+var isHomeBirth = extras.isHomeBirth;
+var immunizationMonths = extras.immunizationMonths;
+var immunizationForms = extras.immunizationForms;
+
+module.exports = [
   {
     icon: 'mother-child',
     title: 'task.pregnancy_danger_sign.title',
