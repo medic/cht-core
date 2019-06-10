@@ -1,4 +1,4 @@
-const {log, error, mkdir} = require('./utils');
+const {log, error, mkdir, extractPlaceholders} = require('./utils');
 const fs = require('fs');
 
 const fileExists = (fpath) => {
@@ -6,7 +6,7 @@ const fileExists = (fpath) => {
   const valid = fs.existsSync(file);
   if(!valid) {
     error(`Unable to find your translation file:\n${file}`);
-  };
+  }
   return valid;
 };
 
@@ -19,31 +19,8 @@ const hasValidName = (fpath) => {
   return valid;
 };
 
-const hasValidLine = (line, idx) => {
-  if(!line.trim().length) {
-    return true;
-  }
-  const valid = line.indexOf('=') > 0;
-  if(!valid) {
-    error(`line ${idx} - Found invalid translation:\n${line}`);
-  }
-  return valid;
-};
-
-const hasValidContent = (fpath) => {
-  const content = fs.readFileSync(fpath, 'utf8');
-  let valid = true;
-  content.toString().split('\n').some((line, idx) => {
-    if (!hasValidLine(line, idx)) {
-      valid = false;
-      return true;
-    }
-  });
-  return valid;
-};
-
 const validTranslations = (fpath) => {
-  return fileExists(fpath) && hasValidName(fpath) && hasValidContent(fpath);
+  return fileExists(fpath) && hasValidName(fpath);
 };
 
 const validDirectory = (fpath) => {
@@ -54,7 +31,27 @@ const validDirectory = (fpath) => {
   return valid;
 };
 
+const validatePlaceHolders = (langs, dir) => {
+  let valid = true;
+  const templateFile = `${dir}/messages-en.properties`;
+  const templatePlaceholders = extractPlaceholders(templateFile);
+  langs.filter(lang => lang !== 'en').forEach(lang => {
+    const file = `${dir}/messages-${lang}.properties`;
+    const placeholders = extractPlaceholders(file);
+    Object.keys(placeholders).forEach(k => {
+      const placeholder = placeholders[k];
+      const templatePlaceholder = templatePlaceholders[k];
+      if (placeholder.placeholders.toString() !== templatePlaceholder.placeholders.toString()) {
+        valid = false;
+        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholder.index + 1} has placeholders that do not match those of messages-en.properties`);
+      }
+    });
+  });
+  return valid;
+};
+
 module.exports = {
   validTranslations: (fpath) => validTranslations(fpath),
-  validDirectory: (fpath) => validDirectory(fpath)
+  validDirectory: (fpath) => validDirectory(fpath),
+  validatePlaceHolders: (lang, fpath) => validatePlaceHolders(lang, fpath)
 };

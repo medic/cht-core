@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html manifest="/empty.manifest">
+<html>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/css/inbox.css" />
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="manifest" href="/manifest.json">
-    <title id="app"></title>
+    <title></title>
   </head>
   <body class="inbox {{currentTab}}" ng-controller="InboxCtrl as $ctrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': $ctrl.selectMode}">
     <div class="bootstrap-layer">

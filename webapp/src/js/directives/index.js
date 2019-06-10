@@ -13,6 +13,7 @@
   require('./facility-filter');
   require('./form-type-filter');
   require('./freetext-filter');
+  require('./messages-list');
   require('./modal');
   require('./navigation');
   require('./report-image');

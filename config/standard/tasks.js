@@ -27,7 +27,7 @@ module.exports = [
         r.reported_date,
         Utils.addDate(
           new Date(r.reported_date),
-          MAX_DAYS_IN_PREGNANCY
+          extras.MAX_DAYS_IN_PREGNANCY
         ).getTime()
       );
     },
@@ -38,7 +38,7 @@ module.exports = [
         days: 0,
         start: 0,
         end: 6,
-        dueDate: function(r, event) {
+        dueDate: function(event, c, r) {
           return new Date(
             Utils.addDate(
               new Date(
@@ -83,7 +83,7 @@ module.exports = [
         id: 'pregnancy-missing-birth',
         start: 1,
         end: 13,
-        dueDate: function(r) {
+        dueDate: function(event, c, r) {
           return Utils.addDate(
             new Date(r.scheduled_tasks[r.scheduled_tasks.length - 1].due),
             7
@@ -92,7 +92,7 @@ module.exports = [
       },
     ],
     priority: function(c, r) {
-      if (isHighRiskPregnancy(c, r)) {
+      if (extras.isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
           label: 'task.warning.high_risk',
@@ -107,9 +107,9 @@ module.exports = [
         r.scheduled_tasks[r.scheduled_tasks.length - 1].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          deliveryForms,
+          extras.deliveryForms,
           r.reported_date,
-          r.reported_date + (MAX_DAYS_IN_PREGNANCY + DAYS_IN_PNC) * MS_IN_DAY
+          r.reported_date + (extras.MAX_DAYS_IN_PREGNANCY + extras.DAYS_IN_PNC) * extras.MS_IN_DAY
         )
       );
     },
@@ -142,7 +142,7 @@ module.exports = [
       },
     ],
     priority: function(c, r) {
-      if (isHighRiskPregnancy(c, r)) {
+      if (extras.isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
           label: 'task.warning.high_risk',
@@ -155,7 +155,7 @@ module.exports = [
         r.reported_date < getNewestDeliveryTimestamp(c) ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          antenatalForms,
+          extras.antenatalForms,
           Utils.addDate(dueDate, -event.start).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -197,7 +197,7 @@ module.exports = [
         r.reported_date < getNewestPregnancyTimestamp(c) ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          postnatalForms,
+          extras.postnatalForms,
           Utils.addDate(dueDate, -event.start).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -218,7 +218,7 @@ module.exports = [
           c.reports,
           'F',
           r.reported_date,
-          Utils.addDate(new Date(r.reported_date), DAYS_IN_PNC).getTime()
+          Utils.addDate(new Date(r.reported_date), extras.DAYS_IN_PNC).getTime()
         )
       );
     },
@@ -228,7 +228,7 @@ module.exports = [
         id: 'postnatal-danger-sign',
         start: 0,
         end: 6,
-        dueDate: function() {
+        dueDate: function(event, c) {
           return new Date(Utils.getMostRecentTimestamp(c.reports, 'F'));
         },
       },
@@ -267,7 +267,7 @@ module.exports = [
       );
     },
     priority: function(c, r) {
-      if (isHomeBirth(r)) {
+      if (extras.isHomeBirth(r)) {
         return {
           level: 'high',
           label: 'task.warning.home_birth',
@@ -292,7 +292,7 @@ module.exports = [
         r.reported_date < getNewestPregnancyTimestamp(c) ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          postnatalForms,
+          extras.postnatalForms,
           Utils.addDate(dueDate, -event.start).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -310,7 +310,7 @@ module.exports = [
     appliesIf: function(c, r, i) {
       return (
         isCoveredByUseCase(c.contact, 'imm') &&
-        immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1
+        extras.immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1
       );
     },
     actions: [{ form: 'immunization_visit' }],
@@ -329,7 +329,7 @@ module.exports = [
         r.scheduled_tasks[i].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          immunizationForms,
+          extras.immunizationForms,
           Utils.addDate(dueDate, -event.days).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -494,4 +494,4 @@ module.exports = [
       });
     }
   },
-]
+];

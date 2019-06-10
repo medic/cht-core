@@ -30,16 +30,12 @@ module.exports = {
       .then(next);
   },
 
-  // blocks unauthenticated requests from passing through
-  checkAuth: (req, res, next) => {
+  // blocks offline users not-authorized requests
+  offlineUserFirewall: (req, res, next) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
     }
-    next();
-  },
 
-  // blocks offline users not-authorized requests
-  offlineUserFirewall: (req, res, next) => {
     if (!auth.isOnlineOnly(req.userCtx) && !req.authorized) {
       res.status(FIREWALL_ERROR.code);
       return res.json(FIREWALL_ERROR);
@@ -50,6 +46,10 @@ module.exports = {
   // proxies online users requests to CouchDB
   // saves offline user-settings doc in the request object
   onlineUserProxy: (proxy, req, res, next) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
     if (auth.isOnlineOnly(req.userCtx)) {
       return proxy.web(req, res);
     }
@@ -61,6 +61,10 @@ module.exports = {
   // saves offline user-settings doc in the request object
   // used for audited endpoints
   onlineUserPassThrough:(req, res, next) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
     if (auth.isOnlineOnly(req.userCtx)) {
       return next('route');
     }

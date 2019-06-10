@@ -197,23 +197,24 @@ describe('registrationUtils', () => {
     });
   });
 
-  describe('normalizeFormCode', () => {
-    it('returns false for strings that do not match', () => {
-      chai.expect(utils._normalizeFormCode('   ')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('!a!b!c!d')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('some time')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('_some!where-')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('____test____??1')).to.equal(null);
-      chai.expect(utils._normalizeFormCode('$%^&alpha1_-)(&-^')).to.equal(null);
+  describe('formCodeMatches', () => {
+
+    const TESTS = [
+      { conf: 'N', docForm: 'F joan', expected: false },
+      { conf: 'medic', docForm: 'medic', expected: true },
+      { conf: 'medic-mobile', docForm: 'Medic-Mobile', expected: true },
+      { conf: 'medic_mobile', docForm: 'Medic_Mobile', expected: true },
+      { conf: 'someform123', docForm: 'someform123', expected: true },
+      { conf: 'alpha1_-', docForm: '$%^&alpha1_-)(&0^', expected: true },
+      { conf: 'क', docForm: 'क', expected: true },
+    ];
+
+    TESTS.forEach(({ conf, docForm, expected }) => {
+      it(`returns "${expected}" for conf="${conf}" and docForm="${docForm}"`, () => {
+        chai.expect(utils._formCodeMatches(conf, docForm)).to.equal(expected);
+      });
     });
 
-    it('returns alpha+dash+underscore substring that matches, lowercased', () => {
-      chai.expect(utils._normalizeFormCode('medic')).to.equal('medic');
-      chai.expect(utils._normalizeFormCode('Medic-Mobile')).to.equal('medic-mobile');
-      chai.expect(utils._normalizeFormCode('Medic_Mobile')).to.equal('medic_mobile');
-      chai.expect(utils._normalizeFormCode('someform123')).to.equal('someform123');
-      chai.expect(utils._normalizeFormCode('$%^&alpha1_-)(&^')).to.equal('alpha1_-');
-    });
   });
 
   describe('getSubjectIds', () => {

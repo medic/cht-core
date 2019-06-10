@@ -1,0 +1,25 @@
+<div id="message-list" class="col-sm-4 inbox-items left-pane">
+  <ul ng-show="!loading || appending">
+    <li ng-repeat="message in messages | orderBy:'-date'" data-record-id="{{message.key}}" data-record-type="{{message.type}}" class="content-row" ng-class="{ 'selected': message.key === loadingContent || !loadingContent && message.key === $ctrl.selected.id, 'unread': !message.read }">
+      <a href="#messages/{{message.type}}:{{message.key}}">
+        <div class="content">
+          <div class="heading">
+            <h4>{{message.contact || message.from || ("messages.unknown.sender" | translate)}}</h4>
+            <div class="date">
+              <span ng-bind-html="message.date | relativeDate"></span>
+            </div>
+          </div>
+          <div class="summary">
+            <p>{{message.message}}</p>
+          </div>
+          <div class="detail" ng-bind-html="message.lineage | lineage"></div>
+        </div>
+      </a>
+    </li>
+  </ul>
+  <p ng-show="error" class="alert alert-danger" role="alert" translate>Error fetching messages</p>
+  <p class="loading-status" ng-show="!error && !loading && !messages.length" translate>No messages found</p>
+  <p class="loading-status" ng-show="!error && !loading && messages.length" translate>message.list.complete</p>
+  <div class="loader" ng-show="loading"></div>
+  <div class="padding"></div>
+</div>

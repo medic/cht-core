@@ -117,16 +117,28 @@ var subjectRequest = function(filters) {
   return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds, getKeysArray);
 };
 
-var contactTypeRequest = function(filters) {
+var contactTypeRequest = function(filters, sortByLastVisitedDate) {
   if (!filters.types) {
     return;
   }
   var view = 'medic-client/contacts_by_type';
+  let request;
   if (filters.types.selected && filters.types.options) {
-    return getRequestForMultidropdown(view, filters.types, getKeysArray);
+    request = getRequestForMultidropdown(view, filters.types, getKeysArray);
+  } else {
+    // Used by select2search.
+    request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
   }
-  // Used by select2search.
-  return getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
+
+  if (sortByLastVisitedDate) {
+    request.map = row => {
+      const [ dead, muted ] = row.value.split(' ');
+      row.sort = dead + ' ' + muted;
+      return row;
+    };
+  }
+
+  return request;
 };
 
 var simprintsRequest = function(filters) {
@@ -196,7 +208,9 @@ var requestBuilders = {
       return [ simprints ];
     }
 
-    var typeRequest = contactTypeRequest(filters);
+    const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
+
+    var typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
     var hasTypeRequest = typeRequest && typeRequest.params.keys.length;
 
     var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
@@ -242,7 +256,7 @@ var requestBuilders = {
       requests.push(defaultContactRequest());
     }
 
-    if (module.exports.shouldSortByLastVisitedDate(extensions)) {
+    if (shouldSortByLastVisitedDate) {
       // Always push this last, search:getIntersection uses the last request
       // result and we'll need it later for sorting
       requests.push(sortByLastVisitedDate());

@@ -31,9 +31,9 @@ module.exports = [
 
     appliesTo: 'reports',
     appliesIf: function(c, r) {
-      if (!isNewestPregnancy(c, r)) return false;
+      if (!extras.isNewestPregnancy(c, r)) return false;
 
-      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c))
+      if (extras.getNewestDeliveryTimestamp(c) < extras.getNewestPregnancyTimestamp(c))
         return true;
 
       var lmp = new Date(r.lmp_date);
@@ -55,15 +55,15 @@ module.exports = [
     subtitle_translation_key: 'targets.this_month.subtitle',
 
     appliesTo: 'reports',
-    appliesIf: isNewestPregnancy,
-    emitCustom: function(c, r) {
+    appliesIf: extras.isNewestPregnancy,
+    emitCustom: function(inst, c, r) {
       var instance = createTargetInstance(
         'pregnancy-registrations-this-month',
         r,
         true
       );
       // use contact id to avoid counting multiple pregnancies for same person
-      instance._id = c.contact._id + '-' + 'pregnancy-registrations-this-month';
+      instance._id = c.contact._id + '~' + 'pregnancy-registrations-this-month';
       emitTargetInstance(instance);
     },
     date: 'reported',
@@ -98,7 +98,7 @@ module.exports = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countANCVisits(
+      var visits = extras.countANCVisits(
         c.reports,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
@@ -121,7 +121,7 @@ module.exports = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countANCVisits(
+      var visits = extras.countANCVisits(
         c.reports,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
@@ -143,7 +143,7 @@ module.exports = [
     appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
-    passesIf: isFacilityDelivery,
+    passesIf: extras.isFacilityDelivery,
     date: 'now',
   },
 
@@ -162,7 +162,7 @@ module.exports = [
 
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isWomanInActivePncPeriod,
+    appliesIf: extras.isWomanInActivePncPeriod,
   },
 
   // PNC: PNC registrations this month
@@ -198,7 +198,7 @@ module.exports = [
     appliesIf: function(c, r) {
       return (
         postnatalForms.indexOf(r.form) !== -1 ||
-        (deliveryForms.indexOf(r.form) !== -1 &&
+        (extras.deliveryForms.indexOf(r.form) !== -1 &&
           r.fields.delivery_code &&
           r.fields.delivery_code.toUpperCase() === 'F')
       );
@@ -218,12 +218,12 @@ module.exports = [
       "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isWomanInActivePncPeriod,
+    appliesIf: extras.isWomanInActivePncPeriod,
     passesIf: function(c) {
       return !isFormSubmittedInWindow(
         c.reports,
         postnatalForms,
-        getNewestDeliveryTimestamp(c),
+        extras.getNewestDeliveryTimestamp(c),
         now.getTime()
       );
     },
@@ -298,13 +298,13 @@ module.exports = [
 
       // PNC: WOMEN WITH 3 PNC VISITS, ALL TIME
       // Women who had 3 PNC visits confirmed during their 6-week PNC period (includes V forms and postnatal visit forms) - all-time
-      var postnatalVisits = countReportsSubmittedInWindow(
+      var postnatalVisits = extras.countReportsSubmittedInWindow(
         c.reports,
         postnatalForms,
         startPNCperiod.getTime(),
         endPNCperiod.getTime()
       );
-      if (isFacilityDelivery(r)) {
+      if (extras.isFacilityDelivery(r)) {
         postnatalVisits++;
       }
 
@@ -365,11 +365,11 @@ module.exports = [
       return immunizationForms.indexOf(r.form) !== -1;
     },
     date: 'reported',
-    emitCustom: function(c, r) {
+    emitCustom: function(inst, c, r) {
       var i, instance;
       if (r.form === 'immunization_visit' || r.form === 'imm') {
         // Multiple vaccine doses can be reported in a single XForm (app or collect)
-        var totalDoses = countDoses(r);
+        var totalDoses = extras.countDoses(r);
         for (i = 0; i < totalDoses; i++) {
           instance = createTargetInstance(
             'imm-vaccines-given-this-month',
@@ -406,7 +406,7 @@ module.exports = [
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: function(c) {
-      var visits = countReportsSubmittedInWindow(
+      var visits = extras.countReportsSubmittedInWindow(
         c.reports,
         immunizationForms,
         now.getTime() - 92 * MS_IN_DAY,
@@ -455,7 +455,7 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: isBcgReported,
+    passesIf: extras.isBcgReported,
   },
 
   // Children under 5 screened for growth monitoring

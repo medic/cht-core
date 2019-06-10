@@ -76,16 +76,8 @@
       "national_admin",
       "district_admin"
     ],
-    "can_export_audit": [
-      "national_admin",
-      "district_admin"
-    ],
     "can_export_feedback": [
       "national_admin"
-    ],
-    "can_export_server_logs": [
-      "national_admin",
-      "district_admin"
     ],
     "can_view_analytics": [
       "national_admin",
@@ -200,6 +192,10 @@
       "national_admin",
       "district_admin"
     ],
+    "can_update_reports": [
+      "national_admin",
+      "district_admin"
+    ],
     "can_delete_contacts": [
       "national_admin",
       "district_admin"
@@ -239,6 +235,14 @@
       "cron": "",
       "mute_after_form_for": "",
       "message": ""
+    }
+  ],
+  "replications": [
+    {
+      "fromSuffix": "user-[^\\-]+-meta",
+      "toSuffix": "users-meta",
+      "text_expression": "",
+      "cron": "0 2 * * *"
     }
   ],
   "registrations": [
@@ -7124,213 +7128,212 @@
           "type": "count",
           "goal": -1,
           "translation_key": "targets.active_pregnancies.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
-          "icon": "pregnancy-1"
+          "icon": "pregnancy-1",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "pregnancy-registrations-this-month",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.pregnancy_registrations.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "pregnancy-1"
+          "icon": "pregnancy-1",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "births-this-month",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.births.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "infant"
+          "icon": "infant",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "delivery-with-min-1-visit",
           "type": "percent",
           "goal": 100,
           "translation_key": "targets.delivery_1_visit.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
-          "icon": "nurse"
+          "icon": "nurse",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "delivery-with-min-4-visits",
           "type": "percent",
           "goal": 100,
           "translation_key": "targets.delivery_4_visits.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
-          "icon": "nurse"
+          "icon": "nurse",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "delivery-at-facility-total",
           "type": "percent",
           "goal": 100,
           "translation_key": "targets.facility_deliveries.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
-          "icon": "clinic"
+          "icon": "clinic",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "pnc-active",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.active_pnc.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "mother-child",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "pnc-registered-this-month",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.pnc_registrations.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "infant",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "pnc-visits-this-month",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.pnc_visits.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
           "icon": "infant",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "pnc-homebirth-0-visits",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.homebirth_no_visits.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "household",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "pnc-homebirth-min-1-visit",
           "type": "percent",
           "goal": 100,
           "translation_key": "targets.homebirth_1_visit.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "nurse",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "pnc-3-visits",
           "type": "percent",
           "goal": 50,
           "translation_key": "targets.birth_3_visits.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "nurse",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "imm-children-under-5-years",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.children_u5.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "children",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "imm-children-registered-this-month",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.children_registered.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
           "icon": "child",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "imm-vaccines-given-this-month",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.vaccines_given.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
           "icon": "immunization",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "imm-children-vaccinated-prev-3-months",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.children_vaccinated.title",
-          "subtitle_translation_key": "targets.past_3mos.subtitle",
           "icon": "chw",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+          "subtitle_translation_key": "targets.past_3mos.subtitle"
         },
         {
           "id": "imm-no-vaccine-reported",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.children_not_vaccinated.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "risk",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "imm-children-with-bcg-reported",
           "type": "percent",
           "goal": 100,
           "translation_key": "targets.bcg_reported.title",
-          "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "child",
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "id": "nutrition-children-screened-growth-monitoring",
           "type": "percent",
           "goal": -1,
           "translation_key": "targets.growth_monitoring.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child"
+          "icon": "child",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "nutrition-children-underweight",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.underweight.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child"
+          "icon": "child",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "children-stunted",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.stunted.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
           "icon": "child",
-          "context": "ctx1"
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "children-mam",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.active_mam.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child"
+          "icon": "child",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "children-sam",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.active_sam.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child"
+          "icon": "child",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "children-otp",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.active_otp.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child"
+          "icon": "child",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "id": "children-sfp",
           "type": "count",
           "goal": -1,
           "translation_key": "targets.active_sfp.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child"
+          "icon": "child",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         }
       ]
     }

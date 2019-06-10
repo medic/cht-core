@@ -8,6 +8,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     Actions,
     Enketo,
     Geolocation,
+    Selectors,
     Snackbar,
     Telemetry,
     TranslateFrom,
@@ -24,7 +25,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        enketoStatus: state.enketoStatus
+        enketoStatus: Selectors.getEnketoStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -115,7 +118,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
 
     $scope.save = function() {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         $log.debug('Attempted to call tasks-content:$scope.save more than once');
         return;
       }
@@ -158,8 +161,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     // Wait for `selected` to be set during tasks generation and load the
     // form if we have no other description or instructions in the task.
     $scope.$watch('selected', function() {
-      if (hasOneFormAndNoFields($scope.selected)) {
-        $scope.performAction($scope.selected.actions[0], true);
+      if (hasOneFormAndNoFields(ctrl.selected)) {
+        $scope.performAction(ctrl.selected.actions[0], true);
       }
     });
 

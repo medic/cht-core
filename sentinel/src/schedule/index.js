@@ -1,12 +1,14 @@
 const async = require('async'),
   moment = require('moment'),
-  date = require('../date'),
   config = require('../config'),
+  transitionsLib = config.getTransitionsLib(),
+  date = transitionsLib.date,
   logger = require('../lib/logger');
 
 const tasks = {
-  dueTasks: require('./due_tasks'),
+  dueTasks: transitionsLib.dueTasks,
   reminders: require('./reminders'),
+  replications: require('./replications'),
 };
 
 function getTime(_hour, _minute) {
@@ -45,6 +47,9 @@ exports.checkSchedule = function() {
         } else {
           cb();
         }
+      },
+      cb => {
+        tasks.replications.execute(cb);
       },
     ],
     err => {

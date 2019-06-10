@@ -13,6 +13,8 @@ require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('@uirouter/angularjs');
 
+require('ng-redux');
+
 angular.module('controllers', []);
 require('./controllers/main');
 require('./controllers/authorization-permissions');
@@ -78,6 +80,7 @@ require('../../../webapp/src/js/services/calendar-interval');
 require('../../../webapp/src/js/services/changes');
 require('../../../webapp/src/js/services/contact-muted');
 require('../../../webapp/src/js/services/contact-schema');
+require('../../../webapp/src/js/services/contact-view-model-generator');
 require('../../../webapp/src/js/services/db');
 require('../../../webapp/src/js/services/export');
 require('../../../webapp/src/js/services/extract-lineage');
@@ -97,6 +100,7 @@ require('../../../webapp/src/js/services/search');
 require('../../../webapp/src/js/services/select2-search');
 require('../../../webapp/src/js/services/settings');
 require('../../../webapp/src/js/services/session');
+require('../../../webapp/src/js/services/telemetry');
 require('../../../webapp/src/js/services/translate');
 require('../../../webapp/src/js/services/translate-from');
 require('../../../webapp/src/js/services/translation-loader');
@@ -104,6 +108,9 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
+require('../../../webapp/src/js/actions');
+require('../../../webapp/src/js/selectors');
+require('../../../webapp/src/js/reducers');
 
 angular.module('adminApp', [
   'ngRoute',
@@ -113,6 +120,7 @@ angular.module('adminApp', [
   'inboxFilters',
   'inboxServices',
   'ipCookie',
+  'ngRedux',
   'pascalprecht.translate',
   'pouchdb',
   'services',
@@ -135,8 +143,10 @@ angular.module('adminApp').constant('POUCHDB_OPTIONS', {
 angular.module('adminApp').config(function(
   $compileProvider,
   $locationProvider,
+  $ngReduxProvider,
   $stateProvider,
-  $translateProvider
+  $translateProvider,
+  Reducers
 ) {
   'ngInject';
 
@@ -148,6 +158,8 @@ angular.module('adminApp').config(function(
   $translateProvider.useSanitizeValueStrategy('escape');
   $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
+
+  $ngReduxProvider.createStoreWith(Reducers, []);
 
   $stateProvider
     .state('settings', {

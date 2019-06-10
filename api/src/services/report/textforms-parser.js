@@ -256,8 +256,8 @@ exports.isCompact = (def, msg, locale) => {
   }
   const labels = _.flatten(_.map(_.values(def.fields), field => {
     return [
-      config.translate(field.labels.tiny, locale),
-      config.translate(field.labels.short, locale)
+      config.translate(field.labels && field.labels.tiny, locale),
+      config.translate(field.labels && field.labels.short, locale)
     ];
   }));
   return !_.some(labels, label => startsWith(fields[0], label));

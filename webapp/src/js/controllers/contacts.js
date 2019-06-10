@@ -22,11 +22,14 @@ var _ = require('underscore'),
     LiveList,
     Search,
     SearchFilters,
+    Selectors,
     Session,
     Settings,
     Simprints,
+    TasksForContact,
     Tour,
     TranslateFrom,
+    UHCSettings,
     UserSettings,
     XmlForms
   ) {
@@ -35,13 +38,20 @@ var _ = require('underscore'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        enketoStatus: state.enketoStatus
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
+        selected: Selectors.getSelected(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
       var actions = Actions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback
+        clearCancelCallback: actions.clearCancelCallback,
+        setSelected: actions.setSelected,
+        updateSelected: actions.updateSelected,
+        loadSelectedChildren: actions.loadSelectedChildren,
+        loadSelectedReports: actions.loadSelectedReports,
+        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
+        setLoadingSelectedReports: actions.setLoadingSelectedReports
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -51,7 +61,7 @@ var _ = require('underscore'),
     LiveList.$init($scope, 'contacts', 'contact-search');
 
     $scope.loading = true;
-    $scope.selected = null;
+    ctrl.setSelected(null);
     $scope.filters = {};
     var defaultTypeFilter = {};
     var usersHomePlace;
@@ -218,89 +228,111 @@ var _ = require('underscore'),
                      settings.muting.unmute_forms.includes(formId));
     };
 
-    $scope.setSelected = function(selected) {
+    const getTasks = () => {
+      return Auth('can_view_tasks')
+        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', receiveTasks))
+        .catch(() => $log.debug('Not authorized to view tasks'));
+    };
+
+    const receiveTasks = (tasks) => {
+      const tasksByContact = {};
+      tasks.forEach(task => {
+        if (task.doc && task.doc.contact) {
+          const contactId = task.doc.contact._id;
+          tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
+        }
+      });
+      ctrl.updateSelected({ tasks });
+      ctrl.updateSelected({ tasksByContact });
+    };
+
+    $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
-      $scope.selected = selected;
+      ctrl.setLoadingSelectedChildren(true);
+      ctrl.setLoadingSelectedReports(true);
+      ctrl.setSelected(selected);
       ctrl.clearCancelCallback();
-      var selectedDoc = selected.doc;
       var title = '';
-      if (selected.doc.type === 'person') {
+      if (ctrl.selected.doc.type === 'person') {
         title = 'contact.profile';
       } else {
-        title = ContactSchema.get(selected.doc.type).label;
+        title = ContactSchema.get(ctrl.selected.doc.type).label;
       }
       $scope.loadingSummary = true;
       return $q
         .all([
-          $translate(title),
-          getActionBarDataForChild(selectedDoc.type),
-          getCanEdit(selectedDoc),
+          $translate(title).catch(() => title),
+          getActionBarDataForChild(ctrl.selected.doc.type),
+          getCanEdit(ctrl.selected.doc),
         ])
         .then(function(results) {
           $scope.setTitle(results[0]);
           if (results[1]) {
-            selectedDoc.child = results[1];
+            ctrl.updateSelected({ doc: { child: results[1] }});
           }
           var canEdit = results[2];
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [selectedDoc],
-            sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+            selected: [ctrl.selected.doc],
+            sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
           });
 
-          return selected.reportLoader.then(function() {
-            return $q.all([
-              ContactSummary(selected.doc, selected.reports, selected.lineage),
-              Settings()
-            ])
-            .then(function(results) {
-              $scope.loadingSummary = false;
-              var summary = results[0];
-              $scope.selected.summary = summary;
-              var options = { doc: selectedDoc, contactSummary: summary.context };
-              XmlForms('ContactsCtrl', options, function(err, forms) {
-                if (err) {
-                  $log.error('Error fetching relevant forms', err);
-                }
-                var showUnmuteModal = function(formId) {
-                  return $scope.selected.doc &&
-                         $scope.selected.doc.muted &&
-                         !isUnmuteForm(results[1], formId);
-                };
-                var formSummaries =
-                  forms &&
-                  forms.map(function(xForm) {
-                    return {
-                      code: xForm.internalId,
-                      title: translateTitle(xForm.translation_key, xForm.title),
-                      icon: xForm.icon,
-                      showUnmuteModal: showUnmuteModal(xForm.internalId)
-                    };
+          return ctrl.loadSelectedChildren(options)
+            .then(ctrl.loadSelectedReports)
+            .then(function() {
+              return $q.all([
+                ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
+                Settings(),
+                getTasks()
+              ])
+              .then(function(results) {
+                $scope.loadingSummary = false;
+                var summary = results[0];
+                ctrl.updateSelected({ summary: summary });
+                var options = { doc: ctrl.selected.doc, contactSummary: summary.context };
+                XmlForms('ContactsCtrl', options, function(err, forms) {
+                  if (err) {
+                    $log.error('Error fetching relevant forms', err);
+                  }
+                  var showUnmuteModal = function(formId) {
+                    return ctrl.selected.doc &&
+                          ctrl.selected.doc.muted &&
+                          !isUnmuteForm(results[1], formId);
+                  };
+                  var formSummaries =
+                    forms &&
+                    forms.map(function(xForm) {
+                      return {
+                        code: xForm.internalId,
+                        title: translateTitle(xForm.translation_key, xForm.title),
+                        icon: xForm.icon,
+                        showUnmuteModal: showUnmuteModal(xForm.internalId)
+                      };
+                    });
+                  var canDelete =
+                    !ctrl.selected.children ||
+                    ((!ctrl.selected.children.places ||
+                      ctrl.selected.children.places.length === 0) &&
+                      (!ctrl.selected.children.persons ||
+                        ctrl.selected.children.persons.length === 0));
+                  $scope.setRightActionBar({
+                    selected: [ctrl.selected.doc],
+                    relevantForms: formSummaries,
+                    sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
+                    canEdit: canEdit,
+                    canDelete: canDelete,
                   });
-                var canDelete =
-                  !selected.children ||
-                  ((!selected.children.places ||
-                    selected.children.places.length === 0) &&
-                    (!selected.children.persons ||
-                      selected.children.persons.length === 0));
-                $scope.setRightActionBar({
-                  selected: [selectedDoc],
-                  relevantForms: formSummaries,
-                  sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-                  canEdit: canEdit,
-                  canDelete: canDelete,
                 });
               });
-            });
           });
         })
         .catch(function(e) {
           $log.error('Error setting selected contact');
           $log.error(e);
-          $scope.selected.error = true;
+          ctrl.updateSelected({ error: true });
           $scope.setRightActionBar();
         });
     };
@@ -310,13 +342,13 @@ var _ = require('underscore'),
     });
 
     const clearSelection = () => {
-      $scope.selected = null;
+      ctrl.setSelected(null);
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
     };
 
     $scope.search = function() {
-      if($scope.filters.search && !ctrl.enketoStatus.edited) {
+      if($scope.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }
@@ -360,7 +392,7 @@ var _ = require('underscore'),
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export('contacts', $scope.filters);
+          Export('contacts', $scope.filters, { humanReadable: true });
         },
       };
       var type;
@@ -410,27 +442,15 @@ var _ = require('underscore'),
         });
     };
 
-    var getVisitCountSettings = function(uhcSettings) {
-      if (!uhcSettings.visit_count) {
-        return {};
-      }
-
-      return {
-        monthStartDate: uhcSettings.visit_count.month_start_date,
-        visitCountGoal: uhcSettings.visit_count.visit_count_goal,
-      };
-    };
-
     var setupPromise = $q
       .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
-      .then(function(results) {
-        usersHomePlace = results[0];
-        $scope.lastVisitedDateExtras = results[1];
-        var uhcSettings = (results[2] && results[2].uhc) || {};
-        $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
-        if ($scope.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
-          $scope.sortDirection = $scope.defaultSortDirection =
-            uhcSettings.contacts_default_sort;
+      .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
+        usersHomePlace = homePlaceSummary;
+        $scope.lastVisitedDateExtras = viewLastVisitedDate;
+        $scope.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
+
+        if ($scope.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
+          $scope.sortDirection = $scope.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
 
         setActionBarData();
@@ -445,14 +465,15 @@ var _ = require('underscore'),
     };
 
     var isRelevantVisitReport = function(doc) {
-      var isRelevantDelete = doc._deleted && isSortedByLastVisited();
+      var isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
       return (
+        doc &&
         $scope.lastVisitedDateExtras &&
         doc.type === 'data_record' &&
         doc.form &&
         doc.fields &&
         doc.fields.visited_contact_uuid &&
-        (liveList.contains({ _id: doc.fields.visited_contact_uuid }) ||
+        (liveList.contains(doc.fields.visited_contact_uuid) ||
           isRelevantDelete)
       );
     };
@@ -461,8 +482,8 @@ var _ = require('underscore'),
       key: 'contacts-list',
       callback: function(change) {
         const limit = liveList.count();
-        if (change.deleted && change.doc.type !== 'data_record') {
-          liveList.remove(change.doc);
+        if (change.deleted) {
+          liveList.remove(change.id);
         }
 
         if (change.doc) {
@@ -487,8 +508,8 @@ var _ = require('underscore'),
       },
       filter: function(change) {
         return (
-          ContactSchema.getTypes().indexOf(change.doc.type) !== -1 ||
-          liveList.containsDeleteStub(change.doc) ||
+          (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
+          (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc)
         );
       },

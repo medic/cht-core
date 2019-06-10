@@ -40,12 +40,14 @@ var _ = require('underscore'),
     RecurringProcessManager,
     ResourceIcons,
     RulesEngine,
+    Selectors,
     Session,
     SetLanguage,
     Settings,
     Telemetry,
     Tour,
     TranslateFrom,
+    TranslationLoader,
     UnreadRecords,
     UpdateServiceWorker,
     UpdateSettings,
@@ -73,9 +75,10 @@ var _ = require('underscore'),
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        cancelCallback: state.cancelCallback,
-        enketoStatus: state.enketoStatus,
-        selectMode: state.selectMode
+        cancelCallback: Selectors.getCancelCallback(state),
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selectMode: Selectors.getSelectMode(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -96,60 +99,80 @@ var _ = require('underscore'),
       Debug.set(false);
     }
 
-    ResourceIcons.getAppTitle().then(title => {
-      document.title = title;
-    });
+    const SYNC_STATUS = {
+      inProgress: {
+        icon: 'fa-refresh',
+        key: 'sync.status.in_progress',
+        disableSyncButton: true
+      },
+      success: {
+        icon: 'fa-check',
+        key: 'sync.status.not_required',
+        className: 'success'
+      },
+      required: {
+        icon: 'fa-exclamation-triangle',
+        key: 'sync.status.required',
+        className: 'required'
+      },
+      unknown: {
+        icon: 'fa-question-circle',
+        key: 'sync.status.unknown'
+      }
+    };
 
     $scope.replicationStatus = {
       disabled: false,
       lastSuccess: {},
       lastTrigger: undefined,
-      current: 'unknown',
-      textKey: 'sync.status.unknown',
-    };
-    var SYNC_ICON = {
-      in_progress: 'fa-refresh',
-      not_required: 'fa-check',
-      required: 'fa-exclamation-triangle',
-      unknown: 'fa-question-circle',
+      current: SYNC_STATUS.unknown,
     };
 
-    const updateReplicationStatus = status => {
-      if ($scope.replicationStatus.current !== status) {
-        $scope.replicationStatus.current = status;
-        $scope.replicationStatus.textKey = 'sync.status.' + status;
-        $scope.replicationStatus.icon = SYNC_ICON[status];
-      }
-    };
-
-    DBSync.addUpdateListener(update => {
-      if (update.disabled) {
+    DBSync.addUpdateListener(({ state, to, from }) => {
+      if (state === 'disabled') {
         $scope.replicationStatus.disabled = true;
-        // admins have potentially too much data so bypass local pouch
-        $log.debug('You have administrative privileges; not replicating');
         return;
       }
-
-      // Listen for directedReplicationStatus to update replicationStatus.lastSuccess
-      var now = Date.now();
-      if (update.directedReplicationStatus === 'success') {
-        $scope.replicationStatus.lastSuccess[update.direction] = now;
+      if (state === 'unknown') {
+        $scope.replicationStatus.current = SYNC_STATUS.unknown;
         return;
       }
-
-      // Listen for aggregateReplicationStatus updates
-      const status = update.aggregateReplicationStatus;
+      const now = Date.now();
       const lastTrigger = $scope.replicationStatus.lastTrigger;
-      if (status === 'not_required' || status === 'required') {
-        const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-        $log.info('Replication ended after ' + delay + ' seconds with status ' + status);
-      } else if (status === 'in_progress') {
+      const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+      if (state === 'inProgress') {
+        $scope.replicationStatus.current = SYNC_STATUS.inProgress;
         $scope.replicationStatus.lastTrigger = now;
-        const duration = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-        $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
+        $log.info(`Replication started after ${delay} seconds since previous attempt`);
+        return;
       }
+      if (to === 'success') {
+        $scope.replicationStatus.lastSuccess.to = now;
+      }
+      if (from === 'success') {
+        $scope.replicationStatus.lastSuccess.from = now;
+      }
+      if (to === 'success' && from === 'success') {
+        $log.info(`Replication succeeded after ${delay} seconds`);
+        $scope.replicationStatus.current = SYNC_STATUS.success;
+      } else {
+        $log.info(`Replication failed after ${delay} seconds`);
+        $scope.replicationStatus.current = SYNC_STATUS.required;
+      }
+    });
 
-      updateReplicationStatus(status);
+    const setAppTitle = () => {
+      ResourceIcons.getAppTitle().then(title => {
+        document.title = title;
+        $('.header-logo').attr('title', `${title} | ${APP_CONFIG.version}`);
+      });
+    };
+    setAppTitle();
+
+    Changes({
+      key: 'branding-icon',
+      filter: change => change.id === 'branding',
+      callback: () => setAppTitle()
     });
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
@@ -158,7 +181,7 @@ var _ = require('underscore'),
       key: 'sync-status',
       callback: function() {
         if (!DBSync.isSyncInProgress()) {
-          updateReplicationStatus('required');
+          $scope.replicationStatus.current = SYNC_STATUS.required;
         }
       },
     });
@@ -246,7 +269,7 @@ var _ = require('underscore'),
     });
 
     $transitions.onBefore({}, (trans) => {
-      if (ctrl.enketoStatus.edited && ctrl.cancelCallback) {
+      if (ctrl.enketoEdited && ctrl.cancelCallback) {
         $scope.navigationCancel({ to: trans.to(), params: trans.params() });
         return false;
       }
@@ -263,11 +286,11 @@ var _ = require('underscore'),
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function(trans) {
-      if (ctrl.enketoStatus.saving) {
+      if (ctrl.enketoSaving) {
         // wait for save to finish
         return;
       }
-      if (!ctrl.enketoStatus.edited) {
+      if (!ctrl.enketoEdited) {
         // form hasn't been modified - return immediately
         if (ctrl.cancelCallback) {
           ctrl.cancelCallback();
@@ -373,7 +396,7 @@ var _ = require('underscore'),
           return pt !== 'clinic';
         });
         // check if new document is a contact
-        return hierarchyTypes.indexOf(change.doc.type) !== -1;
+        return change.doc && hierarchyTypes.indexOf(change.doc.type) !== -1;
       },
       callback: updateAvailableFacilities,
     });
@@ -718,12 +741,8 @@ var _ = require('underscore'),
 
     Changes({
       key: 'inbox-translations',
-      filter: function(change) {
-        return change.doc.type === 'translations';
-      },
-      callback: function(change) {
-        $translate.refresh(change.doc.code);
-      },
+      filter: change => TranslationLoader.test(change.id),
+      callback: change => $translate.refresh(TranslationLoader.getCode(change.id)),
     });
 
     Changes({
@@ -746,10 +765,14 @@ var _ = require('underscore'),
     });
 
     RecurringProcessManager.startUpdateRelativeDate();
+    if (Session.isOnlineOnly()) {
+      RecurringProcessManager.startUpdateReadDocsCount();
+    }
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();
       RecurringProcessManager.stopUpdateRelativeDate();
+      RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
     var userCtx = Session.userCtx();
@@ -757,10 +780,9 @@ var _ = require('underscore'),
       key: 'inbox-user-context',
       filter: function(change) {
         return (
-          change.doc.type === 'user-settings' &&
           userCtx &&
           userCtx.name &&
-          change.doc.name === userCtx.name
+          change.id === `org.couchdb.user:${userCtx.name}`
         );
       },
       callback: function() {

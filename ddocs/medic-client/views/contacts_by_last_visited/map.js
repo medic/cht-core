@@ -4,8 +4,10 @@ function(doc) {
       doc.fields &&
       doc.fields.visited_contact_uuid) {
 
+    var visited_date = doc.fields.visited_date ? Date.parse(doc.fields.visited_date) : doc.reported_date;
+
     // Is a visit report about a family
-    emit(doc.fields.visited_contact_uuid, doc.reported_date);
+    emit(doc.fields.visited_contact_uuid, visited_date);
   } else if (doc.type === 'clinic') {
     // Is a family
     emit(doc._id, 0);

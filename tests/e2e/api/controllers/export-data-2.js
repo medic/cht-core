@@ -87,7 +87,7 @@ describe('Export Data V2.0', () => {
     it('GET Filters by date', () => {
       const from = Date.UTC(2018,1,2,12);
       const to = Date.UTC(2018,1,3,12);
-      utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
+      return utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
           const rows = result.split('\n');
           rows.pop(); // Last row is empty string, discard
 

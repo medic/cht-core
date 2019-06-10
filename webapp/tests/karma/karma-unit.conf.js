@@ -36,9 +36,13 @@ module.exports = function(config) {
 
       // test-specific code
       '../node_modules/chai/chai.js',
+      '../node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js',
       '../node_modules/sinon/pkg/sinon.js',
       '../node_modules/angular-mocks/angular-mocks.js',
       'node_modules/moment/moment.js',
+      'node_modules/redux/dist/redux.js',
+      'node_modules/ng-redux/umd/ng-redux.js',
+      'node_modules/redux-thunk/dist/redux-thunk.js',
       'tests/karma/utils.js',
 
       // test files

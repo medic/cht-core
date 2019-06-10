@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 angular.module('services').factory('ImportContacts',
   function(
     $http,
@@ -52,8 +50,8 @@ angular.module('services').factory('ImportContacts',
         });
     };
 
-    var importContact = function(baseUrl, overwrite, contact) {
-      return $http.head(baseUrl + contact._id)
+    var importContact = function(overwrite, contact) {
+      return $http.head(`${Location.url}/${contact._id}`)
         .then(function(response) {
           var rev = CleanETag(response.headers('ETag'));
           if (!rev || !overwrite) {
@@ -73,9 +71,8 @@ angular.module('services').factory('ImportContacts',
     };
 
     return function(contacts, overwrite) {
-      var baseUrl = Location.path + '/_db/';
-      return $q.all(_.map(contacts, function(contact) {
-        return importContact(baseUrl, overwrite, contact);
+      return $q.all(contacts.map(function(contact) {
+        return importContact(overwrite, contact);
       }));
     };
   }

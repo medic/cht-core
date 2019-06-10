@@ -6,21 +6,21 @@
     </div>
   </div>
 
-  <div class="item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
+  <div class="item-content empty-selection" ng-show="!$ctrl.selected.messages[0] && !loadingContent">
     <div translate>No message selected</div>
   </div>
 
-  <div class="message-content-wrapper item-content" ng-show="selected.messages[0] && !loadingContent">
+  <div class="message-content-wrapper item-content" ng-show="$ctrl.selected.messages[0] && !loadingContent">
     <div class="body">
       <div id="message-header" class="name-header">
-        <mm-sender message="selected.contact"></mm-sender>
+        <mm-sender message="$ctrl.selected.contact"></mm-sender>
       </div>
       <div id="message-content">
         <div class="loader" ng-show="loadingMoreContent"></div>
         <p class="loading-status" ng-show="allLoaded" translate>No more messages</p>
         <div>
           <ul>
-            <li ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{{message.doc._id}}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
+            <li ng-repeat="message in $ctrl.selected.messages | orderBy:'doc.reported_date'" data-record-id="{{message.doc._id}}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
               <div class="marker" ng-if="firstUnread.id === message.doc._id" translate>Unread below</div>
               <span class="message-body">
                 <div class="data">
@@ -57,10 +57,10 @@
           </ul>
         </div>
       </div>
-      <div id="message-footer" class="reply message-form" ng-if="selected.messages[0] && (selected.contact.name || selected.contact.doc)">
+      <div id="message-footer" class="reply message-form" ng-if="$ctrl.selected.messages[0] && ($ctrl.selected.contact.name || $ctrl.selected.contact.doc)">
         <div class="control-group">
           <div class="controls">
-            <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.contact.doc.name || selected.contact.name) }"></textarea>
+            <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: ($ctrl.selected.contact.doc.name || $ctrl.selected.contact.name) }"></textarea>
           </div>
         </div>
         <div class="message-actions">

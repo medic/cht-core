@@ -1,0 +1,11 @@
+<!--
+This loads as an empty page at /medic/_design/medic/_rewire/ which is served to previous versions when upgrading from an appcache build to service-workers.
+This page clears the appcache (by requesitng no manifest) and redirects to root
+-->
+
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; url=/" />
+  </head>
+  <body></body>
+</html>

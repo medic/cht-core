@@ -185,28 +185,28 @@ var isFacilityDelivery = function(r) {
          r.fields.delivery_code.toLowerCase() === 'f';
 };
 
-var isNonFacilityDelivery = function(r) {
+function isNonFacilityDelivery(r) {
   return r &&
          deliveryForms.indexOf(r.form) &&
          r.fields &&
          r.fields.delivery_code &&
          r.fields.delivery_code.toLowerCase() !== 'f';
-};
+}
 
-var getBirthDate = function(r) {
+function getBirthDate(r) {
   var rawDate = r &&
       (r.birth_date || r.fields.birth_date || r.reported_date);
   return new Date(rawDate);
-};
+}
 
-var getPNCperiod = function(deliveryReport) {
+function getPNCperiod(deliveryReport) {
   // Find PNC period based on delivery date, not reported date
   var start = getBirthDate(deliveryReport);
   return {
     start: start,
     end: addDate(start, DAYS_IN_PNC),
   };
-};
+}
 
 var isHighRiskPregnancy = function(pregnancy) {
   // Pregnancy is high risk:
@@ -455,3 +455,49 @@ function getMostRecentReport(reports, form) {
   });
   return result;
 }
+
+module.exports = {
+  now: now,
+  pregnancyForms: pregnancyForms,
+  antenatalForms: antenatalForms,
+  deliveryForms: deliveryForms,
+  postnatalForms: postnatalForms,
+  immunizationForms: immunizationForms,
+  MS_IN_DAY: MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY: MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC: DAYS_IN_PNC,
+  IMMUNIZATION_DOSES: IMMUNIZATION_DOSES,
+  IMMUNIZATION_LIST: IMMUNIZATION_LIST,
+  count: count,
+  isVaccineInLineage: isVaccineInLineage,
+  isCoveredByUseCaseInLineage: isCoveredByUseCaseInLineage,
+  contains: contains,
+  isCoveredByUseCase: isCoveredByUseCase,
+  isFacilityDelivery: isFacilityDelivery,
+  isNonFacilityDelivery: isNonFacilityDelivery,
+  getBirthDate: getBirthDate,
+  getPNCperiod: getPNCperiod,
+  isHighRiskPregnancy: isHighRiskPregnancy,
+  isHighRiskPostnatal: isHighRiskPostnatal,
+  getDeliveryCode: getDeliveryCode,
+  initImmunizations: initImmunizations,
+  addImmunizations: addImmunizations,
+  countDosesReceived: countDosesReceived,
+  countDosesPossible: countDosesPossible,
+  isSingleDose: isSingleDose,
+  countReportsSubmittedInWindow: countReportsSubmittedInWindow,
+  addDate: addDate,
+  getOldestReport: getOldestReport,
+  isActivePregnancy: isActivePregnancy,
+  getSubsequentDeliveries: getSubsequentDeliveries,
+  getSubsequentPregnancies: getSubsequentPregnancies,
+  getAgeInMonths: getAgeInMonths,
+  getNewestDelivery: getNewestDelivery,
+  getNewestPncPeriod: getNewestPncPeriod,
+  getSubsequentVisits: getSubsequentVisits,
+  getTreatmentEnrollmentDate: getTreatmentEnrollmentDate,
+  getTreatmentProgram: getTreatmentProgram,
+  getNutritionScreeningReport: getNutritionScreeningReport,
+  countFollowups: countFollowups,
+  getFollowupExitReport: getFollowupExitReport,
+};

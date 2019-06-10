@@ -27,10 +27,13 @@ require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
-var uiRouter = require('@uirouter/angularjs').default;
+const uiRouter = require('@uirouter/angularjs').default;
 
 require('ng-redux');
-var reducers = require('./reducers');
+const reduxThunk = require('redux-thunk').default;
+const cloneDeep = require('lodash/cloneDeep');
+const objectPath = require('object-path');
+const lineage = require('@medic/lineage')();
 
 require('moment');
 require('moment/locale/bm');
@@ -43,16 +46,59 @@ require('moment/locale/sw');
 
 require('./services');
 require('./actions');
+require('./reducers');
+require('./selectors');
 require('./controllers');
 require('./filters');
 require('./directives');
 require('./enketo/main');
 
-var bootstrapper = require('./bootstrapper');
-var router = require('./router');
-var _ = require('underscore');
+const bootstrapper = require('./bootstrapper');
+const router = require('./router');
+const _ = require('underscore');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
+};
+
+const minifySelected = selected => {
+  const pathsToMinify = ['doc', 'formatted'];
+  const lineageDocs = objectPath.get(selected, 'lineage', []);
+  const docsToMinify = pathsToMinify
+    .map(path => objectPath.get(selected, path))
+    .filter(doc => doc)
+    .concat(lineageDocs);
+
+  docsToMinify.forEach(lineage.minify);
+};
+const makeLoggable = object => {
+  if (Array.isArray(object.selected)) {
+    object.selected.forEach(minifySelected);
+  } else {
+    minifySelected(object.selected);
+  }
+};
+const reduxLoggerConfig = {
+  actionTransformer: function(action) {
+    const loggableAction = cloneDeep(action);
+    makeLoggable(loggableAction.payload);
+    try {
+      JSON.stringify(loggableAction);
+    } catch(error) {
+      loggableAction.payload = 'Payload is not serializable';
+    }
+    return loggableAction;
+  },
+  stateTransformer: function(state) {
+    let loggableState = cloneDeep(state);
+    makeLoggable(loggableState);
+    try {
+      JSON.stringify(loggableState);
+    } catch(error) {
+      loggableState = 'State is not serializable';
+    }
+    return loggableState;
+  },
+  collapsed: true
 };
 
 (function() {
@@ -79,7 +125,8 @@ _.templateSettings = {
     $ngReduxProvider,
     $stateProvider,
     $translateProvider,
-    $urlRouterProvider
+    $urlRouterProvider,
+    Reducers
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
@@ -98,12 +145,12 @@ _.templateSettings = {
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
 
-    var middlewares = [];
+    var middlewares = [reduxThunk];
     if (isDevelopment) {
       var reduxLogger = require('redux-logger');
-      middlewares.push(reduxLogger.createLogger({ collapsed: true }));
+      middlewares.push(reduxLogger.createLogger(reduxLoggerConfig));
     }
-    $ngReduxProvider.createStoreWith(reducers, middlewares);
+    $ngReduxProvider.createStoreWith(Reducers, middlewares);
   });
 
   angular.module('inboxApp').constant('APP_CONFIG', {
@@ -115,6 +162,11 @@ _.templateSettings = {
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.pathname === '/') {
+          parsedUrl.pathname = '/dbinfo';
+          url = parsedUrl.toString();
+        }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);
@@ -134,21 +186,21 @@ _.templateSettings = {
     contacts: 'can_view_contacts',
     analytics: 'can_view_analytics',
     reports: 'can_view_reports',
+    'reports.edit': ['can_update_reports', 'can_view_reports']
   };
 
-  var getRequiredPermission = function(route) {
-    var baseRoute = route.split('.')[0];
-    return ROUTE_PERMISSIONS[baseRoute];
+  var getRequiredPermissions = function(route) {
+    return ROUTE_PERMISSIONS[route] || ROUTE_PERMISSIONS[route.split('.')[0]];
   };
 
   // Detects reloads or route updates (#/something)
   angular.module('inboxApp').run(function($state, $transitions, Auth) {
-    $transitions.onStart({}, function(trans) {
+    $transitions.onBefore({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
-        var permission = getRequiredPermission(trans.to().name);
-        if (permission) {
-          Auth(permission).catch(function() {
-            $state.go('error', { code: 403 });
+        const permissions = getRequiredPermissions(trans.to().name);
+        if (permissions && permissions.length) {
+          return Auth(permissions).catch(function() {
+            return $state.target('error', { code: 403 });
           });
         }
       }

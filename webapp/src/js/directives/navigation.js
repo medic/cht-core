@@ -4,14 +4,14 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/navigation.html',
-    controller: function($ngRedux, $scope) {
+    controller: function($ngRedux, $scope, Selectors) {
       'ngInject';
 
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          cancelCallback: state.cancelCallback,
-          enketoStatus: state.enketoStatus
+          cancelCallback: Selectors.getCancelCallback(state),
+          enketoSaving: Selectors.getEnketoSavingStatus(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

@@ -19,9 +19,13 @@
 angular.module('inboxServices').factory('Changes',
   function(
     $log,
+    $ngRedux,
     $q,
     $timeout,
-    DB
+    Actions,
+    DB,
+    Selectors,
+    Session
   ) {
 
     'use strict';
@@ -29,14 +33,29 @@ angular.module('inboxServices').factory('Changes',
 
     var RETRY_MILLIS = 5000;
 
+    const self = this;
+    const mapStateToTarget = (state) => ({
+      lastChangedDoc: Selectors.getLastChangedDoc(state),
+    });
+    const mapDispatchToTarget = (dispatch) => {
+      const actions = Actions(dispatch);
+      return {
+        setLastChangedDoc: actions.setLastChangedDoc
+      };
+    };
+
+    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
+
     var dbs = {
       medic: {
         lastSeq: null,
-        callbacks: {}
+        callbacks: {},
+        watchIncludeDocs: true
       },
       meta: {
         lastSeq: null,
-        callbacks: {}
+        callbacks: {},
+        watchIncludeDocs: true
       }
     };
 
@@ -60,15 +79,21 @@ angular.module('inboxServices').factory('Changes',
 
     var watchChanges = function(meta) {
       $log.info(`Initiating changes watch (meta=${meta})`);
+      const db = meta ? dbs.meta : dbs.medic;
       var watch = DB({ meta: meta })
         .changes({
           live: true,
-          since: meta ? dbs.meta.lastSeq : dbs.medic.lastSeq,
+          since: db.lastSeq,
           timeout: false,
-          include_docs: true,
+          include_docs: db.watchIncludeDocs,
           return_docs: false,
         })
         .on('change', function(change) {
+          if (self.lastChangedDoc && self.lastChangedDoc._id === change.id) {
+            change.doc = change.doc || self.lastChangedDoc;
+            self.setLastChangedDoc(false);
+          }
+
           notifyAll(meta, change);
         })
         .on('error', function(err) {
@@ -92,6 +117,7 @@ angular.module('inboxServices').factory('Changes',
         .then(function(results) {
           dbs.medic.lastSeq = results[0].update_seq;
           dbs.meta.lastSeq = results[1].update_seq;
+          dbs.medic.watchIncludeDocs = !Session.isOnlineOnly();
           watchChanges(false);
           watchChanges(true);
         })

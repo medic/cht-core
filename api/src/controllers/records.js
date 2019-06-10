@@ -1,14 +1,20 @@
-const db = require('../db'),
-      auth = require('../auth'),
+const auth = require('../auth'),
       serverUtils = require('../server-utils'),
-      recordUtils = require('./record-utils');
+      records = require('../services/records'),
+      config = require('../config');
+
+const runTransitions = doc => {
+  return config.getTransitionsLib()
+    .processDocs([doc])
+    .then(results => results[0]);
+};
 
 const generate = (req, options) => {
   if (req.is('urlencoded')) {
-    return recordUtils.createByForm(req.body, options);
+    return records.createByForm(req.body, options);
   }
   if (req.is('json')) {
-    return recordUtils.createRecordByJSON(req.body);
+    return records.createRecordByJSON(req.body);
   }
   throw new Error('Content type not supported.');
 };
@@ -16,7 +22,7 @@ const generate = (req, options) => {
 const process = (req, res, options) => {
   return auth.check(req, 'can_create_records')
     .then(() => generate(req, options))
-    .then(doc => db.medic.post(doc))
+    .then(doc => runTransitions(doc))
     .then(result => res.json({ success: true, id: result.id }))
     .catch(err => serverUtils.error(err, req, res));
 };
