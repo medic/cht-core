@@ -54,8 +54,8 @@ const migrateTranslation = translationDoc => {
 };
 
 module.exports = {
-  name: 'convert-translation-messages',
-  created: new Date(2018, 11, 8),
+  name: 'convert-translation-messages-fix',
+  created: new Date(2019, 6, 10),
   run: () => {
     return db.medic
       .query('medic-client/doc_by_type', {

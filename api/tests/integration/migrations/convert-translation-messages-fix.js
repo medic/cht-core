@@ -1,7 +1,7 @@
 var utils = require('./utils'),
     DDOC_ID = '_design/medic';
 
-describe('convert-translation-messages migration', function() {
+describe('convert-translation-messages-fix migration', function() {
   afterEach(function() {
     return utils.tearDown();
   });
@@ -30,7 +30,7 @@ describe('convert-translation-messages migration', function() {
       return utils.insertAttachment(ddoc, attachment);
     })
     .then(function() {
-      return utils.runMigration('convert-translation-messages');
+      return utils.runMigration('convert-translation-messages-fix');
     })
     .then(function() {
       return utils.assertDb([
@@ -73,7 +73,7 @@ describe('convert-translation-messages migration', function() {
       return utils.insertAttachment(ddoc, attachment);
     })
     .then(function() {
-      return utils.runMigration('convert-translation-messages');
+      return utils.runMigration('convert-translation-messages-fix');
     })
     .then(function() {
       return utils.assertDb([
@@ -114,7 +114,7 @@ describe('convert-translation-messages migration', function() {
       return utils.insertAttachment(ddoc, attachment);
     })
     .then(function() {
-      return utils.runMigration('convert-translation-messages');
+      return utils.runMigration('convert-translation-messages-fix');
     })
     .then(function() {
       return utils.assertDb([
@@ -209,7 +209,7 @@ describe('convert-translation-messages migration', function() {
       .then(docStub => utils.insertAttachment(docStub, attachmentEn))
       .then(result => utils.insertAttachment({ _id: result.id, _rev: result.rev }, attachmentEs))
       .then(result => utils.insertAttachment({ _id: result.id, _rev: result.rev }, attachmentFr))
-      .then(() => utils.runMigration('convert-translation-messages'))
+      .then(() => utils.runMigration('convert-translation-messages-fix'))
       .then(() => utils.assertDb([
         {
           _id: 'messages-en',
