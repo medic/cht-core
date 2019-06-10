@@ -65,7 +65,7 @@ describe('africas talking service', () => {
         chai.expect(config.get.callCount).to.equal(1);
         chai.expect(config.get.args[0][0]).to.equal('sms');
         chai.expect(request.get.callCount).to.equal(1);
-        chai.expect(request.get.args[0][0]).to.equal('server.com/_node/couchdb@localhost/_config/medic-credentials/africastalking.com');
+        chai.expect(request.get.args[0][0]).to.equal(`server.com/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com`);
         chai.expect(service._getLib.callCount).to.equal(1);
         chai.expect(service._getLib.args[0][0].apiKey).to.equal('555');
         chai.expect(service._getLib.args[0][0].username).to.equal('user');
