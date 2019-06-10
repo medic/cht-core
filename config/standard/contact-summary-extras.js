@@ -497,7 +497,6 @@ module.exports = {
   getSubsequentVisits: getSubsequentVisits,
   getTreatmentEnrollmentDate: getTreatmentEnrollmentDate,
   getTreatmentProgram: getTreatmentProgram,
-  getNutritionScreeningReport: getNutritionScreeningReport,
-  countFollowups: countFollowups,
-  getFollowupExitReport: getFollowupExitReport,
+  countNutritionFollowups: countNutritionFollowups,
+  getMostRecentReport: getMostRecentReport,
 };

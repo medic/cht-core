@@ -28,6 +28,10 @@ var countDosesPossible = extras.countDosesPossible;
 var countReportsSubmittedInWindow = extras.countReportsSubmittedInWindow;
 var getMostRecentReport = extras.getMostRecentReport;
 var getTreatmentEnrollmentDate = extras.getTreatmentEnrollmentDate;
+var pregnancyForms = extras.pregnancyForms;
+var antenatalForms = extras.antenatalForms;
+var postnatalForms = extras.postnatalForms;
+var immunizationForms = extras.immunizationForms;
 
 /* eslint-disable no-global-assign */
 var context = {
@@ -38,7 +42,7 @@ var context = {
     gmp: isCoveredByUseCaseInLineage(lineage, 'gmp'),
   },
   treatment_program: getTreatmentProgram(),
-  enrollment_date: extras.getTreatmentEnrollmentDate(),
+  enrollment_date: getTreatmentEnrollmentDate(),
 };
 
 var fields = [
@@ -55,7 +59,7 @@ var cards = [
   {
     label: 'contact.profile.pregnancy',
     appliesToType: 'report',
-    appliesIf: extras.isActivePregnancy,
+    appliesIf: isActivePregnancy,
     fields: [
       {
         label: 'contact.profile.edd',
@@ -71,7 +75,7 @@ var cards = [
         value: 'contact.profile.visits.of',
         translate: true,
         context: {
-          count: function(r) { return extras.getSubsequentVisits(r).length; },
+          count: function(r) { return getSubsequentVisits(r).length; },
           total: 4,
         },
         width: 6,
@@ -79,12 +83,12 @@ var cards = [
       {
         label: 'contact.profile.risk.title',
         value: function(r) {
-          return extras.isHighRiskPregnancy(r) ? 'contact.profile.risk.high':'contact.profile.risk.normal';
+          return isHighRiskPregnancy(r) ? 'contact.profile.risk.high':'contact.profile.risk.normal';
         },
         translate: true,
         width: 5,
         icon: function(r) {
-          return extras.isHighRiskPregnancy(r) ? 'risk' : '';
+          return isHighRiskPregnancy(r) ? 'risk' : '';
         },
       },
     ],
@@ -173,27 +177,27 @@ var cards = [
       var fields = [];
       var relevantDelivery, birthdate, relevantVisitsANC, relevantVisitsPNC, visitsANC, visitsPNC, subsequentDeliveries, subsequentPregnancies, nextPregnancy;
       reports.forEach(function (report) {
-        if (isReportValid(report) && extras.pregnancyForms.indexOf(report.form) >= 0) {
+        if (isReportValid(report) && pregnancyForms.indexOf(report.form) >= 0) {
 
           // Ignore pregnancies with no delivery report
-          subsequentDeliveries = extras.getSubsequentDeliveries(report);
+          subsequentDeliveries = getSubsequentDeliveries(report);
           if (subsequentDeliveries.length === 0) { return; }
 
-          relevantDelivery = extras.getOldestReport(subsequentDeliveries);
+          relevantDelivery = getOldestReport(subsequentDeliveries);
           birthdate = getBirthDate(relevantDelivery);
 
           // Ignore pregnancy reports that are superseded before delivery report
-          subsequentPregnancies = extras.getSubsequentPregnancies(report);
-          nextPregnancy = extras.getOldestReport(subsequentPregnancies);
+          subsequentPregnancies = getSubsequentPregnancies(report);
+          nextPregnancy = getOldestReport(subsequentPregnancies);
           if (nextPregnancy && nextPregnancy.reported_date < relevantDelivery.reported_date) { return; }
 
           relevantVisitsANC = reports.filter(function (r) {
             // birthdate is set to 00:00 on delivery date, so check for visits up until the end of the birth day date
-            return extras.antenatalForms.indexOf(r.form) >= 0 && r.reported_date > report.reported_date && r.reported_date < (birthdate.getTime() + MS_IN_DAY);
+            return antenatalForms.indexOf(r.form) >= 0 && r.reported_date > report.reported_date && r.reported_date < (birthdate.getTime() + MS_IN_DAY);
           });
           relevantVisitsPNC = reports.filter(function (r) {
             // birthdate is set to 00:00 on delivery day, so add 1 day to end of PNC period
-            return extras.postnatalForms.indexOf(r.form) >= 0 && r.reported_date > birthdate.getTime() && r.reported_date < (birthdate.getTime() + (DAYS_IN_PNC+1)*MS_IN_DAY);
+            return postnatalForms.indexOf(r.form) >= 0 && r.reported_date > birthdate.getTime() && r.reported_date < (birthdate.getTime() + (DAYS_IN_PNC+1)*MS_IN_DAY);
           });
 
           visitsANC = relevantVisitsANC.length;
@@ -222,11 +226,11 @@ var cards = [
     label: 'contact.profile.immunizations',
     appliesToType: 'person',
     appliesIf: function() {
-      return context.use_cases.imm && extras.getAgeInMonths() < 144;
+      return context.use_cases.imm && getAgeInMonths() < 144;
     },
     fields: function() {
       var i, report;
-      var immunizations = extras.initImmunizations();
+      var immunizations = initImmunizations();
       for(i=0; i<reports.length; ++i) {
         report = reports[i];
         if (report.form === 'immunization_visit') {
@@ -243,19 +247,19 @@ var cards = [
       var fields = [];
 
       IMMUNIZATION_LIST.forEach(function(imm) {
-        if (extras.isVaccineInLineage(lineage, imm)) {
+        if (isVaccineInLineage(lineage, imm)) {
           var field = {
             label: 'contact.profile.imm.' + imm,
             translate: true,
             width: 6,
           };
-          if (extras.isSingleDose(imm)) {
+          if (isSingleDose(imm)) {
             field.value = immunizations[imm] ? 'yes' : 'no';
           } else {
             field.value = 'contact.profile.imm.doses';
             field.context = {
-              count: extras.countDosesReceived(immunizations, imm),
-              total: extras.countDosesPossible(imm),
+              count: countDosesReceived(immunizations, imm),
+              total: countDosesPossible(imm),
             };
           }
           fields.push(field);
@@ -266,7 +270,7 @@ var cards = [
         fields.push({
           label: 'contact.profile.imm.generic',
           translate: true,
-          value: extras.countReportsSubmittedInWindow(extras.immunizationForms, now),
+          value: countReportsSubmittedInWindow(immunizationForms, now),
           width: 12,
         });
       }
