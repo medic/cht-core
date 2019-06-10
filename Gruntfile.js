@@ -337,7 +337,8 @@ module.exports = function(grunt) {
           'bootstrap-daterangepicker/**',
           'enketo-core/**',
           'font-awesome/**',
-          'moment/**',
+          'messageformat/**',
+          'moment/**'
         ],
         dest: 'webapp/node_modules_backup',
       },
