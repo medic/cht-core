@@ -4,7 +4,7 @@ const db = require('../db');
 const logger = require('../logger');
 const config = require('../config');
 const africasTalking = require('./africas-talking');
-const recordUtils = require('../controllers/record-utils');
+const records = require('../services/records');
 
 const DB_CHECKING_INTERVAL = 1000*60; // Check DB for messages every minute
 const SMS_SENDING_SERVICES = {
@@ -153,7 +153,7 @@ const createDocs = messages => {
   if (!messages.length) {
     return [];
   }
-  const docs = messages.map(message => recordUtils.createByForm({
+  const docs = messages.map(message => records.createByForm({
     from: message.from,
     message: message.content,
     gateway_ref: message.id,

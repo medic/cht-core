@@ -29,9 +29,7 @@ describe('records controller', () => {
 
   it('create calls createRecordByJSON if json type', () => {
     reqIs.withArgs('json').returns('json'); // yes, it actually returns 'json'
-    const createRecordByJSON = sinon.stub(records, 'createRecordByJSON').returns({ message: 'one' });
-    const createByForm = sinon.stub(records, 'createByForm');
-    const json = sinon.stub();
+    records.createRecordByJSON.returns({ message: 'one' });
     const req = {
       body: {
         message: 'test',
@@ -57,9 +55,7 @@ describe('records controller', () => {
 
   it('create calls createByForm if urlencoded type', () => {
     reqIs.withArgs('urlencoded').returns('urlencoded');
-    const createRecordByJSON = sinon.stub(records, 'createRecordByJSON');
-    const createByForm = sinon.stub(records, 'createByForm').returns({ message: 'one' });
-    const json = sinon.stub();
+    records.createByForm.returns({ message: 'one' });
     const req = {
       body: {
         message: 'test',

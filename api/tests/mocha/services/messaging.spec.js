@@ -6,7 +6,7 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const africasTalking = require('../../../src/services/africas-talking');
 const service = require('../../../src/services/messaging');
-const recordUtils = require('../../../src/controllers/record-utils');
+const records = require('../../../src/services/records');
 
 describe('messaging service', () => {
 
@@ -519,7 +519,7 @@ describe('messaging service', () => {
     it('does nothing when the messages have been seen before', () => {
       const query = sinon.stub(db.medic, 'query').resolves({ rows: [ { key: 'seen' } ] });
       const given = [ { id: 'seen', content: 'abc', from: '+123' } ];
-      const createRecord = sinon.stub(recordUtils, 'createByForm');
+      const createRecord = sinon.stub(records, 'createByForm');
       return service.processIncomingMessages(given).then(() => {
         chai.expect(query.callCount).to.equal(1);
         chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_gateway_ref');
@@ -529,7 +529,7 @@ describe('messaging service', () => {
     });
 
     it('saves WT messages to DB', () => {
-      const createRecord = sinon.stub(recordUtils, 'createByForm')
+      const createRecord = sinon.stub(records, 'createByForm')
         .onCall(0).returns({ message: 'one' })
         .onCall(1).returns({ message: 'two' })
         .onCall(2).returns({ message: 'three' });
