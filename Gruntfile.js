@@ -86,7 +86,7 @@ module.exports = function(grunt) {
           {
             from: /@@APP_CONFIG.name/g,
             to: packageJson.name,
-          }
+          },
         ],
       },
       'change-ddoc-id-for-testing': {
