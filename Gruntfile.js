@@ -337,7 +337,8 @@ module.exports = function(grunt) {
           'bootstrap-daterangepicker/**',
           'enketo-core/**',
           'font-awesome/**',
-          'moment/**',
+          'messageformat/**',
+          'moment/**'
         ],
         dest: 'webapp/node_modules_backup',
       },
@@ -564,6 +565,9 @@ module.exports = function(grunt) {
 
             // patch enketo to always mark the /inputs group as relevant
             'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+
+            // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
+            'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
           ];
           return patches.join(' && ');
         },

@@ -79,7 +79,7 @@ describe('Import Records', () => {
           a_number: 42,
           a_boolean: false,
           another_boolean: false,
-          an_optional_date: moment('2018-11-10').valueOf()
+          an_optional_date: moment.utc('2018-11-10').valueOf()
         });
         return utils.db.remove(doc);
       });
@@ -161,7 +161,7 @@ describe('Import Records', () => {
         });
         expect(doc.fields).to.deep.equal({
           a_number: 42,
-          an_optional_date: moment('2018-11-10').valueOf()
+          an_optional_date: moment.utc('2018-11-10').valueOf()
         });
         expect(doc.errors.length).to.equal(1);
         expect(doc.errors[0]).to.deep.equal({
