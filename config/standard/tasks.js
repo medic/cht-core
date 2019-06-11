@@ -349,26 +349,25 @@ module.exports = [
         r.fields.treatment.program &&
         (r.fields.treatment.program === 'OTP' || r.fields.treatment.program === 'SFP' || r.fields.treatment.program === 'SC')
       );
+
     },
     actions: [{ form: 'nutrition_followup' }],
     events: [
       {
         id: 'nutrition-followup-missing-visit',
-        dueDate: function(r, e, i){
-          return new Date(r.scheduled_tasks[i].due.slice(0, 10));
-        },
+        days: 0,
         start: 0,
         end: 3,
       }
     ],
-    resolvedIf: function(c, r, event, dueDate, i) {
+    resolvedIf: function(c, r, e, dueDate, i) {
       return (
         r.scheduled_tasks[i].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
           ['nutrition_followup', 'CF'],
           Utils.addDate(dueDate, 0).getTime(),
-          Utils.addDate(dueDate, event.end + 1).getTime()
+          Utils.addDate(dueDate, e.end + 1).getTime()
         )
       );
     }
