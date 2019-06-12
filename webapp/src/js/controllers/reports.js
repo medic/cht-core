@@ -420,7 +420,7 @@ angular
           });
       };
 
-      $scope.setLoadingSubActionBar(true);
+      ctrl.setLoadingSubActionBar(true);
       Auth('can_edit_verification')
         .then(() => true)
         .catch(() => false)
@@ -433,7 +433,7 @@ angular
           return writeVerificationToDoc();
         })
         .catch(err => $log.error(`Error verifying message: ${err}`))
-        .finally(() => $scope.setLoadingSubActionBar(false));
+        .finally(() => ctrl.setLoadingSubActionBar(false));
     });
 
     var initScroll = function() {
