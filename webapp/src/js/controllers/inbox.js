@@ -341,19 +341,6 @@ var _ = require('underscore'),
       }
     };
 
-    $scope.settingSelected = function(refreshing) {
-      ctrl.setLoadingContent(false);
-      $timeout(function() {
-        ctrl.setShowContent(true);
-        ctrl.setShowActionBar(true);
-        if (!refreshing) {
-          $timeout(function() {
-            $('.item-body').scrollTop(0);
-          });
-        }
-      });
-    };
-
     $scope.setLoadingContent = function(id) {
       ctrl.setLoadingContent(id);
       ctrl.setShowContent(true);

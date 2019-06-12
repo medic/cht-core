@@ -13,6 +13,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     ContactViewModelGenerator,
     ContactsActions,
     Debounce,
+    GlobalActions,
     Selectors,
     Snackbar,
     UserSettings
@@ -33,7 +34,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
     const mapDispatchToTarget = function(dispatch) {
       const contactsActions = ContactsActions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
+        settingSelected: globalActions.settingSelected,
         updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
@@ -83,7 +86,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         .then(function(model) {
           var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.setSelected(model, options);
-          $scope.settingSelected(refreshing);
+          ctrl.settingSelected(refreshing);
         })
         .catch(function(err) {
           if (err.code === 404 && !silent) {

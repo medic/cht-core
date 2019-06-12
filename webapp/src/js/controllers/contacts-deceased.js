@@ -25,7 +25,8 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
-        setTitle: globalActions.setTitle
+        setTitle: globalActions.setTitle,
+        settingSelected: globalActions.settingSelected
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -35,7 +36,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
       ContactViewModelGenerator.getContact(id)
         .then(function(model) {
           var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
-          $scope.settingSelected(refreshing);
+          ctrl.settingSelected(refreshing);
           return $scope.setSelected(model);
         })
         .then(function() {

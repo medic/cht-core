@@ -33,7 +33,8 @@ angular
       const messagesActions = MessagesActions(dispatch);
       return {
         setLeftActionBar: globalActions.setLeftActionBar,
-        setSelectedMessage: messagesActions.setSelectedMessage
+        setSelectedMessage: messagesActions.setSelectedMessage,
+        settingSelected: globalActions.settingSelected
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -85,7 +86,7 @@ angular
     $scope.setSelected = function(doc) {
       var refreshing = (ctrl.selectedMessage && ctrl.selectedMessage.id) === doc.id;
       ctrl.setSelectedMessage(doc);
-      $scope.settingSelected(refreshing);
+      ctrl.settingSelected(refreshing);
     };
 
     updateConversations()

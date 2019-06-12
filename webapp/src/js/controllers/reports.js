@@ -56,6 +56,7 @@ angular
         setRightActionBar: globalActions.setRightActionBar,
         setSelectedReports: reportsActions.setSelectedReports,
         setTitle: globalActions.setTitle,
+        settingSelected: globalActions.settingSelected,
         updateUnreadCount: globalActions.updateUnreadCount
       };
     };
@@ -175,7 +176,7 @@ angular
         setTitle(model);
       }
       setRightActionBar();
-      $scope.settingSelected(refreshing);
+      ctrl.settingSelected(refreshing);
     };
 
     var fetchFormattedReport = function(report) {
@@ -207,7 +208,7 @@ angular
       const reportId = report._id || report;
       removeSelectedReport(reportId);
       $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
-      $scope.settingSelected(true);
+      ctrl.settingSelected(true);
     };
 
     $scope.selectReport = function(report) {
@@ -534,7 +535,7 @@ angular
             };
           });
           ctrl.setSelectedReports(selected);
-          $scope.settingSelected(true);
+          ctrl.settingSelected(true);
           setRightActionBar();
           $('#reports-list input[type="checkbox"]').prop('checked', true);
         })

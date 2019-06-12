@@ -36,7 +36,8 @@ var _ = require('underscore');
         return {
           setSelectedTask: tasksActions.setSelectedTask,
           setShowContent: globalActions.setShowContent,
-          setTitle: globalActions.setTitle
+          setTitle: globalActions.setTitle,
+          settingSelected: globalActions.settingSelected
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -64,7 +65,7 @@ var _ = require('underscore');
         var task = _.findWhere(LiveList.tasks.getList(), { _id: id });
         if (task) {
           var refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
-          $scope.settingSelected(refreshing);
+          ctrl.settingSelected(refreshing);
           setSelectedTask(task);
         }
       };

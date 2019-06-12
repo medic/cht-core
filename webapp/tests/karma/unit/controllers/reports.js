@@ -39,7 +39,6 @@ describe('ReportsCtrl controller', () => {
     scope.clearSelected = () => {};
     scope.setBackTarget = () => {};
     scope.isMobile = () => false;
-    scope.settingSelected = () => {};
 
     const globalActions = GlobalActions($ngRedux.dispatch);
     const stubbedGlobalActions = {

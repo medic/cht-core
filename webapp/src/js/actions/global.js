@@ -2,6 +2,7 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
+    $timeout,
     ActionUtils,
     Selectors
   ) {
@@ -137,6 +138,19 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
       }
 
+      function settingSelected(refreshing) {
+        setLoadingContent(false);
+        $timeout(function() {
+          setShowContent(true);
+          setShowActionBar(true);
+          if (!refreshing) {
+            $timeout(function() {
+              $('.item-body').scrollTop(0);
+            });
+          }
+        });
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
@@ -164,7 +178,9 @@ angular.module('inboxServices').factory('GlobalActions',
         setUnreadCount,
         setVersion,
         updateReplicationStatus,
-        updateUnreadCount
+        updateUnreadCount,
+
+        settingSelected
       };
     };
   }
