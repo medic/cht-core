@@ -65,7 +65,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { } }
     };
 
     const doc = {
@@ -75,7 +76,8 @@ describe('muting', () => {
       fields: {
         patient_uuid: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -94,7 +96,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { NOT_MUTE: { } }
     };
 
     const doc = {
@@ -104,7 +107,8 @@ describe('muting', () => {
       fields: {
         patient_uuid: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -144,29 +148,32 @@ describe('muting', () => {
           ],
           join_responses: false
         }
-      }
+      },
+      forms: { mute: { } }
     };
 
     const doc1 = {
       _id: uuid(),
       type: 'data_record',
       form: 'mute',
-      from: '12345',
+      from: '+444999',
       fields: {
         patient_id: 'unknown'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc2 = {
       _id: uuid(),
       type: 'data_record',
       form: 'mute',
-      from: '12345',
+      from: '+444999',
       fields: {
         patient_id: 'this will not pass validation'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -188,7 +195,7 @@ describe('muting', () => {
         expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Contact not found');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[0].tasks[0].state).toEqual('pending');
 
         expect(updated[0].errors).toBeDefined();
@@ -198,7 +205,7 @@ describe('muting', () => {
         expect(updated[1].tasks).toBeDefined();
         expect(updated[1].tasks.length).toEqual(1);
         expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
-        expect(updated[1].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[1].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[1].tasks[0].state).toEqual('pending');
 
         expect(updated[1].errors).toBeDefined();
@@ -242,7 +249,8 @@ describe('muting', () => {
             content: 'Contact already unmuted'
           }],
         }]
-      }
+      },
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute1 = {
@@ -252,7 +260,8 @@ describe('muting', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const mute2 = {
@@ -262,7 +271,8 @@ describe('muting', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const unmute1 = {
@@ -272,7 +282,8 @@ describe('muting', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const unmute2 = {
@@ -282,7 +293,8 @@ describe('muting', () => {
       fields: {
         patient_id: 'person'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     let muteTime,
@@ -313,7 +325,7 @@ describe('muting', () => {
         expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Contact muted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[0].tasks[0].state).toEqual('pending');
 
         expect(updated[1].muted).toEqual(muteTime);
@@ -338,7 +350,7 @@ describe('muting', () => {
         expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Contact already muted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[0].tasks[0].state).toEqual('pending');
 
         expect(updated[1].muted).toEqual(muteTime);
@@ -362,7 +374,7 @@ describe('muting', () => {
         expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Contact unmuted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[0].tasks[0].state).toEqual('pending');
 
         expect(updated[1].muted).not.toBeDefined();
@@ -384,7 +396,7 @@ describe('muting', () => {
         expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Contact already unmuted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[0].tasks[0].state).toEqual('pending');
 
         expect(updated[1].muted).not.toBeDefined();
@@ -397,7 +409,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute = {
@@ -407,7 +420,8 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const unmute = {
@@ -417,7 +431,8 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     let muteTime;
@@ -505,7 +520,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute = {
@@ -515,7 +531,8 @@ describe('muting', () => {
       fields: {
         patient_id: '99999'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const muteHC = {
@@ -525,7 +542,8 @@ describe('muting', () => {
       fields: {
         place_id: 'health_center'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const unmute = {
@@ -535,7 +553,8 @@ describe('muting', () => {
       fields: {
         patient_id: '99999'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     let mutePersonTime,
@@ -645,7 +664,8 @@ describe('muting', () => {
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
-      }
+      },
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute = {
@@ -655,7 +675,8 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
-      reported_date: new Date().getTime()
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const person = {
@@ -698,7 +719,7 @@ describe('muting', () => {
         unmute_forms: ['unmute']
       },
       registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
-      forms: { sms_form_1: { public_form: true }, sms_form_2: { public_form: false } }
+      forms: { sms_form_1: { }, sms_form_2: { } }
     };
 
     const notToday = 36 * 24 * 60 * 60 * 1000;
@@ -765,6 +786,7 @@ describe('muting', () => {
         fields: {
           patient_id: 'person'
         },
+        contact: { _id: 'person' },
         scheduled_tasks: [
           { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
           { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
@@ -808,6 +830,7 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
+      content_type: 'xml',
       reported_date: new Date().getTime()
     };
 
@@ -818,6 +841,7 @@ describe('muting', () => {
       fields: {
         place_id: 'clinic'
       },
+      content_type: 'xml',
       reported_date: new Date().getTime()
     };
 

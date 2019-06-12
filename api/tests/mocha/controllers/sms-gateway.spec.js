@@ -1,7 +1,7 @@
 const chai = require('chai'),
       controller = require('../../../src/controllers/sms-gateway'),
       messageUtils = require('../../../src/message-utils'),
-      recordUtils = require('../../../src/controllers/record-utils'),
+      records = require('../../../src/services/records'),
       db = require('../../../src/db'),
       config = require('../../../src/config'),
       sinon = require('sinon');
@@ -22,7 +22,7 @@ describe('sms-gateway controller', () => {
 
   it('post() should save WT messages to DB', () => {
     // given
-    const createRecord = sinon.stub(recordUtils, 'createByForm')
+    const createRecord = sinon.stub(records, 'createByForm')
       .onCall(0).returns({ message: 'one' })
       .onCall(1).returns({ message: 'two' })
       .onCall(2).returns({ message: 'three' });
@@ -152,7 +152,7 @@ describe('sms-gateway controller', () => {
   });
 
   it('post() returns err if something goes wrong', () => {
-    sinon.stub(recordUtils, 'createByForm')
+    sinon.stub(records, 'createByForm')
       .onCall(0).returns({ message: 'one' });
     sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
     sinon.stub(db.medic, 'query')

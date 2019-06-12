@@ -21,8 +21,22 @@ describe('accept_patient_reports', () => {
     it('no type returns false', () => {
       transition.filter({ form: 'x' }).should.equal(false);
     });
+    it('invalid submission returns false', () => {
+      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      sinon.stub(utils, 'isValidSubmission').returns(false);
+      transition
+        .filter({
+          form: 'x',
+          type: 'data_record',
+          reported_date: 1,
+        })
+        .should.equal(false);
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
+    });
     it('returns true', () => {
       sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      sinon.stub(utils, 'isValidSubmission').returns(true);
       transition
         .filter({
           form: 'x',
@@ -30,6 +44,8 @@ describe('accept_patient_reports', () => {
           reported_date: 1,
         })
         .should.equal(true);
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
     });
   });
 
@@ -193,6 +209,29 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[1]._id);
+        done();
+      });
+    });
+
+    it('handles an empty list of scheduled_tasks', done => {
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-17T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [],
+        },
+      ];
+      const putRegistration = sinon.stub(db.medic, 'put');
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        putRegistration.callCount.should.equal(0);
         done();
       });
     });

@@ -166,6 +166,11 @@ const createReduxLoggerConfig = Selectors => ({
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.pathname === '/') {
+          parsedUrl.pathname = '/dbinfo';
+          url = parsedUrl.toString();
+        }
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);

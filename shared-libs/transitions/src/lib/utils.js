@@ -142,31 +142,6 @@ const getReportsWithinTimeWindow = (
     .then(data => data.rows.map(row => row.doc));
 };
 
-/*
- * Return the value on an object/doc defined by a string.  Support dot notation
- * so the schedule `start_from` configuration can support nested properties.
- */
-const getVal = (obj, path) => {
-  const arrayRegex = /\[([0-9]*)\]/;
-  if (typeof path !== 'string') {
-    return;
-  }
-  path = path.split('.');
-  while (obj && path.length) {
-    let part = path.shift();
-    if (arrayRegex.test(part)) {
-      // property with array index
-      const index = arrayRegex.exec(part)[1];
-      part = part.replace(arrayRegex, '');
-      obj = obj[part][index];
-    } else {
-      // property without array index
-      obj = obj[part];
-    }
-  }
-  return obj;
-};
-
 const getPatient = (patientShortcodeId, includeDocs) => {
   if (!patientShortcodeId) {
     return Promise.resolve();
@@ -192,7 +167,6 @@ const getPatient = (patientShortcodeId, includeDocs) => {
 };
 
 module.exports = {
-  getVal: getVal,
   getLocale: getLocale,
   getClinicPhone: doc => {
     const clinic = getClinic(doc);
@@ -313,5 +287,19 @@ module.exports = {
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),
 
-  getSubjectIds: contact => registrationUtils.getSubjectIds(contact)
+  getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
+
+  isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
+
+  // given a report, returns whether it should be accepted as a valid form submission
+  // a report is accepted if
+  // - it's an xform
+  // - it's an SMS public form
+  // - it's an SMS form submitted by a known contact
+  isValidSubmission: doc => {
+    const form = doc && module.exports.getForm(doc.form);
+    return module.exports.isXFormReport(doc) || // xform submission
+           (form && form.public_form) || // json submission to public form
+           (form && module.exports.getClinicPhone(doc)); // json submission by known submitter
+  }
 };

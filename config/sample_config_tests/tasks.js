@@ -1,4 +1,4 @@
-[
+module.exports = [
   {
     title: [{ locale: "en", content: "Postnatal visit needed" }],
     appliesTo: "reports",
@@ -26,4 +26,4 @@
       label: "this is a test"
     }
   }
-]
+];

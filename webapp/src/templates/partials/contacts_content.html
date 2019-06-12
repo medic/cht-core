@@ -105,7 +105,7 @@
                 heading="child.doc.name"
                 dob="child.doc.date_of_birth"
                 primary-contact="child.isPrimaryContact"
-                task-count="child.taskCount"
+                task-count="$ctrl.selected.tasksByContact[child.doc._id]"
                 is-muted="child.doc.muted"
                 display-muted="true"
               />
@@ -139,7 +139,7 @@
         </div>
       </div>
 
-      <div ng-if="contactsContentCtrl.selectedContact.areTasksEnabled" mm-auth="can_view_tasks">
+      <div ng-if="contactsContentCtrl.selectedContact.tasks" mm-auth="can_view_tasks">
         <div class="card tasks">
           <div class="action-header cell">
             <h3 translate>Tasks</h3>

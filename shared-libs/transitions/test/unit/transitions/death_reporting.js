@@ -213,14 +213,30 @@ describe('death_reporting', () => {
       transition.filter({ form: 'x', type: 'data_record' }).should.equal(false);
     });
 
+    it('invalid submission returns false', () => {
+      sinon.stub(config, 'get').returns({
+        mark_deceased_forms: ['x', 'y'],
+        undo_deceased_forms: ['z', 't']
+      });
+
+      sinon.stub(utils, 'isValidSubmission').returns(false);
+      transition.filter({ type: 'data_record', form: 'z', fields: { patient_id: '12' } }).should.equal(false);
+      utils.isValidSubmission.callCount.should.equal(1);
+      utils.isValidSubmission.args[0].should.deep.equal([{ type: 'data_record', form: 'z', fields: { patient_id: '12' } }]);
+    });
+
     it('returns true', () => {
       sinon.stub(config, 'get').returns({
         mark_deceased_forms: ['x', 'y'],
         undo_deceased_forms: ['z', 't']
       });
 
+      sinon.stub(utils, 'isValidSubmission').returns(true);
       transition.filter({ type: 'data_record', form: 'z', fields: { patient_id: '12' } }).should.equal(true);
       transition.filter({ type: 'data_record', form: 't', fields: { patient_id: '12' } }).should.equal(true);
+      utils.isValidSubmission.callCount.should.equal(2);
+      utils.isValidSubmission.args[0].should.deep.equal([{ type: 'data_record', form: 'z', fields: { patient_id: '12' } }]);
+      utils.isValidSubmission.args[1].should.deep.equal([{ type: 'data_record', form: 't', fields: { patient_id: '12' } }]);
     });
   });
 });

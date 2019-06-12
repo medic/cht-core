@@ -35,7 +35,8 @@ describe('Contacts controller', () => {
     isDbAdmin,
     liveListInit,
     liveListReset,
-    getSelectedContact;
+    getSelectedContact,
+    tasksForContact;
 
   beforeEach(() => {
     module('inboxApp');
@@ -151,13 +152,15 @@ describe('Contacts controller', () => {
       return Selectors.getSelectedContact($ngRedux.getState());
     };
 
+    tasksForContact = sinon.stub();
+
     createController = () => {
       searchService = sinon.stub();
       searchService.returns(Promise.resolve(searchResults));
 
       return $controller('ContactsCtrl', {
         $element: sinon.stub(),
-        $log: { error: sinon.stub() },
+        $log: { error: sinon.stub(), debug: sinon.stub() },
         $q: Q,
         $scope: scope,
         $state: { includes: sinon.stub(), go: sinon.stub() },
@@ -187,6 +190,7 @@ describe('Contacts controller', () => {
         },
         Settings: settings,
         Simprints: { enabled: () => false },
+        TasksForContact: tasksForContact,
         Tour: () => {},
         TranslateFrom: key => `TranslateFrom:${key}`,
         UserSettings: userSettings,
@@ -241,6 +245,52 @@ describe('Contacts controller', () => {
           assert.equal(ctrl.setRightActionBar.callCount, 1);
           assert.equal(ctrl.clearRightActionBar.callCount, 1);
         });
+    });
+
+    it('should not get tasks when not allowed', () => {
+      auth.withArgs('can_view_tasks').rejects();
+      return testContactSelection({ doc: district }).then(() => {
+        assert.checkDeepProperties(getSelectedContact().doc, district);
+        assert(ctrl.setRightActionBar.called);
+        assert(auth.withArgs('can_view_tasks').called);
+        assert(!tasksForContact.called);
+      });
+    });
+
+    it('should get tasks when allowed', () => {
+      auth.withArgs('can_view_tasks').resolves();
+      return testContactSelection({ doc: district }).then(() => {
+        assert.checkDeepProperties(getSelectedContact().doc, district);
+        assert(ctrl.setRightActionBar.called);
+        assert(auth.withArgs('can_view_tasks').called);
+        assert.equal(tasksForContact.callCount, 1);
+        assert.deepEqual(tasksForContact.args[0][0].doc, getSelectedContact().doc);
+        assert.equal(tasksForContact.args[0][1], 'ContactsCtrl');
+      });
+    });
+
+    it('should store tasks in redux store and count tasks by contact', () => {
+      auth.withArgs('can_view_tasks').resolves();
+      let receiveTasksCallback;
+      tasksForContact.callsFake((selected, listenerName, callback) => {
+        receiveTasksCallback = callback;
+      });
+      const tasks = [
+        { doc: { contact: { _id: 'contact1' } } },
+        { other: 4  },
+        { doc: { other: 3 } },
+        { doc: { contact: { _id: 'contact1' } } },
+        { doc: { contact: { _id: 'contact2' } } },
+        { doc: { contact: { _id: 'contact1' } } },
+      ];
+
+      return testContactSelection({ doc: district }).then(() => {
+        assert(auth.withArgs('can_view_tasks').called);
+        assert.equal(tasksForContact.callCount, 1);
+        receiveTasksCallback(tasks);
+        assert.deepEqual(getSelectedContact().tasks, tasks);
+        assert.deepEqual(getSelectedContact().tasksByContact, { 'contact1': 3, 'contact2': 1 });
+      });
     });
   });
 

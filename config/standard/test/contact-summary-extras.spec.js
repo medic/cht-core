@@ -1,19 +1,7 @@
 const assert = require('chai').assert;
-const parse = require('medic-conf/src/lib/simple-js-parser');
 
 describe('contact-summary-extras', function() {
-  const csu = parse({
-    jsFiles: [ 'contact-summary-extras.js' ],
-    export: [
-      'IMMUNIZATION_DOSES',
-      'IMMUNIZATION_LIST',
-      'getDeliveryCode',
-      'isVaccineInLineage',
-    ],
-    header: `var Utils = {
-      function() { return 1527158024122; },
-    };`,
-  });
+  const csu = require('../contact-summary-extras');
 
   describe('Immunisations', function() {
     describe('#IMMUNIZATION_LIST', function() {

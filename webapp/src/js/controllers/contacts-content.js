@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    moment = require('moment');
+const moment = require('moment');
 
 angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
@@ -8,9 +7,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $scope,
     $state,
     $stateParams,
-    $timeout,
     $translate,
-    Auth,
     Changes,
     ContactChangeFilter,
     ContactViewModelGenerator,
@@ -18,8 +15,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     Debounce,
     Selectors,
     Snackbar,
-    TasksForContact,
-    TranslateFrom,
     UserSettings
   ) {
 
@@ -78,49 +73,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
-    var translate = function(value, task) {
-      if (_.isString(value)) {
-        // new translation key style
-        return $translate.instant(value, task);
-      }
-      // old message array style
-      return TranslateFrom(value, task);
-    };
-
-    var getTasks = function() {
-      return Auth('can_view_tasks')
-        .then(function() {
-          ctrl.updateSelectedContact({ tasks: [] });
-          var children = ctrl.selectedContact.children.persons || [];
-          TasksForContact(
-            ctrl.selectedContact.doc._id,
-            ctrl.selectedContact.doc.type,
-            _.pluck(children, 'id'),
-            'ContactsContentCtrl',
-            function(areTasksEnabled, tasks) {
-              if (ctrl.selectedContact) {
-                $timeout(() => {
-                  tasks.forEach(function(task) {
-                    task.title = translate(task.title, task);
-                    task.priorityLabel = translate(task.priorityLabel, task);
-                  });
-                  ctrl.updateSelectedContact({ areTasksEnabled: areTasksEnabled, tasks: tasks });
-                  children.forEach(function(child) {
-                    child.taskCount = tasks.filter(function(task) {
-                      return task.doc &&
-                             task.doc.contact &&
-                             task.doc.contact._id === child.doc._id;
-                    }).length;
-                  });
-                });
-              }
-            });
-        })
-        .catch(function() {
-          $log.debug('Not authorized to view tasks');
-        });
-    };
-
     var selectContact = function(id, silent) {
       if (!silent) {
         $scope.setLoadingContent(id);
@@ -132,7 +84,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.setSelected(model, options);
           $scope.settingSelected(refreshing);
-          return getTasks();
         })
         .catch(function(err) {
           if (err.code === 404 && !silent) {

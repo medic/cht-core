@@ -31,7 +31,8 @@ const isRelevantReport = (doc, info = {}) =>
           doc.form &&
           doc.type === 'data_record' &&
           ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
-          !transitionUtils.hasRun(info, TRANSITION_NAME));
+          !transitionUtils.hasRun(info, TRANSITION_NAME) &&
+          utils.isValidSubmission(doc));
 
 // when new contacts are added that have muted parents, they should be set have muted state as well
 // also the schedule associated with their registration should be muted

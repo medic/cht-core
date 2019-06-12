@@ -44,7 +44,7 @@ describe('old skoool rules example', function () {
         var task = tasks[0];
         // The id in new version is generated with report id and event id.
         // Where as in previous nools.rules.js the id was set
-        assert.equal(task._id, report._id + '-' + 'treatment-followup-1');
+        assert.equal(task._id, report._id + '~' + 'treatment-followup-1~0');
         assert.equal(task.priority, 'high');
         assert.equal(task.title[0].locale, 'en');
         assert.equal(task.title[0].content, 'Postnatal visit needed');

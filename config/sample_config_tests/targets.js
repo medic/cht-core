@@ -1,19 +1,19 @@
-var targets = [
+module.exports = [
   {
-    id: "active-pregnancies",
-    type: "count",
-    icon: "pregnancy-1",
+    id: 'active-pregnancies',
+    type: 'count',
+    icon: 'pregnancy-1',
     goal: 10,
-    translation_key: "targets.active_pregnancies.title",
-    subtitle_translation_key: "targets.all_time.subtitle",
+    translation_key: 'targets.active_pregnancies.title',
+    subtitle_translation_key: 'targets.all_time.subtitle',
     passesIf: function () {
       return true;
     },
-    appliesTo: "reports",
+    appliesTo: 'reports',
     appliesIf: function (e, r) {
-      return validateReport(r);
+      return extras.validateReport(r);
     },
-    date: "now"
+    date: 'now'
   },
   // BIRTHS THIS MONTH
   {
@@ -23,9 +23,10 @@ var targets = [
     goal: 100,
     translation_key: 'targets.bcg_reported.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    context: '(user.parent.use_cases && user.parent.use_cases.split(" ").indexOf("imm") !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(" ").indexOf("imm") !== -1)',
+    appliesTo: 'contacts',
     appliesToType: 'person',
-    appliesIf: isHealthyDelivery,
-    passesIf: isHealthyDelivery,
+    appliesIf: extras.isHealthyDelivery,
+    passesIf: extras.isHealthyDelivery,
   }
 ];

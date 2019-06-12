@@ -3,7 +3,6 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
-  url  = require('url'),
   environment = require('./environment'),
   db = require('./db'),
   path = require('path'),
@@ -168,48 +167,31 @@ app.use(compression({
 
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
-    // couchdb request - let it go
+    // CouchDB request for /dbinfo from previous versions
+    // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
     res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
   }
 });
 
-app.get(appPrefix, (req, res) => {
-  if (('deviceID' in req.query) || req.is('application/json')) {
-    // couchdb request - let it go
-    return proxy.web(req, res);
-  }
-  const parsed = url.parse(req.url);
-  parsed.pathname = '/';
-  res.redirect(url.format(parsed));
+app.get('/dbinfo', (req, res) => {
+  req.url = '/';
+  proxy.web(req, res);
 });
 
-app.all('/medic/*', (req, res, next) => {
-  if (environment.db === 'medic') {
-    return next();
-  }
+app.get([`/medic/_design/medic/_rewrite/`, appPrefix], (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html')));
 
-  const parsed = url.parse(req.url);
-  const pathNameTokens = parsed.pathname.split('/');
-  pathNameTokens[1] = environment.db;
-  parsed.pathname = pathNameTokens.join('/');
-  req.url = url.format(parsed);
-  if (parsed.pathname.endsWith('login')) {
-    res.redirect(req.url);
-  } else {
-    proxy.web(req, res);
+app.all('/+medic(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace(/\/medic\/?/, pathPrefix);
   }
-}); 
+  next();
+});
 
-app.all('/admin*', (req, res) => {
-  const originalUrl = req.url;
-  if (originalUrl.split('/')[2] === 'fonts') {
-    res.redirect(req.url.slice(6));
-  } else {
-    req.url = `${adminAppPrefix}${originalUrl.slice(7)}`;
-    proxy.web(req, res);
-  }
+app.all('/+admin(/*)?', (req, res, next) => {
+  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
+  next();
 });
 
 app.get('/favicon.ico', (req, res) => {
@@ -428,13 +410,11 @@ const changesHandler = require('./controllers/changes').request,
 
 app.get(
   changesPath,
-  authorization.checkAuth,
   onlineUserChangesProxy,
   changesHandler
 );
 app.post(
   changesPath,
-  authorization.checkAuth,
   onlineUserChangesProxy,
   jsonParser,
   changesHandler
@@ -444,10 +424,9 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request,
   allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, authorization.checkAuth, onlineUserProxy, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, allDocsHandler);
 app.post(
   allDocsPath,
-  authorization.checkAuth,
   onlineUserProxy,
   jsonParser,
   allDocsHandler
@@ -457,7 +436,6 @@ app.post(
 const bulkGetHandler = require('./controllers/bulk-get').request;
 app.post(
   routePrefix + '_bulk_get(/*)?',
-  authorization.checkAuth,
   onlineUserProxy,
   jsonParser,
   bulkGetHandler
@@ -467,7 +445,6 @@ app.post(
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
   routePrefix + '_bulk_docs(/*)?',
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
   bulkDocs.request,
@@ -483,7 +460,6 @@ const dbDocHandler = require('./controllers/db-doc'),
 
 app.get(
   ddocPath,
-  authorization.checkAuth,
   onlineUserProxy,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -491,13 +467,11 @@ app.get(
 
 app.get(
   docPath,
-  authorization.checkAuth,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
   dbDocHandler.request
 );
 app.post(
   routePrefix,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser, // request body must be json
   dbDocHandler.request,
@@ -505,7 +479,6 @@ app.post(
 );
 app.put(
   docPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
   dbDocHandler.request,
@@ -513,14 +486,12 @@ app.put(
 );
 app.delete(
   docPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -603,12 +574,6 @@ app.get('/service-worker.js', (req, res) => {
   ]);
 
   res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
-});
-
-// To clear the application cache for users upgrading from legacy clients, serve an empty application manifest
-app.get('/empty.manifest', (req, res) => {
-  writeHeaders(req, res, [['Content-Type', 'text/cache-manifest; charset=utf-8']]);
-  res.send('CACHE MANIFEST\n\nNETWORK:\n*\n');
 });
 
 /**

@@ -349,6 +349,14 @@ module.exports = {
     return request(options, { debug: debug, notJson: notJson });
   },
 
+  requestOnMedicDb: (options, debug, notJson) => {
+    if (typeof options === 'string') {
+      options = { path: options };
+    }
+    options.path = `/medic${options.path || ''}`;
+    return request(options, { debug: debug, notJson: notJson });
+  },
+
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({
@@ -400,6 +408,18 @@ module.exports = {
     return module.exports.getDoc(id).then(doc => {
       doc._deleted = true;
       return module.exports.saveDoc(doc);
+    });
+  },
+
+  deleteDocs: ids => {
+    return module.exports.getDocs(ids).then(docs => {
+      docs.forEach(doc => doc._deleted = true);
+      return module.exports.requestOnTestDb({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs },
+        headers: { 'content-type': 'application/json' },
+      });
     });
   },
 

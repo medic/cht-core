@@ -27,8 +27,10 @@ var _ = require('underscore'),
     Session,
     Settings,
     Simprints,
+    TasksForContact,
     Tour,
     TranslateFrom,
+    UHCSettings,
     UserSettings,
     XmlForms
   ) {
@@ -237,6 +239,24 @@ var _ = require('underscore'),
                      settings.muting.unmute_forms.includes(formId));
     };
 
+    const getTasks = () => {
+      return Auth('can_view_tasks')
+        .then(() => TasksForContact(ctrl.selectedContact, 'ContactsCtrl', receiveTasks))
+        .catch(() => $log.debug('Not authorized to view tasks'));
+    };
+
+    const receiveTasks = (tasks) => {
+      const tasksByContact = {};
+      tasks.forEach(task => {
+        if (task.doc && task.doc.contact) {
+          const contactId = task.doc.contact._id;
+          tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
+        }
+      });
+      ctrl.updateSelectedContact({ tasks });
+      ctrl.updateSelectedContact({ tasksByContact });
+    };
+
     $scope.setSelected = function(selected, options) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedContactChildren(true);
@@ -252,7 +272,7 @@ var _ = require('underscore'),
       ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
-          $translate(title),
+          $translate(title).catch(() => title),
           getActionBarDataForChild(ctrl.selectedContact.doc.type),
           getCanEdit(ctrl.selectedContact.doc),
         ])
@@ -275,7 +295,8 @@ var _ = require('underscore'),
             .then(function() {
               return $q.all([
                 ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
-                Settings()
+                Settings(),
+                getTasks()
               ])
               .then(function(results) {
                 ctrl.setContactsLoadingSummary(false);
@@ -430,27 +451,15 @@ var _ = require('underscore'),
         });
     };
 
-    var getVisitCountSettings = function(uhcSettings) {
-      if (!uhcSettings.visit_count) {
-        return {};
-      }
-
-      return {
-        monthStartDate: uhcSettings.visit_count.month_start_date,
-        visitCountGoal: uhcSettings.visit_count.visit_count_goal,
-      };
-    };
-
     var setupPromise = $q
       .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
-      .then(function(results) {
-        usersHomePlace = results[0];
-        ctrl.lastVisitedDateExtras = results[1];
-        var uhcSettings = (results[2] && results[2].uhc) || {};
-        ctrl.visitCountSettings = getVisitCountSettings(uhcSettings);
-        if (ctrl.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
-          ctrl.sortDirection = ctrl.defaultSortDirection =
-            uhcSettings.contacts_default_sort;
+      .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
+        usersHomePlace = homePlaceSummary;
+        ctrl.lastVisitedDateExtras = viewLastVisitedDate;
+        ctrl.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
+
+        if (ctrl.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
+          ctrl.sortDirection = ctrl.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
 
         setActionBarData();

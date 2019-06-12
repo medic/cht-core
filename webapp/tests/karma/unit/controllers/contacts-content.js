@@ -7,28 +7,11 @@ describe('ContactsContentCtrl', () => {
       scope,
       state,
       getContact,
-      tasksForContact,
       changes,
       changesCallback,
       changesFilter,
       contactChangeFilter = sinon.stub(),
-      debounce,
-      getSelected,
-      timeout;
-
-  const childPerson = {
-    _id: 'peach',
-    type: 'person',
-    name: 'Peach',
-    date_of_birth: '1986-01-01'
-  };
-
-  const doc = {
-    _id: 'districtsdistrict',
-    type: 'clinic',
-    contact: { _id: 'mario' },
-    children: { persons: [ ] }
-  };
+      debounce;
 
   const stubGetContact = (doc, childArray) => {
     const childRows = childArray.map(child => {
@@ -44,10 +27,6 @@ describe('ContactsContentCtrl', () => {
       .returns(Promise.resolve(model));
   };
 
-  const stubTasksForContact = tasks => {
-    tasksForContact.callsArgWith(4, true, tasks);
-  };
-
   const createController = () => {
     return controller('ContactsContentCtrl', {
       '$scope': scope,
@@ -55,11 +34,7 @@ describe('ContactsContentCtrl', () => {
       '$state': state,
       '$stateParams': stateParams,
       'Changes': changes,
-      'Auth': () => {
-        return Promise.resolve();
-      },
       'ContactViewModelGenerator': { getContact: getContact },
-      'TasksForContact': tasksForContact,
       'UserSettings': KarmaUtils.promiseService(null, ''),
       'ContactChangeFilter': contactChangeFilter,
       'Debounce': debounce
@@ -71,7 +46,7 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, _$timeout_, $ngRedux, ContactsActions, Selectors) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions) => {
     contactsActions = ContactsActions($ngRedux.dispatch);
 
     scope = _$rootScope_.$new();
@@ -86,19 +61,13 @@ describe('ContactsContentCtrl', () => {
       go: sinon.stub()
     };
 
-    timeout = _$timeout_;
     controller = $controller;
 
     getContact = sinon.stub();
-    tasksForContact = sinon.stub();
     changes = (options) => {
       changesFilter = options.filter;
       changesCallback = options.callback;
       return {unsubscribe: () => {}};
-    };
-
-    getSelected = () => {
-      return Selectors.getSelectedContact($ngRedux.getState());
     };
 
     debounce = (func) => {
@@ -107,53 +76,6 @@ describe('ContactsContentCtrl', () => {
       return fn;
     };
   }));
-
-  describe('Tasks', () => {
-    const runTasksTest = childrenArray => {
-      stateParams = { id: doc._id };
-      stubGetContact(doc, childrenArray);
-      return createController().setupPromise.then(timeout.flush);
-    };
-
-    it('displays tasks for selected contact', () => {
-      const task = { _id: 'aa', contact: { _id: doc._id } };
-      stubTasksForContact([ task ]);
-      return runTasksTest([]).then(() => {
-        const selected = getSelected();
-        chai.assert.equal(tasksForContact.callCount, 1);
-        chai.assert.equal(tasksForContact.args[0][0], doc._id);
-        chai.assert.equal(tasksForContact.args[0][1], doc.type);
-        chai.assert.equal(tasksForContact.args[0][2].length, 0);
-        chai.assert.deepEqual(selected.tasks, [ task ]);
-        chai.assert(selected.areTasksEnabled);
-      });
-    });
-
-    it('displays tasks for selected place and child persons', () => {
-      const tasks = [
-        {
-          _id: 'taskForParent',
-          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: doc._id }
-        },
-        {
-          _id: 'taskForChild',
-          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: childPerson._id }
-        }
-      ];
-      stubTasksForContact(tasks);
-      return runTasksTest([ childPerson ]).then(() => {
-        const selected = getSelected();
-        chai.assert.equal(tasksForContact.callCount, 1);
-        chai.assert.equal(tasksForContact.args[0][0], doc._id);
-        chai.assert.equal(tasksForContact.args[0][1], doc.type);
-        chai.assert.sameMembers(tasksForContact.args[0][2], [ childPerson._id ]);
-        chai.assert.deepEqual(selected.tasks, tasks);
-        chai.assert(selected.areTasksEnabled);
-      });
-    });
-  });
 
   describe('Change feed process', () => {
     let doc,

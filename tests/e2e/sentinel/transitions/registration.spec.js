@@ -56,14 +56,15 @@ describe('registration', () => {
           }],
         }]
       }],
-      forms: { FORM: { public_form: true }}
+      forms: { FORM: { }}
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -91,14 +92,15 @@ describe('registration', () => {
           }],
         }]
       }],
-      forms: { FORM: { public_form: true }}
+      forms: { FORM: { }}
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       form: 'NOT_FORM',
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -146,30 +148,32 @@ describe('registration', () => {
           }]
         }
       }],
-      forms: { FORM: { public_form: true }}
+      forms: { FORM: { }}
     };
 
     const doc1 = {
       _id: uuid(),
       type: 'data_record',
-      from: '12345',
+      from: '+444999',
       form: 'FORM',
       fields: {
         count: 3
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc2 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '12345',
+      from: '+444999',
       fields: {
         patient_id: 'non_existent',
         count: 22
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -191,7 +195,7 @@ describe('registration', () => {
         expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Count is incorrect');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
 
         expect(updated[0].errors).toBeDefined();
         expect(updated[0].errors.length).toEqual(1);
@@ -200,7 +204,7 @@ describe('registration', () => {
         expect(updated[1].tasks).toBeDefined();
         expect(updated[1].tasks.length).toEqual(1);
         expect(updated[1].tasks[0].messages[0].message).toEqual('Patient not found');
-        expect(updated[1].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[1].tasks[0].messages[0].to).toEqual('+444999');
 
         expect(updated[1].errors).toBeDefined();
         expect(updated[1].errors.length).toEqual(1);
@@ -230,7 +234,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: { 'FORM-A': { public_form: true }, 'FORM-B': { public_form: true }}
+      forms: { 'FORM-A': { }, 'FORM-B': { }}
     };
 
     const doc1 = {
@@ -241,7 +245,8 @@ describe('registration', () => {
       fields: {
         patient_name: 'Minerva',
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc2 = {
@@ -253,7 +258,8 @@ describe('registration', () => {
         patient_id: 'person',
         patient_name: 'Mike',
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc3 = {
@@ -265,7 +271,8 @@ describe('registration', () => {
         our_patient_name: 'Venus',
         our_patient_id: 'venus'
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc4 = {
@@ -277,7 +284,8 @@ describe('registration', () => {
         patient_name: 'Ceres',
         our_patient_id: 'patient'
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     let newPatientId;
@@ -359,7 +367,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: { FORM: { public_form: true }}
+      forms: { FORM: { }}
     };
 
     const doc1 = {
@@ -371,7 +379,8 @@ describe('registration', () => {
         patient_id: 'patient',
         weeks_since_lmp: 2,
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc2 = {
@@ -383,7 +392,8 @@ describe('registration', () => {
         patient_id: 'patient',
         last_menstrual_period: 2
       },
-      reported_date: moment().subtract(2, 'weeks').valueOf()
+      reported_date: moment().subtract(2, 'weeks').valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -425,7 +435,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: { FORM: { public_form: true }}
+      forms: { FORM: { }}
     };
 
     const doc1 = {
@@ -437,7 +447,8 @@ describe('registration', () => {
         patient_id: 'patient',
         months_since_birth: 2,
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc2 = {
@@ -449,7 +460,8 @@ describe('registration', () => {
         patient_id: 'patient',
         weeks_since_birth: 2
       },
-      reported_date: moment().subtract(2, 'weeks').valueOf()
+      reported_date: moment().subtract(2, 'weeks').valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc3 = {
@@ -461,7 +473,8 @@ describe('registration', () => {
         patient_id: 'patient',
         age_in_years: 2
       },
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -508,7 +521,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: { FORM: { public_form: true }},
+      forms: { FORM: { }},
       schedules: [{
         name: 'sch1',
         start_from: 'some_date_field',
@@ -570,7 +583,8 @@ describe('registration', () => {
         patient_id: 'patient',
       },
       some_date_field: moment().subtract(3, 'week').valueOf(),
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     const doc2 = {
@@ -582,7 +596,8 @@ describe('registration', () => {
         patient_id: 'patient',
       },
       some_date_field: moment().subtract(2, 'week').valueOf(),
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -628,7 +643,7 @@ describe('registration', () => {
         //1st doc has cleared schedules
         expect(updated[0].scheduled_tasks).toBeDefined();
         expect(updated[0].scheduled_tasks.length).toEqual(3);
-        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared'));
+        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared')).toBe(true);
 
         //2nd doc has schedules
         expect(updated[1].scheduled_tasks).toBeDefined();
@@ -687,7 +702,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: { FORM: { public_form: true }},
+      forms: { FORM: { }},
     };
 
     const doc = {
@@ -700,7 +715,8 @@ describe('registration', () => {
         patient_id: 'patient',
       },
       some_date_field: moment().subtract(3, 'week').valueOf(),
-      reported_date: moment().valueOf()
+      reported_date: moment().valueOf(),
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils

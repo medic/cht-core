@@ -1,6 +1,6 @@
 const auth = require('../auth'),
       serverUtils = require('../server-utils'),
-      recordUtils = require('./record-utils'),
+      records = require('../services/records'),
       config = require('../config');
 
 const runTransitions = doc => {
@@ -11,10 +11,10 @@ const runTransitions = doc => {
 
 const generate = (req, options) => {
   if (req.is('urlencoded')) {
-    return recordUtils.createByForm(req.body, options);
+    return records.createByForm(req.body, options);
   }
   if (req.is('json')) {
-    return recordUtils.createRecordByJSON(req.body);
+    return records.createRecordByJSON(req.body);
   }
   throw new Error('Content type not supported.');
 };

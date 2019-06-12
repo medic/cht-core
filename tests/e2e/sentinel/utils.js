@@ -11,12 +11,15 @@ const waitForSentinel = docIds => {
   return requestOnSentinelTestDb('/_local/sentinel-meta-data')
     .then(metaData => metaData.processed_seq)
     .then(seq => {
-      const changeOpts = {
-        since: seq,
-        filter: '_doc_ids',
-        doc_ids: JSON.stringify(Array.isArray(docIds) ? docIds : [docIds])
+      const opts = {
+        path: '/_changes?' + querystring.stringify({ since: seq, filter: '_doc_ids' }),
+        body: { doc_ids: Array.isArray(docIds) ? docIds : [docIds] },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
       };
-      return utils.requestOnTestDb('/_changes?' + querystring.stringify(changeOpts));
+      return utils.requestOnTestDb(opts);
     })
     .then(response => {
       if (response.results && !response.results.length) {
@@ -46,11 +49,14 @@ const getInfoDoc = docId => {
 
 const getInfoDocs = (docIds = []) => {
   const opts = {
-    keys: JSON.stringify(docIds.map(id => id + '-info')),
-    include_docs: true
+    path: '/_all_docs?include_docs=true',
+    body: { keys: docIds.map(id => id + '-info') },
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
   };
-  return requestOnSentinelTestDb('/_all_docs?' + querystring.stringify(opts))
-    .then(response => response.rows.map(row => row.doc));
+  return requestOnSentinelTestDb(opts).then(response => response.rows.map(row => row.doc));
 };
 
 module.exports = {

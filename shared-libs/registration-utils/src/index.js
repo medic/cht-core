@@ -1,7 +1,5 @@
-// returns the only continuous alphanumeric + dash + underscore sequence in lower case
-var normalizeFormCode = function(formCode) {
-  var match = formCode.match(/^[^\w-]*([\w-]+)[^\w-]*$/);
-  return match && match.length && match[1].toLowerCase();
+const formCodeMatches = (conf, form) => {
+  return (new RegExp('^[^a-z]*' + conf + '[^a-z]*$', 'i')).test(form);
 };
 
 // Returns whether `doc` is a valid registration against a configuration
@@ -17,14 +15,11 @@ exports.isValidRegistration = function(doc, settings) {
     return false;
   }
 
-  var formCode = normalizeFormCode(doc.form);
-  if (!formCode) {
-    return false;
-  }
-
   // Registration transition should be configured for this form
   var registrationConfiguration = settings.registrations.find(function(conf) {
-    return conf && conf.form && String(conf.form).toLowerCase() === formCode;
+    return conf &&
+           conf.form &&
+           formCodeMatches(conf.form, doc.form);
   });
   if (!registrationConfiguration) {
     return false;
@@ -44,7 +39,7 @@ exports.isValidRegistration = function(doc, settings) {
   return Boolean(form.public_form || doc.contact);
 };
 
-exports._normalizeFormCode = normalizeFormCode;
+exports._formCodeMatches = formCodeMatches;
 
 var SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
 exports.getSubjectIds = function(contact) {

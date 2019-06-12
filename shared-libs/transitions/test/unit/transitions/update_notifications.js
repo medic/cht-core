@@ -47,7 +47,20 @@ describe('update_notifications', () => {
       );
     });
 
+    it('should not match when not a valid submission', () => {
+      sinon.stub(utils, 'isValidSubmission').returns(false);
+      assert.equal(
+        transition.filter({
+          form: 'x',
+          fields: { patient_id: 'x' },
+          type: 'data_record',
+        }),
+        false
+      );
+    });
+
     it('match', () => {
+      sinon.stub(utils, 'isValidSubmission').returns(true);
       assert.equal(
         transition.filter({
           form: 'x',
@@ -59,6 +72,7 @@ describe('update_notifications', () => {
     });
 
     it('should match when patient_id field is missing #4649', () => {
+      sinon.stub(utils, 'isValidSubmission').returns(true);
       assert.equal(
         transition.filter({
           form: 'x',
@@ -69,6 +83,7 @@ describe('update_notifications', () => {
     });
 
     it('should match when patient_id field is empty #4649', () => {
+      sinon.stub(utils, 'isValidSubmission').returns(true);
       assert.equal(
         transition.filter({
           form: 'x',

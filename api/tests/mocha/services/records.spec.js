@@ -1,7 +1,7 @@
 const controller = require('../../../src/controllers/records'),
       chai = require('chai'),
       auth = require('../../../src/auth'),
-      recordUtils = require('../../../src/controllers/record-utils'),
+      records = require('../../../src/services/records'),
       sinon = require('sinon'),
       config = require('../../../src/config');
 
@@ -15,8 +15,8 @@ describe('records controller', () => {
     sinon.stub(auth, 'check').resolves();
     const reqIs = sinon.stub().returns(false);
     reqIs.withArgs('json').returns('json'); // yes, it actually returns 'json'
-    const createRecordByJSON = sinon.stub(recordUtils, 'createRecordByJSON').returns({ message: 'one' });
-    const createByForm = sinon.stub(recordUtils, 'createByForm');
+    const createRecordByJSON = sinon.stub(records, 'createRecordByJSON').returns({ message: 'one' });
+    const createByForm = sinon.stub(records, 'createByForm');
     const json = sinon.stub();
     const req = {
       body: {
@@ -46,8 +46,8 @@ describe('records controller', () => {
     sinon.stub(auth, 'check').resolves();
     const reqIs = sinon.stub().returns(false);
     reqIs.withArgs('urlencoded').returns('urlencoded');
-    const createRecordByJSON = sinon.stub(recordUtils, 'createRecordByJSON');
-    const createByForm = sinon.stub(recordUtils, 'createByForm').returns({ message: 'one' });
+    const createRecordByJSON = sinon.stub(records, 'createRecordByJSON');
+    const createByForm = sinon.stub(records, 'createByForm').returns({ message: 'one' });
     const json = sinon.stub();
     const req = {
       body: {
