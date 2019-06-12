@@ -61,13 +61,13 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'adult-1-pnc-active',
+              _id: 'adult-1~pnc-active',
               deleted: false,
               type: 'pnc-active',
               pass: true,
             },
             {
-              _id: 'adult-1-pnc-homebirth-0-visits',
+              _id: 'adult-1~pnc-homebirth-0-visits',
               deleted: false,
               type: 'pnc-homebirth-0-visits',
               pass: true,
@@ -92,61 +92,61 @@ describe('Standard Configuration Targets', function() {
             // then
             const expectedTargets = [
               {
-                _id: 'adult-1-pnc-active',
+                _id: 'adult-1~pnc-active',
                 deleted: false,
                 pass: true,
                 type: 'pnc-active',
               },
               {
-                _id: 'adult-1-pnc-homebirth-0-visits',
+                _id: 'adult-1~pnc-homebirth-0-visits',
                 deleted: false,
                 pass: false,
                 type: 'pnc-homebirth-0-visits',
               },
               {
-                _id: 'adult-1-births-this-month',
+                _id: 'adult-1~births-this-month',
                 deleted: false,
                 pass: true,
                 type: 'births-this-month',
               },
               {
-                _id: 'd-1-delivery-at-facility-total',
+                _id: 'd-1~delivery-at-facility-total',
                 deleted: false,
                 pass: true,
                 type: 'delivery-at-facility-total',
               },
               {
-                _id: 'd-1-delivery-with-min-1-visit',
+                _id: 'd-1~delivery-with-min-1-visit',
                 deleted: false,
                 pass: false,
                 type: 'delivery-with-min-1-visit',
               },
               {
-                _id: 'd-1-delivery-with-min-4-visits',
+                _id: 'd-1~delivery-with-min-4-visits',
                 deleted: false,
                 pass: false,
                 type: 'delivery-with-min-4-visits',
               },
               {
-                _id: 'd-1-pnc-visits-this-month',
+                _id: 'd-1~pnc-visits-this-month',
                 deleted: false,
                 pass: true,
                 type: 'pnc-visits-this-month',
               },
               {
-                _id: 'pnc-2-pnc-visits-this-month',
+                _id: 'pnc-2~pnc-visits-this-month',
                 deleted: false,
                 pass: true,
                 type: 'pnc-visits-this-month',
               },
               {
-                _id: 'adult-1-pnc-3-visits',
+                _id: 'adult-1~pnc-3-visits',
                 deleted: false,
                 pass: false,
                 type: 'pnc-3-visits',
               },
               {
-                _id: 'd-1-pnc-registered-this-month',
+                _id: 'd-1~pnc-registered-this-month',
                 deleted: false,
                 pass: true,
                 type: 'pnc-registered-this-month',
@@ -169,49 +169,49 @@ describe('Standard Configuration Targets', function() {
             // then
             const expectedTargets = [
               {
-                _id: 'adult-1-births-this-month',
+                _id: 'adult-1~births-this-month',
                 deleted: false,
                 pass: true,
                 type: 'births-this-month',
               },
               {
-                _id: 'd-1-delivery-at-facility-total',
+                _id: 'd-1~delivery-at-facility-total',
                 deleted: false,
                 pass: true,
                 type: 'delivery-at-facility-total',
               },
               {
-                _id: 'd-1-delivery-with-min-1-visit',
+                _id: 'd-1~delivery-with-min-1-visit',
                 deleted: false,
                 pass: false,
                 type: 'delivery-with-min-1-visit',
               },
               {
-                _id: 'd-1-delivery-with-min-4-visits',
+                _id: 'd-1~delivery-with-min-4-visits',
                 deleted: false,
                 pass: false,
                 type: 'delivery-with-min-4-visits',
               },
               {
-                _id: 'd-1-pnc-visits-this-month',
+                _id: 'd-1~pnc-visits-this-month',
                 deleted: false,
                 pass: true,
                 type: 'pnc-visits-this-month',
               },
               {
-                _id: 'pnc-2-pnc-visits-this-month',
+                _id: 'pnc-2~pnc-visits-this-month',
                 deleted: false,
                 pass: true,
                 type: 'pnc-visits-this-month',
               },
               {
-                _id: 'adult-1-pnc-3-visits',
+                _id: 'adult-1~pnc-3-visits',
                 deleted: false,
                 pass: false,
                 type: 'pnc-3-visits',
               },
               {
-                _id: 'd-1-pnc-registered-this-month',
+                _id: 'd-1~pnc-registered-this-month',
                 deleted: false,
                 pass: true,
                 type: 'pnc-registered-this-month',
@@ -238,67 +238,67 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  "_id": "adult-1-pnc-active",
+                  "_id": "adult-1~pnc-active",
                   "deleted": false,
                   "type": "pnc-active",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-0-visits",
+                  "_id": "adult-1~pnc-homebirth-0-visits",
                   "deleted": false,
                   "type": "pnc-homebirth-0-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "adult-1-births-this-month",
+                  "_id": "adult-1~births-this-month",
                   "deleted": false,
                   "type": "births-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-at-facility-total",
+                  "_id": "d-1~delivery-at-facility-total",
                   "deleted": false,
                   "type": "delivery-at-facility-total",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-1-visit",
+                  "_id": "d-1~delivery-with-min-1-visit",
                   "deleted": false,
                   "type": "delivery-with-min-1-visit",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-4-visits",
+                  "_id": "d-1~delivery-with-min-4-visits",
                   "deleted": false,
                   "type": "delivery-with-min-4-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-pnc-visits-this-month",
+                  "_id": "d-1~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-2-pnc-visits-this-month",
+                  "_id": "pnc-2~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-3-pnc-visits-this-month",
+                  "_id": "pnc-3~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-3-visits",
+                  "_id": "adult-1~pnc-3-visits",
                   "deleted": false,
                   "type": "pnc-3-visits",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-pnc-registered-this-month",
+                  "_id": "d-1~pnc-registered-this-month",
                   "deleted": false,
                   "type": "pnc-registered-this-month",
                   "pass": true,
@@ -322,55 +322,55 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  "_id": "adult-1-births-this-month",
+                  "_id": "adult-1~births-this-month",
                   "deleted": false,
                   "type": "births-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-at-facility-total",
+                  "_id": "d-1~delivery-at-facility-total",
                   "deleted": false,
                   "type": "delivery-at-facility-total",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-1-visit",
+                  "_id": "d-1~delivery-with-min-1-visit",
                   "deleted": false,
                   "type": "delivery-with-min-1-visit",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-4-visits",
+                  "_id": "d-1~delivery-with-min-4-visits",
                   "deleted": false,
                   "type": "delivery-with-min-4-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-pnc-visits-this-month",
+                  "_id": "d-1~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-2-pnc-visits-this-month",
+                  "_id": "pnc-2~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-3-pnc-visits-this-month",
+                  "_id": "pnc-3~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-3-visits",
+                  "_id": "adult-1~pnc-3-visits",
                   "deleted": false,
                   "type": "pnc-3-visits",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-pnc-registered-this-month",
+                  "_id": "d-1~pnc-registered-this-month",
                   "deleted": false,
                   "type": "pnc-registered-this-month",
                   "pass": true,
@@ -393,61 +393,61 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  "_id": "adult-1-pnc-active",
+                  "_id": "adult-1~pnc-active",
                   "deleted": false,
                   "type": "pnc-active",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-0-visits",
+                  "_id": "adult-1~pnc-homebirth-0-visits",
                   "deleted": false,
                   "type": "pnc-homebirth-0-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "adult-1-births-this-month",
+                  "_id": "adult-1~births-this-month",
                   "deleted": false,
                   "type": "births-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-at-facility-total",
+                  "_id": "d-1~delivery-at-facility-total",
                   "deleted": false,
                   "type": "delivery-at-facility-total",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-1-visit",
+                  "_id": "d-1~delivery-with-min-1-visit",
                   "deleted": false,
                   "type": "delivery-with-min-1-visit",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-4-visits",
+                  "_id": "d-1~delivery-with-min-4-visits",
                   "deleted": false,
                   "type": "delivery-with-min-4-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-pnc-visits-this-month",
+                  "_id": "d-1~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-2-pnc-visits-this-month",
+                  "_id": "pnc-2~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-3-visits",
+                  "_id": "adult-1~pnc-3-visits",
                   "deleted": false,
                   "type": "pnc-3-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-pnc-registered-this-month",
+                  "_id": "d-1~pnc-registered-this-month",
                   "deleted": false,
                   "type": "pnc-registered-this-month",
                   "pass": true,
@@ -474,73 +474,73 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  "_id": "adult-1-pnc-active",
+                  "_id": "adult-1~pnc-active",
                   "deleted": false,
                   "type": "pnc-active",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-0-visits",
+                  "_id": "adult-1~pnc-homebirth-0-visits",
                   "deleted": false,
                   "type": "pnc-homebirth-0-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "adult-1-births-this-month",
+                  "_id": "adult-1~births-this-month",
                   "deleted": false,
                   "type": "births-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-at-facility-total",
+                  "_id": "d-1~delivery-at-facility-total",
                   "deleted": false,
                   "type": "delivery-at-facility-total",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-1-visit",
+                  "_id": "d-1~delivery-with-min-1-visit",
                   "deleted": false,
                   "type": "delivery-with-min-1-visit",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-4-visits",
+                  "_id": "d-1~delivery-with-min-4-visits",
                   "deleted": false,
                   "type": "delivery-with-min-4-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "pnc-2-pnc-visits-this-month",
+                  "_id": "pnc-2~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-3-pnc-visits-this-month",
+                  "_id": "pnc-3~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-4-pnc-visits-this-month",
+                  "_id": "pnc-4~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-3-visits",
+                  "_id": "adult-1~pnc-3-visits",
                   "deleted": false,
                   "type": "pnc-3-visits",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-min-1-visit",
+                  "_id": "adult-1~pnc-homebirth-min-1-visit",
                   "deleted": false,
                   "type": "pnc-homebirth-min-1-visit",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-pnc-registered-this-month",
+                  "_id": "d-1~pnc-registered-this-month",
                   "deleted": false,
                   "type": "pnc-registered-this-month",
                   "pass": true,
@@ -565,61 +565,61 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  "_id": "adult-1-births-this-month",
+                  "_id": "adult-1~births-this-month",
                   "deleted": false,
                   "type": "births-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-at-facility-total",
+                  "_id": "d-1~delivery-at-facility-total",
                   "deleted": false,
                   "type": "delivery-at-facility-total",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-1-visit",
+                  "_id": "d-1~delivery-with-min-1-visit",
                   "deleted": false,
                   "type": "delivery-with-min-1-visit",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-4-visits",
+                  "_id": "d-1~delivery-with-min-4-visits",
                   "deleted": false,
                   "type": "delivery-with-min-4-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "pnc-2-pnc-visits-this-month",
+                  "_id": "pnc-2~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-3-pnc-visits-this-month",
+                  "_id": "pnc-3~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-4-pnc-visits-this-month",
+                  "_id": "pnc-4~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-3-visits",
+                  "_id": "adult-1~pnc-3-visits",
                   "deleted": false,
                   "type": "pnc-3-visits",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-min-1-visit",
+                  "_id": "adult-1~pnc-homebirth-min-1-visit",
                   "deleted": false,
                   "type": "pnc-homebirth-min-1-visit",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-pnc-registered-this-month",
+                  "_id": "d-1~pnc-registered-this-month",
                   "deleted": false,
                   "type": "pnc-registered-this-month",
                   "pass": true,
@@ -643,67 +643,67 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  "_id": "adult-1-pnc-active",
+                  "_id": "adult-1~pnc-active",
                   "deleted": false,
                   "type": "pnc-active",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-0-visits",
+                  "_id": "adult-1~pnc-homebirth-0-visits",
                   "deleted": false,
                   "type": "pnc-homebirth-0-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "adult-1-births-this-month",
+                  "_id": "adult-1~births-this-month",
                   "deleted": false,
                   "type": "births-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-delivery-at-facility-total",
+                  "_id": "d-1~delivery-at-facility-total",
                   "deleted": false,
                   "type": "delivery-at-facility-total",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-1-visit",
+                  "_id": "d-1~delivery-with-min-1-visit",
                   "deleted": false,
                   "type": "delivery-with-min-1-visit",
                   "pass": false,
                 },
                 {
-                  "_id": "d-1-delivery-with-min-4-visits",
+                  "_id": "d-1~delivery-with-min-4-visits",
                   "deleted": false,
                   "type": "delivery-with-min-4-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "pnc-2-pnc-visits-this-month",
+                  "_id": "pnc-2~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "pnc-3-pnc-visits-this-month",
+                  "_id": "pnc-3~pnc-visits-this-month",
                   "deleted": false,
                   "type": "pnc-visits-this-month",
                   "pass": true,
                 },
                 {
-                  "_id": "adult-1-pnc-3-visits",
+                  "_id": "adult-1~pnc-3-visits",
                   "deleted": false,
                   "type": "pnc-3-visits",
                   "pass": false,
                 },
                 {
-                  "_id": "adult-1-pnc-homebirth-min-1-visit",
+                  "_id": "adult-1~pnc-homebirth-min-1-visit",
                   "deleted": false,
                   "type": "pnc-homebirth-min-1-visit",
                   "pass": true,
                 },
                 {
-                  "_id": "d-1-pnc-registered-this-month",
+                  "_id": "d-1~pnc-registered-this-month",
                   "deleted": false,
                   "type": "pnc-registered-this-month",
                   "pass": true,
@@ -730,55 +730,55 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  _id: 'adult-1-pnc-active',
+                  _id: 'adult-1~pnc-active',
                   deleted: false,
                   pass: true,
                   type: 'pnc-active',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-0-visits',
+                  _id: 'adult-1~pnc-homebirth-0-visits',
                   deleted: false,
                   pass: true,
                   type: 'pnc-homebirth-0-visits',
                 },
                 {
-                  _id: 'adult-1-births-this-month',
+                  _id: 'adult-1~births-this-month',
                   deleted: false,
                   pass: true,
                   type: 'births-this-month',
                 },
                 {
-                  _id: 'd-1-delivery-at-facility-total',
+                  _id: 'd-1~delivery-at-facility-total',
                   deleted: false,
                   pass: false,
                   type: 'delivery-at-facility-total',
                 },
                 {
-                  _id: 'd-1-delivery-with-min-1-visit',
+                  _id: 'd-1~delivery-with-min-1-visit',
                   deleted: false,
                   pass: false,
                   type: 'delivery-with-min-1-visit',
                 },
                 {
-                  _id: 'd-1-delivery-with-min-4-visits',
+                  _id: 'd-1~delivery-with-min-4-visits',
                   deleted: false,
                   pass: false,
                   type: 'delivery-with-min-4-visits',
                 },
                 {
-                  _id: 'adult-1-pnc-3-visits',
+                  _id: 'adult-1~pnc-3-visits',
                   deleted: false,
                   pass: false,
                   type: 'pnc-3-visits',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-min-1-visit',
+                  _id: 'adult-1~pnc-homebirth-min-1-visit',
                   deleted: false,
                   pass: false,
                   type: 'pnc-homebirth-min-1-visit',
                 },
                 {
-                  _id: 'd-1-pnc-registered-this-month',
+                  _id: 'd-1~pnc-registered-this-month',
                   deleted: false,
                   pass: true,
                   type: 'pnc-registered-this-month',
@@ -802,61 +802,61 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  _id: 'adult-1-pnc-active',
+                  _id: 'adult-1~pnc-active',
                   deleted: false,
                   pass: true,
                   type: 'pnc-active',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-0-visits',
+                  _id: 'adult-1~pnc-homebirth-0-visits',
                   deleted: false,
                   pass: false,
                   type: 'pnc-homebirth-0-visits',
                 },
                 {
-                  _id: 'adult-1-births-this-month',
+                  _id: 'adult-1~births-this-month',
                   deleted: false,
                   pass: true,
                   type: 'births-this-month',
                 },
                 {
-                  _id: 'd-1-delivery-at-facility-total',
+                  _id: 'd-1~delivery-at-facility-total',
                   deleted: false,
                   pass: false,
                   type: 'delivery-at-facility-total',
                 },
                 {
-                  _id: 'd-1-delivery-with-min-1-visit',
+                  _id: 'd-1~delivery-with-min-1-visit',
                   deleted: false,
                   pass: false,
                   type: 'delivery-with-min-1-visit',
                 },
                 {
-                  _id: 'd-1-delivery-with-min-4-visits',
+                  _id: 'd-1~delivery-with-min-4-visits',
                   deleted: false,
                   pass: false,
                   type: 'delivery-with-min-4-visits',
                 },
                 {
-                  _id: 'pnc-2-pnc-visits-this-month',
+                  _id: 'pnc-2~pnc-visits-this-month',
                   deleted: false,
                   pass: true,
                   type: 'pnc-visits-this-month',
                 },
                 {
-                  _id: 'adult-1-pnc-3-visits',
+                  _id: 'adult-1~pnc-3-visits',
                   deleted: false,
                   pass: false,
                   type: 'pnc-3-visits',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-min-1-visit',
+                  _id: 'adult-1~pnc-homebirth-min-1-visit',
                   deleted: false,
                   pass: true,
                   type: 'pnc-homebirth-min-1-visit',
                 },
                 {
-                  _id: 'd-1-pnc-registered-this-month',
+                  _id: 'd-1~pnc-registered-this-month',
                   deleted: false,
                   pass: true,
                   type: 'pnc-registered-this-month',
@@ -881,67 +881,67 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  _id: 'adult-1-births-this-month',
+                  _id: 'adult-1~births-this-month',
                   deleted: false,
                   pass: true,
                   type: 'births-this-month',
                 },
                 {
-                  _id: 'd-1-delivery-at-facility-total',
+                  _id: 'd-1~delivery-at-facility-total',
                   deleted: false,
                   pass: false,
                   type: 'delivery-at-facility-total',
                 },
                 {
-                  _id: 'd-1-delivery-with-min-1-visit',
+                  _id: 'd-1~delivery-with-min-1-visit',
                   deleted: false,
                   pass: false,
                   type: 'delivery-with-min-1-visit',
                 },
                 {
-                  _id: 'd-1-delivery-with-min-4-visits',
+                  _id: 'd-1~delivery-with-min-4-visits',
                   deleted: false,
                   pass: false,
                   type: 'delivery-with-min-4-visits',
                 },
                 {
-                  _id: 'pnc-2-pnc-visits-this-month',
+                  _id: 'pnc-2~pnc-visits-this-month',
                   deleted: false,
                   pass: true,
                   type: 'pnc-visits-this-month',
                 },
                 {
-                  _id: 'pnc-3-pnc-visits-this-month',
+                  _id: 'pnc-3~pnc-visits-this-month',
                   deleted: false,
                   pass: true,
                   type: 'pnc-visits-this-month',
                 },
                 {
-                  _id: 'adult-1-pnc-3-visits',
+                  _id: 'adult-1~pnc-3-visits',
                   deleted: false,
                   pass: false,
                   type: 'pnc-3-visits',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-min-1-visit',
+                  _id: 'adult-1~pnc-homebirth-min-1-visit',
                   deleted: false,
                   pass: true,
                   type: 'pnc-homebirth-min-1-visit',
                 },
                 {
-                  _id: 'd-1-pnc-registered-this-month',
+                  _id: 'd-1~pnc-registered-this-month',
                   deleted: false,
                   pass: true,
                   type: 'pnc-registered-this-month',
                 },
                 {
-                  _id: 'adult-1-pnc-active',
+                  _id: 'adult-1~pnc-active',
                   deleted: false,
                   pass: true,
                   type: 'pnc-active',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-0-visits',
+                  _id: 'adult-1~pnc-homebirth-0-visits',
                   deleted: false,
                   pass: false,
                   type: 'pnc-homebirth-0-visits',
@@ -965,13 +965,13 @@ describe('Standard Configuration Targets', function() {
 
               const expectedTargets = [
                 {
-                  _id: 'adult-1-pnc-active',
+                  _id: 'adult-1~pnc-active',
                   deleted: false,
                   pass: true,
                   type: 'pnc-active',
                 },
                 {
-                  _id: 'adult-1-pnc-homebirth-0-visits',
+                  _id: 'adult-1~pnc-homebirth-0-visits',
                   deleted: false,
                   pass: true,
                   type: 'pnc-homebirth-0-visits',
@@ -998,73 +998,73 @@ describe('Standard Configuration Targets', function() {
           // then
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true,
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true,
             },
             {
-              _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false,
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: true,
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false,
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false,
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false,
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false,
             },
             {
-              _id: 'child-1-children-mam',
+              _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false,
             },
             {
-              _id: 'child-1-children-sam',
+              _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false,
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false,
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false,
@@ -1088,79 +1088,79 @@ describe('Standard Configuration Targets', function() {
             // then
             const expectedTargets = [
               {
-                _id: 'child-1-imm-children-under-5-years',
+                _id: 'child-1~imm-children-under-5-years',
                 deleted: false,
                 type: 'imm-children-under-5-years',
                 pass: true
               },
               {
-                _id: 'child-1-imm-children-registered-this-month',
+                _id: 'child-1~imm-children-registered-this-month',
                 deleted: false,
                 type: 'imm-children-registered-this-month',
                 pass: true
               },
               {
-                _id: 'r1-imm-vaccines-given-this-month',
+                _id: 'r1~imm-vaccines-given-this-month',
                 deleted: false,
                 type: 'imm-vaccines-given-this-month',
                 pass: true
               },
               {
-                _id: 'child-1-imm-children-vaccinated-prev-3-months',
+                _id: 'child-1~imm-children-vaccinated-prev-3-months',
                 deleted: false,
                 type: 'imm-children-vaccinated-prev-3-months',
                 pass: false
               },
               {
-                _id: 'child-1-imm-no-vaccine-reported',
+                _id: 'child-1~imm-no-vaccine-reported',
                 deleted: false,
                 type: 'imm-no-vaccine-reported',
                 pass: false
               },
               {
-                _id: 'child-1-imm-children-with-bcg-reported',
+                _id: 'child-1~imm-children-with-bcg-reported',
                 deleted: false,
                 type: 'imm-children-with-bcg-reported',
                 pass: false
               },
               {
-                _id: 'child-1-nutrition-children-screened-growth-monitoring',
+                _id: 'child-1~nutrition-children-screened-growth-monitoring',
                 deleted: false,
                 type: 'nutrition-children-screened-growth-monitoring',
                 pass: false
               },
               {
-                _id: 'child-1-nutrition-children-underweight',
+                _id: 'child-1~nutrition-children-underweight',
                 deleted: false,
                 type: 'nutrition-children-underweight',
                 pass: false
               },
               {
-                _id: 'child-1-children-stunted',
+                _id: 'child-1~children-stunted',
                 deleted: false,
                 type: 'children-stunted',
                 pass: false
               },
               {
-                _id: 'child-1-children-mam',
+                _id: 'child-1~children-mam',
                 deleted: false,
                 type: 'children-mam',
                 pass: false
               },
               {
-                _id: 'child-1-children-sam',
+                _id: 'child-1~children-sam',
                 deleted: false,
                 type: 'children-sam',
                 pass: false
               },
               {
-                _id: 'child-1-children-otp',
+                _id: 'child-1~children-otp',
                 deleted: false,
                 type: 'children-otp',
                 pass: false
               },
               {
-                _id: 'child-1-children-sfp',
+                _id: 'child-1~children-sfp',
                 deleted: false,
                 type: 'children-sfp',
                 pass: false
@@ -1190,79 +1190,79 @@ describe('Standard Configuration Targets', function() {
           .then(targets => {
             const expectedTargets = [
               {
-                _id: 'child-1-imm-children-under-5-years',
+                _id: 'child-1~imm-children-under-5-years',
                 deleted: false,
                 type: 'imm-children-under-5-years',
                 pass: true
               },
               {
-                _id: 'child-1-imm-children-registered-this-month',
+                _id: 'child-1~imm-children-registered-this-month',
                 deleted: false,
                 type: 'imm-children-registered-this-month',
                 pass: true
               },
               {
-                _id: 'report-1-imm-vaccines-given-this-month0',
+                _id: 'report-1~imm-vaccines-given-this-month0',
                 deleted: false,
                 type: 'imm-vaccines-given-this-month',
                 pass: true,
                 date: undefined
               },
               {
-                _id: 'child-1-imm-children-vaccinated-prev-3-months',
+                _id: 'child-1~imm-children-vaccinated-prev-3-months',
                 deleted: false,
                 type: 'imm-children-vaccinated-prev-3-months',
                 pass: false
               },
               {
-                _id: 'child-1-imm-no-vaccine-reported',
+                _id: 'child-1~imm-no-vaccine-reported',
                 deleted: false,
                 type: 'imm-no-vaccine-reported',
                 pass: false
               },
               {
-                _id: 'child-1-imm-children-with-bcg-reported',
+                _id: 'child-1~imm-children-with-bcg-reported',
                 deleted: false,
                 type: 'imm-children-with-bcg-reported',
                 pass: true
               },
               {
-                _id: 'child-1-nutrition-children-screened-growth-monitoring',
+                _id: 'child-1~nutrition-children-screened-growth-monitoring',
                 deleted: false,
                 type: 'nutrition-children-screened-growth-monitoring',
                 pass: false
               },
               {
-                _id: 'child-1-nutrition-children-underweight',
+                _id: 'child-1~nutrition-children-underweight',
                 deleted: false,
                 type: 'nutrition-children-underweight',
                 pass: false
               },
-              { _id: 'child-1-children-stunted',
+              { _id: 'child-1~children-stunted',
                 deleted: false,
                 type: 'children-stunted',
                 pass: false
               },
               {
-                _id: 'child-1-children-mam',
+                _id: 'child-1~children-mam',
                 deleted: false,
                 type: 'children-mam',
                 pass: false
               },
               {
-                _id: 'child-1-children-sam',
+                _id: 'child-1~children-sam',
                 deleted: false,
                 type: 'children-sam',
                 pass: false
               },
               {
-                _id: 'child-1-children-otp',
+                _id: 'child-1~children-otp',
                 deleted: false,
                 type: 'children-otp',
                 pass: false
               },
               {
-                _id: 'child-1-children-sfp',
+                _id: 'child-1~children-sfp',
                 deleted: false,
                 type: 'children-sfp',
                 pass: false
@@ -1291,13 +1291,13 @@ describe('Standard Configuration Targets', function() {
           .then(targets => {
             const expectedTargets = [
               {
-                _id: 'adult-1-pregnancy-registrations-this-month',
+                _id: 'adult-1~pregnancy-registrations-this-month',
                 deleted: false,
                 type: 'pregnancy-registrations-this-month',
                 pass: true,
               },
               {
-                _id: 'adult-1-active-pregnancies',
+                _id: 'adult-1~active-pregnancies',
                 deleted: false,
                 type: 'active-pregnancies',
                 pass: true,
@@ -1325,13 +1325,13 @@ describe('Standard Configuration Targets', function() {
           .then(targets => {
             const expectedTargets = [
               {
-                _id: 'adult-1-pregnancy-registrations-this-month',
+                _id: 'adult-1~pregnancy-registrations-this-month',
                 deleted: false,
                 type: 'pregnancy-registrations-this-month',
                 pass: true,
               },
               {
-                _id: 'adult-1-active-pregnancies',
+                _id: 'adult-1~active-pregnancies',
                 deleted: false,
                 type: 'active-pregnancies',
                 pass: true,
@@ -1356,13 +1356,13 @@ describe('Standard Configuration Targets', function() {
           .then(targets => {
             const expectedTargets = [
               {
-                _id: 'adult-1-pregnancy-registrations-this-month',
+                _id: 'adult-1~pregnancy-registrations-this-month',
                 deleted: false,
                 type: 'pregnancy-registrations-this-month',
                 pass: true,
               },
               {
-                _id: 'adult-1-active-pregnancies',
+                _id: 'adult-1~active-pregnancies',
                 deleted: false,
                 type: 'active-pregnancies',
                 pass: true,
@@ -1394,42 +1394,42 @@ describe('Standard Configuration Targets', function() {
           .then(targets => {
 
             const expectedTargets = [
-              { _id: 'adult-1-births-this-month',
+              { _id: 'adult-1~births-this-month',
                 deleted: false,
                 type: 'births-this-month',
                 pass: true,
                 date: 1469358731456 },
-              { _id: 'undefined-delivery-with-min-1-visit',
+              { _id: 'undefined~delivery-with-min-1-visit',
                 deleted: false,
                 type: 'delivery-with-min-1-visit',
                 pass: false,
                 date: 1469358731456 },
-              { _id: 'undefined-delivery-with-min-4-visits',
+              { _id: 'undefined~delivery-with-min-4-visits',
                 deleted: false,
                 type: 'delivery-with-min-4-visits',
                 pass: false,
                 date: 1469358731456 },
-              { _id: 'undefined-delivery-at-facility-total',
+              { _id: 'undefined~delivery-at-facility-total',
                 deleted: false,
                 type: 'delivery-at-facility-total',
                 pass: false,
                 date: 1469358731456 },
-              { _id: 'adult-1-pnc-active',
+              { _id: 'adult-1~pnc-active',
                 deleted: false,
                 type: 'pnc-active',
                 pass: true,
                 date: 1469358731456 },
-              { _id: 'undefined-pnc-registered-this-month',
+              { _id: 'undefined~pnc-registered-this-month',
                 deleted: false,
                 type: 'pnc-registered-this-month',
                 pass: true,
                 date: 1469358731456 },
-              { _id: 'adult-1-pnc-homebirth-0-visits',
+              { _id: 'adult-1~pnc-homebirth-0-visits',
                 deleted: false,
                 type: 'pnc-homebirth-0-visits',
                 pass: true,
                 date: 1469358731456 },
-              { _id: 'adult-1-pnc-3-visits',
+              { _id: 'adult-1~pnc-3-visits',
                 deleted: false,
                 type: 'pnc-3-visits',
                 pass: false,
@@ -1451,71 +1451,71 @@ describe('Standard Configuration Targets', function() {
         .then(targets => {
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
             {
-              _id: 'child-1-children-mam',
+              _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -1544,73 +1544,73 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: true
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
             {
-              _id: 'child-1-children-mam',
+              _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
             {
-              _id: 'child-1-children-sam',
+              _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -1645,71 +1645,71 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: true
             },
-            { _id: 'child-1-children-stunted',
+            { _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
             {
-              _id: 'child-1-children-mam',
+              _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
             {
-              _id: 'child-1-children-sam',
+              _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -1741,73 +1741,73 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: true
             },
             {
-              _id: 'child-1-children-mam',
+              _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
             {
-              _id: 'child-1-children-sam',
+              _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -1840,70 +1840,70 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
-            { _id: 'child-1-children-mam',
+            { _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: true
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -1933,70 +1933,70 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
-            { _id: 'child-1-children-mam',
+            { _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: true
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -2028,70 +2028,70 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
-            { _id: 'child-1-children-mam',
+            { _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: true
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -2123,70 +2123,70 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
-            { _id: 'child-1-children-mam',
+            { _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: true
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -2218,70 +2218,70 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
-            { _id: 'child-1-children-mam',
+            { _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: true
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: false
@@ -2314,70 +2314,70 @@ describe('Standard Configuration Targets', function() {
 
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-under-5-years',
+              _id: 'child-1~imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
               pass: true
             },
             {
-              _id: 'child-1-imm-children-registered-this-month',
+              _id: 'child-1~imm-children-registered-this-month',
               deleted: false,
               type: 'imm-children-registered-this-month',
               pass: true
             },
-            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+            { _id: 'child-1~imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
               pass: false
             },
             {
-              _id: 'child-1-imm-no-vaccine-reported',
+              _id: 'child-1~imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: false
             },
             {
-              _id: 'child-1-imm-children-with-bcg-reported',
+              _id: 'child-1~imm-children-with-bcg-reported',
               deleted: false,
               type: 'imm-children-with-bcg-reported',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              _id: 'child-1~nutrition-children-screened-growth-monitoring',
               deleted: false,
               type: 'nutrition-children-screened-growth-monitoring',
               pass: false
             },
             {
-              _id: 'child-1-nutrition-children-underweight',
+              _id: 'child-1~nutrition-children-underweight',
               deleted: false,
               type: 'nutrition-children-underweight',
               pass: false
             },
             {
-              _id: 'child-1-children-stunted',
+              _id: 'child-1~children-stunted',
               deleted: false,
               type: 'children-stunted',
               pass: false
             },
-            { _id: 'child-1-children-mam',
+            { _id: 'child-1~children-mam',
               deleted: false,
               type: 'children-mam',
               pass: false
             },
-            { _id: 'child-1-children-sam',
+            { _id: 'child-1~children-sam',
               deleted: false,
               type: 'children-sam',
               pass: false
             },
             {
-              _id: 'child-1-children-otp',
+              _id: 'child-1~children-otp',
               deleted: false,
               type: 'children-otp',
               pass: false
             },
             {
-              _id: 'child-1-children-sfp',
+              _id: 'child-1~children-sfp',
               deleted: false,
               type: 'children-sfp',
               pass: true
@@ -2502,5 +2502,5 @@ function nextReportId(baseName) {
 
 function assertTargetsEqual(actual, expected) {
   const sortTargets = (a, b) => a._id.localeCompare(b._id);
-  assert.deepEqualExcluding(actual.sort(sortTargets), expected.sort(sortTargets), 'date');
+  assert.deepEqualExcluding(expected.sort(sortTargets), actual.sort(sortTargets), 'date');
 }

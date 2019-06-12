@@ -104,10 +104,10 @@ const _silenceReminders = (registration, report, config, callback) => {
     task.cleared_by = report._id;
   });
   return db.medic.post(registration, function(err, response) {
-    if (err) { 
+    if (err) {
       return callback(err);
     }
-    
+
     registration._rev = response.rev;
     callback();
   });
@@ -131,7 +131,7 @@ const findValidRegistration = (doc, config, registrations) => {
 
     for (var i = 0; i < registrations.length; i++) {
       var registration = registrations[i];
-      if (registration.scheduled_tasks) {
+      if (registration.scheduled_tasks && registration.scheduled_tasks.length) {
         var scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
         // if the visit was reported prior to the the most recent scheduled task
         // we move to the next registration because the visit does not get
@@ -257,11 +257,12 @@ module.exports = {
   filter: function(doc, info = {}) {
     return Boolean(
       doc &&
-        doc.type === 'data_record' &&
-        doc.form &&
-        doc.reported_date &&
-        !transitionUtils.hasRun(info, NAME) &&
-        _hasConfig(doc)
+      doc.type === 'data_record' &&
+      doc.form &&
+      doc.reported_date &&
+      !transitionUtils.hasRun(info, NAME) &&
+      _hasConfig(doc) &&
+      utils.isValidSubmission(doc) // requires either an xform, a public sms form or a known submitter
     );
   },
   // also used by registrations transition.

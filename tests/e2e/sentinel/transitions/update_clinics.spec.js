@@ -88,12 +88,16 @@ describe('update_clinics', () => {
   });
 
   it('should skip when contact not found', () => {
-    const settings = { transitions: { update_clinics: true } };
+    const settings = {
+      transitions: { update_clinics: true },
+      forms: { 'A': { public_form: true } }
+    };
 
     const doc1 = {
       _id: uuid(),
       type: 'data_record',
       from: '12345',
+      form: 'A',
       reported_date: new Date().getTime()
     };
 
@@ -101,6 +105,7 @@ describe('update_clinics', () => {
       _id: uuid(),
       type: 'data_record',
       refid: 'external',
+      form: 'A',
       reported_date: new Date().getTime(),
     };
 
@@ -118,6 +123,66 @@ describe('update_clinics', () => {
         expect(updated[0].contact).not.toBeDefined();
         expect(updated[1].contact).not.toBeDefined();
       });
+  });
+
+  it('should add facility_not_found', () => {
+    const settings = {
+      transitions: { update_clinics: true },
+      forms: { 'A': { public_form: false } }
+    };
+
+    const doc1 = {
+      _id: uuid(),
+      type: 'data_record',
+      from: '12345',
+      form: 'A',
+      reported_date: new Date().getTime()
+    };
+
+    const doc2 = {
+      _id: uuid(),
+      type: 'data_record',
+      refid: 'external',
+      form: 'B',
+      reported_date: new Date().getTime(),
+    };
+
+    const doc3 = {
+      _id: uuid(),
+      type: 'data_record',
+      from: '12345',
+      form: 'A',
+      content_type: 'xml',
+      reported_date: new Date().getTime()
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDocs([doc1, doc2, doc3]))
+      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
+      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
+      .then(infos => {
+        expect(infos[0].transitions).toBeDefined();
+        expect(infos[0].transitions.update_clinics.ok).toEqual(true);
+        expect(infos[1].transitions).toBeDefined();
+        expect(infos[1].transitions.update_clinics.ok).toEqual(true);
+
+        expect(infos[2].transitions).not.toBeDefined();
+      })
+      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
+      .then(updated => {
+        expect(updated[0].contact).not.toBeDefined();
+        expect(updated[0].errors.length).toEqual(1);
+        expect(updated[0].errors[0].code).toEqual('sys.facility_not_found');
+
+        expect(updated[1].contact).not.toBeDefined();
+        expect(updated[1].errors.length).toEqual(1);
+        expect(updated[1].errors[0].code).toEqual('sys.facility_not_found');
+
+        expect(updated[2].contact).not.toBeDefined();
+        expect(updated[2].errors).not.toBeDefined();
+      });
+
   });
 
   it('should add contact', () => {

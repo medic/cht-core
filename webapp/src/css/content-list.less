@@ -30,7 +30,7 @@
   .date {
     color: @label-color;
     white-space: nowrap;
-    
+
     &.due {
       color: @unread-color;
       font-weight: bold;
@@ -42,7 +42,7 @@
       color: @high-risk-color;
       font-weight: bold;
     }
-    
+
     &.visit-count .summary p {
       color: @high-risk-color;
     }
@@ -166,6 +166,20 @@
 
   &.visit-count > a {
     padding-right: 10px;
+  }
+
+  &.muted.visit-count {
+    .summary p {
+      color: @muted-state-color;
+    }
+    .visits {
+      &.warning, &.danger, &.success {
+        color: @muted-state-color;
+        &:before {
+          display: none;
+        }
+      }
+    }
   }
 }
 

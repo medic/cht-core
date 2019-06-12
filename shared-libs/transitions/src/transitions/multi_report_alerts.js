@@ -38,7 +38,8 @@ const fetchReports = (
       }
       return reports;
     })
-    .then(lineage.hydrateDocs);
+    .then(lineage.hydrateDocs)
+    .then(reports => reports.filter(report => utils.isValidSubmission(report)));
 };
 
 const countReports = (reports, latestReport, script) => {
@@ -67,6 +68,7 @@ const generateMessages = (
   newReports
 ) => {
   phones.forEach(phone => {
+
     if (phone.error) {
       logger.error('%o',phone.error);
       messages.addError(latestReport, phone.error);
@@ -382,7 +384,8 @@ module.exports = {
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, TRANSITION_NAME)
+      !transitionUtils.hasRun(info, TRANSITION_NAME) &&
+      utils.isValidSubmission(doc)
     ),
   onMatch: onMatch,
   init: validateConfig,

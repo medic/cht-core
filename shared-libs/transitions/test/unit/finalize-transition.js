@@ -1,7 +1,8 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
   db = require('../../src/db'),
-  transitions = require('../../src/transitions/index');
+  transitions = require('../../src/transitions/index'),
+  infodoc = require('../../src/lib/infodoc');
 
 describe('finalize transition', () => {
   afterEach(() => sinon.restore());
@@ -24,6 +25,7 @@ describe('finalize transition', () => {
   it('save is called if transition results have changes', done => {
     const doc = { _rev: '1' };
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    sinon.stub(infodoc, 'saveTransitions').resolves();
     transitions.finalize(
       {
         change: { doc: doc },
@@ -34,6 +36,7 @@ describe('finalize transition', () => {
         assert(saveDoc.args[0][0]._rev);
         assert(!err);
         assert.deepEqual(result, { ok: true });
+        assert.equal(infodoc.saveTransitions.callCount, 1);
         done();
       }
     );
@@ -42,6 +45,7 @@ describe('finalize transition', () => {
   it('should callback with save errors', done => {
     const doc = { _rev: '1' };
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+    sinon.stub(infodoc, 'saveTransitions').resolves();
     transitions.finalize(
       {
         change: { doc: doc },
@@ -52,6 +56,7 @@ describe('finalize transition', () => {
         assert.equal(saveDoc.callCount, 1);
         assert(saveDoc.args[0][0]._rev);
         assert(!result);
+        assert.equal(infodoc.saveTransitions.callCount, 0);
         done();
       }
     );
@@ -60,8 +65,6 @@ describe('finalize transition', () => {
   it('applyTransition creates transitions property', done => {
     const doc = { _rev: '1' };
     const info = {};
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(db.sentinel, 'put').resolves({});
     const transition = {
       filter: () => true,
       onMatch: change => {

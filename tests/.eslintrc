@@ -1,4 +1,7 @@
 {
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
   "env": {
     "jasmine": true,
     "jquery": true,

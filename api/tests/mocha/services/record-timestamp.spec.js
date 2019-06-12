@@ -1,5 +1,5 @@
 const chai = require('chai'),
-      recordUtils = require('../../../src/controllers/record-utils');
+      records = require('../../../src/services/records');
 
 const process = timestamp => {
   const body = {
@@ -7,11 +7,11 @@ const process = timestamp => {
     message: 'hmm this is test',
     sent_timestamp: timestamp
   };
-  const doc = recordUtils.createByForm(body);
+  const doc = records.createByForm(body);
   return new Date(doc.reported_date);
 };
 
-describe('record-utils-timestamp', () => {
+describe('record timestamp', () => {
 
   it('ms since epoch', () => {
     const actual = process('1352659197736');

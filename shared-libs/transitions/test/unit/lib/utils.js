@@ -300,4 +300,35 @@ describe('utils util', () => {
       registrationUtils.getSubjectIds.args[0].should.deep.equal([{ _id: 'a' }]);
     });
   });
+
+  describe('getLocale', () => {
+    it('should return correct locale', () => {
+      const docs = [
+        { locale: 'one' },
+        { locale: 'two', sms_message: {} },
+        { locale: 'three', sms_message: { locale: 'four' } },
+        { locale: '', sms_message: { locale: 'five' } },
+        { sms_message: { locale: '' } },
+        { fields: {} }
+      ];
+
+      sinon.stub(config, 'get');
+
+      utils.getLocale(docs[0]).should.deep.equal('one');
+      utils.getLocale(docs[1]).should.deep.equal('two');
+      utils.getLocale(docs[2]).should.deep.equal('three');
+      utils.getLocale(docs[3]).should.deep.equal('five');
+
+      config.get.withArgs('locale_outgoing').returns('outgoingLocale');
+      utils.getLocale(docs[4]).should.deep.equal('outgoingLocale');
+
+      config.get.withArgs('locale_outgoing').returns('');
+      config.get.withArgs('locale').returns('defaultLocale');
+      utils.getLocale(docs[5]).should.deep.equal('defaultLocale');
+
+      config.get.withArgs('locale_outgoing').returns('');
+      config.get.withArgs('locale').returns('');
+      utils.getLocale(docs[5]).should.deep.equal('en');
+    });
+  });
 });

@@ -20,6 +20,7 @@ describe('functional transitions', () => {
 
   it('transitions are only executed once if successful', done => {
     configGet.withArgs('transitions').returns({ conditional_alerts: {} });
+    configGet.withArgs('forms').returns({ V: { }});
     configGet.withArgs('alerts').returns({
       V: {
         form: 'V',
@@ -28,7 +29,7 @@ describe('functional transitions', () => {
         condition: 'true',
       },
     });
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
@@ -40,6 +41,9 @@ describe('functional transitions', () => {
       doc: {
         type: 'data_record',
         form: 'V',
+        contact: {
+          phone: '12345'
+        }
       },
       info: {},
     };
@@ -71,6 +75,7 @@ describe('functional transitions', () => {
 
   it('transitions are only executed again if first run failed', done => {
     configGet.withArgs('transitions').returns({ conditional_alerts: {} });
+    configGet.withArgs('forms').returns({ V: { }});
     configGet.withArgs('alerts').returns({
       V: {
         form: 'V',
@@ -80,7 +85,7 @@ describe('functional transitions', () => {
       },
     });
 
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
@@ -92,6 +97,9 @@ describe('functional transitions', () => {
       doc: {
         type: 'data_record',
         form: 'V',
+        contact: {
+          phone: '12345'
+        }
       },
       info: {},
     };
@@ -108,6 +116,9 @@ describe('functional transitions', () => {
           type: 'data_record',
           form: 'V',
           fields: { last_menstrual_period: 15 },
+          contact: {
+            phone: '12345'
+          }
         },
         info: {},
       };
@@ -141,8 +152,9 @@ describe('functional transitions', () => {
         condition: 'doc.fields.last_menstrual_period == 15',
       },
     });
+    configGet.withArgs('forms').returns({ V: { }});
 
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').resolves({ _id: 'abc-info' });
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
     const infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
@@ -157,6 +169,9 @@ describe('functional transitions', () => {
         from: '123456798',
         fields: {},
         reported_date: new Date(),
+        contact: {
+          phone: '12345'
+        }
       },
       info: {},
     };
@@ -204,7 +219,9 @@ describe('functional transitions', () => {
     it('should throw infodoc errors', done => {
       const doc = { _id: 'my_id', type: 'data_record', form: 'v' };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'get')
+        .resolves({})
+        .onCall(0).rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').rejects({ some: 'err' });
 
@@ -228,6 +245,7 @@ describe('functional transitions', () => {
         },
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+      configGet.withArgs('forms').returns({ V: { }});
 
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
@@ -260,8 +278,11 @@ describe('functional transitions', () => {
         },
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+      configGet.withArgs('forms').returns({ V: { }});
 
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'get')
+        .resolves({})
+        .onCall(0).rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').resolves();
       sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
@@ -271,6 +292,9 @@ describe('functional transitions', () => {
         form: 'V',
         from: '123456',
         type: 'data_record',
+        contact: {
+          phone: '12345'
+        },
         reported_date: new Date('2018-01-01').valueOf()
       };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
@@ -305,6 +329,7 @@ describe('functional transitions', () => {
         },
       });
       configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+      configGet.withArgs('forms').returns({ V: { }});
 
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
@@ -316,6 +341,9 @@ describe('functional transitions', () => {
         form: 'V',
         from: '123456',
         type: 'data_record',
+        contact: {
+          phone: '12345'
+        },
         reported_date: new Date('2018-01-01').valueOf()
       };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
@@ -324,11 +352,8 @@ describe('functional transitions', () => {
       transitions.processChange({ id: doc._id }, (err) => {
         assert.equal(err.error, 'something');
         assert.equal(doc.tasks[0].messages[0].message, 'alert!');
-        assert.equal(db.sentinel.get.callCount, 2);
-        assert.equal(db.sentinel.put.callCount, 2);
-
-        assert.equal(Object.keys(db.sentinel.put.args[1][0].transitions).length, 1);
-        assert.equal(db.sentinel.put.args[1][0].transitions.conditional_alerts.ok, true);
+        assert.equal(db.sentinel.get.callCount, 1);
+        assert.equal(db.sentinel.put.callCount, 1);
         assert.equal(db.medic.put.callCount, 1);
 
         assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
@@ -380,6 +405,7 @@ describe('functional transitions', () => {
           join_responses: false
         }
       }]);
+      configGet.withArgs('forms').returns({ V: { }, P: { }});
 
       const docs = [
         {
@@ -393,13 +419,17 @@ describe('functional transitions', () => {
           id: 'has default response',
           from: 'phone2',
           type: 'data_record',
-          message: 'I just sent an SMS',
+          sms_message: {
+            message: 'I just sent an SMS',
+            from: 'phone2',
+          },
           reported_date: new Date().valueOf()
         },
         {
           id: 'random form that no transition runs on',
           form: 'F',
           type: 'data_record',
+          content_type: 'xml',
           reported_date: new Date().valueOf()
         },
         {
@@ -407,7 +437,7 @@ describe('functional transitions', () => {
           id: 'random form with contact',
           form: 'C',
           type: 'data_record',
-          contact: { _id: 'contact3' },
+          contact: { _id: 'contact3', parent: { _id: 'clinic' } },
           from: 'phone3',
           reported_date: new Date().valueOf()
         },
@@ -415,7 +445,7 @@ describe('functional transitions', () => {
           id: 'will have errors',
           form: 'P',
           type: 'data_record',
-          contact: { _id: 'contact3' },
+          contact: { _id: 'contact3', parent: { _id: 'clinic' } },
           from: 'phone3',
           fields: { random_field: 225 },
           reported_date: new Date().valueOf()
@@ -445,13 +475,20 @@ describe('functional transitions', () => {
         return Promise.resolve({ rows });
       };
 
-      sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => Promise.resolve(docs));
+      sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => {
+        docs.forEach(doc => {
+          if (doc.contact && doc.contact._id === contact3._id) {
+            doc.contact = contact3;
+          }
+        });
+        return Promise.resolve(docs);
+      });
       sinon.stub(db.sentinel, 'allDocs').callsFake(bulkGetInfoDocs);
       sinon.stub(db.medic, 'allDocs').callsFake(bulkGetInfoDocs);
       sinon.stub(db.sentinel, 'bulkDocs').resolves();
 
       //update transitions
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'get').callsFake(id => Promise.resolve({ id, doc_id: id.replace('-info', '') }));
       sinon.stub(db.sentinel, 'put').resolves();
 
       sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
@@ -459,11 +496,11 @@ describe('functional transitions', () => {
       sinon.stub(db.medic, 'query')
       // update_clinics
         .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
-        .callsArgWith(2, null, { rows: [{ id: 'contact1', key: 'phone1' }] })
+        .resolves({ rows: [{ id: 'contact1', key: 'phone1' }] })
         .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: false, limit: 1 })
-        .callsArgWith(2, null, ({ rows: [{ key: 'phone2' }] }))
+        .resolves({ rows: [{ key: 'phone2' }] })
         .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: false, limit: 1 })
-        .callsArgWith(2, null, ({ rows: [{ id: 'contact3', key: 'phone3' }] }))
+        .resolves({ rows: [{ id: 'contact3', key: 'phone3' }] })
         //update_sent_by
         .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: true })
         .resolves({ rows: [{ id: 'contact1', doc: contact1 }] })
@@ -492,7 +529,7 @@ describe('functional transitions', () => {
 
         assert.equal(savedDocs[0].id, 'has alert');
         assert.equal(savedDocs[0]._id.length, 36);
-        assert.equal(savedDocs[0].errors.length, 0);
+        assert(!savedDocs[0].errors);
         assert.deepEqual(savedDocs[0].contact, { _id: 'contact1', parent: { _id: 'clinic' } });
         assert.equal(savedDocs[0].sent_by, 'Merkel');
         assert.equal(savedDocs[0].tasks.length, 1);
@@ -500,19 +537,22 @@ describe('functional transitions', () => {
         assert.deepEqualExcluding(savedDocs[0], originalDocs[0], ['_id', 'errors', 'contact', 'sent_by', 'tasks']);
         // first doc is updated by 3 transitions
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[0]._id);
-        assert.equal(infodocSaves.length, 3);
-        assert.equal(infodocSaves[2][0].transitions.update_clinics.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.conditional_alerts.ok, true);
 
         assert.equal(savedDocs[1].id, 'has default response');
         assert.equal(savedDocs[1]._id.length, 36);
         assert.equal(savedDocs[1].tasks.length, 1);
         assert.equal(savedDocs[1].tasks[0].messages[0].message, 'SMS received');
-        assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks']);
+        assert.equal(savedDocs[1].errors.length, 1);
+        assert.equal(savedDocs[1].errors[0].code, 'sys.facility_not_found');
+        assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks', 'errors']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
         assert.equal(infodocSaves.length, 1);
         assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
 
         assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);
@@ -522,9 +562,9 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[3].sent_by, 'Angela');
         assert.deepEqualExcluding(savedDocs[3], originalDocs[3], 'sent_by');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[3]._id);
-        assert.equal(infodocSaves.length, 2);
-        assert.equal(infodocSaves[1][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[1][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
 
         assert.equal(savedDocs[4].id, 'will have errors');
         assert.equal(savedDocs[4].sent_by, 'Angela');
@@ -535,11 +575,11 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[4].tasks[1].messages[0].message, 'too much randomness');
         assert.deepEqualExcluding(savedDocs[4], originalDocs[4], ['_id', 'sent_by', 'errors', 'tasks']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[4]._id);
-        assert.equal(infodocSaves.length, 4);
-        assert.equal(infodocSaves[2][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.update_sent_by.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.accept_patient_reports.ok, true);
-        assert.equal(infodocSaves[2][0].transitions.conditional_alerts.ok, true);
+        assert.equal(infodocSaves.length, 1);
+        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.accept_patient_reports.ok, true);
+        assert.equal(infodocSaves[0][0].transitions.conditional_alerts.ok, true);
       });
     });
   });

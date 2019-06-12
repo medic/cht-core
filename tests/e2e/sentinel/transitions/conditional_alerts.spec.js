@@ -49,7 +49,8 @@ describe('conditional_alerts', () => {
           message: 'This is an alert',
           recipient: 'reporting_unit'
         }
-      ]
+      ],
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -57,7 +58,8 @@ describe('conditional_alerts', () => {
       form: 'FORM',
       type: 'data_record',
       reported_date: new Date().getTime(),
-      from: '+444999'
+      from: '+444999',
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -78,7 +80,8 @@ describe('conditional_alerts', () => {
         condition: true,
         message: 'This is an alert',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { O: { } }
     };
 
     const doc = {
@@ -86,7 +89,8 @@ describe('conditional_alerts', () => {
       form: 'O',
       type: 'data_record',
       reported_date: new Date().getTime(),
-      from: '+444999'
+      from: '+444999',
+      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
     };
 
     return utils
@@ -107,7 +111,8 @@ describe('conditional_alerts', () => {
         condition: 'FORM(0).somefield > 100',
         message: 'This is an alert',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -138,7 +143,8 @@ describe('conditional_alerts', () => {
         condition: 'FORM(0).somefield > 100',
         message: 'This is an alert',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -184,7 +190,8 @@ describe('conditional_alerts', () => {
         condition: 'FORM(0).temp > 37 && (!FORM(1) || FORM(0).reported_date - FORM(1).reported_date > 10000)',
         message: 'Patient has a fever',
         recipient: 'reporting_unit'
-      }]
+      }],
+      forms: { FORM: { } }
     };
 
     const form1 = {

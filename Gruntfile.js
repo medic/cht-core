@@ -14,6 +14,7 @@ const {
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
 const couchConfig = (() => {
   if (!COUCH_URL) {
@@ -336,7 +337,8 @@ module.exports = function(grunt) {
           'bootstrap-daterangepicker/**',
           'enketo-core/**',
           'font-awesome/**',
-          'moment/**',
+          'messageformat/**',
+          'moment/**'
         ],
         dest: 'webapp/node_modules_backup',
       },
@@ -355,7 +357,6 @@ module.exports = function(grunt) {
       // run ~4x faster. For some reason. Maybe cpu core related.
       'eslint': {
         cmd: () => {
-          const cmd = './node_modules/.bin/eslint --color';
           const paths = [
             'Gruntfile.js',
             'admin/**/*.js',
@@ -378,12 +379,13 @@ module.exports = function(grunt) {
             'shared-libs/transitions/src/lib/pupil/**',
           ];
 
-          return [cmd]
+          return [ESLINT_COMMAND]
             .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
             .concat(paths.map(glob => `"${glob}"`))
             .join(' ');
         }
       },
+      'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -563,6 +565,9 @@ module.exports = function(grunt) {
 
             // patch enketo to always mark the /inputs group as relevant
             'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+
+            // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
+            'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
           ];
           return patches.join(' && ');
         },
@@ -590,7 +595,7 @@ module.exports = function(grunt) {
         ],
       },
       'admin-js': {
-        files: ['admin/src/js/**/*'],
+        files: ['admin/src/js/**/*', 'webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
           'couch-compile:secondary',
@@ -868,7 +873,12 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
+    'build-service-worker',
+  ]);
+
+  grunt.registerTask('build-service-worker', 'Build the service worker', [
     'generate-service-worker',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -953,9 +963,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'install-dependencies',
+    'static-analysis',
     'build',
     'build-admin',
-    'static-analysis',
     'install-dependencies',
     'mochaTest:api-integration',
     'unit',
@@ -980,7 +990,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'exec:blank-link-check',
-    'exec:eslint',
+    'eslint',
     // 'exec:audit-whitelist',
   ]);
 

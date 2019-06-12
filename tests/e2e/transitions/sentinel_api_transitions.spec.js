@@ -1,5 +1,6 @@
 const sentinelUtils = require('../sentinel/utils'),
-      utils = require('../../utils');
+      utils = require('../../utils'),
+      apiUtils = require('./utils');
 
 const contacts = [
   {
@@ -279,35 +280,6 @@ const messages = [{
   content: 'MUTE patient4'
 }];
 
-const waitForChanges = (messages) => {
-  const expectedMessages = messages.map(message => message.message);
-  const changes = [],
-        ids = [];
-  const listener = utils.db.changes({
-    live: true,
-    include_docs: true,
-    since: 'now'
-  });
-
-  return new Promise(resolve => {
-    listener.on('change', change => {
-      if (change.doc.sms_message) {
-        if (ids.includes(change.id)) {
-          return;
-        }
-        const idx = expectedMessages.findIndex(message => message === change.doc.sms_message.message);
-        changes.push(change);
-        expectedMessages.splice(idx, 1);
-        ids.push(change.id);
-        if (!expectedMessages.length) {
-          listener.cancel();
-          resolve(changes);
-        }
-      }
-    });
-  });
-};
-
 const getPostOpts = (path, body) => ({
   path: path,
   method: 'POST',
@@ -334,8 +306,7 @@ const expectTransitions = (infodoc, ...transitions) => {
 
 const isUntransitionedDoc = doc => {
   return doc._rev.startsWith('1-') &&
-         doc.errors.length === 1 &&
-         doc.errors[0].code === 'sys.facility_not_found' &&
+         (!doc.errors || !doc.errors.length) &&
          !doc.tasks.length &&
          !doc.scheduled_tasks &&
          !doc.contact &&
@@ -366,9 +337,9 @@ describe('transitions', () => {
         ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => Promise.all([
-        waitForChanges(messages),
+        apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
       ]))
       .then(([ changes, messages ]) => {
@@ -528,7 +499,7 @@ describe('transitions', () => {
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //form_not_found
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'form_not_found');
@@ -543,7 +514,7 @@ describe('transitions', () => {
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //dead
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'dead');
@@ -599,7 +570,7 @@ describe('transitions', () => {
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //form_not_found
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'form_not_found');
@@ -614,7 +585,7 @@ describe('transitions', () => {
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses');
+        expectTransitions(infodoc, 'default_responses', 'update_clinics');
 
         //dead
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'dead');
@@ -660,9 +631,9 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => Promise.all([
-        waitForChanges(messages),
+        apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes, messages]) => {
@@ -776,9 +747,9 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => Promise.all([
-        waitForChanges(messages),
+        apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes, messages]) => {
@@ -813,6 +784,86 @@ describe('transitions', () => {
         infos.forEach(info => {
           expectTransitions(info, 'update_clinics', 'registration');
         });
+      });
+  });
+
+  it('should run async and sync transitions over the same doc successfully', () => {
+    const settings = {
+      transitions: {
+        update_clinics: true,
+        accept_patient_reports: true,
+        multi_report_alerts: true
+      },
+      forms: {
+        IMM: {
+          meta: { label: { en: 'IMM' }, code: 'IMM'},
+          fields: {
+            patient_id: {
+              labels: { short: { translation_key: 'patient_id' }},
+              position: 1,
+              type: 'string',
+              length: [5, 13],
+              required: true
+            },
+            count: {
+              labels: { short: { translation_key: 'count' }},
+              position: 1,
+              type: 'string',
+              length: [1],
+              required: false
+            }
+          }
+        }
+      },
+      patient_reports: [{
+        form: 'IMM',
+        messages: [{
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'patient_reports msg'
+          }],
+        }]
+      }],
+      multi_report_alerts: [{
+        name: 'test',
+        is_report_counted: 'function(r, l) { return true }',
+        num_reports_threshold: 1,
+        message: 'multi_report_alerts msg',
+        recipients: ['new_report.from'],
+        time_window_in_days: 1,
+        forms: ['IMM']
+      }]
+    };
+
+    const messages = [{
+      id: 'imm1',
+      from: 'phone1',
+      content: 'IMM patient1 1'
+    }];
+
+    let docId;
+
+    return utils
+      .updateSettings(settings, false)
+      .then(() => Promise.all([
+        apiUtils.getApiSmsChanges(messages),
+        utils.request(getPostOpts('/api/sms', { messages: messages })),
+      ]))
+      .then(([changes]) => {
+        docId = changes[0].id;
+      })
+      .then(() => sentinelUtils.waitForSentinel(docId))
+      .then(() => Promise.all([
+        utils.getDoc(docId),
+        sentinelUtils.getInfoDoc(docId)
+      ]))
+      .then(([doc, info]) => {
+        expect(doc.tasks.length).toEqual(2);
+        expect(doc.tasks[0].messages[0].message).toEqual('patient_reports msg');
+        expect(doc.tasks[1].messages[0].message).toEqual('multi_report_alerts msg');
+
+        expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'multi_report_alerts');
       });
   });
 });

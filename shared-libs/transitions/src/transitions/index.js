@@ -234,21 +234,22 @@ const finalize = ({ change, results }, callback) => {
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
-  saveDoc(change, callback);
-};
-
-const saveDoc = (change, callback) => {
-  lineage.minify(change.doc);
-  db.medic.put(change.doc, (err, result) => {
+  saveDoc(change, (err, result) => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
-    } else {
-      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+      return callback(err);
     }
-    return callback(err, result);
+
+    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    infodoc.saveTransitions(change).then(() => callback(err, result));
   });
+};
+
+const saveDoc = (change, callback) => {
+  lineage.minify(change.doc);
+  db.medic.put(change.doc, callback);
 };
 
 /*
@@ -262,7 +263,7 @@ const saveDoc = (change, callback) => {
 const applyTransition = ({ key, change, transition }, callback) => {
   if (!canRun({ key, change, transition })) {
     logger.debug(
-      `canRun test failed on transition ${transition.key} for doc ${change.id} seq ${change.seq}`
+      `canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`
     );
     return callback();
   }
@@ -285,9 +286,8 @@ const applyTransition = ({ key, change, transition }, callback) => {
       if (!changed) {
         return changed;
       }
-      return infodoc.updateTransition(change, key, true).then(() => {
-        return changed;
-      });
+      infodoc.updateTransition(change, key, true);
+      return changed;
     })
     .catch(err => {
       // adds an error to the doc but it will only get saved if there are
@@ -301,9 +301,8 @@ const applyTransition = ({ key, change, transition }, callback) => {
       if (!err.changed) {
         return false;
       }
-      return infodoc.updateTransition(change, key, false).then(() => {
-        return true;
-      });
+      infodoc.updateTransition(change, key, false);
+      return true;
     })
     .then(changed => callback(null, changed)); // return the promise instead
 };

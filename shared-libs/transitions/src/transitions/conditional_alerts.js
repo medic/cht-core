@@ -19,20 +19,27 @@ const evaluateCondition = (doc, alert) => {
   if (alert.condition.indexOf(alert.form) === -1) {
     return runCondition(alert.condition, context);
   }
-  return utils.getReportsWithSameClinicAndForm({
-    doc: doc,
-    formName: alert.form
-  })
-    .then(rows => {
-      rows = _.sortBy(rows, function(row) {
-        return row.doc.reported_date;
-      });
-      context[alert.form] = function(i) {
-        const row = rows[rows.length - 1 - i];
-        return row ? row.doc : row;
-      };
-      return runCondition(alert.condition, context);
-    });
+  return utils.getReportsWithSameClinicAndForm({ doc: doc, formName: alert.form })
+    .then(rows => rows.map(row => row.doc))
+    .then(docs => {
+      if (!doc._id) {
+        docs.push(doc);
+      } else {
+        const index = docs.findIndex(dbDoc => dbDoc._id === doc._id);
+        if (index === -1) {
+          // this is a new doc
+          docs.push(doc);
+        } else {
+          // firing on update: replace the doc in the db with the current doc
+          // which may have been changed by other transitions
+          docs[index] = doc;
+        }
+      }
+      return docs;
+    })
+    .then(docs => docs.sort((lhs, rhs) => lhs.reported_date - rhs.reported_date))
+    .then(docs => context[alert.form] = i => docs[docs.length - 1 - i])
+    .then(() => runCondition(alert.condition, context));
 };
 
 module.exports = {
@@ -44,7 +51,8 @@ module.exports = {
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, NAME)
+      !transitionUtils.hasRun(info, NAME) &&
+      utils.isValidSubmission(doc)
     );
   },
   onMatch: change => {

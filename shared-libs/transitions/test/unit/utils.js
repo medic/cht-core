@@ -11,33 +11,6 @@ describe('utils', () => {
   });
   afterEach(() => sinon.restore());
 
-  it('getVal supports string keys', () => {
-    const doc = {
-      lmp_date: '8000001'
-    };
-    assert.equal(utils.getVal(doc, 'lmp_date'), '8000001');
-    assert.equal(utils.getVal(doc, 'foo'), undefined);
-    // non-string keys return undefined
-    assert.equal(utils.getVal(doc, 10), undefined);
-
-  });
-
-  it('getVal supports dot notation', () => {
-    const doc = {
-      fields: {
-        baz: '99938388',
-        bim: {
-          bop: 15,
-          bam: [1,2,3]
-        }
-      }
-    };
-    assert.equal(utils.getVal(doc, 'fields.baz'), '99938388');
-    assert.equal(utils.getVal(doc, 'fields.bim.bop'), 15);
-    assert.deepEqual(utils.getVal(doc, 'fields.bim.bam'), [1,2,3]);
-    assert.equal(utils.getVal(doc, 'fields.404'), undefined);
-  });
-
   it('getReportsWithSameClinicAndForm calls through to db view correctly', () => {
 
     const formName = 'someForm';
@@ -238,6 +211,70 @@ describe('utils', () => {
         assert.deepEqual(actual, [{ _id: 'a' }, { _id: 'd' }]);
         done();
       });
+    });
+  });
+
+  describe('isValidSubmission', () => {
+    it('should return false with invalid params', () => {
+      assert(!utils.isValidSubmission());
+      assert(!utils.isValidSubmission(false));
+    });
+
+    it('returns false for reports for unknown json form', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').resolves({ F: { public_form: true } });
+      sinon.spy(utils, 'getForm');
+      assert(!utils.isValidSubmission(doc));
+      assert.equal(utils.getForm.callCount, 1);
+      assert.equal(utils.getForm.args[0][0], 'R');
+
+    });
+
+    it('returns false for reports from unknown clinic', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false }});
+      sinon.spy(utils, 'getClinicPhone');
+      assert(!utils.isValidSubmission(doc));
+      assert.equal(config.get.callCount, 1);
+      assert.equal(config.get.args[0][0], 'forms');
+      assert.equal(utils.getClinicPhone.callCount, 1);
+      assert.deepEqual(utils.getClinicPhone.args[0], [doc]);
+    });
+
+    it('returns true for reports for public forms from unknown clinic', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: true } });
+      sinon.spy(utils, 'getClinicPhone');
+      assert(utils.isValidSubmission(doc));
+      assert.equal(config.get.callCount, 1);
+      assert.equal(config.get.args[0][0], 'forms');
+      assert.equal(utils.getClinicPhone.callCount, 0);
+    });
+
+    it('returns true for xforms reports', () => {
+      const doc = { form: 'R', content_type: 'xml', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ OTHER: {} });
+      assert(utils.isValidSubmission(doc));
+      assert.equal(config.get.callCount, 1);
+      assert.equal(config.get.args[0][0], 'forms');
+    });
+
+    it('returns true for reports for non-public forms from known clinics', () => {
+      const doc = { form: 'R', type: 'data_record' };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
+      sinon.stub(utils, 'getClinicPhone').returns('123456');
+      assert(utils.isValidSubmission(doc));
+      assert.equal(config.get.callCount, 1);
+      assert.equal(utils.getClinicPhone.callCount, 1);
+    });
+
+    it('returns true for reports for non-public forms from known submitters', () => {
+      const doc = { form: 'R', type: 'data_record', contact: { phone: '12345' } };
+      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
+      sinon.spy(utils, 'getClinicPhone');
+      assert(utils.isValidSubmission(doc));
+      assert.equal(config.get.callCount, 1);
+      assert.equal(utils.getClinicPhone.callCount, 1);
     });
   });
 });
