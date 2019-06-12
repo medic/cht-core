@@ -39,7 +39,7 @@ module.exports = {
     const overdue = now.clone().subtract(7, 'days');
 
     db.medic.query(
-      'medic-sms/messages_by_state',
+      'medic/messages_by_state',
       {
         include_docs: true,
         endkey: [ 'scheduled', now.valueOf() ],

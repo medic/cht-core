@@ -3,7 +3,7 @@ const _ = require('underscore'),
   db = require('../db'),
   moment = require('moment'),
   config = require('../config'),
-  taskUtils = require('@medic/task-utils'),
+  taskUtils = require('@garethbowen/task-utils'),
   registrationUtils = require('@medic/registration-utils'),
   logger = require('./logger');
 

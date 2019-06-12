@@ -1,6 +1,6 @@
 var _ = require('underscore'),
   uuid = require('uuid/v4'),
-  taskUtils = require('@medic/task-utils'),
+  taskUtils = require('@garethbowen/task-utils'),
   phoneNumber = require('@medic/phone-number');
 
 angular

@@ -1,4 +1,4 @@
-const taskUtils = require('@medic/task-utils');
+const taskUtils = require('@garethbowen/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const db = require('../db');
 const logger = require('../logger');
@@ -225,7 +225,7 @@ module.exports = {
       startkey: [ 'pending-or-forwarded', 0 ],
       endkey: [ 'pending-or-forwarded', '\ufff0' ],
     };
-    return db.medic.query('medic-sms/messages_by_state', viewOptions)
+    return db.medic.query('medic/messages_by_state', viewOptions)
       .then(response => response.rows.map(row => {
         if (row.value.to) {
           const normalized = phoneNumber.normalize(config.get(), row.value.to);
