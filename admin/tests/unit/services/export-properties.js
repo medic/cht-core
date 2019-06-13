@@ -22,12 +22,11 @@ describe('ExportProperties service', function() {
       }
     };
 
-    var settings = { something: true };
     var expected = 'Hello = Gidday\n' +
                    'Goodbye = See ya\n' +
                    'New\\ thing = New';
 
-    var actual = service(settings, doc);
+    var actual = service(doc);
     chai.expect(actual).to.equal(expected);
     done();
 

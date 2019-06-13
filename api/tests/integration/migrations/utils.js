@@ -241,6 +241,9 @@ const getSettings = () => {
 };
 
 const getDdoc = ddocId => db.medic.get(ddocId);
+const getDocStub = docId => db.medic
+  .allDocs({ key: docId })
+  .then(result => result.rows[0] && ({ _id: docId, _rev: result.rows[0].value.rev }));
 
 const insertAttachment = (ddoc, attachment) => {
   return db.medic.putAttachment(
@@ -260,5 +263,6 @@ module.exports = {
   runMigration: runMigration,
   tearDown: tearDown,
   getDdoc: getDdoc,
-  insertAttachment: insertAttachment
+  insertAttachment: insertAttachment,
+  getDocStub
 };

@@ -277,4 +277,144 @@ describe('extract-translations migration', () => {
     });
   });
 
+  it('merges configuration into docs for all translations structures', () => {
+    const translations = [
+      {
+        key: 'hello',
+        default: 'Hi',
+        translations: [
+          { locale: 'en', content: 'Hello configured' },
+          { locale: 'es', content: 'Hola configured' },
+          { locale: 'fr', content: 'Salut configured' },
+          { locale: 'de', content: 'Hallo configured' }
+        ]
+      }
+    ];
+
+    const locales = [
+      { code: 'en', name: 'English' },
+      { code: 'es', name: 'Español (Spanish)' },
+      { code: 'fr', name: 'Français (French)' },
+      { code: 'de', name: 'Deutsche (German)' },
+    ];
+
+    const docs = [
+      {
+        _id: 'messages-en',
+        type: 'translations',
+        code: 'en',
+        name: 'English',
+        enabled: true,
+        values: {
+          hello: 'Hi',
+          welcome: 'Welcome'
+        }
+      },
+      {
+        _id: 'messages-es',
+        type: 'translations',
+        code: 'es',
+        name: 'Spanish',
+        enabled: true,
+        generic: {
+          hello: 'Hola',
+          welcome: 'Bienvenito'
+        }
+      },
+      {
+        _id: 'messages-fr',
+        type: 'translations',
+        code: 'fr',
+        name: 'French',
+        enabled: true,
+        values: {
+          hello: 'Salut'
+        },
+        generic: {
+          welcome: 'Bienvenue'
+        }
+      },
+      {
+        _id: 'messages-de',
+        type: 'translations',
+        code: 'de',
+        name: 'Deutsche (German)',
+        enabled: true,
+        generic: {
+          hello: 'Hallo'
+        },
+        custom: {
+          welcome: 'Willkommen'
+        }
+      }
+    ];
+
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query').resolves({ rows: docs.map(doc => ({ doc })) });
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    const updateSettings = sinon.stub(settingsService, 'update').resolves();
+    return migration.run().then(() => {
+      chai.expect(getSettings.callCount).to.equal(1);
+      chai.expect(view.callCount).to.equal(1);
+      chai.expect(view.args[0][0]).to.equal('medic-client/doc_by_type');
+      chai.expect(view.args[0][1].key[0]).to.equal('translations');
+      chai.expect(view.args[0][1].key[1]).to.equal(true);
+      chai.expect(view.args[0][1].include_docs).to.equal(true);
+      chai.expect(bulk.callCount).to.equal(1);
+      chai.expect(bulk.args[0][0]).to.deep.equal([
+        {
+          _id: 'messages-en',
+          type: 'translations',
+          code: 'en',
+          name: 'English',
+          enabled: true,
+          values: {
+            hello: 'Hello configured',
+            welcome: 'Welcome'
+          }
+        },
+        {
+          _id: 'messages-es',
+          type: 'translations',
+          code: 'es',
+          name: 'Spanish',
+          enabled: true,
+          generic: {
+            hello: 'Hola configured',
+            welcome: 'Bienvenito'
+          }
+        },
+        {
+          _id: 'messages-fr',
+          type: 'translations',
+          code: 'fr',
+          name: 'French',
+          enabled: true,
+          values: {
+            hello: 'Salut configured'
+          },
+          generic: {
+            welcome: 'Bienvenue'
+          }
+        },
+        {
+          _id: 'messages-de',
+          type: 'translations',
+          code: 'de',
+          name: 'Deutsche (German)',
+          enabled: true,
+          generic: {
+            hello: 'Hallo configured'
+          },
+          custom: {
+            welcome: 'Willkommen'
+          }
+        }
+      ]);
+      chai.expect(updateSettings.callCount).to.equal(1);
+      chai.expect(updateSettings.args[0][0].translations).to.equal(null);
+      chai.expect(updateSettings.args[0][0].locales).to.equal(null);
+    });
+  });
+
 });

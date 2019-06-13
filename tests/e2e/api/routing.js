@@ -128,6 +128,9 @@ describe('routing', () => {
         utils
           .requestOnMedicDb(_.extend({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
+        utils
+          .request(_.extend({ path: '/api/deploy-info' }, unauthenticatedRequestOptions))
+          .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
           expect(result.statusCode).toEqual(401);
@@ -142,11 +145,26 @@ describe('routing', () => {
         utils.request(_.extend({ path: '/login/style.css' }, unauthenticatedRequestOptions), { notJson: true }),
         utils.request(_.extend({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
         utils.requestOnMedicDb(_.extend({ path: '/login' }, unauthenticatedRequestOptions), false, true),
+        utils.request(_.extend({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
+        utils.request(_.extend({ path: '/api/info' }, unauthenticatedRequestOptions)),
       ]).then(results => {
         expect(results[0].length).toBeTruthy();
         expect(results[1].length).toBeTruthy();
         expect(_.isArray(results[2])).toEqual(true);
         expect(results[3].length).toBeTruthy();
+        expect(results[4].version).toEqual('0.1.0');
+        expect(results[5].version).toEqual('0.1.0');
+      });
+    });
+
+    it('should display deploy-info to authenticated users', () => {
+      return Promise.all([
+        utils.request(_.extend({ path: '/api/deploy-info' }, onlineRequestOptions)),
+        utils.request(_.extend({ path: '/api/deploy-info' }, offlineRequestOptions)),
+        utils.requestOnTestDb('/_design/medic-client')
+      ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
+        expect(deployInfoOnline).toEqual(ddoc.deploy_info);
+        expect(deployInfoOffline).toEqual(ddoc.deploy_info);
       });
     });
   });
