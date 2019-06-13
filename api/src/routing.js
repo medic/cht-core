@@ -199,13 +199,6 @@ app.all('/+admin(/*)?', (req, res, next) => {
   next();
 });
 
-app.all('/+medic-user-[^ ]+-[^ ]+(/*)?', (req, res, next) => {
-  if (environment.db !== 'medic') {
-    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
-  }
-  next();
-});
-
 app.get('/favicon.ico', (req, res) => {
   // Cache for a week. Normally we don't interfere with couch headers, but
   // due to Chrome (including Android WebView) aggressively requesting
@@ -515,6 +508,13 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
 app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
+
+app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
+  }
+  next();
+});
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
