@@ -1,7 +1,7 @@
 function(doc) {
-  var _emitMsg = function(msg) {
-    if (msg && msg.gateway_ref) {
-      emit(msg.gateway_ref, msg.uuid);
+  var _emitMsg = function(ref, uuid) {
+    if (ref && uuid) {
+      emit(ref, uuid);
     }
   };
 
@@ -9,7 +9,9 @@ function(doc) {
   var _emit = function(tasks) {
     tasks.forEach(function(task) {
       if (task.messages) {
-        task.messages.forEach(_emitMsg);
+        task.messages.forEach(function(msg) {
+          _emitMsg(task.gateway_ref, msg.uuid)
+        });
       }
     });
   };
@@ -17,7 +19,7 @@ function(doc) {
   _emit(doc.scheduled_tasks || []);
 
   // incoming
-  if (doc.type === 'data_record') {
-    _emitMsg(doc.sms_message);
+  if (doc.type === 'data_record' && doc.sms_message) {
+    _emitMsg(doc.sms_message.gateway_ref, doc.sms_message.uuid);
   }
 }

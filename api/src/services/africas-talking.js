@@ -42,7 +42,7 @@ const fetchApiKey = () => {
     });
 };
 
-const getSettings = () => {
+const getCredentials = () => {
   const settings = config.get('sms');
   const username = settings &&
                    settings.africas_talking &&
@@ -108,12 +108,12 @@ module.exports = {
    * @return A Promise which resolves an Array of state change objects.
    */
   send: messages => {
-    // get the settings every call so changes can be made without restarting api
-    return getSettings().then(settings => {
-      const lib = module.exports._getLib(settings);
+    // get the credentials every call so changes can be made without restarting api
+    return getCredentials().then(credentials => {
+      const lib = module.exports._getLib(credentials);
       return messages.reduce((promise, message) => {
         return promise.then(changes => {
-          return sendMessage(lib, settings.from, message).then(change => {
+          return sendMessage(lib, credentials.from, message).then(change => {
             if (change) {
               changes.push(change);
             }

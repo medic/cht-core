@@ -9,7 +9,7 @@ const records = require('../services/records');
 const DB_CHECKING_INTERVAL = 1000*60; // Check DB for messages every minute
 const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking
-  // sms-gateway -- ignored because it's a pull not a push service
+  // medic-gateway -- ignored because it's a pull not a push service
 };
 
 const getTaskFromMessage = (tasks, uuid) => {
@@ -216,8 +216,9 @@ module.exports = {
       });
   },
 
-  /*
-   * Returns `options.limit` messages, optionally filtering by state.
+  /**
+   * Returns a Promise which resolves the first 25 messages in either
+   * "pending" or "forwarded-to-gateway" state.
    */
   getOutgoingMessages: () => {
     const viewOptions = {
