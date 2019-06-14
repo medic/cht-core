@@ -113,6 +113,7 @@ describe('ReportsCtrl controller', () => {
         MarkRead: MarkRead,
         MessageState: {},
         Modal: modal,
+        PlaceHierarchy: PlaceHierarchy,
         ReportViewModelGenerator: {},
         Search: Search,
         SearchFilters: searchFilters,
