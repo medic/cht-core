@@ -24,9 +24,9 @@ const report = {
           to: messageTo1,
           message: messageContent1,
           uuid: 'a',
-          gateway_ref: messageGatewayRef1
-        },
+        }
       ],
+      gateway_ref: messageGatewayRef1,
       state: 'pending',
       state_history: [
         {
@@ -62,9 +62,9 @@ const report = {
           to: messageTo2,
           message: messageContent2,
           uuid: 'b',
-          gateway_ref: messageGatewayRef2
         },
       ],
+      gateway_ref: messageGatewayRef2,
       state: 'scheduled',
       state_history: [
         {
@@ -101,9 +101,9 @@ const report = {
           to: messageTo3,
           message: 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!',
           uuid: 'c',
-          gateway_ref: messageGatewayRef3
         },
       ],
+      gateway_ref: messageGatewayRef3,
       state: 'scheduled',
       state_history: [
         {
@@ -170,6 +170,13 @@ describe('africas talking api', () => {
       expect(helper.getTextFromElement(messageHeader)).toBe('+64271234567');
       expect(helper.getTextFromElement(messageText)).toBe('hello');
       expect(helper.getTextFromElement(messageStatus)).toBe('received');
+
+      // database
+      return element(by.css('#message-content li.incoming:first-child')).getAttribute('data-record-id').then(id => {
+        return utils.getDoc(id).then(doc => {
+          expect(doc.sms_message && doc.sms_message.gateway_ref).toBe('a');
+        });
+      });
     });
   });
 

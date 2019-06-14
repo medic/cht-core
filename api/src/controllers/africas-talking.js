@@ -65,6 +65,7 @@ module.exports = {
       return;
     }
     if (!req.body) {
+      serverUtils.error({ code: 400, message: 'Request body is required' }, req, res);
       return;
     }
     const message = {
