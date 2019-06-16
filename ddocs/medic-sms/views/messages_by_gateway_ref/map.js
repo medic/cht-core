@@ -1,6 +1,6 @@
 function(doc) {
   var _emitMsg = function(ref, uuid) {
-    if (ref && uuid) {
+    if (ref) {
       emit(ref, uuid);
     }
   };
