@@ -74,7 +74,7 @@ module.exports = {
       content: req.body.text
     };
     return messaging.processIncomingMessages([ message ])
-      .then(() => res.json({ success: true }))
+      .then(results => res.json(results))
       .catch(err => serverUtils.error(err, req, res));
   },
   deliveryReports: (req, res) => {
@@ -93,7 +93,7 @@ module.exports = {
       details: req.body.failureReason,
       gatewayRef: req.body.id
     }])
-      .then(() => res.json({ success: true }))
+      .then(results => res.json(results))
       .catch(err => serverUtils.error(err, req, res));
   },
 };

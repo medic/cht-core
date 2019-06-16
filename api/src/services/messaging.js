@@ -123,7 +123,7 @@ const validateRequiredFields = messages => {
   return messages.filter(message => {
     return requiredFields.every(field => {
       if (!message[field]) {
-        logger.info(`Message missing required field "${field}": ${JSON.stringify(message)}`);
+        logger.warn(`Message missing required field "${field}": ${JSON.stringify(message)}`);
       } else {
         return true;
       }
@@ -203,6 +203,8 @@ module.exports = {
    *    - id: unique gateway reference used to prevent double handling
    *    - from: the phone number of the original sender
    *    - content: the string message
+   * Returns a Promise to resolve an object with the number of
+   *    messages saved to the database.
    */
   processIncomingMessages: (messages=[]) => {
     return validateIncomingMessages(messages)
@@ -213,6 +215,7 @@ module.exports = {
           logger.error('Failed saving all the new docs: %o', results);
           throw new Error('Failed saving all the new docs');
         }
+        return { saved: results.length };
       });
   },
 
@@ -244,10 +247,13 @@ module.exports = {
    *   - state
    *   - details (optional)
    *
+   * Returns a Promise to resolve an object with the number of
+   *    tasks saved to the database.
+   *
    * These state updates are prone to failing due to update conflicts, so this
    * function will retry up to three times for any updates which fail.
    */
-  updateMessageTaskStates: (taskStateChanges, retriesLeft=3) => {
+  updateMessageTaskStates: (taskStateChanges, retriesLeft=3, successCount=0) => {
     return resolveMissingUuids(taskStateChanges)
       .then(() => {
         const keys = taskStateChanges.map(change => change.messageId);
@@ -264,13 +270,14 @@ module.exports = {
 
         if (!updated.length) {
           // nothing to update
-          return;
+          return { saved: successCount };
         }
         return db.medic.bulkDocs(updated).then(results => {
           const failures = results.filter(result => !result.ok);
+          successCount += results.length - failures.length;
           if (!failures.length) {
             // all successful
-            return;
+            return { saved: successCount };
           }
 
           if (!retriesLeft) {
@@ -284,7 +291,7 @@ module.exports = {
           failures.forEach(failure => {
             relevantChanges.push(...stateChangesByDocId[failure.id]);
           });
-          return module.exports.updateMessageTaskStates(relevantChanges, --retriesLeft);
+          return module.exports.updateMessageTaskStates(relevantChanges, --retriesLeft, successCount);
         });
       });
   },

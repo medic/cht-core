@@ -81,15 +81,15 @@ const generateStateChange = (message, res) => {
   };
 };
 
-const sendMessage = (lib, from, message) => {
-  return lib.SMS
+const sendMessage = (instance, from, message) => {
+  return instance.SMS
     .send({
       to: [ message.to ],
       from: from,
       message: message.content
     })
     .catch(res => {
-      // The AT lib sometimes throws responses and sometimes errors...
+      // The AT instance sometimes throws responses and sometimes errors...
       const validResponse = getStatus(getRecipient(res));
       if (!validResponse) {
         logger.error(`Error thrown trying to send messages: %o`, res);
@@ -110,10 +110,10 @@ module.exports = {
   send: messages => {
     // get the credentials every call so changes can be made without restarting api
     return getCredentials().then(credentials => {
-      const lib = module.exports._getLib(credentials);
+      const instance = module.exports._getInstance(credentials);
       return messages.reduce((promise, message) => {
         return promise.then(changes => {
-          return sendMessage(lib, credentials.from, message).then(change => {
+          return sendMessage(instance, credentials.from, message).then(change => {
             if (change) {
               changes.push(change);
             }
@@ -124,6 +124,6 @@ module.exports = {
     });
   },
 
-  _getLib: ({ apiKey, username }) => africasTalking({ apiKey, username })
+  _getInstance: ({ apiKey, username }) => africasTalking({ apiKey, username })
 
 };

@@ -48,13 +48,14 @@ describe('Africas Talking controller', () => {
         body: { id: '123', from: '+456', text: 'gidday' }
       };
       sinon.stub(config, 'get').returns({ africas_talking: { allowed_ips: [ '1.2.3.4' ] } });
-      sinon.stub(messaging, 'processIncomingMessages').resolves();
+      sinon.stub(messaging, 'processIncomingMessages').resolves({ saved: 1 });
       return controller.incomingMessages(req, res).then(() => {
         chai.expect(messaging.processIncomingMessages.callCount).to.equal(1);
         chai.expect(messaging.processIncomingMessages.args[0][0]).to.deep.equal([
           { id: '123', from: '+456', content: 'gidday' }
         ]);
         chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0][0]).to.deep.equal({ saved: 1 });
       });
     });
 
@@ -109,7 +110,7 @@ describe('Africas Talking controller', () => {
     });
 
     it('passes the message to the service', () => {
-      sinon.stub(messaging, 'updateMessageTaskStates').resolves();
+      sinon.stub(messaging, 'updateMessageTaskStates').resolves({ saved: 1 });
       const req = {
         connection: { localAddress: 'a', remoteAddress: 'b' },
         ip: '1.2.3.4',
@@ -123,6 +124,7 @@ describe('Africas Talking controller', () => {
           { state: 'sent', details: 'none', gatewayRef: '123' }
         ]);
         chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0][0]).to.deep.equal({ saved: 1 });
       });
     });
 

@@ -1,14 +1,14 @@
 function (doc) {
   var _emit = function(tasks) {
     tasks.forEach(function(task) {
+      var due = task.due || task.timestamp || // for scheduled_message
+                doc.reported_date; // for immediate reply to form submission
+      if (typeof due === 'string') {
+        due = Date.parse(due).valueOf();
+      }
       if (task.messages) {
         task.messages.forEach(function(msg) {
           if (msg.uuid && msg.to && msg.message) {
-            var due = task.due || task.timestamp || // for scheduled_message
-                      doc.reported_date; // for immediate reply to form submission
-            if (typeof due === 'string') {
-              due = Date.parse(due).valueOf();
-            }
             var value = {
               content: msg.message,
               to: msg.to,
@@ -21,6 +21,8 @@ function (doc) {
             }
           }
         });
+      } else {
+        emit([ task.state, due ], {});
       }
     });
   };

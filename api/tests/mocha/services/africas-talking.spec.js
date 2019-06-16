@@ -4,12 +4,12 @@ const request = require('request-promise-native');
 const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');
 const environment = require('../../../src/environment');
-const lib = { SMS: { send: () => {} } };
+const instance = { SMS: { send: () => {} } };
 
 describe('africas talking service', () => {
 
   beforeEach(() => {
-    sinon.stub(service, '_getLib').returns(lib);
+    sinon.stub(service, '_getInstance').returns(instance);
   });
 
   afterEach(() => {
@@ -29,14 +29,14 @@ describe('africas talking service', () => {
         });
     });
 
-    it('forwards messages to lib', () => {
+    it('forwards messages to instance', () => {
       sinon.stub(environment, 'serverUrl').value('server.com');
       sinon.stub(request, 'get').resolves('"555"\n');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
         africas_talking: { username: 'user' }
       });
-      sinon.stub(lib.SMS, 'send').resolves({
+      sinon.stub(instance.SMS, 'send').resolves({
         SMSMessageData: {
           Message: 'Sent to 1/1 Total Cost: KES 0.8000',
           Recipients: [{
@@ -50,8 +50,8 @@ describe('africas talking service', () => {
       });
       const given = [ { id: 'a', to: '+123', content: 'hello' } ];
       return service.send(given).then(actual => {
-        chai.expect(lib.SMS.send.callCount).to.equal(1);
-        chai.expect(lib.SMS.send.args[0][0]).to.deep.equal({
+        chai.expect(instance.SMS.send.callCount).to.equal(1);
+        chai.expect(instance.SMS.send.args[0][0]).to.deep.equal({
           to: [ '+123' ],
           from: '98765',
           message: 'hello'
@@ -66,9 +66,9 @@ describe('africas talking service', () => {
         chai.expect(config.get.args[0][0]).to.equal('sms');
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(request.get.args[0][0]).to.equal(`server.com/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com`);
-        chai.expect(service._getLib.callCount).to.equal(1);
-        chai.expect(service._getLib.args[0][0].apiKey).to.equal('555');
-        chai.expect(service._getLib.args[0][0].username).to.equal('user');
+        chai.expect(service._getInstance.callCount).to.equal(1);
+        chai.expect(service._getInstance.args[0][0].apiKey).to.equal('555');
+        chai.expect(service._getInstance.args[0][0].username).to.equal('user');
       });
     });
 
@@ -78,7 +78,7 @@ describe('africas talking service', () => {
         reply_to: '98765',
         africas_talking: { username: 'user' }
       });
-      sinon.stub(lib.SMS, 'send')
+      sinon.stub(instance.SMS, 'send')
         // success
         .onCall(0).resolves({
           SMSMessageData: {
@@ -124,7 +124,7 @@ describe('africas talking service', () => {
         { id: 'c', to: '+789', content: 'hello' }
       ];
       return service.send(given).then(actual => {
-        chai.expect(lib.SMS.send.callCount).to.equal(3);
+        chai.expect(instance.SMS.send.callCount).to.equal(3);
         chai.expect(actual).to.deep.equal([
           {
             messageId: 'a',
@@ -148,10 +148,10 @@ describe('africas talking service', () => {
         reply_to: '98765',
         africas_talking: { username: 'user' }
       });
-      sinon.stub(lib.SMS, 'send').rejects('Unknown error');
+      sinon.stub(instance.SMS, 'send').rejects('Unknown error');
       const given = [ { uuid: 'a', to: '+123', content: 'hello' } ];
       return service.send(given).then(actual => {
-        chai.expect(lib.SMS.send.callCount).to.equal(1);
+        chai.expect(instance.SMS.send.callCount).to.equal(1);
         chai.expect(actual.length).to.equal(0);
       });
     });

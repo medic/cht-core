@@ -304,7 +304,7 @@ describe('messaging service', () => {
         }
       ]});
 
-      const bulk = sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      const bulk = sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true }, { ok: true } ]);
       const setTaskState = sinon.stub(taskUtils, 'setTaskState');
       setTaskState
         .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId1' }]})).returns(true)   //testDoc
@@ -321,7 +321,7 @@ describe('messaging service', () => {
         { messageId: 'testMessageId4', state: 'state' },
         { messageId: 'testMessageId5', state: 'state' },
         { messageId: 'testMessageId6', state: 'state' }
-      ]).then(() => {
+      ]).then(actual => {
         chai.expect(setTaskState.callCount).to.equal(6);
         chai.expect(setTaskState.args[0]).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined, undefined]);
         chai.expect(setTaskState.args[1]).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined, undefined]);
@@ -333,6 +333,8 @@ describe('messaging service', () => {
         chai.expect(bulk.args[0][0].length).to.equal(2);
         chai.expect(bulk.args[0][0][0]._id).to.equal('testDoc');
         chai.expect(bulk.args[0][0][1]._id).to.equal('testDoc2');
+
+        chai.expect(actual).to.deep.equal({ saved: 2 });
       });
     });
 
@@ -551,7 +553,7 @@ describe('messaging service', () => {
         { id:'3', from:'+3', content:'three' },
       ];
 
-      return service.processIncomingMessages(given).then(() => {
+      return service.processIncomingMessages(given).then(actual => {
         chai.expect(createRecord.callCount).to.equal(3);
         chai.expect(createRecord.args[0][0]).to.deep.equal({ gateway_ref: '1', from: '+1', message: 'one'   });
         chai.expect(createRecord.args[1][0]).to.deep.equal({ gateway_ref: '2', from: '+2', message: 'two'   });
@@ -562,6 +564,7 @@ describe('messaging service', () => {
           { message: 'two' },
           { message: 'three' }
         ]]);
+        chai.expect(actual).to.deep.equal({ saved: 3 });
       });
     });
 
