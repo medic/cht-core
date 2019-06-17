@@ -2,6 +2,8 @@ const _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader'),
   lineageFactory = require('@medic/lineage');
 
+const PAGE_SIZE = 50;
+
 angular
   .module('inboxControllers')
   .controller('ReportsCtrl', function(
@@ -222,7 +224,10 @@ angular
     };
 
     var query = function(opts) {
-      const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
+      const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+      if (options.limit < PAGE_SIZE) {
+        options.limit = PAGE_SIZE;
+      }
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
@@ -570,7 +575,7 @@ angular
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
-          query({ silent: true, limit: Math.max(50, liveList.count()) });
+          query({ silent: true, limit: liveList.count() });
         }
       },
       filter: function(change) {
