@@ -223,7 +223,7 @@ At Medic Mobile we are the technical steward of the [Community Health Toolkit](h
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic).
 
-[![Build Status](https://travis-ci.org/medic/medic.png?branch=master)](https://travis-ci.org/medic/medic/branches)
+[![Build Status](https://travis-ci.org/livinggoods/medic.svg?branch=master)](https://travis-ci.org/livinggoods/medic)
 
 ## Copyright
 
