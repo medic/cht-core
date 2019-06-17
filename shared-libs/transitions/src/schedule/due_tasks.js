@@ -52,10 +52,10 @@ module.exports = {
 
         const objs = result.rows.reduce((objs, row) => {
           if (!objs[row.id]) {
-            row.keys = [];
+            row.dueDates = [];
             objs[row.id] = row;
           }
-          objs[row.id].keys.push(row.key);
+          objs[row.id].dueDates.push(moment(row.key[1]).toISOString());
 
           return objs;
         }, {});
@@ -74,7 +74,7 @@ module.exports = {
                   var updatedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
-                    if (obj.keys.includes(task.due)) {
+                    if (obj.dueDates.includes(task.due)) {
                       if (!task.messages) {
                         const content = {
                           translationKey: task.message_key,
