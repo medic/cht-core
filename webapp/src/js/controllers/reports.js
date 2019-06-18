@@ -23,6 +23,7 @@ angular
     LiveList,
     MarkRead,
     Modal,
+    PlaceHierarchy,
     ReportViewModelGenerator,
     Search,
     SearchFilters,
@@ -52,6 +53,31 @@ angular
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
+
+    // Render the facilities hierarchy as the user is scrolling through the list
+    // Initially, don't load/render any
+    $scope.totalFacilitiesDisplayed = 0;
+    $scope.facilities = [];
+
+    // Load the facilities hierarchy and render one district hospital 
+    // when the user clicks on the filter dropdown
+    $scope.monitorFacilityDropdown = () => {
+      PlaceHierarchy()
+        .then(function(hierarchy) {
+          $scope.facilities = hierarchy;
+          $scope.totalFacilitiesDisplayed += 1;
+        })
+        .catch(function(err) {
+          $log.error('Error loading facilities', err);
+        });
+
+      $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
+        // visible height + pixel scrolled >= total height - 100
+        if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
+          $timeout(() => $scope.totalFacilitiesDisplayed += 1);
+        }
+      });
+    };
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
