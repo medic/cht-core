@@ -33,7 +33,7 @@ define( function( require, exports, module ) {
     Mrdtwidget.prototype._init = function() {
         var self = this;
         var $el = $( this.element );
-        var $input = $el.find( 'input' );
+        var $input = $el.find( '.or-appearance-mrdt-image > input' );
 
         // we need to make it a textarea because text inputs strip out the
         // \n (new line) characters which breaks the encoded file content.
@@ -47,25 +47,34 @@ define( function( require, exports, module ) {
 
         if ( !service.enabled() ) {
             $translate( 'mrdt.disabled' ).then(function( label ) {
-                $el.append( '<p>' + label + '</p>' );
+                $el.find( '.or-appearance-mrdt-image' )
+                   .append( '<p>' + label + '</p>' );
             });
             return;
         }
 
         $el.on( 'click', '.btn.mrdt-verify', function() {
-            service.verify().then( function(image) {
+            service.verify().then( function(data) {
+                const items = data.split('|');
+                const timeTaken = items[0];
+                const image = items[1];
                 $( self.element )
-                    .find( 'textarea' )
+                    .find( '.or-appearance-mrdt-image > textarea' )
                     .val( image )
                     .trigger( 'change' );
                 $( self.element )
-                    .find( '.mrdt-preview' )
+                    .find( '.or-appearance-mrdt-image .mrdt-preview' )
                     .attr('src', 'data:image/png;base64, ' + image);
+                $( self.element )
+                    .find( '.or-appearance-mrdt-time-taken > input' )
+                    .val( timeTaken )
+                    .trigger( 'change' );
             } );
         } );
 
         $translate( 'mrdt.verify' ).then( function( label ) {
-            $el.append(
+            $el.find( '.or-appearance-mrdt-image' )
+               .append(
                 '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
                 '<div><img class="mrdt-preview"/></div>'
             );

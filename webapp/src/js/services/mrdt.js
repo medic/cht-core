@@ -27,9 +27,9 @@ angular.module('inboxServices').service('MRDT',
         $window.medicmobile_android.mrdt_verify();
         return current.promise;
       },
-      respond: function(image) {
+      respond: function(data) {
         if (current) {
-          current.resolve(image);
+          current.resolve(data);
         }
       },
     };
