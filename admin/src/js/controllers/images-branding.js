@@ -86,6 +86,16 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
 
     const updateFavicon = () => updateImage(getFile('#favicon-upload'), 'favicon');
 
+    const removeObsoleteAttachments = () => {
+      const current = $scope.doc._attachments;
+      const updated = {};
+      ['logo', 'favicon'].forEach(key => {
+        const name = $scope.doc.resources[key];
+        updated[name] = current[name];
+      });
+      $scope.doc._attachments = updated;
+    };
+
     $scope.submit = () => {
       $scope.error = null;
 
@@ -100,6 +110,8 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
           !updateFavicon()) {
         return;
       }
+
+      removeObsoleteAttachments();
 
       $scope.submitting = true;
       return DB().put($scope.doc)
