@@ -167,7 +167,20 @@ const send = (payload, config) => {
     return Promise.reject(new Error(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`));
   };
 
-  return auth().then(() => request(sendOptions));
+  return auth().then(() => {
+    if (logger.isDebugEnabled()) {
+      logger.debug('About to send outbound request');
+      logger.debug(JSON.stringify(sendOptions, null, 2));
+    }
+
+    return request(sendOptions)
+      .then(result => {
+        if (logger.isDebugEnabled()) {
+          logger.debug('result from outbound request');
+          logger.debug(JSON.stringify(result, null, 2));
+        }
+      });
+  });
 };
 
 // Collects push configs to attempt out of the task's queue, given a global config
@@ -242,7 +255,7 @@ const execute = () => {
     // For now we presume we aren't going to get much traffic against this and
     // will probably only be doing one push per schedule call
     return pushes.reduce(
-      (p, {taskDoc, medicDoc, config, key}) => p.then(singlePush(taskDoc, medicDoc, config, key)),
+      (p, {taskDoc, medicDoc, config, key}) => p.then(() => singlePush(taskDoc, medicDoc, config, key)),
       Promise.resolve()
     );
   });
