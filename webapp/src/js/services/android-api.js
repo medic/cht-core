@@ -172,6 +172,18 @@ angular.module('inboxServices').factory('AndroidApi',
         },
 
         /**
+         * Handle the response from the MRDT app
+         * @param response The stringified JSON response from the MRDT app.
+         */
+        mrdtTimeTakenResponse: function(response) {
+          try {
+            MRDT.respondTimeTaken(JSON.parse(response));
+          } catch(e) {
+            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
+          }
+        },
+
+        /**
          * Handle the response from the simprints device
          *
          * @param requestType Indicates the response handler to call. Either 'identify' or 'register'.

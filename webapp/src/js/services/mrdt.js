@@ -8,6 +8,7 @@ angular.module('inboxServices').service('MRDT',
     'ngInject';
 
     var current;
+    var timeTaken;
 
     return {
       enabled: function() {
@@ -27,10 +28,13 @@ angular.module('inboxServices').service('MRDT',
         $window.medicmobile_android.mrdt_verify();
         return current.promise;
       },
-      respond: function(data) {
+      respond: function(image) {
         if (current) {
-          current.resolve(data);
+          current.resolve({image: image, timeTaken: timeTaken});
         }
+      },
+      respondTimeTaken: function(data) {
+        timeTaken = data;
       },
     };
   }

@@ -55,9 +55,12 @@ define( function( require, exports, module ) {
 
         $el.on( 'click', '.btn.mrdt-verify', function() {
             service.verify().then( function(data) {
-                const items = data.split('|');
-                const image = items[0];
-                const timeTaken = items[1];
+                var image = data;
+                var timeTaken;
+                if (typeof(data) === 'object') {
+                  image = data.image;
+                  timeTaken = data.timeTaken;
+                }
                 $( self.element )
                     .find( '.or-appearance-mrdt-image > textarea' )
                     .val( image )
