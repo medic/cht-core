@@ -437,11 +437,11 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel sentinel/server.js',
+          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel --watch "shared-libs/**/src/**" sentinel/server.js',
       },
       'blank-link-check': {
         cmd: `echo "Checking for dangerous _blank links..." &&
@@ -484,7 +484,7 @@ module.exports = function(grunt) {
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci)`
+                  (cd shared-libs/${lib} && npm ci --production)`
             )
             .join(' && ');
         }
@@ -966,7 +966,6 @@ module.exports = function(grunt) {
     'static-analysis',
     'build',
     'build-admin',
-    'install-dependencies',
     'mochaTest:api-integration',
     'unit',
     'exec:test-standard'
