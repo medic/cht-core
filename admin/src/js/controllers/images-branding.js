@@ -12,7 +12,7 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
     'use strict';
 
     const DOC_ID = 'branding';
-    const MAX_FILE_SIZE = 100000; // 100MB
+    const MAX_FILE_SIZE = 100000; // 100KB
 
     $('#logo-upload .choose').on('click', _ev => {
       _ev.preventDefault();
@@ -25,19 +25,18 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
     });
 
     $scope.loading = true;
-    $scope.error;
-    $scope.submitting;
-    $scope.favicon;
 
     const getResourcesDoc = () => {
       return DB().get(DOC_ID, { attachments: true })
         .then(doc => {
           $scope.doc = doc;
           $scope.favicon = doc._attachments[doc.resources.favicon];
-          $scope.loading = false;
         })
         .catch(err => {
           $log.error('Error fetching resources file', err);
+        })
+        .then(() => {
+          $scope.loading = false;
         });
     };
 
@@ -55,7 +54,7 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
 
     const validateFile = file => {
       if (file.size > MAX_FILE_SIZE) {
-        const readable = (MAX_FILE_SIZE / 1000) + 'MB';
+        const readable = (MAX_FILE_SIZE / 1000) + 'KB';
         $translate('error.file.size', { size: readable }).then(msg => {
           $scope.error = msg;
         });
@@ -91,7 +90,9 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
       const updated = {};
       ['logo', 'favicon'].forEach(key => {
         const name = $scope.doc.resources[key];
-        updated[name] = current[name];
+        if (name) {
+          updated[name] = current[name];
+        }
       });
       $scope.doc._attachments = updated;
     };
