@@ -367,7 +367,7 @@ describe('outbound schedule', () => {
     });
   });
   describe('single push', () => {
-    let mapDocumentToPayload, send, sentinelPut, infodocGet;
+    let mapDocumentToPayload, send, sentinelPut, sentinelGet;
 
     let restores = [];
 
@@ -376,7 +376,6 @@ describe('outbound schedule', () => {
         infodoc: sinon.stub()
       };
       sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
-      infodocGet = sinon.stub(transitionsLib.infodoc, 'get');
 
       mapDocumentToPayload = sinon.stub();
       restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
@@ -385,6 +384,7 @@ describe('outbound schedule', () => {
       restores.push(outbound.__set__('send', send));
 
       sentinelPut = sinon.stub(db.sentinel, 'put');
+      sentinelGet = sinon.stub(db.sentinel, 'get');
     });
 
     afterEach(() => restores.forEach(restore => restore()));
@@ -411,7 +411,7 @@ describe('outbound schedule', () => {
 
       mapDocumentToPayload.returns({map: 'called'});
       send.resolves();
-      infodocGet.resolves(infoDoc);
+      sentinelGet.resolves(infoDoc);
       sentinelPut.onFirstCall().resolves({rev: '1-abc'});
       sentinelPut.resolves();
 
@@ -448,7 +448,7 @@ describe('outbound schedule', () => {
       return outbound.__get__('singlePush')(task, doc, config, 'test-config-1')
         .then(() => {
           assert.equal(task.queue.length, 1);
-          assert.equal(infodocGet.callCount, 0);
+          assert.equal(sentinelGet.callCount, 0);
           assert.equal(sentinelPut.callCount, 0);
         });
     });
