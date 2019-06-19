@@ -1,12 +1,12 @@
-const config = require('../../src/config');
+const config = require('../../../src/config');
 config.initTransitionLib();
 
 var _ = require('underscore'),
     moment = require('moment'),
     sinon = require('sinon'),
     assert = require('chai').assert,
-    reminders = require('../../src/schedule/reminders'),
-    db = require('../../src/db');
+    reminders = require('../../../src/schedule/reminders'),
+    db = require('../../../src/db');
 
 describe('reminders', () => {
   afterEach(() => sinon.restore());

@@ -34,7 +34,8 @@ const AVAILABLE_TRANSITIONS = [
   'update_notifications',
   'update_scheduled_reports',
   'resolve_pending',
-  'muting'
+  'muting',
+  'mark_for_outbound'
 ];
 
 const transitions = [];
@@ -56,7 +57,7 @@ const processChange = (change, callback) => {
       });
     })
     .catch(err => {
-      logger.error('transitions: fetch failed for %s : %o', change.id, err);
+      logger.error('transitions: processChange failed for %s : %o', change.id, err);
       return callback(err);
     });
 };
