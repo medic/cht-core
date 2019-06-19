@@ -188,8 +188,44 @@ const getConfigurationsToPush = (config, taskDoc) => {
   return taskDoc.queue.map(pushName => ([pushName, config[pushName]]));
 };
 
+// Remove the push task from the task's queue
+const removeConfigKeyFromTask = (taskDoc, key) => {
+  taskDoc.queue.splice(key, 1);
+  if (taskDoc.queue.length === 0) {
+    // Done with this queue completely
+    taskDoc._deleted = true;
+  }
+
+  return db.sentinel.put(taskDoc)
+    .then(({rev}) => {
+      // This works because we are running a single push one at a time and we're passing a
+      // shared reference around (so the next singlePush to run against the same task will have
+      // a reference to this same doc with the updated rev). If we refactor this code to be more
+      // efficient we need to be careful to not cause conflicts against the task document.
+      taskDoc._rev = rev;
+    });
+};
+
+// Log a successful push to the info doc
+const logIntoInfoDoc = (medicDocId, key) => {
+  return db.sentinel.get(`${medicDocId}-info`)
+  .then(info => {
+    info.completed_tasks = info.completed_tasks || [];
+    info.completed_tasks.push({
+      type: 'outbound',
+      name: key,
+      timestamp: Date.now()
+    });
+    return db.sentinel.put(info);
+  });
+};
+
 const singlePush = (taskDoc, medicDoc, config, key) => {
-  const infodoc = configService.getTransitionsLib().infodoc;
+  if (!config) {
+    // The outbound config entry has been deleted / renamed / something!
+    logger.warn(`Unable to push ${medicDoc._id} for ${key} because this outbound config no longer exists, clearing task`);
+    return removeConfigKeyFromTask(taskDoc, key);
+  }
 
   const payload = mapDocumentToPayload(medicDoc, config, key);
   return send(payload, config)
@@ -197,35 +233,12 @@ const singlePush = (taskDoc, medicDoc, config, key) => {
       // Worked, remove entry from queue and add link to info doc
       logger.info(`Pushed ${medicDoc._id} to ${key}`);
 
-      taskDoc.queue.splice(key, 1);
-      if (taskDoc.queue.length === 0) {
-        // Done with this queue completely
-        taskDoc._deleted = true;
-      }
-
-      return db.sentinel.put(taskDoc)
-        .then(({rev}) => {
-          // This works because we are running a single push one at a time and we're passing a
-          // shared reference around (so the next singlePush to run against the same task will have
-          // a reference to this same doc with the updated rev). If we refactor this code to be more
-          // efficient we need to be careful to not cause conflicts against the task document.
-          taskDoc._rev = rev;
-        })
-        .then(() => infodoc.get({id: medicDoc._id, doc: medicDoc}))
-        .then(info => {
-          info.completed_tasks = info.completed_tasks || [];
-          info.completed_tasks.push({
-            type: 'outbound',
-            name: key,
-            timestamp: Date.now()
-          });
-          return db.sentinel.put(info);
-        });
+      return removeConfigKeyFromTask(taskDoc, key)
+        .then(() => logIntoInfoDoc(medicDoc._id, key));
     })
     .catch(err => {
       // Failed
-      logger.error(`Failed to push ${medicDoc._id} to ${key}: ${err.message}`);
-      logger.error(err);
+      logger.error(`Failed to push ${medicDoc._id} to ${key}: %o`, err);
 
       // Don't remove the entry from the task's queue so it will be tried again next time
     });
