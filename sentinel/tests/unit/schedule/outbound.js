@@ -452,6 +452,38 @@ describe('outbound schedule', () => {
           assert.equal(sentinelPut.callCount, 0);
         });
     });
+
+    it('should remove queue entries that refer to non-existant config items', () => {
+      const config = undefined;
+
+      const task = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+
+      const doc = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+
+      const infoDoc = {
+        _id: 'test-doc-1-info',
+        type: 'info'
+      };
+
+      mapDocumentToPayload.returns({map: 'called'});
+      send.resolves();
+      sentinelGet.resolves(infoDoc);
+      sentinelPut.onFirstCall().resolves({rev: '1-abc'});
+      sentinelPut.resolves();
+
+      return outbound.__get__('singlePush')(task, doc, config, 'test-push-1')
+        .then(() => {
+          assert.equal(task._deleted, true);
+          assert.equal(task._rev, '1-abc');
+          assert.equal(send.callCount, 0);
+        });
+    });
   });
   describe('execute', () => {
     let configGet, queuedTasks, singlePush;
