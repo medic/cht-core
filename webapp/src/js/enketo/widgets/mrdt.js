@@ -56,8 +56,8 @@ define( function( require, exports, module ) {
         $el.on( 'click', '.btn.mrdt-verify', function() {
             service.verify().then( function(data) {
                 const items = data.split('|');
-                const timeTaken = items[0];
-                const image = items[1];
+                const image = items[0];
+                const timeTaken = items[1];
                 $( self.element )
                     .find( '.or-appearance-mrdt-image > textarea' )
                     .val( image )
@@ -65,10 +65,12 @@ define( function( require, exports, module ) {
                 $( self.element )
                     .find( '.or-appearance-mrdt-image .mrdt-preview' )
                     .attr('src', 'data:image/png;base64, ' + image);
-                $( self.element )
-                    .find( '.or-appearance-mrdt-time-taken > input' )
-                    .val( timeTaken )
-                    .trigger( 'change' );
+                if (timeTaken) {
+                  $( self.element )
+                      .find( '.or-appearance-mrdt-time-taken > input' )
+                      .val( timeTaken )
+                      .trigger( 'change' );
+                }
             } );
         } );
 
