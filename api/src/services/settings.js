@@ -4,6 +4,8 @@ const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
 const getDoc = () => db.medic.get('settings');
 
+const getSchemaDoc = () => db.medic.get('_design/medic-schema');
+
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
     target[k] = source[k];

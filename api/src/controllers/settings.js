@@ -48,7 +48,11 @@ module.exports = {
         if (!valid){
           throw {
             code: 400,
+<<<<<<< HEAD
             message: JSON.stringify(ajv.errors)
+=======
+            message: 'app_settings.json does not conform to schema'
+>>>>>>> Validate uploaded settings
           };
         }
       })
