@@ -392,6 +392,7 @@ module.exports = function(grunt) {
             [
               `cd ${module}`,
               `rm -rf node_modules`,
+              `npm dedupe`,
               `npm ci --production`,
               `npm pack`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
