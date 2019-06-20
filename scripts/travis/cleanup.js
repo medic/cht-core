@@ -50,6 +50,6 @@ get()
   .then(docs => markDeleted(docs))
   .then(docs => remove(docs))
   .catch(err => {
-    console.error(`Error deleting old travis builds: "${err.message}"`)
+    console.error(`Error deleting old travis builds: "${err.message}"`);
     process.exit(1);
   });
