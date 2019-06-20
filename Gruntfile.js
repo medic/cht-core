@@ -391,7 +391,6 @@ module.exports = function(grunt) {
           .map(module =>
             [
               `cd ${module}`,
-              `rm -rf node_modules`,
               `npm dedupe`,
               `npm ci --production`,
               `npm pack`,
@@ -846,8 +845,8 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
-    'build-node-modules',
     'build-common',
+    'build-node-modules',
     'minify',
     'couch-compile:primary',
   ]);
@@ -966,7 +965,6 @@ module.exports = function(grunt) {
     'install-dependencies',
     'static-analysis',
     'build',
-    'build-admin',
     'mochaTest:api-integration',
     'unit',
     'exec:test-standard'
