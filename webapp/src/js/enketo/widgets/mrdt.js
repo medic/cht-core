@@ -33,14 +33,14 @@ define( function( require, exports, module ) {
     Mrdtwidget.prototype._init = function() {
         var self = this;
         var $el = $( this.element );
-        var $input = $el.find( '.or-appearance-mrdt-image > input' );
+        var $imageInput = $el.find( '.or-appearance-mrdt-image > input' );
 
         // we need to make it a textarea because text inputs strip out the
         // \n (new line) characters which breaks the encoded file content.
-        var textarea = $input[0].outerHTML
+        var textarea = $imageInput[0].outerHTML
             .replace(/^<input /, '<textarea ')
             .replace(/<\/input>/, '</textarea>');
-        $input.replaceWith(textarea);
+        $imageInput.replaceWith(textarea);
         var angularServices = angular.element( document.body ).injector();
         var $translate = angularServices.get( '$translate' );
         var service = angularServices.get( 'MRDT' );

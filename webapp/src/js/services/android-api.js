@@ -167,7 +167,7 @@ angular.module('inboxServices').factory('AndroidApi',
           try {
             MRDT.respond(JSON.parse(response));
           } catch(e) {
-            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
+            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '", error message: "' + e.message + '"'));
           }
         },
 
@@ -179,7 +179,7 @@ angular.module('inboxServices').factory('AndroidApi',
           try {
             MRDT.respondTimeTaken(JSON.parse(response));
           } catch(e) {
-            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
+            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '", error message: "' + e.message + '"'));
           }
         },
 
