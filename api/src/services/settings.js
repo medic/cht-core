@@ -4,6 +4,8 @@ const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
 const getDoc = () => db.medic.get('settings');
 
+const getSchemaDoc = () => db.medic.get('_design/medic-schema');
+
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
     target[k] = source[k];
@@ -26,6 +28,13 @@ const doExtend = (target, source) => {
 };
 
 module.exports = {
+  getSchema: () => {
+    return getSchemaDoc()
+      .then(doc => doc.schema.app_settings)
+      .catch(err => {
+        throw err
+      });
+  },
   get: () => {
     return getDoc()
       .then(doc => doc.settings)

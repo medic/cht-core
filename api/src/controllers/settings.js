@@ -1,8 +1,11 @@
 const auth = require('../auth'),
       serverUtils = require('../server-utils'),
       settingsService = require('../services/settings'),
-      objectPath = require('object-path');
+      objectPath = require('object-path'),
+      Ajv = require('ajv'),
+      logger = require('../logger');
 
+const ajv = new Ajv();
 const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
 
 module.exports = {
@@ -37,6 +40,16 @@ module.exports = {
           throw {
             code: 403,
             message: 'Insufficient permissions'
+          };
+        }
+      })
+      .then(() => settingsService.getSchema())
+      .then(schema => {
+        const valid = ajv.validate(JSON.parse(schema), req.body);
+        if (!valid){
+          throw {
+            code: 400,
+            message: 'app_settings.json does not conform to schema'
           };
         }
       })
