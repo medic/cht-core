@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const taskUtils = require('@garethbowen/task-utils');
+const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const db = require('../../../src/db');
 const config = require('../../../src/config');

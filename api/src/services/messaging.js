@@ -1,4 +1,4 @@
-const taskUtils = require('@garethbowen/task-utils');
+const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const db = require('../db');
 const logger = require('../logger');

@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    taskUtils = require('@garethbowen/task-utils');
+    taskUtils = require('@medic/task-utils');
 
 (function () {
 
