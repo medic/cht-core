@@ -535,13 +535,11 @@ module.exports = function(grunt) {
       },
       'shared-lib-unit': {
         cmd: () => {
-          return getSharedLibDirs()
-            .map(
-              lib =>
-                `echo Testing shared library: ${lib} &&
-                 (cd shared-libs/${lib} && npm ci && npm test)`
-            )
-            .join(' && ');
+          const sharedLibs = getSharedLibDirs();
+          return [
+            ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
+            ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
+          ].join(' && ');
         },
       },
       // To monkey patch a library...
