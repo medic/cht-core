@@ -404,6 +404,7 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `npm ci --production`,
               `npm pack`,
+              `ls -l medic-${module}-0.1.0.tgz`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')
