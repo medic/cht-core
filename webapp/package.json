@@ -56,15 +56,13 @@
     "pouchdb-browser": "^7.0.0",
     "pouchdb-debug": "^7.0.0",
     "redux": "^4.0.1",
+    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "select2": "4.0.3",
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.9.1",
     "uuid": "^3.3.2"
-  },
-  "devDependencies": {
-    "redux-logger": "^3.0.6"
   },
   "resolutions": {
     "**/jquery": "3.2.x",
