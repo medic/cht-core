@@ -168,6 +168,11 @@ module.exports = function(grunt) {
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'moment': './webapp/node_modules/moment/moment',
+            'google-libphonenumber': './webapp/node_modules/google-libphonenumber',
+            'gsm': './webapp/node_modules/gsm',
+            'object-path': './webapp/node_modules/object-path',
+            'bikram-sambat': './webapp/node_modules/bikram-sambat',
+            '@medic/phone-number': './webapp/node_modules/@medic/phone-number'
           },
         },
       },
@@ -178,6 +183,11 @@ module.exports = function(grunt) {
           transform: ['browserify-ngannotate'],
           alias: {
             'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
+            'gsm': './admin/node_modules/gsm',
+            'object-path': './admin/node_modules/object-path',
+            'bikram-sambat': './admin/node_modules/bikram-sambat',
+            '@medic/phone-number': './admin/node_modules/@medic/phone-number'
           },
         },
       },
