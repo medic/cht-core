@@ -204,7 +204,7 @@ describe('login controller', () => {
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.include('<form id="form" action="/lg/login" method="POST">');
+        chai.expect(send.args[0][0]).to.include('<form id="form" action="/medic/login" method="POST">');
       });
     });
   });
