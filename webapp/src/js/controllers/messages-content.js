@@ -47,6 +47,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         setLoadingContent: globalActions.setLoadingContent,
         setMessagesError: messagesActions.setMessagesError,
         updateSelectedMessage: messagesActions.updateSelectedMessage,
+        setSelected: messagesActions.setSelected,
         setTitle: globalActions.setTitle
       };
     };
@@ -109,7 +110,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         return;
       }
       $('.message-content-wrapper').off('scroll', checkScroll);
-      $scope.setSelected({ id: id, messages: [] });
+      ctrl.setSelected({ id: id, messages: [] });
       if (!options.silent) {
         $scope.setLoadingContent(id);
       }

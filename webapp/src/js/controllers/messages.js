@@ -83,12 +83,6 @@ angular
       }
     };
 
-    $scope.setSelected = function(doc) {
-      var refreshing = (ctrl.selectedMessage && ctrl.selectedMessage.id) === doc.id;
-      ctrl.setSelectedMessage(doc);
-      ctrl.settingSelected(refreshing);
-    };
-
     updateConversations()
       .then(function() {
         if (
