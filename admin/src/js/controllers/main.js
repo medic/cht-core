@@ -11,6 +11,7 @@ angular.module('controllers').controller('MainCtrl',
   ) {
     'ngInject';
 
+    // Override $window.PouchDB.fetch
     const dbFetch = $window.PouchDB.fetch;
     $window.PouchDB.fetch = function() {
       return dbFetch.apply(this, arguments)
