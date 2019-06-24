@@ -1,9 +1,8 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const request = require('request-promise-native');
+const secureSettings = require('@medic/settings');
 const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');
-const environment = require('../../../src/environment');
 const instance = { SMS: { send: () => {} } };
 
 describe('africas talking service', () => {
@@ -30,8 +29,7 @@ describe('africas talking service', () => {
     });
 
     it('forwards messages to instance', () => {
-      sinon.stub(environment, 'serverUrl').value('server.com');
-      sinon.stub(request, 'get').resolves('"555"\n');
+      sinon.stub(secureSettings, 'getCredentials').resolves('555');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
         africas_talking: { username: 'user' }
@@ -64,8 +62,8 @@ describe('africas talking service', () => {
         }]);
         chai.expect(config.get.callCount).to.equal(1);
         chai.expect(config.get.args[0][0]).to.equal('sms');
-        chai.expect(request.get.callCount).to.equal(1);
-        chai.expect(request.get.args[0][0]).to.equal(`server.com/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com`);
+        chai.expect(secureSettings.getCredentials.callCount).to.equal(1);
+        chai.expect(secureSettings.getCredentials.args[0][0]).to.equal('africastalking.com');
         chai.expect(service._getInstance.callCount).to.equal(1);
         chai.expect(service._getInstance.args[0][0].apiKey).to.equal('555');
         chai.expect(service._getInstance.args[0][0].username).to.equal('user');
@@ -73,7 +71,7 @@ describe('africas talking service', () => {
     });
 
     it('does not return status update for errors that should be retried', () => {
-      sinon.stub(request, 'get').resolves('"555"\n');
+      sinon.stub(secureSettings, 'getCredentials').resolves('555');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
         africas_talking: { username: 'user' }
@@ -143,7 +141,7 @@ describe('africas talking service', () => {
     });
 
     it('an invalid response is ignored so it will be retried', () => {
-      sinon.stub(request, 'get').resolves('"555"\n');
+      sinon.stub(secureSettings, 'getCredentials').resolves('555');
       sinon.stub(config, 'get').returns({
         reply_to: '98765',
         africas_talking: { username: 'user' }

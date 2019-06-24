@@ -3,6 +3,8 @@ const objectPath = require('object-path'),
       request = require('request-promise-native'),
       vm = require('vm');
 
+const secureSettings = require('@medic/settings');
+
 const configService = require('../config'),
       db = require('../db'),
       logger = require('../lib/logger'),
@@ -10,20 +12,14 @@ const configService = require('../config'),
 
 const CONFIGURED_PUSHES = 'outbound';
 
-const fetchPassword = key =>
-  request(`${db.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/${key}`)
-    // This API gives weird psuedo-JSON results:
-    //   "password"\n
-    // Should be just `password`
-    .then(result => result.match(/^"(.+)"\n?$/)[1])
-    .catch(err => {
-      if (err.statusCode === 404) {
-        logger.error(`CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`);
-      }
-
-      // Throw it regardless so the process gets halted, we just error above for higher specificity
-      throw err;
-    });
+const fetchPassword = key => {
+  return secureSettings.getCredentials(key).then(password => {
+    if (!password) {
+      throw new Error(`CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`);
+    }
+    return password;
+  });
+};
 
 // Returns a list of tasks with their fully hydrated medic document
 const queuedTasks = () =>
@@ -107,7 +103,6 @@ const mapDocumentToPayload = (doc, config, key) => {
 // Attempts to send a given payload using a given push config
 const send = (payload, config) => {
   const sendOptions = {
-    method: 'POST',
     url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
     json: true
@@ -139,7 +134,6 @@ const send = (payload, config) => {
       return fetchPassword(authConf['password_key'])
         .then(password => {
           const authOptions = {
-            method: 'POST',
             form: {
               login: authConf.username,
               password: password
@@ -148,7 +142,7 @@ const send = (payload, config) => {
             json: true
           };
 
-          return request(authOptions)
+          return request.post(authOptions)
             .then(result => {
               // No that's not a spelling mistake, this API is sometimes French!
               if (result.statut !== 200) {
@@ -173,7 +167,7 @@ const send = (payload, config) => {
       logger.debug(JSON.stringify(sendOptions, null, 2));
     }
 
-    return request(sendOptions)
+    return request.post(sendOptions)
       .then(result => {
         if (logger.isDebugEnabled()) {
           logger.debug('result from outbound request');

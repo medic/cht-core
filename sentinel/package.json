@@ -13,6 +13,7 @@
     "@medic/phone-number": "file:../shared-libs/phone-number",
     "@medic/registration-utils": "file:../shared-libs/registration-utils",
     "@medic/server-checks": "file:../shared-libs/server-checks",
+    "@medic/settings": "file:../shared-libs/settings",
     "@medic/task-utils": "file:../shared-libs/task-utils",
     "@medic/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "@medic/transitions": "file:../shared-libs/transitions",

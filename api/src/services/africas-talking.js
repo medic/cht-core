@@ -1,6 +1,5 @@
-const request = require('request-promise-native');
 const africasTalking = require('africastalking');
-const environment = require('../environment');
+const secureSettings = require('@medic/settings');
 const logger = require('../logger');
 const config = require('../config');
 
@@ -25,23 +24,6 @@ const STATUS_MAP = {
   502: { success: false, state: 'failed', detail: 'RejectedByGateway', retry: true },
 };
 
-// TODO Pull this function out as a service once this is merged: https://github.com/medic/medic/pull/5686/
-const fetchApiKey = () => {
-  return request.get(`${environment.serverUrl}/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com`)
-    // This API gives weird psuedo-JSON results:
-    //   "password"\n
-    // Should be just `password`
-    .then(result => result.match(/^"(.+)"\n?$/)[1])
-    .catch(err => {
-      if (err.statusCode === 404) {
-        throw new Error(`CouchDB config key 'medic-credentials/africastalking.com' has not been populated. Refer to the Africa's Talking configuration documentation.`);
-      }
-
-      // Throw it regardless so the process gets halted, we just error above for higher specificity
-      throw err;
-    });
-};
-
 const getCredentials = () => {
   const settings = config.get('sms');
   const username = settings &&
@@ -51,7 +33,13 @@ const getCredentials = () => {
     // invalid configuration
     return Promise.reject('No username configured. Refer to the Africa\'s Talking configuration documentation.');
   }
-  return fetchApiKey().then(apiKey => ({ apiKey, username, from: settings.reply_to }));
+  return secureSettings.getCredentials('africastalking.com')
+    .then(apiKey => {
+      if (!apiKey) {
+        return Promise.reject('No api configured. Refer to the Africa\'s Talking configuration documentation.');
+      }
+      return { apiKey, username, from: settings.reply_to };
+    });
 };
 
 const getRecipient = res => {
