@@ -19,7 +19,7 @@ angular.module('inboxDirectives').directive('mmDateFilter', function(SearchFilte
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'dateFilterCtrl',
     link: function(scope) {
       SearchFilters.date(function(date) {
         scope.filters.date = date;
