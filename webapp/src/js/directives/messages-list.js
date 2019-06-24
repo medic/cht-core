@@ -17,6 +17,6 @@ angular.module('inboxDirectives').directive('mmMessagesList', function() {
 
         $scope.$on('$destroy', unsubscribe);
       },
-      controllerAs: '$ctrl'
+      controllerAs: 'messagesListCtrl'
     };
   });
