@@ -10,6 +10,18 @@ angular.module('controllers').controller('MainCtrl',
     Session
   ) {
     'ngInject';
+
+    const dbFetch = $window.PouchDB.fetch;
+    $window.PouchDB.fetch = function() {
+      return dbFetch.apply(this, arguments)
+        .then(function(response) {
+          if (response.status === 401) {
+            Session.navigateToLogin();
+          }
+          return response;
+        });
+    };   
+    
     $translate.use('en');
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
