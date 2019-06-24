@@ -71,6 +71,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
       }
 
+      function setForms(forms) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FORMS, 'forms', forms));
+      }
+
       function clearFilters() {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', {}));
       }
@@ -164,6 +168,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setFacilities,
         setFilter,
         setFilters,
+        setForms,
         setIsAdmin,
         setLeftActionBar,
         setLastChangedDoc,

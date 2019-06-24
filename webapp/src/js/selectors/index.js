@@ -12,6 +12,7 @@ const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving
 const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getFacilities = state => getGlobalState(state).facilities;
 const getFilters = state => getGlobalState(state).filters;
+const getForms = state => getGlobalState(state).forms;
 const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLastChangedDoc = state => getGlobalState(state).lastChangedDoc;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
@@ -59,6 +60,7 @@ const getSelectedReportsDocs = reselect.createSelector(
   getSelectedReports,
   selected => selected.map(item => item.doc || item.summary)
 );
+const getVerifyingReport = state => getReportsState(state).verifyingReport;
 
 // Tasks
 const getTasksState = state => state.tasks;
@@ -76,6 +78,7 @@ angular.module('inboxServices').constant('Selectors', {
   getEnketoError,
   getFacilities,
   getFilters,
+  getForms,
   getIsAdmin,
   getLastChangedDoc,
   getLoadingContent,
@@ -107,6 +110,7 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedReportsSummaries,
   getSelectedReportsValidChecks,
   getSelectedReportsDocs,
+  getVerifyingReport,
 
   getTasksState,
   getSelectedTask

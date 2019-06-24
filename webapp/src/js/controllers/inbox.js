@@ -80,6 +80,7 @@ var _ = require('underscore'),
         currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        forms: Selectors.getForms(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state),
@@ -93,6 +94,7 @@ var _ = require('underscore'),
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setFacilities: globalActions.setFacilities,
+        setForms: globalActions.setForms,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
@@ -416,7 +418,9 @@ var _ = require('underscore'),
                   icon: xForm.icon,
                 };
               });
-              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
+              const forms = xFormSummaries.concat(jsonFormSummaries);
+              $scope.forms = forms;
+              ctrl.setForms(forms);
               $rootScope.$broadcast('formLoadingComplete');
             }
           );

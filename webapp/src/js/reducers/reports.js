@@ -1,7 +1,8 @@
 const _ = require('underscore');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
-  selected: []
+  selected: [],
+  verifyingReport: false
 };
 
 module.exports = function(state, action) {
@@ -41,6 +42,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { selected: selected });
     case actionTypes.SET_SELECTED_REPORTS:
       return Object.assign({}, state, { selected: action.payload.selected });
+    case actionTypes.SET_VERIFYING_REPORT:
+      return Object.assign({}, state, { verifyingReport: action.payload.verifyingReport });
     case actionTypes.UPDATE_SELECTED_REPORT_ITEM:
       selected = state.selected.map(item => {
         if (item._id === action.payload.id) {

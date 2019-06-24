@@ -35,11 +35,13 @@ angular
     const mapStateToTarget = state => ({
       enketoEdited: Selectors.getEnketoEditedStatus(state),
       filters: Selectors.getFilters(state),
+      forms: Selectors.getForms(state),
       selectMode: Selectors.getSelectMode(state),
       selectedReports: Selectors.getSelectedReports(state),
       selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
       showContent: Selectors.getShowContent(state),
-      unreadCount: Selectors.getUnreadCount(state)
+      unreadCount: Selectors.getUnreadCount(state),
+      verifyingReport: Selectors.getVerifyingReport(state)
     });
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
@@ -53,9 +55,11 @@ angular
         setLastChangedDoc: globalActions.setLastChangedDoc,
         setLeftActionBar: globalActions.setLeftActionBar,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setRightActionBar: globalActions.setRightActionBar,
+        setRightActionBar: reportsActions.setRightActionBar,
+        setSelected: reportsActions.setSelected,
         setSelectedReports: reportsActions.setSelectedReports,
-        setTitle: globalActions.setTitle,
+        setTitle: reportsActions.setTitle,
+        setVerifyingReport: reportsActions.setVerifyingReport,
         settingSelected: globalActions.settingSelected,
         updateUnreadCount: globalActions.updateUnreadCount
       };
@@ -96,7 +100,7 @@ angular
     };
 
     var setSelected = function(model) {
-      $scope.setSelected(model);
+      ctrl.setSelected(model);
       if (ctrl.selectMode) {
         return;
       }
@@ -111,72 +115,6 @@ angular
         .catch(function(err) {
           $log.error('Error marking read', err);
         });
-    };
-
-    var setTitle = function(model) {
-      var formInternalId = model.formInternalId || model.form;
-      var form = _.findWhere($scope.forms, { code: formInternalId });
-      var name = (form && form.name) || (form && form.title) || model.form;
-      ctrl.setTitle(name);
-    };
-
-    var setRightActionBar = function() {
-      const model = {};
-      const doc =
-        !ctrl.selectMode &&
-        ctrl.selectedReportsDocs &&
-        ctrl.selectedReportsDocs.length === 1 &&
-        ctrl.selectedReportsDocs[0];
-      if (!doc) {
-        return ctrl.setRightActionBar(model);
-      }
-      model.verified = doc.verified;
-      model.type = doc.content_type;
-      model.verifyingReport = ctrl.verifyingReport;
-      if (!doc.contact || !doc.contact._id) {
-        return ctrl.setRightActionBar(model);
-      }
-
-      DB()
-        .get(doc.contact._id)
-        .then(function(contact) {
-          model.sendTo = contact;
-          ctrl.setRightActionBar(model);
-        })
-        .catch(function(err) {
-          ctrl.setRightActionBar(model);
-          throw err;
-        });
-    };
-
-    $scope.setSelected = function(model) {
-      var refreshing = true;
-      if (ctrl.selectMode) {
-        var existing = _.findWhere(ctrl.selectedReports, { _id: model.doc._id });
-        if (existing) {
-          _.extend(existing, model);
-        } else {
-          model.expanded = false;
-          ctrl.addSelectedReport(model);
-        }
-      } else {
-        if (liveList.initialised()) {
-          liveList.setSelected(model.doc && model.doc._id);
-        }
-        refreshing =
-          model.doc &&
-          ctrl.selectedReports.length &&
-          ctrl.selectedReports[0]._id === model.doc._id;
-        if (!refreshing) {
-          ctrl.verifyingReport = false;
-        }
-
-        model.expanded = true;
-        ctrl.setSelectedReports([model]);
-        setTitle(model);
-      }
-      setRightActionBar();
-      ctrl.settingSelected(refreshing);
     };
 
     var fetchFormattedReport = function(report) {
@@ -200,7 +138,7 @@ angular
         return s._id === id;
       });
       if (index !== -1) {
-        setRightActionBar();
+        ctrl.setRightActionBar();
       }
     };
 
@@ -324,8 +262,8 @@ angular
     };
 
     $scope.$on('ToggleVerifyingReport', function() {
-      ctrl.verifyingReport = !ctrl.verifyingReport;
-      setRightActionBar();
+      ctrl.setVerifyingReport(!ctrl.verifyingReport);
+      ctrl.setRightActionBar();
     });
 
     const clearSelection = () => {
@@ -333,7 +271,7 @@ angular
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $('#reports-list input[type="checkbox"]').prop('checked', false);
-      ctrl.verifyingReport = false;
+      ctrl.setVerifyingReport(false);
     };
 
     $scope.$on('ClearSelected', function() {
@@ -474,7 +412,7 @@ angular
       ctrl.search();
     };
 
-    if ($scope.forms) {
+    if (ctrl.forms) {
       // if forms are already loaded
       ctrl.search();
     } else {
@@ -485,7 +423,7 @@ angular
         var doc =
           ctrl.selectedReports && ctrl.selectedReports[0] && ctrl.selectedReports[0].doc;
         if (doc) {
-          setTitle(doc);
+          ctrl.setTitle(doc);
         }
       });
     }
@@ -536,7 +474,7 @@ angular
           });
           ctrl.setSelectedReports(selected);
           ctrl.settingSelected(true);
-          setRightActionBar();
+          ctrl.setRightActionBar();
           $('#reports-list input[type="checkbox"]').prop('checked', true);
         })
         .catch(function(err) {
@@ -546,7 +484,7 @@ angular
 
     var deselectAll = function() {
       ctrl.setSelectedReports([]);
-      setRightActionBar();
+      ctrl.setRightActionBar();
       $('#reports-list input[type="checkbox"]').prop('checked', false);
     };
 
