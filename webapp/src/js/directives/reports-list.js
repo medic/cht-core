@@ -18,6 +18,6 @@ angular.module('inboxDirectives').directive('mmReportsList', function() {
 
         $scope.$on('$destroy', unsubscribe);
       },
-      controllerAs: '$ctrl'
+      controllerAs: 'reportsList'
     };
   });
