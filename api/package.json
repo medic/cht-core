@@ -73,6 +73,7 @@
     "@medic/registration-utils",
     "@medic/search",
     "@medic/server-checks",
+    "@medic/settings",
     "@medic/task-utils",
     "@medic/tombstone-utils",
     "@medic/transitions",
