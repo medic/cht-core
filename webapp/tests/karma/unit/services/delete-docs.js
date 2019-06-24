@@ -260,7 +260,7 @@ describe('DeleteDocs service', function() {
 
     return service(docs).then(function() {
       chai.expect(docs.length).to.equal(1);
-      chai.expect(isCircularBefore).to.equal(false);
+      chai.expect(isCircularBefore).to.equal(true);
       try {
         JSON.stringify(bulkDocs.args[0][0][0]);
       } catch (e) {
