@@ -1,3 +1,5 @@
+const dummy = require('@medic/dummy');
+dummy.doSomeLazy([1, 2, 3]);
 angular.module('controllers').controller('MainCtrl',
   function (
     $log,
