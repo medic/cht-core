@@ -25,8 +25,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
 
-    var getCurrentDeployment = function() {
-      return DB().get(DEPLOY_DOC_ID)
+    var getCurrentDeployment = function(rev) {
+      return DB().get(DEPLOY_DOC_ID, { rev })
       .then(function(deployDoc) {
         $scope.deployDoc = deployDoc;
       }).catch(function(err) {
@@ -172,7 +172,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     Changes({
       key: 'upgrade',
       filter: change => change.id === DEPLOY_DOC_ID,
-      callback: () => getCurrentDeployment()
+      callback: change => getCurrentDeployment(change.changes[0].rev)
     });
   }
 );
