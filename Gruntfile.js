@@ -42,7 +42,10 @@ const getSharedLibDirs = () => {
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
 };
 
-const copySharedLibs = 'rm -rf ../shared-libs/*/node_modules && mkdir ./node_modules/@medic && cp -r ../shared-libs/* ./node_modules/@medic';
+const copySharedLibs = [
+  'mkdir ./node_modules/@medic',
+  'cp -r ../shared-libs/* ./node_modules/@medic'
+].join( '&& ');
 
 module.exports = function(grunt) {
   'use strict';
@@ -403,9 +406,9 @@ module.exports = function(grunt) {
           .map(module =>
             [
               `cd ${module}`,
-              `npm dedupe`,
               `npm ci --production`,
               `${copySharedLibs}`,
+              `npm dedupe`,
               `npm pack`,
               `ls -l medic-${module}-0.1.0.tgz`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
