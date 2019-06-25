@@ -15,6 +15,7 @@ env:
   matrix:
     - TEST_SUITE=integration NODE_VERSION=8
     - TEST_SUITE=integration NODE_VERSION=10
+    - TEST_SUITE=integration NODE_VERSION=12
     - TEST_SUITE=performance NODE_VERSION=10
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic-test

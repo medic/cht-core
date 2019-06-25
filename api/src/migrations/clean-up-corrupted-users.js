@@ -12,8 +12,8 @@ var update = function(docs, callback) {
 };
 
 var needsUpdate = function(row) {
-  return row.doc.hasOwnProperty('$promise') ||
-         row.doc.hasOwnProperty('$resolved');
+  return Object.prototype.hasOwnProperty.call(row.doc, '$promise') ||
+         Object.prototype.hasOwnProperty.call(row.doc, '$resolved');
 };
 
 var fixUsers = function(skip, callback) {

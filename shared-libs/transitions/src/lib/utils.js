@@ -60,7 +60,7 @@ const addError = (doc, error) => {
   }
   // try to avoid duplicates
   for (const i in doc.errors) {
-    if (doc.errors.hasOwnProperty(i)) {
+    if (Object.prototype.hasOwnProperty.call(doc.errors, i)) {
       const e = doc.errors[i];
       if (error.code === e.code) {
         return;

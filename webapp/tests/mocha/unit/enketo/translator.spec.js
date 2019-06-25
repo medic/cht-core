@@ -5,7 +5,6 @@ const translator = require('../../../../src/js/enketo/translator');
 
 describe('enketo translator', () => {
 
-  /*global document:true*/
   beforeEach(done => {
     document = {};
     require('../mock-angular');
