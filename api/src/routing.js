@@ -46,6 +46,9 @@ const _ = require('underscore'),
   extractedResourceDirectory = require('./resource-extraction').getDestinationDirectory(),
   app = express();
 
+const dummy = require('@medic/dummy');
+dummy.doSomeLazy([1, 2, 3]);
+
 // requires content-type application/json header
 var jsonParser = bodyParser.json({ limit: '32mb' });
 

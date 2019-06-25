@@ -1,0 +1,12 @@
+{
+  "name": "@medic/dummy",
+  "version": "1.0.0",
+  "description": "This is a dummy shared lib",
+  "main": "src/dummy.js",
+  "scripts": {},
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "lazy.js": "^0.5.1"
+  }
+}
