@@ -61,8 +61,8 @@ module.exports = {
           callback();
         });
       },
-      function() {
-        return again;
+      function(cb) {
+        cb(null, again);
       },
       callback
     );
