@@ -33,22 +33,21 @@ define( function( require, exports, module ) {
     Mrdtwidget.prototype._init = function() {
         var self = this;
         var $el = $( this.element );
-        var $imageInput = $el.find( '.or-appearance-mrdt-image > input' );
+        var $input = $el.find( 'input' );
 
         // we need to make it a textarea because text inputs strip out the
         // \n (new line) characters which breaks the encoded file content.
-        var textarea = $imageInput[0].outerHTML
+        var textarea = $input[0].outerHTML
             .replace(/^<input /, '<textarea ')
             .replace(/<\/input>/, '</textarea>');
-        $imageInput.replaceWith(textarea);
+        $input.replaceWith(textarea);
         var angularServices = angular.element( document.body ).injector();
         var $translate = angularServices.get( '$translate' );
         var service = angularServices.get( 'MRDT' );
 
         if ( !service.enabled() ) {
             $translate( 'mrdt.disabled' ).then(function( label ) {
-                $el.find( '.or-appearance-mrdt-image' )
-                   .append( '<p>' + label + '</p>' );
+                $el.append( '<p>' + label + '</p>' );
             });
             return;
         }
@@ -58,15 +57,16 @@ define( function( require, exports, module ) {
                 var image = data.image;
                 var timeTaken = data.timeTaken;
                 $( self.element )
-                    .find( '.or-appearance-mrdt-image > textarea' )
+                    .find( 'textarea' )
                     .val( image )
                     .trigger( 'change' );
                 $( self.element )
-                    .find( '.or-appearance-mrdt-image .mrdt-preview' )
+                    .find( '.mrdt-preview' )
                     .attr('src', 'data:image/png;base64, ' + image);
                 if (timeTaken) {
                   $( self.element )
-                      .find( '.or-appearance-mrdt-time-taken > input' )
+                      .siblings( '.or-appearance-mrdt-time-taken' )
+                      .find( 'input' )
                       .val( timeTaken )
                       .trigger( 'change' );
                 }
@@ -74,8 +74,7 @@ define( function( require, exports, module ) {
         } );
 
         $translate( 'mrdt.verify' ).then( function( label ) {
-            $el.find( '.or-appearance-mrdt-image' )
-               .append(
+            $el.append(
                 '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
                 '<div><img class="mrdt-preview"/></div>'
             );
@@ -104,4 +103,3 @@ define( function( require, exports, module ) {
         'selector': '.or-appearance-mrdt-verify',
     };
 } );
-
