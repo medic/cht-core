@@ -10,6 +10,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
+    $timeout,
     $translate,
     $window,
     Changes,
@@ -178,7 +179,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         }
 
         if ($scope.deployDoc) {
-          $scope.deployDoc._deleted = true;
+          $timeout(() => $scope.deployDoc._deleted = true);
         }
       }
     });
