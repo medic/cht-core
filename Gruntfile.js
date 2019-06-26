@@ -425,7 +425,7 @@ module.exports = function(grunt) {
             const existentBundledDependencies = pkg.bundledDependencies;
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
             getSharedLibDirs().forEach(lib => {
-              if (existentBundledDependencies.includes(lib)) {
+              if (existentBundledDependencies.includes(`@medic/${lib}`)) {
                 pkg.bundledDependencies.push(`@medic/${lib}`);
               }
             });
