@@ -33,15 +33,6 @@
     "jsverify": "^0.8.4"
   },
   "bundledDependencies": [
-    "@medic/lineage",
-    "@medic/message-utils",
-    "@medic/phone-number",
-    "@medic/registration-utils",
-    "@medic/server-checks",
-    "@medic/task-utils",
-    "@medic/tombstone-utils",
-    "@medic/transitions",
-    "@medic/translation-utils",
     "async",
     "bikram-sambat",
     "bikram-sambat-bootstrap",

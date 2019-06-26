@@ -78,5 +78,8 @@ module.exports = {
   },
   _getViewMapFns: function() {
     return viewMapFns;
+  },
+  test: () => {
+    console.log('view map utils test function!!!!');
   }
 };

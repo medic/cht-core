@@ -423,13 +423,8 @@ module.exports = function(grunt) {
           ['api', 'sentinel'].forEach(module => {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
-            const existentBundledDependencies = pkg.bundledDependencies;
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            getSharedLibDirs().forEach(lib => {
-              if (existentBundledDependencies.includes(`@medic/${lib}`)) {
-                pkg.bundledDependencies.push(`@medic/${lib}`);
-              }
-            });
+            getSharedLibDirs().forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
