@@ -1,4 +1,4 @@
-const africasTalking = require('africastalking');
+const request = require('request-promise-native');
 const secureSettings = require('@medic/settings');
 const logger = require('../logger');
 const config = require('../config');
@@ -69,23 +69,53 @@ const generateStateChange = (message, res) => {
   };
 };
 
-const sendMessage = (instance, from, message) => {
-  return instance.SMS
-    .send({
-      to: [ message.to ],
-      from: from,
+const getUrl = sandbox => {
+  const prefix = sandbox ? 'sandbox.' : '';
+  return `https://api.${prefix}africastalking.com/version1/messaging`;
+};
+
+const parseResponseBody = body => {
+  try {
+    return JSON.parse(body);
+  } catch(e) {
+    return;
+  }
+};
+
+const sendMessage = (credentials, message) => {
+  const url = getUrl(credentials.username === 'sandbox');
+  logger.debug(`Sending message to "${url}"`);
+  return request.post({
+    url: url,
+    simple: false,
+    form: {
+      username: credentials.username,
+      from: credentials.from,
+      to: message.to,
       message: message.content
-    })
-    .catch(res => {
-      // The AT instance sometimes throws responses and sometimes errors...
-      const validResponse = getStatus(getRecipient(res));
-      if (!validResponse) {
-        logger.error(`Error thrown trying to send messages: %o`, res);
-        return; // unknown error
+    },
+    headers: {
+      apikey: credentials.apiKey,
+      Accept: 'application/json'
+    }
+  })
+    .then(body => {
+      const result = parseResponseBody(body);
+      if (!result) {
+        logger.error(`Unable to JSON parse response: %o`, body);
+        return; // retry later
       }
-      return res;
+      const validResponse = getStatus(getRecipient(result));
+      if (!validResponse) {
+        logger.error(`Invalid response when trying to send messages: %o`, result);
+        return; // retry later
+      }
+      return generateStateChange(message, result);
     })
-    .then(res => generateStateChange(message, res));
+    .catch(err => {
+      // unknown error - ignore it so the message will be retried again later
+      logger.error(`Error thrown trying to send messages: %o`, err);
+    });
 };
 
 module.exports = {
@@ -98,10 +128,9 @@ module.exports = {
   send: messages => {
     // get the credentials every call so changes can be made without restarting api
     return getCredentials().then(credentials => {
-      const instance = module.exports._getInstance(credentials);
       return messages.reduce((promise, message) => {
         return promise.then(changes => {
-          return sendMessage(instance, credentials.from, message).then(change => {
+          return sendMessage(credentials, message).then(change => {
             if (change) {
               changes.push(change);
             }
@@ -110,8 +139,6 @@ module.exports = {
         });
       }, Promise.resolve([]));
     });
-  },
-
-  _getInstance: ({ apiKey, username }) => africasTalking({ apiKey, username })
+  }
 
 };

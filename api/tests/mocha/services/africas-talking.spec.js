@@ -1,15 +1,50 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const request = require('request-promise-native');
 const secureSettings = require('@medic/settings');
 const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');
-const instance = { SMS: { send: () => {} } };
+
+const SUCCESS_RESPONSE = JSON.stringify({
+  SMSMessageData: {
+    Message: 'Sent to 1/1 Total Cost: KES 0.8000',
+    Recipients: [{
+      statusCode: 101,
+      number: '+254711XXXYYY',
+      status: 'Success',
+      cost: 'KES 0.8000',
+      messageId: 'ATPid_SampleTxnId123'
+    }]
+  }
+});
+
+const INVALID_PHONE_NUMBER_RESPONSE = JSON.stringify({
+  SMSMessageData: {
+    Message: 'Sent to 1/1 Total Cost: KES 0.8000',
+    Recipients: [{
+      statusCode: 403,
+      number: '+254711XXXYYY',
+      status: 'InvalidPhoneNumber',
+      cost: 'KES 0.8000',
+      messageId: 'def'
+    }]
+  }
+});
+
+const INTERNAL_SERVER_ERROR_RESPONSE = JSON.stringify({
+  SMSMessageData: {
+    Message: 'Sent to 1/1 Total Cost: KES 0.8000',
+    Recipients: [{
+      statusCode: 500,
+      number: '+254711XXXYYY',
+      status: 'InternalServerError',
+      cost: 'KES 0.8000',
+      messageId: 'ghi'
+    }]
+  }
+});
 
 describe('africas talking service', () => {
-
-  beforeEach(() => {
-    sinon.stub(service, '_getInstance').returns(instance);
-  });
 
   afterEach(() => {
     sinon.restore();
@@ -34,39 +69,47 @@ describe('africas talking service', () => {
         reply_to: '98765',
         africas_talking: { username: 'user' }
       });
-      sinon.stub(instance.SMS, 'send').resolves({
-        SMSMessageData: {
-          Message: 'Sent to 1/1 Total Cost: KES 0.8000',
-          Recipients: [{
-            statusCode: 101,
-            number: '+254711XXXYYY',
-            status: 'Success',
-            cost: 'KES 0.8000',
-            messageId: 'ATPid_SampleTxnId123'  
-          }]
-        }
-      });
+      sinon.stub(request, 'post').resolves(SUCCESS_RESPONSE);
       const given = [ { id: 'a', to: '+123', content: 'hello' } ];
       return service.send(given).then(actual => {
-        chai.expect(instance.SMS.send.callCount).to.equal(1);
-        chai.expect(instance.SMS.send.args[0][0]).to.deep.equal({
-          to: [ '+123' ],
-          from: '98765',
-          message: 'hello'
-        });
         chai.expect(actual).to.deep.equal([{
           messageId: 'a',
           gatewayRef: 'ATPid_SampleTxnId123',
           state: 'sent',
           details: 'Sent'
         }]);
+        chai.expect(request.post.callCount).to.equal(1);
+        chai.expect(request.post.args[0][0].url).to.equal('https://api.africastalking.com/version1/messaging');
+        chai.expect(request.post.args[0][0].form.username).to.equal('user');
+        chai.expect(request.post.args[0][0].form.from).to.equal('98765');
+        chai.expect(request.post.args[0][0].form.to).to.equal('+123');
+        chai.expect(request.post.args[0][0].form.message).to.equal('hello');
+        chai.expect(request.post.args[0][0].headers.apikey).to.equal('555');
         chai.expect(config.get.callCount).to.equal(1);
         chai.expect(config.get.args[0][0]).to.equal('sms');
         chai.expect(secureSettings.getCredentials.callCount).to.equal(1);
         chai.expect(secureSettings.getCredentials.args[0][0]).to.equal('africastalking.com');
-        chai.expect(service._getInstance.callCount).to.equal(1);
-        chai.expect(service._getInstance.args[0][0].apiKey).to.equal('555');
-        chai.expect(service._getInstance.args[0][0].username).to.equal('user');
+      });
+    });
+
+    it('forwards messages to sandbox when testing', () => {
+      sinon.stub(secureSettings, 'getCredentials').resolves('555');
+      sinon.stub(config, 'get').returns({
+        reply_to: '98765',
+        africas_talking: { username: 'sandbox' }
+      });
+      sinon.stub(request, 'post').resolves(SUCCESS_RESPONSE);
+      const given = [ { id: 'a', to: '+123', content: 'hello' } ];
+      return service.send(given).then(actual => {
+        chai.expect(actual).to.deep.equal([{
+          messageId: 'a',
+          gatewayRef: 'ATPid_SampleTxnId123',
+          state: 'sent',
+          details: 'Sent'
+        }]);
+        chai.expect(request.post.callCount).to.equal(1);
+        chai.expect(request.post.args[0][0].url).to.equal('https://api.sandbox.africastalking.com/version1/messaging');
+        chai.expect(request.post.args[0][0].form.username).to.equal('sandbox');
       });
     });
 
@@ -76,57 +119,21 @@ describe('africas talking service', () => {
         reply_to: '98765',
         africas_talking: { username: 'user' }
       });
-      sinon.stub(instance.SMS, 'send')
-        // success
-        .onCall(0).resolves({
-          SMSMessageData: {
-            Message: 'Sent to 1/1 Total Cost: KES 0.8000',
-            Recipients: [{
-              statusCode: 101,
-              number: '+254711XXXYYY',
-              status: 'Success',
-              cost: 'KES 0.8000',
-              messageId: 'abc'  
-            }]
-          }
-        })
-        // fatal error
-        .onCall(1).rejects({
-          SMSMessageData: {
-            Message: 'Sent to 1/1 Total Cost: KES 0.8000',
-            Recipients: [{
-              statusCode: 403,
-              number: '+254711XXXYYY',
-              status: 'InvalidPhoneNumber',
-              cost: 'KES 0.8000',
-              messageId: 'def'  
-            }]
-          }
-        })
-        // temporary error - don't update state
-        .onCall(2).rejects({
-          SMSMessageData: {
-            Message: 'Sent to 1/1 Total Cost: KES 0.8000',
-            Recipients: [{
-              statusCode: 500,
-              number: '+254711XXXYYY',
-              status: 'InternalServerError',
-              cost: 'KES 0.8000',
-              messageId: 'ghi'  
-            }]
-          }
-        });
+      sinon.stub(request, 'post')
+        .onCall(0).resolves(SUCCESS_RESPONSE) // success
+        .onCall(1).resolves(INVALID_PHONE_NUMBER_RESPONSE) // fatal error
+        .onCall(2).resolves(INTERNAL_SERVER_ERROR_RESPONSE); // temporary error - don't update state
       const given = [
         { id: 'a', to: '+123', content: 'hello' },
         { id: 'b', to: '+456', content: 'hello' },
         { id: 'c', to: '+789', content: 'hello' }
       ];
       return service.send(given).then(actual => {
-        chai.expect(instance.SMS.send.callCount).to.equal(3);
+        chai.expect(request.post.callCount).to.equal(3);
         chai.expect(actual).to.deep.equal([
           {
             messageId: 'a',
-            gatewayRef: 'abc',
+            gatewayRef: 'ATPid_SampleTxnId123',
             state: 'sent',
             details: 'Sent'
           },
@@ -146,10 +153,10 @@ describe('africas talking service', () => {
         reply_to: '98765',
         africas_talking: { username: 'user' }
       });
-      sinon.stub(instance.SMS, 'send').rejects('Unknown error');
+      sinon.stub(request, 'post').rejects('Unknown error');
       const given = [ { uuid: 'a', to: '+123', content: 'hello' } ];
       return service.send(given).then(actual => {
-        chai.expect(instance.SMS.send.callCount).to.equal(1);
+        chai.expect(request.post.callCount).to.equal(1);
         chai.expect(actual.length).to.equal(0);
       });
     });
