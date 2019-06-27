@@ -17,15 +17,6 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  afterAll(done =>
-    utils.request(`/_users/${userName}`)
-    .then(doc => utils.request({
-      path: `/_users/${userName}?rev=${doc._rev}`,
-      method: 'DELETE'
-    }))
-    .catch(() => {}) // If this fails we don't care
-    .then(() => utils.afterEach(done)));
-
   it('should allow a new user to read/write from meta db', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm(userName, fullName, password);
@@ -51,10 +42,9 @@ describe('Create user meta db : ', () => {
         });
     }, 4000);
     const doc = { _id: userName };
-    browser.sleep(2000).then(()=> {
+    browser.sleep(4000).then(()=> {
       const postData = JSON.stringify(doc);
       return utils.requestOnTestMetaDb(_.defaults({ 
-        path: '/', 
         method: 'POST', 
         headers: {
           'Content-Type': 'application/json',
