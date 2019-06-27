@@ -255,7 +255,7 @@ describe('All Docs service', () => {
         limit: 'limit',
         include_docs: 'sometimes'
       };
-      authorization.getAllowedDocIds.returns(['a', 'b', 'c']);
+      authorization.getAllowedDocIds.resolves(['a', 'b', 'c']);
 
       return service
         .filterOfflineRequest(userCtx, query, body)
@@ -271,6 +271,41 @@ describe('All Docs service', () => {
             include_docs: 'sometimes',
             keys: ['a', 'b', 'c']
           });
+
+          authorization.getAllowedDocIds.callCount.should.equal(1);
+        });
+    });
+
+    it('calls db.allDocs with full parameter list when including docs', () => {
+      query = {
+        conflicts: 'something',
+        descending: 'else',
+        skip: 'skip',
+        stale: 'notsomuch',
+        update_seq: 'figure',
+        limit: 'limit',
+        include_docs: 'sometimes',
+        keys: JSON.stringify(['a', 'b'])
+      };
+
+      db.medic.allDocs.resolves({ rows: [] });
+
+      return service
+        .filterOfflineRequest(userCtx, query, body)
+        .then(() => {
+          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.args[0][0].should.deep.equal({
+            conflicts: 'something',
+            descending: 'else',
+            skip: 'skip',
+            stale: 'notsomuch',
+            update_seq: 'figure',
+            limit: 'limit',
+            keys: ['a', 'b'],
+            include_docs: 'sometimes'
+          });
+
+          authorization.getAllowedDocIds.callCount.should.equal(0);
         });
     });
 
@@ -309,6 +344,7 @@ describe('All Docs service', () => {
         .filterOfflineRequest(userCtx, query, body)
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
+          authorization.getAllowedDocIds.callCount.should.equal(1);
           result.should.deep.equal([{ id: 'a' }, { id: 'b' }]);
         });
     });
@@ -322,6 +358,7 @@ describe('All Docs service', () => {
         .filterOfflineRequest(userCtx, query, body)
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
+          authorization.getAllowedDocIds.callCount.should.equal(1);
           result.should.deep.equal({ rows: [
               { id: 'a' },
               { id: 'b', error: 'forbidden' },
@@ -342,6 +379,7 @@ describe('All Docs service', () => {
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: docIds });
+          authorization.getAllowedDocIds.callCount.should.equal(1);
 
           result.should.deep.equal(allDocsResponse);
         });
@@ -360,6 +398,7 @@ describe('All Docs service', () => {
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['b', 'c', 'd'] });
+          authorization.getAllowedDocIds.callCount.should.equal(1);
 
           result.should.deep.equal({ rows: [
               {id: 'a', error: 'forbidden'},
@@ -371,6 +410,83 @@ describe('All Docs service', () => {
               {id: 'g', error: 'forbidden'}
             ]});
         });
+    });
+
+    describe('when including docs with keys', () => {
+      it('should query _all_docs with requested keys and filter results', () => {
+        const ids = ['a', 'b', 'c', 'd', 'e'];
+        db.medic.allDocs
+          .withArgs({ keys: ids, include_docs: true })
+          .resolves({ rows: ids.map(id => ({ id, doc: { _id: id } })) });
+
+        body = { keys: ids  };
+        query = { include_docs: true };
+
+        sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: true, id: doc._id }));
+        sinon.stub(authorization, 'allowedDoc').returns(false);
+        authorization.allowedDoc.withArgs('a').returns(true);
+        authorization.allowedDoc.withArgs('d').returns(true);
+        authorization.allowedDoc.withArgs('e').returns(true);
+
+        return service
+          .filterOfflineRequest(userCtx, query, body)
+          .then(result => {
+            authorization.getViewResults.callCount.should.equal(5);
+            authorization.allowedDoc.callCount.should.equal(5);
+            authorization.allowedDoc.calledWith('a', sinon.match.any, { view: true, doc: 'a' });
+            authorization.allowedDoc.calledWith('b', sinon.match.any, { view: true, doc: 'b' });
+            authorization.allowedDoc.calledWith('c', sinon.match.any, { view: true, doc: 'c' });
+            authorization.allowedDoc.calledWith('d', sinon.match.any, { view: true, doc: 'd' });
+            authorization.allowedDoc.calledWith('e', sinon.match.any, { view: true, doc: 'e' });
+
+            result.should.deep.equal({ rows: [
+                { id: 'a', doc: { _id: 'a' }},
+                { id: 'b', error: 'forbidden' },
+                { id: 'c', error: 'forbidden' },
+                { id: 'd', doc: { _id: 'd' }},
+                { id: 'e', doc: { _id: 'e' }},
+              ]});
+          });
+      });
+
+      it('should fill the gaps for not found docs as well', () => {
+        const ids = ['a', 'b', 'c', 'd', 'e'];
+        db.medic.allDocs
+          .withArgs({ keys: ids, include_docs: true })
+          .resolves({ rows: [
+              { id: 'a', doc: { _id: 'a' }},
+              { id: 'b', doc: null, value: { deleted: true } },
+              { id: 'c', doc: { _id: 'c' }},
+              { id: 'd', doc: null, value: { deleted: true }},
+              { id: 'e', doc: { _id: 'e' }},
+            ]});
+
+        body = { keys: ids  };
+        query = { include_docs: true };
+
+        sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: true, id: doc._id }));
+        sinon.stub(authorization, 'allowedDoc').returns(false);
+        authorization.allowedDoc.withArgs('a').returns(true);
+        authorization.allowedDoc.withArgs('e').returns(true);
+
+        return service
+          .filterOfflineRequest(userCtx, query, body)
+          .then(result => {
+            authorization.getViewResults.callCount.should.equal(3);
+            authorization.allowedDoc.callCount.should.equal(3);
+            authorization.allowedDoc.calledWith('a', sinon.match.any, { view: true, doc: 'a' });
+            authorization.allowedDoc.calledWith('c', sinon.match.any, { view: true, doc: 'c' });
+            authorization.allowedDoc.calledWith('e', sinon.match.any, { view: true, doc: 'e' });
+
+            result.should.deep.equal({ rows: [
+                { id: 'a', doc: { _id: 'a' }},
+                { id: 'b', error: 'forbidden' },
+                { id: 'c', error: 'forbidden' },
+                { id: 'd', error: 'forbidden' },
+                { id: 'e', doc: { _id: 'e' }},
+              ]});
+          });
+      });
     });
   });
 });

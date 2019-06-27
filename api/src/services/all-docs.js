@@ -64,6 +64,39 @@ const formatResults = (results, requestIds) => {
   return results;
 };
 
+const requestWithIncludeDocs = (authorizationContext, options) => {
+  // filters response from CouchDB only to include successfully read and allowed docs
+  const allowedRow = row => {
+    return row.doc &&
+           authorization.allowedDoc(row.id, authorizationContext, authorization.getViewResults(row.doc));
+  };
+
+  return db.medic
+    .allDocs(options)
+    .then(results => results.rows.filter(allowedRow))
+    .then(rows => ({ rows }));
+};
+
+const withoutIncludeDocs = (authorizationContext, options, query) => {
+  return authorization
+    .getAllowedDocIds(authorizationContext)
+    .then(allowedDocIds => {
+      // when specific keys are requested, the expectation is to send deleted documents as well
+      allowedDocIds = options.keys ?
+        authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
+
+      const filteredIds = filterRequestIds(allowedDocIds, options.keys, query);
+
+      if (!filteredIds.length) {
+        return { rows: [] };
+      }
+
+      options.keys = filteredIds;
+
+      return db.medic.allDocs(options);
+    });
+};
+
 module.exports = {
   // offline users will only receive results for documents they are allowed to see
   // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
@@ -72,22 +105,16 @@ module.exports = {
 
     return authorization
       .getAuthorizationContext(userCtx)
-      .then(authorizationContext => authorization.getAllowedDocIds(authorizationContext))
-      .then(allowedDocIds => {
-        // when specific keys are requested, the expectation is to send deleted documents as well
-        allowedDocIds = requestIds ?
-          authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
-
-        const filteredIds = filterRequestIds(allowedDocIds, requestIds, query);
-
-        if (!filteredIds.length) {
-          return { rows: [] };
-        }
-
+      .then(authorizationContext => {
         // remove all the `startKey` / `endKey` / `key` params from the request options, as they are incompatible with
         // `keys` and their function is already handled
-        const options = _.defaults({ keys: filteredIds }, _.omit(query, 'key', ...startKeyParams, ...endKeyParams));
-        return db.medic.allDocs(options);
+        const options = _.defaults({ keys: requestIds }, _.omit(query, 'key', ...startKeyParams, ...endKeyParams));
+        const includeDocs = query && query.include_docs;
+        if (includeDocs && requestIds) {
+          return requestWithIncludeDocs(authorizationContext, options);
+        }
+
+        return withoutIncludeDocs(authorizationContext, options, query);
       })
       .then(results => formatResults(results, requestIds));
   }
