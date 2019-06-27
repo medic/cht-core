@@ -68,7 +68,7 @@ angular.module('inboxServices').service('Enketo',
         var elem = $(this);
         var src = elem.attr('data-media-src');
         elem.css('visibility', 'hidden');
-        elem.wrap('<div class="loader">'  );
+        elem.wrap('<div class="loader">');
         DB()
           .getAttachment(id, src)
           .then(function(blob) {
