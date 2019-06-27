@@ -1,9 +1,10 @@
 const _ = require('underscore'),
-      utils = require('../../utils'),
-      usersPage = require('../../page-objects/users/users.po.js'),
-      commonElements = require('../../page-objects/common/common.po.js'),
-      loginPage = require('../../page-objects/login/login.po.js'),
-      addUserModal = require('../../page-objects/users/add-user-modal.po.js');
+      auth = require('../auth')(),
+      utils = require('../utils'),
+      usersPage = require('../page-objects/users/users.po.js'),
+      commonElements = require('../page-objects/common/common.po.js'),
+      loginPage = require('../page-objects/login/login.po.js'),
+      addUserModal = require('../page-objects/users/add-user-modal.po.js');
 
 const userName = 'fulltester' + new Date().getTime(),
       fullName = 'Roger Milla',
@@ -17,7 +18,24 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  it('should allow a new user to read/write from meta db', () => {
+  afterAll(done => {
+    commonElements.goToLoginPage();
+    loginPage.login(auth.user, auth.pass);
+    return Promise.all([
+      utils.request(`/_users/org.couchdb.user:${userName}`)
+      .then(doc => utils.request({
+        path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
+        method: 'DELETE'
+      })),
+      utils.revertDb()
+    ])
+    .then(() => done()).catch(done.fail);
+  });
+
+  beforeEach(utils.beforeEach);
+  afterEach(utils.afterEach);
+
+  it('should allow a new user to read/write from meta db', () => {console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
     usersPage.openAddUserModal();
     addUserModal.fillForm(userName, fullName, password);
     addUserModal.submit();
