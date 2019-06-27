@@ -64,18 +64,13 @@ angular.module('inboxServices').service('Enketo',
     var inited = init();
 
     var replaceJavarosaMediaWithLoaders = function(id, form) {
-      form.find('img,video,audio').each(function() {
+      form.find('[data-media-src]').each(function() {
         var elem = $(this);
-        var src = elem.attr('src');
-        if (!(/^jr:\/\//.test(src))) {
-          return;
-        }
-        // Change URL to fragment to prevent browser trying to load it
-        elem.attr('src', '#' + src);
+        var src = elem.attr('data-media-src');
         elem.css('visibility', 'hidden');
-        elem.wrap('<div class="loader">');
+        elem.wrap('<div class="loader">'  );
         DB()
-          .getAttachment(id, src.substring(5))
+          .getAttachment(id, src)
           .then(function(blob) {
             var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
@@ -95,8 +90,8 @@ angular.module('inboxServices').service('Enketo',
         XSLT.transform('openrosa2xmlmodel.xsl', xml)
       ])
       .then(function(results) {
-        var $html = $(results[0]);
-        var model = results[1];
+        const $html = $(results[0].replace(/ src="jr:\/\//gi, ' data-media-src="'));
+        const model = results[1];
         $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
