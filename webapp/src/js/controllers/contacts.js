@@ -255,6 +255,8 @@ const PAGE_SIZE = 50;
       ctrl.setLoadingSelectedChildren(true);
       ctrl.setLoadingSelectedReports(true);
       ctrl.setSelected(selected);
+      const reportLoader = ctrl.loadSelectedChildren(options)
+        .then(ctrl.loadSelectedReports);
       ctrl.clearCancelCallback();
       var title = '';
       if (ctrl.selected.doc.type === 'person') {
@@ -284,8 +286,7 @@ const PAGE_SIZE = 50;
             canEdit: canEdit,
           });
 
-          return ctrl.loadSelectedChildren(options)
-            .then(ctrl.loadSelectedReports)
+          return reportLoader
             .then(function() {
               return $q.all([
                 ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
