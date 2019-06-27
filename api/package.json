@@ -87,6 +87,7 @@
   ],
   "sharedLibs": [
     "bulk-docs-utils",
+    "dummy",
     "lineage",
     "message-utils",
     "phone-number",
