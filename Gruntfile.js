@@ -48,6 +48,11 @@ const copySharedLibs = [
   'cp -r ../shared-libs/* ./node_modules/@medic'
 ].join( '&& ');
 
+const linkSharedLibs = [
+  'mkdir ./node_modules/@medic',
+  ...getSharedLibDirs().map(lib => `ln -sr ../shared-libs/${lib} ./node_modules/@medic/${lib}`)
+].join(' &&');
+
 module.exports = function(grunt) {
   'use strict';
 
@@ -424,7 +429,9 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            getSharedLibDirs().forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
+            if (pkg.sharedLibs) {
+              pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
+            }
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
@@ -510,7 +517,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${copySharedLibs} && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs} && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {

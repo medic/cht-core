@@ -84,5 +84,19 @@
     "uuid",
     "winston",
     "xmlbuilder"
+  ],
+  "sharedLibs": [
+    "bulk-docs-utils",
+    "lineage",
+    "message-utils",
+    "phone-number",
+    "registration-utils",
+    "search",
+    "server-checks",
+    "task-utils",
+    "tombstone-utils",
+    "transitions",
+    "translation-utils",
+    "view-map-utils"
   ]
 }

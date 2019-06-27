@@ -53,5 +53,16 @@
     "url-join",
     "uuid",
     "winston"
+  ],
+  "sharedLibs": [
+    "lineage",
+    "message-utils",
+    "phone-number",
+    "registration-utils",
+    "server-checks",
+    "task-utils",
+    "tombstone-utils",
+    "transitions",
+    "translation-utils"
   ]
 }
