@@ -499,6 +499,13 @@ app.all(
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;
 
+app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
+  }
+  next();
+});
+
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
   proxyForChanges.web(req, res);
@@ -509,12 +516,6 @@ app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
 
-app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
-  if (environment.db !== 'medic') {
-    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
-  }
-  next();
-});
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
