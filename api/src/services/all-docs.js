@@ -64,8 +64,8 @@ const formatResults = (results, requestIds) => {
   return results;
 };
 
-const requestWithIncludeDocs = (authorizationContext, options) => {
-  // filters response from CouchDB only to include successfully read and allowed docs
+// filters response from CouchDB only to include successfully read and allowed docs
+const filterAllowedDocs = (authorizationContext, options) => {
   const allowedRow = row => {
     return row.doc &&
            authorization.allowedDoc(row.id, authorizationContext, authorization.getViewResults(row.doc));
@@ -77,7 +77,7 @@ const requestWithIncludeDocs = (authorizationContext, options) => {
     .then(rows => ({ rows }));
 };
 
-const withoutIncludeDocs = (authorizationContext, options, query) => {
+const filterAllowedDocIds = (authorizationContext, options, query) => {
   return authorization
     .getAllowedDocIds(authorizationContext)
     .then(allowedDocIds => {
@@ -111,10 +111,10 @@ module.exports = {
         const options = _.defaults({ keys: requestIds }, _.omit(query, 'key', ...startKeyParams, ...endKeyParams));
         const includeDocs = query && query.include_docs;
         if (includeDocs && requestIds) {
-          return requestWithIncludeDocs(authorizationContext, options);
+          return filterAllowedDocs(authorizationContext, options);
         }
 
-        return withoutIncludeDocs(authorizationContext, options, query);
+        return filterAllowedDocIds(authorizationContext, options, query);
       })
       .then(results => formatResults(results, requestIds));
   }
@@ -124,6 +124,8 @@ module.exports = {
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
     _filterRequestIds: filterRequestIds,
-    _getRequestIds: getRequestIds
+    _getRequestIds: getRequestIds,
+    _filterAllowedDocs: filterAllowedDocs,
+    _filterAllowedDocIds: filterAllowedDocIds
   });
 }

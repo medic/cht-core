@@ -164,6 +164,7 @@ describe('All Docs service', () => {
       authorization.getAuthorizationContext.rejects(new Error('something'));
       return service
         .filterOfflineRequest(userCtx, query, body)
+        .then(result => result.should.equal('should have thrown'))
         .catch(err => {
           err.message.should.deep.equal('something');
         });
@@ -174,6 +175,7 @@ describe('All Docs service', () => {
 
       return service
         .filterOfflineRequest(userCtx, query, body)
+        .then(result => result.should.equal('should have thrown'))
         .catch(err => {
           err.message.should.deep.equal('something');
         });
@@ -240,6 +242,7 @@ describe('All Docs service', () => {
 
       return service
         .filterOfflineRequest(userCtx, query, body)
+        .then(result => result.should.equal('should have thrown'))
         .catch(err => {
           err.message.should.deep.equal('something');
         });
@@ -487,6 +490,90 @@ describe('All Docs service', () => {
               ]});
           });
       });
+    });
+  });
+
+  describe('filterAllowedDocs', () => {
+    it('should request _all_docs with provided options', () => {
+      db.medic.allDocs.resolves({ rows: [] });
+      const authCtx = { userCtx: { name: 'mia' } };
+      const opts = { include_docs: true, conflicts: true, something: 'else', keys: [1, 2, 3] };
+
+      return service._filterAllowedDocs(authCtx, opts).then(result => {
+        db.medic.allDocs.callCount.should.equal(1);
+        db.medic.allDocs.args[0].should.deep.equal([opts]);
+        result.should.deep.equal({ rows: [] });
+      });
+    });
+
+    it('should filter response from _all_docs and return allowed docs only', () => {
+      const authCtx = { userCtx: { name: 'mia' } };
+      const opts = { include_docs: true, keys: [1, 2, 3, 4, 5] };
+      db.medic.allDocs.resolves({ rows: [
+          { id: 1, doc: { _id: 1, ok: true } },
+          { id: 2, doc: { _id: 2, ok: false } },
+          { id: 3, doc: null, value: { deleted: true } },
+          { id: 4, doc: { _id: 2, ok: true } },
+          { id: 5, error: 'missing' },
+      ]});
+      sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ allowed: doc.ok, id: doc._id }));
+      sinon.stub(authorization, 'allowedDoc').callsFake((id, ctx, views) => views.allowed);
+
+      return service._filterAllowedDocs(authCtx, opts).then(result => {
+        db.medic.allDocs.callCount.should.equal(1);
+        db.medic.allDocs.args[0].should.deep.equal([opts]);
+
+        authorization.getViewResults.callCount.should.equal(3);
+        authorization.allowedDoc.callCount.should.equal(3);
+        authorization.allowedDoc.calledWith(1, authCtx, { allowed: true, id: 1 });
+        authorization.allowedDoc.calledWith(2, authCtx, { allowed: false, id: 2 });
+        authorization.allowedDoc.calledWith(4, authCtx, { allowed: true, id: 4 });
+
+        result.should.deep.equal({ rows: [
+            { id: 1, doc: { _id: 1, ok: true } },
+            { id: 4, doc: { _id: 2, ok: true } }
+        ]});
+      });
+    });
+
+    it('should throw allDocs errors', () => {
+      db.medic.allDocs.rejects({ some: 'error' });
+      const authCtx = { userCtx: { name: 'mia' } };
+      const opts = { include_docs: true, conflicts: true, something: 'else', keys: [1, 2, 3] };
+
+      return service
+        ._filterAllowedDocs(authCtx, opts)
+        .then(result => result.should.equal('should have thrown'))
+        .catch(err => err.should.deep.equal({ some: 'error' }));
+    });
+  });
+
+  describe('filterAllowedDocIds', () => {
+    it('should get allowed doc ids and request all docs with the filtered list', () => {
+      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      const authCtx = { userCtx: { name: 'mia' } };
+      const opts = { keys: [1, 2, 3, 4, 5, 6] };
+      const query = { keys: opts.keys };
+      db.medic.allDocs.resolves({ rows: [{ id: 1 }, { id: 2 }, { id: 3 }]});
+
+      return service._filterAllowedDocIds(authCtx, opts, query).then(result => {
+        authorization.getAllowedDocIds.callCount.should.equal(1);
+        db.medic.allDocs.callCount.should.equal(1);
+        db.medic.allDocs.args[0].should.deep.equal([{ keys: [1, 2, 3] }]);
+        result.should.deep.equal({ rows: [{ id: 1 }, { id: 2 }, { id: 3 }]});
+      });
+    });
+
+    it('should throw allDocs errors', () => {
+      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      db.medic.allDocs.rejects({ some: 'error' });
+      const authCtx = { userCtx: { name: 'mia' } };
+      const opts = { };
+
+      return service
+        ._filterAllowedDocIds(authCtx, opts, {})
+        .then(result => result.should.equal('should have thrown'))
+        .catch(err => err.should.deep.equal({ some: 'error' }));
     });
   });
 });

@@ -235,6 +235,43 @@ describe('all_docs handler', () => {
       });
   });
 
+  it('should filter offline users requests when requesting keys with include_docs', () => {
+    const docs = [
+      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
+      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
+    ];
+    const keys = docs.map(doc => doc._id);
+    const allowed = ['1', '3', '4'];
+
+    return utils
+      .saveDocs(docs)
+      .then(() => Promise.all([
+        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}` }, offlineRequestOptions))
+      ]))
+      .then(results => {
+        expect(results[0].rows.length).toEqual(5);
+        expect(results[0].rows.map(row => row.id)).toEqual(['1', '2', '3', '4', '5']);
+        expect(results[1].rows.length).toEqual(5);
+        expect(results[1].rows.map(row => row.id)).toEqual(['1', '2', '3', '4', '5']);
+
+        results[0].rows.forEach(row => {
+          if (allowed.includes(row.id)) {
+            // jasmine.objectContaining is like a chai's deep.include
+            expect(row.doc).toEqual(jasmine.objectContaining(docs.find(doc => doc._id === row.id)));
+          } else {
+            expect(row.doc).not.toBeDefined();
+            expect(row.error).toEqual('forbidden');
+          }
+        });
+
+        expect(results[1].rows.every(row => !row.doc)).toBe(true);
+      });
+  });
+
   it('returns correct info for restricted deleted documents', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
