@@ -41,7 +41,7 @@ const getInfoDoc = change => {
         doc.transitions = doc.transitions || change.doc.transitions || {};
         return doc;
       } else {
-        return createInfoDoc(change.id, 'unknown');
+        return createInfoDoc(change.id, new Date());
       }
     })
     .then(doc => updateInfoDoc(doc, rev));
@@ -129,7 +129,7 @@ const bulkGet = changes => {
     .then(result => {
       result.forEach(row => {
         if (!row.doc) {
-          infoDocs.push(createInfoDoc(getDocId(row.key), 'unknown'));
+          infoDocs.push(createInfoDoc(getDocId(row.key), new Date()));
         } else {
           row.doc.legacy = true;
           infoDocs.push(row.doc);
