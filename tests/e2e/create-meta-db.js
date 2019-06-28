@@ -1,10 +1,13 @@
 const _ = require('underscore'),
       auth = require('../auth')(),
+      helper = require('../helper'),
       utils = require('../utils'),
       usersPage = require('../page-objects/users/users.po.js'),
       commonElements = require('../page-objects/common/common.po.js'),
       loginPage = require('../page-objects/login/login.po.js'),
-      addUserModal = require('../page-objects/users/add-user-modal.po.js');
+      addUserModal = require('../page-objects/users/add-user-modal.po.js'),
+      constants = require('../constants'),
+      dbName = constants.DB_NAME;
 
 const userName = 'fulltester' + new Date().getTime(),
       fullName = 'Roger Milla',
@@ -27,7 +30,11 @@ describe('Create user meta db : ', () => {
         path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
         method: 'DELETE'
       })),
-      utils.revertDb()
+      utils.revertDb(),
+      utils.request({
+        path: `/${dbName}-user-${userName}-meta`,
+        method: 'DELETE'
+      })
     ])
     .then(() => done()).catch(done.fail);
   });
@@ -35,33 +42,20 @@ describe('Create user meta db : ', () => {
   beforeEach(utils.beforeEach);
   afterEach(utils.afterEach);
 
-  it('should allow a new user to read/write from meta db', () => {console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  it('should allow a new user to read/write from meta db', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm(userName, fullName, password);
     addUserModal.submit();
-    browser.wait(() => {
-      return element(by.css('#edit-user-profile')).isDisplayed()
-        .then(isDisplayed => {
-          return !isDisplayed;
-        })
-        .catch(() => {
-          return true;
-        });
-    }, 2000);
+    helper.waitForAngularComplete();
     commonElements.goToLoginPage();
     loginPage.login(userName, password, false);
-    browser.wait(() => {
-      return element(by.css('.btn.cancel')).isDisplayed()
-        .then(isDisplayed => {
-          return !isDisplayed;
-        })
-        .catch(() => {
-          return true;
-        });
-    }, 4000);
+    commonElements.calm();
+    helper.waitForAngularComplete();
+
     const doc = { _id: userName };
-    browser.sleep(4000).then(()=> {
-      const postData = JSON.stringify(doc);
+    const postData = JSON.stringify(doc);
+
+    browser.wait(() => {
       return utils.requestOnTestMetaDb(_.defaults({ 
         method: 'POST', 
         headers: {
@@ -71,13 +65,15 @@ describe('Create user meta db : ', () => {
         body: postData
       }, options));
     });
-    browser.sleep(1).then(()=> {
+
+    browser.wait(() => {
       return utils.requestOnTestMetaDb(_.defaults({ 
         path: '/_changes' 
       }, options)).then(response => {
         const changes = response.results;
         const ids = _.pluck(changes, 'id').sort();
         expect(ids[1]).toEqual(doc._id);
+        return true;
       });
     });
   });
