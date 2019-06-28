@@ -1,14 +1,29 @@
-const db = require('../db'),
-      authorization = require('./authorization'),
-      _ = require('underscore');
+const db = require('../db');
+const authorization = require('./authorization');
+const _ = require('underscore');
 
-const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'],
-      endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
+const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'];
+const endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
+
+const parseQuery = query => {
+  if (!query) {
+    return;
+  }
+
+  Object.keys(query).forEach(key => {
+    try {
+      query[key] = JSON.parse(query[key]);
+    } catch(e) {
+      // leave parameter as is
+    }
+  });
+};
 
 const getRequestIds = (query, body) => {
+  parseQuery(query);
   // CouchDB prioritizes query `keys` above body `keys`
   if (query && query.keys) {
-    return JSON.parse(query.keys);
+    return query.keys;
   }
 
   if (body && body.keys) {
@@ -16,7 +31,7 @@ const getRequestIds = (query, body) => {
   }
 
   if (query && query.key) {
-    return [ JSON.parse(query.key) ]; // PouchDB stringifies before requesting
+    return [ query.key ];
   }
 };
 
@@ -37,7 +52,7 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
 
   if (endKeys.length) {
     const endKey = _.last(endKeys);
-    if (query.inclusive_end === 'false') {
+    if (Object.prototype.hasOwnProperty.call(query, 'inclusive_end') && !query.inclusive_end) {
       allowedIds = allowedIds.filter(docId => docId < endKey);
     } else {
       allowedIds = allowedIds.filter(docId => docId <= endKey);

@@ -221,10 +221,8 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?start_key=10&end_key=8' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({
-          path: '/_all_docs?startkey=10&endkey=8&inclusive_end=false'
-        }, offlineRequestOptions))
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?start_key="10"&end_key="8"' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions))
       ]))
       .then(result => {
         expect(result[0].rows.length).toEqual(5);
@@ -250,7 +248,7 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}` }, offlineRequestOptions))
+        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions))
       ]))
       .then(results => {
         expect(results[0].rows.length).toEqual(5);
@@ -269,6 +267,38 @@ describe('all_docs handler', () => {
         });
 
         expect(results[1].rows.every(row => !row.doc)).toBe(true);
+        results[1].rows.forEach(row => {
+          if (allowed.includes(row.id)) {
+            expect(row.value).toBeDefined();
+          } else {
+            expect(row.error).toEqual('forbidden');
+          }
+        });
+      });
+  });
+
+  it('should filter offline users requests with skip and limit', () => {
+    const docs = [
+      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
+      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
+    ];
+
+    return utils
+      .saveDocs(docs)
+      .then(() => Promise.all([
+        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions))
+      ]))
+      .then(results => {
+        expect(results[0].rows.length).toEqual(2);
+        expect(results[0].rows.map(row => row.id)).toEqual(['1', '3']);
+        expect(results[0].rows.every(row => !row.doc)).toBe(true);
+        expect(results[1].rows.length).toEqual(1);
+        expect(results[1].rows[0].id).toEqual('4');
+        expect(results[1].rows[0].doc).toEqual(jasmine.objectContaining({ _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' }));
       });
   });
 
