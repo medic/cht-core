@@ -186,7 +186,6 @@ describe('processDocs', () => {
 
       chai.expect(infodoc.saveTransitions.callCount).to.equal(1);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
-
     });
   });
 });

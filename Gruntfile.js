@@ -168,6 +168,11 @@ module.exports = function(grunt) {
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'moment': './webapp/node_modules/moment/moment',
+            'google-libphonenumber': './webapp/node_modules/google-libphonenumber',
+            'gsm': './webapp/node_modules/gsm',
+            'object-path': './webapp/node_modules/object-path',
+            'bikram-sambat': './webapp/node_modules/bikram-sambat',
+            '@medic/phone-number': './webapp/node_modules/@medic/phone-number'
           },
         },
       },
@@ -178,6 +183,11 @@ module.exports = function(grunt) {
           transform: ['browserify-ngannotate'],
           alias: {
             'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
+            'gsm': './admin/node_modules/gsm',
+            'object-path': './admin/node_modules/object-path',
+            'bikram-sambat': './admin/node_modules/bikram-sambat',
+            '@medic/phone-number': './admin/node_modules/@medic/phone-number'
           },
         },
       },
@@ -337,7 +347,8 @@ module.exports = function(grunt) {
           'bootstrap-daterangepicker/**',
           'enketo-core/**',
           'font-awesome/**',
-          'moment/**',
+          'messageformat/**',
+          'moment/**'
         ],
         dest: 'webapp/node_modules_backup',
       },
@@ -390,7 +401,7 @@ module.exports = function(grunt) {
           .map(module =>
             [
               `cd ${module}`,
-              `rm -rf node_modules`,
+              `npm dedupe`,
               `npm ci --production`,
               `npm pack`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
@@ -436,11 +447,11 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel sentinel/server.js',
+          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel --watch "shared-libs/**/src/**" sentinel/server.js',
       },
       'blank-link-check': {
         cmd: `echo "Checking for dangerous _blank links..." &&
@@ -483,7 +494,7 @@ module.exports = function(grunt) {
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci)`
+                  (cd shared-libs/${lib} && npm ci --production)`
             )
             .join(' && ');
         }
@@ -534,13 +545,11 @@ module.exports = function(grunt) {
       },
       'shared-lib-unit': {
         cmd: () => {
-          return getSharedLibDirs()
-            .map(
-              lib =>
-                `echo Testing shared library: ${lib} &&
-                 (cd shared-libs/${lib} && npm ci && npm test)`
-            )
-            .join(' && ');
+          const sharedLibs = getSharedLibDirs();
+          return [
+            ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
+            ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
+          ].join(' && ');
         },
       },
       // To monkey patch a library...
@@ -564,6 +573,9 @@ module.exports = function(grunt) {
 
             // patch enketo to always mark the /inputs group as relevant
             'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+
+            // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
+            'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
           ];
           return patches.join(' && ');
         },
@@ -841,8 +853,8 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
-    'build-node-modules',
     'build-common',
+    'build-node-modules',
     'minify',
     'couch-compile:primary',
   ]);
@@ -961,8 +973,6 @@ module.exports = function(grunt) {
     'install-dependencies',
     'static-analysis',
     'build',
-    'build-admin',
-    'install-dependencies',
     'mochaTest:api-integration',
     'unit',
     'exec:test-standard'

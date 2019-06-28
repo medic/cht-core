@@ -280,6 +280,27 @@ describe('all_docs handler', () => {
       });
   });
 
+  it('filters offline users results when db name is not medic', () => {
+    const docs = [
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+    ];
+
+    return utils
+      .saveDocs(docs)
+      .then(() => utils.requestOnMedicDb(offlineRequestOptions)).then(result => {
+        expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
+        expect(restrictedKeys.some(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(false);
+
+        expect(result.rows.findIndex(row => row.id === 'allowed_contact')).not.toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'allowed_report')).not.toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
+      });
+  });
+
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
     const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
 
@@ -297,6 +318,18 @@ describe('all_docs handler', () => {
           .catch(err => err),
         utils
           .request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"` }, offlineRequestOptions))
+          .catch(err => err),
+        utils.requestOnMedicDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
+        utils.request(_.defaults({ path: `//medic//_all_docs?key="denied_report"` }, offlineRequestOptions)),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//medic//_all_docs/something?key="denied_report"` }, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {

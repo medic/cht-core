@@ -1187,6 +1187,144 @@ describe('db-doc handler', () => {
     });
   });
 
+  describe('should restrict offline users when db name is not medic', () => {
+    it('GET', () => {
+      offlineRequestOptions.method = 'GET';
+
+      return Promise.all([
+        utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
+      ]).then(results => {
+        expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
+          _id: 'fixture:user:offline',
+          name: 'OfflineUser',
+          type: 'person',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        });
+
+        expect(results[1].statusCode).toEqual(403);
+        expect(results[1].responseBody).toEqual({
+          error: 'forbidden',
+          reason: 'Insufficient privileges',
+        });
+      });
+    });
+
+    it('PUT', () => {
+      _.extend(offlineRequestOptions, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const docs = [
+        {
+          _id: 'a_put_1',
+          type: 'clinic',
+          parent: { _id: 'fixture:offline' },
+          name: 'a1',
+        },
+        {
+          _id: 'a_put_2',
+          type: 'clinic',
+          parent: { _id: 'fixture:offline' },
+          name: 'a2',
+        },
+        {
+          _id: 'd_put_1',
+          type: 'clinic',
+          parent: { _id: 'fixture:online' },
+          name: 'd1',
+        },
+        {
+          _id: 'd_put_2',
+          type: 'clinic',
+          parent: { _id: 'fixture:online' },
+          name: 'd2',
+        },
+      ];
+
+      return utils
+        .saveDocs(docs)
+        .then(results => {
+          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
+
+          const updates = [
+            { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
+            { _id: 'n_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied
+            _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored allowed, new denied
+            _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new allowed
+          ];
+
+          return Promise.all(
+            updates.map(doc =>
+              utils
+                .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
+                .catch(err => err)
+            )
+          );
+        })
+        .then(results => {
+          expect(_.omit(results[0], 'rev')).toEqual({ ok: true, id: 'n_put_1' });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(_.omit(results[2], 'rev')).toEqual({ ok: true, id: 'a_put_1' });
+          expect(results[3].statusCode).toEqual(403);
+          expect(results[3].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[4].statusCode).toEqual(403);
+          expect(results[4].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[5].statusCode).toEqual(403);
+          expect(results[5].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+        });
+    });
+
+    it('GET attachment', () => {
+      return utils
+        .saveDoc({ _id: 'with_attachments' })
+        .then(result =>
+          utils.requestOnMedicDb({
+            path: `/with_attachments/att_name?rev=${result.rev}`,
+            method: 'PUT',
+            body: 'my attachment content',
+            headers: { 'Content-Type': 'text/plain' },
+          })
+        )
+        .then(() => {
+          onlineRequestOptions.path = '/with_attachments/att_name';
+          return utils.requestOnMedicDb(onlineRequestOptions, false, true);
+        })
+        .then(result => {
+          expect(result).toEqual('my attachment content');
+        });
+    });
+
+    it('PUT attachment', () => {
+      return utils
+        .saveDoc({ _id: 'with_attachments' })
+        .then(result => {
+          _.extend(onlineRequestOptions, {
+            path: `/with_attachments/new_attachment?rev=${result.rev}`,
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' },
+            body: 'my new attachment content',
+          });
+
+          return utils.requestOnMedicDb(onlineRequestOptions);
+        })
+        .then(result =>
+          utils.requestOnMedicDb(
+            `/with_attachments/new_attachment?rev=${result.rev}`,
+            false,
+            true
+          )
+        )
+        .then(result => {
+          expect(result).toEqual('my new attachment content');
+        });
+    });
+  });
+
   it('restricts calls with irregular urls which match couchdb endpoints', () => {
     const doc = {
       _id: 'denied_report',
@@ -1199,56 +1337,30 @@ describe('db-doc handler', () => {
       .saveDoc(doc)
       .then(() =>
         Promise.all([
+          utils.requestOnTestDb(_.defaults({ path: '/denied_report' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '///denied_report//' }, offlineRequestOptions)).catch(err => err),
           utils
-            .requestOnTestDb(
-              _.defaults({ path: '/denied_report' }, offlineRequestOptions)
-            )
+            .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/dsada` }, offlineRequestOptions))
             .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions)).catch(err => err),
           utils
-            .requestOnTestDb(
-              _.defaults({ path: '///denied_report//' }, offlineRequestOptions)
-            )
+            .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/something` }, offlineRequestOptions))
             .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/denied_report' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '///denied_report//' }, offlineRequestOptions)).catch(err => err),
           utils
-            .request(
-              _.defaults(
-                { path: `//${constants.DB_NAME}//denied_report/dsada` },
-                offlineRequestOptions
-              )
-            )
+            .request(_.defaults({ path: `//medic//denied_report/dsada` }, offlineRequestOptions))
             .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions)).catch(err => err),
           utils
-            .requestOnTestDb(
-              _.defaults(
-                { path: '/denied_report/something' },
-                offlineRequestOptions
-              )
-            )
-            .catch(err => err),
-          utils
-            .requestOnTestDb(
-              _.defaults(
-                { path: '///denied_report//something' },
-                offlineRequestOptions
-              )
-            )
-            .catch(err => err),
-          utils
-            .request(
-              _.defaults(
-                { path: `//${constants.DB_NAME}//denied_report/something` },
-                offlineRequestOptions
-              )
-            )
+            .request(_.defaults({ path: `//medic//denied_report/something` }, offlineRequestOptions))
             .catch(err => err),
         ])
       )
       .then(results => {
-        expect(
-          results.every(
-            result => result.statusCode === 403 || result.statusCode === 404
-          )
-        ).toBe(true);
+        expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).toBe(true);
       });
   });
 
@@ -1390,53 +1502,34 @@ describe('db-doc handler', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic-client' },
-              request,
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic' },
-              request,
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/something' },
-              request,
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic-admin' },
-              request,
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(403);
-        expect(results[3].responseBody.error).toEqual('forbidden');
+        results.forEach(result => {
+          expect(result.statusCode).toEqual(403);
+          expect(result.responseBody.error).toEqual('forbidden');
+        });
       });
     });
   });

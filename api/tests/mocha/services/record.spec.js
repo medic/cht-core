@@ -1,10 +1,10 @@
-const controller = require('../../../src/controllers/record-utils'),
+const service = require('../../../src/services/records'),
       chai = require('chai'),
       definitions = require('../../form-definitions'),
       config = require('../../../src/config'),
       sinon = require('sinon');
 
-describe('record-utils', () => {
+describe('records', () => {
 
   afterEach(() => {
     sinon.restore();
@@ -15,14 +15,14 @@ describe('record-utils', () => {
     const body = Object.create(null);
     body.message = 'test';
     body.from = '+123';
-    const doc = controller.createByForm(body);
+    const doc = service.createByForm(body);
     chai.expect(doc.from).to.equal(body.from);
     done();
   });
 
   it('create form returns error if form value is missing', done => {
     try {
-      controller.createByForm({ message: 'test' });
+      service.createByForm({ message: 'test' });
     } catch(e) {
       chai.expect(e.publicMessage).to.equal('Missing required value: from');
       done();
@@ -32,7 +32,7 @@ describe('record-utils', () => {
   it('create json returns error if missing _meta property', done => {
     const body = { name: 'bob' };
     try {
-      controller.createRecordByJSON(body);
+      service.createRecordByJSON(body);
     } catch(e) {
       chai.expect(e.publicMessage).to.equal('Missing _meta property.');
       done();
@@ -40,7 +40,7 @@ describe('record-utils', () => {
   });
 
   it('create form', done => {
-    const actual = controller.createByForm({
+    const actual = service.createByForm({
       message: 'test',
       from: '+123',
       unwanted: ';-- DROP TABLE users'
@@ -58,7 +58,7 @@ describe('record-utils', () => {
   it('create json', done => {
     sinon.stub(config, 'get').returns(definitions.forms);
 
-    const actual = controller.createRecordByJSON({
+    const actual = service.createRecordByJSON({
       _meta: {
         form: 'YYYY',
         from: '+123',

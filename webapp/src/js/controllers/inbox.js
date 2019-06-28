@@ -24,7 +24,6 @@ var _ = require('underscore'),
     Auth,
     Changes,
     CheckDate,
-    ContactSchema,
     CountMessages,
     DBSync,
     DatabaseConnectionMonitor,
@@ -36,7 +35,6 @@ var _ = require('underscore'),
     LiveListConfig,
     Location,
     Modal,
-    PlaceHierarchy,
     RecurringProcessManager,
     ResourceIcons,
     RulesEngine,
@@ -213,7 +211,6 @@ var _ = require('underscore'),
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
-    $scope.facilities = [];
     $scope.people = [];
     $scope.filterQuery = { value: null };
     $scope.version = APP_CONFIG.version;
@@ -376,29 +373,6 @@ var _ = require('underscore'),
       if (!$state.includes('reports')) {
         ctrl.setSelectMode(false);
       }
-    });
-
-    var updateAvailableFacilities = function() {
-      PlaceHierarchy()
-        .then(function(hierarchy) {
-          $scope.facilities = hierarchy;
-        })
-        .catch(function(err) {
-          $log.error('Error loading facilities', err);
-        });
-    };
-    updateAvailableFacilities();
-
-    Changes({
-      key: 'inbox-facilities',
-      filter: function(change) {
-        var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
-          return pt !== 'clinic';
-        });
-        // check if new document is a contact
-        return change.doc && hierarchyTypes.indexOf(change.doc.type) !== -1;
-      },
-      callback: updateAvailableFacilities,
     });
 
     $scope.unreadCount = {};

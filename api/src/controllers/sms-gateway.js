@@ -4,7 +4,7 @@
  */
 const db = require('../db'),
       messageUtils = require('../message-utils'),
-      recordUtils = require('./record-utils'),
+      records = require('../services/records'),
       logger = require('../logger'),
       config = require('../config'),
       // map from the medic-gateway state to the medic app's state
@@ -93,7 +93,7 @@ const addNewMessages = req => {
         return true;
       }
     }))
-    .then(messages => messages.map(message => recordUtils.createByForm({
+    .then(messages => messages.map(message => records.createByForm({
       from: message.from,
       message: message.content,
       gateway_ref: message.id,

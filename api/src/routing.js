@@ -3,7 +3,6 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
-  url  = require('url'),
   environment = require('./environment'),
   db = require('./db'),
   path = require('path'),
@@ -132,7 +131,10 @@ app.use(
           'data:', // unsafe
           'blob:',
         ],
-        mediaSrc: [`'self'`],
+        mediaSrc: [
+          `'self'`,
+          'blob:',
+        ],
         scriptSrc: [
           `'self'`,
           `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
@@ -181,33 +183,18 @@ app.get('/dbinfo', (req, res) => {
   proxy.web(req, res);
 });
 
-app.get(appPrefix, (req, res) => proxy.web(req, res));
+app.get([`/medic/_design/medic/_rewrite/`, appPrefix], (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html')));
 
-app.all('/medic/*', (req, res, next) => {
-  if (environment.db === 'medic') {
-    return next();
+app.all('/+medic(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace(/\/medic\/?/, pathPrefix);
   }
+  next();
+});
 
-  const parsed = url.parse(req.url);
-  const pathNameTokens = parsed.pathname.split('/');
-  pathNameTokens[1] = environment.db;
-  parsed.pathname = pathNameTokens.join('/');
-  req.url = url.format(parsed);
-  if (parsed.pathname.endsWith('login')) {
-    res.redirect(req.url);
-  } else {
-    proxy.web(req, res);
-  }
-}); 
-
-app.all('/admin*', (req, res) => {
-  const originalUrl = req.url;
-  if (originalUrl.split('/')[2] === 'fonts') {
-    res.redirect(req.url.slice(6));
-  } else {
-    req.url = `${adminAppPrefix}${originalUrl.slice(7)}`;
-    proxy.web(req, res);
-  }
+app.all('/+admin(/*)?', (req, res, next) => {
+  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
+  next();
 });
 
 app.get('/favicon.ico', (req, res) => {
@@ -308,6 +295,13 @@ app.all('/setup/finish', function(req, res) {
 app.get('/api/info', function(req, res) {
   var p = require('../package.json');
   res.json({ version: p.version });
+});
+
+app.get('/api/deploy-info', (req, res) => {
+  if (!req.userCtx) {
+    return serverUtils.notLoggedIn(req, res);
+  }
+  res.json(environment.getDeployInfo());
 });
 
 app.get('/api/auth/:path', function(req, res) {
@@ -426,13 +420,11 @@ const changesHandler = require('./controllers/changes').request,
 
 app.get(
   changesPath,
-  authorization.checkAuth,
   onlineUserChangesProxy,
   changesHandler
 );
 app.post(
   changesPath,
-  authorization.checkAuth,
   onlineUserChangesProxy,
   jsonParser,
   changesHandler
@@ -442,10 +434,9 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request,
   allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, authorization.checkAuth, onlineUserProxy, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, allDocsHandler);
 app.post(
   allDocsPath,
-  authorization.checkAuth,
   onlineUserProxy,
   jsonParser,
   allDocsHandler
@@ -455,7 +446,6 @@ app.post(
 const bulkGetHandler = require('./controllers/bulk-get').request;
 app.post(
   routePrefix + '_bulk_get(/*)?',
-  authorization.checkAuth,
   onlineUserProxy,
   jsonParser,
   bulkGetHandler
@@ -465,7 +455,6 @@ app.post(
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
   routePrefix + '_bulk_docs(/*)?',
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
   bulkDocs.request,
@@ -481,7 +470,6 @@ const dbDocHandler = require('./controllers/db-doc'),
 
 app.get(
   ddocPath,
-  authorization.checkAuth,
   onlineUserProxy,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -489,13 +477,11 @@ app.get(
 
 app.get(
   docPath,
-  authorization.checkAuth,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
   dbDocHandler.request
 );
 app.post(
   routePrefix,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser, // request body must be json
   dbDocHandler.request,
@@ -503,7 +489,6 @@ app.post(
 );
 app.put(
   docPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
   dbDocHandler.request,
@@ -511,14 +496,12 @@ app.put(
 );
 app.delete(
   docPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
-  authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall

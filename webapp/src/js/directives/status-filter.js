@@ -19,7 +19,7 @@ angular.module('inboxDirectives').directive('mmStatusFilter', function(SearchFil
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'statusFilterCtrl',
     link: function(scope) {
       SearchFilters.status(function(status) {
         scope.filters.valid = status.valid;

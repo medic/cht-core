@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      <div class="card children persons" ng-if="selected.doc.type !== 'person'">
+      <div class="card children persons" ng-if="$ctrl.selected.doc.type !== 'person'">
         <div class="action-header cell">
           <div ng-show="$ctrl.selected.doc.type !== 'clinic'" class="col-xs-12">
             <h3 translate>People</h3>
@@ -105,7 +105,7 @@
                 heading="child.doc.name"
                 dob="child.doc.date_of_birth"
                 primary-contact="child.isPrimaryContact"
-                task-count="child.taskCount"
+                task-count="$ctrl.selected.tasksByContact[child.doc._id]"
                 is-muted="child.doc.muted"
                 display-muted="true"
               />
@@ -139,7 +139,7 @@
         </div>
       </div>
 
-      <div ng-if="$ctrl.selected.areTasksEnabled" mm-auth="can_view_tasks">
+      <div ng-if="$ctrl.selected.tasks" mm-auth="can_view_tasks">
         <div class="card tasks">
           <div class="action-header cell">
             <h3 translate>Tasks</h3>

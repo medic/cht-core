@@ -19,7 +19,7 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'facilityFilterCtrl',
     link: function(scope) {
       SearchFilters.facility(function(facilities) {
         scope.filters.facilities = facilities;

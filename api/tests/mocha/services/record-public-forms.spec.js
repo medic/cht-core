@@ -2,9 +2,9 @@ const sinon = require('sinon'),
       chai = require('chai'),
       definitions = require('../../form-definitions'),
       config = require('../../../src/config'),
-      recordUtils = require('../../../src/controllers/record-utils');
+      records = require('../../../src/services/records');
 
-describe('record-utils-public-forms', () => {
+describe('records-public-forms', () => {
 
   afterEach(() => {
     sinon.restore();
@@ -17,7 +17,7 @@ describe('record-utils-public-forms', () => {
       message: '1!YYYW!facility#foo',
       sent_timestamp: '1352399720000'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.fields.foo).to.equal('foo'); // make sure form parsed correctly
     chai.expect(doc.from).to.equal(body.from);
     chai.expect(doc.errors.length).to.equal(0);
@@ -30,7 +30,7 @@ describe('record-utils-public-forms', () => {
       message: '1!YYYZ!one#two#20111010',
       sent_timestamp: '1352399720000'
     };
-    const doc = recordUtils.createByForm(body);
+    const doc = records.createByForm(body);
     chai.expect(doc.fields.two).to.equal('two'); // make sure form parsed correctly
     chai.expect(doc.from).to.equal(body.from);
     chai.expect(doc.errors.length).to.equal(0);

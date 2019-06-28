@@ -36,7 +36,8 @@ describe('Contacts controller', () => {
     liveListInit,
     liveListReset,
     actions,
-    getSelected;
+    getSelected,
+    tasksForContact;
 
   beforeEach(() => {
     module('inboxApp');
@@ -148,13 +149,15 @@ describe('Contacts controller', () => {
       return Selectors.getSelected($ngRedux.getState());
     };
 
+    tasksForContact = sinon.stub();
+
     createController = () => {
       searchService = sinon.stub();
       searchService.returns(Promise.resolve(searchResults));
 
       return $controller('ContactsCtrl', {
         $element: sinon.stub(),
-        $log: { error: sinon.stub() },
+        $log: { error: sinon.stub(), debug: sinon.stub() },
         $q: Q,
         $scope: scope,
         $state: { includes: sinon.stub(), go: sinon.stub() },
@@ -183,6 +186,7 @@ describe('Contacts controller', () => {
         },
         Settings: settings,
         Simprints: { enabled: () => false },
+        TasksForContact: tasksForContact,
         Tour: () => {},
         TranslateFrom: key => `TranslateFrom:${key}`,
         UserSettings: userSettings,
@@ -236,6 +240,54 @@ describe('Contacts controller', () => {
           assert.equal(scope.setRightActionBar.callCount, 2);
           assert.deepEqual(scope.setRightActionBar.args[1], []);
         });
+    });
+
+    it('should not get tasks when not allowed', () => {
+      auth.withArgs('can_view_tasks').rejects();
+      return testContactSelection({ doc: district }).then(() => {
+        assert.checkDeepProperties(getSelected().doc, district);
+        assert(scope.setRightActionBar.called);
+        assert(scope.setRightActionBar.args[0][0].selected);
+        assert(auth.withArgs('can_view_tasks').called);
+        assert(!tasksForContact.called);
+      });
+    });
+
+    it('should get tasks when allowed', () => {
+      auth.withArgs('can_view_tasks').resolves();
+      return testContactSelection({ doc: district }).then(() => {
+        assert.checkDeepProperties(getSelected().doc, district);
+        assert(scope.setRightActionBar.called);
+        assert(scope.setRightActionBar.args[0][0].selected);
+        assert(auth.withArgs('can_view_tasks').called);
+        assert.equal(tasksForContact.callCount, 1);
+        assert.deepEqual(tasksForContact.args[0][0].doc, getSelected().doc);
+        assert.equal(tasksForContact.args[0][1], 'ContactsCtrl');
+      });
+    });
+
+    it('should store tasks in redux store and count tasks by contact', () => {
+      auth.withArgs('can_view_tasks').resolves();
+      let receiveTasksCallback;
+      tasksForContact.callsFake((selected, listenerName, callback) => {
+        receiveTasksCallback = callback;
+      });
+      const tasks = [
+        { doc: { contact: { _id: 'contact1' } } },
+        { other: 4  },
+        { doc: { other: 3 } },
+        { doc: { contact: { _id: 'contact1' } } },
+        { doc: { contact: { _id: 'contact2' } } },
+        { doc: { contact: { _id: 'contact1' } } },
+      ];
+
+      return testContactSelection({ doc: district }).then(() => {
+        assert(auth.withArgs('can_view_tasks').called);
+        assert.equal(tasksForContact.callCount, 1);
+        receiveTasksCallback(tasks);
+        assert.deepEqual(getSelected().tasks, tasks);
+        assert.deepEqual(getSelected().tasksByContact, { 'contact1': 3, 'contact2': 1 });
+      });
     });
   });
 
@@ -622,16 +674,16 @@ describe('Contacts controller', () => {
         facility_id: undefined,
       });
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(10).fill(searchResult);
+      searchResults = Array(60).fill(searchResult);
 
       return createController()
         .getSetupPromiseForTesting({ scrollLoaderStub })
         .then(() => {
           const lhs = contactsLiveList.getList();
           changesCallback({});
-          assert.equal(lhs.length, 10);
+          assert.equal(lhs.length, 60);
           assert.deepInclude(searchService.args[1][2], {
-            limit: 10,
+            limit: 60,
             silent: true,
             withIds: false,
           });
@@ -640,15 +692,15 @@ describe('Contacts controller', () => {
 
     it('when refreshing list as non-admin, does modify limit #4085', () => {
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(10).fill(searchResult);
+      searchResults = Array(60).fill(searchResult);
 
       return createController()
         .getSetupPromiseForTesting({ scrollLoaderStub })
         .then(() => {
           const lhs = contactsLiveList.getList();
-          assert.equal(lhs.length, 11);
+          assert.equal(lhs.length, 61);
           changesCallback({});
-          assert.equal(searchService.args[1][2].limit, 10);
+          assert.equal(searchService.args[1][2].limit, 60);
           assert.equal(searchService.args[1][2].skip, undefined);
         });
     });
@@ -792,13 +844,13 @@ describe('Contacts controller', () => {
         .then(() => {
           changesCallback({ doc: { _id: '123' } });
           assert.equal(searchService.callCount, 2);
-          assert.equal(searchService.args[1][2].limit, 2);
+          assert.equal(searchService.args[1][2].limit, 50); // 50 is the minimum size just in case it's a new contact at the end of the list
         });
     });
 
     it('when handling deletes, does not shorten the LiveList #4080', () => {
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(30).fill(searchResult);
+      searchResults = Array(60).fill(searchResult);
 
       isAdmin = true;
       userSettings = KarmaUtils.promiseService(null, {
@@ -810,7 +862,7 @@ describe('Contacts controller', () => {
         .then(() => {
           deadListFind.returns(true);
           changesCallback({ deleted: true, doc: {} });
-          assert.equal(searchService.args[1][2].limit, 30);
+          assert.equal(searchService.args[1][2].limit, 60);
         });
     });
 
@@ -1159,7 +1211,7 @@ describe('Contacts controller', () => {
             return createController()
               .getSetupPromiseForTesting()
               .then(() => {
-                Array.apply(null, Array(5)).forEach((k, i) =>
+                Array.apply(null, Array(60)).forEach((k, i) =>
                   contactsLiveList.insert({ _id: i })
                 );
                 assert.equal(searchService.callCount, 1);
@@ -1176,7 +1228,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 60, withIds: false, silent: true, reuseExistingDom: true },
                       { displayLastVisitedDate: true, visitCountSettings: {} },
                       undefined,
                     ]);
@@ -1206,7 +1258,7 @@ describe('Contacts controller', () => {
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 5, withIds: true, silent: true, reuseExistingDom: true },
+                    { limit: 49, withIds: true, silent: true, reuseExistingDom: true },
                     {
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
@@ -1219,7 +1271,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {
                         displayLastVisitedDate: true,
                         visitCountSettings: {},
@@ -1262,7 +1314,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       { displayLastVisitedDate: true, visitCountSettings: {} },
                       undefined,
                     ]);
@@ -1291,7 +1343,7 @@ describe('Contacts controller', () => {
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 5, withIds: true, silent: true, reuseExistingDom: true },
+                    { limit: 49, withIds: true, silent: true, reuseExistingDom: true },
                     {
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
@@ -1304,7 +1356,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {
                         displayLastVisitedDate: true,
                         visitCountSettings: {},
@@ -1347,7 +1399,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {},
                       undefined,
                     ]);
@@ -1386,7 +1438,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[2], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {},
                       undefined,
                     ]);

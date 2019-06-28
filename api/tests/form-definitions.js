@@ -24,9 +24,6 @@ exports.forms = {
           tiny: 'RPY'
         },
         type: 'integer',
-        validate: {
-          is_numeric_year: true
-        },
         required: true
       },
       month: {
@@ -35,9 +32,6 @@ exports.forms = {
           tiny: 'RPM'
         },
         type: 'integer',
-        validations: {
-          is_numeric_month: true
-        },
         list: [
           [
             1,
@@ -213,9 +207,7 @@ exports.forms = {
         type: 'integer'
       }
     },
-    autoreply: 'Zikomo!',
-    facility_reference: 'facility_id',
-    messages_task: 'function() {var msg = [], ignore = [], dh_ph = clinic && clinic.parent && clinic.parent.parent && clinic.parent.parent.contact && clinic.parent.parent.contact.phone; keys.forEach(function(key) { if (ignore.indexOf(key) === -1) { msg.push(labels.shift() + \': \' + values.shift()); } else { labels.shift(); values.shift(); } }); return {to:dh_ph, message:msg.join(\', \')}; }'
+    facility_reference: 'facility_id'
   },
   YYYZ: {
     meta: {
@@ -344,12 +336,6 @@ exports.forms = {
           4,
           4
         ],
-        validations: {
-          is_numeric_year: true
-        },
-        flags: {
-
-        }
       },
       cref_month: {
         labels: {
@@ -365,9 +351,6 @@ exports.forms = {
           1,
           2
         ],
-        validations: {
-          is_numeric_month: true
-        },
         flags: {
 
         },
@@ -460,9 +443,6 @@ exports.forms = {
           1,
           2
         ],
-        validations: {
-          is_numeric_day: true
-        },
         flags: {
 
         }
@@ -481,9 +461,6 @@ exports.forms = {
           11,
           11
         ],
-        validations: {
-
-        },
         flags: {
           input_digits_only: true
         }
@@ -502,12 +479,6 @@ exports.forms = {
           1,
           2
         ],
-        validations: {
-
-        },
-        flags: {
-
-        },
         list: [
           [
             1,
@@ -554,13 +525,7 @@ exports.forms = {
         length: [
           0,
           20
-        ],
-        validations: {
-
-        },
-        flags: {
-
-        }
+        ]
       },
       cref_age: {
         labels: {
@@ -575,13 +540,7 @@ exports.forms = {
         length: [
           1,
           2
-        ],
-        validations: {
-
-        },
-        flags: {
-
-        }
+        ]
       },
       cref_mom: {
         labels: {
@@ -596,13 +555,7 @@ exports.forms = {
         length: [
           0,
           20
-        ],
-        validations: {
-
-        },
-        flags: {
-
-        }
+        ]
       },
       cref_treated: {
         labels: {
@@ -617,13 +570,7 @@ exports.forms = {
         length: [
           0,
           20
-        ],
-        validations: {
-
-        },
-        flags: {
-
-        }
+        ]
       },
       cref_rec: {
         labels: {
@@ -639,12 +586,6 @@ exports.forms = {
           1,
           2
         ],
-        validations: {
-
-        },
-        flags: {
-
-        },
         list: [
           [
             1,
@@ -727,13 +668,7 @@ exports.forms = {
         length: [
           0,
           35
-        ],
-        validations: {
-
-        },
-        flags: {
-
-        }
+        ]
       },
       cref_agent: {
         labels: {
@@ -748,13 +683,7 @@ exports.forms = {
         length: [
           0,
           20
-        ],
-        validations: {
-
-        },
-        flags: {
-
-        }
+        ]
       }
     },
     facility_reference: 'cref_rc'

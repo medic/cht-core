@@ -18,7 +18,10 @@ describe('Authorization middleware', () => {
     proxy = { web: sinon.stub().resolves() };
     next = sinon.stub().resolves();
     testReq = {};
-    testRes = {};
+    testRes = {
+      status: sinon.stub(),
+      json: sinon.stub()
+    };
   });
 
   afterEach(() => {
@@ -51,22 +54,13 @@ describe('Authorization middleware', () => {
     });
   });
 
-  describe('checkAuth', () => {
+  describe('Online Users Proxy', () => {
     it('blocks unauthenticated requests', () => {
-      middleware.checkAuth(testReq, testRes, next);
+      middleware.onlineUserProxy(proxy, testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.notLoggedIn.callCount.should.equal(1);
     });
 
-    it('allows authenticated requests to pass through', () => {
-      testReq.userCtx = {};
-      middleware.checkAuth(testReq, testRes, next);
-      next.callCount.should.equal(1);
-      serverUtils.notLoggedIn.callCount.should.equal(0);
-    });
-  });
-
-  describe('Online Users Proxy', () => {
     it('it proxies the request for online users', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
@@ -138,6 +132,12 @@ describe('Authorization middleware', () => {
   });
 
   describe('Online User Pass Through', () => {
+    it('blocks unauthenticated requests', () => {
+      middleware.onlineUserPassThrough(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.notLoggedIn.callCount.should.equal(1);
+    });
+
     it('it sends online user requests to next route', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
@@ -184,6 +184,53 @@ describe('Authorization middleware', () => {
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
         });
+    });
+  });
+
+  describe('offlineUserFirewall', () => {
+    it('blocks unauthenticated requests', () => {
+      middleware.offlineUserFirewall(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.notLoggedIn.callCount.should.equal(1);
+    });
+
+    it('should block offline users', () => {
+      testReq.userCtx = { name: 'user' };
+      testReq.authorized = false;
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
+      middleware.offlineUserFirewall(testReq, testRes, next);
+      serverUtils.notLoggedIn.callCount.should.equal(0);
+      next.callCount.should.equal(0);
+      testRes.status.callCount.should.equal(1);
+      testRes.status.args[0].should.deep.equal([403]);
+      testRes.json.callCount.should.equal(1);
+      testRes.json.args[0].should.deep.equal([{
+        code: 403,
+        error: 'forbidden',
+        details: 'Offline users are not allowed access to this endpoint'
+      }]);
+    });
+
+    it('should allow offline users when request is authorized', () => {
+      testReq.userCtx = { name: 'user' };
+      testReq.authorized = true;
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
+      middleware.offlineUserFirewall(testReq, testRes, next);
+      serverUtils.notLoggedIn.callCount.should.equal(0);
+      next.callCount.should.equal(1);
+      testRes.status.callCount.should.equal(0);
+      testRes.json.callCount.should.equal(0);
+    });
+
+    it('should allow online users', () => {
+      testReq.userCtx = { name: 'user' };
+      testReq.authorized = false;
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
+      middleware.offlineUserFirewall(testReq, testRes, next);
+      serverUtils.notLoggedIn.callCount.should.equal(0);
+      next.callCount.should.equal(1);
+      testRes.status.callCount.should.equal(0);
+      testRes.json.callCount.should.equal(0);
     });
   });
 

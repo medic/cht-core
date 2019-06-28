@@ -97,8 +97,13 @@ module.exports = {
         if (!auth.isOnlineOnly(userCtx)) {
           throw { code: 403, message: 'Insufficient privileges' };
         }
+        return userCtx;
       })
-      .then(() => auth.check(req, getExportPermission(req.params.type)))
+      .then((userCtx) => {
+        if (!auth.hasAllPermissions(userCtx, 'can_export_all')) {
+          return auth.check(req, getExportPermission(req.params.type));
+        }
+      })
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
 

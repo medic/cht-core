@@ -138,7 +138,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
     sinon.restore();
   });
 
@@ -163,13 +163,12 @@ describe('Enketo service', function() {
       dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
       dbGetAttachment.returns(Promise.resolve('xml'));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       EnketoPrepopulationData.returns(Promise.resolve('<xml></xml>'));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
-      service
-        .render($('<div></div>'), 'ok')
+      service.render($('<div></div>'), 'ok')
         .then(function() {
           done(new Error('Should throw error'));
         })
@@ -188,11 +187,11 @@ describe('Enketo service', function() {
       FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
       EnketoPrepopulationData.returns(Promise.resolve('<xml></xml>'));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       return service.render($('<div></div>'), 'ok').then(function() {
         chai.expect(UserContact.callCount).to.equal(1);
-        chai.expect(EnketoPrepopulationData.callCount).to.equal(2);
+        chai.expect(EnketoPrepopulationData.callCount).to.equal(1);
         chai.expect(transform.callCount).to.equal(2);
         chai.expect(transform.args[0][0]).to.equal('openrosa2html5form.xsl');
         chai.expect(transform.args[1][0]).to.equal('openrosa2xmlmodel.xsl');
@@ -246,7 +245,8 @@ describe('Enketo service', function() {
       var wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, 'ok').then(function() {
         var img = wrapper.find('img').first();
-        chai.expect(img.attr('src')).to.equal('#jr://myimg');
+        chai.expect(img.attr('src')).to.equal(undefined);
+        chai.expect(img.attr('data-media-src')).to.equal('myimg');
         chai.expect(img.css('visibility')).to.equal('hidden');
         chai.expect(img.closest('div').hasClass('loader')).to.equal(true);
         chai.expect(transform.callCount).to.equal(2);
@@ -264,7 +264,7 @@ describe('Enketo service', function() {
       FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
       EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve('my model'));
       return service.render($('<div></div>'), 'ok', data).then(function() {
         chai.expect(EnketoForm.callCount).to.equal(1);
@@ -286,7 +286,7 @@ describe('Enketo service', function() {
       FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
       EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       var instanceData = {
         inputs: {
@@ -314,7 +314,7 @@ describe('Enketo service', function() {
       FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
       EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
       var instanceData = {
         contact: {
@@ -362,7 +362,7 @@ describe('Enketo service', function() {
       FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
       EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
       var instanceData = {
         contact: {
@@ -405,7 +405,7 @@ describe('Enketo service', function() {
       FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
       EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onFirstCall().returns(Promise.resolve('<div>my form</div>'))
         .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       var instanceData = {
         contact: {

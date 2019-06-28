@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -50,6 +50,7 @@
     "grunt-sass": "^3.0.2",
     "grunt-text-replace": "^0.4.0",
     "grunt-xmlmin": "^0.1.8",
+    "jasmine-spec-reporter": "^4.2.1",
     "jit-grunt": "^0.10.0",
     "karma": "^3.1.3",
     "karma-chrome-launcher": "^2.2.0",

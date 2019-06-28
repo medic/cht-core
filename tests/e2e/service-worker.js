@@ -75,6 +75,7 @@ describe('Service worker cache', () => {
       '/login/script.js',
       '/login/style.css',
       '/manifest.json',
+      '/medic/_design/medic/_rewrite/',
       '/medic/login',
       '/xslt/openrosa2html5form.xsl',
       '/xslt/openrosa2xmlmodel.xsl',

@@ -49,7 +49,7 @@ const renderLogin = (req, redirect, branding) => {
   const locale = cookie.get(req, 'locale');
   return getLoginTemplate().then(template => {
     return template({
-      action: path.join('/', environment.db, 'login'),
+      action: '/medic/login',
       redirect: redirect,
       branding: branding,
       translations: {
