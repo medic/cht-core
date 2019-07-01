@@ -1,26 +1,12 @@
 const db = require('../db');
 const authorization = require('./authorization');
 const _ = require('underscore');
+const utils = require('./utils');
 
 const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'];
 const endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
 
-const parseQuery = query => {
-  if (!query) {
-    return;
-  }
-
-  Object.keys(query).forEach(key => {
-    try {
-      query[key] = JSON.parse(query[key]);
-    } catch(e) {
-      // leave parameter as is
-    }
-  });
-};
-
 const getRequestIds = (query, body) => {
-  parseQuery(query);
   // CouchDB prioritizes query `keys` above body `keys`
   if (query && query.keys) {
     return query.keys;
@@ -116,6 +102,7 @@ module.exports = {
   // offline users will only receive results for documents they are allowed to see
   // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
   filterOfflineRequest: (userCtx, query, body) => {
+    query = utils.parseQueryParams(query);
     const requestIds = getRequestIds(query, body);
 
     return authorization

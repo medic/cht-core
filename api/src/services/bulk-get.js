@@ -1,20 +1,7 @@
 const authorization = require('./authorization');
 const db = require('../db');
 const _ = require('underscore');
-
-const parseQuery = query => {
-  if (!query) {
-    return;
-  }
-
-  Object.keys(query).forEach(key => {
-    try {
-      query[key] = JSON.parse(query[key]);
-    } catch(e) {
-      // leave parameter as is
-    }
-  });
-};
+const utils = require('./utils');
 
 // filters response from CouchDB only to include successfully read and allowed docs
 const filterResults = (authorizationContext, result) => {
@@ -33,7 +20,7 @@ const filterResults = (authorizationContext, result) => {
 module.exports = {
   // offline users will only receive `doc`+`rev` pairs they are allowed to see
   filterOfflineRequest: (userCtx, query, docs) => {
-    parseQuery(query);
+    query = utils.parseQueryParams(query);
     let authorizationContext;
 
     return authorization

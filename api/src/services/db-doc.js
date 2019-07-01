@@ -1,16 +1,7 @@
 const db = require('../db');
 const authorization = require('./authorization');
 const _ = require('underscore');
-
-const parseQuery = query => {
-  Object.keys(query).forEach(key => {
-    try {
-      query[key] = JSON.parse(query[key]);
-    } catch(e) {
-      // leave parameter as is
-    }
-  });
-};
+const utils = require('./utils');
 
 const getStoredDoc = (params, method, query, isAttachment) => {
   if (!params || !params.docId) {
@@ -30,7 +21,7 @@ const getStoredDoc = (params, method, query, isAttachment) => {
         return Promise.reject({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
       }
     }
-    parseQuery(query);
+    query = utils.parseQueryParams(query);
     options = _.omit(query, 'latest');
   }
 

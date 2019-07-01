@@ -28,7 +28,7 @@ describe('All Docs service', () => {
 
   describe('Get Request Ids', () => {
     it('returns request key parameter', () => {
-      query = { key: '"a"' };
+      query = { key: 'a' };
 
       const response = service._getRequestIds(query);
       response.length.should.equal(1);
@@ -36,7 +36,7 @@ describe('All Docs service', () => {
     });
 
     it('returns query keys for GET requests', () => {
-      query = { keys: JSON.stringify(['a', 'b', 'c']) };
+      query = { keys: ['a', 'b', 'c'] };
       const response = service._getRequestIds(query);
       response.length.should.equal(3);
       response.should.deep.equal(['a', 'b', 'c']);
@@ -250,10 +250,10 @@ describe('All Docs service', () => {
 
     it('calls db.allDocs with full parameter list', () => {
       query = {
-        conflicts: 'something',
-        descending: 'else',
+        conflicts: 'true',
+        descending: 'false',
         skip: 'skip',
-        stale: 'notsomuch',
+        stale: '"false"',
         update_seq: 'figure',
         limit: 'limit',
         include_docs: 'sometimes'
@@ -265,10 +265,10 @@ describe('All Docs service', () => {
         .then(() => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({
-            conflicts: 'something',
-            descending: 'else',
+            conflicts: true,
+            descending: false,
             skip: 'skip',
-            stale: 'notsomuch',
+            stale: 'false',
             update_seq: 'figure',
             limit: 'limit',
             include_docs: 'sometimes',
@@ -413,10 +413,6 @@ describe('All Docs service', () => {
               {id: 'g', error: 'forbidden'}
             ]});
         });
-    });
-
-    it('parses query params', () => {
-
     });
 
     describe('when including docs with keys', () => {
