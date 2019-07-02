@@ -1,6 +1,7 @@
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
+const path = require('path');
 
 const {
   TRAVIS_TAG,
@@ -48,10 +49,14 @@ const copySharedLibs = [
   'cp -r ../shared-libs/* ./node_modules/@medic'
 ].join( '&& ');
 
-const linkSharedLibs = [
-  'mkdir ./node_modules/@medic',
-  ...getSharedLibDirs().map(lib => `ln -s $(realpath ../shared-libs/${lib}) $(realpath ./node_modules/@medic/${lib})`)
-].join(' && ');
+const linkSharedLibs = dir => {
+  const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
+  const symlinkPath = lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
+  return [
+    'mkdir ./node_modules/@medic',
+    ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
+  ].join(' && ');
+};
 
 module.exports = function(grunt) {
   'use strict';
@@ -517,7 +522,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs} && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
