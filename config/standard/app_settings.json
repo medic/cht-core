@@ -206,6 +206,12 @@
     ],
     "can_delete_users": [
       "national_admin"
+    ],
+    "can_view_outgoing_messages": [
+      "national_admin"
+    ],
+    "can_export_all": [
+      "national_admin"
     ]
   },
   "setup_complete": true,

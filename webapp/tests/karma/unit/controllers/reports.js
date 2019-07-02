@@ -12,6 +12,7 @@ describe('ReportsCtrl controller', () => {
       modal,
       LiveList,
       MarkRead,
+      PlaceHierarchy,
       Search,
       Changes,
       FormatDataRecord,
@@ -78,6 +79,7 @@ describe('ReportsCtrl controller', () => {
     };
 
     Search = sinon.stub().resolves();
+    PlaceHierarchy = sinon.stub().resolves([]);
 
     Changes = sinon.stub().callsFake(options => {
       changesCallback = options.callback;
@@ -109,6 +111,7 @@ describe('ReportsCtrl controller', () => {
         MarkRead: MarkRead,
         MessageState: {},
         Modal: modal,
+        PlaceHierarchy: PlaceHierarchy,
         ReportViewModelGenerator: {},
         Search: Search,
         SearchFilters: searchFilters,

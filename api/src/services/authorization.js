@@ -233,7 +233,7 @@ const getAllowedDocIds = (feed) => {
       }
     });
 
-    return validatedIds;
+    return _.uniq(validatedIds);
   });
 };
 

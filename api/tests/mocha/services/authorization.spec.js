@@ -227,6 +227,27 @@ describe('Authorization service', () => {
           ]);
         });
     });
+
+    it('should not return duplicates', () => {
+      const subjectIds = ['subject', 'contact', 'parent'];
+      db.medic.query
+        .withArgs('medic/docs_by_replication_key')
+        .resolves({ rows: [
+            { id: 'r1', key: 'subject', value: {} },
+            { id: 'r1', key: 'contact', value: {} },
+            { id: 'r1', key: 'parent', value: {} },
+            { id: 'r2', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
+            { id: 'r3', key: 'contact', value: {} },
+            { id: 'r2', key: 'parent', value: {} },
+          ]});
+
+      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
+      return service
+        .getAllowedDocIds({ subjectIds, userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' } })
+        .then(result => {
+          result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
+        });
+    });
   });
 
   describe('getViewResults', () => {

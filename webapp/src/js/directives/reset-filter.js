@@ -20,6 +20,6 @@ angular.module('inboxDirectives').directive('mmResetFilter', function() {
     controllerAs: 'resetFilterCtrl',
     bindToController: {
       selected: '<'
-    },
+    }
   };
 });

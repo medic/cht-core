@@ -53,6 +53,10 @@ require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
 
+// directives we borrow from webapp
+angular.module('inboxDirectives', []);
+require('../../../webapp/src/js/directives/auth');
+
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
@@ -117,6 +121,7 @@ angular.module('adminApp', [
   'controllers',
   'directives',
   'filters',
+  'inboxDirectives',
   'inboxFilters',
   'inboxServices',
   'ipCookie',

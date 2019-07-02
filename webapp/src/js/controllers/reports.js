@@ -2,6 +2,8 @@ const _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader'),
   lineageFactory = require('@medic/lineage');
 
+const PAGE_SIZE = 50;
+
 angular
   .module('inboxControllers')
   .controller('ReportsCtrl', function(
@@ -21,6 +23,7 @@ angular
     LiveList,
     MarkRead,
     Modal,
+    PlaceHierarchy,
     ReportViewModelGenerator,
     ReportsActions,
     Search,
@@ -53,6 +56,31 @@ angular
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
+
+    // Render the facilities hierarchy as the user is scrolling through the list
+    // Initially, don't load/render any
+    $scope.totalFacilitiesDisplayed = 0;
+    $scope.facilities = [];
+
+    // Load the facilities hierarchy and render one district hospital 
+    // when the user clicks on the filter dropdown
+    $scope.monitorFacilityDropdown = () => {
+      PlaceHierarchy()
+        .then(function(hierarchy) {
+          $scope.facilities = hierarchy;
+          $scope.totalFacilitiesDisplayed += 1;
+        })
+        .catch(function(err) {
+          $log.error('Error loading facilities', err);
+        });
+
+      $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
+        // visible height + pixel scrolled >= total height - 100
+        if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
+          $timeout(() => $scope.totalFacilitiesDisplayed += 1);
+        }
+      });
+    };
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -227,7 +255,10 @@ angular
     };
 
     var query = function(opts) {
-      const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
+      const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+      if (options.limit < PAGE_SIZE) {
+        options.limit = PAGE_SIZE;
+      }
       if (!options.silent) {
         ctrl.error = false;
         ctrl.errorSyntax = false;
@@ -575,7 +606,7 @@ angular
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
-          query({ silent: true, limit: Math.max(50, liveList.count()) });
+          query({ silent: true, limit: liveList.count() });
         }
       },
       filter: function(change) {

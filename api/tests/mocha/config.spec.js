@@ -95,6 +95,39 @@ describe('Config', () => {
         chai.expect(settingsService.update.callCount).to.equal(0);
       });
     });
+
+    it('should not crash if getting translation docs is unsuccessful', () => {
+      settingsService.get.resolves({ foo: 'bar' });
+      db.medic.get.withArgs('_design/medic').callsArgWith(1, null, { _id: '_design/medic' });
+      db.medic.query.rejects('errors nooo');
+
+      return config.load().then(() => {
+        chai.expect(settingsService.get.callCount).to.equal(1);
+        chai.expect(settingsService.update.callCount).to.equal(1);
+        chai.expect(db.medic.get.callCount).to.equal(1);
+        chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
+        chai.expect(db.medic.query.callCount).to.equal(1);
+      });
+    });
+
+    it('should crash if translations are malformed', () => {
+      settingsService.get.resolves({ foo: 'bar' });
+      db.medic.get.withArgs('_design/medic').callsArgWith(1, null, { _id: '_design/medic' });
+      db.medic.query.resolves({
+        rows: [
+          { doc: { generic: 'something', code: 'en' }},
+          { doc: { custom: 'or other', code: 'fr', values: 'true' }},
+          { doc: { code: 'hi' }}
+        ]
+      });
+
+      return config
+        .load()
+        .then(() => chai.expect(true).to.equal('should have crashed'))
+        .catch((err) => {
+          chai.expect(err).to.be.an.instanceof(TypeError);
+      });
+    });
   });
 
   describe('listen', () => {

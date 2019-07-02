@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 /*
   Auth service returns a promise that will be resolved if
@@ -25,39 +25,39 @@ angular.module('inboxServices').factory('Auth',
     'ngInject';
     'use strict';
 
-    var check = function(permissions, userRoles, settings, expected) {
-      return _.every(permissions, function(permission) {
-        var roles = settings.permissions[permission];
+    const check = (permissions, userRoles, settings, expected) => {
+      return _.every(permissions, (permission) => {
+        const roles = settings.permissions[permission];
         if (!roles) {
           return !expected;
         }
-        var found = _.intersection(userRoles, roles).length > 0;
+        const found = _.intersection(userRoles, roles).length > 0;
         return expected === found;
       });
     };
 
-    var isRequired = function(permission) {
+    const isRequired = (permission) => {
       return permission.indexOf('!') !== 0;
     };
 
-    var getRequired = function(permissions) {
+    const getRequired = (permissions) => {
       return _.filter(permissions, isRequired);
     };
 
-    var getDisallowed = function(permissions) {
+    const getDisallowed = (permissions) => {
       permissions = _.reject(permissions, isRequired);
-      permissions = _.map(permissions, function(permission) {
+      permissions = _.map(permissions, (permission) => {
         return permission.substring(1);
       });
       return permissions;
     };
 
-    var authFail = function(reason, permissions, roles) {
-      $log.debug('Auth failed: ' + reason + '. User roles: ' + roles + '. Wanted permissions: ' + permissions);
+    const authFail = (reason, permissions, roles) => {
+      $log.debug(`Auth failed: ${reason}. User roles: ${roles}. Wanted permissions: ${permissions}`);
       return $q.reject();
     };
 
-    var checkPermissions = function(required, disallowed, roles, settings) {
+    const checkPermissions = (required, disallowed, roles, settings) => {
       if (!check(required, roles, settings, true)) {
         return 'missing required permission(s)';
       }
@@ -65,16 +65,15 @@ angular.module('inboxServices').factory('Auth',
       if (!check(disallowed, roles, settings, false)) {
         return 'found disallowed permission(s)';
       }
-
       return true;
     };
 
-    var getRoles = function() {
-      var userCtx = Session.userCtx();
+    const getRoles = () => {
+      const userCtx = Session.userCtx();
       if (!userCtx) {
         return $q.reject(new Error('Not logged in'));
       }
-      var roles = userCtx.roles;
+      const roles = userCtx.roles;
       if (!roles || roles.length === 0) {
         return authFail('user has no roles');
       }
@@ -82,14 +81,14 @@ angular.module('inboxServices').factory('Auth',
       return $q.resolve(roles);
     };
 
-    var auth = function(permissions) {
-      return getRoles().then(function(roles) {
+    const auth = (permissions) => {
+      return getRoles().then(roles => {
         if (!_.isArray(permissions)) {
           permissions = [ permissions ];
         }
 
-        var requiredPermissions = getRequired(permissions);
-        var disallowedPermissions = getDisallowed(permissions);
+        const requiredPermissions = getRequired(permissions);
+        const disallowedPermissions = getDisallowed(permissions);
 
         if (_.contains(roles, '_admin')) {
           if (disallowedPermissions.length > 0) {
@@ -98,8 +97,8 @@ angular.module('inboxServices').factory('Auth',
           return $q.resolve();
         }
 
-        return Settings().then(function(settings) {
-          var result = checkPermissions(requiredPermissions, disallowedPermissions, roles, settings);
+        return Settings().then(settings => {
+          const result = checkPermissions(requiredPermissions, disallowedPermissions, roles, settings);
           if (result !== true) {
             return authFail(result, permissions, roles);
           }
@@ -109,37 +108,35 @@ angular.module('inboxServices').factory('Auth',
       });
     };
 
-    auth.any = function(permissionsList) {
-      return getRoles().then(function(roles) {
+    auth.any = permissionsList => {
+      // The `permissionsList` is an array that contains groups of arrays mainly attributed
+      // to the complexity of permssion grouping
+      return getRoles().then(roles => {
         if (!_.isArray(permissionsList)) {
           return auth(permissionsList);
         }
 
-        var requiredPermissions = _.map(permissionsList, function(permissions) {
+        const requiredPermissions = _.map(permissionsList, (permissions) => {
           return getRequired(permissions);
         });
-        var disallowedPermissions = _.map(permissionsList, function(permissions) {
+        const disallowedPermissions = _.map(permissionsList, (permissions) => {
           return getDisallowed(permissions);
         });
 
         if (_.contains(roles, '_admin')) {
-          if (_.every(disallowedPermissions, function(permissions) { return permissions.length; })) {
+          if (_.every(disallowedPermissions, (permissions) => { return permissions.length; })) {
             return authFail('missing required permission(s)', permissionsList, roles);
           }
 
           return $q.resolve();
         }
 
-        return Settings().then(function(settings) {
-          var validPermissions = permissionsList
-            .map(function(permissions, key) {
-              return checkPermissions(requiredPermissions[key], disallowedPermissions[key], roles, settings);
-            })
-            .filter(function(result) {
-              return result === true;
-            });
+        return Settings().then(settings => {
+          const validPermissions = permissionsList.some((permission, i) => {
+            return true === checkPermissions(requiredPermissions[i], disallowedPermissions[i], roles, settings);
+          });
 
-          if (!validPermissions.length) {
+          if (!validPermissions) {
             return authFail('no matching permissions', permissionsList, roles);
           }
 
@@ -148,8 +145,8 @@ angular.module('inboxServices').factory('Auth',
       });
     };
 
-    auth.online = function(online) {
-      var userCtx = Session.userCtx();
+    auth.online = (online) => {
+      const userCtx = Session.userCtx();
       if (!userCtx) {
         return $q.reject(new Error('Not logged in'));
       }

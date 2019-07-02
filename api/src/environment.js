@@ -31,3 +31,9 @@ if (UNIT_TEST_ENV) {
   );
   process.exit(1);
 }
+
+let deployInfo;
+module.exports.setDeployInfo = newDeployInfo => {
+  deployInfo = newDeployInfo;
+};
+module.exports.getDeployInfo = () => deployInfo;

@@ -23,6 +23,8 @@ const mergeEnabled = (settings, docs) => {
   });
 };
 
+const getTranslationsProp = doc => ['values', 'generic', 'custom'].find(prop => prop in doc);
+
 const mergeTranslations = (settings, docs) => {
   if (!settings) {
     return;
@@ -31,16 +33,10 @@ const mergeTranslations = (settings, docs) => {
     setting.translations.forEach(translation => {
       const doc = _.findWhere(docs, { code: translation.locale });
       if (doc) {
-        if (_.has(doc, 'values')) {
-          if (!doc.values[setting.key] || translation.content !== translation.default) {
-            // only update the doc if it was changed from the default
-            doc.values[setting.key] = translation.content;
-          }
-        } else { 
-          if (!doc.generic[setting.key] || translation.content !== translation.default) {
-            // only update the doc if it was changed from the default
-            doc.generic[setting.key] = translation.content;
-          }
+        const prop = getTranslationsProp(doc);
+        if (!doc[prop][setting.key] || translation.content !== translation.default) {
+          // only update the doc if it was changed from the default
+          doc[prop][setting.key] = translation.content;
         }
       }
     });
