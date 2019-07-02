@@ -25,11 +25,11 @@ describe('All Docs controller', () => {
   describe('invalidRequest', () => {
     it('returns error when request query `keys` is not JSON', () => {
       testReq.query.keys = 'abcd';
-      controller._invalidRequest(testReq).should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
+      controller._invalidRequest(testReq).should.deep.equal({ error: 'bad_request', reason: '`keys` parameter must be an array.' });
     });
 
     it('returns error when request query `keys` is not an array', () => {
-      testReq.query.keys = JSON.stringify({ some: 'thing' });
+      testReq.query.keys = { some: 'thing' };
       controller._invalidRequest(testReq).should.deep.equal(
         { error: 'bad_request', reason: '`keys` parameter must be an array.' });
     });
@@ -43,7 +43,7 @@ describe('All Docs controller', () => {
 
     it('returns false otherwise', () => {
       controller._invalidRequest({}).should.equal(false);
-      controller._invalidRequest({query: { keys: JSON.stringify([1, 2]) }}).should.equal(false);
+      controller._invalidRequest({query: { keys: [1, 2] }}).should.equal(false);
       controller._invalidRequest({body: { keys: [1, 2] }}).should.equal(false);
     });
   });

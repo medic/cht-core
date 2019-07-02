@@ -1,7 +1,6 @@
 const db = require('../db');
 const authorization = require('./authorization');
 const _ = require('underscore');
-const utils = require('./utils');
 
 const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'];
 const endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
@@ -102,7 +101,6 @@ module.exports = {
   // offline users will only receive results for documents they are allowed to see
   // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
   filterOfflineRequest: (userCtx, query, body) => {
-    query = utils.parseQueryParams(query);
     const requestIds = getRequestIds(query, body);
 
     return authorization
@@ -112,6 +110,11 @@ module.exports = {
         // `keys` and their function is already handled
         const options = _.defaults({ keys: requestIds }, _.omit(query, 'key', ...startKeyParams, ...endKeyParams));
         const includeDocs = query && query.include_docs;
+
+        // during replication, when PouchDB receives changes for docs on 1st rev, it will first request them with
+        // an _all_docs with `include_docs=true&keys=<doc_ids>`.
+        // querying `docs_by_replication_key` for users with many docs is slower than actually running the view map
+        // functions over a reduced set of documents
         if (includeDocs && requestIds) {
           return filterAllowedDocs(authorizationContext, options);
         }

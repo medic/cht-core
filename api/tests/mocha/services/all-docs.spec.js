@@ -250,10 +250,10 @@ describe('All Docs service', () => {
 
     it('calls db.allDocs with full parameter list', () => {
       query = {
-        conflicts: 'true',
-        descending: 'false',
+        conflicts: true,
+        descending: false,
         skip: 'skip',
-        stale: '"false"',
+        stale: 'false',
         update_seq: 'figure',
         limit: 'limit',
         include_docs: 'sometimes'
@@ -288,7 +288,7 @@ describe('All Docs service', () => {
         update_seq: 'figure',
         limit: 'limit',
         include_docs: 'sometimes',
-        keys: JSON.stringify(['a', 'b'])
+        keys: ['a', 'b']
       };
 
       db.medic.allDocs.resolves({ rows: [] });
@@ -319,7 +319,7 @@ describe('All Docs service', () => {
         skip: 'skip',
         endkey: 10,
         end_key_doc_id: 'c',
-        key: '"b"',
+        key: 'b',
         startkey: 2,
         start_key: 3,
         start_key_doc_id: 'a',
@@ -355,7 +355,7 @@ describe('All Docs service', () => {
     it('populates response when specific keys are requested', () => {
       authorization.getAllowedDocIds.resolves(['a', 'c', 'f', 'g']);
       db.medic.allDocs.resolves({rows :[{ id: 'a' }, { id: 'c' }]});
-      query.keys = JSON.stringify(['a', 'b', 'c', 'd']);
+      query.keys = ['a', 'b', 'c', 'd'];
 
       return service
         .filterOfflineRequest(userCtx, query, body)
