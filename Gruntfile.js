@@ -50,7 +50,7 @@ const copySharedLibs = [
 
 const linkSharedLibs = [
   'mkdir ./node_modules/@medic',
-  ...getSharedLibDirs().map(lib => `ln -sr ../shared-libs/${lib} ./node_modules/@medic/${lib}`)
+  ...getSharedLibDirs().map(lib => `ln -s $(realpath ../shared-libs/${lib}) $(realpath ./node_modules/@medic/${lib})`)
 ].join(' && ');
 
 module.exports = function(grunt) {
