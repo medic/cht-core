@@ -46,7 +46,7 @@ const getSharedLibDirs = () => {
 const copySharedLibs = [
   'rm -rf ../shared-libs/*/node_modules/@medic',
   'mkdir ./node_modules/@medic',
-  'cp -r ../shared-libs/* ./node_modules/@medic'
+  'cp -RP ../shared-libs/* ./node_modules/@medic'
 ].join( '&& ');
 
 const linkSharedLibs = dir => {
