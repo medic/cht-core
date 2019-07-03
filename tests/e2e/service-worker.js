@@ -48,6 +48,13 @@ const unregisterServiceWorker = () => browser.executeAsyncScript(async () => {
   callback();
 });
 
+const wipeAllCaches = () => browser.executeAsyncScript(async () => {
+  const callback = arguments[arguments.length - 1];
+  const cacheNames = await caches.keys();
+  cacheNames.forEach(async (name) => await caches.delete(name));
+  callback();
+});
+
 describe('Service worker cache', () => {
   afterEach(utils.afterEach);
 
@@ -108,6 +115,8 @@ describe('Service worker cache', () => {
     } finally {
       // since we've broken the cache. for sw registration
       await unregisterServiceWorker();
+
+      await wipeAllCaches();
     }
   });
 });
