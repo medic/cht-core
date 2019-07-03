@@ -72,7 +72,7 @@ angular.module('inboxDirectives').directive('mmAuth', function(
     if (result === true) {
       dynamicChecks(true);
     } else {
-      result().then(dynamicChecks);
+      result.then(dynamicChecks);
     }
   };
   return {
