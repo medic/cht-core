@@ -180,10 +180,10 @@ describe('auth directive', () => {
       const element2 = compile('<a mm-auth mm-auth-any="[false, false, false]">')(scope);
       scope.$digest();
       setTimeout(() => {
-          chai.expect(element.hasClass('hidden')).to.equal(true);
-          chai.expect(element2.hasClass('hidden')).to.equal(true);
-          chai.expect(Auth.any.callCount).to.equal(0);
-          done();
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(element2.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.any.callCount).to.equal(0);
+        done();
       });
     });
 
