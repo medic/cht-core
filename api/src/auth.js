@@ -63,6 +63,11 @@ module.exports = {
            hasRole(userCtx, ONLINE_ROLE);
   },
 
+  isOffline: roles => {
+    const configured = config.get('roles') || {};
+    return roles.some(role => configured[role] && configured[role].offline);
+  },
+
   hasAllPermissions: (userCtx, permissions) => {
     if (isDbAdmin(userCtx)) {
       return true;

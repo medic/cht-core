@@ -6,6 +6,7 @@ const _ = require('underscore'),
       db = require('../db'),
       lineage = require('@medic/lineage')(Promise, db.medic),
       getRoles = require('./types-and-roles');
+const auth = require('../auth');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
@@ -284,11 +285,6 @@ const mapUsers = (users, settings, facilities) => {
     });
 };
 
-const isOffline = roles => {
-  const configured = config.get('roles') || {};
-  return roles.some(role => configured[role] && configured[role].offline);
-};
-
 const getSettingsUpdates = (username, data) => {
   const ignore = ['type', 'place', 'contact'];
 
@@ -309,7 +305,7 @@ const getSettingsUpdates = (username, data) => {
   }
   if (settings.roles) {
     const index = settings.roles.indexOf(ONLINE_ROLE);
-    if (isOffline(settings.roles)) {
+    if (auth.isOffline(settings.roles)) {
       if (index !== -1) {
         // remove the online role
         settings.roles.splice(index, 1);
@@ -350,7 +346,7 @@ const getUserUpdates = (username, data) => {
     // deprecated: use 'roles' instead
     user.roles = getRoles(data.type);
   }
-  if (user.roles && !isOffline(user.roles)) {
+  if (user.roles && !auth.isOffline(user.roles)) {
     user.roles.push(ONLINE_ROLE);
   }
   if (data.place) {
@@ -389,7 +385,7 @@ const validatePassword = password => {
 
 const missingFields = data => {
   const required = ['username', 'password'];
-  if (data.roles && isOffline(data.roles)) {
+  if (data.roles && auth.isOffline(data.roles)) {
     required.push('place', 'contact');
   }
 
@@ -537,7 +533,7 @@ module.exports = {
               settings.facility_id = user.facility_id;
               return places.getPlace(user.facility_id);
             } else if (_.isNull(data.place)) {
-              if (settings.roles && isOffline(settings.roles)) {
+              if (settings.roles && auth.isOffline(settings.roles)) {
                 return Promise.reject(error400('Place field is required for offline users','field is required',{'field': 'Place'}));
               }
               user.facility_id = null;
@@ -548,7 +544,7 @@ module.exports = {
             if (data.contact) {
               return module.exports._validateContact(settings.contact_id, user.facility_id);
             } else if (_.isNull(data.contact)) {
-              if (settings.roles && isOffline(settings.roles)) {
+              if (settings.roles && auth.isOffline(settings.roles)) {
                 return Promise.reject(error400('Contact field is required for offline users','field is required',{'field': 'Contact'}));
               }
               settings.contact_id = null;

@@ -455,6 +455,10 @@ app.post(
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
+const initialReplication = require('./controllers/initial-replication');
+// initial replication
+app.get(routePrefix + '_replication_info', authorization.getUserSettings, initialReplication.numberOfIds);
+
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc'),

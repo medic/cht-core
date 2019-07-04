@@ -76,5 +76,17 @@ module.exports = {
   setAuthorized: (req, res, next) => {
     req.authorized = true;
     next();
+  },
+
+  getUserSettings: (req, res, next) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
+    if (auth.isOnlineOnly(req.userCtx)) {
+      return next();
+    }
+
+    return getUserSettings(req).then(next);
   }
 };

@@ -6,14 +6,16 @@ const bootstrapper = require('../../../src/js/bootstrapper'),
         remote: { skip_setup: true }
       };
 
-let originalDocument,
-    originalWindow,
-    pouchDb,
-    localGet,
-    localReplicate,
-    localClose,
-    registered,
-    remoteClose;
+let originalDocument;
+let originalWindow;
+let pouchDb;
+let localGet;
+let localReplicate;
+let localClose;
+let registered;
+let remoteClose;
+let localAllDocs;
+let remoteGet;
 
 describe('bootstrapper', () => {
 
@@ -25,15 +27,19 @@ describe('bootstrapper', () => {
     localReplicate = sinon.stub();
     localClose = sinon.stub();
     remoteClose = sinon.stub();
+    localAllDocs = sinon.stub();
+    remoteGet = sinon.stub();
 
     pouchDb.onCall(0).returns({
       get: localGet,
       replicate: { from: localReplicate },
-      close: localClose
+      close: localClose,
+      allDocs: localAllDocs
     });
     pouchDb.onCall(1).returns({
       remote: true,
-      close: remoteClose
+      close: remoteClose,
+      get: remoteGet
     });
     registered = {};
 
@@ -63,7 +69,9 @@ describe('bootstrapper', () => {
     $ = sinon.stub().returns({
       text: sinon.stub(),
       click: sinon.stub(),
-      html: sinon.stub()
+      html: sinon.stub(),
+      hide: sinon.stub(),
+      show: sinon.stub()
     });
 
     done();
@@ -125,6 +133,9 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
+    localAllDocs.resolves({ total_rows: 0 });
+    remoteGet.withArgs('_replication_info').resolves({ total_docs: 99, warn: false });
+
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
@@ -145,6 +156,56 @@ describe('bootstrapper', () => {
       });
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
+      assert.equal(localAllDocs.callCount, 1);
+      assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
+      assert.equal(remoteGet.callCount, 1);
+      assert.deepEqual(remoteGet.args[0], ['_replication_info']);
+      done();
+    });
+  });
+
+  it('should perform initial replication with more than 100 docs', done => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').onCall(0).rejects();
+    localGet.withArgs('_design/medic-client').onCall(1).resolves();
+    localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
+
+    const localReplicateResult = Promise.resolve();
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
+
+    localAllDocs.resolves({ total_rows: 0 });
+    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(pouchDb.callCount, 2);
+      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
+      assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
+      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
+      assert.deepEqual(pouchDb.args[1][1], { skip_setup: true, replicationId: pouchDbOptions.remote.replicationId });
+      assert.equal(localGet.callCount, 3);
+      assert.equal(localGet.args[0][0], '_design/medic-client');
+      assert.equal(localGet.args[1][0], '_design/medic-client');
+      assert.equal(localReplicate.callCount, 1);
+      assert.equal(localReplicate.args[0][0].remote, true);
+      assert.deepEqual(localReplicate.args[0][1], {
+        live: false,
+        retry: false,
+        heartbeat: 10000,
+        timeout: 600000,
+        query_params: { initial_replication: true }
+      });
+      assert.equal(localClose.callCount, 1);
+      assert.equal(remoteClose.callCount, 1);
+      assert.equal(localAllDocs.callCount, 1);
+      assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
+      assert.equal(remoteGet.callCount, 2);
+      assert.deepEqual(remoteGet.args[0], ['_replication_info']);
+      assert.deepEqual(remoteGet.args[1], ['_replication_init']);
+      assert(pouchDbOptions.remote.replicationId);
+      assert.equal(localId.callCount, 1);
+      assert.equal(remoteId.callCount, 1);
       done();
     });
   });
@@ -155,6 +216,9 @@ describe('bootstrapper', () => {
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
+
+    localAllDocs.resolves({ total_rows: 0 });
+    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
@@ -172,6 +236,9 @@ describe('bootstrapper', () => {
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
+    localAllDocs.resolves({ total_rows: 0 });
+    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
       assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
@@ -186,6 +253,9 @@ describe('bootstrapper', () => {
     const localReplicateResult = Promise.reject({ status: 404 });
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
+
+    localAllDocs.resolves({ total_rows: 0 });
+    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
@@ -202,6 +272,9 @@ describe('bootstrapper', () => {
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = sinon.stub();
     localReplicate.returns(localReplicateResult);
+
+    localAllDocs.resolves({ total_rows: 0 });
+    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
 
     localGet.withArgs('_design/medic-client').onCall(1).rejects();
 

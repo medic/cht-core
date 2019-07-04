@@ -13,6 +13,10 @@ var TRANSLATIONS = {
     DOWNLOAD_APP: 'Downloading app…',
     ERROR_MESSAGE: 'Loading error, please check your connection.',
     TRY_AGAIN: 'Try again',
+    POLL_REPLICATION: 'Polling replication data…',
+    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds something something. Are you sure you want to continue?`,
+    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    ABORT: 'Cancel',
   },
   es: {
     FETCH_INFO: ({ count }) => `Descargando datos (${count} archivos)…`,
@@ -24,6 +28,10 @@ var TRANSLATIONS = {
     DOWNLOAD_APP: 'Descargando aplicación…',
     ERROR_MESSAGE: 'Error al cargar, por favor comprueba la conexión',
     TRY_AGAIN: 'Volver a intentar',
+    POLL_REPLICATION: 'Polling replication data…',
+    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds something something. Are you sure you want to continue?`,
+    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    ABORT: 'Cancel',
   },
   sw: {
     FETCH_INFO: ({ count }) => `Inakusanya jumbe (jumbe ${count})…`,
@@ -35,6 +43,10 @@ var TRANSLATIONS = {
     DOWNLOAD_APP: 'Kupakua programu…',
     ERROR_MESSAGE: 'Kuna hitilafu katika kupakia, tafadhali hakikisha uko kwenye mtandao',
     TRY_AGAIN: 'Jaribu tena',
+    POLL_REPLICATION: 'Polling replication data…',
+    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds something something. Are you sure you want to continue?`,
+    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    ABORT: 'Cancel',
   },
   ne: {
     FETCH_INFO: ({ count }) => {
@@ -50,6 +62,10 @@ var TRANSLATIONS = {
     DOWNLOAD_APP: 'ऐप डाउनलोड गर्दै…',
     ERROR_MESSAGE: 'लोडिंग त्रुटि, कृपया आफ्नो ईन्टरनेट कनेक्सन जाँच गर्नुहोस्',
     TRY_AGAIN: 'पुन: प्रयास गर्नुहोस्',
+    POLL_REPLICATION: 'Polling replication data…',
+    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds something something. Are you sure you want to continue?`,
+    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    ABORT: 'Cancel',
   },
   fr: {
     FETCH_INFO: ({ count }) => `Récupération des infos (${count} docs)…`,
@@ -61,6 +77,10 @@ var TRANSLATIONS = {
     DOWNLOAD_APP: 'Téléchargement de l\'app en cours…',
     ERROR_MESSAGE: 'Erreur de chargement, veuillez vérifier votre connexion',
     TRY_AGAIN: 'Réessayer',
+    POLL_REPLICATION: 'Polling replication data…',
+    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds something something. Are you sure you want to continue?`,
+    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    ABORT: 'Cancel',
   },
   hi: {
     FETCH_INFO: ({ count }) => `जानकारी ढूंदी जा रहीं हैं (${count} दस्तावेज)…`,
@@ -72,6 +92,10 @@ var TRANSLATIONS = {
     DOWNLOAD_APP: 'एप डाउनलोड हो रही है…',
     ERROR_MESSAGE: 'लोडिंग में त्रुटि, कृपया अपना कनेक्शन जांचें।',
     TRY_AGAIN: 'पुन: प्रयास करें',
+    POLL_REPLICATION: 'Polling replication data…',
+    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds something something. Are you sure you want to continue?`,
+    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    ABORT: 'Cancel',
   },
 };
 
