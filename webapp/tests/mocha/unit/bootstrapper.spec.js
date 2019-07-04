@@ -153,6 +153,7 @@ describe('bootstrapper', () => {
         retry: false,
         heartbeat: 10000,
         timeout: 600000,
+        query_params: { initial_replication: true }
       });
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
@@ -183,7 +184,7 @@ describe('bootstrapper', () => {
       assert.equal(pouchDb.args[0][0], 'medic-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
-      assert.deepEqual(pouchDb.args[1][1], { skip_setup: true, replicationId: pouchDbOptions.remote.replicationId });
+      assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
       assert.equal(localGet.callCount, 3);
       assert.equal(localGet.args[0][0], '_design/medic-client');
       assert.equal(localGet.args[1][0], '_design/medic-client');
@@ -200,12 +201,8 @@ describe('bootstrapper', () => {
       assert.equal(remoteClose.callCount, 1);
       assert.equal(localAllDocs.callCount, 1);
       assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
-      assert.equal(remoteGet.callCount, 2);
+      assert.equal(remoteGet.callCount, 1);
       assert.deepEqual(remoteGet.args[0], ['_replication_info']);
-      assert.deepEqual(remoteGet.args[1], ['_replication_init']);
-      assert(pouchDbOptions.remote.replicationId);
-      assert.equal(localId.callCount, 1);
-      assert.equal(remoteId.callCount, 1);
       done();
     });
   });
