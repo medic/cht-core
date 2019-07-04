@@ -199,18 +199,22 @@ var _ = require('underscore'),
     // BootstrapTranslator is used because $translator.onReady has not fired
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
-    RulesEngine.init.catch(function() {}).then(function() {
-      $scope.dbWarmedUp = true;
+    RulesEngine.init
+      .catch(function(err) {
+        $log.error('RuleEngine failed to Initialize', err);
+      })
+      .then(function() {
+        $scope.dbWarmedUp = true;
 
-      var dbWarmed = performance.now();
-      Telemetry.record(
-        'boot_time:4:to_db_warmed',
-        dbWarmed - $window.startupTimes.bootstrapped
-      );
-      Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
+        var dbWarmed = performance.now();
+        Telemetry.record(
+          'boot_time:4:to_db_warmed',
+          dbWarmed - $window.startupTimes.bootstrapped
+        );
+        Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
-      delete $window.startupTimes;
-    });
+        delete $window.startupTimes;
+      });
 
     Feedback.init();
 
