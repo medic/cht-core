@@ -41,18 +41,22 @@ const getInfoDoc = change => {
         doc.transitions = doc.transitions || change.doc.transitions || {};
         return doc;
       } else {
-        return createInfoDoc(change.id, 'unknown');
+        return createInfoDoc(change.doc._id, change.doc._rev);
       }
     })
     .then(doc => updateInfoDoc(doc, rev));
 };
 
-const createInfoDoc = (docId, initialReplicationDate) => {
+const createInfoDoc = (docId, docRev) => {
+  // either it hasn't been even saved yet (ie comes from SMS synchronous transition processing)
+  // or it has been saved once and is being picked up by sentinel.
+  const isInitialVersion = !docRev || docRev.startsWith('1-');
+
   return {
     _id: infoDocId(docId),
     type: 'info',
     doc_id: docId,
-    initial_replication_date: initialReplicationDate,
+    initial_replication_date: isInitialVersion ? new Date() : 'unknown',
   };
 };
 
@@ -129,7 +133,10 @@ const bulkGet = changes => {
     .then(result => {
       result.forEach(row => {
         if (!row.doc) {
-          infoDocs.push(createInfoDoc(getDocId(row.key), 'unknown'));
+          const mainDocId = getDocId(row.key);
+          const mainDoc = changes.find(change => change.id === mainDocId).doc;
+
+          infoDocs.push(createInfoDoc(mainDoc._id, mainDoc._rev));
         } else {
           row.doc.legacy = true;
           infoDocs.push(row.doc);
