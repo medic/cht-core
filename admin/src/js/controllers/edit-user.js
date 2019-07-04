@@ -7,8 +7,8 @@ var passwordTester = require('simple-password-tester'),
 angular
   .module('controllers')
   .controller('EditUserCtrl', function(
-    $log,
     $http,
+    $log,
     $q,
     $rootScope,
     $scope,
@@ -297,7 +297,12 @@ angular
         contact_id: $scope.editUserModel.contact
       };
 
+      if (previousQuery && JSON.stringify(query) === previousQuery) {
+        return Promise.resolve();
+      }
+
       replicationInfoRequestCanceler = $q.defer();
+      previousQuery = JSON.stringify(query);
       return $http
         .post('/medic/_replication_info', query, { timeout: replicationInfoRequestCanceler.promise })
         .then(resp => {
