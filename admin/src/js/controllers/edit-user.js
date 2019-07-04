@@ -8,6 +8,7 @@ angular
   .module('controllers')
   .controller('EditUserCtrl', function(
     $log,
+    $http,
     $q,
     $rootScope,
     $scope,
@@ -279,6 +280,41 @@ angular
       });
     };
 
+    let replicationInfoRequestCanceler;
+    let previousQuery;
+    const getReplicationInfo = () => {
+      if (replicationInfoRequestCanceler) {
+        replicationInfoRequestCanceler.resolve();
+      }
+      const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
+      if (!role || !role.offline) {
+        return Promise.resolve();
+      }
+
+      const query = {
+        role: $scope.editUserModel.role,
+        facility_id: $scope.editUserModel.place,
+        contact_id: $scope.editUserModel.contact
+      };
+
+      replicationInfoRequestCanceler = $q.defer();
+      return $http
+        .post('/medic/_replication_info', query, { timeout: replicationInfoRequestCanceler.promise })
+        .then(resp => {
+          replicationInfoRequestCanceler.resolve();
+          replicationInfoRequestCanceler = null;
+
+          if (resp.data.warn) {
+            $scope.replicationWarning = query;
+            $translate('configuration.user.replication.limit.exceeded', { total_docs: resp.data.total_docs }).then(value =>{
+              $scope.setError(null, value);
+            });
+
+            return Promise.reject();
+          }
+        });
+    };
+
     var computeFields = function() {
       $scope.editUserModel.place = $(
         '#edit-user-profile [name=facilitySelect]'
@@ -329,36 +365,38 @@ angular
               $scope.setError();
               return;
             }
-            changedUpdates($scope.editUserModel).then(function(updates) {
-              $q.resolve()
-                .then(function() {
-                  if (!haveUpdates(updates)) {
-                    return;
-                  } else if ($scope.editUserModel.id) {
-                    return UpdateUser($scope.editUserModel.username, updates);
-                  } else {
-                    return CreateUser(updates);
-                  }
-                })
-                .then(function() {
-                  $scope.setFinished();
-                  // TODO: change this from a broadcast to a changes watcher
-                  //       https://github.com/medic/medic/issues/4094
-                  $rootScope.$broadcast(
-                    'UsersUpdated',
-                    $scope.editUserModel.id
-                  );
-                  $uibModalInstance.close();
-                })
-                .catch(function(err) {
-                  if (err && err.data && err.data.error && err.data.error.translationKey) {
-                    $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
-                      $scope.setError(err, value);
-                    });           
-                  } else {
-                    $scope.setError(err, 'Error updating user');
-                  }
-                });
+            getReplicationInfo().then(() => {
+              changedUpdates($scope.editUserModel).then(function(updates) {
+                $q.resolve()
+                  .then(function() {
+                    if (!haveUpdates(updates)) {
+                      return;
+                    } else if ($scope.editUserModel.id) {
+                      return UpdateUser($scope.editUserModel.username, updates);
+                    } else {
+                      return CreateUser(updates);
+                    }
+                  })
+                  .then(function() {
+                    $scope.setFinished();
+                    // TODO: change this from a broadcast to a changes watcher
+                    //       https://github.com/medic/medic/issues/4094
+                    $rootScope.$broadcast(
+                      'UsersUpdated',
+                      $scope.editUserModel.id
+                    );
+                    $uibModalInstance.close();
+                  })
+                  .catch(function(err) {
+                    if (err && err.data && err.data.error && err.data.error.translationKey) {
+                      $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                        $scope.setError(err, value);
+                      });
+                    } else {
+                      $scope.setError(err, 'Error updating user');
+                    }
+                  });
+              });
             });
           })
           .catch(function(err) {

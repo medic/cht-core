@@ -457,7 +457,7 @@ app.post(
 
 const initialReplication = require('./controllers/initial-replication');
 // initial replication
-app.get(routePrefix + '_replication_info', authorization.getUserSettings, initialReplication.info);
+app.all(routePrefix + '_replication_info', jsonParser, authorization.getUserSettings, initialReplication.info);
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route

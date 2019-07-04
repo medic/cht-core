@@ -14,18 +14,19 @@ const getAllowedDocIds = userCtx => {
 module.exports.info = (req, res) => {
   let userCtx;
   if (auth.isOnlineOnly(req.userCtx)) {
-    if (!req.query.role || !req.query.facility_id) {
+    const params = req.body || req.query;
+    if (!params.role || !params.facility_id) {
       return serverUtils.error({ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res);
     }
 
-    if (!auth.isOffline([ req.query.role ])) {
+    if (!auth.isOffline([ params.role ])) {
       return serverUtils.error({ code: 400, reason: 'Provided role is not offline' }, req, res);
     }
 
     userCtx = {
-      roles: [ req.query.role ],
-      facility_id: req.query.facility_id,
-      contact_id: req.query.contact_id
+      roles: [ params.role ],
+      facility_id: params.facility_id,
+      contact_id: params.contact_id
     };
   } else {
     userCtx = req.userCtx;
