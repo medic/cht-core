@@ -205,7 +205,7 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   return !allowedSubmitter;
 };
 
-const getAllowedDocIds = (feed, { includeTombstones = true, limit = 0 }) => {
+const getAllowedDocIds = (feed, { includeTombstones = true, limit = 0 } = {}) => {
   const opts = { keys: feed.subjectIds };
   if (limit) {
     opts.limit = limit;

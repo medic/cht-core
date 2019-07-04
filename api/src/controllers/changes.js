@@ -276,7 +276,7 @@ const initFeed = (req, res) => {
     .getAuthorizationContext(feed.req.userCtx)
     .then(authorizationContext => {
       _.extend(feed, authorizationContext);
-      return authorization.getAllowedDocIds(feed, { include_tombstomes: !feed.initialReplication });
+      return authorization.getAllowedDocIds(feed, { includeTombstones: !feed.initialReplication });
     })
     .then(allowedDocIds => {
       feed.allowedDocIds = allowedDocIds;
