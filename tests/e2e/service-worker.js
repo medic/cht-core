@@ -41,17 +41,15 @@ const doFetch = (path, headers) => browser.executeAsyncScript(async (innerPath, 
   });
 }, path, headers);
 
-const unregisterServiceWorker = () => browser.executeAsyncScript(async () => {
+const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsyncScript(async () => {
   const callback = arguments[arguments.length - 1];
+
   const registrations = await navigator.serviceWorker.getRegistrations();
   registrations.forEach(registration => registration.unregister());
-  callback();
-});
 
-const wipeAllCaches = () => browser.executeAsyncScript(async () => {
-  const callback = arguments[arguments.length - 1];
   const cacheNames = await caches.keys();
   cacheNames.forEach(async (name) => await caches.delete(name));
+
   callback();
 });
 
@@ -114,9 +112,7 @@ describe('Service worker cache', () => {
       expect(resultingCachedUrls).to.deep.eq(initialCachedUrls);
     } finally {
       // since we've broken the cache. for sw registration
-      await unregisterServiceWorker();
-
-      await wipeAllCaches();
+      await unregisterServiceWorkerAndWipeAllCaches();
     }
   });
 });
