@@ -10,8 +10,16 @@ module.exports = {
   error: (msg) => {
     console.log(`${chalk.red('Error: ')}${msg}`);
   },
-  extractPlaceholders: (file) => {
+  extractPlaceholders: (file, onlyPlaceholders = false) => {
     const content = fs.readFileSync(file, 'utf8');
+
+    if (onlyPlaceholders) {
+      return content
+              .toString()
+              .match(/{{.+?}}/g)
+              .sort()
+              .filter((el,i,a) => i === a.indexOf(el));
+    }
 
     const result = {};
     content
@@ -20,7 +28,7 @@ module.exports = {
       .forEach((line, index) => {
         const placeholders = line.match(/{{.+?}}/g);
         if (placeholders) {
-          placeholders.sort();
+          placeholders.sort().filter((el,i,a) => i === a.indexOf(el));
           const key = line.split('=')[0].trim();
           result[key] = {placeholders, index};
         }
