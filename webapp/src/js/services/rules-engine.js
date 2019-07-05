@@ -66,7 +66,7 @@ var nools = require('nools'),
             return contactHasId(fact.contact, factId);
           });
           if (!fact) {
-            fact = new Contact({ reports: [] });
+            fact = new Contact({ contact: { _id: factId }, reports: [] });
             facts.push(fact);
           }
           fact.reports.push(report);
