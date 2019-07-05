@@ -34,15 +34,18 @@
     }
   };
 
-  const getDbInfo = function() {
+  const getBaseUrl = () => {
     // parse the URL to determine the remote and local database names
     const location = window.location;
-    const dbName = 'medic';
     const port = location.port ? ':' + location.port : '';
-    const remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
+    return `${location.protocol}//${location.hostname}${port}`;
+  };
+
+  const getDbInfo = function() {
+    const dbName = 'medic';
     return {
       name: dbName,
-      remote: remoteDB
+      remote: `${getBaseUrl()}/${dbName}`
     };
   };
 
@@ -50,12 +53,12 @@
     return dbInfo.name + '-user-' + username;
   };
 
-  const docCountPoll = (localDb, remoteDb) => {
+  const docCountPoll = (localDb) => {
     setUiStatus('POLL_REPLICATION');
     return Promise
       .all([
         localDb.allDocs({ limit: 1 }),
-        remoteDb.get('_replication_info')
+        window.PouchDB.fetch(`${getBaseUrl()}/api/v1/users-info`).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
         localDocCount = local.total_rows;
@@ -199,7 +202,7 @@
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
-          return docCountPoll(localDb, remoteDb)
+          return docCountPoll(localDb)
             .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
             .then(isReplicationStillNeeded => {

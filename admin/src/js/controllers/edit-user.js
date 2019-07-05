@@ -280,12 +280,8 @@ angular
       });
     };
 
-    let replicationInfoRequestCanceler;
     let previousQuery;
     const getReplicationInfo = () => {
-      if (replicationInfoRequestCanceler) {
-        replicationInfoRequestCanceler.resolve();
-      }
       const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
         return Promise.resolve();
@@ -301,14 +297,10 @@ angular
         return Promise.resolve();
       }
 
-      replicationInfoRequestCanceler = $q.defer();
       previousQuery = JSON.stringify(query);
       return $http
-        .post('/medic/_replication_info', query, { timeout: replicationInfoRequestCanceler.promise })
+        .post('/api/v1/users-info', query)
         .then(resp => {
-          replicationInfoRequestCanceler.resolve();
-          replicationInfoRequestCanceler = null;
-
           if (resp.data.warn) {
             $scope.replicationWarning = query;
             $translate('configuration.user.replication.limit.exceeded', { total_docs: resp.data.total_docs }).then(value =>{

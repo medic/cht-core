@@ -15,7 +15,6 @@ let localClose;
 let registered;
 let remoteClose;
 let localAllDocs;
-let remoteGet;
 
 describe('bootstrapper', () => {
 
@@ -28,7 +27,6 @@ describe('bootstrapper', () => {
     localClose = sinon.stub();
     remoteClose = sinon.stub();
     localAllDocs = sinon.stub();
-    remoteGet = sinon.stub();
 
     pouchDb.onCall(0).returns({
       get: localGet,
@@ -38,10 +36,10 @@ describe('bootstrapper', () => {
     });
     pouchDb.onCall(1).returns({
       remote: true,
-      close: remoteClose,
-      get: remoteGet
+      close: remoteClose
     });
     registered = {};
+    pouchDb.fetch = sinon.stub();
 
     if (typeof document !== 'undefined') {
       originalDocument = document;
@@ -134,7 +132,8 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    remoteGet.withArgs('_replication_info').resolves({ total_docs: 99, warn: false });
+
+    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 99, warn: false }) });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -159,8 +158,9 @@ describe('bootstrapper', () => {
       assert.equal(remoteClose.callCount, 1);
       assert.equal(localAllDocs.callCount, 1);
       assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
-      assert.equal(remoteGet.callCount, 1);
-      assert.deepEqual(remoteGet.args[0], ['_replication_info']);
+
+      assert.equal(pouchDb.fetch.callCount, 1);
+      assert.deepEqual(pouchDb.fetch.args[0], ['http://localhost:5988/api/v1/users-info']);
       done();
     });
   });
@@ -176,7 +176,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -201,8 +201,8 @@ describe('bootstrapper', () => {
       assert.equal(remoteClose.callCount, 1);
       assert.equal(localAllDocs.callCount, 1);
       assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
-      assert.equal(remoteGet.callCount, 1);
-      assert.deepEqual(remoteGet.args[0], ['_replication_info']);
+      assert.equal(pouchDb.fetch.callCount, 1);
+      assert.deepEqual(pouchDb.fetch.args[0], ['http://localhost:5988/api/v1/users-info']);
       done();
     });
   });
@@ -215,7 +215,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
@@ -234,7 +234,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
@@ -252,7 +252,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
@@ -271,7 +271,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    remoteGet.withArgs('_replication_info').resolves({ total_docs: 2500, warn: false });
+    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
     localGet.withArgs('_design/medic-client').onCall(1).rejects();
 

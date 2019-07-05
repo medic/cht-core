@@ -350,6 +350,8 @@ app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
+app.get('/api/v1/users-info', authorization.getUserSettings, users.info);
+app.post('/api/v1/users-info', jsonParser, authorization.getUserSettings, users.info);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth
@@ -454,10 +456,6 @@ app.post(
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
-
-const initialReplication = require('./controllers/initial-replication');
-// initial replication
-app.all(routePrefix + '_replication_info', jsonParser, authorization.getUserSettings, initialReplication.info);
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route

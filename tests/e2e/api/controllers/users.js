@@ -1,6 +1,7 @@
-const constants = require('../../../constants'),
-      http = require('http'),
-      utils = require('../../../utils');
+const constants = require('../../../constants');
+const http = require('http');
+const utils = require('../../../utils');
+const uuid = require('uuid');
 
 const user = n => `org.couchdb.user:${n}`;
 
@@ -228,4 +229,127 @@ describe('Users API', () => {
 
   });
 
+  describe('/api/v1/users-info', () => {
+
+    const password = 'passwordSUP3RS3CR37!';
+
+    const parentPlace = {
+      _id: 'PARENT_PLACE',
+      type: 'district_hospital',
+      name: 'Big Parent Hospital'
+    };
+
+    const users = [
+      {
+        username: 'offline',
+        password: password,
+        place: {
+          _id: 'fixture:offline',
+          type: 'health_center',
+          name: 'Offline place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:offline',
+          name: 'OfflineUser'
+        },
+        roles: ['district_admin']
+      },
+      {
+        username: 'online',
+        password: password,
+        place: {
+          _id: 'fixture:online',
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:online',
+          name: 'OnlineUser'
+        },
+        roles: ['national_admin']
+      }
+    ];
+
+    let offlineRequestOptions;
+    let onlineRequestOptions;
+    const nbrOfflineDocs = 30;
+    let expectedNbrDocs = nbrOfflineDocs + 4; // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+
+    beforeAll(done => {
+      utils
+        .saveDoc(parentPlace)
+        .then(() => Promise.all(users.map(user => utils.request({
+          path: '/api/v1/users',
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: user
+        }))))
+        .then(() => {
+          const docs = Array.from(Array(nbrOfflineDocs), () => ({
+            _id: `random_contact_${uuid()}`,
+            type: `clinic`,
+            parent: { _id: 'fixture:offline' }
+          }));
+          return utils.saveDocs(docs);
+        })
+        .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
+        .then(resp => expectedNbrDocs += resp.rows.length)
+        .then(done);
+    });
+
+    afterAll(done =>
+      utils
+        .revertDb()
+        .then(() => utils.deleteUsers(users.map(user => user.username)))
+        .then(done)
+    );
+
+    beforeEach(() => {
+      offlineRequestOptions = {
+        path: '/api/v1/users-info',
+        auth: `offline:${password}`,
+        method: 'GET'
+      };
+
+      onlineRequestOptions = {
+        path: '/api/v1/users-info',
+        auth: `online:${password}`,
+        method: 'GET'
+      };
+    });
+
+    it('should return correct number of allowed docs for offline users', () => {
+      return utils.request(offlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+      });
+    });
+
+    it('should return correct number of allowed docs when requested by online user with GET', () => {
+      onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
+      return utils.request(onlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+      });
+    });
+
+    it('should return correct number of allowed docs when requested by online user with POST', () => {
+      onlineRequestOptions.method = 'POST';
+      onlineRequestOptions.body = {
+        role: 'district_admin',
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      return utils.request(onlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+      });
+    });
+
+    it('should ignore parameters for requests from offline users', () => {
+      offlineRequestOptions.path += '?role=district_admin&facility_id=fixture:online';
+      return utils.request(offlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+      });
+    });
+  });
 }) ;

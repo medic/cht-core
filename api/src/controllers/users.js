@@ -1,8 +1,11 @@
-const _ = require('underscore'),
-  auth = require('../auth'),
-  logger = require('../logger'),
-  serverUtils = require('../server-utils'),
-  usersService = require('../services/users');
+const _ = require('underscore');
+const auth = require('../auth');
+const logger = require('../logger');
+const serverUtils = require('../server-utils');
+const usersService = require('../services/users');
+const authorization = require('../services/authorization');
+
+const DOC_IDS_WARN_LIMIT = 10000;
 
 const hasFullPermission = req => {
   return auth
@@ -41,6 +44,12 @@ const basicAuthValid = (credentials, username) => {
 };
 
 const isChangingPassword = req => Object.keys(req.body).includes('password');
+
+const getAllowedDocIds = userCtx => {
+  return authorization
+    .getAuthorizationContext(userCtx)
+    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false, limit: DOC_IDS_WARN_LIMIT * 2 }));
+};
 
 module.exports = {
   get: (req, res) => {
@@ -134,4 +143,34 @@ module.exports = {
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  info: (req, res) => {
+    let userCtx;
+    if (auth.isOnlineOnly(req.userCtx)) {
+      if (!auth.hasAllPermissions(req.userCtx, 'can_update_users')) {
+        return serverUtils.error({ code: 403, reason: 'Insufficient privileges' }, req, res);
+      }
+      const params = req.body || req.query;
+      if (!params.role || !params.facility_id) {
+        return serverUtils.error({ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res);
+      }
+
+      if (!auth.isOffline([ params.role ])) {
+        return serverUtils.error({ code: 400, reason: 'Provided role is not offline' }, req, res);
+      }
+
+      userCtx = {
+        roles: [ params.role ],
+        facility_id: params.facility_id,
+        contact_id: params.contact_id
+      };
+    } else {
+      userCtx = req.userCtx;
+    }
+
+    return getAllowedDocIds(userCtx).then(docIds => res.json({
+      total_docs: docIds.length,
+      warn: docIds.length >= DOC_IDS_WARN_LIMIT
+    }));
+  }
 };
