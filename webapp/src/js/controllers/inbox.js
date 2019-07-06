@@ -206,11 +206,8 @@ var _ = require('underscore'),
       .then(function() {
         $scope.dbWarmedUp = true;
 
-        var dbWarmed = performance.now();
-        Telemetry.record(
-          'boot_time:4:to_db_warmed',
-          dbWarmed - $window.startupTimes.bootstrapped
-        );
+        const dbWarmed = performance.now();
+        Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
         Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
         delete $window.startupTimes;
