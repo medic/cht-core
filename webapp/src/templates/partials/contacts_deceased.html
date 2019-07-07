@@ -1,16 +1,16 @@
 <div class="content-pane right-pane deceased-page">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="contactsDeceasedCtrl.loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!contactsDeceasedCtrl.selectedContact && !contactsDeceasedCtrl.loadingContent">
     <div translate>No contact selected</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !loadingContent">
+  <div class="col-sm-8 item-content" ng-show="contactsDeceasedCtrl.selectedContact && !contactsDeceasedCtrl.loadingContent">
     <div class="material">
       <div>
         <div class="card children persons">
@@ -20,7 +20,7 @@
             </div>
           </div>
           <ul>
-            <mm-content-row ng-repeat="child in $ctrl.selected.children.deceased"
+            <mm-content-row ng-repeat="child in contactsDeceasedCtrl.selectedContact.children.deceased"
               id="child.doc._id"
               route="'contacts'"
               heading="child.doc.name"

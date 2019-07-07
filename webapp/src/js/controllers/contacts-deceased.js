@@ -17,7 +17,8 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     var ctrl = this;
     var mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state),
+        loadingContent: Selectors.getLoadingContent(state),
+        selectedContact: Selectors.getSelectedContact(state)
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
@@ -26,7 +27,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
       $scope.setLoadingContent(id);
       ContactViewModelGenerator.getContact(id)
         .then(function(model) {
-          var refreshing = (ctrl.selected && ctrl.selected.doc._id) === id;
+          var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.settingSelected(refreshing);
           return $scope.setSelected(model);
         })
@@ -53,14 +54,14 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     var changeListener = Changes({
       key: 'contacts-deceased',
       filter: function(change) {
-        return ctrl.selected && ctrl.selected.doc._id === change.id;
+        return ctrl.selectedContact && ctrl.selectedContact.doc._id === change.id;
       },
       callback: function(change) {
         if (change.deleted) {
-          var parentId = ctrl.selected &&
-                         ctrl.selected.doc &&
-                         ctrl.selected.doc.parent &&
-                         ctrl.selected.doc.parent._id;
+          var parentId = ctrl.selectedContact &&
+                         ctrl.selectedContact.doc &&
+                         ctrl.selectedContact.doc.parent &&
+                         ctrl.selectedContact.doc.parent._id;
           if (parentId) {
             // select the parent
             selectContact(parentId, true);

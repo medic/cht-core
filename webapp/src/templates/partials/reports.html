@@ -1,13 +1,21 @@
 <div class="filters">
   <div class="inner">
-    <ng-include src="'templates/partials/reports_filters.html'"></ng-include>
+    <mm-reports-filters></mm-reports-filters>
     <mm-navigation></mm-navigation>
   </div>
 </div>
 
 <div class="inner">
   <div class="inbox page">
-    <mm-reports-list></mm-reports-list>
+    <mm-reports-list
+      appending="reportsCtrl.appending"
+      error="reportsCtrl.error"
+      error-syntax="reportsCtrl.errorSyntax"
+      filtered="filtered"
+      has-reports="hasReports"
+      loading="reportsCtrl.loading"
+      more-items="moreItems"
+    ></mm-reports-list>
     <ui-view name="content"/>
   </div>
 </div>

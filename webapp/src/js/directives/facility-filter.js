@@ -11,8 +11,9 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state)
+          facilities: Selectors.getFacilities(state),
+          isAdmin: Selectors.getIsAdmin(state),
+          selectMode: Selectors.getSelectMode(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
@@ -20,6 +21,9 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'facilityFilterCtrl',
+    bindToController: {
+      selected: '<'
+    },
     link: function(scope) {
       SearchFilters.facility(function(facilities) {
         scope.filters.facilities = facilities;

@@ -15,11 +15,10 @@
 
   angular.module('inboxControllers').controller('ErrorCtrl',
     function (
-      $scope,
       $stateParams
     ) {
       'ngInject';
-      $scope.error = errors[$stateParams.code] || errors['404'];
+      this.error = errors[$stateParams.code] || errors['404'];
     }
   );
 

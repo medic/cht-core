@@ -19,7 +19,7 @@ describe('MessagesCtrl controller', () => {
     createController = () => {
       return $controller('MessagesCtrl', {
         '$scope': scope,
-        'Actions': () => actions,
+        'GlobalActions': () => actions,
         'Changes': () => {
           return { unsubscribe: () => {} };
         },

@@ -151,7 +151,7 @@ angular.module('adminApp').config(function(
   $ngReduxProvider,
   $stateProvider,
   $translateProvider,
-  Reducers
+  RootReducer
 ) {
   'ngInject';
 
@@ -164,7 +164,7 @@ angular.module('adminApp').config(function(
   $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
 
-  $ngReduxProvider.createStoreWith(Reducers, []);
+  $ngReduxProvider.createStoreWith(RootReducer, []);
 
   $stateProvider
     .state('settings', {

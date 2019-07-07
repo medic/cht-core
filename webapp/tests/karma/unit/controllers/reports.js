@@ -4,7 +4,7 @@ describe('ReportsCtrl controller', () => {
 
   let createController,
       scope,
-      actions,
+      reportsActions,
       report,
       get,
       post,
@@ -27,7 +27,7 @@ describe('ReportsCtrl controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(($rootScope, $controller, $ngRedux, Actions) => {
+  beforeEach(inject(($rootScope, $controller, $ngRedux, ReportsActions) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();
@@ -36,7 +36,6 @@ describe('ReportsCtrl controller', () => {
     scope.readStatus = { forms: 0, messages: 0 };
     scope.updateReadStatus = () => {};
     scope.isRead = () => true;
-    scope.setFilterQuery = () => {};
     scope.reports = [ report, { _id: 'a' } ];
     scope.clearSelected = () => {};
     scope.setBackTarget = () => {};
@@ -45,9 +44,8 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
-    scope.setLoadingSubActionBar = sinon.stub();
 
-    actions = Actions($ngRedux.dispatch);
+    reportsActions = ReportsActions($ngRedux.dispatch);
     auth = sinon.stub().resolves();
     modal = sinon.stub().resolves();
     liveListInit = sinon.stub();
@@ -175,7 +173,7 @@ describe('ReportsCtrl controller', () => {
         post.returns(Promise.resolve());
 
         createController();
-        actions.setSelected([{
+        reportsActions.setSelectedReports([{
           _id: 'abc',
           doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
         }]);

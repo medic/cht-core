@@ -6,7 +6,13 @@
 
 <div class="inner">
   <div class="inbox page">
-    <ng-include src="'templates/partials/tasks_list.html'"></ng-include>
+    <mm-tasks-list
+      error="tasksCtrl.error"
+      has-tasks="hasTasks"
+      loading="tasksCtrl.loading"
+      refresh-task-list="refreshTaskList"
+      tasks-disabled="tasksDisabled"
+    ></mm-tasks-list>
     <ui-view name="content"/>
   </div>
 </div>

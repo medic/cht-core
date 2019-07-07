@@ -1,53 +1,53 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent || loadingForm">
+  <div class="col-sm-8 item-content empty-selection" ng-show="tasksContentCtrl.loadingContent || tasksContentCtrl.loadingForm">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!tasksContentCtrl.selectedTask && !tasksContentCtrl.loadingContent">
     <div translate>No task selected</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !loadingForm && contentError">
-    <div translate>{{ errorTranslationKey }}</div>
+  <div class="col-sm-8 item-content empty-selection" ng-show="!tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm && contentError">
+    <div translate>{{ tasksContentCtrl.errorTranslationKey }}</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !form && !loadingContent && !loadingForm && !contentError">
+  <div class="col-sm-8 item-content" ng-show="tasksContentCtrl.selectedTask && !form && !tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm && !contentError">
     <div class="body">
       <div>
-        <h2>{{$ctrl.selected.title | translateFrom:selected}}</h2>
+        <h2>{{tasksContentCtrl.selectedTask.title | translateFrom:selected}}</h2>
         <ul>
           <li>
             <label translate>task.date</label>
-            <p ng-bind-html="$ctrl.selected.date | simpleDate"></p>
+            <p ng-bind-html="tasksContentCtrl.selectedTask.date | simpleDate"></p>
           </li>
-          <li ng-if="$ctrl.selected.priority">
+          <li ng-if="tasksContentCtrl.selectedTask.priority">
             <label translate>task.priority</label>
-            <p ng-class="{'high-priority': $ctrl.selected.priority === 'high', 'medium-priority': $ctrl.selected.priority === 'medium'}">
+            <p ng-class="{'high-priority': tasksContentCtrl.selectedTask.priority === 'high', 'medium-priority': tasksContentCtrl.selectedTask.priority === 'medium'}">
               <span class="priority">
                 <i class="fa fa-exclamation-triangle high-priority-icon"></i>
                 <i class="fa fa-info-circle medium-priority-icon"></i>
               </span>
-              {{$ctrl.selected.priorityLabel | translateFrom:selected}}
+              {{tasksContentCtrl.selectedTask.priorityLabel | translateFrom:selected}}
             </p>
           </li>
-          <li ng-repeat="field in $ctrl.selected.fields">
+          <li ng-repeat="field in tasksContentCtrl.selectedTask.fields">
             <label>{{field.label | translateFrom:selected}}</label>
             <p>{{field.value | translateFrom:selected}}</p>
           </li>
-          <li class="actions" ng-if="$ctrl.selected.actions.length">
-            <a class="btn btn-primary" ng-click="performAction(action)" ng-repeat="action in $ctrl.selected.actions">{{action.label | translateFrom:selected}}</a>
+          <li class="actions" ng-if="tasksContentCtrl.selectedTask.actions.length">
+            <a class="btn btn-primary" ng-click="performAction(action)" ng-repeat="action in tasksContentCtrl.selectedTask.actions">{{action.label | translateFrom:selected}}</a>
           </li>
         </ul>
       </div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && form && !loadingContent && !loadingForm">
+  <div class="col-sm-8 item-content" ng-show="tasksContentCtrl.selectedTask && form && !tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm">
     <div class="body">
-      <mm-enketo id="'task-report'" status="$ctrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
+      <mm-enketo id="'task-report'" status="tasksContentCtrl.enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>
   </div>
 </div>
