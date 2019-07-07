@@ -24,7 +24,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     $scope.filters.form = $state.params.form;
     $scope.filters.place = $state.params.place;
-    $scope.facilities = [];
+    ctrl.facilities = [];
 
     Settings()
       .then(function(settings) {
@@ -226,7 +226,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     var loadAvailableFacilities = function() {
       PlaceHierarchy()
         .then(function(hierarchy) {
-          $scope.facilities = hierarchy;
+          ctrl.facilities = hierarchy;
         })
         .catch(function(err) {
           $log.error('Error loading facilities', err);

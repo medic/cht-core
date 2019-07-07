@@ -47,6 +47,7 @@ angular
       return {
         addSelectedReport: reportsActions.addSelectedReport,
         removeSelectedReport: reportsActions.removeSelectedReport,
+        setFacilities: globalActions.setFacilities,
         setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
         setLastChangedDoc: globalActions.setLastChangedDoc,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
@@ -60,14 +61,14 @@ angular
     // Render the facilities hierarchy as the user is scrolling through the list
     // Initially, don't load/render any
     $scope.totalFacilitiesDisplayed = 0;
-    $scope.facilities = [];
+    ctrl.setFacilities([]);
 
-    // Load the facilities hierarchy and render one district hospital 
+    // Load the facilities hierarchy and render one district hospital
     // when the user clicks on the filter dropdown
     $scope.monitorFacilityDropdown = () => {
       PlaceHierarchy()
         .then(function(hierarchy) {
-          $scope.facilities = hierarchy;
+          ctrl.setFacilities(hierarchy);
           $scope.totalFacilitiesDisplayed += 1;
         })
         .catch(function(err) {

@@ -96,7 +96,6 @@ var _ = require('underscore'),
       var globalActions = GlobalActions(dispatch);
       return {
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setFacilities: globalActions.setFacilities,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
