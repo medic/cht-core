@@ -131,7 +131,10 @@ app.use(
           'data:', // unsafe
           'blob:',
         ],
-        mediaSrc: [`'self'`],
+        mediaSrc: [
+          `'self'`,
+          'blob:',
+        ],
         scriptSrc: [
           `'self'`,
           `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
@@ -292,6 +295,13 @@ app.all('/setup/finish', function(req, res) {
 app.get('/api/info', function(req, res) {
   var p = require('../package.json');
   res.json({ version: p.version });
+});
+
+app.get('/api/deploy-info', (req, res) => {
+  if (!req.userCtx) {
+    return serverUtils.notLoggedIn(req, res);
+  }
+  res.json(environment.getDeployInfo());
 });
 
 app.get('/api/auth/:path', function(req, res) {

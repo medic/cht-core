@@ -23,7 +23,6 @@ var _ = require('underscore'),
     Auth,
     Changes,
     CheckDate,
-    ContactSchema,
     CountMessages,
     DBSync,
     DatabaseConnectionMonitor,
@@ -36,7 +35,6 @@ var _ = require('underscore'),
     LiveListConfig,
     Location,
     Modal,
-    PlaceHierarchy,
     RecurringProcessManager,
     ResourceIcons,
     RulesEngine,
@@ -57,6 +55,17 @@ var _ = require('underscore'),
     XmlForms
   ) {
     'ngInject';
+
+    const dbFetch = $window.PouchDB.fetch;
+    $window.PouchDB.fetch = function() {
+      return dbFetch.apply(this, arguments)
+        .then(function(response) {
+          if (response.status === 401) {
+            Session.navigateToLogin();
+          }
+          return response;
+        });
+    };
 
     $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
@@ -92,7 +101,6 @@ var _ = require('underscore'),
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setFacilities: globalActions.setFacilities,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
@@ -353,29 +361,7 @@ var _ = require('underscore'),
       }
     });
 
-    var updateAvailableFacilities = function() {
-      PlaceHierarchy()
-        .then(function(hierarchy) {
-          ctrl.setFacilities(hierarchy);
-        })
-        .catch(function(err) {
-          $log.error('Error loading facilities', err);
-        });
-    };
-    updateAvailableFacilities();
-
-    Changes({
-      key: 'inbox-facilities',
-      filter: function(change) {
-        var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
-          return pt !== 'clinic';
-        });
-        // check if new document is a contact
-        return change.doc && hierarchyTypes.indexOf(change.doc.type) !== -1;
-      },
-      callback: updateAvailableFacilities,
-    });
-
+    $scope.unreadCount = {};
     UnreadRecords(function(err, data) {
       if (err) {
         return $log.error('Error fetching read status', err);

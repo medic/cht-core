@@ -171,8 +171,10 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         } else {
             drawBackgroundCircle(inactiveBgColor);
             running = false;
-
-            audio.play();
+            if ($(canvas).closest('body').length > 0) {
+                // only beep if the canvas is still attached to the DOM
+                audio.play();
+            }
         }
     }
 

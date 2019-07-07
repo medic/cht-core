@@ -1,6 +1,8 @@
 var _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader');
 
+const PAGE_SIZE = 50;
+
 (function() {
   'use strict';
 
@@ -96,7 +98,9 @@ var _ = require('underscore'),
 
     var _query = function(options) {
       options = options || {};
-      options.limit = options.limit || 50;
+      if (!options.limit || options.limit < PAGE_SIZE) {
+        options.limit = PAGE_SIZE;
+      }
 
       if (!options.silent) {
         ctrl.loading = true;

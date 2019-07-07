@@ -167,7 +167,19 @@ angular.module('inboxServices').factory('AndroidApi',
           try {
             MRDT.respond(JSON.parse(response));
           } catch(e) {
-            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
+            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '", error message: "' + e.message + '"'));
+          }
+        },
+
+        /**
+         * Handle the response from the MRDT app
+         * @param response The stringified JSON response from the MRDT app.
+         */
+        mrdtTimeTakenResponse: function(response) {
+          try {
+            MRDT.respondTimeTaken(JSON.parse(response));
+          } catch(e) {
+            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '", error message: "' + e.message + '"'));
           }
         },
 

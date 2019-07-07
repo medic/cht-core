@@ -14,6 +14,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     DB,
     FormatDataRecord,
     GlobalActions,
+    PlaceHierarchy,
     Selectors,
     Settings
   ) {
@@ -39,6 +40,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     ctrl.setFilter({ form: $state.params.form });
     ctrl.setFilter({ place: $state.params.place });
+    ctrl.facilities = [];
 
     Settings()
       .then(function(settings) {
@@ -236,6 +238,17 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
 
     setDistrict($state.params.place);
+
+    var loadAvailableFacilities = function() {
+      PlaceHierarchy()
+        .then(function(hierarchy) {
+          ctrl.facilities = hierarchy;
+        })
+        .catch(function(err) {
+          $log.error('Error loading facilities', err);
+        });
+    };
+    loadAvailableFacilities();
 
     var getViewReports = function(doc, dates) {
       var params = reportingUtils.getReportingViewArgs(dates),

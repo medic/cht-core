@@ -12,6 +12,7 @@ describe('ReportsCtrl controller', () => {
       modal,
       LiveList,
       MarkRead,
+      PlaceHierarchy,
       Search,
       Changes,
       FormatDataRecord,
@@ -45,6 +46,10 @@ describe('ReportsCtrl controller', () => {
       setRightActionBar: sinon.stub()
     };
     reportsActions = ReportsActions($ngRedux.dispatch);
+    scope.setTitle = () => {};
+    scope.setRightActionBar = sinon.stub();
+    scope.setLeftActionBar = sinon.stub();
+    scope.settingSelected = () => {};
 
     reportsActions = ReportsActions($ngRedux.dispatch);
     auth = sinon.stub().resolves();
@@ -80,6 +85,7 @@ describe('ReportsCtrl controller', () => {
     };
 
     Search = sinon.stub().resolves();
+    PlaceHierarchy = sinon.stub().resolves([]);
 
     Changes = sinon.stub().callsFake(options => {
       changesCallback = options.callback;
@@ -112,6 +118,7 @@ describe('ReportsCtrl controller', () => {
         MarkRead: MarkRead,
         MessageState: {},
         Modal: modal,
+        PlaceHierarchy: PlaceHierarchy,
         ReportViewModelGenerator: {},
         Search: Search,
         SearchFilters: searchFilters,
