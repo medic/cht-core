@@ -364,7 +364,7 @@ describe('Users API', () => {
         .then(resp => expect(resp).toEqual('should have thrown'))
         .catch(err => {
           expect(err.statusCode).toEqual(400);
-        })
+        });
     });
   });
 }) ;
