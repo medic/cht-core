@@ -413,8 +413,6 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
           chai.expect(http.post.callCount).to.equal(1);
-          console.log('http args', http.post.args[0]);
-          console.log(scope.editUserModel);
           chai.expect(http.post.args[0]).to.deep.equal([
             '/api/v1/users-info',
             { role: 'supervisor', facility_id: scope.editUserModel.place, contact_id: scope.editUserModel.contact }
