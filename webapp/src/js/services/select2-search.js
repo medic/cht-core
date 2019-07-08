@@ -137,6 +137,9 @@ angular.module('inboxServices').factory('Select2Search',
           } else {
             resolution = getDoc(value).then(function(doc) {
               selectEl.select2('data')[0].doc = doc;
+            })
+            .catch(err => {
+              $log.warn('Unable to hydrate select2 selection', err);
             });
           }
         }
@@ -185,7 +188,7 @@ angular.module('inboxServices').factory('Select2Search',
                   selectEl.trigger('change');
                 })
                 .catch(function(err) {
-                  $log.error('Unable to hydrate select2 selection', err);
+                  $log.warn('Unable to hydrate select2 selection', err);
                 });
             }
           });
