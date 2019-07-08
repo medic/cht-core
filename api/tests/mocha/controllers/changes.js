@@ -2045,7 +2045,6 @@ describe('Changes controller', () => {
 
       return nextTick().then(() => {
         authorization.getAllowedDocIds.callCount.should.equal(8);
-        console.log(require('util').inspect(authorization.getAllowedDocIds.args, { depth: 100 }));
         logger.warn.callCount.should.equal(0);
         controller._logWarnings();
         logger.warn.callCount.should.equal(2);
