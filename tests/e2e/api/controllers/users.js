@@ -351,5 +351,20 @@ describe('Users API', () => {
         expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
       });
     });
+
+    it('should throw error when requesting for online roles', () => {
+      onlineRequestOptions.method = 'POST';
+      onlineRequestOptions.body = {
+        role: 'national_admin',
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => expect(resp).toEqual('should have thrown'))
+        .catch(err => {
+          expect(err.statusCode).toEqual(400);
+        })
+    });
   });
 }) ;

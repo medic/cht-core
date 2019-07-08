@@ -43,6 +43,30 @@ const basicAuthValid = (credentials, username) => {
 
 const isChangingPassword = req => Object.keys(req.body).includes('password');
 
+const getInfoUserCtx = req => {
+  if (!auth.isOnlineOnly(req.userCtx)) {
+    return req.userCtx;
+  }
+
+  if (!auth.hasAllPermissions(req.userCtx, 'can_update_users')) {
+    throw { code: 403, reason: 'Insufficient privileges' };
+  }
+  const params = req.body || req.query;
+  if (!params.role || !params.facility_id) {
+    throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
+  }
+
+  if (!auth.isOffline([ params.role ])) {
+    throw { code: 400, reason: 'Provided role is not offline' };
+  }
+
+  return {
+    roles: [ params.role ],
+    facility_id: params.facility_id,
+    contact_id: params.contact_id
+  };
+};
+
 const getAllowedDocIds = userCtx => {
   return authorization
     .getAuthorizationContext(userCtx)
@@ -144,28 +168,11 @@ module.exports = {
 
   info: (req, res) => {
     let userCtx;
-    if (auth.isOnlineOnly(req.userCtx)) {
-      if (!auth.hasAllPermissions(req.userCtx, 'can_update_users')) {
-        return serverUtils.error({ code: 403, reason: 'Insufficient privileges' }, req, res);
-      }
-      const params = req.body || req.query;
-      if (!params.role || !params.facility_id) {
-        return serverUtils.error({ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res);
-      }
-
-      if (!auth.isOffline([ params.role ])) {
-        return serverUtils.error({ code: 400, reason: 'Provided role is not offline' }, req, res);
-      }
-
-      userCtx = {
-        roles: [ params.role ],
-        facility_id: params.facility_id,
-        contact_id: params.contact_id
-      };
-    } else {
-      userCtx = req.userCtx;
+    try {
+      userCtx = getInfoUserCtx(req);
+    } catch (err) {
+      return serverUtils.error(err, req, res);
     }
-
     return getAllowedDocIds(userCtx).then(docIds => res.json({
       total_docs: docIds.length,
       warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT
