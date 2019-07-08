@@ -34,7 +34,7 @@ angular.module('controllers').controller('MessageQueueCtrl',
     };
     $scope.displayLastUpdated = tab !== 'scheduled';
     $scope.loading = true;
-    $scope.basePath = Location.path;
+    $scope.basePath = Location.path.substr(0, Location.path.length - 1);
 
     var formatMessages = function(messages) {
       if (tab === 'due') {
