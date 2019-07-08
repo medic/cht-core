@@ -62,10 +62,9 @@ var nools = require('nools'),
         });
         dataRecords.forEach(function(report) {
           const factId = getContactId(report);
-          const contact = factId ? { _id: factId } : undefined;
-          
           let fact = _.find(facts, fact => contactHasId(fact.contact, factId));
           if (!fact) {
+            const contact = factId ? { _id: factId } : undefined;
             fact = new Contact({ contact, reports: [] });
             facts.push(fact);
           }
