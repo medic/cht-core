@@ -17,7 +17,7 @@ describe('TasksContentCtrl', () => {
   });
 
   beforeEach(inject(($controller, $ngRedux, TasksActions, Selectors) => {
-    tasksActions = Actions($ngRedux.dispatch);
+    tasksActions = TasksActions($ngRedux.dispatch);
     render = sinon.stub();
     XmlForm = sinon.stub();
     $scope = {

@@ -63,7 +63,7 @@ describe('Enketo service', () => {
     </model>`;
 
   let service,
-      Actions;
+      GlobalActions;
   const enketoInit = sinon.stub(),
       transform = sinon.stub(),
       dbGetAttachment = sinon.stub(),
@@ -86,8 +86,7 @@ describe('Enketo service', () => {
       EnketoPrepopulationData = sinon.stub(),
       XmlForm = sinon.stub(),
       Search = sinon.stub(),
-      LineageModelGenerator = { contact: sinon.stub() },
-      GlobalActions;
+      LineageModelGenerator = { contact: sinon.stub() };
 
   beforeEach(() => {
     module('inboxApp');
