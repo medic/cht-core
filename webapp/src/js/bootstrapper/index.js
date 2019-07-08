@@ -67,7 +67,7 @@
         if (remote.warn) {
           return new Promise(resolve => {
             const errorMessage = translator.translate('TOO_MANY_DOCS', { count: remoteDocCount });
-            const continueBtn = translator.translate('CONTINUE', { count: remoteDocCount });
+            const continueBtn = translator.translate('CONTINUE');
             const abort = translator.translate('ABORT');
 
             $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();

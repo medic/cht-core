@@ -15,7 +15,7 @@ var TRANSLATIONS = {
     TRY_AGAIN: 'Try again',
     POLL_REPLICATION: 'Polling replication data…',
     TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
-    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
   es: {
@@ -30,7 +30,7 @@ var TRANSLATIONS = {
     TRY_AGAIN: 'Volver a intentar',
     POLL_REPLICATION: 'Polling replication data…',
     TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
-    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
   sw: {
@@ -45,7 +45,7 @@ var TRANSLATIONS = {
     TRY_AGAIN: 'Jaribu tena',
     POLL_REPLICATION: 'Polling replication data…',
     TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
-    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
   ne: {
@@ -64,7 +64,7 @@ var TRANSLATIONS = {
     TRY_AGAIN: 'पुन: प्रयास गर्नुहोस्',
     POLL_REPLICATION: 'Polling replication data…',
     TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
-    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
   fr: {
@@ -79,7 +79,7 @@ var TRANSLATIONS = {
     TRY_AGAIN: 'Réessayer',
     POLL_REPLICATION: 'Polling replication data…',
     TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
-    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
   hi: {
@@ -94,7 +94,7 @@ var TRANSLATIONS = {
     TRY_AGAIN: 'पुन: प्रयास करें',
     POLL_REPLICATION: 'Polling replication data…',
     TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
-    CONTINUE: ({ count }) => `Yes, I am sure I want to download ${count} docs`,
+    CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
 };
