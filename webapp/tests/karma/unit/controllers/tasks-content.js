@@ -101,4 +101,22 @@ describe('TasksContentCtrl', function() {
     done();
   });
 
+  it('displays error if enketo fails to render', done => {
+    render.throws('err');
+    task = {
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: 'nothing'
+      }]
+    };
+    XmlForm.returns(Promise.resolve({ id: 'myform', doc: { title: 'My Form' } }));
+    createController();
+    watchCallback();
+    setTimeout(function() {
+      chai.expect($scope.loadingForm).to.equal(false);
+      chai.expect($scope.contentError).to.equal(true);
+      done();
+    });
+  });
 });
