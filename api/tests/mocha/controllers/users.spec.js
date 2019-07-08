@@ -114,7 +114,7 @@ describe('Users Controller', () => {
             contact_id: undefined
           }]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false, limit: 20000 }]);
+          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false }]);
         });
@@ -146,13 +146,13 @@ describe('Users Controller', () => {
             contact_id: req.query.contact_id
           }]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false, limit: 20000 }]);
+          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false}]);
         });
       });
 
-      it('should return warning when doc Ids exceeds limit', () => {
+      it('should return warning when resulting doc ids length exceeds recommended limit', () => {
         req.query = {
           role: 'some_role',
           facility_id: 'some_facility_id'
@@ -202,7 +202,7 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([userCtx]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false, limit: 20000 } ]);
+          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false } ]);
         });
       });
 

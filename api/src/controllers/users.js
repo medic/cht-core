@@ -46,7 +46,7 @@ const isChangingPassword = req => Object.keys(req.body).includes('password');
 const getAllowedDocIds = userCtx => {
   return authorization
     .getAuthorizationContext(userCtx)
-    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false, limit: usersService.DOC_IDS_WARN_LIMIT * 2 }));
+    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false }));
 };
 
 module.exports = {
