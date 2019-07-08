@@ -5,8 +5,6 @@ const serverUtils = require('../server-utils');
 const usersService = require('../services/users');
 const authorization = require('../services/authorization');
 
-const DOC_IDS_WARN_LIMIT = 10000;
-
 const hasFullPermission = req => {
   return auth
     .check(req, 'can_update_users')
@@ -48,7 +46,7 @@ const isChangingPassword = req => Object.keys(req.body).includes('password');
 const getAllowedDocIds = userCtx => {
   return authorization
     .getAuthorizationContext(userCtx)
-    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false, limit: DOC_IDS_WARN_LIMIT * 2 }));
+    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false, limit: usersService.DOC_IDS_WARN_LIMIT * 2 }));
 };
 
 module.exports = {
@@ -170,7 +168,7 @@ module.exports = {
 
     return getAllowedDocIds(userCtx).then(docIds => res.json({
       total_docs: docIds.length,
-      warn: docIds.length >= DOC_IDS_WARN_LIMIT
+      warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT
     }));
   }
 };

@@ -1,22 +1,26 @@
-const auth = require('../auth'),
-      db = require('../db'),
-      authorization = require('../services/authorization'),
-      _ = require('underscore'),
-      heartbeatFilter = require('../services/heartbeat-filter'),
-      tombstoneUtils = require('@medic/tombstone-utils'),
-      uuid = require('uuid/v4'),
-      config = require('../config'),
-      logger = require('../logger'),
-      serverChecks = require('@medic/server-checks'),
-      environment = require('../environment'),
-      semver = require('semver');
+const auth = require('../auth');
+const db = require('../db');
+const authorization = require('../services/authorization');
+const _ = require('underscore');
+const heartbeatFilter = require('../services/heartbeat-filter');
+const tombstoneUtils = require('@medic/tombstone-utils');
+const uuid = require('uuid/v4');
+const config = require('../config');
+const logger = require('../logger');
+const serverChecks = require('@medic/server-checks');
+const environment = require('../environment');
+const semver = require('semver');
+const usersService = require('../services/users');
 
-let inited = false,
-    continuousFeed = false,
-    longpollFeeds = [],
-    normalFeeds = [],
-    currentSeq = 0,
-    limitChangesRequests = null;
+let inited = false;
+let continuousFeed = false;
+let longpollFeeds = [];
+let normalFeeds = [];
+let currentSeq = 0;
+let limitChangesRequests = null;
+let docCountUserWarnings = {};
+
+const LOG_WARNING_INTERVAL = 60 * 60 * 1000; // 1 hour
 
 const cleanUp = feed => {
   clearInterval(feed.heartbeat);
@@ -280,6 +284,10 @@ const initFeed = (req, res) => {
     })
     .then(allowedDocIds => {
       feed.allowedDocIds = allowedDocIds;
+
+      if (feed.allowedDocIds.length > usersService.DOC_IDS_WARN_LIMIT) {
+        docCountUserWarnings[feed.req.userCtx.name] = feed.allowedDocIds.length;
+      }
       return feed;
     });
 };
@@ -400,6 +408,17 @@ const request = (req, res) => {
   });
 };
 
+const logWarnings = () => {
+  if (Object.keys(docCountUserWarnings).length) {
+    Object.keys(docCountUserWarnings).forEach(user => {
+      logger.warn(`User "${user}" replicates "${docCountUserWarnings[user]}" docs`);
+    });
+  }
+  docCountUserWarnings = {};
+};
+
+setInterval(logWarnings, LOG_WARNING_INTERVAL);
+
 module.exports = {
   request: request,
 };
@@ -422,6 +441,7 @@ if (process.env.UNIT_TEST_ENV) {
       inited = false;
       currentSeq = 0;
       limitChangesRequests = null;
+      docCountUserWarnings = {};
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
@@ -429,6 +449,7 @@ if (process.env.UNIT_TEST_ENV) {
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
     _shouldLimitChangesRequests: shouldLimitChangesRequests,
-    _getLimitChangesRequests: () => limitChangesRequests
+    _getLimitChangesRequests: () => limitChangesRequests,
+    _logWarnings: logWarnings
   });
 }

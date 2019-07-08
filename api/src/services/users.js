@@ -9,6 +9,7 @@ const auth = require('../auth');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
+const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
@@ -565,5 +566,7 @@ module.exports = {
           })
           .then(() => response);
       });
-  }
+  },
+
+  DOC_IDS_WARN_LIMIT
 };
