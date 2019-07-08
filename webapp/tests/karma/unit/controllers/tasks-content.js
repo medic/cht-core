@@ -102,7 +102,7 @@ describe('TasksContentCtrl', function() {
   });
 
   it('displays error if enketo fails to render', done => {
-    render.throws('err');
+    render.returns(Promise.reject('foo'));
     task = {
       actions: [{
         type: 'report',
