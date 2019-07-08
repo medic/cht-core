@@ -1,4 +1,6 @@
 describe('Enketo service', () => {
+  const { expect } = chai;
+
   'use strict';
 
   /** @return a mock form ready for putting in #dbContent */
@@ -152,8 +154,8 @@ describe('Enketo service', () => {
           done(new Error('Should throw error'));
         })
         .catch(function(actual) {
-          chai.expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
-          chai.expect(actual.translationKey).to.equal('error.loading.form.no_contact');
+          expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          expect(actual.translationKey).to.equal('error.loading.form.no_contact');
           done();
         });
     });
@@ -173,8 +175,8 @@ describe('Enketo service', () => {
           done(new Error('Should throw error'));
         })
         .catch(function(actual) {
-          chai.expect(enketoInit.callCount).to.equal(1);
-          chai.expect(actual.message).to.equal(JSON.stringify(expected));
+          expect(enketoInit.callCount).to.equal(1);
+          expect(actual.message).to.equal(JSON.stringify(expected));
           done();
         });
     });
@@ -190,14 +192,14 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
       return service.render($('<div></div>'), 'ok').then(() => {
-        chai.expect(UserContact.callCount).to.equal(1);
-        chai.expect(EnketoPrepopulationData.callCount).to.equal(1);
-        chai.expect(transform.callCount).to.equal(2);
-        chai.expect(transform.args[0][0]).to.equal('openrosa2html5form.xsl');
-        chai.expect(transform.args[1][0]).to.equal('openrosa2xmlmodel.xsl');
-        chai.expect(FileReader.utf8.callCount).to.equal(1);
-        chai.expect(FileReader.utf8.args[0][0]).to.equal('xmlblob');
-        chai.expect(enketoInit.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+        expect(EnketoPrepopulationData.callCount).to.equal(1);
+        expect(transform.callCount).to.equal(2);
+        expect(transform.args[0][0]).to.equal('openrosa2html5form.xsl');
+        expect(transform.args[1][0]).to.equal('openrosa2xmlmodel.xsl');
+        expect(FileReader.utf8.callCount).to.equal(1);
+        expect(FileReader.utf8.args[0][0]).to.equal('xmlblob');
+        expect(enketoInit.callCount).to.equal(1);
       });
     });
 
@@ -218,15 +220,15 @@ describe('Enketo service', () => {
       return service.render(wrapper, 'ok').then(() => {
         // need to wait for async get attachment to complete
         const img = wrapper.find('img').first();
-        chai.expect(img.attr('src')).to.equal('myobjurl');
-        chai.expect(img.css('visibility')).to.satisfy(function(val) {
+        expect(img.attr('src')).to.equal('myobjurl');
+        expect(img.css('visibility')).to.satisfy(function(val) {
           // different browsers return different values but both are equivalent
           return val === '' || val === 'visible';
         });
-        chai.expect(transform.callCount).to.equal(2);
-        chai.expect(enketoInit.callCount).to.equal(1);
-        chai.expect(createObjectURL.callCount).to.equal(1);
-        chai.expect(createObjectURL.args[0][0]).to.equal('myobjblob');
+        expect(transform.callCount).to.equal(2);
+        expect(enketoInit.callCount).to.equal(1);
+        expect(createObjectURL.callCount).to.equal(1);
+        expect(createObjectURL.args[0][0]).to.equal('myobjblob');
       });
     });
 
@@ -245,13 +247,13 @@ describe('Enketo service', () => {
       const wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, 'ok').then(() => {
         const img = wrapper.find('img').first();
-        chai.expect(img.attr('src')).to.equal(undefined);
-        chai.expect(img.attr('data-media-src')).to.equal('myimg');
-        chai.expect(img.css('visibility')).to.equal('hidden');
-        chai.expect(img.closest('div').hasClass('loader')).to.equal(true);
-        chai.expect(transform.callCount).to.equal(2);
-        chai.expect(enketoInit.callCount).to.equal(1);
-        chai.expect(createObjectURL.callCount).to.equal(0);
+        expect(img.attr('src')).to.equal(undefined);
+        expect(img.attr('data-media-src')).to.equal('myimg');
+        expect(img.css('visibility')).to.equal('hidden');
+        expect(img.closest('div').hasClass('loader')).to.equal(true);
+        expect(transform.callCount).to.equal(2);
+        expect(enketoInit.callCount).to.equal(1);
+        expect(createObjectURL.callCount).to.equal(0);
       });
     });
 
@@ -267,9 +269,9 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       return service.render($('<div></div>'), 'ok', data).then(() => {
-        chai.expect(EnketoForm.callCount).to.equal(1);
-        chai.expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
-        chai.expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
+        expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
       });
     });
 
@@ -295,9 +297,9 @@ describe('Enketo service', () => {
         }
       };
       return service.render($('<div></div>'), 'ok', instanceData).then(() => {
-        chai.expect(EnketoForm.callCount).to.equal(1);
-        chai.expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
-        chai.expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
+        expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
       });
     });
 
@@ -330,22 +332,22 @@ describe('Enketo service', () => {
       Search.resolves([ { _id: 'somereport' }]);
       LineageModelGenerator.contact.resolves({ lineage: [ { _id: 'someparent' } ] });
       return service.render($('<div></div>'), 'ok', instanceData).then(() => {
-        chai.expect(EnketoForm.callCount).to.equal(1);
-        chai.expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
-        chai.expect(summary.id).to.equal('contact-summary');
-        chai.expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
-        chai.expect(Search.callCount).to.equal(1);
-        chai.expect(Search.args[0][0]).to.equal('reports');
-        chai.expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
-        chai.expect(LineageModelGenerator.contact.callCount).to.equal(1);
-        chai.expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
-        chai.expect(ContactSummary.callCount).to.equal(1);
-        chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
-        chai.expect(ContactSummary.args[0][1].length).to.equal(1);
-        chai.expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
-        chai.expect(ContactSummary.args[0][2].length).to.equal(1);
-        chai.expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
+        expect(summary.id).to.equal('contact-summary');
+        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
+        expect(Search.callCount).to.equal(1);
+        expect(Search.args[0][0]).to.equal('reports');
+        expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
+        expect(LineageModelGenerator.contact.callCount).to.equal(1);
+        expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+        expect(ContactSummary.callCount).to.equal(1);
+        expect(ContactSummary.args[0][0]._id).to.equal('fffff');
+        expect(ContactSummary.args[0][1].length).to.equal(1);
+        expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
+        expect(ContactSummary.args[0][2].length).to.equal(1);
+        expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
       });
     });
 
@@ -382,13 +384,13 @@ describe('Enketo service', () => {
       });
       LineageModelGenerator.contact.resolves({ lineage: [] });
       return service.render($('<div></div>'), 'ok', instanceData).then(() => {
-        chai.expect(EnketoForm.callCount).to.equal(1);
-        chai.expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
-        chai.expect(summary.id).to.equal('contact-summary');
-        chai.expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes></context>');
-        chai.expect(ContactSummary.callCount).to.equal(1);
-        chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
+        expect(summary.id).to.equal('contact-summary');
+        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes></context>');
+        expect(ContactSummary.callCount).to.equal(1);
+        expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
     });
 
@@ -417,10 +419,10 @@ describe('Enketo service', () => {
         }
       };
       return service.render($('<div></div>'), 'ok', instanceData).then(() => {
-        chai.expect(EnketoForm.callCount).to.equal(1);
-        chai.expect(EnketoForm.args[0][1].external).to.equal(undefined);
-        chai.expect(ContactSummary.callCount).to.equal(0);
-        chai.expect(LineageModelGenerator.contact.callCount).to.equal(0);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].external).to.equal(undefined);
+        expect(ContactSummary.callCount).to.equal(0);
+        expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
     });
 
@@ -449,10 +451,10 @@ describe('Enketo service', () => {
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([ { _id: 'somereport' }]);
       return service.render($('<div></div>'), 'ok', instanceData).then(() => {
-        chai.expect(LineageModelGenerator.contact.callCount).to.equal(1);
-        chai.expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
-        chai.expect(ContactSummary.callCount).to.equal(1);
-        chai.expect(ContactSummary.args[0][2].length).to.equal(0);
+        expect(LineageModelGenerator.contact.callCount).to.equal(1);
+        expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+        expect(ContactSummary.callCount).to.equal(1);
+        expect(ContactSummary.args[0][2].length).to.equal(0);
       });
     });
   });
@@ -462,8 +464,8 @@ describe('Enketo service', () => {
     it('rejects on invalid form', function(done) {
       form.validate.resolves(false);
       service.save('V', form).catch(function(actual) {
-        chai.expect(actual.message).to.equal('Form is invalid');
-        chai.expect(form.validate.callCount).to.equal(1);
+        expect(actual.message).to.equal('Form is invalid');
+        expect(form.validate.callCount).to.equal(1);
         done();
       });
     });
@@ -480,26 +482,26 @@ describe('Enketo service', () => {
       return service.save('V', form).then(function(actual) {
         actual = actual[0];
 
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(UserContact.callCount).to.equal(1);
-        chai.expect(actual._id).to.match(/(\w+-)\w+/);
-        chai.expect(actual._rev).to.equal('1-abc');
-        chai.expect(actual.fields.name).to.equal('Sally');
-        chai.expect(actual.fields.lmp).to.equal('10');
-        chai.expect(actual.form).to.equal('V');
-        chai.expect(actual.type).to.equal('data_record');
-        chai.expect(actual.content_type).to.equal('xml');
-        chai.expect(actual.contact._id).to.equal('123');
-        chai.expect(actual.from).to.equal('555');
-        chai.expect(dbGetAttachment.callCount).to.equal(1);
-        chai.expect(dbGetAttachment.args[0][0]).to.equal('abc');
-        chai.expect(AddAttachment.callCount).to.equal(1);
-        chai.expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-        chai.expect(AddAttachment.args[0][1]).to.equal('content');
-        chai.expect(AddAttachment.args[0][2]).to.equal(content);
-        chai.expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+        expect(actual._id).to.match(/(\w+-)\w+/);
+        expect(actual._rev).to.equal('1-abc');
+        expect(actual.fields.name).to.equal('Sally');
+        expect(actual.fields.lmp).to.equal('10');
+        expect(actual.form).to.equal('V');
+        expect(actual.type).to.equal('data_record');
+        expect(actual.content_type).to.equal('xml');
+        expect(actual.contact._id).to.equal('123');
+        expect(actual.from).to.equal('555');
+        expect(dbGetAttachment.callCount).to.equal(1);
+        expect(dbGetAttachment.args[0][0]).to.equal('abc');
+        expect(AddAttachment.callCount).to.equal(1);
+        expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+        expect(AddAttachment.args[0][1]).to.equal('content');
+        expect(AddAttachment.args[0][2]).to.equal(content);
+        expect(AddAttachment.args[0][3]).to.equal('application/xml');
       });
     });
 
@@ -518,22 +520,22 @@ describe('Enketo service', () => {
       return service.save('V', form, null, null).then(function(actual) {
         actual = actual[0];
 
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(UserContact.callCount).to.equal(1);
-        chai.expect(actual._id).to.match(/(\w+-)\w+/);
-        chai.expect(actual.fields.name).to.equal('Sally');
-        chai.expect(actual.fields.lmp).to.equal('10');
-        chai.expect(actual.fields.secret_code_name).to.equal('S4L');
-        chai.expect(actual.form).to.equal('V');
-        chai.expect(actual.type).to.equal('data_record');
-        chai.expect(actual.content_type).to.equal('xml');
-        chai.expect(actual.contact._id).to.equal('123');
-        chai.expect(actual.from).to.equal('555');
-        chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-        chai.expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        chai.expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+        expect(actual._id).to.match(/(\w+-)\w+/);
+        expect(actual.fields.name).to.equal('Sally');
+        expect(actual.fields.lmp).to.equal('10');
+        expect(actual.fields.secret_code_name).to.equal('S4L');
+        expect(actual.form).to.equal('V');
+        expect(actual.type).to.equal('data_record');
+        expect(actual.content_type).to.equal('xml');
+        expect(actual.contact._id).to.equal('123');
+        expect(actual.from).to.equal('555');
+        expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -556,26 +558,26 @@ describe('Enketo service', () => {
       return service.save('V', form, null, '6').then(function(actual) {
         actual = actual[0];
 
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbGet.callCount).to.equal(1);
-        chai.expect(dbGet.args[0][0]).to.equal('6');
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(actual._id).to.equal('6');
-        chai.expect(actual._rev).to.equal('2-abc');
-        chai.expect(actual.fields.name).to.equal('Sally');
-        chai.expect(actual.fields.lmp).to.equal('10');
-        chai.expect(actual.form).to.equal('V');
-        chai.expect(actual.type).to.equal('data_record');
-        chai.expect(actual.reported_date).to.equal(500);
-        chai.expect(actual.content_type).to.equal('xml');
-        chai.expect(AddAttachment.callCount).to.equal(1);
-        chai.expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-        chai.expect(AddAttachment.args[0][1]).to.equal('content');
-        chai.expect(AddAttachment.args[0][2]).to.equal(content);
-        chai.expect(AddAttachment.args[0][3]).to.equal('application/xml');
-        chai.expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        chai.expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbGet.callCount).to.equal(1);
+        expect(dbGet.args[0][0]).to.equal('6');
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(actual._id).to.equal('6');
+        expect(actual._rev).to.equal('2-abc');
+        expect(actual.fields.name).to.equal('Sally');
+        expect(actual.fields.lmp).to.equal('10');
+        expect(actual.form).to.equal('V');
+        expect(actual.type).to.equal('data_record');
+        expect(actual.reported_date).to.equal(500);
+        expect(actual.content_type).to.equal('xml');
+        expect(AddAttachment.callCount).to.equal(1);
+        expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+        expect(AddAttachment.args[0][1]).to.equal('content');
+        expect(AddAttachment.args[0][2]).to.equal(content);
+        expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -610,45 +612,45 @@ describe('Enketo service', () => {
       return service.save('V', form, null, null).then(function(actual) {
         const endTime = Date.now() + 1;
 
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(UserContact.callCount).to.equal(1);
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
 
-        chai.expect(actual.length).to.equal(3);
+        expect(actual.length).to.equal(3);
 
         const actualReport = actual[0];
-        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualReport._rev).to.equal(`1-${actualReport._id}-abc`);
-        chai.expect(actualReport.fields.name).to.equal('Sally');
-        chai.expect(actualReport.fields.lmp).to.equal('10');
-        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        chai.expect(actualReport.form).to.equal('V');
-        chai.expect(actualReport.type).to.equal('data_record');
-        chai.expect(actualReport.content_type).to.equal('xml');
-        chai.expect(actualReport.contact._id).to.equal('123');
-        chai.expect(actualReport.from).to.equal('555');
-        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport._id).to.match(/(\w+-)\w+/);
+        expect(actualReport._rev).to.equal(`1-${actualReport._id}-abc`);
+        expect(actualReport.fields.name).to.equal('Sally');
+        expect(actualReport.fields.lmp).to.equal('10');
+        expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        expect(actualReport.form).to.equal('V');
+        expect(actualReport.type).to.equal('data_record');
+        expect(actualReport.content_type).to.equal('xml');
+        expect(actualReport.contact._id).to.equal('123');
+        expect(actualReport.from).to.equal('555');
+        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
-        chai.expect(actualReport.fields.doc1).to.equal(undefined);
-        chai.expect(actualReport.fields.doc2).to.equal(undefined);
+        expect(actualReport.fields.doc1).to.equal(undefined);
+        expect(actualReport.fields.doc2).to.equal(undefined);
 
         const actualThing1 = actual[1];
-        chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualThing1._rev).to.equal(`1-${actualThing1._id}-abc`);
-        chai.expect(actualThing1.reported_date).to.be.within(startTime, endTime);
-        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
+        expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        expect(actualThing1._rev).to.equal(`1-${actualThing1._id}-abc`);
+        expect(actualThing1.reported_date).to.be.within(startTime, endTime);
+        expect(actualThing1.some_property_1).to.equal('some_value_1');
 
         const actualThing2 = actual[2];
-        chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualThing2._rev).to.equal(`1-${actualThing2._id}-abc`);
-        chai.expect(actualThing2.reported_date).to.be.within(startTime, endTime);
-        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
+        expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        expect(actualThing2._rev).to.equal(`1-${actualThing2._id}-abc`);
+        expect(actualThing2.reported_date).to.be.within(startTime, endTime);
+        expect(actualThing2.some_property_2).to.equal('some_value_2');
 
-        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
 
-        chai.expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        chai.expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
+        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
       });
     });
 
@@ -682,47 +684,47 @@ describe('Enketo service', () => {
       return service.save('V', form, true).then(function(actual) {
         const endTime = Date.now() + 1;
 
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(UserContact.callCount).to.equal(1);
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
 
-        chai.expect(actual.length).to.equal(3);
+        expect(actual.length).to.equal(3);
 
         const actualReport = actual[0];
-        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualReport.fields.name).to.equal('Sally');
-        chai.expect(actualReport.fields.lmp).to.equal('10');
-        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        chai.expect(actualReport.form).to.equal('V');
-        chai.expect(actualReport.type).to.equal('data_record');
-        chai.expect(actualReport.content_type).to.equal('xml');
-        chai.expect(actualReport.contact._id).to.equal('123');
-        chai.expect(actualReport.from).to.equal('555');
-        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport._id).to.match(/(\w+-)\w+/);
+        expect(actualReport.fields.name).to.equal('Sally');
+        expect(actualReport.fields.lmp).to.equal('10');
+        expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        expect(actualReport.form).to.equal('V');
+        expect(actualReport.type).to.equal('data_record');
+        expect(actualReport.content_type).to.equal('xml');
+        expect(actualReport.contact._id).to.equal('123');
+        expect(actualReport.from).to.equal('555');
+        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
-        chai.expect(actualReport.fields.doc1).to.equal(undefined);
-        chai.expect(actualReport.fields.doc2).to.equal(undefined);
+        expect(actualReport.fields.doc1).to.equal(undefined);
+        expect(actualReport.fields.doc2).to.equal(undefined);
 
-        chai.expect(actualReport.geolocation).to.equal(true);
+        expect(actualReport.geolocation).to.equal(true);
 
         const actualThing1 = actual[1];
-        chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualThing1.reported_date).to.be.above(startTime);
-        chai.expect(actualThing1.reported_date).to.be.below(endTime);
-        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
+        expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        expect(actualThing1.reported_date).to.be.above(startTime);
+        expect(actualThing1.reported_date).to.be.below(endTime);
+        expect(actualThing1.some_property_1).to.equal('some_value_1');
 
-        chai.expect(actualThing1.geolocation).to.equal(true);
+        expect(actualThing1.geolocation).to.equal(true);
 
         const actualThing2 = actual[2];
-        chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualThing2.reported_date).to.be.above(startTime);
-        chai.expect(actualThing2.reported_date).to.be.below(endTime);
-        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
+        expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        expect(actualThing2.reported_date).to.be.above(startTime);
+        expect(actualThing2.reported_date).to.be.below(endTime);
+        expect(actualThing2.some_property_2).to.equal('some_value_2');
 
-        chai.expect(actualThing2.geolocation).to.equal(true);
+        expect(actualThing2.geolocation).to.equal(true);
 
-        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
       });
     });
 
@@ -760,49 +762,49 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
       return service.save('V', form).then(function(actual) {
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(UserContact.callCount).to.equal(1);
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
 
-        chai.expect(actual.length).to.equal(3);
+        expect(actual.length).to.equal(3);
         const reportId = actual[0]._id;
         const doc1_id = actual[1]._id;
         const doc2_id = actual[2]._id;
 
         const actualReport = actual[0];
-        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualReport.fields.name).to.equal('Sally');
-        chai.expect(actualReport.fields.lmp).to.equal('10');
-        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        chai.expect(actualReport.fields.my_self_0).to.equal(reportId);
-        chai.expect(actualReport.fields.my_child_01).to.equal(doc1_id);
-        chai.expect(actualReport.fields.my_child_02).to.equal(doc2_id);
-        chai.expect(actualReport.form).to.equal('V');
-        chai.expect(actualReport.type).to.equal('data_record');
-        chai.expect(actualReport.content_type).to.equal('xml');
-        chai.expect(actualReport.contact._id).to.equal('123');
-        chai.expect(actualReport.from).to.equal('555');
-        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport._id).to.match(/(\w+-)\w+/);
+        expect(actualReport.fields.name).to.equal('Sally');
+        expect(actualReport.fields.lmp).to.equal('10');
+        expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        expect(actualReport.fields.my_self_0).to.equal(reportId);
+        expect(actualReport.fields.my_child_01).to.equal(doc1_id);
+        expect(actualReport.fields.my_child_02).to.equal(doc2_id);
+        expect(actualReport.form).to.equal('V');
+        expect(actualReport.type).to.equal('data_record');
+        expect(actualReport.content_type).to.equal('xml');
+        expect(actualReport.contact._id).to.equal('123');
+        expect(actualReport.from).to.equal('555');
+        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
-        chai.expect(actualReport.fields.doc1).to.equal(undefined);
-        chai.expect(actualReport.fields.doc2).to.equal(undefined);
+        expect(actualReport.fields.doc1).to.equal(undefined);
+        expect(actualReport.fields.doc2).to.equal(undefined);
 
         const actualThing1 = actual[1];
-        chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
-        chai.expect(actualThing1.my_self_1).to.equal(doc1_id);
-        chai.expect(actualThing1.my_parent_1).to.equal(reportId);
-        chai.expect(actualThing1.my_sibling_1).to.equal(doc2_id);
+        expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        expect(actualThing1.some_property_1).to.equal('some_value_1');
+        expect(actualThing1.my_self_1).to.equal(doc1_id);
+        expect(actualThing1.my_parent_1).to.equal(reportId);
+        expect(actualThing1.my_sibling_1).to.equal(doc2_id);
 
         const actualThing2 = actual[2];
-        chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
-        chai.expect(actualThing2.my_self_2).to.equal(doc2_id);
-        chai.expect(actualThing2.my_parent_2).to.equal(reportId);
-        chai.expect(actualThing2.my_sibling_2).to.equal(doc1_id);
+        expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        expect(actualThing2.some_property_2).to.equal('some_value_2');
+        expect(actualThing2.my_self_2).to.equal(doc2_id);
+        expect(actualThing2.my_parent_2).to.equal(reportId);
+        expect(actualThing2.my_sibling_2).to.equal(doc1_id);
 
-        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
       });
     });
 
@@ -839,34 +841,34 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
       return service.save('V', form).then(function(actual) {
-        chai.expect(form.validate.callCount).to.equal(1);
-        chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbBulkDocs.callCount).to.equal(1);
-        chai.expect(UserContact.callCount).to.equal(1);
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
 
-        chai.expect(actual.length).to.equal(4);
+        expect(actual.length).to.equal(4);
         const reportId = actual[0]._id;
 
         const actualReport = actual[0];
-        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
-        chai.expect(actualReport.fields.name).to.equal('Sally');
-        chai.expect(actualReport.fields.lmp).to.equal('10');
-        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        chai.expect(actualReport.form).to.equal('V');
-        chai.expect(actualReport.type).to.equal('data_record');
-        chai.expect(actualReport.content_type).to.equal('xml');
-        chai.expect(actualReport.contact._id).to.equal('123');
-        chai.expect(actualReport.from).to.equal('555');
-        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport._id).to.match(/(\w+-)\w+/);
+        expect(actualReport.fields.name).to.equal('Sally');
+        expect(actualReport.fields.lmp).to.equal('10');
+        expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        expect(actualReport.form).to.equal('V');
+        expect(actualReport.type).to.equal('data_record');
+        expect(actualReport.content_type).to.equal('xml');
+        expect(actualReport.contact._id).to.equal('123');
+        expect(actualReport.from).to.equal('555');
+        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
         for (let i=1; i<=3; ++i) {
           const repeatDocN = actual[i];
-          chai.expect(repeatDocN._id).to.match(/(\w+-)\w+/);
-          chai.expect(repeatDocN.my_parent).to.equal(reportId);
-          chai.expect(repeatDocN.some_property).to.equal('some_value_'+i);
+          expect(repeatDocN._id).to.match(/(\w+-)\w+/);
+          expect(repeatDocN.my_parent).to.equal(reportId);
+          expect(repeatDocN.some_property).to.equal('some_value_'+i);
         }
 
-        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(4);
+        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(4);
       });
     });
 
@@ -893,12 +895,12 @@ describe('Enketo service', () => {
       UserContact.resolves({ _id: 'my-user', phone: '8989' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       return service.save('my-form', form, true).then(() => {
-        chai.expect(AddAttachment.callCount).to.equal(2);
-        chai.expect(AddAttachment.args[0][1]).to.equal('content');
+        expect(AddAttachment.callCount).to.equal(2);
+        expect(AddAttachment.args[0][1]).to.equal('content');
 
-        chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form/my_file');
-        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-        chai.expect(AddAttachment.args[1][3]).to.equal('image');
+        expect(AddAttachment.args[1][1]).to.equal('user-file/my-form/my_file');
+        expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        expect(AddAttachment.args[1][3]).to.equal('image');
       });
     });
 
@@ -932,17 +934,17 @@ describe('Enketo service', () => {
       UserContact.resolves({ _id: 'my-user', phone: '8989' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       return service.save('my-form-internal-id', form, true).then(() => {
-        chai.expect(AddAttachment.callCount).to.equal(3);
-        chai.expect(AddAttachment.args[0][1]).to.equal('content');
+        expect(AddAttachment.callCount).to.equal(3);
+        expect(AddAttachment.args[0][1]).to.equal('content');
 
-        chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
-        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-        chai.expect(AddAttachment.args[1][3]).to.equal('image');
+        expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
+        expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        expect(AddAttachment.args[1][3]).to.equal('image');
 
-        chai.expect(AddAttachment.args[2][1])
+        expect(AddAttachment.args[2][1])
           .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
-        chai.expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
-        chai.expect(AddAttachment.args[2][3]).to.equal('mytype');
+        expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
+        expect(AddAttachment.args[2][3]).to.equal('mytype');
       });
     });
   });
