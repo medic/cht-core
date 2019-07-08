@@ -33,17 +33,19 @@ const validDirectory = (fpath) => {
 
 const validatePlaceHolders = (langs, dir) => {
   let valid = true;
+  const extraFile = `${dir}/messages-ex.properties`;
   const templateFile = `${dir}/messages-en.properties`;
-  const templatePlaceholders = extractPlaceholders(templateFile, true);
-  langs.filter(lang => lang !== 'en').forEach(lang => {
+  const templatePlaceholders = extractPlaceholders(templateFile, extraFile);
+  langs.filter(lang => lang !== 'en' && lang !== 'ex').forEach(lang => {
     const file = `${dir}/messages-${lang}.properties`;
-    const placeholdersWithIndex = extractPlaceholders(file);
-    Object.keys(placeholdersWithIndex).forEach(k => {
-      const placeholderWithIndex = placeholdersWithIndex[k];
-      const foundAllPlaceholders = placeholderWithIndex.placeholders.every(el => templatePlaceholders.includes(el));
+    const placeholders = extractPlaceholders(file);
+    Object.keys(placeholders).forEach(k => {
+      const placeholder = placeholders[k];
+      const templatePlaceholder = templatePlaceholders[k];
+      const foundAllPlaceholders = placeholder.placeholders.every(el => templatePlaceholder.placeholders.includes(el));
       if (!foundAllPlaceholders) {
         valid = false;
-        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholderWithIndex.index + 1} has placeholders that do not match those of messages-en.properties`);
+        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholder.index + 1} has placeholders that do not match those of messages-en.properties\nYou can use messages-en.extra.properties to add placeholders missing from the reference context.`);
       }
     });
   });

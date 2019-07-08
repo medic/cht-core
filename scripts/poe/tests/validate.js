@@ -33,7 +33,7 @@ describe('validate', () => {
 
   test('error on non-matching translation placeholders', () => {
     validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'non-matching-placeholders'));
-    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties');
+    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties\nYou can use messages-en.extra.properties to add placeholders missing from the reference context.');
   });
 
 });
