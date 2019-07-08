@@ -142,7 +142,8 @@ angular.module('inboxServices').factory('Select2Search',
           } else {
             resolution = getDoc(value).then(function(doc) {
               selectEl.select2('data')[0].doc = doc;
-            });
+            })
+            .catch(err => $log.error('Select2 failed to get document', err));
           }
         }
 
@@ -187,7 +188,8 @@ angular.module('inboxServices').factory('Select2Search',
               getDoc(docId).then(function(doc) {
                 selectEl.select2('data')[0].doc = doc;
                 selectEl.trigger('change');
-              });
+              })
+              .catch(err => $log.error('Select2 failed to get document', err));
             }
           });
         }
