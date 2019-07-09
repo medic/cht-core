@@ -7,11 +7,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $state,
     $timeout,
     $translate,
-    Actions,
     ContactForm,
     ContactSave,
     ContactSchema,
     Enketo,
+    GlobalActions,
     LineageModelGenerator,
     Selectors,
     Snackbar
@@ -24,22 +24,25 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     var mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state)
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        loadingContent: Selectors.getLoadingContent(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setCancelCallback: actions.setCancelCallback,
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError
+        setCancelCallback: globalActions.setCancelCallback,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
+        setEnketoError: globalActions.setEnketoError,
+        setLoadingContent: globalActions.setLoadingContent,
+        setShowContent: globalActions.setShowContent
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.loadingContent = true;
-    $scope.setShowContent(true);
+    ctrl.setLoadingContent(true);
+    ctrl.setShowContent(true);
     ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
         $state.go('contacts.detail', { id: null });
@@ -168,11 +171,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       .then(renderForm)
       .then(setEnketoContact)
       .then(function() {
-        $scope.loadingContent = false;
+        ctrl.setLoadingContent(false);
       })
       .catch(function(err) {
-        $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
-        $scope.loadingContent = false;
+        ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
+        ctrl.setLoadingContent(false);
         $scope.contentError = true;
         $log.error('Error loading contact form.', err);
       });

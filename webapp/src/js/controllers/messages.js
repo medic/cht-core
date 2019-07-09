@@ -9,35 +9,35 @@ angular
     $state,
     $stateParams,
     $timeout,
-    Actions,
     Changes,
     Export,
     MessageContacts,
     MessageListUtils,
+    MessagesActions,
     Selectors,
     Tour
   ) {
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state)
+        selectedMessage: Selectors.getSelectedMessage(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const messagesActions = MessagesActions(dispatch);
       return {
-        setSelected: actions.setSelected
+        setSelectedMessage: messagesActions.setSelectedMessage
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.allLoaded = false;
     $scope.messages = [];
-    ctrl.setSelected(null);
-    $scope.loading = true;
+    ctrl.setSelectedMessage(null);
+    ctrl.loading = true;
 
     var setMessages = function(options) {
       options = options || {};
@@ -46,7 +46,7 @@ angular
         var selectedChanged = MessageListUtils.mergeUpdated(
           $scope.messages,
           options.messages,
-          ctrl.selected && ctrl.selected.id
+          ctrl.selectedMessage && ctrl.selectedMessage.id
         );
         if (selectedChanged) {
           $scope.$broadcast('UpdateContactConversation', { silent: true });
@@ -60,12 +60,12 @@ angular
     var updateConversations = function(options) {
       options = options || {};
       if (!options.changes) {
-        $scope.loading = true;
+        ctrl.loading = true;
       }
       return MessageContacts.list().then(function(messages) {
         options.messages = messages;
         setMessages(options);
-        $scope.loading = false;
+        ctrl.loading = false;
       });
     };
 
@@ -80,8 +80,8 @@ angular
     };
 
     $scope.setSelected = function(doc) {
-      var refreshing = (ctrl.selected && ctrl.selected.id) === doc.id;
-      ctrl.setSelected(doc);
+      var refreshing = (ctrl.selectedMessage && ctrl.selectedMessage.id) === doc.id;
+      ctrl.setSelectedMessage(doc);
       $scope.settingSelected(refreshing);
     };
 
@@ -108,7 +108,7 @@ angular
       });
 
     $scope.$on('ClearSelected', function() {
-      ctrl.setSelected(null);
+      ctrl.setSelectedMessage(null);
     });
 
     var changeListener = Changes({

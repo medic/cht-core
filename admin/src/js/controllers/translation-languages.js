@@ -18,20 +18,19 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     'use strict';
     'ngInject';
 
-    var createLocaleModel = function(settings, doc, totalTranslations) {
+    var createLocaleModel = function(doc, totalTranslations) {
       var result = {
         doc: doc
       };
 
-      var content = ExportProperties(settings, doc);
+      var content = ExportProperties(doc);
       if (content) {
         result.export = {
           name: doc._id + '.properties',
           url: Blob.text(content)
         };
       }
-
-      result.missing = totalTranslations - Object.keys(Object.assign(doc.generic, doc.custom || {})).length;
+      result.missing = totalTranslations - getTranslationKeys(doc).length;
 
       return result;
     };
@@ -43,10 +42,12 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
       });
     };
 
-    var countTotalTranslations = function(rows) {
-      var keys = rows.map(function(row) {
-        return row.doc.custom || row.doc.generic ? Object.keys(Object.assign(row.doc.generic, row.doc.custom || {})) : [];
-      });
+    const getTranslationKeys = doc => {
+      return Object.keys(Object.assign({}, doc.generic || {}, doc.custom || {}));
+    };
+
+    const countTotalTranslations = (rows) => {
+      let keys = rows.map(row => getTranslationKeys(row.doc));
       keys = _.uniq(_.flatten(keys));
       return keys.length;
     };
@@ -73,7 +74,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
               outgoing: settings.locale_outgoing
             },
             locales: _.map(docs, function(row) {
-              return createLocaleModel(settings, row.doc, totalTranslations);
+              return createLocaleModel(row.doc, totalTranslations);
             })
           };
         })

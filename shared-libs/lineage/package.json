@@ -9,13 +9,17 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@medic/memdown": "^1.0.0",
+    "@medic/memdown": "file:../memdown",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^1.0.12",
     "chai-shallow-deep-equal": "^1.4.6",
     "mocha": "^5.2.0",
-    "sinon": "^7.1.1"
+    "sinon": "^7.1.1",
+    "pouchdb-adapter-memory": "^7.0.0",
+    "pouchdb-core": "^7.0.0",
+    "pouchdb-mapreduce": "^7.0.0",
+    "uuid": "^3.3.2"
   },
   "dependencies": {
     "underscore": "^1.9.1"

@@ -1,13 +1,20 @@
 <div class="filters">
   <div class="inner">
-    <ng-include src="'templates/partials/contacts_filters.html'"></ng-include>
+    <mm-contacts-filters></mm-contacts-filters>
     <mm-navigation></mm-navigation>
   </div>
 </div>
 
 <div class="inner">
   <div class="inbox page">
-    <ng-include src="'templates/partials/contacts_list.html'"></ng-include>
+    <mm-contacts-list
+      appending="contactsCtrl.appending"
+      error="contactsCtrl.error"
+      filtered="filtered"
+      has-contacts="hasContacts"
+      loading="contactsCtrl.loading"
+      more-items="moreItems"
+    ></mm-contacts-list>
     <ui-view name="content"/>
   </div>
 </div>

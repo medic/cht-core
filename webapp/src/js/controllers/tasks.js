@@ -13,32 +13,35 @@ var _ = require('underscore');
       $timeout,
       $translate,
       $window,
-      Actions,
+      GlobalActions,
       LiveList,
       RulesEngine,
       Selectors,
+      TasksActions,
       Tour,
       TranslateFrom
     ) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
-          selected: Selectors.getSelected(state)
+          selectedTask: Selectors.getSelectedTask(state)
         };
       };
-      var mapDispatchToTarget = function(dispatch) {
-        var actions = Actions(dispatch);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        const tasksActions = TasksActions(dispatch);
         return {
-          setSelected: actions.setSelected
+          setSelectedTask: tasksActions.setSelectedTask,
+          setShowContent: globalActions.setShowContent
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
-        ctrl.setSelected(task);
+        ctrl.setSelectedTask(task);
         if (_.isString(task.title)) {
           // new translation key style
           task.title = $translate.instant(task.title, task);
@@ -47,7 +50,7 @@ var _ = require('underscore');
           task.title = TranslateFrom(task.title, task);
         }
         $scope.setTitle(TranslateFrom(task.title, task));
-        $scope.setShowContent(true);
+        ctrl.setShowContent(true);
       };
 
       $scope.setSelected = function(id) {
@@ -58,7 +61,7 @@ var _ = require('underscore');
         }
         var task = _.findWhere(LiveList.tasks.getList(), { _id: id });
         if (task) {
-          var refreshing = (ctrl.selected && ctrl.selected._id) === id;
+          var refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
           $scope.settingSelected(refreshing);
           setSelectedTask(task);
         }
@@ -69,33 +72,33 @@ var _ = require('underscore');
       };
 
       $scope.$on('ClearSelected', function() {
-        ctrl.setSelected(null);
+        ctrl.setSelectedTask(null);
       });
 
       $timeout(function() {
         LiveList.tasks.refresh();
       });
-      ctrl.setSelected(null);
-      $scope.error = false;
+      ctrl.setSelectedTask(null);
+      ctrl.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
       $scope.tasksDisabled = !RulesEngine.enabled;
-      $scope.loading = true;
+      ctrl.loading = true;
 
       RulesEngine.complete.then(function() {
         $timeout(function() {
-          $scope.loading = false;
+          ctrl.loading = false;
         });
       });
 
       LiveList.tasks.notifyChange = function(task) {
         $scope.hasTasks = LiveList.tasks.count() > 0;
-        if (ctrl.selected && task._id === ctrl.selected._id ||
-            (!ctrl.selected && task._id === $state.params.id)) {
+        if (ctrl.selectedTask && task._id === ctrl.selectedTask._id ||
+            (!ctrl.selectedTask && task._id === $state.params.id)) {
           setSelectedTask(task);
         }
       };
       LiveList.tasks.notifyError = function() {
-        $scope.error = true;
+        ctrl.error = true;
         $scope.clearSelected();
       };
 

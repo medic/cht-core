@@ -76,9 +76,9 @@ angular.module('services').factory('ImportProperties',
 angular.module('services').factory('ExportProperties',
   function() {
     'use strict';
-    return function(settings, locale) {
+    return function (locale) {
       var stringifier = properties.createStringifier();
-      var values = Object.assign(locale.generic, locale.custom || {});
+      var values = Object.assign({}, locale.generic, locale.custom || {});
       Object.keys(values).forEach(function(key) {
         stringifier.property({ key: key, value: values[key] });
       });

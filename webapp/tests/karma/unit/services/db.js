@@ -181,7 +181,7 @@ describe('DB service', () => {
       chai.expect(pouchDB.callCount).to.equal(2);
       chai.expect(actual2.id).to.equal(expected.id);
       chai.expect(isOnlineOnly.callCount).to.equal(1);
-      chai.expect(userCtx.callCount).to.equal(8);
+      chai.expect(userCtx.callCount).to.equal(4);
     });
 
     it('returns remote for admin user', () => {

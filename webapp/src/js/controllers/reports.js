@@ -2,6 +2,8 @@ const _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader'),
   lineageFactory = require('@medic/lineage');
 
+const PAGE_SIZE = 50;
+
 angular
   .module('inboxControllers')
   .controller('ReportsCtrl', function(
@@ -12,16 +14,18 @@ angular
     $stateParams,
     $timeout,
     $translate,
-    Actions,
     AddReadStatus,
     Auth,
     Changes,
     DB,
     Export,
+    GlobalActions,
     LiveList,
     MarkRead,
     Modal,
+    PlaceHierarchy,
     ReportViewModelGenerator,
+    ReportsActions,
     Search,
     SearchFilters,
     Selectors,
@@ -34,29 +38,59 @@ angular
     const mapStateToTarget = state => ({
       enketoEdited: Selectors.getEnketoEditedStatus(state),
       selectMode: Selectors.getSelectMode(state),
-      selected: Selectors.getSelected(state)
+      selectedReports: Selectors.getSelectedReports(state),
+      showContent: Selectors.getShowContent(state)
     });
-    
     const mapDispatchToTarget = function(dispatch) {
-      const actions = Actions(dispatch);
+      const globalActions = GlobalActions(dispatch);
+      const reportsActions = ReportsActions(dispatch);
       return {
-        addSelected: actions.addSelected,
-        removeSelected: actions.removeSelected,
-        setSelected: actions.setSelected,
-        setFirstSelectedDocProperty: actions.setFirstSelectedDocProperty,
-        setLastChangedDoc: actions.setLastChangedDoc
+        addSelectedReport: reportsActions.addSelectedReport,
+        removeSelectedReport: reportsActions.removeSelectedReport,
+        setFacilities: globalActions.setFacilities,
+        setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
+        setLastChangedDoc: globalActions.setLastChangedDoc,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectedReports: reportsActions.setSelectedReports
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var lineage = lineageFactory();
 
+    // Render the facilities hierarchy as the user is scrolling through the list
+    // Initially, don't load/render any
+    $scope.totalFacilitiesDisplayed = 0;
+    ctrl.setFacilities([]);
+
+    // Load the facilities hierarchy and render one district hospital
+    // when the user clicks on the filter dropdown
+    $scope.monitorFacilityDropdown = () => {
+      PlaceHierarchy()
+        .then(function(hierarchy) {
+          ctrl.setFacilities(hierarchy);
+          $scope.totalFacilitiesDisplayed += 1;
+        })
+        .catch(function(err) {
+          $log.error('Error loading facilities', err);
+        });
+
+      $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
+        // visible height + pixel scrolled >= total height - 100
+        if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
+          $timeout(() => $scope.totalFacilitiesDisplayed += 1);
+        }
+      });
+    };
+
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
     // where the summary is the data required for the collapsed view,
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
-    ctrl.setSelected([]);
+    ctrl.setSelectedReports([]);
+    ctrl.appending = false;
+    ctrl.error = false;
     $scope.filters = {
       search: $stateParams.query,
     };
@@ -108,7 +142,7 @@ angular
 
     var setRightActionBar = function() {
       var model = {};
-      model.selected = ctrl.selected.map(function(s) {
+      model.selected = ctrl.selectedReports.map(function(s) {
         return s.doc || s.summary;
       });
       var doc =
@@ -141,12 +175,12 @@ angular
     $scope.setSelected = function(model) {
       var refreshing = true;
       if (ctrl.selectMode) {
-        var existing = _.findWhere(ctrl.selected, { _id: model.doc._id });
+        var existing = _.findWhere(ctrl.selectedReports, { _id: model.doc._id });
         if (existing) {
           _.extend(existing, model);
         } else {
           model.expanded = false;
-          ctrl.addSelected(model);
+          ctrl.addSelectedReport(model);
         }
       } else {
         if (liveList.initialised()) {
@@ -154,14 +188,14 @@ angular
         }
         refreshing =
           model.doc &&
-          ctrl.selected.length &&
-          ctrl.selected[0]._id === model.doc._id;
+          ctrl.selectedReports.length &&
+          ctrl.selectedReports[0]._id === model.doc._id;
         if (!refreshing) {
           $scope.verifyingReport = false;
         }
 
         model.expanded = true;
-        ctrl.setSelected([model]);
+        ctrl.setSelectedReports([model]);
         setTitle(model);
       }
       setRightActionBar();
@@ -183,9 +217,9 @@ angular
         });
     };
 
-    var removeSelected = function(id) {
-      ctrl.removeSelected(id);
-      var index = _.findIndex(ctrl.selected, function(s) {
+    var removeSelectedReport = function(id) {
+      ctrl.removeSelectedReport(id);
+      var index = _.findIndex(ctrl.selectedReports, function(s) {
         return s._id === id;
       });
       if (index !== -1) {
@@ -195,7 +229,7 @@ angular
 
     $scope.deselectReport = function(report) {
       const reportId = report._id || report;
-      removeSelected(reportId);
+      removeSelectedReport(reportId);
       $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
       $scope.settingSelected(true);
     };
@@ -222,17 +256,20 @@ angular
     };
 
     var query = function(opts) {
-      const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
+      const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+      if (options.limit < PAGE_SIZE) {
+        options.limit = PAGE_SIZE;
+      }
       if (!options.silent) {
-        $scope.error = false;
-        $scope.errorSyntax = false;
-        $scope.loading = true;
-        if (ctrl.selected.length && $scope.isMobile()) {
+        ctrl.error = false;
+        ctrl.errorSyntax = false;
+        ctrl.loading = true;
+        if (ctrl.selectedReports.length && $scope.isMobile()) {
           $scope.selectReport();
         }
       }
       if (options.skip) {
-        $scope.appending = true;
+        ctrl.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
@@ -242,14 +279,14 @@ angular
         .then(updateLiveList)
         .then(function(data) {
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
-          $scope.loading = false;
-          $scope.appending = false;
-          $scope.error = false;
-          $scope.errorSyntax = false;
+          ctrl.loading = false;
+          ctrl.appending = false;
+          ctrl.error = false;
+          ctrl.errorSyntax = false;
           if (
             !$state.params.id &&
             !$scope.isMobile() &&
-            !ctrl.selected &&
+            !ctrl.selectedReports &&
             !ctrl.selectMode &&
             $state.is('reports.detail')
           ) {
@@ -264,15 +301,15 @@ angular
           initScroll();
         })
         .catch(function(err) {
-          $scope.error = true;
-          $scope.loading = false;
+          ctrl.error = true;
+          ctrl.loading = false;
           if (
             $scope.filters.search &&
             err.reason &&
             err.reason.toLowerCase().indexOf('bad query syntax') !== -1
           ) {
             // invalid freetext filter query
-            $scope.errorSyntax = true;
+            ctrl.errorSyntax = true;
           }
           $log.error('Error loading messages', err);
         });
@@ -285,11 +322,11 @@ angular
         $state.go('reports.detail', { id: null }, { notify: false });
         clearSelection();
       }
-      if ($scope.isMobile() && $scope.showContent) {
+      if ($scope.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }
-      $scope.loading = true;
+      ctrl.loading = true;
       if (
         $scope.filters.search ||
         ($scope.filters.forms &&
@@ -318,7 +355,7 @@ angular
     });
 
     const clearSelection = () => {
-      ctrl.setSelected([]);
+      ctrl.setSelectedReports([]);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $('#reports-list input[type="checkbox"]').prop('checked', false);
@@ -333,16 +370,16 @@ angular
       Modal({
         templateUrl: 'templates/modals/edit_report.html',
         controller: 'EditReportCtrl',
-        model: { report: ctrl.selected[0].doc },
+        model: { report: ctrl.selectedReports[0].doc },
       });
     });
 
     $scope.$on('VerifyReport', function(e, reportIsValid) {
-      if (!ctrl.selected[0].doc.form) {
+      if (!ctrl.selectedReports[0].doc.form) {
         return;
       }
 
-      $scope.setLoadingSubActionBar(true);
+      ctrl.setLoadingSubActionBar(true);
 
       const promptUserToConfirmVerification = () => {
         const verificationTranslationKey = reportIsValid ? 'reports.verify.valid' : 'reports.verify.invalid';
@@ -362,9 +399,9 @@ angular
         if (canUserEdit) {
           return true;
         }
-        
+
         // don't verify if user can't edit and this is an edit
-        const docHasExistingResult = ctrl.selected[0].doc.verified !== undefined;
+        const docHasExistingResult = ctrl.selectedReports[0].doc.verified !== undefined;
         if (docHasExistingResult) {
           return false;
         }
@@ -374,41 +411,41 @@ angular
       };
 
       const writeVerificationToDoc = function() {
-        if (ctrl.selected[0].doc.contact) {
-          const minifiedContact = lineage.minifyLineage(ctrl.selected[0].doc.contact);
-          ctrl.setFirstSelectedDocProperty({ contact: minifiedContact });
+        if (ctrl.selectedReports[0].doc.contact) {
+          const minifiedContact = lineage.minifyLineage(ctrl.selectedReports[0].doc.contact);
+          ctrl.setFirstSelectedReportDocProperty({ contact: minifiedContact });
         }
 
-        const clearVerification = ctrl.selected[0].doc.verified === reportIsValid;
+        const clearVerification = ctrl.selectedReports[0].doc.verified === reportIsValid;
         if (clearVerification) {
-          ctrl.setFirstSelectedDocProperty({
+          ctrl.setFirstSelectedReportDocProperty({
             verified: undefined,
             verified_date: undefined,
           });
         } else {
-          ctrl.setFirstSelectedDocProperty({
+          ctrl.setFirstSelectedReportDocProperty({
             verified: reportIsValid,
             verified_date: Date.now(),
           });
         }
-        ctrl.setLastChangedDoc(ctrl.selected[0].doc);
+        ctrl.setLastChangedDoc(ctrl.selectedReports[0].doc);
 
         return DB()
-          .get(ctrl.selected[0].doc._id)
+          .get(ctrl.selectedReports[0].doc._id)
           .then(function(existingRecord) {
-            ctrl.setFirstSelectedDocProperty({ _rev: existingRecord._rev });
-            return DB().post(ctrl.selected[0].doc);
+            ctrl.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
+            return DB().post(ctrl.selectedReports[0].doc);
           })
           .catch(function(err) {
             $log.error('Error verifying message', err);
           })
           .finally(function () {
             $scope.$broadcast('VerifiedReport', reportIsValid);
-            $scope.setLoadingSubActionBar(false);
+            ctrl.setLoadingSubActionBar(false);
           });
       };
 
-      $scope.setLoadingSubActionBar(true);
+      ctrl.setLoadingSubActionBar(true);
       Auth('can_edit_verification')
         .then(() => true)
         .catch(() => false)
@@ -421,12 +458,12 @@ angular
           return writeVerificationToDoc();
         })
         .catch(err => $log.error(`Error verifying message: ${err}`))
-        .finally(() => $scope.setLoadingSubActionBar(false));
+        .finally(() => ctrl.setLoadingSubActionBar(false));
     });
 
     var initScroll = function() {
       scrollLoader.init(function() {
-        if (!$scope.loading && $scope.moreItems) {
+        if (!ctrl.loading && $scope.moreItems) {
           query({ skip: true });
         }
       });
@@ -452,7 +489,7 @@ angular
     };
 
     $scope.resetFilterModel = function() {
-      if (ctrl.selectMode && ctrl.selected && ctrl.selected.length) {
+      if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {
         // can't filter when in select mode
         return;
       }
@@ -466,11 +503,11 @@ angular
       $scope.search();
     } else {
       // otherwise wait for loading to complete
-      $scope.loading = true;
+      ctrl.loading = true;
       $scope.$on('formLoadingComplete', function() {
         $scope.search();
         var doc =
-          ctrl.selected && ctrl.selected[0] && ctrl.selected[0].doc;
+          ctrl.selectedReports && ctrl.selectedReports[0] && ctrl.selectedReports[0].doc;
         if (doc) {
           setTitle(doc);
         }
@@ -484,7 +521,7 @@ angular
         var target = $(e.target).closest('li[data-record-id]');
         var reportId = target.attr('data-record-id');
         var checkbox = target.find('input[type="checkbox"]');
-        var alreadySelected = _.findWhere(ctrl.selected, { _id: reportId });
+        var alreadySelected = _.findWhere(ctrl.selectedReports, { _id: reportId });
         // timeout so if the user clicked the checkbox it has time to
         // register before we set it to the correct value.
         $timeout(function() {
@@ -492,7 +529,7 @@ angular
           if (!alreadySelected) {
             $scope.selectReport(reportId);
           } else {
-            removeSelected(reportId);
+            removeSelectedReport(reportId);
           }
         });
       }
@@ -501,7 +538,7 @@ angular
     var syncCheckboxes = function() {
       $('#reports-list li').each(function() {
         var id = $(this).attr('data-record-id');
-        var found = _.findWhere(ctrl.selected, { _id: id });
+        var found = _.findWhere(ctrl.selectedReports, { _id: id });
         $(this)
           .find('input[type="checkbox"]')
           .prop('checked', found);
@@ -521,7 +558,7 @@ angular
               contact: summary.contact,
             };
           });
-          ctrl.setSelected(selected);
+          ctrl.setSelectedReports(selected);
           $scope.settingSelected(true);
           setRightActionBar();
           $('#reports-list input[type="checkbox"]').prop('checked', true);
@@ -532,7 +569,7 @@ angular
     });
 
     var deselectAll = function() {
-      ctrl.setSelected([]);
+      ctrl.setSelectedReports([]);
       setRightActionBar();
       $('#reports-list input[type="checkbox"]').prop('checked', false);
     };
@@ -570,7 +607,7 @@ angular
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
-          query({ silent: true, limit: Math.max(50, liveList.count()) });
+          query({ silent: true, limit: liveList.count() });
         }
       },
       filter: function(change) {

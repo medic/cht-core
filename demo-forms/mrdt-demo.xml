@@ -7,12 +7,14 @@
         <mrdt delimiter="#" id="mrdt_demo">
           <name/>
           <mrdt_image_data type="binary"/>
+          <mrdt_time_taken tag="hidden"/>
           <meta>
             <instanceID/>
           </meta>
         </mrdt>
       </instance>
       <bind nodeset="/mrdt/name" type="string"/>
+      <bind nodeset="/mrdt/mrdt_time_taken" type="int"/>
       <bind nodeset="/mrdt/mrdt_image_data" type="string"/>
     </model>
   </h:head>
@@ -24,6 +26,9 @@
       </input>
       <input ref="/mrdt/mrdt_image_data" appearance="mrdt-verify">
         <label>MRDT image</label>
+      </input>
+      <input ref="/mrdt/mrdt_time_taken" appearance="mrdt-time-taken hidden">
+        <label>MRDT time taken</label>
       </input>
     </group>
   </h:body>

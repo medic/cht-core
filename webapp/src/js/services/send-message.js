@@ -8,9 +8,9 @@ angular
   .factory('SendMessage', function(
     $ngRedux,
     $q,
-    Actions,
     DB,
     ExtractLineage,
+    GlobalActions,
     Settings,
     UserSettings
   ) {
@@ -19,9 +19,9 @@ angular
 
     const self = this;
     const mapDispatchToTarget = (dispatch) => {
-      const actions = Actions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
-        setLastChangedDoc: actions.setLastChangedDoc
+        setLastChangedDoc: globalActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);

@@ -6,7 +6,10 @@
 
 <div class="inner">
   <div class="inbox page">
-    <mm-messages-list></mm-messages-list>
+    <mm-messages-list
+      loading="messagesCtrl.loading"
+      messages="messages"
+    ></mm-messages-list>
     <ui-view name="content"/>
   </div>
 </div>

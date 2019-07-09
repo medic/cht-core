@@ -2,7 +2,7 @@ describe('Contacts Edit controller', () => {
 
   'use strict';
 
-  let actions,
+  let globalActions,
       contactSchema,
       createController,
       scope,
@@ -10,20 +10,19 @@ describe('Contacts Edit controller', () => {
       contactForm,
       spyState;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
-  beforeEach(inject((_$rootScope_, $controller) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, GlobalActions) => {
     contactForm = { forEdit: sinon.stub(), forCreate: sinon.stub() };
-    actions = {
-      setCancelCallback: sinon.stub(),
-      setEnketoSavingStatus: sinon.stub(),
-      setEnketoError: sinon.stub(),
-    };
+    const stubbedGlobalActions = { setCancelCallback: sinon.stub() };
+    globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), stubbedGlobalActions);
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
-    scope.setShowContent = sinon.stub();
     contactSchema = { get: sinon.stub().returns({ fields: { parent: '' }}) };
     var $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
@@ -43,7 +42,7 @@ describe('Contacts Edit controller', () => {
         '$state': spyState,
         '$timeout': work => work(),
         '$translate': $translate,
-        'Actions': () => actions,
+        'GlobalActions': () => globalActions,
         'ContactForm': contactForm,
         'ContactSave': sinon.stub(),
         'ContactSchema': contactSchema,
@@ -58,7 +57,7 @@ describe('Contacts Edit controller', () => {
   it('cancelling redirects to contacts list when query has `from` param equal to `list`', () => {
     let cancelCallback;
     spyState.params.from = 'list';
-    actions.setCancelCallback.callsFake(func => cancelCallback = func);
+    globalActions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
     cancelCallback();
@@ -69,7 +68,7 @@ describe('Contacts Edit controller', () => {
   it('cancelling falls back to parent contact if new contact and query `from` param is not equal to `list`', () => {
     let cancelCallback;
     spyState.params.from = 'something';
-    actions.setCancelCallback.callsFake(func => cancelCallback = func);
+    globalActions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
     cancelCallback();
@@ -79,7 +78,7 @@ describe('Contacts Edit controller', () => {
 
   it('cancelling falls back to parent contact if new contact and query does not have `from` param', () => {
     let cancelCallback;
-    actions.setCancelCallback.callsFake(func => cancelCallback = func);
+    globalActions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
     cancelCallback();
@@ -90,7 +89,7 @@ describe('Contacts Edit controller', () => {
   it('cancelling falls back to contact if edit contact', () => {
     let cancelCallback;
     spyState.params.id = 'id';
-    actions.setCancelCallback.callsFake(func => cancelCallback = func);
+    globalActions.setCancelCallback.callsFake(func => cancelCallback = func);
 
     createController();
     cancelCallback();

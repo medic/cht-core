@@ -53,7 +53,9 @@ define( function( require, exports, module ) {
         }
 
         $el.on( 'click', '.btn.mrdt-verify', function() {
-            service.verify().then( function(image) {
+            service.verify().then( function(data) {
+                var image = data.image;
+                var timeTaken = data.timeTaken;
                 $( self.element )
                     .find( 'textarea' )
                     .val( image )
@@ -61,6 +63,13 @@ define( function( require, exports, module ) {
                 $( self.element )
                     .find( '.mrdt-preview' )
                     .attr('src', 'data:image/png;base64, ' + image);
+                if (timeTaken) {
+                  $( self.element )
+                      .siblings( '.or-appearance-mrdt-time-taken' )
+                      .find( 'input' )
+                      .val( timeTaken )
+                      .trigger( 'change' );
+                }
             } );
         } );
 
@@ -94,4 +103,3 @@ define( function( require, exports, module ) {
         'selector': '.or-appearance-mrdt-verify',
     };
 } );
-

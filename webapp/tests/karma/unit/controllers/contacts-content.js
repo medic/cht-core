@@ -1,7 +1,7 @@
 describe('ContactsContentCtrl', () => {
   'use strict';
 
-  let actions,
+  let contactsActions,
       controller,
       stateParams,
       scope,
@@ -46,12 +46,12 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions) => {
-    actions = Actions($ngRedux.dispatch);
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions) => {
+    contactsActions = ContactsActions($ngRedux.dispatch);
 
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = selected => actions.setSelected(selected);
+    scope.setSelected = selected => contactsActions.setSelectedContact(selected);
     scope.clearSelected = sinon.stub();
     scope.settingSelected = sinon.stub();
     state = {
