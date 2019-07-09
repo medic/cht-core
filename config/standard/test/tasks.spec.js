@@ -46,9 +46,16 @@ const fixtures = {
     }),
     nutrition_screening: freshCloneOf({
       _id: 'ms-report-1',
-      fields:{
-        zscore: { treatment: 'yes'}
+      fields: {
+        treatment: {
+          program: 'OTP'
+        }
       },
+      scheduled_tasks: [
+        {
+          due: new Date(now).toISOString()
+        }
+      ],
       form: 'nutrition_screening',
       reported_date: now,
     }),
@@ -73,6 +80,16 @@ const fixtures = {
       fields: {},
       form: 'DR',
       reported_date: now,
+    }),
+    nutrition_exit_dead: freshCloneOf({
+      _id: 'nfd',
+      fields: {
+        exit: {
+          outcome: 'dead'
+        }
+      },
+      form: 'nutrition_exit',
+      reported_date: now
     }),
   },
 };
@@ -558,24 +575,22 @@ describe('Standard Configuration Tasks', function() {
         });
     });
 
-    it('should raise treatment enrollment task', function(){
+    it('should raise nutrition follow up task', function(){
 
       session.assert(contactWith(fixtures.reports.nutrition_screening()));
 
       return session.emitTasks()
         .then(tasks => {
-
           const task = tasks[0];
 
-          assertTitle(task, 'task.treatment_enrollment.title');
+          assertTitle(task, 'task.nutrition_followup.title');
           assertIcon(task, 'child');
           assertNotResolved(task);
-          assert.include(task.actions[0], {form: 'treatment_enrollment'});
+          assert.include(task.actions[0], {form: 'nutrition_followup'});
         });
     });
 
-
-    it('should raise death confirmation task', function(){
+    it('should raise death confirmation task from CHW death report', function(){
 
       session.assert(contactWith(fixtures.reports.dr()));
 
@@ -585,7 +600,21 @@ describe('Standard Configuration Tasks', function() {
           const task = tasks[0];
 
           assertTitle(task, 'task.death_confirmation.title');
-          assertIcon(task, 'risk');
+          assertIcon(task, 'icon-death-general');
+          assertNotResolved(task);
+          assert.include(task.actions[0], {form: 'death_confirmation'});
+        });
+    });
+
+    it('should raise death confirmation task from nutrition followup death exit', function(){
+      session.assert(contactWith(fixtures.reports.nutrition_exit_dead()));
+
+      return session.emitTasks()
+        .then(tasks => {
+          const task = tasks[0];
+
+          assertTitle(task, 'task.death_confirmation.title');
+          assertIcon(task, 'icon-death-general');
           assertNotResolved(task);
           assert.include(task.actions[0], {form: 'death_confirmation'});
         });

@@ -11,6 +11,27 @@ var isFacilityDelivery = extras.isFacilityDelivery;
 var getBirthDate = extras.getBirthDate;
 var isHighRiskPostnatal = extras.isHighRiskPostnatal;
 var addImmunizations = extras.addImmunizations;
+var getMostRecentNutritionEnrollment = extras.getMostRecentNutritionEnrollment;
+var countNutritionFollowups = extras.countNutritionFollowups;
+var isActivePregnancy = extras.isActivePregnancy;
+var getSubsequentVisits = extras.getSubsequentVisits;
+var isHighRiskPregnancy = extras.isHighRiskPregnancy;
+var getSubsequentDeliveries = extras.getSubsequentDeliveries;
+var getOldestReport = extras.getOldestReport;
+var getSubsequentPregnancies = extras.getSubsequentPregnancies;
+var getAgeInMonths = extras.getAgeInMonths;
+var initImmunizations = extras.initImmunizations;
+var isVaccineInLineage = extras.isVaccineInLineage;
+var isSingleDose = extras.isSingleDose;
+var countDosesReceived = extras.countDosesReceived;
+var countDosesPossible = extras.countDosesPossible;
+var countReportsSubmittedInWindow = extras.countReportsSubmittedInWindow;
+var getMostRecentReport = extras.getMostRecentReport;
+var getTreatmentEnrollmentDate = extras.getTreatmentEnrollmentDate;
+var pregnancyForms = extras.pregnancyForms;
+var antenatalForms = extras.antenatalForms;
+var postnatalForms = extras.postnatalForms;
+var immunizationForms = extras.immunizationForms;
 
 /* eslint-disable no-global-assign */
 var context = {
@@ -21,7 +42,7 @@ var context = {
     gmp: isCoveredByUseCaseInLineage(lineage, 'gmp'),
   },
   treatment_program: getTreatmentProgram(),
-  enrollment_date: extras.getTreatmentEnrollmentDate(),
+  enrollment_date: getTreatmentEnrollmentDate(),
 };
 
 var fields = [
@@ -38,7 +59,7 @@ var cards = [
   {
     label: 'contact.profile.pregnancy',
     appliesToType: 'report',
-    appliesIf: extras.isActivePregnancy,
+    appliesIf: isActivePregnancy,
     fields: [
       {
         label: 'contact.profile.edd',
@@ -54,7 +75,7 @@ var cards = [
         value: 'contact.profile.visits.of',
         translate: true,
         context: {
-          count: function(r) { return extras.getSubsequentVisits(r).length; },
+          count: function(r) { return getSubsequentVisits(r).length; },
           total: 4,
         },
         width: 6,
@@ -62,12 +83,12 @@ var cards = [
       {
         label: 'contact.profile.risk.title',
         value: function(r) {
-          return extras.isHighRiskPregnancy(r) ? 'contact.profile.risk.high':'contact.profile.risk.normal';
+          return isHighRiskPregnancy(r) ? 'contact.profile.risk.high':'contact.profile.risk.normal';
         },
         translate: true,
         width: 5,
         icon: function(r) {
-          return extras.isHighRiskPregnancy(r) ? 'risk' : '';
+          return isHighRiskPregnancy(r) ? 'risk' : '';
         },
       },
     ],
@@ -156,27 +177,27 @@ var cards = [
       var fields = [];
       var relevantDelivery, birthdate, relevantVisitsANC, relevantVisitsPNC, visitsANC, visitsPNC, subsequentDeliveries, subsequentPregnancies, nextPregnancy;
       reports.forEach(function (report) {
-        if (isReportValid(report) && extras.pregnancyForms.indexOf(report.form) >= 0) {
+        if (isReportValid(report) && pregnancyForms.indexOf(report.form) >= 0) {
 
           // Ignore pregnancies with no delivery report
-          subsequentDeliveries = extras.getSubsequentDeliveries(report);
+          subsequentDeliveries = getSubsequentDeliveries(report);
           if (subsequentDeliveries.length === 0) { return; }
 
-          relevantDelivery = extras.getOldestReport(subsequentDeliveries);
+          relevantDelivery = getOldestReport(subsequentDeliveries);
           birthdate = getBirthDate(relevantDelivery);
 
           // Ignore pregnancy reports that are superseded before delivery report
-          subsequentPregnancies = extras.getSubsequentPregnancies(report);
-          nextPregnancy = extras.getOldestReport(subsequentPregnancies);
+          subsequentPregnancies = getSubsequentPregnancies(report);
+          nextPregnancy = getOldestReport(subsequentPregnancies);
           if (nextPregnancy && nextPregnancy.reported_date < relevantDelivery.reported_date) { return; }
 
           relevantVisitsANC = reports.filter(function (r) {
             // birthdate is set to 00:00 on delivery date, so check for visits up until the end of the birth day date
-            return extras.antenatalForms.indexOf(r.form) >= 0 && r.reported_date > report.reported_date && r.reported_date < (birthdate.getTime() + MS_IN_DAY);
+            return antenatalForms.indexOf(r.form) >= 0 && r.reported_date > report.reported_date && r.reported_date < (birthdate.getTime() + MS_IN_DAY);
           });
           relevantVisitsPNC = reports.filter(function (r) {
             // birthdate is set to 00:00 on delivery day, so add 1 day to end of PNC period
-            return extras.postnatalForms.indexOf(r.form) >= 0 && r.reported_date > birthdate.getTime() && r.reported_date < (birthdate.getTime() + (DAYS_IN_PNC+1)*MS_IN_DAY);
+            return postnatalForms.indexOf(r.form) >= 0 && r.reported_date > birthdate.getTime() && r.reported_date < (birthdate.getTime() + (DAYS_IN_PNC+1)*MS_IN_DAY);
           });
 
           visitsANC = relevantVisitsANC.length;
@@ -205,11 +226,11 @@ var cards = [
     label: 'contact.profile.immunizations',
     appliesToType: 'person',
     appliesIf: function() {
-      return context.use_cases.imm && extras.getAgeInMonths() < 144;
+      return context.use_cases.imm && getAgeInMonths() < 144;
     },
     fields: function() {
       var i, report;
-      var immunizations = extras.initImmunizations();
+      var immunizations = initImmunizations();
       for(i=0; i<reports.length; ++i) {
         report = reports[i];
         if (report.form === 'immunization_visit') {
@@ -226,19 +247,19 @@ var cards = [
       var fields = [];
 
       IMMUNIZATION_LIST.forEach(function(imm) {
-        if (extras.isVaccineInLineage(lineage, imm)) {
+        if (isVaccineInLineage(lineage, imm)) {
           var field = {
             label: 'contact.profile.imm.' + imm,
             translate: true,
             width: 6,
           };
-          if (extras.isSingleDose(imm)) {
+          if (isSingleDose(imm)) {
             field.value = immunizations[imm] ? 'yes' : 'no';
           } else {
             field.value = 'contact.profile.imm.doses';
             field.context = {
-              count: extras.countDosesReceived(immunizations, imm),
-              total: extras.countDosesPossible(imm),
+              count: countDosesReceived(immunizations, imm),
+              total: countDosesPossible(imm),
             };
           }
           fields.push(field);
@@ -249,7 +270,7 @@ var cards = [
         fields.push({
           label: 'contact.profile.imm.generic',
           translate: true,
-          value: extras.countReportsSubmittedInWindow(extras.immunizationForms, now),
+          value: countReportsSubmittedInWindow(immunizationForms, now),
           width: 12,
         });
       }
@@ -261,33 +282,49 @@ var cards = [
     label: 'contact.profile.growth_monitoring',
     appliesToType: 'person',
     appliesIf: function() {
-      return context.use_cases.gmp && extras.getAgeInMonths() < 60 && extras.getNutritionScreeningReport();
+      return context.use_cases.gmp && getAgeInMonths() < 60 && !!getMostRecentReport(reports, ['nutrition_screening']);
     },
     fields: function() {
 
       var fields = [];
-      var screening_report = extras.getNutritionScreeningReport();
+      var screening_report = getMostRecentReport(reports, ['nutrition_screening']);
 
       fields.push({
         label: 'contact.profile.weight',
         translate: true,
-        width: 6,
-        value: screening_report.fields.zscore.weight
+        width: 3,
+        value: screening_report.fields.measurements.weight
       });
 
       fields.push({
         label: 'contact.profile.height',
         translate: true,
-        width: 6,
-        value: screening_report.fields.zscore.height
+        width: 3,
+        value: screening_report.fields.measurements.height
       });
+
+      fields.push({
+        label: 'contact.profile.gender',
+        translate: true,
+        width: 3,
+        value: screening_report.fields.measurements.gender
+      });
+
+      if (screening_report.fields.measurements.hasOwnProperty('muac')){
+        fields.push({
+          label: 'contact.profile.muac',
+          translate: true,
+          width: 3,
+          value: screening_report.fields.measurements.muac
+        });
+      }
 
       fields.push({
         label: 'contact.profile.wfa',
         translate: true,
         width: 4,
-        value: screening_report.fields.zscore.zscore_wfa,
-        icon: screening_report.fields.zscore.zscore_wfa < -3? 'risk':'',
+        value: screening_report.fields.wfa,
+        icon: screening_report.fields.wfa < -3? 'warning':'',
 
       });
 
@@ -295,8 +332,8 @@ var cards = [
         label: 'contact.profile.hfa',
         translate: true,
         width: 4,
-        value: screening_report.fields.zscore.zscore_hfa,
-        icon: screening_report.fields.zscore.zscore_hfa < -3? 'risk':'',
+        value: screening_report.fields.hfa,
+        icon: screening_report.fields.hfa < -3? 'warning':'',
 
       });
 
@@ -304,8 +341,8 @@ var cards = [
         label: 'contact.profile.wfh',
         translate: true,
         width: 4,
-        value: screening_report.fields.zscore.zscore_wfh,
-        icon: screening_report.fields.zscore.zscore_wfh? 'risk':'',
+        value: screening_report.fields.wfh,
+        icon: screening_report.fields.wfh < -3? 'warning':'',
       });
 
       return fields;
@@ -316,45 +353,58 @@ var cards = [
     label: 'contact.profile.imam',
     appliesToType: 'person',
     appliesIf: function() {
-      return Boolean(getTreatmentProgram());
+      return !!getTreatmentProgram();
     },
     fields: function() {
 
       var fields = [];
 
-      var enrollment_report = reports.find(function(r){
-        return r.form === 'treatment_enrollment';
-      });
+      var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
 
       if (enrollment_report){
         fields.push({
           label: 'contact.profile.weight',
           translate: true,
-          width: 6,
-          value: enrollment_report.fields.zscore.weight
+          width: 3,
+          value: enrollment_report.fields.measurements.weight
         });
 
         fields.push({
           label: 'contact.profile.height',
           translate: true,
-          width: 6,
-          value: enrollment_report.fields.zscore.height
+          width: 3,
+          value: enrollment_report.fields.measurements.height
         });
+
+        if (enrollment_report.fields.measurements.hasOwnProperty('muac')){
+          fields.push({
+            label: 'contact.profile.muac',
+            translate: true,
+            width: 3,
+            value: enrollment_report.fields.measurements.muac
+          });
+        }
 
         fields.push({
           label: 'contact.profile.wfh',
           translate: true,
-          width: 12,
-          value: enrollment_report.fields.zscore.zscore_wfh,
-          icon: enrollment_report.fields.zscore.zscore_wfh < -2? 'risk':'',
+          width: 3,
+          value: enrollment_report.fields.wfh,
+          icon: enrollment_report.fields.wfh < -3? 'risk':'',
         });
+
 
         fields.push({
           label: 'contact.profile.nutrition_program',
           translate: true,
           width: 6,
-          value: enrollment_report.fields.enrollment.program
+          value: function(){
+            if (enrollment_report.fields.treatment.program === 'OTP') return 'contact.profile.nutrition_program.otp';
+            else if (enrollment_report.fields.treatment.program === 'SFP') return 'contact.profile.nutrition_program.sfp';
+            else if (enrollment_report.fields.treatment.program === 'SC') return 'contact.profile.nutrition_program.sc';
+          }()
         });
+
 
         fields.push({
           label: 'contact.profile.sessions',
@@ -362,7 +412,7 @@ var cards = [
           translate: true,
           width: 6,
           context: {
-            count: extras.countFollowups(),
+            count: countNutritionFollowups(),
             total: 8,
           },
         });
@@ -375,22 +425,17 @@ var cards = [
     label: 'contact.profile.imam_history',
     appliesToType: 'person',
     appliesIf: function() {
-      return Boolean(extras.getFollowupExitReport());
+      return !!getMostRecentNutritionEnrollment().exit;
     },
     fields: function() {
 
       var fields = [];
-      var enrollment_report =  reports.find(function(r){
-        return r.form === 'treatment_enrollment';
-      });
+      var enrollment_report =  getMostRecentNutritionEnrollment().enrollment;
 
-      // var last_followup_visit = getLastFollowupVisitReport();
-
-      var exit_report = extras.getFollowupExitReport();
-      // var date = '';
+      var exit_report = getMostRecentNutritionEnrollment().exit;
 
       var d = new Date(0);
-      if (exit_report) d.setUTCSeconds(exit_report.reported_date/1000);
+      d.setUTCSeconds(exit_report.reported_date/1000);
 
       if (enrollment_report){
 
@@ -398,35 +443,35 @@ var cards = [
           label: 'contact.profile.last_treatment',
           translate: true,
           width: 6,
-          value: enrollment_report.fields.enrollment? enrollment_report.fields.enrollment.program: ''
+          value: enrollment_report.fields.treatment.program
         });
 
         fields.push({
           label: 'contact.profile.exit_date',
           translate: true,
           width: 6,
-          value: exit_report? d.toISOString().slice(0, 10): ''
+          value: d.toISOString().slice(0, 10)
         });
 
         fields.push({
           label: 'contact.profile.weight_at_exit',
           translate: true,
           width: 6,
-          value: exit_report? exit_report.fields.zscore.weight: ''
+          value: exit_report.fields.measurements.weight
         });
 
         fields.push({
           label: 'contact.profile.height_at_exit',
           translate: true,
           width: 6,
-          value: exit_report? exit_report.fields.zscore.height: ''
+          value: exit_report.fields.measurements.height
         });
 
         fields.push({
           label: 'contact.profile.wfh',
           translate: true,
           width: 12,
-          value: exit_report? exit_report.fields.zscore.zscore_wfh: ''
+          value: exit_report.fields.measurements.wfh
         });
 
       }
