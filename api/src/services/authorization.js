@@ -241,9 +241,8 @@ const excludeTombstoneIds = (docIds) => {
   return docIds.filter(docId => !tombstoneUtils.isTombstoneId(docId));
 };
 
-const convertTombstoneIds = (docIds) => {
-  return docIds.map(docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId);
-};
+const convertTombstoneId = docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId;
+const convertTombstoneIds = docIds => docIds.map(convertTombstoneId);
 
 const getViewResults = (doc) => {
   return {
@@ -269,5 +268,7 @@ module.exports = {
   alwaysAllowCreate: alwaysAllowCreate,
   updateContext: updateContext,
   filterAllowedDocs: filterAllowedDocs,
-  isDeleteStub: tombstoneUtils._isDeleteStub
+  isDeleteStub: tombstoneUtils._isDeleteStub,
+  generateTombstoneId: tombstoneUtils.generateTombstoneId,
+  convertTombstoneId: convertTombstoneId
 };
