@@ -2,12 +2,18 @@ const {validTranslations, validDirectory, validatePlaceHolders} = require('../li
 const valid = validTranslations;
 const path = require('path');
 
+const originalJoin = path.join;
+
 describe('validate', () => {
 
   console = {
     log: jest.fn(),
     error: jest.fn()
   };
+
+  afterEach(() => {
+    path.join = originalJoin;
+  });
 
   test('translation file exists', () => {
     expect(valid('tests/messages-en.properties')).toBeFalsy();
@@ -27,13 +33,17 @@ describe('validate', () => {
   });
 
   test('successful matching translation placeholders', () => {
-    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'matching-placeholders'));
+    const matchingPlaceholderDir = path.resolve(__dirname, 'translations', 'matching-placeholders');
+    path.join = jest.fn().mockReturnValue(path.join(matchingPlaceholderDir, 'messages-ex.properties'));
+    validatePlaceHolders(['en', 'sw'], matchingPlaceholderDir);
     expect(console.error).toHaveBeenCalledTimes(0);
   });
 
   test('error on non-matching translation placeholders', () => {
-    validatePlaceHolders(['en', 'sw'], path.resolve(__dirname, 'translations', 'non-matching-placeholders'));
-    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties\nYou can use messages-en.extra.properties to add placeholders missing from the reference context.');
+    const nonMatchingPlaceholderDir = path.resolve(__dirname, 'translations', 'non-matching-placeholders');
+    path.join = jest.fn().mockReturnValue(path.join(nonMatchingPlaceholderDir, 'messages-ex.properties'));
+    validatePlaceHolders(['en', 'sw'], nonMatchingPlaceholderDir);
+    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties\nYou can use messages-ex.properties to add placeholders missing from the reference context.');
   });
 
 });
