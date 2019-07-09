@@ -90,6 +90,7 @@
   ],
   "sharedLibs": [
     "bulk-docs-utils",
+    "infodoc",
     "lineage",
     "message-utils",
     "phone-number",

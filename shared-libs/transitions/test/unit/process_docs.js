@@ -2,7 +2,7 @@ const sinon = require('sinon'),
       config = require('../../src/config'),
       db = require('../../src/db'),
       transitions = require('../../src/transitions/index'),
-      infodoc = require('../../src/lib/infodoc'),
+      infodoc = require('@medic/infodoc'),
       chai = require('chai'),
       chaiExclude = require('chai-exclude');
 

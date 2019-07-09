@@ -30,7 +30,7 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -69,7 +69,7 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
       .then(() => sentinelUtils.getInfoDoc(doc1._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc1._id))
       .then(updated => {
@@ -79,7 +79,7 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
@@ -115,8 +115,8 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(infos[0].transitions).not.toBeDefined();
-        expect(infos[1].transitions).not.toBeDefined();
+        expect(Object.keys(infos[0].transitions).length).toEqual(0);
+        expect(Object.keys(infos[1].transitions).length).toEqual(0);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
@@ -167,7 +167,7 @@ describe('update_clinics', () => {
         expect(infos[1].transitions).toBeDefined();
         expect(infos[1].transitions.update_clinics.ok).toEqual(true);
 
-        expect(infos[2].transitions).not.toBeDefined();
+        expect(Object.keys(infos[2].transitions).length).toEqual(0);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
       .then(updated => {

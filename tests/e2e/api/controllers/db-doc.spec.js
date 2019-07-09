@@ -1,5 +1,6 @@
 const _ = require('underscore'),
   utils = require('../../../utils'),
+  sUtils = require('../../sentinel/utils'),
   constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
@@ -523,17 +524,17 @@ describe('db-doc handler', () => {
       });
 
       const allowedDoc = {
-          _id: 'allowed_doc_post',
-          type: 'clinic',
-          parent: { _id: 'fixture:offline' },
-          name: 'allowed',
-        },
-        deniedDoc = {
-          _id: 'denied_doc_post',
-          type: 'clinic',
-          parent: { _id: 'fixture:online' },
-          name: 'denied',
-        };
+        _id: 'allowed_doc_post',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'allowed',
+      };
+      const deniedDoc = {
+        _id: 'denied_doc_post',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'denied',
+      };
 
       return Promise.all([
         utils.requestOnTestDb(
@@ -554,26 +555,32 @@ describe('db-doc handler', () => {
           .requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions))
           .catch(err => err),
       ])
-        .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
+        .then(([allowed, denied, forbidden]) => {
+          expect(_.omit(allowed, 'rev')).toEqual({
             id: 'allowed_doc_post',
             ok: true,
           });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
+          expect(denied.statusCode).toEqual(403);
+          expect(denied.responseBody).toEqual({
             error: 'forbidden',
             reason: 'Insufficient privileges',
           });
-          expect(results[2].responseBody.error).toEqual('forbidden');
+          expect(forbidden.responseBody.error).toEqual('forbidden');
 
           return Promise.all([
             utils.getDoc('allowed_doc_post'),
             utils.getDoc('denied_doc_post').catch(err => err),
           ]);
         })
-        .then(results => {
-          expect(_.omit(results[0], '_rev')).toEqual(allowedDoc);
-          expect(results[1].statusCode).toEqual(404);
+        .then(([allowed, denied]) => {
+          expect(_.omit(allowed, '_rev')).toEqual(allowedDoc);
+          expect(denied.statusCode).toEqual(404);
+
+          const ids = ['allowed_doc_post', 'denied_doc_post'];
+          return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+        }).then(([allowedInfo, deniedInfo]) => {
+          expect(allowedInfo).toBeDefined();
+          expect(deniedInfo).not.toBeDefined();
         });
     });
 
@@ -682,6 +689,17 @@ describe('db-doc handler', () => {
             error: 'forbidden',
             reason: 'Insufficient privileges',
           });
+
+          const ids = ['a_put_1', 'a_put_2', 'd_put_1', 'd_put_2', 'n_put_1', 'n_put_2'];
+
+          return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+        }).then(([a1, a2, d1, d2, n1, n2]) => {
+          expect(a1._rev.substring(0, 2)).toEqual('3-');
+          expect(a2._rev.substring(0, 2)).toEqual('2-');
+          expect(d1._rev.substring(0, 2)).toEqual('2-');
+          expect(d2._rev.substring(0, 2)).toEqual('2-');
+          expect(n1._rev.substring(0, 2)).toEqual('2-');
+          expect(n2).not.toBeDefined();
         });
     });
 

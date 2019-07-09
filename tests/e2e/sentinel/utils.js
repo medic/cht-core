@@ -54,6 +54,8 @@ const getInfoDoc = docId => {
 };
 
 const getInfoDocs = (docIds = []) => {
+  docIds = Array.isArray(docIds) ? docIds : [docIds];
+
   const opts = {
     path: '/_all_docs?include_docs=true',
     body: { keys: docIds.map(id => id + '-info') },

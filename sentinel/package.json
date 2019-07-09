@@ -55,6 +55,7 @@
     "winston"
   ],
   "sharedLibs": [
+    "infodoc",
     "lineage",
     "message-utils",
     "phone-number",
