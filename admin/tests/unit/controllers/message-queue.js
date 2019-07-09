@@ -31,7 +31,7 @@ describe('MessageQueueCtrl controller', () => {
           params: { page: page },
           go: stateGo
         },
-        'Location': { path: 'http://some-path/' },
+        'Location': { path: 'some path' },
         'MessageQueue': MessageQueue,
         'Settings': Settings
       });
@@ -57,7 +57,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(MessageQueue.query.callCount).to.equal(1);
         chai.expect(scope.pagination.page).to.equal(1);
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['tab', 0, 25, undefined]);
-        chai.expect(scope.basePath).to.equal('http://some-path');
+        chai.expect(scope.basePath).to.equal('some path');
         done();
       });
     });
