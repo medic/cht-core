@@ -208,26 +208,6 @@ describe('transitions', () => {
     });
   });
 
-  it('deleteInfo doc handles missing info doc', () => {
-    const given = { id: 'abc' };
-    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
-    return infodoc.delete(given);
-  });
-
-  it('deleteInfoDoc deletes info doc', () => {
-    const given = { id: 'abc' };
-    const get = sinon
-      .stub(db.sentinel, 'get')
-      .resolves({ _id: 'abc', _rev: '123' });
-    const insert = sinon.stub(db.sentinel, 'put').resolves({});
-    return infodoc.delete(given).then(() => {
-      assert.equal(get.callCount, 1);
-      assert.equal(get.args[0][0], 'abc-info');
-      assert.equal(insert.callCount, 1);
-      assert.equal(insert.args[0][0]._deleted, true);
-    });
-  });
-
   it('deleteReadDocs handles missing read doc', () => {
     db.medicDbName = 'medic';
     const given = { id: 'abc' };

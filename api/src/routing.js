@@ -31,6 +31,7 @@ const _ = require('underscore'),
   settings = require('./controllers/settings'),
   bulkDocs = require('./controllers/bulk-docs'),
   africasTalking = require('./controllers/africas-talking'),
+  infodoc = require('./controllers/infodoc'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
   staticResources = /\/(templates|static)\//,
@@ -448,8 +449,9 @@ app.post(
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
   routePrefix + '_bulk_docs(/*)?',
-  authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
+  infodoc.mark,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonQueryParser,
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -477,17 +479,19 @@ app.get(
   dbDocHandler.request
 );
 app.post(
-  routePrefix,
+  `/+${environment.db}/?`,
+  jsonParser,
+  infodoc.mark,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
-  jsonParser, // request body must be json
   jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.put(
   docPath,
-  authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
+  infodoc.mark,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
@@ -696,5 +700,8 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
     proxyRes.pipe(res);
   }
 });
+
+proxyForAuth.on('proxyRes', infodoc.update);
+proxy.on('proxyRes', infodoc.update);
 
 module.exports = app;

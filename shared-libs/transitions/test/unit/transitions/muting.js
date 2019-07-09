@@ -84,34 +84,36 @@ describe('Muting transition', () => {
       mutingUtils.isMutedInLineage.returns(false);
       chai.expect(transition.filter({ muted: false }, {})).to.equal(false);
       chai.expect(transition.filter({ muted: false, type: 'something' }, {})).to.equal(false);
-      chai.expect(transition.filter({ muted: false, type: 'person' }, {})).to.equal(false);
-      chai.expect(transition.filter({ muted: false, type: 'clinic' }, {})).to.equal(false);
+      chai.expect(transition.filter({ muted: false, type: 'person', reported_date: 1}, {})).to.equal(false);
+      chai.expect(transition.filter({ muted: false, type: 'clinic', reported_date: 2}, {})).to.equal(false);
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(2);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
-        [{ muted: false, type: 'person' }],
-        [{ muted: false, type: 'clinic' }]
+        [{ muted: false, type: 'person', reported_date: 1}, 1],
+        [{ muted: false, type: 'clinic', reported_date: 2}, 2]
       ]);
     });
 
     it('should return true for valid contacts', () => {
       config.get.withArgs('contact_types').returns([{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]);
       mutingUtils.isMutedInLineage.returns(true);
-      chai.expect(transition.filter({ muted: false, type: 'person' }, {})).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'clinic' }, {})).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'district_hospital' }, {})).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'health_center' }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'person', reported_date: 1 }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'clinic', reported_date: 2 }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'district_hospital', reported_date: 3 }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'health_center', reported_date: 4 }, {})).to.equal(true);
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(4);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
-        [{ muted: false, type: 'person' }],
-        [{ muted: false, type: 'clinic' }],
-        [{ muted: false, type: 'district_hospital' }],
-        [{ muted: false, type: 'health_center' }]
+        [{ muted: false, type: 'person', reported_date: 1 }, 1],
+        [{ muted: false, type: 'clinic', reported_date: 2 }, 2],
+        [{ muted: false, type: 'district_hospital', reported_date: 3 }, 3],
+        [{ muted: false, type: 'health_center', reported_date: 4 }, 4]
       ]);
     });
 
-    it('should return false for old contacts', () => {
+    it('should return false for previously muted contacts', () => {
+      // Even though one of its parents have been muted
       mutingUtils.isMutedInLineage.returns(true);
-      chai.expect(transition.filter({ muted: false, type: 'person' }, { _rev: '2-test' })).to.equal(false);
+      // because it's been muted before we want to ignore it
+      chai.expect(transition.filter({ muted: false, type: 'person' }, { muting_history: [{some: 'history'}]})).to.equal(false);
     });
   });
 

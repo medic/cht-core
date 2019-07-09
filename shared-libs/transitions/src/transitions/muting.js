@@ -40,14 +40,20 @@ const isRelevantReport = (doc, info = {}) =>
           !transitionUtils.hasRun(info, TRANSITION_NAME) &&
           utils.isValidSubmission(doc));
 
-// when new contacts are added that have muted parents, they should be set have muted state as well
-// also the schedule associated with their registration should be muted
-const isRelevantContact = (doc, info = {}) =>
+//
+// When *new* contacts are added that have muted parents, they and their schedules should be muted.
+//
+// We are deciding a contact is new if:
+//  - Their reported date is *after* a mute that has happened in their parent lineage
+//  - And we haven't performed any kind of mute on them before
+//
+const isRelevantContact = (doc, infoDoc = {}) =>
   Boolean(doc &&
-          !info._rev &&
+          ['person', 'clinic', 'health_center', 'district_hospital'].includes(doc.type) &&
           isContact(doc) &&
           !doc.muted &&
-          mutingUtils.isMutedInLineage(doc));
+          mutingUtils.isMutedInLineage(doc, doc.reported_date) &&
+          !infoDoc.muting_history);
 
 module.exports = {
   init: () => {

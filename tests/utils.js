@@ -3,6 +3,7 @@ const _ = require('underscore'),
   constants = require('./constants'),
   http = require('http'),
   path = require('path'),
+  rpn = require('request-promise-native'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 
@@ -13,6 +14,11 @@ const db = new PouchDB(
   `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
     constants.COUCH_PORT
   }/${constants.DB_NAME}`
+);
+const sentinel = new PouchDB(
+  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
+    constants.COUCH_PORT
+  }/${constants.DB_NAME}-sentinel`
 );
 
 let originalSettings;
@@ -43,6 +49,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
     console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
+  // TODO: replace with request-promise-native
   const req = http.request(options, res => {
     res.setEncoding('utf8');
     let body = '';
@@ -319,6 +326,7 @@ const deleteUsers = usernames => {
 
 module.exports = {
   db: db,
+  sentinelDb: sentinel,
 
   request: request,
 
@@ -582,5 +590,17 @@ module.exports = {
   // @return {Promise}
   deleteUsers: deleteUsers,
 
-  setDebug: debug => e2eDebug = debug
+  setDebug: debug => e2eDebug = debug,
+
+  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
+  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
+  setProcessedSeqToNow: () => {
+    return Promise.all([
+      sentinel.get('_local/sentinel-meta-data'),
+      db.info()
+    ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
+      sentinelMetadata.processed_seq = updateSeq;
+      return sentinel.put(sentinelMetadata);
+    });
+  },
 };

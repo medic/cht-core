@@ -24,7 +24,7 @@ describe('update_sent_by', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -75,10 +75,10 @@ describe('update_sent_by', () => {
       .then(() => sentinelUtils.waitForSentinel([report1._id, report2._id, report3._id, report4._id]))
       .then(() => sentinelUtils.getInfoDocs([report1._id, report2._id, report3._id, report4._id]))
       .then(infos => {
-        expect(infos[0].transitions).not.toBeDefined();
-        expect(infos[1].transitions).not.toBeDefined();
-        expect(infos[2].transitions).not.toBeDefined();
-        expect(infos[3].transitions).not.toBeDefined();
+        expect(Object.keys(infos[0].transitions).length).toEqual(0);
+        expect(Object.keys(infos[1].transitions).length).toEqual(0);
+        expect(Object.keys(infos[2].transitions).length).toEqual(0);
+        expect(Object.keys(infos[3].transitions).length).toEqual(0);
       });
   });
 

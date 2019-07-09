@@ -86,7 +86,7 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -117,7 +117,7 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -680,22 +680,24 @@ describe('muting', () => {
     };
 
     const person = {
-      _id: 'person2',
+      _id: 'person3',
       name: 'Person',
       type: 'person',
       parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
-      phone: '+444999',
-      reported_date: new Date().getTime()
+      phone: '+444999'
     };
 
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
-      .then(() => utils.saveDoc(person))
+      .then(() => {
+        person.reported_date = Date.now();
+        return utils.saveDoc(person);
+      })
       .then(() => sentinelUtils.waitForSentinel(person._id))
       .then(() => sentinelUtils.getInfoDoc(person._id))
-      .then(info => {
+      .then((info) => {
         expect(info.transitions).toBeDefined();
         expect(info.transitions.muting).toBeDefined();
         expect(info.transitions.muting.ok).toBe(true);
