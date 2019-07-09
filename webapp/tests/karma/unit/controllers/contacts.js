@@ -145,9 +145,7 @@ describe('Contacts controller', () => {
       loadSelectedContactChildren: sinon.stub().returns(Promise.resolve()),
       loadSelectedContactReports: sinon.stub().returns(Promise.resolve())
     };
-    getSelected = () => {
-      return Selectors.getSelectedContact($ngRedux.getState());
-    };
+    getSelected = () => Selectors.getSelectedContact($ngRedux.getState());
 
     tasksForContact = sinon.stub();
 

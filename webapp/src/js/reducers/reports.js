@@ -9,18 +9,17 @@ module.exports = function(state, action) {
     state = initialState;
   }
 
-  let filteredSelected;
-  let selected;
   switch (action.type) {
     case actionTypes.ADD_SELECTED_REPORT:
       return Object.assign({}, state, {
         selected: state.selected.concat(action.payload.selected)
       });
-    case actionTypes.REMOVE_SELECTED_REPORT:
-      filteredSelected = _.filter(state.selected, selected => selected._id !== action.payload.id);
+    case actionTypes.REMOVE_SELECTED_REPORT: {
+      const filteredSelected = _.filter(state.selected, selected => selected._id !== action.payload.id);
       return Object.assign({}, state, { selected: filteredSelected });
-    case actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY:
-      selected = state.selected.map((item, index) => {
+    }
+    case actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY: {
+      const selected = state.selected.map((item, index) => {
         if (index === 0) {
           return Object.assign({}, item, {
             doc: Object.assign({}, item.doc, action.payload.doc)
@@ -29,8 +28,9 @@ module.exports = function(state, action) {
         return item;
       });
       return Object.assign({}, state, { selected });
-    case actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY:
-      selected = state.selected.map((item, index) => {
+    }
+    case actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY: {
+      const selected = state.selected.map((item, index) => {
         if (index === 0) {
           return Object.assign({}, item, {
             formatted: Object.assign({}, item.formatted, action.payload.formatted)
@@ -38,17 +38,19 @@ module.exports = function(state, action) {
         }
         return item;
       });
-      return Object.assign({}, state, { selected: selected });
+      return Object.assign({}, state, { selected });
+    }
     case actionTypes.SET_SELECTED_REPORTS:
       return Object.assign({}, state, { selected: action.payload.selected });
-    case actionTypes.UPDATE_SELECTED_REPORT_ITEM:
-      selected = state.selected.map(item => {
+    case actionTypes.UPDATE_SELECTED_REPORT_ITEM: {
+      const selected = state.selected.map(item => {
         if (item._id === action.payload.id) {
           return Object.assign({}, item, action.payload.selected);
         }
         return item;
       });
       return Object.assign({}, state, { selected });
+    }
     default:
       return state;
   }

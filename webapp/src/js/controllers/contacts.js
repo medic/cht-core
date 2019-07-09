@@ -52,8 +52,7 @@ const PAGE_SIZE = 50;
         clearCancelCallback: globalActions.clearCancelCallback,
         loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
         loadSelectedContactReports: contactsActions.loadSelectedContactReports,
-        setLoadingSelectedContactChildren: contactsActions.setLoadingSelectedContactChildren,
-        setLoadingSelectedContactReports: contactsActions.setLoadingSelectedContactReports,
+        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
         setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
         setSelectedContact: contactsActions.setSelectedContact,
         updateSelectedContact: contactsActions.updateSelectedContact
@@ -255,13 +254,14 @@ const PAGE_SIZE = 50;
       ctrl.updateSelectedContact({ tasksByContact });
     };
 
-    $scope.setSelected = function(selected, options) {
+    $scope.setSelected = function(selected, contactViewModelOptions) {
       liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedContactChildren(true);
-      ctrl.setLoadingSelectedContactReports(true);
+      ctrl.setLoadingSelectedContact();
       ctrl.setSelectedContact(selected);
       ctrl.clearCancelCallback();
-      var title = '';
+      const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
+
+      let title = '';
       if (ctrl.selectedContact.doc.type === 'person') {
         title = 'contact.profile';
       } else {
@@ -279,18 +279,17 @@ const PAGE_SIZE = 50;
           if (results[1]) {
             ctrl.updateSelectedContact({ doc: { child: results[1] }});
           }
-          var canEdit = results[2];
+          const canEdit = results[2];
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
             selected: [ctrl.selectedContact.doc],
             sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit: canEdit,
+            canEdit,
           });
 
-          return ctrl.loadSelectedContactChildren(options)
-            .then(ctrl.loadSelectedContactReports)
+          return lazyLoadedContactData
             .then(function() {
               return $q.all([
                 ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
@@ -299,29 +298,27 @@ const PAGE_SIZE = 50;
               ])
               .then(function(results) {
                 ctrl.setContactsLoadingSummary(false);
-                var summary = results[0];
+                const summary = results[0];
                 ctrl.updateSelectedContact({ summary: summary });
-                var options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
+                const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
-                  var showUnmuteModal = function(formId) {
+                  const showUnmuteModal = function(formId) {
                     return ctrl.selectedContact.doc &&
                           ctrl.selectedContact.doc.muted &&
                           !isUnmuteForm(results[1], formId);
                   };
-                  var formSummaries =
-                    forms &&
-                    forms.map(function(xForm) {
-                      return {
-                        code: xForm.internalId,
-                        title: translateTitle(xForm.translation_key, xForm.title),
-                        icon: xForm.icon,
-                        showUnmuteModal: showUnmuteModal(xForm.internalId)
-                      };
-                    });
-                  var canDelete =
+                  const formSummaries = forms && forms.map(function(xForm) {
+                    return {
+                      code: xForm.internalId,
+                      title: translateTitle(xForm.translation_key, xForm.title),
+                      icon: xForm.icon,
+                      showUnmuteModal: showUnmuteModal(xForm.internalId)
+                    };
+                  });
+                  const canDelete =
                     !ctrl.selectedContact.children ||
                     ((!ctrl.selectedContact.children.places ||
                       ctrl.selectedContact.children.places.length === 0) &&
@@ -331,8 +328,8 @@ const PAGE_SIZE = 50;
                     selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
                     sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
-                    canEdit: canEdit,
-                    canDelete: canDelete,
+                    canEdit,
+                    canDelete,
                   });
                 });
               });

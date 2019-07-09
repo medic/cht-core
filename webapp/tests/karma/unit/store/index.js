@@ -215,24 +215,14 @@ describe('Store', function() {
       chai.expect(contactsState).to.deep.equal({ selected });
     });
 
-    it('sets loadingSelectedContactChildren', () => {
-      const initialState = createContactsState({ loadingSelectedChildren: false });
+    it('sets loadingSelectedContact', () => {
+      const initialState = createContactsState({ loadingSelectedChildren: false, loadingSelectedReports: false });
       setupStore(initialState);
-      contactsActions.setLoadingSelectedContactChildren(true);
+      contactsActions.setLoadingSelectedContact();
       const state = getState();
       const contactsState = selectors.getContactsState(state);
       chai.expect(state).to.not.equal(initialState);
-      chai.expect(contactsState).to.deep.equal({ loadingSelectedChildren: true });
-    });
-
-    it('sets loadingSelectedContactReports', () => {
-      const initialState = createContactsState({ loadingSelectedReports: false });
-      setupStore(initialState);
-      contactsActions.setLoadingSelectedContactReports(true);
-      const state = getState();
-      const contactsState = selectors.getContactsState(state);
-      chai.expect(state).to.not.equal(initialState);
-      chai.expect(contactsState).to.deep.equal({ loadingSelectedReports: true });
+      chai.expect(contactsState).to.deep.equal({ loadingSelectedChildren: true, loadingSelectedReports: true });
     });
 
     it('loads selected contact children', (done) => {
