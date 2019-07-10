@@ -51,7 +51,7 @@ const getInfoUserCtx = req => {
   if (!auth.hasAllPermissions(req.userCtx, 'can_update_users')) {
     throw { code: 403, reason: 'Insufficient privileges' };
   }
-  const params = req.body || req.query;
+  const params = req.query;
   if (!params.role || !params.facility_id) {
     throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
   }

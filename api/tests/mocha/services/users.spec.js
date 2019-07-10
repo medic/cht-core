@@ -1,15 +1,16 @@
-const chai = require('chai'),
-      sinon = require('sinon'),
-      service = require('../../../src/services/users'),
-      people = require('../../../src/controllers/people'),
-      places = require('../../../src/controllers/places'),
-      config = require('../../../src/config'),
-      db = require('../../../src/db'),
-      COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
+const chai = require('chai');
+const sinon = require('sinon');
+const service = require('../../../src/services/users');
+const people = require('../../../src/controllers/people');
+const places = require('../../../src/controllers/places');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
+const auth = require('../../../src/auth');
+const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
-const facilitya = { _id: 'a', name: 'aaron' },
-      facilityb = { _id: 'b', name: 'brian' },
-      facilityc = { _id: 'c', name: 'cathy' };
+const facilitya = { _id: 'a', name: 'aaron' };
+const facilityb = { _id: 'b', name: 'brian' };
+const facilityc = { _id: 'c', name: 'cathy' };
 
 let userData;
 
@@ -943,11 +944,29 @@ describe('Users service', () => {
       sinon.stub(service, '_validateUserSettings').resolves({});
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
+      sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel', 'mm-online']);
         chai.expect(db.users.put.callCount).to.equal(1);
         chai.expect(db.users.put.args[0][0].roles).to.deep.equal(['rebel', 'mm-online']);
+      });
+    });
+
+    it('roles param updates roles on user and user-settings doc when offline', () => {
+      const data = {
+        roles: [ 'rebel' ]
+      };
+      sinon.stub(service, '_validateUser').resolves({});
+      sinon.stub(service, '_validateUserSettings').resolves({});
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+      sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(true);
+      return service.updateUser('paul', data, true).then(() => {
+        chai.expect(db.medic.put.callCount).to.equal(1);
+        chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel']);
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0][0].roles).to.deep.equal(['rebel']);
       });
     });
 
@@ -1037,7 +1056,7 @@ describe('Users service', () => {
         const settings = db.medic.put.args[0][0];
         chai.expect(settings.facility_id).to.equal(null);
         chai.expect(settings.contact_id).to.equal(null);
-        
+
         chai.expect(db.users.put.callCount).to.equal(1);
         const user = db.users.put.args[0][0];
         chai.expect(user.facility_id).to.equal(null);
@@ -1063,6 +1082,7 @@ describe('Users service', () => {
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
+      sinon.stub(auth, 'isOffline').withArgs(['rambler']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
@@ -1071,7 +1091,7 @@ describe('Users service', () => {
         chai.expect(settings.known).to.equal(false);
         chai.expect(settings.type).to.equal('user-settings');
         chai.expect(settings.roles).to.deep.equal(['rambler', 'mm-online']);
-        
+
         chai.expect(db.users.put.callCount).to.equal(1);
         const user = db.users.put.args[0][0];
         chai.expect(user.facility_id).to.equal('el paso');

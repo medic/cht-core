@@ -2,6 +2,7 @@ const constants = require('../../../constants');
 const http = require('http');
 const utils = require('../../../utils');
 const uuid = require('uuid');
+const querystring = require('querystring');
 
 const user = n => `org.couchdb.user:${n}`;
 
@@ -326,38 +327,30 @@ describe('Users API', () => {
       });
     });
 
-    it('should return correct number of allowed docs when requested by online user with GET', () => {
+    it('should return correct number of allowed docs when requested by online user', () => {
       onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
       return utils.request(onlineRequestOptions).then(resp => {
         expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
-    it('should return correct number of allowed docs when requested by online user with POST', () => {
-      onlineRequestOptions.method = 'POST';
-      onlineRequestOptions.body = {
-        role: 'district_admin',
-        facility_id: 'fixture:offline'
-      };
-      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
-      return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
-      });
-    });
-
     it('should ignore parameters for requests from offline users', () => {
-      offlineRequestOptions.path += '?role=district_admin&facility_id=fixture:online';
+      const params = {
+        role: 'district_admin',
+        facility_id: 'fixture:online'
+      };
+      offlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(offlineRequestOptions).then(resp => {
         expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
     it('should throw error when requesting for online roles', () => {
-      onlineRequestOptions.method = 'POST';
-      onlineRequestOptions.body = {
+      const params = {
         role: 'national_admin',
         facility_id: 'fixture:offline'
       };
+      offlineRequestOptions.path += '?' + querystring.stringify(params);
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)

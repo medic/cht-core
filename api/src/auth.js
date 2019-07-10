@@ -1,10 +1,9 @@
-var request = require('request-promise-native'),
-    url = require('url'),
-    _ = require('underscore'),
-    db = require('./db'),
-    environment = require('./environment'),
-    config = require('./config'),
-    ONLINE_ROLE = 'mm-online';
+const request = require('request-promise-native');
+const url = require('url');
+const _ = require('underscore');
+const db = require('./db');
+const environment = require('./environment');
+const config = require('./config');
 
 var get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -60,12 +59,14 @@ module.exports = {
   isOnlineOnly: userCtx => {
     return hasRole(userCtx, '_admin') ||
            hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           hasRole(userCtx, ONLINE_ROLE);
+           !module.exports.isOffline(userCtx.roles);
   },
 
   isOffline: roles => {
     const configured = config.get('roles') || {};
-    return roles.some(role => configured[role] && configured[role].offline);
+    const configuredRole = roles.some(role => configured[role]);
+    return !configuredRole ||
+           roles.some(role => configured[role] && configured[role].offline);
   },
 
   hasAllPermissions: (userCtx, permissions) => {
