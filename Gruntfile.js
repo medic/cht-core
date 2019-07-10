@@ -854,6 +854,14 @@ module.exports = function(grunt) {
       'build/ddocs/medic-admin/_attachments/js/templates.js':
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
+    jsdoc : {
+      dist : {
+          src: ['webapp/src/js/**/*.js', 'admin/src/js/**/*.js'],
+          options: {
+              destination: 'jsdoc-docs'
+          }
+      }
+    },
   });
 
   // Build tasks
@@ -1062,5 +1070,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
     'dev-webapp',
+  ]);
+
+  grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
+    'jsdoc'
   ]);
 };

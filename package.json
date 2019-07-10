@@ -41,6 +41,7 @@
     "grunt-couch": "^1.5.1",
     "grunt-env": "^0.4.4",
     "grunt-exec": "^3.0.0",
+    "grunt-jsdoc": "^2.4.0",
     "grunt-karma": "^3.0.1",
     "grunt-mocha-test": "^0.13.3",
     "grunt-notify": "^0.4.5",
