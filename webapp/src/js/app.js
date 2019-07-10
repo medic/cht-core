@@ -73,14 +73,14 @@ const minifySelected = selected => {
 const makeSelectedLoggable = selected => {
   if (Array.isArray(selected)) {
     selected.forEach(minifySelected);
-  } else {
+  } else if (selected) {
     minifySelected(selected);
   }
 };
 const createReduxLoggerConfig = Selectors => ({
   actionTransformer: function(action) {
     const loggableAction = cloneDeep(action);
-    makeSelectedLoggable(loggableAction.payload.selected);
+    makeSelectedLoggable(loggableAction.payload && loggableAction.payload.selected);
     try {
       JSON.stringify(loggableAction);
     } catch(error) {

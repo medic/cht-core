@@ -29,12 +29,8 @@ angular.module('inboxServices').factory('ContactsActions',
         });
       }
 
-      function setLoadingSelectedContactChildren(loading) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_SELECTED_CONTACT_CHILDREN, 'loadingSelectedChildren', loading));
-      }
-
-      function setLoadingSelectedContactReports(loading) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_SELECTED_CONTACT_REPORTS, 'loadingSelectedReports', loading));
+      function setLoadingSelectedContact() {
+        dispatch({ type: actionTypes.SET_LOADING_SELECTED_CONTACT });
       }
 
       function setContactsLoadingSummary(value) {
@@ -52,8 +48,7 @@ angular.module('inboxServices').factory('ContactsActions',
       return {
         loadSelectedContactChildren,
         loadSelectedContactReports,
-        setLoadingSelectedContactChildren,
-        setLoadingSelectedContactReports,
+        setLoadingSelectedContact,
         setContactsLoadingSummary,
         setSelectedContact,
         updateSelectedContact
