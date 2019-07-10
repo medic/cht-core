@@ -116,7 +116,7 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
           chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
         });
       });
 
@@ -148,7 +148,7 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
           chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false}]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
         });
       });
 
@@ -170,7 +170,7 @@ describe('Users Controller', () => {
 
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
         });
       });
     });
@@ -197,7 +197,7 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 8000, warn: false }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 8000, warn: false, limit: 10000 }]);
 
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([userCtx]);
@@ -220,7 +220,7 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
         });
       });
     });

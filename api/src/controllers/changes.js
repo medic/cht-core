@@ -409,11 +409,9 @@ const request = (req, res) => {
 };
 
 const logWarnings = () => {
-  if (Object.keys(docCountUserWarnings).length) {
-    Object.keys(docCountUserWarnings).forEach(user => {
-      logger.warn(`User "${user}" replicates "${docCountUserWarnings[user]}" docs`);
-    });
-  }
+  Object.keys(docCountUserWarnings).forEach(user => {
+    logger.warn(`User "${user}" replicates "${docCountUserWarnings[user]}" docs`);
+  });
   docCountUserWarnings = {};
 };
 

@@ -175,7 +175,8 @@ module.exports = {
     }
     return getAllowedDocIds(userCtx).then(docIds => res.json({
       total_docs: docIds.length,
-      warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT
+      warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT,
+      limit: usersService.DOC_IDS_WARN_LIMIT
     }));
   }
 };

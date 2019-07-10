@@ -322,14 +322,14 @@ describe('Users API', () => {
 
     it('should return correct number of allowed docs for offline users', () => {
       return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
     it('should return correct number of allowed docs when requested by online user with GET', () => {
       onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
       return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
@@ -341,14 +341,14 @@ describe('Users API', () => {
       };
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
     it('should ignore parameters for requests from offline users', () => {
       offlineRequestOptions.path += '?role=district_admin&facility_id=fixture:online';
       return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false });
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 

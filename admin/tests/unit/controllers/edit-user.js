@@ -33,7 +33,7 @@ describe('EditUserCtrl controller', () => {
         'national-manager': { name: 'national-manager', offline: false }
       }
     });
-    http = { post: sinon.stub() };
+    http = { get: sinon.stub() };
     userToEdit = {
       _id: 'user.id',
       name: 'user.name',
@@ -382,7 +382,7 @@ describe('EditUserCtrl controller', () => {
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
       mockContactGet(userToEdit.contact_id);
-      http.post.withArgs('/api/v1/users-info').resolves({ data: { total_docs: 1000, warn: false }});
+      http.get.withArgs('/api/v1/users-info').resolves({ data: { total_docs: 1000, warn: false, limit: 10000 }});
 
       setTimeout(() => {
         scope.editUserModel.fullname = 'fullname';
@@ -412,10 +412,10 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
           chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
-          chai.expect(http.post.callCount).to.equal(1);
-          chai.expect(http.post.args[0]).to.deep.equal([
+          chai.expect(http.get.callCount).to.equal(1);
+          chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { role: 'supervisor', facility_id: scope.editUserModel.place, contact_id: scope.editUserModel.contact }
+            { params: { role: 'supervisor', facility_id: scope.editUserModel.place, contact_id: scope.editUserModel.contact }}
           ]);
           done();
         });
@@ -463,7 +463,7 @@ describe('EditUserCtrl controller', () => {
 
         setTimeout(() => {
           chai.expect(UpdateUser.called).to.equal(true);
-          chai.expect(http.post.callCount).to.equal(0);
+          chai.expect(http.get.callCount).to.equal(0);
           chai.expect(UpdateUser.args[0]).to.deep.equal([
             'user.name',
             {
@@ -485,7 +485,7 @@ describe('EditUserCtrl controller', () => {
       mockContact('new_contact_id');
       mockFacility('new_facility_id');
       mockContactGet(userToEdit.contact_id);
-      http.post.withArgs('/api/v1/users-info').resolves({ data: { warn: true, total_docs: 10200 } });
+      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: true, total_docs: 10200, limit: 10000 } });
 
       setTimeout(() => {
         scope.editUserModel.fullname = 'fullname';
@@ -502,10 +502,10 @@ describe('EditUserCtrl controller', () => {
 
         setTimeout(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
-          chai.expect(http.post.callCount).to.equal(1);
-          chai.expect(http.post.args[0]).to.deep.equal([
+          chai.expect(http.get.callCount).to.equal(1);
+          chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { role: 'supervisor', facility_id: 'new_facility_id', contact_id: 'new_contact_id' }
+            { params: { role: 'supervisor', facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
           ]);
           done();
         });
@@ -517,7 +517,7 @@ describe('EditUserCtrl controller', () => {
       mockContact('new_contact_id');
       mockFacility('new_facility_id');
       mockContactGet(userToEdit.contact_id);
-      http.post.withArgs('/api/v1/users-info').resolves({ data: { warn: true, total_docs: 10200 } });
+      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: true, total_docs: 10200, limit: 10000 } });
 
       setTimeout(() => {
         scope.editUserModel.fullname = 'fullname';
@@ -534,16 +534,16 @@ describe('EditUserCtrl controller', () => {
 
         setTimeout(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
-          chai.expect(http.post.callCount).to.equal(1);
-          chai.expect(http.post.args[0]).to.deep.equal([
+          chai.expect(http.get.callCount).to.equal(1);
+          chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { role: 'supervisor', facility_id: 'new_facility_id', contact_id: 'new_contact_id' }
+            { params: { role: 'supervisor', facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
           ]);
 
           scope.editUser();
           setTimeout(() => {
             chai.expect(UpdateUser.callCount).to.equal(1);
-            chai.expect(http.post.callCount).to.equal(1);
+            chai.expect(http.get.callCount).to.equal(1);
 
             const updateUserArgs = UpdateUser.args[0];
             chai.expect(updateUserArgs[0]).to.equal('user.name');

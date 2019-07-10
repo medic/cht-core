@@ -66,7 +66,7 @@
 
         if (remote.warn) {
           return new Promise(resolve => {
-            const errorMessage = translator.translate('TOO_MANY_DOCS', { count: remoteDocCount });
+            const errorMessage = translator.translate('TOO_MANY_DOCS', { count: remoteDocCount, limit: remote.limit });
             const continueBtn = translator.translate('CONTINUE');
             const abort = translator.translate('ABORT');
 
@@ -153,13 +153,7 @@
   };
 
   const setUiError = err => {
-    let errorMessage;
-    if (err && err.key) {
-      errorMessage = translator.translate(err.key);
-    } else {
-      errorMessage = translator.translate('ERROR_MESSAGE');
-    }
-
+    const errorMessage = translator.translate(err && err.key || 'ERROR_MESSAGE');
     const tryAgain = translator.translate('TRY_AGAIN');
     $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
     $('#btn-reload').click(() => window.location.reload(false));

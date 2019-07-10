@@ -281,10 +281,10 @@ angular
     };
 
     let previousQuery;
-    const getReplicationInfo = () => {
+    const validateReplicationLimit = () => {
       const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
-        return Promise.resolve();
+        return $q.resolve();
       }
 
       const query = {
@@ -294,18 +294,18 @@ angular
       };
 
       if (previousQuery && JSON.stringify(query) === previousQuery) {
-        return Promise.resolve();
+        return $q.resolve();
       }
 
       previousQuery = JSON.stringify(query);
       return $http
-        .post('/api/v1/users-info', query)
+        .get('/api/v1/users-info', { params: query })
         .then(resp => {
           if (resp.data.warn) {
-            $translate('configuration.user.replication.limit.exceeded', { total_docs: resp.data.total_docs }).then(value => {
-              $scope.setError(null, value);
+            return $q.reject({
+              key: 'configuration.user.replication.limit.exceeded',
+              params: { total_docs: resp.data.total_docs, limit: resp.data.limit }
             });
-            return Promise.reject();
           }
 
           previousQuery = null;
@@ -362,7 +362,7 @@ angular
               $scope.setError();
               return;
             }
-            return getReplicationInfo().then(() => {
+            return validateReplicationLimit().then(() => {
               changedUpdates($scope.editUserModel).then(function(updates) {
                 $q.resolve()
                   .then(function() {
@@ -397,7 +397,11 @@ angular
             });
           })
           .catch(function(err) {
-            $scope.setError(err, 'Error validating user');
+            if (err.key) {
+              $translate(err.key, err.params).then(value => $scope.setError(err, value));
+            } else {
+              $scope.setError(err, 'Error validating user');
+            }
           });
       } else {
         $scope.setError();

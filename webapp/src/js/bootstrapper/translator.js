@@ -14,7 +14,7 @@ var TRANSLATIONS = {
     ERROR_MESSAGE: 'Loading error, please check your connection.',
     TRY_AGAIN: 'Try again',
     POLL_REPLICATION: 'Polling replication data…',
-    TOO_MANY_DOCS: ({ count }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit. Do you wish to continue?`,
+    TOO_MANY_DOCS: ({ count, limit }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit of ${limit}. Do you wish to continue?`,
     CONTINUE: 'Continue',
     ABORT: 'Cancel',
   },
