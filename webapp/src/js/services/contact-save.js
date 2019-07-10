@@ -5,10 +5,10 @@ angular.module('inboxServices').service('ContactSave',
   function(
     $ngRedux,
     $q,
-    Actions,
     DB,
     EnketoTranslation,
-    ExtractLineage
+    ExtractLineage,
+    GlobalActions
   ) {
 
     'use strict';
@@ -17,9 +17,9 @@ angular.module('inboxServices').service('ContactSave',
     const self = this;
     const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
-      const actions = Actions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
-        setLastChangedDoc: actions.setLastChangedDoc
+        setLastChangedDoc: globalActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);

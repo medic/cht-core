@@ -583,6 +583,17 @@ module.exports = function(grunt) {
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
+      'envify': {
+        cmd: () => {
+          if (!TRAVIS_BUILD_NUMBER) {
+            return 'echo "Not building on Travis so not envifying"';
+          }
+          return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && ' +
+                 'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
+                 'rm inbox.tmp.js && ' +
+                 'echo "Envify complete"';
+        }
+      }
     },
     watch: {
       options: {
@@ -855,6 +866,7 @@ module.exports = function(grunt) {
     'exec:clean-build-dir',
     'copy:ddocs',
     'build-common',
+    'exec:envify',
     'build-node-modules',
     'minify',
     'couch-compile:primary',

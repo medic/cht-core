@@ -1,17 +1,17 @@
 <div class="content-pane right-pane">
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="reportsAddCtrl.loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && contentError">
-    <div translate>{{ errorTranslationKey }}</div>
+  <div class="col-sm-8 item-content empty-selection" ng-show="!reportsAddCtrl.loadingContent && contentError">
+    <div translate>{{ reportsAddCtrl.errorTranslationKey }}</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
+  <div class="col-sm-8 item-content" ng-show="!reportsAddCtrl.loadingContent && !contentError">
     <div class="body">
-      <mm-enketo id="'report-form'" status="$ctrl.enketoStatus" on-submit="save()"on-cancel="navigationCancel()" />
+      <mm-enketo id="'report-form'" status="reportsAddCtrl.enketoStatus" on-submit="save()"on-cancel="navigationCancel()" />
     </div>
   </div>
 </div>

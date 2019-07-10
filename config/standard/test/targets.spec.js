@@ -1533,7 +1533,9 @@ describe('Standard Configuration Targets', function() {
       session.assert(childWithReport(
         {
           form: 'G',
-          fields: {},
+          fields: {
+            severity: 1
+          },
           reported_date: today,
         }
       ));
@@ -1630,9 +1632,10 @@ describe('Standard Configuration Targets', function() {
       const r = {
         form: 'nutrition_screening',
         fields: {
-          zscore: {
-            zscore_wfa: -3
-          }
+          measurements: {
+            wfa: -3
+          },
+          treatment: {}
         },
         reported_date: today,
       };
@@ -1727,9 +1730,10 @@ describe('Standard Configuration Targets', function() {
       const r = {
         form: 'nutrition_screening',
         fields: {
-          zscore: {
-            zscore_hfa: -3
-          }
+          measurements: {
+            hfa: -3
+          },
+          treatment: {}
         },
         reported_date: today,
       };
@@ -1824,11 +1828,12 @@ describe('Standard Configuration Targets', function() {
   describe('children active MAM', function(){
     it('should create active MAM target for WFH z-score between -3 & -2', function(){
       const r = {
-        form: 'treatment_enrollment',
+        form: 'nutrition_screening',
         fields: {
-          zscore: {
-            zscore_wfh: -3
-          }
+          measurements: {
+            wfh: -3
+          },
+          treatment: {}
         },
         reported_date: today,
       };
@@ -1917,11 +1922,12 @@ describe('Standard Configuration Targets', function() {
 
     it('should create active MAM target for MUAC between 11.5 & 12.4 cm', function(){
       const r = {
-        form: 'treatment_enrollment',
+        form: 'nutrition_screening',
         fields: {
-          zscore: {
+          measurements: {
             muac: 12
-          }
+          },
+          treatment: {}
         },
         reported_date: today,
       };
@@ -2012,11 +2018,12 @@ describe('Standard Configuration Targets', function() {
     it('should create active SAM target for WFH z-score less than -3', function(){
 
       const r = {
-        form: 'treatment_enrollment',
+        form: 'nutrition_screening',
         fields: {
-          zscore: {
-            zscore_wfh: -4
-          }
+          measurements: {
+            wfh: -4
+          },
+          treatment: {}
         },
         reported_date: today,
       };
@@ -2107,11 +2114,12 @@ describe('Standard Configuration Targets', function() {
     it('should create active SAM target for MUAC less than 11.5 cm', function(){
 
       const r = {
-        form: 'treatment_enrollment',
+        form: 'nutrition_screening',
         fields: {
-          zscore: {
+          measurements: {
             muac: 10
-          }
+          },
+          treatment: {}
         },
         reported_date: today,
       };
@@ -2202,9 +2210,12 @@ describe('Standard Configuration Targets', function() {
   describe('children active OTP', function(){
     it('should create active OTP for children enrolled', function(){
       const r = {
-        form: 'treatment_enrollment',
+        form: 'nutrition_screening',
         fields: {
-          enrollment: {
+          measurements: {
+            wfa: 0
+          },
+          treatment: {
             program: 'OTP'
           }
         },
@@ -2298,9 +2309,12 @@ describe('Standard Configuration Targets', function() {
   describe('children active SFP', function(){
     it('should create active SFP target for children enrolled', function(){
       const r = {
-        form: 'treatment_enrollment',
+        form: 'nutrition_screening',
         fields: {
-          enrollment: {
+          measurements: {
+            wfa: 0
+          },
+          treatment: {
             program: 'SFP'
           }
         },

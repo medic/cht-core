@@ -19,9 +19,12 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+    ctrl.error = false;
+
     $scope.filters.form = $state.params.form;
     $scope.filters.place = $state.params.place;
-    $scope.facilities = [];
+    ctrl.facilities = [];
 
     Settings()
       .then(function(settings) {
@@ -71,20 +74,20 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
         $scope.expandedRecord = null;
       } else {
         $timeout(function() {
-          $scope.loadingRecord = id;
+          ctrl.loadingRecord = id;
         });
         DB()
           .get(id)
           .then(FormatDataRecord)
           .then(function(formatted) {
             $timeout(function() {
-              $scope.loadingRecord = false;
+              ctrl.loadingRecord = false;
               $scope.formattedRecord = formatted[0];
               $scope.expandedRecord = id;
             });
           })
           .catch(function(err) {
-            $scope.loadingRecord = false;
+            ctrl.loadingRecord = false;
             $log.error('Error getting doc', err);
           });
       }
@@ -180,8 +183,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
 
     var setDistrict = function(placeId) {
-      $scope.error = false;
-      $scope.loadingTotals = true;
+      ctrl.error = false;
+      ctrl.loadingTotals = true;
       var dates = reportingUtils.getDates($scope.filters);
       DB()
         .get(placeId || $scope.place._id)
@@ -199,7 +202,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
               if (place.type === 'health_center') {
                 $scope.clinics = rows;
               } else {
-                $scope.facilities = rows;
+                ctrl.facilities = rows;
               }
               $scope.chart = [
                 { key: 'valid', y: $scope.totals.complete },
@@ -208,13 +211,13 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
               ];
               $scope.filters.district = findDistrict(place);
               $scope.place = place;
-              $scope.loadingTotals = false;
+              ctrl.loadingTotals = false;
             });
         })
         .catch(function(err) {
           $log.error('Error setting place.', err);
-          $scope.error = true;
-          $scope.loadingTotals = false;
+          ctrl.error = true;
+          ctrl.loadingTotals = false;
         });
     };
 
@@ -223,7 +226,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     var loadAvailableFacilities = function() {
       PlaceHierarchy()
         .then(function(hierarchy) {
-          $scope.facilities = hierarchy;
+          ctrl.facilities = hierarchy;
         })
         .catch(function(err) {
           $log.error('Error loading facilities', err);

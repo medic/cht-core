@@ -56,17 +56,16 @@ var nools = require('nools'),
         return registrationUtils.getSubjectIds(contact).includes(id);
       };
 
-      var deriveFacts = function(dataRecords, contacts) {
-        var facts = _.map(contacts, function(contact) {
+      const deriveFacts = function(dataRecords, contacts) {
+        const facts = _.map(contacts, function(contact) {
           return new Contact({ contact: contact, reports: [] });
         });
         dataRecords.forEach(function(report) {
-          var factId = getContactId(report);
-          var fact = _.find(facts, function(fact) {
-            return contactHasId(fact.contact, factId);
-          });
+          const factId = getContactId(report);
+          let fact = _.find(facts, fact => contactHasId(fact.contact, factId));
           if (!fact) {
-            fact = new Contact({ reports: [] });
+            const contact = factId ? { _id: factId } : undefined;
+            fact = new Contact({ contact, reports: [] });
             facts.push(fact);
           }
           fact.reports.push(report);
@@ -249,7 +248,8 @@ var nools = require('nools'),
             })
             .catch(callback);
         },
-        _nools: nools // exposed for testing
+        _nools: nools, // exposed for testing
+        _getSession: () => session,
       };
     }
   );

@@ -1,23 +1,26 @@
-angular.module('inboxDirectives').directive('mmReportsList', function() {
-  'use strict';
+angular.module('inboxDirectives').component('mmReportsList', {
+  templateUrl: 'templates/directives/reports_list.html',
+  controller: function($ngRedux, $scope, Selectors) {
+    'ngInject';
 
-    return {
-      restrict: 'E',
-      templateUrl: 'templates/directives/reports_list.html',
-      controller: function($ngRedux, $scope, Selectors) {
-        'ngInject';
-
-        var ctrl = this;
-        var mapStateToTarget = function(state) {
-          return {
-            selectMode: Selectors.getSelectMode(state),
-            selected: Selectors.getSelected(state)
-          };
-        };
-        var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
-
-        $scope.$on('$destroy', unsubscribe);
-      },
-      controllerAs: '$ctrl'
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        selectMode: Selectors.getSelectMode(state),
+        selectedReports: Selectors.getSelectedReports(state)
+      };
     };
-  });
+    const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+
+    $scope.$on('$destroy', unsubscribe);
+  },
+  controllerAs: 'reportsListCtrl',
+  bindings: {
+    appending: '<',
+    error: '<',
+    filtered: '<',
+    hasReports: '<',
+    loading: '<',
+    moreItems: '<'
+  }
+});

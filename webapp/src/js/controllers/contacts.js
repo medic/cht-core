@@ -14,13 +14,14 @@ const PAGE_SIZE = 50;
     $state,
     $stateParams,
     $translate,
-    Actions,
     Auth,
     Changes,
     ContactSchema,
     ContactSummary,
+    ContactsActions,
     Export,
     GetDataRecords,
+    GlobalActions,
     LiveList,
     Search,
     SearchFilters,
@@ -37,33 +38,36 @@ const PAGE_SIZE = 50;
   ) {
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
-        selected: Selectors.getSelected(state)
+        selectedContact: Selectors.getSelectedContact(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      const contactsActions = ContactsActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setSelected: actions.setSelected,
-        updateSelected: actions.updateSelected,
-        loadSelectedChildren: actions.loadSelectedChildren,
-        loadSelectedReports: actions.loadSelectedReports,
-        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
-        setLoadingSelectedReports: actions.setLoadingSelectedReports
+        clearCancelCallback: globalActions.clearCancelCallback,
+        loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
+        loadSelectedContactReports: contactsActions.loadSelectedContactReports,
+        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
+        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
+        setSelectedContact: contactsActions.setSelectedContact,
+        updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var liveList = LiveList.contacts;
 
     LiveList.$init($scope, 'contacts', 'contact-search');
 
-    $scope.loading = true;
-    ctrl.setSelected(null);
+    ctrl.appending = false;
+    ctrl.error = false;
+    ctrl.loading = true;
+    ctrl.setSelectedContact(null);
     $scope.filters = {};
     var defaultTypeFilter = {};
     var usersHomePlace;
@@ -76,7 +80,7 @@ const PAGE_SIZE = 50;
 
     var _initScroll = function() {
       scrollLoader.init(function() {
-        if (!$scope.loading && $scope.moreItems) {
+        if (!ctrl.loading && $scope.moreItems) {
           _query({
             paginating: true,
             reuseExistingDom: true,
@@ -92,12 +96,12 @@ const PAGE_SIZE = 50;
       }
 
       if (!options.silent) {
-        $scope.loading = true;
-        $scope.error = false;
+        ctrl.loading = true;
+        ctrl.error = false;
       }
 
       if (options.paginating) {
-        $scope.appending = true;
+        ctrl.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
@@ -144,10 +148,10 @@ const PAGE_SIZE = 50;
             additionalListItem =
               !$scope.filters.search &&
               !$scope.filters.simprintsIdentities &&
-              (additionalListItem || !$scope.appending) &&
+              (additionalListItem || !ctrl.appending) &&
               homeIndex === -1;
 
-            if (!$scope.appending) {
+            if (!ctrl.appending) {
               if (homeIndex !== -1) {
                 // move it to the top
                 contacts.splice(homeIndex, 1);
@@ -183,15 +187,15 @@ const PAGE_SIZE = 50;
           liveList.set(mergedList, !!options.reuseExistingDom);
 
           _initScroll();
-          $scope.loading = false;
-          $scope.appending = false;
+          ctrl.loading = false;
+          ctrl.appending = false;
           $scope.hasContacts = liveList.count() > 0;
           setActionBarData();
         })
         .catch(function(err) {
-          $scope.error = true;
-          $scope.loading = false;
-          $scope.appending = false;
+          ctrl.error = true;
+          ctrl.loading = false;
+          ctrl.appending = false;
           $log.error('Error searching for contacts', err);
         });
     };
@@ -234,7 +238,7 @@ const PAGE_SIZE = 50;
 
     const getTasks = () => {
       return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', receiveTasks))
+        .then(() => TasksForContact(ctrl.selectedContact, 'ContactsCtrl', receiveTasks))
         .catch(() => $log.debug('Not authorized to view tasks'));
     };
 
@@ -246,88 +250,86 @@ const PAGE_SIZE = 50;
           tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
         }
       });
-      ctrl.updateSelected({ tasks });
-      ctrl.updateSelected({ tasksByContact });
+      ctrl.updateSelectedContact({ tasks });
+      ctrl.updateSelectedContact({ tasksByContact });
     };
 
-    $scope.setSelected = function(selected, options) {
+    $scope.setSelected = function(selected, contactViewModelOptions) {
       liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedChildren(true);
-      ctrl.setLoadingSelectedReports(true);
-      ctrl.setSelected(selected);
+      ctrl.setLoadingSelectedContact();
+      ctrl.setSelectedContact(selected);
       ctrl.clearCancelCallback();
-      var title = '';
-      if (ctrl.selected.doc.type === 'person') {
+      const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
+
+      let title = '';
+      if (ctrl.selectedContact.doc.type === 'person') {
         title = 'contact.profile';
       } else {
-        title = ContactSchema.get(ctrl.selected.doc.type).label;
+        title = ContactSchema.get(ctrl.selectedContact.doc.type).label;
       }
-      $scope.loadingSummary = true;
+      ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
           $translate(title).catch(() => title),
-          getActionBarDataForChild(ctrl.selected.doc.type),
-          getCanEdit(ctrl.selected.doc),
+          getActionBarDataForChild(ctrl.selectedContact.doc.type),
+          getCanEdit(ctrl.selectedContact.doc),
         ])
         .then(function(results) {
           $scope.setTitle(results[0]);
           if (results[1]) {
-            ctrl.updateSelected({ doc: { child: results[1] }});
+            ctrl.updateSelectedContact({ doc: { child: results[1] }});
           }
-          var canEdit = results[2];
+          const canEdit = results[2];
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [ctrl.selected.doc],
-            sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
+            selected: [ctrl.selectedContact.doc],
+            sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit: canEdit,
+            canEdit,
           });
 
-          return ctrl.loadSelectedChildren(options)
-            .then(ctrl.loadSelectedReports)
+          return lazyLoadedContactData
             .then(function() {
               return $q.all([
-                ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
+                ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
                 Settings(),
                 getTasks()
               ])
               .then(function(results) {
-                $scope.loadingSummary = false;
-                var summary = results[0];
-                ctrl.updateSelected({ summary: summary });
-                var options = { doc: ctrl.selected.doc, contactSummary: summary.context };
+                ctrl.setContactsLoadingSummary(false);
+                const summary = results[0];
+                ctrl.updateSelectedContact({ summary: summary });
+                const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
-                  var showUnmuteModal = function(formId) {
-                    return ctrl.selected.doc &&
-                          ctrl.selected.doc.muted &&
+                  const showUnmuteModal = function(formId) {
+                    return ctrl.selectedContact.doc &&
+                          ctrl.selectedContact.doc.muted &&
                           !isUnmuteForm(results[1], formId);
                   };
-                  var formSummaries =
-                    forms &&
-                    forms.map(function(xForm) {
-                      return {
-                        code: xForm.internalId,
-                        title: translateTitle(xForm.translation_key, xForm.title),
-                        icon: xForm.icon,
-                        showUnmuteModal: showUnmuteModal(xForm.internalId)
-                      };
-                    });
-                  var canDelete =
-                    !ctrl.selected.children ||
-                    ((!ctrl.selected.children.places ||
-                      ctrl.selected.children.places.length === 0) &&
-                      (!ctrl.selected.children.persons ||
-                        ctrl.selected.children.persons.length === 0));
+                  const formSummaries = forms && forms.map(function(xForm) {
+                    return {
+                      code: xForm.internalId,
+                      title: translateTitle(xForm.translation_key, xForm.title),
+                      icon: xForm.icon,
+                      showUnmuteModal: showUnmuteModal(xForm.internalId)
+                    };
+                  });
+                  const canDelete =
+                    !ctrl.selectedContact.children ||
+                    ((!ctrl.selectedContact.children.places ||
+                      ctrl.selectedContact.children.places.length === 0) &&
+                      (!ctrl.selectedContact.children.persons ||
+                        ctrl.selectedContact.children.persons.length === 0));
                   $scope.setRightActionBar({
-                    selected: [ctrl.selected.doc],
+                    selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
-                    sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
-                    canEdit: canEdit,
-                    canDelete: canDelete,
+                    sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
+                    canEdit,
+                    canDelete,
                   });
                 });
               });
@@ -336,7 +338,7 @@ const PAGE_SIZE = 50;
         .catch(function(e) {
           $log.error('Error setting selected contact');
           $log.error(e);
-          ctrl.updateSelected({ error: true });
+          ctrl.updateSelectedContact({ error: true });
           $scope.setRightActionBar();
         });
     };
@@ -346,7 +348,7 @@ const PAGE_SIZE = 50;
     });
 
     const clearSelection = () => {
-      ctrl.setSelected(null);
+      ctrl.setSelectedContact(null);
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
     };
@@ -357,7 +359,7 @@ const PAGE_SIZE = 50;
         clearSelection();
       }
 
-      $scope.loading = true;
+      ctrl.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;
         liveList = LiveList['contact-search'];
@@ -384,7 +386,7 @@ const PAGE_SIZE = 50;
 
     $scope.simprintsEnabled = Simprints.enabled();
     $scope.simprintsIdentify = function() {
-      $scope.loading = true;
+      ctrl.loading = true;
       Simprints.identify().then(function(identities) {
         $scope.filters.simprintsIdentities = identities;
         $scope.search();

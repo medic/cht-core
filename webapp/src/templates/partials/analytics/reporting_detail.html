@@ -49,11 +49,11 @@
   </div>
 </div>
 
-<div class="loader" ng-show="loadingTotals"></div>
+<div class="loader" ng-show="analyticsReportingDetailCtrl.loadingTotals"></div>
 
-<div ng-show="place && !loadingTotals" class="district-totals">
-  <div class="alert alert-danger" role="alert" ng-show="error" translate>analytics.connection.error</div>
-  <div class="row" ng-hide="error">
+<div ng-show="place && !analyticsReportingDetailCtrl.loadingTotals" class="district-totals">
+  <div class="alert alert-danger" role="alert" ng-show="analyticsReportingDetailCtrl.error" translate>analytics.connection.error</div>
+  <div class="row" ng-hide="analyticsReportingDetailCtrl.error">
     <div class="col-sm-2 col-xs-6">
       <i class="fa fa-hospital-o"></i>
       <h4>{{totals.health_centers_size}}</h4>
@@ -82,13 +82,13 @@
   </div>
 </div>
 
-<div class="facility-select" ng-show="place && place.type === 'district_hospital' && !loadingTotals">
-  <div class="row title" ng-show="facilities.length">
+<div class="facility-select" ng-show="place && place.type === 'district_hospital' && !analyticsReportingDetailCtrl.loadingTotals">
+  <div class="row title" ng-show="analyticsReportingDetailCtrl.facilities.length">
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-1" translate>analytics.reporting.reports</div>
     <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
   </div>
-  <a ui-sref="analytics.reporting.detail({ form: filters.form, place: facility.id })" class="row facility" ng-repeat="facility in facilities">
+  <a ui-sref="analytics.reporting.detail({ form: filters.form, place: facility.id })" class="row facility" ng-repeat="facility in analyticsReportingDetailCtrl.facilities">
     <div class="col-sm-4">
       {{facility.name}} ({{facility.clinics.length}})
     </div>
@@ -102,7 +102,7 @@
   </div>
 </div>
 
-<div class="facility-select" ng-show="place && !loadingTotals">
+<div class="facility-select" ng-show="place && !analyticsReportingDetailCtrl.loadingTotals">
   <div class="row title" ng-show="clinics.length">
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
@@ -129,7 +129,7 @@
             <i class="fa fa-caret-down" ng-show="record.id && expandedRecord === record.id"></i><i class="fa fa-caret-right" ng-show="record.id && expandedRecord !== record.id"></i>{{record.name}}
           </div>
         </div>
-        <div class="loader" ng-show="record.id && loadingRecord === record.id"></div>
+        <div class="loader" ng-show="record.id && analyticsReportingDetailCtrl.loadingloadingRecord === record.id"></div>
         <div class="fields" ng-if="expandedRecord && expandedRecord === record.id">
           <div class="row">
             <div class="col-sm-12"><label translate>fields</label></div>

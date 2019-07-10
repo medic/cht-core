@@ -20,7 +20,6 @@ var _ = require('underscore'),
     $translate,
     $window,
     APP_CONFIG,
-    Actions,
     Auth,
     Changes,
     CheckDate,
@@ -30,6 +29,7 @@ var _ = require('underscore'),
     Debug,
     Enketo,
     Feedback,
+    GlobalActions,
     JsonForms,
     Language,
     LiveListConfig,
@@ -56,6 +56,17 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
+    const dbFetch = $window.PouchDB.fetch;
+    $window.PouchDB.fetch = function() {
+      return dbFetch.apply(this, arguments)
+        .then(function(response) {
+          if (response.status === 401) {
+            Session.navigateToLogin();
+          }
+          return response;
+        });
+    };
+
     $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
       'boot_time:1:to_first_code_execution',
@@ -76,14 +87,22 @@ var _ = require('underscore'),
         cancelCallback: Selectors.getCancelCallback(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selectMode: Selectors.getSelectMode(state)
+        selectMode: Selectors.getSelectMode(state),
+        showContent: Selectors.getShowContent(state),
+        version: Selectors.getVersion(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setSelectMode: actions.setSelectMode
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setIsAdmin: globalActions.setIsAdmin,
+        setLoadingContent: globalActions.setLoadingContent,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectMode: globalActions.setSelectMode,
+        setShowActionBar: globalActions.setShowActionBar,
+        setShowContent: globalActions.setShowContent,
+        setVersion: globalActions.setVersion
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -188,37 +207,37 @@ var _ = require('underscore'),
     // BootstrapTranslator is used because $translator.onReady has not fired
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
-    RulesEngine.init.catch(function() {}).then(function() {
-      $scope.dbWarmedUp = true;
+    RulesEngine.init
+      .catch(function(err) {
+        $log.error('RuleEngine failed to Initialize', err);
+      })
+      .then(function() {
+        $scope.dbWarmedUp = true;
 
-      var dbWarmed = performance.now();
-      Telemetry.record(
-        'boot_time:4:to_db_warmed',
-        dbWarmed - $window.startupTimes.bootstrapped
-      );
-      Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
+        const dbWarmed = performance.now();
+        Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
+        Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
-      delete $window.startupTimes;
-    });
+        delete $window.startupTimes;
+      });
 
     Feedback.init();
 
     LiveListConfig($scope);
     CheckDate();
 
-    $scope.loadingContent = false;
-    $scope.loadingSubActionBar = false;
+    ctrl.setLoadingContent(false);
+    ctrl.setLoadingSubActionBar(false);
+    ctrl.setVersion(APP_CONFIG.version);
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
     $scope.people = [];
     $scope.filterQuery = { value: null };
-    $scope.version = APP_CONFIG.version;
     $scope.actionBar = {};
     $scope.tours = [];
-    $scope.baseUrl = Location.path;
-    $scope.adminUrl = Location.adminPath;
-    $scope.isAdmin = Session.isAdmin();
+    ctrl.adminUrl = Location.adminPath;
+    ctrl.setIsAdmin(Session.isAdmin());
 
     if (
       $window.medicmobile_android &&
@@ -247,12 +266,6 @@ var _ = require('underscore'),
 
     $scope.isMobile = function() {
       return $('#mobile-detection').css('display') === 'inline';
-    };
-
-    $scope.setFilterQuery = function(query) {
-      if (query) {
-        $scope.filterQuery.value = query;
-      }
     };
 
     $scope.$on('HideContent', function() {
@@ -314,9 +327,9 @@ var _ = require('underscore'),
      * Unset the selected item without navigation
      */
     $scope.unsetSelected = function() {
-      $scope.setShowContent(false);
-      $scope.loadingContent = false;
-      $scope.showActionBar = false;
+      ctrl.setShowContent(false);
+      ctrl.setLoadingContent(false);
+      ctrl.setShowActionBar(false);
       $scope.setTitle();
       $scope.$broadcast('ClearSelected');
     };
@@ -335,10 +348,10 @@ var _ = require('underscore'),
     };
 
     $scope.settingSelected = function(refreshing) {
-      $scope.loadingContent = false;
+      ctrl.setLoadingContent(false);
       $timeout(function() {
-        $scope.setShowContent(true);
-        $scope.showActionBar = true;
+        ctrl.setShowContent(true);
+        ctrl.setShowActionBar(true);
         if (!refreshing) {
           $timeout(function() {
             $('.item-body').scrollTop(0);
@@ -347,25 +360,13 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.setShowContent = function(showContent) {
-      if (showContent && ctrl.selectMode) {
-        // when in select mode we never show the RHS on mobile
-        return;
-      }
-      $scope.showContent = showContent;
-    };
-
     $scope.setTitle = function(title) {
       $scope.title = title;
     };
 
     $scope.setLoadingContent = function(id) {
-      $scope.loadingContent = id;
-      $scope.setShowContent(true);
-    };
-
-    $scope.setLoadingSubActionBar = function(loadingSubActionBar) {
-      $scope.loadingSubActionBar = loadingSubActionBar;
+      ctrl.setLoadingContent(id);
+      ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {
@@ -561,6 +562,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
+        controllerAs: 'sendMessageCtrl',
         model: {
           to: target.attr('data-send-to'),
         },
@@ -662,6 +664,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/feedback.html',
         controller: 'FeedbackCtrl',
+        controllerAs: 'feedbackCtrl'
       });
     };
 

@@ -2,7 +2,7 @@
   <div class="row">
     <div class="inner">
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && $ctrl.selectMode">
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && actionBarCtrl.selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="emit('SelectAll')">
             <span class="fa fa-check-square-o"></span>
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && !$ctrl.selectMode">
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && !actionBarCtrl.selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
@@ -41,7 +41,7 @@
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn($event)" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.isAdmin" ng-click="actionBar.left.exportFn($event)" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
@@ -49,7 +49,7 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'contacts'">
-        <div class="actions dropup" mm-auth mm-auth-any="[ isAdmin, actionBar.left.userChildPlace.type && 'can_create_places' ]">
+        <div class="actions dropup" mm-auth mm-auth-any="[ actionBarCtrl.isAdmin, actionBar.left.userChildPlace.type && 'can_create_places' ]">
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.left.userChildPlace.type" ui-sref="contacts.addChild({ type: actionBar.left.userChildPlace.type, parent_id: actionBar.left.userFacilityId, from: 'list' })" mm-auth="can_create_places">
             <span class="fa-stack">
               <i ng-bind-html="actionBar.left.userChildPlace.icon | resourceIcon"></i>
@@ -57,7 +57,7 @@
             </span>
             <p translate>{{actionBar.left.addPlaceLabel}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn()" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.isAdmin" ng-click="actionBar.left.exportFn()" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
@@ -70,7 +70,7 @@
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn()" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.isAdmin" ng-click="actionBar.left.exportFn()" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
@@ -78,8 +78,8 @@
       </div>
 
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'reports'">
-        <div ng-show="$ctrl.selectMode">
-          <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected.length && (!loadingContent) && 'reports.detail' | isState">
+        <div ng-show="actionBarCtrl.selectMode">
+          <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBar.right.selected.length && (!actionBarCtrl.loadingContent) && 'reports.detail' | isState">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBar.right.selected)">
               <span class="fa fa-trash-o"></span>
               <p translate>select.mode.delete.all</p>
@@ -87,8 +87,8 @@
           </div>
         </div>
 
-        <div ng-show="!$ctrl.selectMode">
-          <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected && !loadingContent && ('reports.detail' | isState)">
+        <div ng-show="!actionBarCtrl.selectMode">
+          <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBar.right.selected && !actionBarCtrl.loadingContent && ('reports.detail' | isState)">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
@@ -97,10 +97,10 @@
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
-            <div class="dropdown-menu sub-actions" ng-show="actionBar.right.verifyingReport && loadingSubActionBar">
+            <div class="dropdown-menu sub-actions" ng-show="actionBar.right.verifyingReport && actionBarCtrl.loadingSubActionBar">
               <div class="loader"></div>
             </div>
-            <div class="dropdown-menu sub-actions" mm-auth mm-auth-any="[['can_verify_reports', 'can_edit_verification'], actionBar.right.selected[0].verified === undefined && 'can_verify_reports']" ng-show="actionBar.right.verifyingReport && !loadingSubActionBar">
+            <div class="dropdown-menu sub-actions" mm-auth mm-auth-any="[['can_verify_reports', 'can_edit_verification'], actionBar.right.selected[0].verified === undefined && 'can_verify_reports']" ng-show="actionBar.right.verifyingReport && !actionBarCtrl.loadingSubActionBar">
               <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBar.right.verified === false }" ng-click="emit('VerifyReport', false)">
                 <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-invalid-icon.html'"></span>
                 <span translate>reports.verify.invalid</span>
@@ -131,7 +131,7 @@
       </div>
 
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'contacts'">
-        <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected && !loadingContent && ('contacts.detail' | isState)">
+        <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBar.right.selected && !actionBarCtrl.loadingContent && ('contacts.detail' | isState)">
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': (!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)}">
             <span class="fa fa-plus"></span>

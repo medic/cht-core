@@ -8,18 +8,20 @@ angular.module('inboxDirectives').directive('mmDateFilter', function(SearchFilte
     controller: function($ngRedux, $scope, Selectors) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state)
+          selectMode: Selectors.getSelectMode(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl',
+    controllerAs: 'dateFilterCtrl',
+    bindToController: {
+      selected: '<'
+    },
     link: function(scope) {
       SearchFilters.date(function(date) {
         scope.filters.date = date;

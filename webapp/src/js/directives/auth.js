@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 angular.module('inboxDirectives').directive('mmAuth', function(
   $log,
@@ -8,71 +8,71 @@ angular.module('inboxDirectives').directive('mmAuth', function(
 ) {
   'use strict';
   'ngInject';
-  var link = function(scope, element, attributes) {
-    var promises = [];
-    if (attributes.mmAuth) {
-      promises.push(Auth(attributes.mmAuth.split(',')));
-    }
+  const link = function(scope, element, attributes) {
 
-    if (attributes.mmAuthOnline) {
-      promises.push(Auth.online($parse(attributes.mmAuthOnline)(scope)));
-    }
-
-    if (promises.length) {
-      element.addClass('hidden');
-      $q
-        .all(promises)
+    const updateVisibility = promises => {
+      return $q.all(promises)
         .then(function () {
           element.removeClass('hidden');
+          return true;
         })
         .catch(function (err) {
           if (err) {
             $log.error('Error checking authorization', err);
           }
           element.addClass('hidden');
-        });
-    }
-
-    var checkAuthAny = function() {
-      element.addClass('hidden');
-
-      var mmAuthAny = mmAuthAnyGetter(scope);
-      mmAuthAny = _.isArray(mmAuthAny) ? mmAuthAny : [mmAuthAny];
-
-      if (_.any(mmAuthAny, function(element) {
-        return element === true;
-      })) {
-        return element.removeClass('hidden');
-      }
-
-      var permissionsGroups = mmAuthAny
-        .filter(function(element) {
-          return _.isArray(element) || _.isString(element);
-        })
-        .map(function(element) {
-          return (_.isArray(element) && _.flatten(element)) || [ element ];
-        });
-
-      if (!permissionsGroups.length) {
-        return;
-      }
-
-      Auth
-        .any(permissionsGroups)
-        .then(function() {
-          element.removeClass('hidden');
-        })
-        .catch(function (err) {
-          if (err) {
-            $log.error('Error checking authorization', err);
-          }
-          element.addClass('hidden');
+          return false;
         });
     };
 
-    if (attributes.mmAuthAny) {
-      var mmAuthAnyGetter = $parse(attributes.mmAuthAny);
-      scope.$watch(mmAuthAnyGetter, checkAuthAny);
+    const staticChecks = () => {
+      const promises = [];
+      if (attributes.mmAuth) {
+        promises.push(Auth(attributes.mmAuth.split(',')));
+      }
+
+      if (attributes.mmAuthOnline) {
+        promises.push(Auth.online($parse(attributes.mmAuthOnline)(scope)));
+      }
+
+      if (!promises.length) {
+        return true;
+      }
+
+      return updateVisibility(promises);
+    };
+
+    const dynamicChecks = allowed => {
+      if (allowed && attributes.mmAuthAny) {
+        const mmAuthAnyGetter = $parse(attributes.mmAuthAny);
+        scope.$watch(mmAuthAnyGetter, () => {
+          let mmAuthAny = mmAuthAnyGetter(scope);
+          mmAuthAny = Array.isArray(mmAuthAny) ? mmAuthAny : [mmAuthAny];
+
+          if (mmAuthAny.some(element => element === true)) {
+            element.removeClass('hidden');
+            return;
+          }
+
+          const permissionsGroups = mmAuthAny
+            .filter(element => Array.isArray(element) || _.isString(element))
+            .map(element => (Array.isArray(element) && _.flatten(element)) || [ element ]);
+
+          if (!permissionsGroups.length) {
+            element.addClass('hidden');
+            return;
+          }
+
+          return updateVisibility([ Auth.any(permissionsGroups) ]);
+        });
+      }
+    };
+
+    const result = staticChecks();
+    if (result === true) {
+      dynamicChecks(true);
+    } else {
+      result.then(dynamicChecks);
     }
   };
   return {

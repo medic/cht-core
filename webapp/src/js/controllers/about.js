@@ -2,16 +2,33 @@ angular.module('inboxControllers').controller('AboutCtrl',
   function (
     $interval,
     $log,
+    $ngRedux,
     $scope,
     $translate,
     $window,
     DB,
     Debug,
+    GlobalActions,
     ResourceIcons,
+    Selectors,
     Session
   ) {
     'use strict';
     'ngInject';
+
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        version: Selectors.getVersion(state)
+      };
+    };
+    const mapDispatchToTarget = function(dispatch) {
+      var globalActions = GlobalActions(dispatch);
+      return {
+        setVersion: globalActions.setVersion
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.url = $window.location.hostname;
     $scope.userCtx = Session.userCtx();
@@ -44,7 +61,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
       .then(function(info) {
         const version = getDeployVersion(info.deploy_info);
         if (version) {
-          $scope.version = version;
+          ctrl.setVersion(version);
         }
         $scope.clientDdocVersion = formatRev(info._rev);
       })
@@ -85,5 +102,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
       .catch(function (err) {
         $log.error('Failed to fetch DB info', err);
       });
+
+    $scope.$on('$destroy', unsubscribe);
   }
 );

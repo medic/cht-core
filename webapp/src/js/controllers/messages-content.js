@@ -15,11 +15,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
-    Actions,
     Changes,
+    GlobalActions,
     LineageModelGenerator,
     MarkRead,
     MessageContacts,
+    MessagesActions,
     Modal,
     Selectors,
     SendMessage,
@@ -29,21 +30,25 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
-        selected: Selectors.getSelected(state)
+        loadingContent: Selectors.getLoadingContent(state),
+        selectedMessage: Selectors.getSelectedMessage(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      const messagesActions = MessagesActions(dispatch);
       return {
-        addSelectedMessage: actions.addSelectedMessage,
-        removeSelectedMessage: actions.removeSelectedMessage,
-        updateSelected: actions.updateSelected
+        addSelectedMessage: messagesActions.addSelectedMessage,
+        removeSelectedMessage: messagesActions.removeSelectedMessage,
+        setLoadingContent: globalActions.setLoadingContent,
+        setMessagesError: messagesActions.setMessagesError,
+        updateSelectedMessage: messagesActions.updateSelectedMessage
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     $scope.send = {
       message: ''
@@ -71,7 +76,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
 
     var markAllRead = function() {
-      var docs = _.pluck(ctrl.selected.messages, 'doc');
+      var docs = _.pluck(ctrl.selectedMessage.messages, 'doc');
       if (docs.length) {
         $scope.markConversationRead(docs);
         MarkRead(docs)
@@ -96,8 +101,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var selectContact = function(id, type, options) {
       options = options || {};
       if (!id) {
-        $scope.error = false;
-        $scope.loadingContent = false;
+        ctrl.setMessagesError(false);
+        ctrl.setLoadingContent(false);
         $scope.clearSelected();
         return;
       }
@@ -113,49 +118,49 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         .then(function(results) {
           var contactModel = results[0];
           var conversation = results[1];
-          if (ctrl.selected && ctrl.selected.id !== id) {
+          if (ctrl.selectedMessage && ctrl.selectedMessage.id !== id) {
             // ignore response for previous request
             return;
           }
 
           $scope.setLoadingContent(false);
-          $scope.error = false;
+          ctrl.setMessagesError(false);
           var unread = _.filter(conversation, function(message) {
             return !message.read;
           });
           $scope.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;
           });
-          ctrl.updateSelected({ contact: contactModel, messages: conversation });
+          ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
           $scope.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markAllRead();
           $timeout(scrollToUnread);
         })
         .catch(function(err) {
-          $scope.loadingContent = false;
-          $scope.error = true;
+          ctrl.setLoadingContent(false);
+          ctrl.setMessagesError(true);
           $log.error('Error fetching contact conversation', err);
         });
     };
 
     var updateConversation = function(options) {
-      var selectedId = ctrl.selected && ctrl.selected.id;
+      var selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
       if (selectedId) {
-        var skip = options.skip && ctrl.selected.messages.length;
+        var skip = options.skip && ctrl.selectedMessage.messages.length;
         if (skip) {
           $timeout(function() {
-            $scope.loadingMoreContent = true;
+            ctrl.loadingMoreContent = true;
           });
         }
 
         MessageContacts.conversation(selectedId, skip)
           .then(function(conversation) {
-            $scope.loadingMoreContent = false;
+            ctrl.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
             conversation.forEach(function(updated) {
-              var match = _.findWhere(ctrl.selected.messages, { id: updated.id });
+              var match = _.findWhere(ctrl.selectedMessage.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
               } else {
@@ -190,15 +195,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
 
     $scope.sendMessage = () => {
-      if (!ctrl.selected) {
+      if (!ctrl.selectedMessage) {
         $log.error('Error sending message', new Error('No facility selected'));
         return;
       }
       let recipient;
-      if (ctrl.selected.contact.doc) { // known contact
-        recipient = { doc: ctrl.selected.contact.doc };
+      if (ctrl.selectedMessage.contact.doc) { // known contact
+        recipient = { doc: ctrl.selectedMessage.contact.doc };
       } else { // unknown sender
-        recipient = { doc: { contact: { phone: ctrl.selected.id } } };
+        recipient = { doc: { contact: { phone: ctrl.selectedMessage.id } } };
       }
       SendMessage(recipient, $scope.send.message)
         .then(() => {
@@ -213,8 +218,9 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
+        controllerAs: 'sendMessageCtrl',
         model: {
-          to: ctrl.selected.id,
+          to: ctrl.selectedMessage.id,
           message: $scope.send.message
         }
       });
@@ -232,8 +238,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       },
       filter: function(change) {
         return $scope.currentTab === 'messages' &&
-          ctrl.selected &&
-          _.findWhere(ctrl.selected.messages, { id: change.id });
+          ctrl.selectedMessage &&
+          _.findWhere(ctrl.selectedMessage.messages, { id: change.id });
       }
     });
 

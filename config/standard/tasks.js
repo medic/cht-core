@@ -1,7 +1,17 @@
+var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
+var DAYS_IN_PNC = extras.DAYS_IN_PNC;
+var MS_IN_DAY = extras.MS_IN_DAY;
 var isFormFromArraySubmittedInWindow = extras.isFormFromArraySubmittedInWindow;
 var isCoveredByUseCase = extras.isCoveredByUseCase;
 var getNewestPregnancyTimestamp = extras.getNewestPregnancyTimestamp;
 var getNewestDeliveryTimestamp = extras.getNewestDeliveryTimestamp;
+var isHighRiskPregnancy = extras.isHighRiskPregnancy;
+var deliveryForms = extras.deliveryForms;
+var antenatalForms = extras.antenatalForms;
+var postnatalForms = extras.postnatalForms;
+var isHomeBirth = extras.isHomeBirth;
+var immunizationMonths = extras.immunizationMonths;
+var immunizationForms = extras.immunizationForms;
 
 module.exports = [
   {
@@ -17,7 +27,7 @@ module.exports = [
         r.reported_date,
         Utils.addDate(
           new Date(r.reported_date),
-          extras.MAX_DAYS_IN_PREGNANCY
+          MAX_DAYS_IN_PREGNANCY
         ).getTime()
       );
     },
@@ -82,7 +92,7 @@ module.exports = [
       },
     ],
     priority: function(c, r) {
-      if (extras.isHighRiskPregnancy(c, r)) {
+      if (isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
           label: 'task.warning.high_risk',
@@ -97,9 +107,9 @@ module.exports = [
         r.scheduled_tasks[r.scheduled_tasks.length - 1].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          extras.deliveryForms,
+          deliveryForms,
           r.reported_date,
-          r.reported_date + (extras.MAX_DAYS_IN_PREGNANCY + extras.DAYS_IN_PNC) * extras.MS_IN_DAY
+          r.reported_date + (MAX_DAYS_IN_PREGNANCY + DAYS_IN_PNC) * MS_IN_DAY
         )
       );
     },
@@ -132,7 +142,7 @@ module.exports = [
       },
     ],
     priority: function(c, r) {
-      if (extras.isHighRiskPregnancy(c, r)) {
+      if (isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
           label: 'task.warning.high_risk',
@@ -145,7 +155,7 @@ module.exports = [
         r.reported_date < getNewestDeliveryTimestamp(c) ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          extras.antenatalForms,
+          antenatalForms,
           Utils.addDate(dueDate, -event.start).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -187,7 +197,7 @@ module.exports = [
         r.reported_date < getNewestPregnancyTimestamp(c) ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          extras.postnatalForms,
+          postnatalForms,
           Utils.addDate(dueDate, -event.start).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -208,7 +218,7 @@ module.exports = [
           c.reports,
           'F',
           r.reported_date,
-          Utils.addDate(new Date(r.reported_date), extras.DAYS_IN_PNC).getTime()
+          Utils.addDate(new Date(r.reported_date), DAYS_IN_PNC).getTime()
         )
       );
     },
@@ -257,7 +267,7 @@ module.exports = [
       );
     },
     priority: function(c, r) {
-      if (extras.isHomeBirth(r)) {
+      if (isHomeBirth(r)) {
         return {
           level: 'high',
           label: 'task.warning.home_birth',
@@ -282,7 +292,7 @@ module.exports = [
         r.reported_date < getNewestPregnancyTimestamp(c) ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          extras.postnatalForms,
+          postnatalForms,
           Utils.addDate(dueDate, -event.start).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -296,11 +306,11 @@ module.exports = [
     icon: 'immunization',
     title: 'task.immunization_missing_visit.title',
     appliesTo: 'scheduled_tasks',
-    appliesToType: ['CW', 'child_health_registration'],
+    appliesToType: ['C', 'CW', 'child_health_registration'],
     appliesIf: function(c, r, i) {
       return (
         isCoveredByUseCase(c.contact, 'imm') &&
-        extras.immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1
+        immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1
       );
     },
     actions: [{ form: 'immunization_visit' }],
@@ -319,7 +329,7 @@ module.exports = [
         r.scheduled_tasks[i].state === 'cleared' ||
         isFormFromArraySubmittedInWindow(
           c.reports,
-          extras.immunizationForms,
+          immunizationForms,
           Utils.addDate(dueDate, -event.days).getTime(),
           Utils.addDate(dueDate, event.end + 1).getTime()
         )
@@ -327,65 +337,125 @@ module.exports = [
     },
   },
 
-  // create nutrition screening task if degree of severity is moderate/severe
+  // followup tasks as per nutrition program schedule (OTP, SFP, or SC)
+  {
+    icon: 'child',
+    title: 'task.nutrition_followup.title',
+    appliesTo: 'scheduled_tasks',
+    appliesToType: ['nutrition_screening'],
+    appliesIf: function(c, r) {
+      return (
+        isCoveredByUseCase(c.contact, 'gmp') &&
+        r.fields.treatment.program &&
+        (r.fields.treatment.program === 'OTP' || r.fields.treatment.program === 'SFP' || r.fields.treatment.program === 'SC')
+      );
+
+    },
+    actions: [{ form: 'nutrition_followup' }],
+    events: [
+      {
+        id: 'nutrition-followup-missing-visit',
+        days: 0,
+        start: 0,
+        end: 3,
+      }
+    ],
+    resolvedIf: function(c, r, e, dueDate, i) {
+      return (
+        r.scheduled_tasks[i].state === 'cleared' ||
+        isFormFromArraySubmittedInWindow(
+          c.reports,
+          ['nutrition_followup', 'CF'],
+          Utils.addDate(dueDate, 0).getTime(),
+          Utils.addDate(dueDate, e.end + 1).getTime()
+        )
+      );
+    }
+  },
+
+  // create nutrition screening task if degree of severity is moderate or severe
   {
     icon: 'child',
     title: 'task.nutrition_screening.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return r.fields.severity === "2" || r.fields.severity === "3";
+    appliesIf: function(c, r){
+      var severity = r.fields.severity.toString();
+      return severity === "3" || severity === "2";
     },
     actions: [{form: 'nutrition_screening'}],
-    events: [{
+    events: [
+      {
       id: 'nutrition_screening',
       days: 2,
       start: 2,
-      end: 7
+      end: 0
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening';
       });
     }
   },
 
-  // create treatment enrollment task. enroll = 'yes' in ms & followup
+  // create nutrition screening task if degree of severity is severe (3)
   {
     icon: 'child',
-    title: 'task.treatment_enrollment.title',
+    title: 'task.nutrition_screening_missing.title',
     appliesTo: 'reports',
-    appliesToType: ['nutrition_screening', 'nutrition_followup'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return (r.form === 'nutrition_screening' && r.fields.zscore.treatment === 'yes') || (r.form === 'nutrition_followup' && r.fields.exit && r.fields.exit.enroll && r.fields.exit.enroll === 'yes');
+    appliesToType: ['G'],
+    appliesIf: function(c, r){
+      return r.fields.severity.toString() === "3";
     },
-    actions: [{form: 'treatment_enrollment'}],
-    events: [{
-      id: 'treatment-enrollment',
-      days: 2,
-      start: 2,
+    actions: [{form: 'nutrition_screening'}],
+    events: [
+      {
+      id: 'nutrition_screening',
+      days: 7,
+      start: 0,
       end: 7
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
-        return r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.enroll === 'yes';
+        return r.form === 'nutrition_screening';
+      });
+    }
+  },
+
+  // create nutrition screening task if degree of severity is moderate
+  {
+    icon: 'child',
+    title: 'task.nutrition_screening_missing.title',
+    appliesTo: 'reports',
+    appliesToType: ['G'],
+    appliesIf: function(c, r){
+      return r.fields.severity.toString() === "2";
+    },
+    actions: [{form: 'nutrition_screening'}],
+    events: [{
+      id: 'nutrition_screening',
+      days: 21,
+      start: 0,
+      end: 7
+    }],
+    resolvedIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_screening';
       });
     }
   },
 
   // Create death confirmation task
   {
-    icon: 'risk',
+    icon: 'icon-death-general',
     title: 'task.death_confirmation.title',
     appliesTo: 'reports',
-    appliesToType: ['DR', 'death_confirmation'],
-    appliesIf: function(c, r, i){
-      /* jshint unused:vars */
-      return r.form === 'DR';
+    appliesToType: ['DR', 'nutrition_exit'],
+    appliesIf: function(c, r){
+      return (
+        r.form === 'DR' ||
+        (r.form === 'nutrition_exit' && r.fields.exit.outcome === 'dead')
+      );
     },
     actions: [{form: 'death_confirmation'}],
     events: [{
@@ -394,10 +464,32 @@ module.exports = [
       start: 2,
       end: 7
     }],
-    resolvedIf: function(c, r, event, dueDate){
-      /* jshint unused:vars */
+    resolvedIf: function(c){
       return c.reports.some(function(r){
         return r.form === 'death_confirmation' && r.fields.death_report.death === 'yes';
+      });
+    }
+  },
+
+  // Exit child from nutrition program
+  {
+    icon: 'child',
+    title: 'task.nutrition_exit.title',
+    appliesTo: 'reports',
+    appliesToType: ['nutrition_followup'],
+    appliesIf: function(c, r){
+      return r.fields.measurements.exit === 'yes';
+    },
+    actions: [{form: 'nutrition_exit'}],
+    events: [{
+      id: 'nutrition-exit',
+      days: 2,
+      start: 2,
+      end: 7
+    }],
+    resolvedIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'nutrition_exit';
       });
     }
   },
