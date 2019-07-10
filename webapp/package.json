@@ -12,14 +12,6 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@medic/bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
-    "@medic/lineage": "file:../shared-libs/lineage",
-    "@medic/message-utils": "file:../shared-libs/message-utils",
-    "@medic/phone-number": "file:../shared-libs/phone-number",
-    "@medic/registration-utils": "file:../shared-libs/registration-utils",
-    "@medic/search": "file:../shared-libs/search",
-    "@medic/task-utils": "file:../shared-libs/task-utils",
-    "@medic/translation-utils": "file:../shared-libs/translation-utils",
     "@uirouter/angularjs": "^1.0.21",
     "angular": "^1.7.5",
     "angular-cookie": "^4.1.0",

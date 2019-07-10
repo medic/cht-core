@@ -8,16 +8,6 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@medic/lineage": "file:../shared-libs/lineage",
-    "@medic/message-utils": "file:../shared-libs/message-utils",
-    "@medic/phone-number": "file:../shared-libs/phone-number",
-    "@medic/registration-utils": "file:../shared-libs/registration-utils",
-    "@medic/server-checks": "file:../shared-libs/server-checks",
-    "@medic/settings": "file:../shared-libs/settings",
-    "@medic/task-utils": "file:../shared-libs/task-utils",
-    "@medic/tombstone-utils": "file:../shared-libs/tombstone-utils",
-    "@medic/transitions": "file:../shared-libs/transitions",
-    "@medic/translation-utils": "file:../shared-libs/translation-utils",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
     "bikram-sambat-bootstrap": "^1.4.2",
@@ -43,16 +33,6 @@
     "jsverify": "^0.8.4"
   },
   "bundledDependencies": [
-    "@medic/lineage",
-    "@medic/message-utils",
-    "@medic/phone-number",
-    "@medic/registration-utils",
-    "@medic/settings",
-    "@medic/server-checks",
-    "@medic/task-utils",
-    "@medic/tombstone-utils",
-    "@medic/transitions",
-    "@medic/translation-utils",
     "async",
     "bikram-sambat",
     "bikram-sambat-bootstrap",
@@ -73,5 +53,17 @@
     "url-join",
     "uuid",
     "winston"
+  ],
+  "sharedLibs": [
+    "lineage",
+    "message-utils",
+    "phone-number",
+    "registration-utils",
+    "server-checks",
+    "settings",
+    "task-utils",
+    "tombstone-utils",
+    "transitions",
+    "translation-utils"
   ]
 }
