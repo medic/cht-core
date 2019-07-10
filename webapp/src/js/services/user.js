@@ -27,8 +27,8 @@
       };
 
       let userDoc;
-      return function() {
-        if (userDoc) {
+      return function(forceRemote) {
+        if (!forceRemote && userDoc) {
           return userDoc;
         }
 

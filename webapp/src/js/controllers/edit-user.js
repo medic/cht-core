@@ -35,7 +35,7 @@ var passwordTester = require('simple-password-tester'),
       });
 
       var determineEditUserModel = function() {
-        return UserSettings()
+        return UserSettings(true)
           .then(function(user) {
             if (user) {
               return {
