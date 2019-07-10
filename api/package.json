@@ -93,6 +93,7 @@
     "registration-utils",
     "search",
     "server-checks",
+    "settings",
     "task-utils",
     "tombstone-utils",
     "transitions",
