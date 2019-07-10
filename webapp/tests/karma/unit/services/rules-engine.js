@@ -1,15 +1,17 @@
-describe(`RulesEngine service`, function() {
+
+describe(`RulesEngine service`, () => {
+  const { expect } = chai;
 
   'use strict';
 
-  var Search,
+  let Search,
       Settings,
       UserContact,
       Changes,
       injector,
       nools;
 
-  var rules =
+  const rules =
     `define Contact {
       contact: null,
       reports: null
@@ -100,7 +102,7 @@ describe(`RulesEngine service`, function() {
       }
     }`;
 
-  var dataRecords = [
+  const dataRecords = [
     {
       _id: 1,
       form: `P`,
@@ -137,13 +139,13 @@ describe(`RulesEngine service`, function() {
     }
   ];
 
-  var contacts = [
+  const contacts = [
     { _id: 1, name: `Jenny` },
     { _id: 2, name: `Sally` },
     { _id: 3, name: `Rachel` }
   ];
 
-  var schedules = [
+  const schedules = [
     {
       name: `anc-registration`,
       events: [
@@ -184,8 +186,8 @@ describe(`RulesEngine service`, function() {
     }
   ];
 
-  var calculateDate = function(registration, days) {
-    var lmpWeeks = registration.form === `P` ? registration.fields.last_menstrual_period : 4;
+  const calculateDate = (registration, days) => {
+    const lmpWeeks = registration.form === `P` ? registration.fields.last_menstrual_period : 4;
     return moment(registration.reported_date)
       .subtract(lmpWeeks, `weeks`)
       .add(days, `days`)
@@ -196,95 +198,95 @@ describe(`RulesEngine service`, function() {
       .toISOString();
   };
 
-  beforeEach(function() {
+  beforeEach(() => {
     Search = sinon.stub();
     Settings = sinon.stub();
     UserContact = sinon.stub();
     Changes = sinon.stub();
     module(`inboxApp`);
-    module(function ($provide) {
+    module($provide => {
       $provide.value(`Search`, Search);
       $provide.value(`Settings`, Settings);
       $provide.value(`UserContact`, UserContact);
       $provide.value(`Changes`, Changes);
       $provide.value(`$q`, Q); // bypass $q so we don't have to digest
       $provide.value(`Session`, {
-        isOnlineOnly: function() {
+        isOnlineOnly: () => {
           return false;
         }
       });
     });
-    inject(function($injector) {
+    inject($injector => {
       injector = $injector;
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     if (nools) {
       nools.deleteFlow(`medic`);
     }
     KarmaUtils.restore(Search, Settings, Changes, UserContact);
   });
 
-  var getService = function() {
-    var service = injector.get(`RulesEngine`);
+  const getService = () => {
+    const service = injector.get(`RulesEngine`);
     nools = service._nools;
     return service;
   };
 
-  it(`returns search errors`, function(done) {
+  it(`returns search errors`, done => {
     Search.returns(Promise.reject(`boom`));
-    Settings.returns(Promise.resolve({
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
-    var service = getService();
-    service.listen(`test`, `task`, function(err) {
-      chai.expect(err).to.equal(`boom`);
-      chai.expect(Search.callCount).to.equal(2);
+    });
+    UserContact.resolves({ name: `Jim` });
+    const service = getService();
+    service.listen(`test`, `task`, err => {
+      expect(err).to.equal(`boom`);
+      expect(Search.callCount).to.equal(2);
       done();
     });
   });
 
-  it(`returns settings errors`, function(done) {
+  it(`returns settings errors`, done => {
     Settings.returns(Promise.reject(`boom`));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
-    var service = getService();
-    service.listen(`test`, `task`, function(err) {
-      chai.expect(err).to.equal(`boom`);
-      chai.expect(Settings.callCount).to.equal(1);
+    UserContact.resolves({ name: `Jim` });
+    const service = getService();
+    service.listen(`test`, `task`, err => {
+      expect(err).to.equal(`boom`);
+      expect(Settings.callCount).to.equal(1);
       done();
     });
   });
 
-  it(`returns empty when settings returns no config`, function(done) {
-    Settings.returns(Promise.resolve({}));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
-      chai.expect(Search.callCount).to.equal(0);
-      chai.expect(Settings.callCount).to.equal(1);
-      chai.expect(actual).to.deep.equal([]);
+  it(`returns empty when settings returns no config`, done => {
+    Settings.resolves({});
+    UserContact.resolves({ name: `Jim` });
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
+      expect(Search.callCount).to.equal(0);
+      expect(Settings.callCount).to.equal(1);
+      expect(actual).to.deep.equal([]);
       done();
     });
   });
 
-  it(`generates tasks when given registrations`, function(done) {
+  it(`generates tasks when given registrations`, done => {
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var expectations = {
+    const expectations = {
       '1-visit-1': {
         registration: dataRecords[0],
         schedule: schedules[0].events[0],
@@ -347,31 +349,31 @@ describe(`RulesEngine service`, function() {
       }
     };
 
-    var service = getService();
-    var compile = sinon.spy(service._nools, `compile`);
-    var callbackCount = 0;
+    const service = getService();
+    const compile = sinon.spy(nools, `compile`);
+    let callbackCount = 0;
 
-    service.listen(`test`, `task`, function(err, actuals) {
-      actuals.forEach(function(actual) {
-        var expected = expectations[actual._id];
-        chai.expect(actual.type).to.equal(expected.schedule.type);
-        chai.expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
-        chai.expect(actual.title).to.deep.equal(expected.schedule.title);
-        chai.expect(actual.fields[0].label).to.deep.equal([{ content: `Description`, locale: `en` }]);
-        chai.expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
-        chai.expect(actual.doc._id).to.equal(expected.registration._id);
-        chai.expect(actual.resolved).to.equal(expected.resolved);
-        chai.expect(actual.reports).to.deep.equal(expected.reports);
+    service.listen(`test`, `task`, (err, actuals) => {
+      actuals.forEach(actual => {
+        const expected = expectations[actual._id];
+        expect(actual.type).to.equal(expected.schedule.type);
+        expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
+        expect(actual.title).to.deep.equal(expected.schedule.title);
+        expect(actual.fields[0].label).to.deep.equal([{ content: `Description`, locale: `en` }]);
+        expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
+        expect(actual.doc._id).to.equal(expected.registration._id);
+        expect(actual.resolved).to.equal(expected.resolved);
+        expect(actual.reports).to.deep.equal(expected.reports);
         callbackCount++;
         if (callbackCount === 10) {
-          chai.expect(Search.callCount).to.equal(2);
-          chai.expect(Settings.callCount).to.equal(1);
-          chai.expect(UserContact.callCount).to.equal(1);
-          chai.expect(compile.callCount).to.equal(1);
-          chai.expect(compile.args[0][0]).to.deep.equal(rules);
-          chai.expect(compile.args[0][1].name).to.equal(`medic`);
-          chai.expect(compile.args[0][1].scope).to.have.property(`Utils`);
-          chai.expect(compile.args[0][1].scope.user.name).to.equal(`Jim`);
+          expect(Search.callCount).to.equal(2);
+          expect(Settings.callCount).to.equal(1);
+          expect(UserContact.callCount).to.equal(1);
+          expect(compile.callCount).to.equal(1);
+          expect(compile.args[0][0]).to.deep.equal(rules);
+          expect(compile.args[0][1].name).to.equal(`medic`);
+          expect(compile.args[0][1].scope).to.have.property(`Utils`);
+          expect(compile.args[0][1].scope.user.name).to.equal(`Jim`);
           compile.restore();
           done();
         }
@@ -379,9 +381,9 @@ describe(`RulesEngine service`, function() {
     });
   });
 
-  it(`generates tasks using patient_id - #2986`, function(done) {
+  it(`generates tasks using patient_id - #2986`, done => {
 
-    var dataRecord = {
+    const dataRecord = {
       _id: 1,
       form: `P`,
       reported_date: 1437618272360,
@@ -390,22 +392,22 @@ describe(`RulesEngine service`, function() {
         last_menstrual_period: 10
       }
     };
-    var contact = {
+    const contact = {
       _id: 2,
       name: `Jenny`,
       patient_id: `12345`
     };
-    Search.onFirstCall().returns(Promise.resolve([ dataRecord ]));
-    Search.onSecondCall().returns(Promise.resolve([ contact ]));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves([ dataRecord ]);
+    Search.onSecondCall().resolves([ contact ]);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var expectations = {
+    const expectations = {
       '1-visit-1': {
         registration: dataRecord,
         schedule: schedules[0].events[0],
@@ -420,32 +422,32 @@ describe(`RulesEngine service`, function() {
       }
     };
 
-    var service = getService();
-    var compile = sinon.spy(service._nools, `compile`);
-    var callbackCount = 0;
+    const service = getService();
+    const compile = sinon.spy(nools, `compile`);
+    let callbackCount = 0;
 
-    service.listen(`test`, `task`, function(err, actuals) {
-      actuals.forEach(function(actual) {
-        var expected = expectations[actual._id];
-        chai.expect(actual.type).to.equal(expected.schedule.type);
-        chai.expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
-        chai.expect(actual.title).to.deep.equal(expected.schedule.title);
-        chai.expect(actual.fields[0].label).to.deep.equal([{ content: `Description`, locale: `en` }]);
-        chai.expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
-        chai.expect(actual.doc._id).to.equal(expected.registration._id);
-        chai.expect(actual.resolved).to.equal(expected.resolved);
-        chai.expect(actual.reports).to.deep.equal(expected.reports);
-        chai.expect(actual.contact).to.deep.equal(contact);
+    service.listen(`test`, `task`, (err, actuals) => {
+      actuals.forEach(actual => {
+        const expected = expectations[actual._id];
+        expect(actual.type).to.equal(expected.schedule.type);
+        expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
+        expect(actual.title).to.deep.equal(expected.schedule.title);
+        expect(actual.fields[0].label).to.deep.equal([{ content: `Description`, locale: `en` }]);
+        expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
+        expect(actual.doc._id).to.equal(expected.registration._id);
+        expect(actual.resolved).to.equal(expected.resolved);
+        expect(actual.reports).to.deep.equal(expected.reports);
+        expect(actual.contact).to.deep.equal(contact);
         callbackCount++;
         if (callbackCount === 2) {
-          chai.expect(Search.callCount).to.equal(2);
-          chai.expect(Settings.callCount).to.equal(1);
-          chai.expect(UserContact.callCount).to.equal(1);
-          chai.expect(compile.callCount).to.equal(1);
-          chai.expect(compile.args[0][0]).to.deep.equal(rules);
-          chai.expect(compile.args[0][1].name).to.equal(`medic`);
-          chai.expect(compile.args[0][1].scope).to.have.property(`Utils`);
-          chai.expect(compile.args[0][1].scope.user.name).to.equal(`Jim`);
+          expect(Search.callCount).to.equal(2);
+          expect(Settings.callCount).to.equal(1);
+          expect(UserContact.callCount).to.equal(1);
+          expect(compile.callCount).to.equal(1);
+          expect(compile.args[0][0]).to.deep.equal(rules);
+          expect(compile.args[0][1].name).to.equal(`medic`);
+          expect(compile.args[0][1].scope).to.have.property(`Utils`);
+          expect(compile.args[0][1].scope.user.name).to.equal(`Jim`);
           compile.restore();
           done();
         }
@@ -453,31 +455,31 @@ describe(`RulesEngine service`, function() {
     });
   });
 
-  it(`caches tasks`, function(done) {
+  it(`caches tasks`, done => {
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var service = getService();
-    var expected = {};
-    service.listen(`test`, `task`, function(err, results) {
-      results.forEach(function(result) {
+    const service = getService();
+    const expected = {};
+    service.listen(`test`, `task`, (err, results) => {
+      results.forEach(result => {
         expected[result._id] = result;
       });
       if (_.values(expected).length === 10) {
-        service.listen(`another-test`, `task`, function(err, actual) {
+        service.listen(`another-test`, `task`, (err, actual) => {
           // Search and Settings shouldn't be called again, and
           // results should be the same
-          chai.expect(Search.callCount).to.equal(2);
-          chai.expect(Settings.callCount).to.equal(1);
-          chai.expect(actual).to.deep.equal(_.values(expected));
+          expect(Search.callCount).to.equal(2);
+          expect(Settings.callCount).to.equal(1);
+          expect(actual).to.deep.equal(_.values(expected));
           done();
         });
       }
@@ -485,9 +487,9 @@ describe(`RulesEngine service`, function() {
 
   });
 
-  it(`updates when a contact is deleted`, function(done) {
+  it(`updates when a contact is deleted`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -499,23 +501,23 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var contacts = [
+    const contacts = [
       { _id: 1, name: `Jenny` }
     ];
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
@@ -523,7 +525,7 @@ describe(`RulesEngine service`, function() {
           id: 1
         });
       } else if (callbackCount === 5 || callbackCount === 6 || callbackCount === 7) {
-        chai.expect(actual[0].contact.deleted).to.equal(true);
+        expect(actual[0].contact.deleted).to.equal(true);
         if (callbackCount === 7) {
           done();
         }
@@ -531,9 +533,9 @@ describe(`RulesEngine service`, function() {
     });
   });
 
-  it(`updates when a report is deleted`, function(done) {
+  it(`updates when a report is deleted`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -554,23 +556,23 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var contacts = [
+    const contacts = [
       { _id: 1, name: `Jenny` }
     ];
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       callbackCount++;
       if (callbackCount === 6) {
         Changes.args[0][0].callback({
@@ -579,21 +581,21 @@ describe(`RulesEngine service`, function() {
         });
       } else if (callbackCount === 7) {
         // Both reports are still there
-        chai.expect(actual[0].reports.length).to.equal(2);
+        expect(actual[0].reports.length).to.equal(2);
         // Report 2 is deleted
-        chai.expect(actual[0].reports[0]._id).to.equal(2);
-        chai.expect(actual[0].reports[0].deleted).to.equal(true);
+        expect(actual[0].reports[0]._id).to.equal(2);
+        expect(actual[0].reports[0].deleted).to.equal(true);
         // Report 3 is not
-        chai.expect(actual[0].reports[1]._id).to.equal(3);
-        chai.expect(!!actual[0].reports[1].deleted).to.equal(false);
+        expect(actual[0].reports[1]._id).to.equal(3);
+        expect(!!actual[0].reports[1].deleted).to.equal(false);
         done();
       }
     });
   });
 
-  it(`updates when a contact is added`, function(done) {
+  it(`updates when a contact is added`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -605,25 +607,25 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var contacts = [
+    const contacts = [
       { _id: 1, name: `Jenny` }
     ];
 
-    var newContact = { _id: 4, name: `Sarah` };
+    const newContact = { _id: 4, name: `Sarah` };
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       if (err) {
         return done(err);
       }
@@ -634,16 +636,16 @@ describe(`RulesEngine service`, function() {
           doc: newContact
         });
       } else if (callbackCount === 5) {
-        chai.expect(actual[0].type).to.equal(`no-report`);
-        chai.expect(actual[0].contact._id).to.equal(4);
+        expect(actual[0].type).to.equal(`no-report`);
+        expect(actual[0].contact._id).to.equal(4);
         done();
       }
     });
   });
 
-  it(`updates when a report is added`, function(done) {
+  it(`updates when a report is added`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -655,7 +657,7 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var newReport = {
+    const newReport = {
       _id: 3,
       form: `P`,
       reported_date: 1437618272360,
@@ -665,23 +667,23 @@ describe(`RulesEngine service`, function() {
       }
     };
 
-    var contacts = [
+    const contacts = [
       { _id: 1, name: `Jenny` }
     ];
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       if (err) {
         return done(err);
       }
@@ -692,15 +694,15 @@ describe(`RulesEngine service`, function() {
           doc: newReport
         });
       } else if (callbackCount === 5) {
-        chai.expect(actual[0].reports.length).to.equal(2);
+        expect(actual[0].reports.length).to.equal(2);
         done();
       }
     });
   });
 
-  it(`updates when a report is added matching the contact patient_id - #3111`, function(done) {
+  it(`updates when a report is added matching the contact patient_id - #3111`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -712,7 +714,7 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var newReport = {
+    const newReport = {
       _id: 3,
       form: `P`,
       reported_date: 1437618272360,
@@ -722,23 +724,23 @@ describe(`RulesEngine service`, function() {
       }
     };
 
-    var contacts = [
+    const contacts = [
       { _id: `some_uuid`, name: `Jenny`, patient_id: 1 }
     ];
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       if (err) {
         return done(err);
       }
@@ -749,15 +751,15 @@ describe(`RulesEngine service`, function() {
           doc: newReport
         });
       } else if (callbackCount === 5) {
-        chai.expect(actual[0].reports.length).to.equal(2);
+        expect(actual[0].reports.length).to.equal(2);
         done();
       }
     });
   });
 
-  it(`updates when a contact is updated`, function(done) {
+  it(`updates when a contact is updated`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -772,23 +774,23 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var contacts = [
+    const contacts = [
       { _id: 1, name: `Jenny` }
     ];
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       if (err) {
         return done(err);
       }
@@ -799,15 +801,15 @@ describe(`RulesEngine service`, function() {
           doc: { _id: 1, name: `Jennifer` }
         });
       } else if (callbackCount === 5) {
-        chai.expect(actual[0].contact.name).to.equal(`Jennifer`);
+        expect(actual[0].contact.name).to.equal(`Jennifer`);
         done();
       }
     });
   });
 
-  it(`updates when a report is updated`, function(done) {
+  it(`updates when a report is updated`, done => {
 
-    var dataRecords = [
+    const dataRecords = [
       {
         _id: 2,
         form: `P`,
@@ -822,23 +824,23 @@ describe(`RulesEngine service`, function() {
       }
     ];
 
-    var contacts = [
+    const contacts = [
       { _id: 1, name: `Jenny` }
     ];
 
-    Search.onFirstCall().returns(Promise.resolve(dataRecords));
-    Search.onSecondCall().returns(Promise.resolve(contacts));
-    Settings.returns(Promise.resolve({
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves(contacts);
+    Settings.resolves({
       tasks: {
-        rules: rules,
-        schedules: schedules
+        rules,
+        schedules
       }
-    }));
-    UserContact.returns(Promise.resolve({ name: `Jim` }));
+    });
+    UserContact.resolves({ name: `Jim` });
 
-    var callbackCount = 0;
-    var service = getService();
-    service.listen(`test`, `task`, function(err, actual) {
+    let callbackCount = 0;
+    const service = getService();
+    service.listen(`test`, `task`, (err, actual) => {
       if (err) {
         return done(err);
       }
@@ -857,9 +859,92 @@ describe(`RulesEngine service`, function() {
           }
         });
       } else if (callbackCount === 5) {
-        chai.expect(actual[0].doc.fields.last_menstrual_period).to.equal(15);
+        expect(actual[0].doc.fields.last_menstrual_period).to.equal(15);
         done();
       }
+    });
+  });
+
+  it('reports are grouped by contact.id even if contact doc is not present', () => {
+    const dataRecords = [
+      {
+        _id: 2,
+        form: `myform`,
+        reported_date: 1,
+        patient_id: '1',
+      },
+      {
+        _id: 3,
+        form: `myform`,
+        reported_date: 2,
+        patient_id: '1',
+      },
+    ];
+
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves([]);
+    Settings.resolves({
+      tasks: { rules, schedules },
+    });
+    UserContact.resolves({ name: `Jim` });
+
+    const service = getService();
+
+    return service.init.then(() => {
+      const facts = service._getSession().getFacts();
+      expect(facts).to.deep.eq([{
+        contact: { _id: '1' },
+        reports: dataRecords,
+      }]);
+    });
+  });
+
+  it('reports are not grouped when reports have no contact id', () => {
+    const dataRecords = [
+      {
+        _id: 2,
+        form: `myform`,
+        reported_date: 1,
+      },
+      {
+        _id: 3,
+        form: `myform`,
+        reported_date: 2,
+      },
+    ];
+
+    Search.onFirstCall().resolves(dataRecords);
+    Search.onSecondCall().resolves([]);
+    Settings.resolves({
+      tasks: { rules, schedules },
+    });
+    UserContact.resolves({ name: `Jim` });
+
+    const service = getService();
+    return service.init.then(() => {
+      const facts = service._getSession().getFacts();
+      expect(facts).to.deep.eq([
+        {
+          contact: undefined,
+          reports: [
+            {
+              _id: 2,
+              form: 'myform',
+              reported_date: 1
+            }
+          ]
+        },
+        {
+          contact: undefined,
+          reports: [
+            {
+              _id: 3,
+              form: 'myform',
+              reported_date: 2
+            }
+          ]
+        }
+      ]);
     });
   });
 

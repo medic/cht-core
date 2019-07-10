@@ -1,5 +1,7 @@
-describe('TasksContentCtrl', function() {
-  var $scope,
+describe('TasksContentCtrl', () => {
+  const { expect } = chai;
+
+  let $scope,
       tasksActions,
       getEnketoEditedStatus,
       task,
@@ -14,20 +16,20 @@ describe('TasksContentCtrl', function() {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(function($controller, $ngRedux, TasksActions, Selectors) {
+  beforeEach(inject(($controller, $ngRedux, TasksActions, Selectors) => {
     tasksActions = TasksActions($ngRedux.dispatch);
     render = sinon.stub();
     XmlForm = sinon.stub();
     $scope = {
-      $on: function() {},
-      $watch: function(prop, cb) {
+      $on: () => {},
+      $watch: (prop, cb) => {
         watchCallback = cb;
       },
       setSelected: () => tasksActions.setSelectedTask(task)
     };
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
-    render.returns(Promise.resolve());
-    createController = function() {
+    render.resolves();
+    createController = () => {
       ctrl = $controller('TasksContentCtrl', {
         $scope: $scope,
         $q: Q,
@@ -39,11 +41,11 @@ describe('TasksContentCtrl', function() {
     };
   }));
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore(render, XmlForm);
   });
 
-  it('loads form when task has one action and no fields', function(done) {
+  it('loads form when task has one action and no fields', done => {
     task = {
       actions: [{
         type: 'report',
@@ -51,33 +53,33 @@ describe('TasksContentCtrl', function() {
         content: 'nothing'
       }]
     };
-    XmlForm.returns(Promise.resolve({ id: 'myform', doc: { title: 'My Form' } }));
+    XmlForm.resolves({ id: 'myform', doc: { title: 'My Form' } });
     createController();
     watchCallback();
-    chai.expect($scope.formId).to.equal('A');
-    setTimeout(function() {
-      chai.expect(render.callCount).to.equal(1);
-      chai.expect(render.getCall(0).args.length).to.equal(4);
-      chai.expect(render.getCall(0).args[0]).to.equal('#task-report');
-      chai.expect(render.getCall(0).args[1]).to.equal('myform');
-      chai.expect(render.getCall(0).args[2]).to.equal('nothing');
-      chai.expect(getEnketoEditedStatus()).to.equal(false);
+    expect($scope.formId).to.equal('A');
+    setTimeout(() => {
+      expect(render.callCount).to.equal(1);
+      expect(render.getCall(0).args.length).to.equal(4);
+      expect(render.getCall(0).args[0]).to.equal('#task-report');
+      expect(render.getCall(0).args[1]).to.equal('myform');
+      expect(render.getCall(0).args[2]).to.equal('nothing');
+      expect(getEnketoEditedStatus()).to.equal(false);
       done();
     });
   });
 
-  it('does not load form when task has more than one action', function(done) {
+  it('does not load form when task has more than one action', done => {
     task = {
       actions: [{}, {}] // two forms
     };
     createController();
-    chai.expect($scope.formId).to.equal(null);
-    chai.expect(ctrl.loadingForm).to.equal(undefined);
-    chai.expect(render.callCount).to.equal(0);
+    expect($scope.formId).to.equal(null);
+    expect(ctrl.loadingForm).to.equal(undefined);
+    expect(render.callCount).to.equal(0);
     done();
   });
 
-  it('does not load form when task has fields (e.g. description)', function(done) {
+  it('does not load form when task has fields (e.g. description)', done => {
     task = {
       actions: [{
         type: 'report',
@@ -95,10 +97,28 @@ describe('TasksContentCtrl', function() {
       }]
     };
     createController();
-    chai.expect($scope.formId).to.equal(null);
-    chai.expect(ctrl.loadingForm).to.equal(undefined);
-    chai.expect(render.callCount).to.equal(0);
+    expect($scope.formId).to.equal(null);
+    expect(ctrl.loadingForm).to.equal(undefined);
+    expect(render.callCount).to.equal(0);
     done();
   });
 
+  it('displays error if enketo fails to render', done => {
+    render.rejects('foo');
+    task = {
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: 'nothing'
+      }]
+    };
+    XmlForm.resolves({ id: 'myform', doc: { title: 'My Form' } });
+    createController();
+    watchCallback();
+    setTimeout(() => {
+      expect(ctrl.loadingForm).to.equal(false);
+      expect($scope.contentError).to.equal(true);
+      done();
+    });
+  });
 });
