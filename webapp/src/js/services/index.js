@@ -97,6 +97,5 @@
   require('./wealth-quintiles-watcher');
   require('./xml-forms');
   require('./xml-forms-context-utils');
-  require('./xslt');
   require('./z-score');
 })();
