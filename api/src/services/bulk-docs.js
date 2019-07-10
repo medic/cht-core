@@ -199,30 +199,23 @@ const getExistentDocs = docs => {
     .then(result => {
       const tombstoneIds = [];
       result.rows.forEach(row => {
-        if (row.error) {
-          // not found
-          return;
+        if (row.doc) {
+          return existentDocs[row.id] = row.doc;
         }
 
-        if (row.value && row.value.deleted && !row.doc) {
-          return tombstoneIds.push(authorization.generateTombstoneId(row.id, row.value.rev));
+        if (row.value && row.value.deleted) {
+          tombstoneIds.push(authorization.generateTombstoneId(row.id, row.value.rev));
         }
-
-        existentDocs[row.id] = row.doc;
       });
 
       if (!tombstoneIds.length) {
-        return;
+        return { rows: [] };
       }
 
-      // get all tombstone docs to check if user is allowed to edit the deleted doc
+      // get all tombstone docs to check if user is allowed to edit the deleted docs
       return db.medic.allDocs({ keys: tombstoneIds, include_docs: true });
     })
     .then(result => {
-      if (!result) {
-        return existentDocs;
-      }
-
       result.rows.forEach(row => {
         if (row.doc) {
           existentDocs[authorization.convertTombstoneId(row.id)] = row.doc;
@@ -246,9 +239,9 @@ const filterRequestDocs = (authorizationContext, docs) => {
 
   return getExistentDocs(allowedRequestDocs).then(existentDocs => {
     const allowedDocs = allowedRequestDocs.filter(doc => {
-      return !doc._id || // new doc
-             !existentDocs[doc._id] || // new doc
-             authorization.allowedDoc(doc._id, authorizationContext, authorization.getViewResults(existentDocs[doc._id]));
+      const existentDoc = doc._id && existentDocs[doc._id];
+      return !existentDoc ||
+             authorization.allowedDoc(doc._id, authorizationContext, authorization.getViewResults(existentDoc));
     });
 
     return allowedDocs;
