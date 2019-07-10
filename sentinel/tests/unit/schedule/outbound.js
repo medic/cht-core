@@ -1,26 +1,25 @@
 const assert = require('chai').assert;
 const sinon = require('sinon');
-
-const config = require('../../../src/config'),
-      db = require('../../../src/db');
-
 const rewire = require('rewire');
+const request = require('request-promise-native');
+const secureSettings = require('@medic/settings');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
 const outbound = rewire('../../../src/schedule/outbound');
 
 describe('outbound schedule', () => {
-  beforeEach(() => sinon.restore());
+  afterEach(() => sinon.restore());
 
   describe('queuedTasks', () => {
-    let lineage, restoreLineage;
+    let lineage;
+    let restoreLineage;
+
     beforeEach(() => {
       lineage = sinon.stub();
       restoreLineage = outbound.__set__('lineage', {hydrateDocs: lineage});
     });
 
-    afterEach(() => {
-      sinon.restore();
-      restoreLineage();
-    });
+    afterEach(() => restoreLineage());
 
     it('gets all queues and associated docs', () => {
       const task = {
@@ -59,6 +58,7 @@ describe('outbound schedule', () => {
         });
     });
   });
+
   describe('mapDocumentToPayload', () => {
     const mapDocumentToPayload = outbound.__get__('mapDocumentToPayload');
 
@@ -81,6 +81,7 @@ describe('outbound schedule', () => {
         bar: 'baaa'
       });
     });
+
     it('supports deep dest => src mapping', () => {
       const doc = {
         _id: 'test-doc',
@@ -104,6 +105,7 @@ describe('outbound schedule', () => {
         }
       });
     });
+
     it('errors if src path does not exist', () => {
       const doc = {
         _id: 'test-doc',
@@ -121,6 +123,7 @@ describe('outbound schedule', () => {
 
       assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), `Mapping error for 'test-config/foo': cannot find 'doc.fields.foo' on source document`);
     });
+
     it('supports optional path mappings', () => {
       const doc = {
         _id: 'test-doc',
@@ -133,11 +136,11 @@ describe('outbound schedule', () => {
 
       const conf = {
         mapping: {
-          'foo': {
+          foo: {
             path: 'doc.fields.foo',
             optional: true
           },
-          'bar': 'doc.fields.bar'
+          bar: 'doc.fields.bar'
         }
       };
 
@@ -145,6 +148,7 @@ describe('outbound schedule', () => {
         bar: 42
       });
     });
+
     it('supports basic awkward data conversion via arbitrary expressions', () => {
       const doc = {
         _id: 'test-doc',
@@ -156,8 +160,8 @@ describe('outbound schedule', () => {
 
       const conf = {
         mapping: {
-          'list_count': {expr: 'doc.fields.a_list.length'},
-          'foo': {expr: 'doc.fields.foo === \'Yes\''},
+          list_count: {expr: 'doc.fields.a_list.length'},
+          foo: {expr: 'doc.fields.foo === \'Yes\''},
         }
       };
       assert.deepEqual(mapDocumentToPayload(doc, conf, 'test-doc'), {
@@ -165,6 +169,7 @@ describe('outbound schedule', () => {
         foo: false
       });
     });
+
     it('throws a useful exception if the expression errors', () => {
       const doc = {
         _id: 'test-doc',
@@ -172,24 +177,15 @@ describe('outbound schedule', () => {
 
       const conf = {
         mapping: {
-          'is_gonna_fail': {expr: 'doc.fields.null.pointer'},
+          is_gonna_fail: {expr: 'doc.fields.null.pointer'},
         }
       };
 
       assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error/);
     });
   });
-  describe('push', () => {
-    let request, restoreRequest;
-    beforeEach(() => {
-      request = sinon.stub();
-      restoreRequest = outbound.__set__('request', request);
-    });
 
-    afterEach(() => {
-      sinon.restore();
-      restoreRequest();
-    });
+  describe('push', () => {
 
     it('should push on minimal configuration', () => {
       const payload = {
@@ -203,17 +199,17 @@ describe('outbound schedule', () => {
         }
       };
 
-      request.resolves();
+      sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('send')(payload, conf)
         .then(() => {
-          assert.equal(request.callCount, 1);
-          assert.equal(request.args[0][0].method, 'POST');
-          assert.equal(request.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.args[0][0].body, {some: 'data'});
-          assert.equal(request.args[0][0].json, true);
+          assert.equal(request.post.callCount, 1);
+          assert.equal(request.post.args[0][0].url, 'http://test/foo');
+          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
+          assert.equal(request.post.args[0][0].json, true);
         });
     });
+
     it('should support pushing via basic auth', () => {
       const payload = {
         some: 'data'
@@ -231,23 +227,25 @@ describe('outbound schedule', () => {
         }
       };
 
-      request.onCall(0).resolves('"pass"\n');
-      request.onCall(1).resolves();
+      sinon.stub(secureSettings, 'getCredentials').resolves('pass');
+      sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('send')(payload, conf)
         .then(() => {
-          assert.equal(request.callCount, 2);
-          assert.equal(request.args[1][0].method, 'POST');
-          assert.equal(request.args[1][0].url, 'http://test/foo');
-          assert.deepEqual(request.args[1][0].body, {some: 'data'});
-          assert.equal(request.args[1][0].json, true);
-          assert.deepEqual(request.args[1][0].auth, {
+          assert.equal(secureSettings.getCredentials.callCount, 1);
+          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.equal(request.post.callCount, 1);
+          assert.equal(request.post.args[0][0].url, 'http://test/foo');
+          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
+          assert.equal(request.post.args[0][0].json, true);
+          assert.deepEqual(request.post.args[0][0].auth, {
             username: 'admin',
             password: 'pass',
             sendImmediately: true
           });
         });
     });
+
     it('should support Muso SIH custom auth', () => {
       const payload = {
         some: 'data'
@@ -266,31 +264,33 @@ describe('outbound schedule', () => {
         }
       };
 
-      request.onCall(0).resolves('"pass"\n');
-      request.onCall(1).resolves({
+      sinon.stub(secureSettings, 'getCredentials').resolves('pass');
+      const post = sinon.stub(request, 'post');
+      
+      post.onCall(0).resolves({
         statut: 200,
         message: 'Requête traitée avec succès.',
         data: {
           username_token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
         }
       });
-      request.onCall(2).resolves();
+      post.onCall(1).resolves();
 
       return outbound.__get__('send')(payload, conf)
         .then(() => {
-          assert.equal(request.callCount, 3);
+          assert.equal(post.callCount, 2);
 
-          assert.equal(request.args[1][0].form.login, 'admin');
-          assert.equal(request.args[1][0].form.password, 'pass');
-          assert.equal(request.args[1][0].url, 'http://test/login');
+          assert.equal(post.args[0][0].form.login, 'admin');
+          assert.equal(post.args[0][0].form.password, 'pass');
+          assert.equal(post.args[0][0].url, 'http://test/login');
 
-          assert.equal(request.args[2][0].method, 'POST');
-          assert.equal(request.args[2][0].url, 'http://test/foo');
-          assert.deepEqual(request.args[2][0].body, {some: 'data'});
-          assert.equal(request.args[2][0].json, true);
-          assert.equal(request.args[2][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
+          assert.equal(post.args[1][0].url, 'http://test/foo');
+          assert.deepEqual(post.args[1][0].body, {some: 'data'});
+          assert.equal(post.args[1][0].json, true);
+          assert.equal(post.args[1][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
         });
     });
+
     it('should error is Muso SIH custom auth fails to return a 200', () => {
       const payload = {
         some: 'data'
@@ -309,8 +309,9 @@ describe('outbound schedule', () => {
         }
       };
 
-      request.onCall(0).resolves('"wrong pass"\n');
-      request.onCall(1).resolves({
+      sinon.stub(secureSettings, 'getCredentials').resolves('wrong pass');
+
+      sinon.stub(request, 'post').resolves({
         statut: 404,
         message: 'Login/Mot de passe Incorrect !'
       });
@@ -324,6 +325,7 @@ describe('outbound schedule', () => {
         });
     });
   });
+
   describe('getConfigurationsToPush', () => {
     it('should return empty for no queued pushes', () => {
       const config = {
@@ -345,6 +347,7 @@ describe('outbound schedule', () => {
         []
       );
     });
+
     it('should return pushes to attempt', () => {
       const config = {
         'test-push-1': {
@@ -366,8 +369,12 @@ describe('outbound schedule', () => {
       );
     });
   });
+
   describe('single push', () => {
-    let mapDocumentToPayload, send, sentinelPut, sentinelGet;
+    let mapDocumentToPayload;
+    let send;
+    let sentinelPut;
+    let sentinelGet;
 
     let restores = [];
 
@@ -485,9 +492,11 @@ describe('outbound schedule', () => {
         });
     });
   });
-  describe('execute', () => {
-    let configGet, queuedTasks, singlePush;
 
+  describe('execute', () => {
+    let configGet;
+    let queuedTasks;
+    let singlePush;
     let restores = [];
 
     beforeEach(() => {

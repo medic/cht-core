@@ -2,19 +2,18 @@
  * This module implements GET and POST to support medic-gateway's API
  * @see https://github.com/medic/medic-gateway
  */
-const db = require('../db'),
-      messageUtils = require('../message-utils'),
-      records = require('../services/records'),
-      logger = require('../logger'),
-      config = require('../config'),
-      // map from the medic-gateway state to the medic app's state
-      STATUS_MAP = {
-        UNSENT: 'received-by-gateway',
-        PENDING: 'forwarded-by-gateway',
-        SENT: 'sent',
-        DELIVERED: 'delivered',
-        FAILED: 'failed',
-      };
+const auth = require('../auth');
+const messaging = require('../services/messaging');
+const serverUtils = require('../server-utils');
+
+// map from the medic-gateway state to the medic app's state
+const STATUS_MAP = {
+  UNSENT:    'received-by-gateway',
+  PENDING:   'forwarded-by-gateway',
+  SENT:      'sent',
+  DELIVERED: 'delivered',
+  FAILED:    'failed',
+};
 
 const mapStateFields = update => {
   const result = {
@@ -37,75 +36,16 @@ const markMessagesForwarded = messages => {
     messageId: message.id,
     state: 'forwarded-to-gateway'
   }));
-  return new Promise((resolve, reject) => {
-    messageUtils.updateMessageTaskStates(taskStateChanges, err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(messages);
-      }
-    });
-  });
+  return messaging.updateMessageTaskStates(taskStateChanges);
 };
 
 const getOutgoing = () => {
-  return new Promise((resolve, reject) => {
-    messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
-      (err, pendingMessages) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(pendingMessages.map(message => ({
-          id: message.id,
-          to: message.to,
-          content: message.message,
-        })));
-    });
-  });
-};
-
-const runTransitions = docs => {
-  return config.getTransitionsLib().processDocs(docs);
-};
-
-// Process webapp-terminating messages
-const addNewMessages = req => {
-  let messages = req.body.messages;
-  if (!messages || !messages.length) {
-    return Promise.resolve();
+  if (!messaging.isMedicGatewayEnabled()) {
+    return [];
   }
-
-  messages = messages.filter(message => {
-    if(message.from !== undefined && message.content !== undefined) {
-      return true;
-    }
-    logger.info(`Message missing required field: ${JSON.stringify(message)}`);
+  return messaging.getOutgoingMessages().then(messages => {
+    return markMessagesForwarded(messages).then(() => messages);
   });
-
-  const ids = messages.map(m => m.id);
-
-  return db.medic.query('medic-sms/sms-messages', { keys:ids })
-    .then(res => res.rows.map(r => r.key))
-    .then(seenIds => messages.filter(m => {
-      if (seenIds.includes(m.id)) {
-        logger.info(`Ignoring message (ID already seen): ${m.id}`);
-      } else {
-        return true;
-      }
-    }))
-    .then(messages => messages.map(message => records.createByForm({
-      from: message.from,
-      message: message.content,
-      gateway_ref: message.id,
-    })))
-    .then(docs => runTransitions(docs))
-    .then(results => {
-      const allOk = results.every(result => result.ok);
-      if (!allOk) {
-        logger.error('Failed saving all the new docs: %o', results);
-        throw new Error('Failed saving all the new docs');
-      }
-    });
 };
 
 // Process message status updates
@@ -114,26 +54,29 @@ const processTaskStateUpdates = req => {
     return Promise.resolve();
   }
   const taskStateChanges = req.body.updates.map(mapStateFields);
-  return new Promise((resolve, reject) => {
-    messageUtils.updateMessageTaskStates(taskStateChanges, err => {
-      if (err) {
-        return reject(err);
-      }
-      resolve();
-    });
-  });
+  return messaging.updateMessageTaskStates(taskStateChanges);
 };
 
+// Process webapp-terminating messages
+const addNewMessages = req => {
+  let messages = req.body.messages;
+  return messaging.processIncomingMessages(messages);
+};
+
+const checkAuth = req => auth.check(req, 'can_access_gateway_api');
+
 module.exports = {
-  get: () => {
-    return { 'medic-gateway': true };
+  get: (req, res) => {
+    return checkAuth(req)
+      .then(() => res.json({ 'medic-gateway': true }))
+      .catch(err => serverUtils.error(err, req, res));
   },
-  post: req => {
-    return Promise.resolve()
+  post: (req, res) => {
+    return checkAuth(req)
       .then(() => addNewMessages(req))
       .then(() => processTaskStateUpdates(req))
-      .then(getOutgoing)
-      .then(markMessagesForwarded)
-      .then(outgoingMessages => ({ messages: outgoingMessages }));
+      .then(() => getOutgoing())
+      .then(messages => res.json({ messages }))
+      .catch(err => serverUtils.error(err, req, res));
   },
 };
