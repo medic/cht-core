@@ -60,6 +60,7 @@
     "phone-number",
     "registration-utils",
     "server-checks",
+    "settings",
     "task-utils",
     "tombstone-utils",
     "transitions",
