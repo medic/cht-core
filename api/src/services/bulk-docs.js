@@ -177,7 +177,7 @@ const filterNewDocs = (allowedDocIds, docs) => {
 
 // returns a list of filtered docs the user is allowed to update/create
 const filterAllowedDocs = (authorizationContext, docs) => {
-  const docObjs = docs.map(doc => ({
+  docs = docs.map(doc => ({
     doc,
     viewResults: authorization.getViewResults(doc),
     allowed: authorization.alwaysAllowCreate(doc),
@@ -186,7 +186,7 @@ const filterAllowedDocs = (authorizationContext, docs) => {
     },
   }));
   return authorization
-    .filterAllowedDocs(authorizationContext, docObjs)
+    .filterAllowedDocs(authorizationContext, docs)
     .map(docObj => docObj.doc);
 };
 
