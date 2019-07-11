@@ -164,7 +164,7 @@ var defaultReportRequest = function() {
 
 var defaultContactRequest = function() {
   return {
-    view: 'medic-client/contacts_by_type_index_name',
+    view: 'medic-client/contacts_by_type',
     ordered: true
   };
 };

@@ -11,12 +11,12 @@
 
   angular.module('inboxServices').constant('ActionUtils', {
     createSingleValueAction: function(type, valueName, value) {
-      const action = {
+      return {
         type,
-        payload: {}
+        payload: {
+          [valueName]: value,
+        }
       };
-      action.payload[valueName] = value;
-      return action;
     }
   });
 

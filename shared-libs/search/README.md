@@ -34,7 +34,7 @@ The first parameter is the type, the second parameter is the query params descri
 There is only one query option in contacts: `search`:
 
 ```js
-Search('contact', {search: "your search terms"})
+Search('contacts', {search: "your search terms"})
     .then(ids => { ... })
 ```
 

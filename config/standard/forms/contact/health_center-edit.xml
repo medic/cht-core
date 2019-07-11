@@ -32,6 +32,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>Antenatal care</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Growth monitoring (nutrition)</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>Immunizations</value>
           </text>
@@ -50,11 +53,20 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>Cholera</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>Fractional inactivated polio</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>Influenza</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
             <value>Hepatitis A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
@@ -81,7 +93,7 @@
             <value>Pneumococcal Pneumonia</value>
           </text>
           <text id="/data/health_center/vaccines/polio:label">
-            <value>Polio</value>
+            <value>Oral Polio</value>
           </text>
           <text id="/data/health_center/vaccines/rotavirus:label">
             <value>Rotavirus</value>
@@ -148,6 +160,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>Soins prénataux</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Surveillance de la croissance</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>Vaccination</value>
           </text>
@@ -166,11 +181,20 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>Choléra</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>-</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>Grippe</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
             <value>Hépatite A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
             <value>HPV (virus du papillome humain)</value>
@@ -264,6 +288,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>गर्भावस्था की देखभाल</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>विकास की निगरानी</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>टीकाकरण</value>
           </text>
@@ -282,11 +309,20 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>Cholera</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>Fractional inactivated polio</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>Influenza</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
             <value>Hepatitis A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
@@ -313,7 +349,7 @@
             <value>Pneumococcal Pneumonia</value>
           </text>
           <text id="/data/health_center/vaccines/polio:label">
-            <value>Polio</value>
+            <value>Oral Polio</value>
           </text>
           <text id="/data/health_center/vaccines/rotavirus:label">
             <value>Rotavirus</value>
@@ -380,6 +416,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>Perawatan Antenatal</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Pemantauan Pertumbuhan</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>Imunisasi</value>
           </text>
@@ -398,11 +437,20 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>Kolera</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>Fractional inactivated polio</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>Influenza</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
             <value>Hepatitis A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>Hepatitis B</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
@@ -429,7 +477,7 @@
             <value>Pneumococcal Pneumonia</value>
           </text>
           <text id="/data/health_center/vaccines/polio:label">
-            <value>Polio</value>
+            <value>Oral Polio</value>
           </text>
           <text id="/data/health_center/vaccines/rotavirus:label">
             <value>Rotavirus</value>
@@ -479,10 +527,10 @@
             <value>बाहिरी ID</value>
           </text>
           <text id="/data/health_center/is_name_generated/false:label">
-            <value>म आफैँ नाम दिन चाहन्छु</value>
+            <value>होइन, म आफैँ नाम दिन चाहन्छु</value>
           </text>
           <text id="/data/health_center/is_name_generated/true:label">
-            <value>ठिक छ</value>
+            <value>हो</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
             <value>के तपाई यस स्थानको प्राथमिक सम्पर्क व्यक्तिलाई नाम दिन चाहनुहुन्छ &quot;<output value=" /data/health_center/generated_name "/>&quot;?</value>
@@ -495,6 +543,9 @@
           </text>
           <text id="/data/health_center/use_cases/anc:label">
             <value>पूर्व प्रसुती स्याहार</value>
+          </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>विकास अनुगमन</value>
           </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>खोप</value>
@@ -514,10 +565,19 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>-</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>-</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
             <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
@@ -612,6 +672,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>Huduma ya kabla ya kuzaa</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Ufuatiliaji wa Ukuaji</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>Chanjo</value>
           </text>
@@ -630,10 +693,19 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>-</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>-</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
             <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
@@ -702,7 +774,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2018-11-14_09-59">
+        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2019-03-03_08-22">
           <inputs>
             <meta>
               <location>
@@ -832,6 +904,10 @@
           <label ref="jr:itext('/data/health_center/use_cases/imm:label')"/>
           <value>imm</value>
         </item>
+        <item>
+          <label ref="jr:itext('/data/health_center/use_cases/gmp:label')"/>
+          <value>gmp</value>
+        </item>
       </select>
       <select ref="/data/health_center/vaccines">
         <label ref="jr:itext('/data/health_center/vaccines:label')"/>
@@ -847,6 +923,10 @@
         <item>
           <label ref="jr:itext('/data/health_center/vaccines/hep_a:label')"/>
           <value>hep_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/health_center/vaccines/hep_b:label')"/>
+          <value>hep_b</value>
         </item>
         <item>
           <label ref="jr:itext('/data/health_center/vaccines/hpv:label')"/>
@@ -877,6 +957,10 @@
           <value>ipv</value>
         </item>
         <item>
+          <label ref="jr:itext('/data/health_center/vaccines/fipv:label')"/>
+          <value>fipv</value>
+        </item>
+        <item>
           <label ref="jr:itext('/data/health_center/vaccines/polio:label')"/>
           <value>polio</value>
         </item>
@@ -903,6 +987,10 @@
         <item>
           <label ref="jr:itext('/data/health_center/vaccines/yellow_fever:label')"/>
           <value>yellow_fever</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/health_center/vaccines/dpt:label')"/>
+          <value>dpt</value>
         </item>
       </select>
       <input appearance="multiline" ref="/data/health_center/notes">

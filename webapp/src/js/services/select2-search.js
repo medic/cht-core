@@ -101,11 +101,16 @@ angular.module('inboxServices').factory('Select2Search',
       var getDoc = function(id) {
         return LineageModelGenerator.contact(id, { merge: true })
           .then(function(contact) {
-            return contact && contact.doc;
+            contact.doc.muted = ContactMuted(contact.doc);
+            return contact.doc;
           })
-          .then(function(doc) {
-            doc.muted = ContactMuted(doc);
-            return doc;
+          .catch(err => {
+            if (err.code === 404) {
+              $log.warn('Unable to hydrate select2 document', err);
+              return undefined;
+            }
+
+            throw err;
           });
       };
 
@@ -137,7 +142,8 @@ angular.module('inboxServices').factory('Select2Search',
           } else {
             resolution = getDoc(value).then(function(doc) {
               selectEl.select2('data')[0].doc = doc;
-            });
+            })
+            .catch(err => $log.error('Select2 failed to get document', err));
           }
         }
 
@@ -179,14 +185,11 @@ angular.module('inboxServices').factory('Select2Search',
                         e.params.data.id;
 
             if (docId) {
-              getDoc(docId)
-                .then(function(doc) {
-                  selectEl.select2('data')[0].doc = doc;
-                  selectEl.trigger('change');
-                })
-                .catch(function(err) {
-                  $log.error('Unable to hydrate select2 selection', err);
-                });
+              getDoc(docId).then(function(doc) {
+                selectEl.select2('data')[0].doc = doc;
+                selectEl.trigger('change');
+              })
+              .catch(err => $log.error('Select2 failed to get document', err));
             }
           });
         }

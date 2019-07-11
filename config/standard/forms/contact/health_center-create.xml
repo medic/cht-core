@@ -5,96 +5,6 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/data/health_center/external_id:label">
-            <value>External ID</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/false:label">
-            <value>No, I want to name it manually</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/true:label">
-            <value>Yes</value>
-          </text>
-          <text id="/data/health_center/is_name_generated:label">
-            <value>Would you like to name the place after the primary contact: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
-          </text>
-          <text id="/data/health_center/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/health_center/notes:label">
-            <value>Notes</value>
-          </text>
-          <text id="/data/health_center/use_cases/anc:label">
-            <value>Antenatal care</value>
-          </text>
-          <text id="/data/health_center/use_cases/imm:label">
-            <value>Immunizations</value>
-          </text>
-          <text id="/data/health_center/use_cases/pnc:label">
-            <value>Postnatal care</value>
-          </text>
-          <text id="/data/health_center/use_cases:hint">
-            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/health_center/use_cases:label">
-            <value>Health programs</value>
-          </text>
-          <text id="/data/health_center/vaccines/bcg:label">
-            <value>BCG</value>
-          </text>
-          <text id="/data/health_center/vaccines/cholera:label">
-            <value>Cholera</value>
-          </text>
-          <text id="/data/health_center/vaccines/flu:label">
-            <value>Influenza</value>
-          </text>
-          <text id="/data/health_center/vaccines/hep_a:label">
-            <value>Hepatitis A</value>
-          </text>
-          <text id="/data/health_center/vaccines/hpv:label">
-            <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/data/health_center/vaccines/ipv:label">
-            <value>Inactivated Polio</value>
-          </text>
-          <text id="/data/health_center/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
-          </text>
-          <text id="/data/health_center/vaccines/meningococcal:label">
-            <value>Meningococcal</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmr:label">
-            <value>MMR (Measles, Mumps, Rubella)</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmrv:label">
-            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
-          </text>
-          <text id="/data/health_center/vaccines/penta:label">
-            <value>Pentavalent</value>
-          </text>
-          <text id="/data/health_center/vaccines/pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
-          </text>
-          <text id="/data/health_center/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/health_center/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
-          </text>
-          <text id="/data/health_center/vaccines/typhoid:label">
-            <value>Typhoid</value>
-          </text>
-          <text id="/data/health_center/vaccines/vitamin_a:label">
-            <value>Vitamin A</value>
-          </text>
-          <text id="/data/health_center/vaccines/yellow_fever:label">
-            <value>Yellow Fever</value>
-          </text>
-          <text id="/data/health_center/vaccines:hint">
-            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/health_center/vaccines:label">
-            <value>Select vaccines</value>
-          </text>
           <text id="/data/contact/external_id:label">
             <value>External ID</value>
           </text>
@@ -137,6 +47,108 @@
           <text id="/data/contact:label">
             <value>New Person</value>
           </text>
+          <text id="/data/health_center/external_id:label">
+            <value>External ID</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/false:label">
+            <value>No, I want to name it manually</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/true:label">
+            <value>Yes</value>
+          </text>
+          <text id="/data/health_center/is_name_generated:label">
+            <value>Would you like to name the place after the primary contact: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          </text>
+          <text id="/data/health_center/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/data/health_center/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/health_center/use_cases/anc:label">
+            <value>Antenatal care</value>
+          </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Growth monitoring (nutrition)</value>
+          </text>
+          <text id="/data/health_center/use_cases/imm:label">
+            <value>Immunizations</value>
+          </text>
+          <text id="/data/health_center/use_cases/pnc:label">
+            <value>Postnatal care</value>
+          </text>
+          <text id="/data/health_center/use_cases:hint">
+            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/health_center/use_cases:label">
+            <value>Health programs</value>
+          </text>
+          <text id="/data/health_center/vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/data/health_center/vaccines/cholera:label">
+            <value>Cholera</value>
+          </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>Fractional inactivated polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
+          <text id="/data/health_center/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
+          <text id="/data/health_center/vaccines/ipv:label">
+            <value>Inactivated Polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
+          <text id="/data/health_center/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/health_center/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/health_center/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/data/health_center/vaccines/polio:label">
+            <value>Oral Polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/health_center/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/health_center/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/health_center/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/health_center/vaccines:hint">
+            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/health_center/vaccines:label">
+            <value>Select vaccines</value>
+          </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Create a new person</value>
           </text>
@@ -178,6 +190,51 @@
           </text>
         </translation>
         <translation lang="fr">
+          <text id="/data/contact/external_id:label">
+            <value>Identifiant externe</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Nom</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>Téléphone</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>Téléphone alternatif</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>ASC</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>Superviseur ASC</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>Staff médical</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>Infirmier</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>Autre</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>Patient</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>Rôle</value>
+          </text>
+          <text id="/data/contact/role_other:label">
+            <value>Specifier</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Nouvelle personne</value>
+          </text>
           <text id="/data/health_center/external_id:label">
             <value>Identifiant externe</value>
           </text>
@@ -199,6 +256,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>Soins prénataux</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Surveillance de la croissance</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>Vaccination</value>
           </text>
@@ -217,11 +277,20 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>Choléra</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>-</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>Grippe</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
             <value>Hépatite A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
             <value>HPV (virus du papillome humain)</value>
@@ -268,51 +337,6 @@
           <text id="/data/health_center/vaccines:label">
             <value>Choisissez les vaccins</value>
           </text>
-          <text id="/data/contact/external_id:label">
-            <value>Identifiant externe</value>
-          </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/name:label">
-            <value>Nom</value>
-          </text>
-          <text id="/data/contact/notes:label">
-            <value>Notes</value>
-          </text>
-          <text id="/data/contact/phone:label">
-            <value>Téléphone</value>
-          </text>
-          <text id="/data/contact/phone_alternate:label">
-            <value>Téléphone alternatif</value>
-          </text>
-          <text id="/data/contact/role/chw:label">
-            <value>ASC</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>Superviseur ASC</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>Staff médical</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>Infirmier</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>Autre</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Patient</value>
-          </text>
-          <text id="/data/contact/role:label">
-            <value>Rôle</value>
-          </text>
-          <text id="/data/contact/role_other:label">
-            <value>Specifier</value>
-          </text>
-          <text id="/data/contact:label">
-            <value>Nouvelle personne</value>
-          </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Créer une nouvelle personne</value>
           </text>
@@ -354,96 +378,6 @@
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/data/health_center/external_id:label">
-            <value>बाहरी ID</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/false:label">
-            <value>नहीं, मैं इसे मैन्युअल रूप से नाम देना चाहता हूं</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/true:label">
-            <value>हाँ</value>
-          </text>
-          <text id="/data/health_center/is_name_generated:label">
-            <value>क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
-          </text>
-          <text id="/data/health_center/name:label">
-            <value>नाम</value>
-          </text>
-          <text id="/data/health_center/notes:label">
-            <value>नोट्स</value>
-          </text>
-          <text id="/data/health_center/use_cases/anc:label">
-            <value>गर्भावस्था की देखभाल</value>
-          </text>
-          <text id="/data/health_center/use_cases/imm:label">
-            <value>टीकाकरण</value>
-          </text>
-          <text id="/data/health_center/use_cases/pnc:label">
-            <value>गर्भावस्था के बाद की देखभाल</value>
-          </text>
-          <text id="/data/health_center/use_cases:hint">
-            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
-          </text>
-          <text id="/data/health_center/use_cases:label">
-            <value>स्वास्थ्य कार्यक्रम</value>
-          </text>
-          <text id="/data/health_center/vaccines/bcg:label">
-            <value>BCG</value>
-          </text>
-          <text id="/data/health_center/vaccines/cholera:label">
-            <value>Cholera</value>
-          </text>
-          <text id="/data/health_center/vaccines/flu:label">
-            <value>Influenza</value>
-          </text>
-          <text id="/data/health_center/vaccines/hep_a:label">
-            <value>Hepatitis A</value>
-          </text>
-          <text id="/data/health_center/vaccines/hpv:label">
-            <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/data/health_center/vaccines/ipv:label">
-            <value>Inactivated Polio</value>
-          </text>
-          <text id="/data/health_center/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
-          </text>
-          <text id="/data/health_center/vaccines/meningococcal:label">
-            <value>Meningococcal</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmr:label">
-            <value>MMR (Measles, Mumps, Rubella)</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmrv:label">
-            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
-          </text>
-          <text id="/data/health_center/vaccines/penta:label">
-            <value>Pentavalent</value>
-          </text>
-          <text id="/data/health_center/vaccines/pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
-          </text>
-          <text id="/data/health_center/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/health_center/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
-          </text>
-          <text id="/data/health_center/vaccines/typhoid:label">
-            <value>Typhoid</value>
-          </text>
-          <text id="/data/health_center/vaccines/vitamin_a:label">
-            <value>Vitamin A</value>
-          </text>
-          <text id="/data/health_center/vaccines/yellow_fever:label">
-            <value>Yellow Fever</value>
-          </text>
-          <text id="/data/health_center/vaccines:hint">
-            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
-          </text>
-          <text id="/data/health_center/vaccines:label">
-            <value>टीकाकरण चुनें</value>
-          </text>
           <text id="/data/contact/external_id:label">
             <value>बाहरी ID</value>
           </text>
@@ -489,6 +423,108 @@
           <text id="/data/contact:label">
             <value>नया व्यक्ति</value>
           </text>
+          <text id="/data/health_center/external_id:label">
+            <value>बाहरी ID</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/false:label">
+            <value>नहीं, मैं इसे मैन्युअल रूप से नाम देना चाहता हूं</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/true:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/data/health_center/is_name_generated:label">
+            <value>क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
+          </text>
+          <text id="/data/health_center/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/health_center/notes:label">
+            <value>नोट्स</value>
+          </text>
+          <text id="/data/health_center/use_cases/anc:label">
+            <value>गर्भावस्था की देखभाल</value>
+          </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>विकास की निगरानी</value>
+          </text>
+          <text id="/data/health_center/use_cases/imm:label">
+            <value>टीकाकरण</value>
+          </text>
+          <text id="/data/health_center/use_cases/pnc:label">
+            <value>गर्भावस्था के बाद की देखभाल</value>
+          </text>
+          <text id="/data/health_center/use_cases:hint">
+            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
+          </text>
+          <text id="/data/health_center/use_cases:label">
+            <value>स्वास्थ्य कार्यक्रम</value>
+          </text>
+          <text id="/data/health_center/vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/data/health_center/vaccines/cholera:label">
+            <value>Cholera</value>
+          </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>Fractional inactivated polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
+          <text id="/data/health_center/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
+          <text id="/data/health_center/vaccines/ipv:label">
+            <value>Inactivated Polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
+          <text id="/data/health_center/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/health_center/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/health_center/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/data/health_center/vaccines/polio:label">
+            <value>Oral Polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/health_center/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/health_center/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/health_center/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/health_center/vaccines:hint">
+            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
+          </text>
+          <text id="/data/health_center/vaccines:label">
+            <value>टीकाकरण चुनें</value>
+          </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>एक नया व्यक्ति बनाएं</value>
           </text>
@@ -530,96 +566,6 @@
           </text>
         </translation>
         <translation lang="id">
-          <text id="/data/health_center/external_id:label">
-            <value>Eksternal ID</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/false:label">
-            <value>Tidak, saya ingin nama itu secara manual</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/true:label">
-            <value>Iya</value>
-          </text>
-          <text id="/data/health_center/is_name_generated:label">
-            <value>Apakah Anda ingin nama tempat setelah kontak utama: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
-          </text>
-          <text id="/data/health_center/name:label">
-            <value>Nama</value>
-          </text>
-          <text id="/data/health_center/notes:label">
-            <value>Catatan</value>
-          </text>
-          <text id="/data/health_center/use_cases/anc:label">
-            <value>Perawatan Antenatal</value>
-          </text>
-          <text id="/data/health_center/use_cases/imm:label">
-            <value>Imunisasi</value>
-          </text>
-          <text id="/data/health_center/use_cases/pnc:label">
-            <value>Perawatan Setelah Melahirkan</value>
-          </text>
-          <text id="/data/health_center/use_cases:hint">
-            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/health_center/use_cases:label">
-            <value>Program Kesehatan</value>
-          </text>
-          <text id="/data/health_center/vaccines/bcg:label">
-            <value>BCG</value>
-          </text>
-          <text id="/data/health_center/vaccines/cholera:label">
-            <value>Kolera</value>
-          </text>
-          <text id="/data/health_center/vaccines/flu:label">
-            <value>Influenza</value>
-          </text>
-          <text id="/data/health_center/vaccines/hep_a:label">
-            <value>Hepatitis A</value>
-          </text>
-          <text id="/data/health_center/vaccines/hpv:label">
-            <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/data/health_center/vaccines/ipv:label">
-            <value>Inactivated Polio</value>
-          </text>
-          <text id="/data/health_center/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
-          </text>
-          <text id="/data/health_center/vaccines/meningococcal:label">
-            <value>Meningococcal</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmr:label">
-            <value>MMR (Measles, Mumps, Rubella)</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmrv:label">
-            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
-          </text>
-          <text id="/data/health_center/vaccines/penta:label">
-            <value>Pentavalent</value>
-          </text>
-          <text id="/data/health_center/vaccines/pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
-          </text>
-          <text id="/data/health_center/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/health_center/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
-          </text>
-          <text id="/data/health_center/vaccines/typhoid:label">
-            <value>Typhoid</value>
-          </text>
-          <text id="/data/health_center/vaccines/vitamin_a:label">
-            <value>Vitamin A</value>
-          </text>
-          <text id="/data/health_center/vaccines/yellow_fever:label">
-            <value>Yellow Fever</value>
-          </text>
-          <text id="/data/health_center/vaccines:hint">
-            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/health_center/vaccines:label">
-            <value>Pilih Jenis Vaksin</value>
-          </text>
           <text id="/data/contact/external_id:label">
             <value>Eksternal ID</value>
           </text>
@@ -665,6 +611,108 @@
           <text id="/data/contact:label">
             <value>Orang Baru</value>
           </text>
+          <text id="/data/health_center/external_id:label">
+            <value>Eksternal ID</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/false:label">
+            <value>Tidak, saya ingin nama itu secara manual</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/true:label">
+            <value>Iya</value>
+          </text>
+          <text id="/data/health_center/is_name_generated:label">
+            <value>Apakah Anda ingin nama tempat setelah kontak utama: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          </text>
+          <text id="/data/health_center/name:label">
+            <value>Nama</value>
+          </text>
+          <text id="/data/health_center/notes:label">
+            <value>Catatan</value>
+          </text>
+          <text id="/data/health_center/use_cases/anc:label">
+            <value>Perawatan Antenatal</value>
+          </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Pemantauan Pertumbuhan</value>
+          </text>
+          <text id="/data/health_center/use_cases/imm:label">
+            <value>Imunisasi</value>
+          </text>
+          <text id="/data/health_center/use_cases/pnc:label">
+            <value>Perawatan Setelah Melahirkan</value>
+          </text>
+          <text id="/data/health_center/use_cases:hint">
+            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/health_center/use_cases:label">
+            <value>Program Kesehatan</value>
+          </text>
+          <text id="/data/health_center/vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/data/health_center/vaccines/cholera:label">
+            <value>Kolera</value>
+          </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>Diptheria, Pertussis, and Tetanus (DPT)</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>Fractional inactivated polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>Hepatitis B</value>
+          </text>
+          <text id="/data/health_center/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
+          <text id="/data/health_center/vaccines/ipv:label">
+            <value>Inactivated Polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
+          <text id="/data/health_center/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/health_center/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/health_center/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/data/health_center/vaccines/polio:label">
+            <value>Oral Polio</value>
+          </text>
+          <text id="/data/health_center/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/health_center/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/health_center/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/health_center/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/health_center/vaccines:hint">
+            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/health_center/vaccines:label">
+            <value>Pilih Jenis Vaksin</value>
+          </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Buat orang baru</value>
           </text>
@@ -706,96 +754,6 @@
           </text>
         </translation>
         <translation lang="ne">
-          <text id="/data/health_center/external_id:label">
-            <value>बाहिरि ID</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/false:label">
-            <value>होइन, म आफैँ नाम दिन चाहन्छु</value>
-          </text>
-          <text id="/data/health_center/is_name_generated/true:label">
-            <value>हो</value>
-          </text>
-          <text id="/data/health_center/is_name_generated:label">
-            <value>के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
-          </text>
-          <text id="/data/health_center/name:label">
-            <value>नाम</value>
-          </text>
-          <text id="/data/health_center/notes:label">
-            <value>टिप्पणि</value>
-          </text>
-          <text id="/data/health_center/use_cases/anc:label">
-            <value>पूर्व प्रसुती स्याहार</value>
-          </text>
-          <text id="/data/health_center/use_cases/imm:label">
-            <value>खोप</value>
-          </text>
-          <text id="/data/health_center/use_cases/pnc:label">
-            <value>प्रसुती पश्चातको स्याहार</value>
-          </text>
-          <text id="/data/health_center/use_cases:hint">
-            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
-          </text>
-          <text id="/data/health_center/use_cases:label">
-            <value>स्वास्थ्य कार्यक्रम</value>
-          </text>
-          <text id="/data/health_center/vaccines/bcg:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/cholera:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/flu:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/hep_a:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/hpv:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/ipv:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/jap_enc:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/meningococcal:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmr:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/mmrv:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/penta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/pneumococcal:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/polio:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/rotavirus:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/typhoid:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/vitamin_a:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines/yellow_fever:label">
-            <value>-</value>
-          </text>
-          <text id="/data/health_center/vaccines:hint">
-            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
-          </text>
-          <text id="/data/health_center/vaccines:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/external_id:label">
             <value>बाहिरि ID</value>
           </text>
@@ -841,6 +799,108 @@
           <text id="/data/contact:label">
             <value>नया व्यक्ति</value>
           </text>
+          <text id="/data/health_center/external_id:label">
+            <value>बाहिरि ID</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/false:label">
+            <value>होइन, म आफैँ नाम दिन चाहन्छु</value>
+          </text>
+          <text id="/data/health_center/is_name_generated/true:label">
+            <value>हो</value>
+          </text>
+          <text id="/data/health_center/is_name_generated:label">
+            <value>के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
+          </text>
+          <text id="/data/health_center/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/health_center/notes:label">
+            <value>टिप्पणि</value>
+          </text>
+          <text id="/data/health_center/use_cases/anc:label">
+            <value>पूर्व प्रसुती स्याहार</value>
+          </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>विकास अनुगमन</value>
+          </text>
+          <text id="/data/health_center/use_cases/imm:label">
+            <value>खोप</value>
+          </text>
+          <text id="/data/health_center/use_cases/pnc:label">
+            <value>प्रसुती पश्चातको स्याहार</value>
+          </text>
+          <text id="/data/health_center/use_cases:hint">
+            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
+          </text>
+          <text id="/data/health_center/use_cases:label">
+            <value>स्वास्थ्य कार्यक्रम</value>
+          </text>
+          <text id="/data/health_center/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/flu:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/ipv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/penta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/polio:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines:hint">
+            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
+          </text>
+          <text id="/data/health_center/vaccines:label">
+            <value>-</value>
+          </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>एक नया व्यक्ति बनाउनुस</value>
           </text>
@@ -882,6 +942,51 @@
           </text>
         </translation>
         <translation lang="sw">
+          <text id="/data/contact/external_id:label">
+            <value>Kitambulisho cha nje</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Jina</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>Maelezo</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>Namba ya Simi</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>Namba Ya</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>Mhudumu wa afya</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>Mkuu wa wahudumu wa afya</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>Meneja wa Kituo cha afya</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>Muuguzi</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>Nyingine</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>Mgonjwa</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>Namba ya simu Nyingine</value>
+          </text>
+          <text id="/data/contact/role_other:label">
+            <value>Fafanua vingine</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Mtu Mpya</value>
+          </text>
           <text id="/data/health_center/external_id:label">
             <value>Namba ya nje</value>
           </text>
@@ -903,6 +1008,9 @@
           <text id="/data/health_center/use_cases/anc:label">
             <value>Huduma ya kabla ya kuzaa</value>
           </text>
+          <text id="/data/health_center/use_cases/gmp:label">
+            <value>Ufuatiliaji wa Ukuaji</value>
+          </text>
           <text id="/data/health_center/use_cases/imm:label">
             <value>Chanjo</value>
           </text>
@@ -921,10 +1029,19 @@
           <text id="/data/health_center/vaccines/cholera:label">
             <value>-</value>
           </text>
+          <text id="/data/health_center/vaccines/dpt:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/fipv:label">
+            <value>-</value>
+          </text>
           <text id="/data/health_center/vaccines/flu:label">
             <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/health_center/vaccines/hep_b:label">
             <value>-</value>
           </text>
           <text id="/data/health_center/vaccines/hpv:label">
@@ -972,51 +1089,6 @@
           <text id="/data/health_center/vaccines:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/external_id:label">
-            <value>Kitambulisho cha nje</value>
-          </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/name:label">
-            <value>Jina</value>
-          </text>
-          <text id="/data/contact/notes:label">
-            <value>Maelezo</value>
-          </text>
-          <text id="/data/contact/phone:label">
-            <value>Namba ya Simi</value>
-          </text>
-          <text id="/data/contact/phone_alternate:label">
-            <value>Namba Ya</value>
-          </text>
-          <text id="/data/contact/role/chw:label">
-            <value>Mhudumu wa afya</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>Mkuu wa wahudumu wa afya</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>Meneja wa Kituo cha afya</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>Muuguzi</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>Nyingine</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Mgonjwa</value>
-          </text>
-          <text id="/data/contact/role:label">
-            <value>Namba ya simu Nyingine</value>
-          </text>
-          <text id="/data/contact/role_other:label">
-            <value>Fafanua vingine</value>
-          </text>
-          <text id="/data/contact:label">
-            <value>Mtu Mpya</value>
-          </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Ongeza mtumizi mpya</value>
           </text>
@@ -1059,7 +1131,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2018-11-14_09-59">
+        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2019-03-03_08-22">
           <inputs>
             <meta>
               <location>
@@ -1306,6 +1378,10 @@
           <label ref="jr:itext('/data/health_center/use_cases/imm:label')"/>
           <value>imm</value>
         </item>
+        <item>
+          <label ref="jr:itext('/data/health_center/use_cases/gmp:label')"/>
+          <value>gmp</value>
+        </item>
       </select>
       <select ref="/data/health_center/vaccines">
         <label ref="jr:itext('/data/health_center/vaccines:label')"/>
@@ -1321,6 +1397,10 @@
         <item>
           <label ref="jr:itext('/data/health_center/vaccines/hep_a:label')"/>
           <value>hep_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/health_center/vaccines/hep_b:label')"/>
+          <value>hep_b</value>
         </item>
         <item>
           <label ref="jr:itext('/data/health_center/vaccines/hpv:label')"/>
@@ -1351,6 +1431,10 @@
           <value>ipv</value>
         </item>
         <item>
+          <label ref="jr:itext('/data/health_center/vaccines/fipv:label')"/>
+          <value>fipv</value>
+        </item>
+        <item>
           <label ref="jr:itext('/data/health_center/vaccines/polio:label')"/>
           <value>polio</value>
         </item>
@@ -1377,6 +1461,10 @@
         <item>
           <label ref="jr:itext('/data/health_center/vaccines/yellow_fever:label')"/>
           <value>yellow_fever</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/health_center/vaccines/dpt:label')"/>
+          <value>dpt</value>
         </item>
       </select>
       <input appearance="multiline" ref="/data/health_center/notes">

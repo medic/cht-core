@@ -80,14 +80,14 @@ var db = PouchDB(couchUrl);
 
 console.log('        state | to               |  len | message                          | doc URL');
 
-db.query('medic-sms/tasks_messages')
+db.query('medic/messages_by_state')
   .then((res) => {
     res.rows.map((row) => {
-        const doc = row.value;
-        const m = doc.message;
+        const state = row.key[0];
+        const m = row.value.content;
         printTableRow(
-            doc.state, -13,
-            doc.to, 16,
+            state, -13,
+            row.value.to, 16,
             m ? m.length : 0, -4,
             m, 32,
             link(row.id), 0);

@@ -205,6 +205,14 @@ angular.module('inboxServices').service('Enketo',
       return LineageModelGenerator.contact(contact._id)
         .then(function(model) {
           return model.lineage;
+        })
+        .catch(function(err) {
+          if (err.code === 404) {
+            $log.warn(`Enketo failed to get lineage of contact '${contact._id}' because document does not exist`, err);
+            return [];
+          }
+
+          throw err;
         });
     };
 

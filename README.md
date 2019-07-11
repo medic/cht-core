@@ -196,6 +196,10 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 [Travis](https://travis-ci.org/medic/medic) runs `grunt ci` every time some new code is pushed to github.
 
+### Build documentation
+
+To build reference documentation into a local folder `jsdoc-docs`: `grunt build-documentation`
+
 ## Configuring Medic
 
 This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 

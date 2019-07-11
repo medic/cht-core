@@ -1,6 +1,7 @@
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
+const path = require('path');
 
 const {
   TRAVIS_TAG,
@@ -40,6 +41,21 @@ const getSharedLibDirs = () => {
   return fs
     .readdirSync('shared-libs')
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
+};
+
+const copySharedLibs = [
+  'rm -rf ../shared-libs/*/node_modules/@medic',
+  'mkdir ./node_modules/@medic',
+  'cp -RP ../shared-libs/* ./node_modules/@medic'
+].join( '&& ');
+
+const linkSharedLibs = dir => {
+  const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
+  const symlinkPath = lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
+  return [
+    'mkdir ./node_modules/@medic',
+    ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
+  ].join(' && ');
 };
 
 module.exports = function(grunt) {
@@ -401,9 +417,11 @@ module.exports = function(grunt) {
           .map(module =>
             [
               `cd ${module}`,
-              `npm dedupe`,
               `npm ci --production`,
+              `${copySharedLibs}`,
+              `npm dedupe`,
               `npm pack`,
+              `ls -l medic-${module}-0.1.0.tgz`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')
@@ -416,6 +434,9 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
+            if (pkg.sharedLibs) {
+              pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
+            }
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
@@ -501,7 +522,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
@@ -833,6 +854,14 @@ module.exports = function(grunt) {
       'build/ddocs/medic-admin/_attachments/js/templates.js':
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
+    jsdoc : {
+      dist : {
+          src: ['webapp/src/js/**/*.js', 'admin/src/js/**/*.js'],
+          options: {
+              destination: 'jsdoc-docs'
+          }
+      }
+    },
   });
 
   // Build tasks
@@ -1041,5 +1070,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
     'dev-webapp',
+  ]);
+
+  grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
+    'jsdoc'
   ]);
 };

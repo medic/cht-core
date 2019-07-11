@@ -47,7 +47,6 @@ describe('TaskUtils shared lib - setTaskState function', function() {
     chai.expect(task.state_history.length).to.equal(2);
     chai.expect(task.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '111'});
     chai.expect(task.state_history[1]).to.deep.equal({ state: 'newState', state_details: 'details', timestamp: '000'});
-
   });
 
   it('should add history when state and/or details are updated', function() {
@@ -143,4 +142,16 @@ describe('TaskUtils shared lib - setTaskState function', function() {
     chai.expect(task.state_history.length).to.equal(1);
     chai.expect(task.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '000' });
   });
+
+  it('should add the gateway_ref when given', () => {
+    var task = {};
+    var result = taskUtils.setTaskState(task, 'newState', 'details', 'abc');
+    chai.expect(result).to.equal(true);
+    chai.expect(task.state).to.equal('newState');
+    chai.expect(task.state_details).to.equal('details');
+    chai.expect(task.gateway_ref).to.equal('abc');
+    chai.expect(task.state_history.length).to.equal(1);
+    chai.expect(task.state_history[0]).to.deep.equal({ state: 'newState', state_details: 'details', timestamp: '000'});
+  });
+
 });
