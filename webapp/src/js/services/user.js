@@ -4,7 +4,6 @@
 
   angular.module('inboxServices').factory('UserSettings',
     function(
-      $log,
       $q,
       Cache,
       DB,
@@ -45,39 +44,14 @@
           return $q.reject(new Error('UserCtx not found'));
         }
 
-        var listeners = {};
-
-        function emit(event, data) {
-          if (listeners[event]) {
-            listeners[event].forEach(callback => {
-              try {
-                callback(data);
-              } catch(e) {
-                $log.error('Error triggering listener callback.', event, data, callback);
-              }
-            });
-          }
-        }
-
         var deferred = $q((resolve, reject) => {
           cache((err, settings) => {
             if (err) {
-              emit('error', err);
               return reject(err);
             }
-            emit('change', settings);
             resolve(settings);
           });
         });
-
-        deferred.on = (event, callback) => {
-          if (!listeners[event]) {
-            listeners[event] = [];
-          }
-          listeners[event].push(callback);
-
-          return deferred;
-        };
 
         return deferred;
       };
