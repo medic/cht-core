@@ -18,7 +18,7 @@
         }
       };
 
-      var cache = Cache({
+      const cache = Cache({
         get: callback => {
           const docId = userDocId();
           DB()
@@ -44,16 +44,14 @@
           return $q.reject(new Error('UserCtx not found'));
         }
 
-        var deferred = $q((resolve, reject) => {
-          cache((err, settings) => {
-            if (err) {
-              return reject(err);
-            }
-            resolve(settings);
-          });
+        const deferred = $q.defer();
+        cache((err, settings) => {
+          if (err) {
+            return deferred.reject(err);
+          }
+          deferred.resolve(settings);
         });
-
-        return deferred;
+        return deferred.promise;
       };
     }
   );
