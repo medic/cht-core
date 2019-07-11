@@ -366,7 +366,7 @@ angular.module('inboxServices').service('EnketoTranslation',
       if (childMatcher) {
         var found = elem.find(childMatcher(name));
         if (found.length > 1) {
-          $log.warn('Using the matcher "' + childMatcher() + '" we found ' + found.length + ' elements, ' +
+          $log.warn('Using the matcher "' + childMatcher(name) + '" we found ' + found.length + ' elements, ' +
             'we should only ever bind one.', elem);
         }
         return found;
