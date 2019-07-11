@@ -34,7 +34,6 @@ angular.module('inboxServices').service('Enketo',
     'ngInject';
 
     var objUrls = [];
-    // var xmlCache = {};
     var FORM_ATTACHMENT_NAME = 'xml';
 
     var currentForm;
@@ -62,7 +61,6 @@ angular.module('inboxServices').service('Enketo',
     };
     var inited = init();
 
-    // TODO move this in to API as well
     var replaceJavarosaMediaWithLoaders = function(id, form) {
       form.find('[data-media-src]').each(function() {
         var elem = $(this);
@@ -90,8 +88,9 @@ angular.module('inboxServices').service('Enketo',
         getFormAttachment(form._id, 'model.xml')
       ])
       .then(function(results) {
-        const $html = $(results[0].replace(/ src="jr:\/\//gi, ' data-media-src="'));
+        const $html = $(results[0]);
         const model = results[1];
+        // TODO move this down to `translateXml`
         $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
@@ -105,7 +104,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    // TODO see if we can get away from this
+    // TODO call this somewhere?!
     var translateXml = function(text, language, title) {
       var xml = $.parseXML(text);
       var $xml = $(xml);
