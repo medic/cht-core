@@ -20,6 +20,7 @@ serverChecks.check(environment.serverUrl).then(() => {
     ddocExtraction = require('./src/ddoc-extraction'),
     resourceExtraction = require('./src/resource-extraction'),
     translations = require('./src/translations'),
+    generateXform = require('./src/services/generate-xform'),
     serverUtils = require('./src/server-utils'),
     apiPort = process.env.API_PORT || 5988;
 
@@ -44,6 +45,10 @@ serverChecks.check(environment.serverUrl).then(() => {
     .then(() => logger.info('Running db migrations…'))
     .then(migrations.run)
     .then(() => logger.info('Database migrations completed successfully'))
+
+    .then(() => logger.info('Updating xforms…'))
+    .then(() => generateXform.update('form:multimedia')) // TODO change to update all
+    .then(() => logger.info('xforms updated successfully'))
 
     .catch(err => {
       logger.error('Fatal error initialising medic-api');
