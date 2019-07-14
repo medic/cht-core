@@ -364,10 +364,10 @@ angular.module('inboxServices').service('EnketoTranslation',
 
     var findCurrentElement = function(elem, name, childMatcher) {
       if (childMatcher) {
-        var found = elem.find(childMatcher(name));
+        const matcher = childMatcher(name);
+        const found = elem.find(matcher);
         if (found.length > 1) {
-          $log.warn('Using the matcher "' + childMatcher() + '" we found ' + found.length + ' elements, ' +
-            'we should only ever bind one.', elem);
+          $log.warn(`Enketo bindJsonToXml: Using the matcher "${matcher}" we found ${found.length} elements. We should only ever bind one.`, elem);
         }
         return found;
       } else {
