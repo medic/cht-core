@@ -47,7 +47,7 @@ serverChecks.check(environment.serverUrl).then(() => {
     .then(() => logger.info('Database migrations completed successfully'))
 
     .then(() => logger.info('Updating xforms…'))
-    .then(() => generateXform.update('form:multimedia')) // TODO change to update all
+    .then(() => generateXform.updateAll())
     .then(() => logger.info('xforms updated successfully'))
 
     .catch(err => {

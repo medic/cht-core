@@ -34,7 +34,6 @@ angular.module('inboxServices').service('Enketo',
     'ngInject';
 
     var objUrls = [];
-    var FORM_ATTACHMENT_NAME = 'xml';
 
     var currentForm;
     this.getCurrentForm = function() {
@@ -90,7 +89,7 @@ angular.module('inboxServices').service('Enketo',
       .then(function(results) {
         const $html = $(results[0]);
         const model = results[1];
-        // TODO move this down to `translateXml`
+        // TODO work out where this is used??
         $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
@@ -99,57 +98,14 @@ angular.module('inboxServices').service('Enketo',
         return {
           html: $html,
           model: model,
+          title: form.title,
           hasContactSummary: hasContactSummary
         };
       });
     };
 
-    // TODO call this somewhere?!
-    var translateXml = function(text, language, title) {
-      var xml = $.parseXML(text);
-      var $xml = $(xml);
-      // set the user's language as default so it'll be used for itext translations
-      $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
-      // manually translate the title as enketo-core doesn't have any way to do this
-      // https://github.com/enketo/enketo-core/issues/405
-      if (title) {
-        $xml.find('h\\:title,title').text(TranslateFrom(title));
-      }
-      return xml;
-    };
-
     var getFormAttachment = function(id, name) {
       return DB().getAttachment(id, name).then(FileReader.utf8);
-    };
-
-    // var getFormXml = function(form, language) {
-    //   return getFormAttachment(form._id).then(function(text) {
-    //     return translateXml(text, language, form.title);
-    //   });
-    // };
-
-    var withForm = function(id, language) {
-      // if (!xmlCache[id]) {
-      //   xmlCache[id] = {};
-      // }
-      // if (!xmlCache[id][language]) {
-      //   xmlCache[id][language] = DB()
-      //     .get(id)
-      //     // .then(function(form) {
-      //     //   return getFormXml(form, language);
-      //     // })
-      //     .then(transformXml);
-      // }
-      return DB().get(id)
-        .then(transformXml)
-        .then(function(form) {
-          // clone form to avoid leaking of data between instances of a form
-          return {
-            html: form.html.clone(),
-            model: form.model,
-            hasContactSummary: form.hasContactSummary
-          };
-        });
     };
 
     var handleKeypressOnInputField = function(e) {
@@ -258,14 +214,14 @@ angular.module('inboxServices').service('Enketo',
     var getEnketoOptions = function(doc, instanceData) {
       return $q.all([
         EnketoPrepopulationData(doc.model, instanceData),
-        getContactSummary(doc, instanceData)
+        getContactSummary(doc, instanceData),
+        Language()
       ])
-        .then(function(results) {
-          var instanceStr = results[0];
-          var contactSummary = results[1];
-          var options = {
+        .then(([ instanceStr, contactSummary, language ]) => {
+          const options = {
             modelStr: doc.model,
-            instanceStr: instanceStr
+            instanceStr: instanceStr,
+            language: language
           };
           if (contactSummary) {
             options.external = [ contactSummary ];
@@ -290,6 +246,18 @@ angular.module('inboxServices').service('Enketo',
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
         }
+        // TODO remove this when enketo-core is updated to respect options.language
+        currentForm.langs.setAll(options.language);
+        // manually translate the title as enketo-core doesn't have any way to do this
+        // https://github.com/enketo/enketo-core/issues/405
+        const $title = wrapper.find('#form-title');
+        if (doc.title) {
+          // title defined in the doc - overwrite contents
+          $title.text(TranslateFrom(doc.title));
+        } else if ($title.text() === 'No Title') {
+          // useless enketo default - remove it
+          $title.remove();
+        } // else the title is hardcoded in the form definition - leave it alone
         wrapper.show();
 
         wrapper.find('input').on('keydown', handleKeypressOnInputField);
@@ -353,18 +321,20 @@ angular.module('inboxServices').service('Enketo',
         $(selector).on('valuechange.enketo', listener);
       }
     };
-                        
-    var renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
-      return Language()
-        .then(language => withForm(form, language))
-        .then(function(doc) {
-          replaceJavarosaMediaWithLoaders(form, doc.html);
-          return renderFromXmls(doc, selector, instanceData);
-        })
-        .then(function(form) {
-          registerEditedListener(selector, editedListener);
-          registerValuechangeListener(selector, valuechangeListener);
-          return form;
+
+    var renderForm = function(selector, id, instanceData, editedListener, valuechangeListener) {
+      return Language().then(language => {
+        return DB().get(id)
+          .then(form => transformXml(form))
+          .then(doc => {
+            replaceJavarosaMediaWithLoaders(id, doc.html);
+            return renderFromXmls(doc, selector, instanceData, language);
+          })
+          .then(function(form) {
+            registerEditedListener(selector, editedListener);
+            registerValuechangeListener(selector, valuechangeListener);
+            return form;
+          });
         });
     };
 
@@ -583,9 +553,5 @@ angular.module('inboxServices').service('Enketo',
       objUrls.length = 0;
     };
 
-    // TODO remove
-    this.clearXmlCache = function() {
-      // xmlCache = {};
-    };
   }
 );

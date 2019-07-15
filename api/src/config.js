@@ -1,17 +1,18 @@
-const _ = require('underscore'),
-  db = require('./db'),
-  ddocExtraction = require('./ddoc-extraction'),
-  resourceExtraction = require('./resource-extraction'),
-  translations = require('./translations'),
-  defaults = require('./config.default.json'),
-  settingsService = require('./services/settings'),
-  translationCache = {},
-  logger = require('./logger'),
-  viewMapUtils = require('@medic/view-map-utils'),
-  translationUtils = require('@medic/translation-utils');
+const _ = require('underscore');
+const db = require('./db');
+const ddocExtraction = require('./ddoc-extraction');
+const resourceExtraction = require('./resource-extraction');
+const translations = require('./translations');
+const defaults = require('./config.default.json');
+const settingsService = require('./services/settings');
+const generateXform = require('./services/generate-xform');
+const translationCache = {};
+const logger = require('./logger');
+const viewMapUtils = require('@medic/view-map-utils');
+const translationUtils = require('@medic/translation-utils');
 
-let settings = {},
-    transitionsLib;
+let settings = {};
+let transitionsLib;
 
 const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
@@ -171,9 +172,12 @@ module.exports = {
               process.exit(1);
             })
             .then(() => initTransitionLib());
-        } else if (change.id.indexOf('messages-') === 0) {
+        } else if (change.id.startsWith('messages-')) {
           logger.info('Detected translations change - reloading');
           loadTranslations().then(() => initTransitionLib());
+        } else if (change.id.startsWith('form:')) {
+          logger.info('Detected form change - generating attachments');
+          generateXform.update(change.id);
         }
       })
       .on('error', err => {

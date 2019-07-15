@@ -65,30 +65,30 @@ describe('Enketo service', () => {
       <bind nodeset="/data/name" type="string" required="true()" />
     </model>`;
 
-  let service,
-      GlobalActions;
-  const enketoInit = sinon.stub(),
-      transform = sinon.stub(),
-      dbGetAttachment = sinon.stub(),
-      dbGet = sinon.stub(),
-      dbBulkDocs = sinon.stub(),
-      ContactSummary = sinon.stub(),
-      Form2Sms = sinon.stub(),
-      UserContact = sinon.stub(),
-      UserSettings = sinon.stub(),
-      createObjectURL = sinon.stub(),
-      FileReader = { utf8: sinon.stub() },
-      Language = sinon.stub(),
-      TranslateFrom = sinon.stub(),
-      form = {
-        validate: sinon.stub(),
-        getDataStr: sinon.stub()
-      },
-      AddAttachment = sinon.stub(),
-      EnketoForm = sinon.stub(),
-      EnketoPrepopulationData = sinon.stub(),
-      Search = sinon.stub(),
-      LineageModelGenerator = { contact: sinon.stub() };
+  let service;
+  let GlobalActions;
+
+  const enketoInit = sinon.stub();
+  const dbGetAttachment = sinon.stub();
+  const dbGet = sinon.stub();
+  const dbBulkDocs = sinon.stub();
+  const ContactSummary = sinon.stub();
+  const Form2Sms = sinon.stub();
+  const UserContact = sinon.stub();
+  const UserSettings = sinon.stub();
+  const createObjectURL = sinon.stub();
+  const FileReader = { utf8: sinon.stub() };
+  const Language = sinon.stub();
+  const TranslateFrom = sinon.stub();
+  const form = {
+    validate: sinon.stub(),
+    getDataStr: sinon.stub(),
+  };
+  const AddAttachment = sinon.stub();
+  const EnketoForm = sinon.stub();
+  const EnketoPrepopulationData = sinon.stub();
+  const Search = sinon.stub();
+  const LineageModelGenerator = { contact: sinon.stub() };
 
   beforeEach(() => {
     module('inboxApp');
@@ -96,19 +96,19 @@ describe('Enketo service', () => {
     window.EnketoForm = EnketoForm;
     EnketoForm.returns({
       init: enketoInit,
+      langs: { setAll: () => {} },
       calc: { update: () => {} },
       output: { update: () => {} },
     });
 
     GlobalActions = { setLastChangedDoc: sinon.stub() };
 
-    module(function($provide) {
+    module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
         getAttachment: dbGetAttachment,
         get: dbGet,
         bulkDocs: dbBulkDocs
       }));
-      $provide.value('XSLT', { transform: transform });
       $provide.value('$window', {
         angular: { callbacks: [] },
         URL: { createObjectURL: createObjectURL },
@@ -134,39 +134,36 @@ describe('Enketo service', () => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('GlobalActions', () => GlobalActions);
     });
-    inject(function(_Enketo_) {
-      service = _Enketo_;
-    });
+    inject(_Enketo_ => service = _Enketo_ );
     Language.resolves('en');
     TranslateFrom.returns('translated');
   });
 
   afterEach(() => {
-    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
     sinon.restore();
   });
 
   describe('render', () => {
 
-    it('renders error when user does not have associated contact', function(done) {
+    it('renders error when user does not have associated contact', done => {
       UserContact.resolves();
       service
         .render(null, 'not-defined')
         .then(() => {
           done(new Error('Should throw error'));
         })
-        .catch(function(actual) {
+        .catch(actual => {
           expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
           expect(actual.translationKey).to.equal('error.loading.form.no_contact');
           done();
         });
     });
 
-    it('return error when form initialisation fails', function(done) {
+    it('return error when form initialisation fails', done => {
       UserContact.resolves({ contact_id: '123' });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xml');
-      transform
+      dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
       EnketoPrepopulationData.resolves('<xml></xml>');
@@ -177,9 +174,9 @@ describe('Enketo service', () => {
         .then(function() {
           done(new Error('Should throw error'));
         })
-        .catch(function(actual) {
-          chai.expect(enketoInit.callCount).to.equal(1);
-          chai.expect(actual.message).to.equal(JSON.stringify(expected));
+        .catch(actual => {
+          expect(enketoInit.callCount).to.equal(1);
+          expect(actual.message).to.equal(JSON.stringify(expected));
           done();
         });
     });
@@ -187,48 +184,47 @@ describe('Enketo service', () => {
     it('return form when everything works', () => {
       UserContact.resolves({ contact_id: '123' });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<xml></xml>');
-      transform
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
       return service.render($('<div></div>'), 'ok').then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
-        expect(transform.callCount).to.equal(2);
-        expect(transform.args[0][0]).to.equal('openrosa2html5form.xsl');
-        expect(transform.args[1][0]).to.equal('openrosa2xmlmodel.xsl');
-        expect(FileReader.utf8.callCount).to.equal(1);
-        expect(FileReader.utf8.args[0][0]).to.equal('xmlblob');
+        expect(FileReader.utf8.callCount).to.equal(2);
+        expect(FileReader.utf8.args[0][0]).to.equal('<div>my form</div>');
+        expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
         expect(enketoInit.callCount).to.equal(1);
+        expect(dbGetAttachment.callCount).to.equal(2);
+        expect(dbGetAttachment.args[0][0]).to.equal('form:myform');
+        expect(dbGetAttachment.args[0][1]).to.equal('form.html');
+        expect(dbGetAttachment.args[1][0]).to.equal('form:myform');
+        expect(dbGetAttachment.args[1][1]).to.equal('model.xml');
       });
     });
 
     it('replaces img src with obj urls', () => {
       UserContact.resolves({ contact_id: '123' });
       dbGet.resolves(mockEnketoDoc('myform'));
-      transform
-        .onFirstCall().resolves('<div><img src="jr://myimg"></div>')
-        .onSecondCall().resolves(VISIT_MODEL);
       dbGetAttachment
-        .onFirstCall().resolves('xmlblob')
-        .onSecondCall().resolves('myobjblob');
+        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
+        .onSecondCall().resolves(VISIT_MODEL)
+        .onThirdCall().resolves('myobjblob');
       createObjectURL.returns('myobjurl');
       enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
+      FileReader.utf8
+        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, 'ok').then(() => {
         // need to wait for async get attachment to complete
         const img = wrapper.find('img').first();
-        expect(img.attr('src')).to.equal('myobjurl');
-        expect(img.css('visibility')).to.satisfy(function(val) {
+        expect(img.css('visibility')).to.satisfy(val => {
           // different browsers return different values but both are equivalent
           return val === '' || val === 'visible';
         });
-        expect(transform.callCount).to.equal(2);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(1);
         expect(createObjectURL.args[0][0]).to.equal('myobjblob');
@@ -238,14 +234,13 @@ describe('Enketo service', () => {
     it('leaves img wrapped if failed to load', () => {
       UserContact.resolves({ contact_id: '123' });
       dbGet.resolves(mockEnketoDoc('myform'));
-      transform
-        .onFirstCall().resolves('<div><img src="jr://myimg"></div>')
-        .onSecondCall().resolves(VISIT_MODEL);
       dbGetAttachment
-        .onFirstCall().resolves('xmlblob')
-        .onSecondCall().rejects('not found');
+        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
+        .onSecondCall().resolves(VISIT_MODEL)
+        .onThirdCall().rejects('not found');
       enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
+      FileReader.utf8
+        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, 'ok').then(() => {
@@ -254,7 +249,6 @@ describe('Enketo service', () => {
         expect(img.attr('data-media-src')).to.equal('myimg');
         expect(img.css('visibility')).to.equal('hidden');
         expect(img.closest('div').hasClass('loader')).to.equal(true);
-        expect(transform.callCount).to.equal(2);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(0);
       });
@@ -264,13 +258,14 @@ describe('Enketo service', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves(data);
-      transform
+      dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
       return service.render($('<div></div>'), 'ok', data).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
@@ -286,13 +281,14 @@ describe('Enketo service', () => {
         facility_id: '789'
       });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves(data);
-      transform
+      dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
+      EnketoPrepopulationData.resolves(data);
       const instanceData = {
         inputs: {
           patient_id: 123,
@@ -314,13 +310,14 @@ describe('Enketo service', () => {
         facility_id: '789'
       });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves(data);
-      transform
+      dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      EnketoPrepopulationData.resolves(data);
       const instanceData = {
         contact: {
           _id: 'fffff',
@@ -362,13 +359,14 @@ describe('Enketo service', () => {
         facility_id: '789'
       });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves(data);
-      transform
+      dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      EnketoPrepopulationData.resolves(data);
       const instanceData = {
         contact: {
           _id: 'fffff'
@@ -405,13 +403,12 @@ describe('Enketo service', () => {
         facility_id: '789'
       });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves(data);
-      transform
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
       const instanceData = {
         contact: {
           _id: 'fffff'
@@ -438,11 +435,10 @@ describe('Enketo service', () => {
         facility_id: '789'
       });
       dbGet.resolves(mockEnketoDoc('myform'));
-      dbGetAttachment.resolves('xmlblob');
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<data><patient_id>123</patient_id></data>');
-      transform
+      dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
       const instanceData = {
@@ -464,9 +460,9 @@ describe('Enketo service', () => {
 
   describe('save', () => {
 
-    it('rejects on invalid form', function(done) {
+    it('rejects on invalid form', done => {
       form.validate.resolves(false);
-      service.save('V', form).catch(function(actual) {
+      service.save('V', form).catch(actual => {
         expect(actual.message).to.equal('Form is invalid');
         expect(form.validate.callCount).to.equal(1);
         done();
@@ -482,7 +478,7 @@ describe('Enketo service', () => {
       UserContact.resolves({ _id: '123', phone: '555' });
       UserSettings.resolves({ name: 'Jim' });
 
-      return service.save('V', form).then(function(actual) {
+      return service.save('V', form).then(actual => {
         actual = actual[0];
 
         expect(form.validate.callCount).to.equal(1);
@@ -520,7 +516,7 @@ describe('Enketo service', () => {
       dbBulkDocs.resolves([ { ok: true, id: '(generated-in-service)', rev: '1-abc' } ]);
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form, null, null).then(function(actual) {
+      return service.save('V', form, null, null).then(actual => {
         actual = actual[0];
 
         expect(form.validate.callCount).to.equal(1);
@@ -558,7 +554,7 @@ describe('Enketo service', () => {
       });
       dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
       dbGetAttachment.resolves('<form/>');
-      return service.save('V', form, null, '6').then(function(actual) {
+      return service.save('V', form, null, '6').then(actual => {
         actual = actual[0];
 
         expect(form.validate.callCount).to.equal(1);
@@ -612,7 +608,7 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
 
-      return service.save('V', form, null, null).then(function(actual) {
+      return service.save('V', form, null, null).then(actual => {
         const endTime = Date.now() + 1;
 
         expect(form.validate.callCount).to.equal(1);
@@ -684,7 +680,7 @@ describe('Enketo service', () => {
       ]);
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form, true).then(function(actual) {
+      return service.save('V', form, true).then(actual => {
         const endTime = Date.now() + 1;
 
         expect(form.validate.callCount).to.equal(1);
@@ -716,7 +712,6 @@ describe('Enketo service', () => {
         expect(actualThing1.reported_date).to.be.above(startTime);
         expect(actualThing1.reported_date).to.be.below(endTime);
         expect(actualThing1.some_property_1).to.equal('some_value_1');
-
         expect(actualThing1.geolocation).to.equal(true);
 
         const actualThing2 = actual[2];
@@ -764,7 +759,8 @@ describe('Enketo service', () => {
       ]);
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(function(actual) {
+
+      return service.save('V', form).then(actual => {
         expect(form.validate.callCount).to.equal(1);
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -776,6 +772,7 @@ describe('Enketo service', () => {
         const doc2_id = actual[2]._id;
 
         const actualReport = actual[0];
+
         expect(actualReport._id).to.match(/(\w+-)\w+/);
         expect(actualReport.fields.name).to.equal('Sally');
         expect(actualReport.fields.lmp).to.equal('10');
@@ -843,7 +840,7 @@ describe('Enketo service', () => {
       ]);
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(function(actual) {
+      return service.save('V', form).then(actual => {
         expect(form.validate.callCount).to.equal(1);
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -853,6 +850,7 @@ describe('Enketo service', () => {
         const reportId = actual[0]._id;
 
         const actualReport = actual[0];
+
         expect(actualReport._id).to.match(/(\w+-)\w+/);
         expect(actualReport.fields.name).to.equal('Sally');
         expect(actualReport.fields.lmp).to.equal('10');
@@ -866,9 +864,9 @@ describe('Enketo service', () => {
 
         for (let i=1; i<=3; ++i) {
           const repeatDocN = actual[i];
-          expect(repeatDocN._id).to.match(/(\w+-)\w+/);
-          expect(repeatDocN.my_parent).to.equal(reportId);
-          expect(repeatDocN.some_property).to.equal('some_value_'+i);
+          chai.expect(repeatDocN._id).to.match(/(\w+-)\w+/);
+          chai.expect(repeatDocN.my_parent).to.equal(reportId);
+          chai.expect(repeatDocN.some_property).to.equal('some_value_'+i);
         }
 
         expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(4);
