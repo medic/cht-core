@@ -856,7 +856,15 @@ module.exports = function(grunt) {
     },
     jsdoc : {
       dist : {
-          src: ['api/src/*.js, api/src/**/*.js, admin/src/**/**/*.js, webapp/src/**/**/*.js'],
+          src: [
+            'admin/src/js/**/*.js',
+            'api/src/*.js',
+            'api/src/**/*.js',
+            'sentinel/src/*.js',
+            'sentinel/src/**/*.js',
+            'webapp/src/**/*.js',
+            'webapp/src/**/**/*.js'
+          ],
           options: {
               destination: 'jsdoc-docs',
               configure: 'node_modules/angular-jsdoc/common/conf.json',
