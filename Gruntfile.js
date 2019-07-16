@@ -857,13 +857,14 @@ module.exports = function(grunt) {
     jsdoc : {
       dist : {
           src: [
+            'admin/src/js/*.js',
             'admin/src/js/**/*.js',
             'api/src/*.js',
             'api/src/**/*.js',
             'sentinel/src/*.js',
             'sentinel/src/**/*.js',
-            'webapp/src/**/*.js',
-            'webapp/src/**/**/*.js'
+            'webapp/src/js/*.js',
+            'webapp/src/js/**/*.js'
           ],
           options: {
               destination: 'jsdoc-docs',
