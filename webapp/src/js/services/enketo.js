@@ -33,6 +33,9 @@ angular.module('inboxServices').service('Enketo',
     'use strict';
     'ngInject';
 
+    const HTML_ATTACHMENT_NAME = 'form.html';
+    const MODEL_ATTACHMENT_NAME = 'model.xml';
+
     var objUrls = [];
 
     var currentForm;
@@ -83,8 +86,8 @@ angular.module('inboxServices').service('Enketo',
 
     var transformXml = function(form) {
       return $q.all([
-        getFormAttachment(form._id, 'form.html'),
-        getFormAttachment(form._id, 'model.xml')
+        getAttachment(form._id, HTML_ATTACHMENT_NAME),
+        getAttachment(form._id, MODEL_ATTACHMENT_NAME)
       ])
       .then(function(results) {
         const $html = $(results[0]);
@@ -104,7 +107,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var getFormAttachment = function(id, name) {
+    var getAttachment = function(id, name) {
       return DB().getAttachment(id, name).then(FileReader.utf8);
     };
 
@@ -434,7 +437,7 @@ angular.module('inboxServices').service('Enketo',
       docsToStore.unshift(doc);
 
       return XmlForms.get(doc.form)
-        .then(getFormAttachment)
+        .then(form => getAttachment(form.id, 'xml')) // TODO not necessarily called 'xml'
         .then(function(form) {
           doc.fields = EnketoTranslation.reportRecordToJs(record, form);
           return docsToStore;
