@@ -166,12 +166,12 @@ exports.parseField = (field, raw) => {
         for (let i of field.list) {
           const item = field.list[i];
           if (item[0] === raw) {
-            return config.translate(item[1]);
+            return item[1];
           }
         }
         logger.warn(`Option not available for ${raw} in list.`);
       }
-      return config.translate(raw);
+      return raw;
     case 'date':
       if (!raw) {
         return null;
