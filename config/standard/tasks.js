@@ -1,17 +1,19 @@
-var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
-var DAYS_IN_PNC = extras.DAYS_IN_PNC;
-var MS_IN_DAY = extras.MS_IN_DAY;
-var isFormFromArraySubmittedInWindow = extras.isFormFromArraySubmittedInWindow;
-var isCoveredByUseCase = extras.isCoveredByUseCase;
-var getNewestPregnancyTimestamp = extras.getNewestPregnancyTimestamp;
-var getNewestDeliveryTimestamp = extras.getNewestDeliveryTimestamp;
-var isHighRiskPregnancy = extras.isHighRiskPregnancy;
-var deliveryForms = extras.deliveryForms;
-var antenatalForms = extras.antenatalForms;
-var postnatalForms = extras.postnatalForms;
-var isHomeBirth = extras.isHomeBirth;
-var immunizationMonths = extras.immunizationMonths;
-var immunizationForms = extras.immunizationForms;
+const {
+  MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC,
+  MS_IN_DAY,
+  isFormFromArraySubmittedInWindow,
+  isCoveredByUseCase,
+  getNewestPregnancyTimestamp,
+  getNewestDeliveryTimestamp,
+  isHighRiskPregnancy,
+  deliveryForms,
+  antenatalForms,
+  postnatalForms,
+  isHomeBirth,
+  immunizationMonths,
+  immunizationForms,
+} = require('./nools-extras');
 
 module.exports = [
   {

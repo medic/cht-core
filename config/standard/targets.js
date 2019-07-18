@@ -1,21 +1,23 @@
-var MS_IN_DAY = extras.MS_IN_DAY;
-var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
-var DAYS_IN_PNC = extras.DAYS_IN_PNC;
-var immunizationForms = extras.immunizationForms;
-var postnatalForms = extras.postnatalForms;
-var isFormSubmittedInWindow = extras.isFormSubmittedInWindow;
-var isChildUnder5 = extras.isChildUnder5;
-var isHealthyDelivery = extras.isHealthyDelivery;
-var isNewestPregnancy = extras.isNewestPregnancy;
-var getNewestDeliveryTimestamp = extras.getNewestDeliveryTimestamp;
-var getNewestPregnancyTimestamp = extras.getNewestPregnancyTimestamp;
-var countANCVisits = extras.countANCVisits;
-var isFacilityDelivery = extras.isFacilityDelivery;
-var isWomanInActivePncPeriod = extras.isWomanInActivePncPeriod;
-var deliveryForms = extras.deliveryForms;
-var countReportsSubmittedInWindow = extras.countReportsSubmittedInWindow;
-var countDoses = extras.countDoses;
-var isBcgReported = extras.isBcgReported;
+const {
+  MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC,
+  immunizationForms,
+  postnatalForms,
+  isFormSubmittedInWindow,
+  isChildUnder5,
+  isHealthyDelivery,
+  isNewestPregnancy,
+  getNewestDeliveryTimestamp,
+  getNewestPregnancyTimestamp,
+  countANCVisits,
+  isFacilityDelivery,
+  isWomanInActivePncPeriod,
+  deliveryForms,
+  countReportsSubmittedInWindow,
+  countDoses,
+  isBcgReported,
+} = require('./nools-extras');
 
 module.exports = [
   // Pregnancy related widgets
