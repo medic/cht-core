@@ -1,10 +1,10 @@
-const db = require('../db');
+const db = require('../db'),
+      logger = require('../logger'),
+      util = require('util');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
 const getDoc = () => db.medic.get('settings');
-
-const getSchemaDoc = () => db.medic.get('_design/medic-schema');
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -29,11 +29,15 @@ const doExtend = (target, source) => {
 
 module.exports = {
   getSchema: () => {
-    return getSchemaDoc()
+    return db.medic.get('_design/medic-schema')
       .then(doc => doc.schema.app_settings)
       .catch(err => {
         throw err
       });
+  },
+  getBuild: () => {
+    return db.medic.get('_design/medic')
+      .catch( err => { throw err });
   },
   get: () => {
     return getDoc()
