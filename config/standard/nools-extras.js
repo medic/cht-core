@@ -187,6 +187,7 @@ function isHealthyDelivery(c, r) {
 
 function isWomanInActivePncPeriod(c) {
   // The PNC period ending today started 6 weeks ago, rounded down to midnight
+  const now = Utils.now();
   var startPNCperiod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - DAYS_IN_PNC);
 
   return getNewestDeliveryTimestamp(c) > startPNCperiod.getTime();
@@ -194,7 +195,7 @@ function isWomanInActivePncPeriod(c) {
 
 function isChildUnder5(c) {
   var birthDate = new Date(c.contact.date_of_birth);
-  var ageInMs = new Date(now - birthDate.getTime());
+  var ageInMs = new Date(Utils.now() - birthDate.getTime());
   var ageInMonths = (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();
   return ageInMonths < 60;
 }

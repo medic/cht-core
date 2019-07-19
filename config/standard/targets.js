@@ -38,6 +38,7 @@ module.exports = [
         return true;
 
       var lmp = new Date(r.lmp_date);
+      var now = Utils.now();
       var maxEDD = new Date(now);
       maxEDD.setDate(lmp.getDate() + 294);
       return maxEDD < now;
@@ -225,7 +226,7 @@ module.exports = [
         c.reports,
         postnatalForms,
         getNewestDeliveryTimestamp(c),
-        now.getTime()
+        Utils.now().getTime()
       );
     },
   },
@@ -407,6 +408,7 @@ module.exports = [
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: function(c) {
+      var now = Utils.now();
       var visits = countReportsSubmittedInWindow(
         c.reports,
         immunizationForms,
