@@ -30,12 +30,12 @@ module.exports = {
     return db.medic.get('_design/medic-schema')
       .then(doc => doc.schema.app_settings)
       .catch(err => {
-        throw err
+        throw err;
       });
   },
   getBuild: () => {
     return db.medic.get('_design/medic')
-      .catch( err => { throw err });
+      .catch( err => { throw err; });
   },
   get: () => {
     return getDoc()
