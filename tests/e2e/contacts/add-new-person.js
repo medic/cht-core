@@ -14,12 +14,7 @@ describe('Add new person tests : ', () => {
   it('should add new person', () => {
     commonElements.goToPeople();
     expect(commonElements.isAt('contacts-list'));
-    contactPage.addNewDistrict('BedeDistrict'); // TODO restore this to its former glory, creating a person as part of the district creation!
-    contactPage.completeNewPersonForm('Bede');
-    const firstInLHS = element(by.css('#contacts-list .content-row:first-child'));
-    helper.waitUntilReady(firstInLHS);
-    firstInLHS.click();
-    helper.waitUntilReady(element(by.css('div[ng-if="!contactsContentCtrl.loadingSelectedContactChildren"]')));
+    contactPage.addNewDistrict('BedeDistrict');
     const district = element(by.css('.card h2'));
     helper.waitUntilReady(district);
     expect(district.getText()).toBe('BedeDistrict');
