@@ -135,15 +135,6 @@ const getPatient = (patientShortcodeId, includeDocs) => {
   });
 };
 
-const hasKnownSender = doc => {
-  const contact = doc && doc.contact;
-  if (!contact) {
-    return false;
-  }
-  return (contact.phone) ||
-         (contact.parent && contact.parent.contact && contact.parent.contact.phone);
-};
-
 module.exports = {
   getLocale: getLocale,
   addError: addError,
@@ -265,6 +256,14 @@ module.exports = {
     const form = doc && module.exports.getForm(doc.form);
     return module.exports.isXFormReport(doc) || // xform submission
            (form && form.public_form) || // json submission to public form
-           (form && hasKnownSender(doc)); // json submission by known submitter
+           (form && module.exports.hasKnownSender(doc)); // json submission by known submitter
+  },
+  hasKnownSender: doc => {
+    const contact = doc && doc.contact;
+    if (!contact) {
+      return false;
+    }
+    return (contact.phone) ||
+           (contact.parent && contact.parent.contact && contact.parent.contact.phone);
   }
 };

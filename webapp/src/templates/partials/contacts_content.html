@@ -92,7 +92,7 @@
         </ul>
         <ul class="action deceased">
           <li ng-if="group.deceasedCount > 0" class="content-row deceased">
-            <a ui-sref="contacts.deceased({ id: $ctrl.selected.doc._id })">
+            <a ui-sref="contacts.deceased({ id: contactsContentCtrl.selectedContact.doc._id })">
               <span translate translate-values="{ count: group.deceasedCount }">contact.deceased.view</span>
               <i class="fa fa-chevron-right"></i>
             </a>

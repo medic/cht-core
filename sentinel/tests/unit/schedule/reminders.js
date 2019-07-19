@@ -146,7 +146,7 @@ describe('reminders', () => {
           assert.deepEqual(clinics, [{ id: 'xxx', contact: 'maria' }]);
           assert.equal(db.medic.query.callCount, 1);
           assert.equal(db.medic.query.args[0][0], 'medic-client/contacts_by_type');
-          assert.deepEqual(db.medic.query.args[0][1].keys, [ 'clinic' ]);
+          assert.deepEqual(db.medic.query.args[0][1].keys, [[ 'clinic' ]]);
           assert.equal(reminders._lineage.hydrateDocs.callCount, 1);
           assert.deepEqual(reminders._lineage.hydrateDocs.args[0], [[{ id: 'xxx' }]]);
           done();

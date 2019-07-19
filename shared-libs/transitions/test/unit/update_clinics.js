@@ -10,7 +10,6 @@ let lineageStub;
 
 describe('update clinic', () => {
   beforeEach(() => {
-    sinon.stub(config, 'get').returns([ { id: 'clinic' } ]);
     lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
   });
 
@@ -151,6 +150,7 @@ describe('update clinic', () => {
       },
     };
 
+    sinon.stub(config, 'get').returns([ { id: 'clinic' } ]);
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
     lineageStub.returns(Promise.resolve(contact));
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -202,6 +202,7 @@ describe('update clinic', () => {
       name: 'zenith',
       phone: '+12345',
     };
+    sinon.stub(config, 'get').returns([ { id: 'clinic' } ]);
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: clinic }] });
     lineageStub.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {

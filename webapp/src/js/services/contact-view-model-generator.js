@@ -118,6 +118,14 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       modelToMute.doc.muted = ContactMuted(modelToMute.doc, modelToMute.lineage);
     };
 
+    // muted state is inherited, but only set when online via Sentinel transition
+    const setChildrenMutedState = (model, children) => {
+      if (model.doc.muted) {
+        children.forEach(child => child.doc.muted = child.doc.muted || model.doc.muted);
+      }
+      return children;
+    };
+
     const groupChildrenByType = children => {
       return _.groupBy(children, child => child.doc.contact_type || child.doc.type);
     };
@@ -217,6 +225,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       model.children = [];
       return ContactTypes.getAll().then(types => {
         return getChildren(model, types, options)
+          .then(children => setChildrenMutedState(model, children))
           .then(children => addPrimaryContact(model.doc, children))
           .then(children => groupChildrenByType(children))
           .then(groups => buildChildModels(groups, types))

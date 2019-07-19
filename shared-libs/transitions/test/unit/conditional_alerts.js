@@ -306,7 +306,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([]);
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
@@ -334,7 +334,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([]);
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
@@ -362,7 +362,7 @@ describe('conditional alerts', () => {
         recipient: '+5555555'
       }
     });
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([
       {
         key: 'a',
         doc: {

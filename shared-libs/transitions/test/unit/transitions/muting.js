@@ -59,7 +59,8 @@ describe('Muting transition', () => {
     });
 
     it('should return false for valid docs but not valid submissions', () => {
-      config.get.returns({ mute_forms: ['formA', 'formB'], unmute_forms: ['formC', 'formD'] });
+      config.get.withArgs('contact_types').returns([{ id: 'person' }, { id: 'clinic' } ]);
+      config.get.withArgs('muting').returns({ mute_forms: ['formA', 'formB'], unmute_forms: ['formC', 'formD'] });
       transitionUtils.hasRun.returns(false);
       sinon.stub(utils, 'isValidSubmission').returns(false);
 

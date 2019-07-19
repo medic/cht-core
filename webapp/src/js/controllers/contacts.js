@@ -17,8 +17,8 @@ const PAGE_SIZE = 50;
     Auth,
     Changes,
     ContactSummary,
-    ContactsActions,
     ContactTypes,
+    ContactsActions,
     Export,
     GetDataRecords,
     GlobalActions,
@@ -201,13 +201,12 @@ const PAGE_SIZE = 50;
         });
     };
 
-    const getChildTypes = function(type) {
-      if (!type) {
-        const doc = ctrl.selected.doc;
-        $log.error(`Unknown contact type "${doc.contact_type || doc.type}" for contact "${doc._id}"`);
+    const getChildTypes = function(model) {
+      if (!model.type) {
+        $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
         return [];
       }
-      return ContactTypes.getChildren(type.id).then(childTypes => {
+      return ContactTypes.getChildren(model.type.id).then(childTypes => {
         const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
         const models = [];
         if (grouped.places) {
@@ -282,7 +281,7 @@ const PAGE_SIZE = 50;
              selected.children.every(group => !group.contacts || !group.contacts.length);
     };
 
-    $scope.setSelected = function(selected, options) {
+    $scope.setSelected = function(selected, contactViewModelOptions) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedContact();
       ctrl.setSelectedContact(selected);
@@ -294,16 +293,10 @@ const PAGE_SIZE = 50;
         .all([
           getTitle(ctrl.selectedContact),
           getCanEdit(ctrl.selectedContact.doc),
-          getChildTypes(ctrl.selectedContact.type)
+          getChildTypes(ctrl.selectedContact)
         ])
-        .then(function(results) {
-          const title = results[0];
-          const canEdit = results[1];
-          const childTypes = results[2];
+        .then(([ title, canEdit, childTypes ]) => {
           $scope.setTitle(title);
-          if (canEdit) {
-            ctrl.updateSelectedContact({ doc: { child: results[1] }});
-          }
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
@@ -321,9 +314,7 @@ const PAGE_SIZE = 50;
                 Settings(),
                 getTasks()
               ])
-              .then(function(results) {
-                const summary = results[0];
-                const settings = results[1];
+              .then(([ summary, settings ]) => {
                 ctrl.setContactsLoadingSummary(false);
                 ctrl.updateSelectedContact({ summary: summary });
                 const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };

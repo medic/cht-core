@@ -1,4 +1,4 @@
-gitangular.module('inboxControllers').controller('ContactsEditCtrl',
+angular.module('inboxControllers').controller('ContactsEditCtrl',
   function (
     $log,
     $ngRedux,

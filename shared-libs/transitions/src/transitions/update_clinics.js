@@ -13,7 +13,6 @@ const getContactType = doc => {
   return contactTypes.find(type => type.id === typeId);
 };
 
-<<<<<<< HEAD
 const getContactByRefid = doc => {
   const params = {
     key: ['external', doc.refid],

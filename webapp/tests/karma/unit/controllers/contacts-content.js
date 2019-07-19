@@ -64,7 +64,6 @@ describe('ContactsContentCtrl', () => {
       go: sinon.stub()
     };
 
-    timeout = _$timeout_;
     controller = $controller;
 
     getContact = sinon.stub();

@@ -72,8 +72,12 @@ angular.module('inboxServices').factory('TasksForContact',
 
     const getIdsForTasks = (model) => {
       let contactIds = [];
-      if (model.doc.type === 'clinic' && model.children && model.children.persons && model.children.persons.length) {
-        contactIds = model.children.persons.map(child => child.id);
+      if (!model.type.person && model.children) {
+        model.children.forEach(child => {
+          if (child.type.person && child.contacts && child.contacts.length) {
+            contactIds.push(...child.contacts.map(contact => contact._id));
+          }
+        });
       }
       contactIds.push(model.doc._id);
       return contactIds;
@@ -106,7 +110,7 @@ angular.module('inboxServices').factory('TasksForContact',
       }
       // ... or a leaf place type
       return ContactTypes.getAll().then(types => {
-        const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(docType));
+        const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type.id));
         if (!hasChild) {
           return true;
         }

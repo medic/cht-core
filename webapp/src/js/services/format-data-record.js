@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-  messages = require('@garethbowen/message-utils'),
+  messages = require('@medic/message-utils'),
   lineageFactory = require('@medic/lineage'),
   registrationUtils = require('@medic/registration-utils');
 

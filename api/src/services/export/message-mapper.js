@@ -2,7 +2,7 @@ const _ = require('underscore'),
       db = require('../../db'),
       config = require('../../config'),
       dateFormat = require('./date-format'),
-      messageUtils = require('@garethbowen/message-utils'),
+      messageUtils = require('@medic/message-utils'),
       registrationUtils = require('@medic/registration-utils'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 

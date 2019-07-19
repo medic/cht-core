@@ -35,22 +35,10 @@ describe('ContactViewModelGenerator service', () => {
   };
 
   const stubDbQueryChildren = (err, parentId, docs = []) => {
-    const options = {
-      startkey: [parentId],
-      endkey: [parentId, {}],
-      include_docs: true
-    };
-    const optionsForTypePerson = {
-      keys: [[parentId, 'person']],
-      include_docs: true
-    };
     docs = docs.map(doc => {
       return { doc: doc };
     });
-    dbQuery.withArgs('medic-client/contacts_by_parent', options)
-      .returns(KarmaUtils.promise(err, { rows: docs }));
-    dbQuery.withArgs('medic-client/contacts_by_parent', optionsForTypePerson)
-      .returns(KarmaUtils.promise(err, { rows: docs }));
+    dbQuery.returns(KarmaUtils.promise(err, { rows: docs }));
   };
 
   const stubSearch = (err, reports) => {
@@ -71,8 +59,9 @@ describe('ContactViewModelGenerator service', () => {
       const types = [
         { id: 'family' },
         { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
+        { id: 'chp', person: true, parents: [ 'mushroom' ] },
         { id: 'red-herring' },
-        { id: 'clinic' },
+        { id: 'clinic', parents: [ 'mushroom' ] },
         { id: 'mushroom', name_key: 'label.mushroom' }
       ];
       ContactTypes = { getAll: sinon.stub().resolves(types) };
@@ -240,7 +229,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     describe('muted sorting', () => {
-      it('when selected doc is a clinic, should sort muted persons on the bottom sorted by age', () => {
+      it('when child type has sort_by_dob should sort muted persons on the bottom sorted by age', () => {
         doc.type = 'clinic';
         const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
@@ -248,57 +237,56 @@ describe('ContactViewModelGenerator service', () => {
         const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
 
         return runPlaceTest([childPerson1, mutedChildPerson2, mutedChildPerson1, childPerson2]).then(model => {
-          assert.equal(model.children.persons.length, 5);
-          assert.equal(model.children.persons[0].doc._id, childContactPerson._id); // primary contact on top
+          assert.equal(model.children[0].contacts.length, 5);
+          assert.equal(model.children[0].contacts[0].doc._id, childContactPerson._id); // primary contact on top
 
-          assert.equal(model.children.persons[1].doc._id, childPerson2._id);
-          assert.equal(model.children.persons[2].doc._id, childPerson1._id);
-          assert.equal(model.children.persons[3].doc._id, mutedChildPerson2._id);
-          assert.equal(model.children.persons[4].doc._id, mutedChildPerson1._id);
+          assert.equal(model.children[0].contacts[1].doc._id, childPerson2._id);
+          assert.equal(model.children[0].contacts[2].doc._id, childPerson1._id);
+          assert.equal(model.children[0].contacts[3].doc._id, mutedChildPerson2._id);
+          assert.equal(model.children[0].contacts[4].doc._id, mutedChildPerson1._id);
         });
       });
 
-      it('when selected doc is not a clinic, should sort muted persons on the bottom sorted by name', () => {
-        doc.type = 'district_hospital';
-        const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
-        const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
-        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
-        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+      it('when child type does not have sort_by_dob should sort muted persons on the bottom sorted by name', () => {
+        doc.type = 'clinic';
+        const childPerson1 = { _id: 'childPerson1', type: 'chp', name: 'person 1', date_of_birth: '2000-01-01' };
+        const childPerson2 = { _id: 'childPerson2', type: 'chp', name: 'person 2', date_of_birth: '1999-01-01' };
+        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
 
         return runPlaceTest([mutedChildPerson2, mutedChildPerson1, childPerson2, childPerson1]).then(model => {
-          assert.equal(model.children.persons.length, 5);
-          assert.equal(model.children.persons[0].doc._id, childContactPerson._id); // primary contact on top
+          assert.equal(model.children[0].contacts.length, 4);
 
-          assert.equal(model.children.persons[1].doc._id, childPerson1._id);
-          assert.equal(model.children.persons[2].doc._id, childPerson2._id);
-          assert.equal(model.children.persons[3].doc._id, mutedChildPerson1._id);
-          assert.equal(model.children.persons[4].doc._id, mutedChildPerson2._id);
+          assert.equal(model.children[0].contacts[0].doc._id, childPerson1._id);
+          assert.equal(model.children[0].contacts[1].doc._id, childPerson2._id);
+          assert.equal(model.children[0].contacts[2].doc._id, mutedChildPerson1._id);
+          assert.equal(model.children[0].contacts[3].doc._id, mutedChildPerson2._id);
         });
       });
 
       it('should sort muted places to the bottom, alphabetically', () => {
-        doc.type = 'health_center';
+        doc.type = 'mushroom';
         const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
         const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
         const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
         const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: 'clinic', name: 'muted 2', muted: 124 };
 
         return runPlaceTest([mutedChildPlace2, mutedChildPlace1, childPlace2, childPlace1]).then(model => {
-          assert.equal(model.children.places.length, 4);
-          assert.equal(model.children.places[0].doc._id, childPlace1._id);
-          assert.equal(model.children.places[1].doc._id, childPlace2._id);
-          assert.equal(model.children.places[2].doc._id, mutedChildPlace1._id);
-          assert.equal(model.children.places[3].doc._id, mutedChildPlace2._id);
+          assert.equal(model.children[1].contacts.length, 4);
+          assert.equal(model.children[1].contacts[0].doc._id, childPlace1._id);
+          assert.equal(model.children[1].contacts[1].doc._id, childPlace2._id);
+          assert.equal(model.children[1].contacts[2].doc._id, mutedChildPlace1._id);
+          assert.equal(model.children[1].contacts[3].doc._id, mutedChildPlace2._id);
         });
       });
 
       it('should propagate muted state to not yet muted children and sort correctly', () => {
-        doc.type = 'district_hospital';
+        doc.type = 'mushroom';
         doc.muted = 123456;
-        const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
-        const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
-        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
-        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+        const childPerson1 = { _id: 'childPerson1', type: 'chp', name: 'person 1', date_of_birth: '2000-01-01' };
+        const childPerson2 = { _id: 'childPerson2', type: 'chp', name: 'person 2', date_of_birth: '1999-01-01' };
+        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
         const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
         const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
         const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
@@ -310,19 +298,17 @@ describe('ContactViewModelGenerator service', () => {
         ];
 
         return runPlaceTest(children).then(model => {
-          assert.equal(model.children.persons.length, 5);
-          assert.equal(model.children.persons[0].doc._id, childContactPerson._id); // primary contact on top
+          assert.equal(model.children[0].contacts.length, 4);
+          assert.equal(model.children[0].contacts[0].doc._id, mutedChildPerson1._id);
+          assert.equal(model.children[0].contacts[1].doc._id, mutedChildPerson2._id);
+          assert.equal(model.children[0].contacts[2].doc._id, childPerson1._id);
+          assert.equal(model.children[0].contacts[3].doc._id, childPerson2._id);
 
-          assert.equal(model.children.persons[1].doc._id, mutedChildPerson1._id);
-          assert.equal(model.children.persons[2].doc._id, mutedChildPerson2._id);
-          assert.equal(model.children.persons[3].doc._id, childPerson1._id);
-          assert.equal(model.children.persons[4].doc._id, childPerson2._id);
-
-          assert.equal(model.children.places.length, 4);
-          assert.equal(model.children.places[0].doc._id, mutedChildPlace1._id);
-          assert.equal(model.children.places[1].doc._id, mutedChildPlace2._id);
-          assert.equal(model.children.places[2].doc._id, childPlace1._id);
-          assert.equal(model.children.places[3].doc._id, childPlace2._id);
+          assert.equal(model.children[2].contacts.length, 4);
+          assert.equal(model.children[2].contacts[0].doc._id, mutedChildPlace1._id);
+          assert.equal(model.children[2].contacts[1].doc._id, mutedChildPlace2._id);
+          assert.equal(model.children[2].contacts[2].doc._id, childPlace1._id);
+          assert.equal(model.children[2].contacts[3].doc._id, childPlace2._id);
         });
       });
     });
