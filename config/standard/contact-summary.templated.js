@@ -13,6 +13,7 @@ const {
   isHighRiskPostnatal,
   addImmunizations,
   getMostRecentNutritionEnrollment,
+  isReportValid,
   countNutritionFollowups,
   isActivePregnancy,
   getSubsequentVisits,
