@@ -3,8 +3,6 @@ const auth = require('../auth'),
       settingsService = require('../services/settings'),
       objectPath = require('object-path'),
       Ajv = require('ajv'),
-      util = require('util'),
-      logger = require('../logger'),
       crypto = require('crypto');
 
 const SCHEMA_FILE_PREFIX = 'schema-';

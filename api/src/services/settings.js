@@ -1,6 +1,4 @@
-const db = require('../db'),
-      logger = require('../logger'),
-      util = require('util');
+const db = require('../db');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
