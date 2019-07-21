@@ -1,15 +1,13 @@
-var url = require('url'),
-  path = require('path'),
-  environment = require('./environment'),
-  isClientHuman = require('./is-client-human'),
-  logger = require('./logger'),
-  MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
+const url = require('url');
+const path = require('path');
+const environment = require('./environment');
+const isClientHuman = require('./is-client-human');
+const logger = require('./logger');
+const MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
-var wantsJSON = function(req) {
-  return req.get('Accept') === 'application/json';
-};
+const wantsJSON = req => req.get('Accept') === 'application/json';
 
-var writeJSON = function(res, code, message, details) {
+const writeJSON = (res, code, message, details) => {
   res.status(code);
   res.json({
     code: code,
@@ -18,7 +16,7 @@ var writeJSON = function(res, code, message, details) {
   });
 };
 
-var respond = function(req, res, code, message, details) {
+const respond = (req, res, code, message, details) => {
   if (wantsJSON(req)) {
     return writeJSON(res, code, message, details);
   }
@@ -26,6 +24,12 @@ var respond = function(req, res, code, message, details) {
     res.writeHead(code, {
       'Content-Type': 'text/plain',
     });
+  }
+  if (message.message) {
+    message = message.message;
+  }
+  if (typeof message !== 'string') {
+    message = JSON.stringify(message);
   }
   if (details) {
     message += ': ' + JSON.stringify(details);
@@ -48,7 +52,7 @@ module.exports = {
    * Attempts to determine the correct response given the error code.
    * Set showPrompt if this is a direct API call rather than from the webapp
    */
-  error: function(err, req, res, showPrompt) {
+  error: (err, req, res, showPrompt) => {
     if (typeof err === 'string') {
       return module.exports.serverError(err, req, res);
     }
@@ -71,7 +75,7 @@ module.exports = {
    * The correct error handler to call when you know the error is
    * an authentication error.
    */
-  notLoggedIn: function(req, res, showPrompt) {
+  notLoggedIn: (req, res, showPrompt) => {
     if (showPrompt) {
       // api access - basic auth allowed
       promptForBasicAuth(res);
@@ -83,7 +87,7 @@ module.exports = {
     }
     // web access - redirect humans to login page; prompt others for basic auth
     if (isClientHuman(req)) {
-      var redirectUrl = url.format({
+      const redirectUrl = url.format({
         pathname: path.join('/', environment.db, 'login'),
         query: { redirect: req.url },
       });
@@ -96,24 +100,16 @@ module.exports = {
   /**
    * Only to be used when handling unexpected errors.
    */
-  serverError: function(err, req, res) {
+  serverError: (err, req, res) => {
     logger.error('Server error: %o', err);
-    if (err.publicMessage) {
-      respond(req, res, 500, `Server error: ${err.publicMessage}`);
-    } else {
-      respond(req, res, 500, 'Server error');
-    }
+    respond(req, res, 500, 'Server error', err.publicMessage);
   },
 
   emptyJSONBodyError: (req, res) => {
-    return module.exports.error(
-      {
-        code: 400,
-        message:
-          'Request body is empty or Content-Type header was not set to application/json.',
-      },
-      req,
-      res
-    );
+    const err = {
+      code: 400,
+      message: 'Request body is empty or Content-Type header was not set to application/json.',
+    };
+    return module.exports.error(err, req, res);
   },
 };
