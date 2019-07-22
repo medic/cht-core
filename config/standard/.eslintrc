@@ -8,10 +8,6 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
-  "rules": {
-    "no-undef": "off",
-    "no-unused-vars": "off"
-  },
   "overrides": [
     {
       "files": [

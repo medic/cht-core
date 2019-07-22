@@ -40,7 +40,7 @@ module.exports = [
         days: 0,
         start: 0,
         end: 6,
-        dueDate: function(event, c, r) {
+        dueDate: function(event, c) {
           return new Date(
             Utils.addDate(
               new Date(
