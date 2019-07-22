@@ -269,7 +269,7 @@ exports.parse = (def, doc) => {
 /**
  * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
- * @returns {Array|[]} - An array of values from the raw sms message
+ * @returns {Array} - An array of values from the raw sms message
  * @api public
  */
 exports.parseArray = (def, doc) => {
