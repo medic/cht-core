@@ -3,7 +3,7 @@
 // chai.use(chaiExclude);
 // const assert = chai.assert;
 const assert = require('chai').assert;
-const NootilsManager = require('@kennsippell/medic-nootils/src/node/test-wrapper');
+const NootilsManager = require('medic-nootils/src/node/test-wrapper');
 
 let reportIdCounter;
 

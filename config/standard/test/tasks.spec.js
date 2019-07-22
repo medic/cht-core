@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('chai').assert;
-const NootilsManager = require('@kennsippell/medic-nootils/src/node/test-wrapper');
+const NootilsManager = require('medic-nootils/src/node/test-wrapper');
 
 const now = NootilsManager.BASE_DATE;
 const MS_IN_DAY = 24*60*60*1000;  // 1 day in ms

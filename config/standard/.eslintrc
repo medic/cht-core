@@ -8,6 +8,11 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
+  "globals": {
+    "contact": true,
+    "reports": true,
+    "lineage": true
+  },
   "overrides": [
     {
       "files": [
