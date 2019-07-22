@@ -1,4 +1,4 @@
-const now = Date.now();
+const now = new Date();
 
 // FIXME this file should be renamed, as it also contains constants
 var MS_IN_DAY = 24*60*60*1000;  // 1 day in ms

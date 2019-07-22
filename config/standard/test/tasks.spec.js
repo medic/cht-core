@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('chai').assert;
-const NootilsManager = require('medic-nootils/src/node/test-wrapper');
+const NootilsManager = require('@kennsippell/medic-nootils/src/node/test-wrapper');
 
 const now = NootilsManager.BASE_DATE;
 const MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
@@ -104,8 +104,8 @@ describe('Standard Configuration Tasks', function() {
 
   let nootilsManager, Contact, session;
 
-  before(() => {
-    nootilsManager = NootilsManager({ user:TEST_USER });
+  before(async () => {
+    nootilsManager = await NootilsManager({ user:TEST_USER });
     Contact = nootilsManager.Contact;
     session = nootilsManager.session;
   });

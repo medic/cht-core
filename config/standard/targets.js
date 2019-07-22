@@ -58,16 +58,7 @@ module.exports = [
 
     appliesTo: 'reports',
     appliesIf: isNewestPregnancy,
-    emitCustom: function(inst, c, r) {
-      var instance = createTargetInstance(
-        'pregnancy-registrations-this-month',
-        r,
-        true
-      );
-      // use contact id to avoid counting multiple pregnancies for same person
-      instance._id = c.contact._id + '~' + 'pregnancy-registrations-this-month';
-      emitTargetInstance(instance);
-    },
+    idType: 'contact',
     date: 'reported',
   },
 
@@ -367,28 +358,17 @@ module.exports = [
       return immunizationForms.indexOf(r.form) !== -1;
     },
     date: 'reported',
-    emitCustom: function(inst, c, r) {
-      var i, instance;
+    emitCustom: function(emit, inst, c, r) {
       if (r.form === 'immunization_visit' || r.form === 'imm') {
         // Multiple vaccine doses can be reported in a single XForm (app or collect)
         var totalDoses = countDoses(r);
-        for (i = 0; i < totalDoses; i++) {
-          instance = createTargetInstance(
-            'imm-vaccines-given-this-month',
-            r,
-            true
-          );
-          instance._id += i;
-          emitTargetInstance(instance);
+        for (let i = 0; i < totalDoses; i++) {
+          inst._id += i;
+          emit(inst);
         }
       } else {
         // For TextForms each vaccine is separate report
-        instance = createTargetInstance(
-          'imm-vaccines-given-this-month',
-          r,
-          true
-        );
-        emitTargetInstance(instance);
+        emit(inst);
       }
     },
   },

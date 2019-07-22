@@ -355,7 +355,7 @@ function getAgeInMonths() {
   var birthDate, ageInMs;
   if (contact.date_of_birth && contact.date_of_birth !== '') {
     birthDate = new Date(contact.date_of_birth);
-    ageInMs = new Date(now - birthDate.getTime());
+    ageInMs = new Date(Date.now() - birthDate.getTime());
     return (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();
   }
 }
