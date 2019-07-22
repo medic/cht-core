@@ -872,10 +872,7 @@ module.exports = function(grunt) {
           '!api/src/extracted-resources/**',
         ],
         options: {
-            destination: 'api-jsdocs',
-            configure: 'node_modules/angular-jsdoc/common/conf.json',
-            template: 'node_modules/angular-jsdoc/angular-template',
-            readme: './api/README.md'
+            destination: 'api-jsdocs'
         }
       },
       distSentinel : {
@@ -883,10 +880,7 @@ module.exports = function(grunt) {
           'sentinel/src/**/*.js'
         ],
         options: {
-            destination: 'sentinel-jsdocs',
-            configure: 'node_modules/angular-jsdoc/common/conf.json',
-            template: 'node_modules/angular-jsdoc/angular-template',
-            readme: './sentinel/README.md'
+            destination: 'sentinel-jsdocs'
         }
       },
       distSharedLibs : {
@@ -907,9 +901,7 @@ module.exports = function(grunt) {
           'shared-libs/view-map-utils/src/*.js'
         ],
         options: {
-            destination: 'shared-libs-jsdocs',
-            configure: 'node_modules/angular-jsdoc/common/conf.json',
-            template: 'node_modules/angular-jsdoc/angular-template'
+            destination: 'shared-libs-jsdocs'
         }
       },
       distWebapp : {
