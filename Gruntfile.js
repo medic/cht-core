@@ -855,24 +855,74 @@ module.exports = function(grunt) {
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
     jsdoc : {
-      dist : {
+      distAdmin : {
           src: [
-            'admin/src/js/*.js',
-            'admin/src/js/**/*.js',
-            'api/src/*.js',
-            'api/src/**/*.js',
-            'sentinel/src/*.js',
-            'sentinel/src/**/*.js',
-            'webapp/src/js/*.js',
-            'webapp/src/js/**/*.js'
+            'admin/src/js/**/*.js'
           ],
           options: {
-              destination: 'jsdoc-docs',
+              destination: 'admin-jsdocs',
               configure: 'node_modules/angular-jsdoc/common/conf.json',
               template: 'node_modules/angular-jsdoc/angular-template',
               readme: './README.md'
           }
-      }
+      },
+      distApi : {
+        src: [
+          'api/src/**/*.js',
+          '!api/src/extracted-resources/**',
+        ],
+        options: {
+            destination: 'api-jsdocs',
+            configure: 'node_modules/angular-jsdoc/common/conf.json',
+            template: 'node_modules/angular-jsdoc/angular-template',
+            readme: './api/README.md'
+        }
+      },
+      distSentinel : {
+        src: [
+          'sentinel/src/**/*.js'
+        ],
+        options: {
+            destination: 'sentinel-jsdocs',
+            configure: 'node_modules/angular-jsdoc/common/conf.json',
+            template: 'node_modules/angular-jsdoc/angular-template',
+            readme: './sentinel/README.md'
+        }
+      },
+      distSharedLibs : {
+        src: [
+          'shared-libs/bulk-docs-utils/src/*.js',
+          'shared-libs/lineage/src/*.js',
+          'shared-libs/memdown/src/*.js',
+          'shared-libs/message-utils/src/*.js',
+          'shared-libs/phone-number/src/*.js',
+          'shared-libs/registration-utils/src/*.js',
+          'shared-libs/search/src/*.js',
+          'shared-libs/server-checks/src/*.js',
+          'shared-libs/settings/src/*.js',
+          'shared-libs/task-utils/src/*.js',
+          'shared-libs/tombstone-utils/src/*.js',
+          'shared-libs/transitions/src/*.js',
+          'shared-libs/transition-utils/src/*.js',
+          'shared-libs/view-map-utils/src/*.js'
+        ],
+        options: {
+            destination: 'shared-libs-jsdocs',
+            configure: 'node_modules/angular-jsdoc/common/conf.json',
+            template: 'node_modules/angular-jsdoc/angular-template'
+        }
+      },
+      distWebapp : {
+        src: [
+          'webapp/src/js/**/*.js'
+        ],
+        options: {
+            destination: 'webapp-jsdocs',
+            configure: 'node_modules/angular-jsdoc/common/conf.json',
+            template: 'node_modules/angular-jsdoc/angular-template',
+            readme: './README.md'
+        }
+      },
     },
   });
 
