@@ -29,7 +29,12 @@
     },
     "district_admins_access_unallocated_messages": { "type": "boolean" },
     "public_access": { "type": "boolean" },
-    "default_country_code": { "type": "string" },
+    "default_country_code": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" }
+      ]
+    },
     "gateway_number": { "type": "string" },
     "schedule_morning_hours": {
       "type": "number",
@@ -670,4 +675,3 @@
     }
   }
 }
-
