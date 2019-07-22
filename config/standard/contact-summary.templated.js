@@ -491,7 +491,7 @@ if(lineage[0] && lineage[0].contact) {
 }
 
 module.exports = {
-  context: context,
-  cards: cards,
-  fields: fields,
+  context,
+  cards,
+  fields,
 };
