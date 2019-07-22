@@ -33,10 +33,6 @@ module.exports = {
         throw err;
       });
   },
-  getBuild: () => {
-    return db.medic.get('_design/medic')
-      .catch( err => { throw err; });
-  },
   get: () => {
     return getDoc()
       .then(doc => doc.settings)
