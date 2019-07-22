@@ -200,8 +200,6 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 To build reference documentation into a local folder `jsdoc-docs`: `grunt build-documentation`
 
-To add documentation, use these [tags](https://www.npmjs.com/package/angular-jsdoc#tags-available). See examples [here](https://www.npmjs.com/package/angular-jsdoc#example).
-
 ## Configuring Medic
 
 This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 
