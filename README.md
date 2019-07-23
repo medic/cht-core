@@ -54,11 +54,13 @@ cd medic
 npm ci
 ```
 
+Remember to follow [CouchDB's single node setup guide](http://docs.couchdb.org/en/stable/setup/single-node.html).
+
 ### Enabling a secure CouchDB
 
 By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
 
-First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
+First, add an admin user. When [prompted to create an admin during installation](http://localhost:5984/_utils/#/setup), use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils).For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
 
 Now that's done, we must configure some security settings on CouchDB:
 
@@ -138,18 +140,18 @@ Then run either `node ./server.js` from the api directory or `grunt dev-api` fro
 
 Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:5988/medic/login).
 
-### Testing locally with devices 
+### Testing locally with devices
 
 Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Community Health Application Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
 
-1. Create a ngrok account at https://ngrok.com/ 
+1. Create a ngrok account at https://ngrok.com/
 1. Follow instructions on downloading and linking your computer to your ngrok account.
 1. Start the webapp. This can be via docker, grunt, debug, horti, etc....
 1. Run ngrok and forward it towards the port you are running the webapp on.
     * EX: For running webapp in docker locally using the docker instructions above `$ ./ngrok http 443`. This will forward the traffic from your ngrok url on https to 443 on your local machine. </br>
     * EX: For running via horti, or grunt where the api starts on port 5988. `$ ./ngrok http 5988` This will forward the traffic from your ngrok url on https to 5988 on your local machine.
-    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988 
-1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.                
+    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988
+1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
 
 
 ### Data
@@ -197,9 +199,9 @@ To build reference documentation into a local folder `jsdoc-docs`: `grunt build-
 
 ## Configuring Medic
 
-This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 
+This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further.
 
-We include the "standard" configuration in this repo, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
+We include the "standard" configuration in this repo, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard).
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -207,7 +209,7 @@ To import the standard configuration:
 
 1. Install medic-conf: `npm install -g medic-conf`
 2. Navigate to the configuration you want to import: `cd <medic-repo>/config/standard`
-1. Ensure the app/api is running. Specifically on localhost for these instructions. 
+1. Ensure the app/api is running. Specifically on localhost for these instructions.
 3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
