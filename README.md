@@ -39,11 +39,20 @@ You will need to install the following:
 
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
+- [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) v2.x
 
 ### Setup CouchDB on a single node
 
 NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
+
+### Build the webapp
+
+```shell
+git clone https://github.com/medic/medic
+cd medic
+npm ci
+```
 
 ### Enabling a secure CouchDB
 
@@ -54,9 +63,7 @@ First, add an admin user. When prompted to create an admin during installation, 
 Now that's done, we must configure some security settings on CouchDB:
 
 ```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@127.0.0.1
-grunt secure-couchdb
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=couchdb@127.0.0.1 grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:
@@ -74,19 +81,9 @@ curl -X PUT "http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAM
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
-## Build and run
-
-### Build the webapp
-
-```shell
-git clone https://github.com/medic/medic
-cd medic
-npm ci
-```
-
 ### Deploy all the apps
 
-Create a `.env` file in the app directory with the following contents
+Create a `.env` file in the app directory with the following contents.
 
 ```shell
 COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
@@ -96,9 +93,7 @@ COUCH_NODE_NAME=couchdb@127.0.0.1
 Then do an initial deploy of the webapp:
 
 ```shell
-grunt dev-webapp
-# or just
-grunt
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=couchdb@127.0.0.1 grunt
 ```
 
 Once this is complete you can close it, and from now on you can just run:
