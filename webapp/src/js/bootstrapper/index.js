@@ -87,6 +87,12 @@
       });
   };
 
+  const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
+    return localDb.id().then(id => {
+      POUCHDB_OPTIONS.remote.headers['medic-replication-id'] = id;
+    });
+  };
+
   var initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     var dbSyncStartTime = Date.now();
@@ -195,7 +201,7 @@
     const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
 
     let isInitialReplicationNeeded;
-    Promise.all([swRegistration, testReplicationNeeded()])
+    Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
       .then(function(resolved) {
         isInitialReplicationNeeded = !!resolved[1];
 

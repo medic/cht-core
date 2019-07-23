@@ -161,17 +161,22 @@ const createReduxLoggerConfig = Selectors => ({
     name: '@@APP_CONFIG.name',
     version: '@@APP_CONFIG.version',
   });
-  var POUCHDB_OPTIONS = {
+  const POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
     remote: {
       skip_setup: true,
+      headers: {
+        'Accept': 'application/json'
+      },
       fetch: function(url, opts) {
         const parsedUrl = new URL(url);
         if (parsedUrl.pathname === '/') {
           parsedUrl.pathname = '/dbinfo';
           url = parsedUrl.toString();
         }
-        opts.headers.set('Accept', 'application/json');
+        Object.keys(POUCHDB_OPTIONS.remote.headers).forEach(header => {
+          opts.headers.set(header, POUCHDB_OPTIONS.remote.headers[header]);
+        });
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);
       },

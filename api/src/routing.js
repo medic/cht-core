@@ -103,6 +103,7 @@ app.use((req, res, next) => {
 });
 
 morgan.token('id', req => req.id);
+/*
 app.use(
   morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
     immediate: true,
@@ -112,7 +113,7 @@ app.use(
   morgan(
     'RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'
   )
-);
+); */
 
 app.use(
   helmet({
@@ -397,6 +398,13 @@ app.get('/api/v1/settings', settings.get);
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
+
+const ssp = require('./controllers/ssp');
+app.get('/api/v1/unpurged/v1', authorization.onlineUserPassThrough, ssp.requestSeparate);
+app.get('/api/v1/unpurged/v3', authorization.onlineUserPassThrough, ssp.requestGrouped);
+
+app.get('/api/v1/purged/v1', authorization.onlineUserPassThrough, ssp.changesSeparate);
+app.get('/api/v1/purged/v3', authorization.onlineUserPassThrough, ssp.changesGrouped);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
