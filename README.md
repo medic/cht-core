@@ -1,6 +1,6 @@
 # Medic Mobile
 
-These instructions should help you get setup to run or develop on Medic Mobile's Community Health Application Framework. For latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
+These instructions should help you get setup to run or develop on Medic Mobile's Core Framework. For latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
 
 If you are interested in building community health applications using this framework a good place to start is the guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
@@ -145,7 +145,7 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 ### Testing locally with devices 
 
-Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Community Health Application Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
+Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
 
 1. Create a ngrok account at https://ngrok.com/ 
 1. Follow instructions on downloading and linking your computer to your ngrok account.
