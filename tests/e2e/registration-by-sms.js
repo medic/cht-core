@@ -245,7 +245,7 @@ describe('registration transition', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
-    const start = moment().startOf('day');
+    const start = moment.utc().startOf('day');
     start.subtract(12, 'weeks');
     const expected_date = start.clone().add(40, 'weeks');
 
