@@ -40,6 +40,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
+    if (!$state.params.id) {
+      // adding a new contact, deselect the old one
+      $scope.clearSelected();
+      $scope.settingSelected();
+    }
     ctrl.setLoadingContent(true);
     ctrl.setShowContent(true);
     ctrl.setCancelCallback(function() {
@@ -135,15 +140,6 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     getContact()
-      .then(function(contact) {
-        if (!contact) {
-          // adding a new contact, deselect the old one
-          $scope.clearSelected();
-          $scope.settingSelected();
-        }
-
-        return contact;
-      })
       .then(getForm)
       .then(renderForm)
       .then(setEnketoContact)

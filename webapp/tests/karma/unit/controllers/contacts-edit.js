@@ -24,6 +24,7 @@ describe('Contacts Edit controller', () => {
     scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
     contactTypes = { get: sinon.stub().resolves({}) };
+    scope.settingSelected = sinon.stub();
     var $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
 
