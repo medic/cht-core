@@ -12,7 +12,6 @@
     "npm": ">=6.4.1"
   },
   "scripts": {
-    "start": "nf start",
     "test": "grunt test",
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
@@ -29,7 +28,6 @@
     "eslint-plugin-couchdb": "^0.1.0",
     "eslint-plugin-jasmine": "^2.10.1",
     "eslint-plugin-no-only-tests": "^2.1.0",
-    "foreman": "^3.0.1",
     "grunt": "^1.0.3",
     "grunt-angular-templates": "^1.1.0",
     "grunt-browserify": "^5.3.0",
