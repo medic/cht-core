@@ -1,14 +1,14 @@
-# Medic Mobile
+# The Core Framework of the Community Health Toolkit (CHT)
 
-These instructions should help you get setup to run or develop on the Community Health Toolkit's Core Framework. For latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
+These instructions are designed to help you run or develop on the CHT’s Core Framework, a technical resource contributed by Medic Mobile. 
 
-If you are interested in building community health applications using this framework a good place to start is the guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
+Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities. We build world-class, open-source software that supports health workers delivering equitable care that reaches everyone. Medic Mobile serves as the technical lead and a core contributor to the [Community Health Toolkit] (https://communityhealthtoolkit.org).
+
+To build community health applications using this framework, read our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md). For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
 
 ## Overview
 
-Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
-
-The `medic` repository is the core tool of the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The `medic` repository is the core tool of the Medic Mobile stack and a central resource of the Community Health Toolkit. When health workers submit data — using text messages (SMS) or mobile applications — a web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally or in the cloud by setting up the individual components or as a Docker container.
 
@@ -21,11 +21,11 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 ## Easy Deployment
 
-If you want to get up and running with no fuss, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
+If you want to get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
 
 Once up and running you can [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
 
-If you want to develop against the underlying framework of Medic and set up components individually, follow the _Development Setup_ below.
+If you want to develop against the underlying framework and set up components individually, follow the _Development Setup_ below.
 
 ## Development Setup
 
@@ -47,7 +47,7 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 
 ### Enabling a secure CouchDB
 
-By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
+By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
 
 First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
 
