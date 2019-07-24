@@ -54,13 +54,11 @@ cd medic
 npm ci
 ```
 
-Remember to follow [CouchDB's single node setup guide](http://docs.couchdb.org/en/stable/setup/single-node.html).
-
 ### Enabling a secure CouchDB
 
 By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
 
-First, add an admin user. When [prompted to create an admin during installation](http://localhost:5984/_utils/#/setup), use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils).For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
 
 Now that's done, we must configure some security settings on CouchDB:
 
@@ -83,58 +81,72 @@ curl -X PUT "http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAM
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
-### Deploy all the apps
+### Required environment variables
 
-Create a `.env` file in the app directory with the following contents.
+Medic needs the following environment variables to be declared:
+ - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myAdminUser:myAdminPass@localhost:5984/medic`
+ - `COUCH_NODE_NAME`: the name of your CouchDB's node. This is likely to either be `couchdb@127.0.0,1` or `noname@nohost`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
+ - (optionally) `API_PORT`: the port API will run on. If not defined we use `5998`
+ - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
 
-```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@127.0.0.1
+How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
+
+```sh
+export COUCH_NODE_NAME=couchdb@127.0.0.1
+export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
-
-Then do an initial deploy of the webapp:
-
-```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=couchdb@127.0.0.1 grunt
-```
-
-Once this is complete you can close it, and from now on you can just run:
-
-```shell
-npm start
-```
-
-which will start the webapp, api, and sentinel, and watch for changes in each app.
-
-### Deploy apps individually
-
-If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
 
 #### Deploy the webapp
 
-`grunt dev-webapp` will build and deploy the webapp, then watch for changes and redeploy when necessary.
+Webapp code is stored in CouchDB. To compile and deploy the current code, use `grunt`:
 
-#### Start medic-sentinel
-
-```shell
-cd sentinel
-npm ci
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+```sh
+grunt
 ```
 
-Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
+This will also watch for changes and redeploy as neccessary.
 
 #### Start medic-api
 
-```shell
+API is needed to access the application. First make sure dependencies are up to date:
+
+```sh
 cd api
 npm ci
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
-Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
+Then either start it directly with `node`:
+
+```sh
+node server.js
+```
+
+Or use `grunt` to have it watch for changes and restart as neccessary:
+
+```sh
+grunt dev-api
+```
+
+#### Start medic-sentinel
+
+Sentinel is reponsible for certain background tasks. It's not strictly required to access the application, but many features won't work without it. First make sure dependencies are up to date:
+
+```sh
+cd sentinel
+npm ci
+```
+
+Then either start it directly with `node`:
+
+```sh
+node server.js
+```
+
+Or use `grunt` to have it watch for changes and restart as neccessary:
+
+```sh
+grunt dev-sentinel
+```
 
 ### Try it out
 
