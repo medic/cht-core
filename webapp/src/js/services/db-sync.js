@@ -9,12 +9,14 @@ angular
   .module('inboxServices')
   .factory('DBSync', function(
     $interval,
+    $http,
     $log,
     $q,
     $window,
     Auth,
     DB,
-    Session
+    Session,
+    POUCHDB_OPTIONS
   ) {
     'use strict';
     'ngInject';
@@ -62,6 +64,51 @@ angular
       }
     ];
 
+    const processPurges = () => {
+      let lastSeq;
+      let ids;
+      return $http
+        .get('/api/v1/server-side-purge/changes', { headers: POUCHDB_OPTIONS.remote.headers })
+        .then(response => {
+          lastSeq = response.data.last_seq;
+          ids = response.data.purged_ids;
+          $log.debug(`Got ${ids.length} purges from the server`);
+          return DB().allDocs({ keys: ids });
+        })
+        .then(result => {
+          const purgedDocs = [];
+          result.rows.forEach(row => {
+            if (row.id && row.value.rev) {
+              purgedDocs.push({ _id: row.id, _rev: row.value.rev, _deleted: true, purged: true });
+            }
+          });
+          console.log(purgedDocs);
+          return DB().bulkDocs(purgedDocs);
+        })
+        .then(results => {
+          const errors = results.reduce((msg, result) => {
+            if (!result.ok) {
+              msg += result.id + ' with ' + result.message + '; ';
+            }
+
+            return msg;
+          }, '');
+          if (errors) {
+            throw new Error(`Not all documents purged successfully: ${errors}`);
+          }
+
+          $log.debug(`Purged ${results.length} docs`);
+          return $http.get('/api/v1/server-side-purge/checkpoint', { params: { seq: lastSeq }, headers: POUCHDB_OPTIONS.remote.headers });
+        })
+        .then(() => ids.length && processPurges());
+    };
+
+    const getServerSidePurges = () => {
+      return processPurges().then(() => {
+        $log.debug(`Getting recent purges successful`);
+      });
+    };
+
     const replicate = function(direction) {
       return direction.allowed()
         .then(allowed => {
@@ -83,7 +130,9 @@ angular
             })
             .then(info => {
               $log.debug(`Replication ${direction.name} successful`, info);
-              return;
+              if (direction.name === 'from') {
+                return getServerSidePurges();
+              }
             })
             .catch(err => {
               $log.error(`Error replicating ${direction.name} remote server`, err);

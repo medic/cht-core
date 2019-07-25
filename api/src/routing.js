@@ -399,12 +399,10 @@ app.get('/api/v1/settings', settings.get);
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
-const ssp = require('./controllers/ssp');
-app.get('/api/v1/unpurged/v1', authorization.onlineUserPassThrough, ssp.requestSeparate);
-app.get('/api/v1/unpurged/v3', authorization.onlineUserPassThrough, ssp.requestGrouped);
+const purgedDocsController = require('./controllers/purged-docs');
 
-app.get('/api/v1/purged/v1', authorization.onlineUserPassThrough, ssp.changesSeparate);
-app.get('/api/v1/purged/v3', authorization.onlineUserPassThrough, ssp.changesGrouped);
+app.get('/api/v1/server-side-purge/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
+app.get('/api/v1/server-side-purge/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

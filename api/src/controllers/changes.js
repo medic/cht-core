@@ -305,15 +305,15 @@ const difference = (array1, array2) => {
   const diff = [];
   let i = 0;
   let j = 0;
-  while (i < array1.length && j < array2.length) {
-    if (array1[i] === array2[j]) {
-      i++;
-      j++;
-    } else if (array1[i] > array2[j]) {
-      j++;
-    } else {
+  while (i < array1.length) {
+    if (j >= array2.length || array1[i] < array2[j]) {
       diff.push(array1[i]);
       i++;
+    } else if (array1[i] === array2[j]) {
+      i++;
+      j++;
+    } else {
+      j++;
     }
   }
 
@@ -321,12 +321,10 @@ const difference = (array1, array2) => {
 };
 
 const filterPurgedIds = feed => {
-  if (!feed.initialReplication) {
-    return Promise.resolve();
-  }
+  return Promise.resolve();
 
   return serverSidePurge
-    .getPurgedIds({ roles: feed.userCtx.roles, docIds: feed.allowedDocIds, checkPointerId: feed.req.replicationId })
+    .getPurgedIds(feed.userCtx.roles, feed.allowedDocIds)
     .then(purgedIds => {
       feed.allowedDocIds = difference(feed.allowedDocIds, purgedIds);
     });

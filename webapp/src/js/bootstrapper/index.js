@@ -93,6 +93,10 @@
     });
   };
 
+  const initPurgeCheckpoint = (db) => {
+    return db.fetch(`${getBaseUrl()}/api/v1/server-side-purge/checkpoint?seq=now`);
+  };
+
   var initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     var dbSyncStartTime = Date.now();
@@ -113,6 +117,7 @@
       });
 
     return replicator
+      .then(() => initPurgeCheckpoint(remoteDb))
       .then(function() {
         var duration = Date.now() - dbSyncStartTime;
         console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
@@ -171,9 +176,8 @@
     $('.bootstrap-layer .error').show();
   };
 
-  var getDdoc = function(localDb) {
-    return localDb.get('_design/medic-client');
-  };
+  const getDdoc = localDb => localDb.get('_design/medic-client');
+  const getSettingsDoc = localDb => localDb.get('settings');
 
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
@@ -198,7 +202,10 @@
     const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
     const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
 
-    const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
+    const testReplicationNeeded = () => Promise
+      .all([getDdoc(localDb), getSettingsDoc(localDb)])
+      .then(() => false)
+      .catch(() => true);
 
     let isInitialReplicationNeeded;
     Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])

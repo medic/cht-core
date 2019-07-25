@@ -2,7 +2,6 @@ const db = require('../db');
 const environment = require('../environment');
 const cache = require('./cache');
 const crypto = require('crypto');
-const logger = require('../logger');
 
 const purgeDbs = {};
 const getRoleHash = roles => crypto
@@ -10,8 +9,12 @@ const getRoleHash = roles => crypto
   .update(JSON.stringify(roles.sort()), 'utf8')
   .digest('hex');
 
+const purgedFakeRev = roles => `2-${getRoleHash(roles)}`;
+const PURGED = 'purged';
+
 const getPurgeDb = roles => {
   const hash = getRoleHash(roles);
+  console.log(hash);
   if (!purgeDbs[hash]) {
     purgeDbs[hash] = db.get(`${environment.db}-purged-role-${hash}`)
   }
@@ -40,7 +43,7 @@ const getPurgedIdsFromChanges = result => {
   return purgedIds;
 };
 
-const getPurgedIds = ({ roles = [], docIds = [], checkPointerId = '' }) => {
+const getPurgedIds = (roles, docIds) => {
   const cacheKey = getCacheKey(roles, docIds);
   const cached = cache.get(cacheKey);
   if (cached) {
@@ -48,37 +51,38 @@ const getPurgedIds = ({ roles = [], docIds = [], checkPointerId = '' }) => {
     return Promise.resolve(cached);
   }
 
-  const purgeDb = db.get(purgeDbName(roles));
+  const purgeDb = getPurgeDb(roles);
   const ids = docIds.map(getPurgedId);
 
   return purgeDb
-    .changes({ doc_ids: ids, batch_size: ids.length + 1 })
-    .then(result => {
-      const purgedIds = getPurgedIdsFromChanges(result);
-      if (checkPointerId) {
-        writeCheckPointer(roles, checkPointerId);
-      }
-
-      return purgedIds;
-    });
+    .changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length })
+    .then(result => getPurgedIdsFromChanges(result));
 };
 
-const getPurgedChanges = ({ roles = [], docIds = [], checkPointerId = '' }) => {
+const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {
   const purgeDb = getPurgeDb(roles);
   const ids = docIds.map(getPurgedId);
 
   return getCheckPointer(purgeDb, checkPointerId)
     .then(checkPointer => {
+      console.log(checkPointer, 'checkpointer');
       const opts = {
         doc_ids: ids,
         batch_size: ids.length + 1,
-        limit: 100,
-        since: checkPointer.last_seq
+        limit: limit,
+        since: checkPointer.last_seq,
+        seq_interval: ids.length
       };
 
       return purgeDb.changes(opts);
     })
-    .then(result => getPurgedIdsFromChanges(result));
+    .then(result => {
+      const purgedDocIds = getPurgedIdsFromChanges(result);
+      return {
+        purgedDocIds,
+        lastSeq: result.last_seq
+      };
+    });
 };
 
 const getCheckPointer = (db, checkPointerId) => db
@@ -88,7 +92,7 @@ const getCheckPointer = (db, checkPointerId) => db
     last_seq: 0
   }));
 
-const writeCheckPointer = ({ roles = [], checkPointerId = '', seq = '' }) => {
+const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
   const purgeDb = getPurgeDb(roles);
 
   return Promise
@@ -97,13 +101,16 @@ const writeCheckPointer = ({ roles = [], checkPointerId = '', seq = '' }) => {
       purgeDb.info()
     ])
     .then(([ checkPointer, info ]) => {
-      checkPointer.last_seq = seq || info.update_seq;
+      console.log(checkPointer, 'checkpointer');
+      checkPointer.last_seq = seq === 'now' ? info.update_seq : seq;
       purgeDb.put(checkPointer);
     });
 };
 
 module.exports = {
   getPurgedIds,
+  getPurgedIdsSince,
   getCheckPointer,
   writeCheckPointer,
+
 };
