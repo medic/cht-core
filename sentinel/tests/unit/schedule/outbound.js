@@ -52,11 +52,16 @@ describe('outbound schedule', () => {
       return outbound.__get__('queuedTasks')()
         .then(results => {
           assert.equal(lineage.callCount, 1);
-          assert.deepEqual(results, [
-            {taskDoc: task, medicDoc: doc}
-          ]);
+          assert.deepEqual(results, {
+            validTasks: [{ task: task, doc: doc }],
+            invalidTasks: []
+          });
         });
     });
+
+    it('returns tasks separately if their doc cannot be resolved');
+
+    it('Errors if the task fails to resolve a document for some other reason apart from deletion');
   });
 
   describe('mapDocumentToPayload', () => {
@@ -266,7 +271,7 @@ describe('outbound schedule', () => {
 
       sinon.stub(secureSettings, 'getCredentials').resolves('pass');
       const post = sinon.stub(request, 'post');
-      
+
       post.onCall(0).resolves({
         statut: 200,
         message: 'Requête traitée avec succès.',
@@ -540,7 +545,10 @@ describe('outbound schedule', () => {
       };
 
       configGet.returns(config);
-      queuedTasks.resolves([{ taskDoc: task1, medicDoc: doc1 }, { taskDoc: task2, medicDoc: doc2 }]);
+      queuedTasks.resolves({
+        validTasks: [{ task: task1, doc: doc1 }, { task: task2, doc: doc2 }],
+        invalidTasks: []
+      });
 
       singlePush.resolves();
 

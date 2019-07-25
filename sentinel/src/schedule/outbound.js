@@ -21,7 +21,9 @@ const fetchPassword = key => {
   });
 };
 
-// Returns a list of tasks with their fully hydrated medic document
+// Returns an object containing:
+//   validTasks: an array of tasks and their hydrated docs as {task doc} objects
+//   invalidTasks: an array of tasks whose documents have been deleted
 const queuedTasks = () =>
   db.sentinel.allDocs({
     startkey: 'task:outbound:',
@@ -36,15 +38,35 @@ const queuedTasks = () =>
       keys: associatedDocIds,
       include_docs: true
     }).then(results => {
-      const associatedDocs = results.rows.map(r => r.doc);
-      return lineage.hydrateDocs(associatedDocs);
-    }).then(associatedDocs => {
-      // allDocs returns results in order, as does hydrateDocs, so we can just
-      // combine them with the task docs above
-      return outboundTaskDocs.map((t, idx) => ({
-        taskDoc: t,
-        medicDoc: associatedDocs[idx]
-      }));
+      const { validTasks, invalidTasks } = results.rows.reduce((acc, r, idx) => {
+        const task = outboundTaskDocs[idx];
+        if (r.doc) {
+           validTasks.push({
+            task: task,
+            doc: r.doc
+          });
+        } else if (!r.error === 'not_found') {
+          invalidTasks.push({
+            task: task,
+            row: r
+          });
+        } else {
+          throw Error(`Unexpected error retrieving a document: ${JSON.stringify(r)}`);
+        }
+      }, {validTasks: [], invalidTasks: []});
+
+      if (validTasks.length) {
+        return lineage.hydrateDocs(validTasks.map(t => t.doc))
+          .then(hydratedDocs => {
+            validTasks.forEach((t, idx) => {
+              t.doc = hydratedDocs[idx];
+            });
+
+            return { validTasks, invalidTasks };
+          });
+      } else {
+        return { validTasks, invalidTasks };
+      }
     });
   });
 
@@ -89,7 +111,7 @@ const mapDocumentToPayload = (doc, config, key) => {
 
     if (required && srcValue === undefined) {
       const problem = expr ? 'expr evaluated to undefined' : `cannot find '${path}' on source document`;
-      throw Error(`Mapping error for '${key}/${dest}': ${problem}`);
+      throw Error(`Mapping error for '${key}/${dest}' on source document ${doc._id}: ${problem}`);
     }
 
     if (srcValue !== undefined) {
@@ -238,6 +260,16 @@ const singlePush = (taskDoc, medicDoc, config, key) => {
     });
 };
 
+const removeInvalidTasks = invalidTasks => {
+  logger.warn(`Found ${invalidTasks.length} tasks that could not have their associated records loaded:`);
+  invalidTasks.forEach(t => {
+    logger.warn(`Task ${t.task._id} failed to load ${t.task.doc_id} because:`);
+    logger.warn(JSON.stringify(t.row, null, 2));
+  });
+
+  logger.warn('Deleting invalid tasks');
+};
+
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
   const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
@@ -246,25 +278,28 @@ const execute = () => {
   }
 
   return queuedTasks()
-  .then(tasks => {
-    const pushes = tasks.reduce((acc, {taskDoc, medicDoc}) => {
-      const pushesForDoc =
-        getConfigurationsToPush(configuredPushes, taskDoc)
-          .map(([key, config]) => ({taskDoc, medicDoc, config, key}));
+  .then(({validTasks, invalidTasks}) => {
+    return removeInvalidTasks(invalidTasks)
+      .then(() => {
+        const pushes = validTasks.reduce((acc, {task, doc}) => {
+          const pushesForDoc =
+            getConfigurationsToPush(configuredPushes, task)
+              .map(([key, config]) => ({task, doc, config, key}));
 
-      return acc.concat(pushesForDoc);
-    }, []);
+          return acc.concat(pushesForDoc);
+        }, []);
 
-    // Attempts each push one by one. Written to be simple not efficient.
-    // There are lots of things we could do to make this faster / less fragile,
-    // such as scoping pushes by domain, as well as writing out successes before
-    // all pushes are complete
-    // For now we presume we aren't going to get much traffic against this and
-    // will probably only be doing one push per schedule call
-    return pushes.reduce(
-      (p, {taskDoc, medicDoc, config, key}) => p.then(() => singlePush(taskDoc, medicDoc, config, key)),
-      Promise.resolve()
-    );
+        // Attempts each push one by one. Written to be simple not efficient.
+        // There are lots of things we could do to make this faster / less fragile,
+        // such as scoping pushes by domain, as well as writing out successes before
+        // all pushes are complete
+        // For now we presume we aren't going to get much traffic against this and
+        // will probably only be doing one push per schedule call
+        return pushes.reduce(
+          (p, {task, doc, config, key}) => p.then(() => singlePush(task, doc, config, key)),
+          Promise.resolve()
+        );
+      });
   });
 };
 
