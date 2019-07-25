@@ -368,6 +368,7 @@ describe('login controller', () => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(hasAllPermissions.callCount).to.equal(1);
+        chai.expect(isOnlineOnly.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.equal('/admin/');
