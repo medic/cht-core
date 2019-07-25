@@ -391,6 +391,44 @@ describe('EnketoTranslation service', () => {
       // then
       assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
     });
+
+    it('hides sections tagged `hidden`', () => {
+      // given
+      const xml =
+        `<doc>
+          <name>Sally</name>
+          <secret tag="hidden">
+            <first>a</first>
+            <second>b</second>
+          </secret>
+          <lmp>10</lmp>
+        </doc>`;
+
+      // when
+      const hidden_fields = service.getHiddenFieldList(xml);
+
+      // then
+      assert.deepEqual(hidden_fields, [ 'secret' ]);
+    });
+
+    it('recurses to find `hidden` children', () => {
+      // given
+      const xml =
+        `<doc>
+          <name>Sally</name>
+          <secret>
+            <first tag="hidden">a</first>
+            <second>b</second>
+          </secret>
+          <lmp tag="hidden">10</lmp>
+        </doc>`;
+
+      // when
+      const hidden_fields = service.getHiddenFieldList(xml);
+
+      // then
+      assert.deepEqual(hidden_fields, [ 'secret.first', 'lmp' ]);
+    });
   });
 
   describe('#bindJsonToXml()', () => {
