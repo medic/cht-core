@@ -3,6 +3,20 @@ const utils = require('../utils'),
       helper = require('../helper'),
       moment = require('moment');
 
+const computeExpectedDate = async () => {
+  const reportedDate = await browser.executeAsyncScript(async () => {
+    const callback = arguments[arguments.length - 1];
+    const element = document.querySelector('.detail .relative-date-content');
+    const attribute = element.getAttribute('data-date-options');
+    callback(JSON.parse(attribute));
+  });
+
+  const start = moment(reportedDate.date).startOf('day').subtract(12, 'weeks');
+  const expectedDate = start.add(40, 'weeks');
+
+  return expectedDate;
+};
+
 describe('registration transition', () => {
   const PHONE = '+64271234567';
   const FORM_NAME = 'Registration';
@@ -245,10 +259,6 @@ describe('registration transition', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
-    const start = moment.utc().startOf('day');
-    start.subtract(12, 'weeks');
-    const expected_date = start.clone().add(40, 'weeks');
-
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
       expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`Submitted by ${CAROL.name}`);
@@ -259,13 +269,13 @@ describe('registration transition', () => {
       expect(summaryElement.element(by.css('.detail .status')).isDisplayed()).toBe(false);
     };
 
-    const checkAutoResponse = () => {
+    const checkAutoResponse = (expectedDate) => {
       const taskElement = element(by.css('#reports-content .details > ul'));
       expect(taskElement.element(by.css('.task-list > li:nth-child(1) > ul > li')).getText()).toBe('Thank you '+ CAROL.name +' for registering Siobhan');
       expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .state.forwarded-to-gateway')).isDisplayed()).toBeTruthy();
       expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .recipient')).getText()).toBe(' to +64271234567');
 
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) > ul > li')).getText()).toBe('LMP ' + expected_date.locale('sw').format('ddd, MMM Do, YYYY'));
+      expect(taskElement.element(by.css('.task-list > li:nth-child(2) > ul > li')).getText()).toBe('LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
       expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .state.forwarded-to-gateway')).isDisplayed()).toBeTruthy();
       expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
@@ -278,7 +288,7 @@ describe('registration transition', () => {
       expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
 
-    it('shows content', () => {
+    it('shows content', async () => {
       commonElements.goToReports(true);
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')).isPresent(), 10000);
@@ -287,11 +297,13 @@ describe('registration transition', () => {
       // wait for content to load
       browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)).isPresent(), 30000);
 
+      const expectedDate = await computeExpectedDate();
+
       checkItemSummary();
-      checkAutoResponse();
+      checkAutoResponse(expectedDate);
       checkScheduledTask(1, 'ANC Reminders LMP:1', 'Visit 1 reminder for Siobhan');
       checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
-      checkScheduledTask(3, 'ANC Reminders LMP:3', 'LMP ' + expected_date.locale('sw').format('ddd, MMM Do, YYYY'));
+      checkScheduledTask(3, 'ANC Reminders LMP:3', 'LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
     });
 
   });
