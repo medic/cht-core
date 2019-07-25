@@ -854,12 +854,66 @@ module.exports = function(grunt) {
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
     jsdoc : {
-      dist : {
-          src: ['webapp/src/js/**/*.js', 'admin/src/js/**/*.js'],
+      distAdmin : {
+          src: [
+            'admin/src/js/**/*.js'
+          ],
           options: {
-              destination: 'jsdoc-docs'
+              destination: 'jsdocs/admin',
+              configure: 'node_modules/angular-jsdoc/common/conf.json',
+              template: 'node_modules/angular-jsdoc/angular-template',
+              readme: './README.md'
           }
-      }
+      },
+      distApi : {
+        src: [
+          'api/src/**/*.js',
+          '!api/src/extracted-resources/**',
+        ],
+        options: {
+            destination: 'jsdocs/api'
+        }
+      },
+      distSentinel : {
+        src: [
+          'sentinel/src/**/*.js'
+        ],
+        options: {
+            destination: 'jsdocs/sentinel'
+        }
+      },
+      distSharedLibs : {
+        src: [
+          'shared-libs/bulk-docs-utils/src/*.js',
+          'shared-libs/lineage/src/*.js',
+          'shared-libs/memdown/src/*.js',
+          'shared-libs/message-utils/src/*.js',
+          'shared-libs/phone-number/src/*.js',
+          'shared-libs/registration-utils/src/*.js',
+          'shared-libs/search/src/*.js',
+          'shared-libs/server-checks/src/*.js',
+          'shared-libs/settings/src/*.js',
+          'shared-libs/task-utils/src/*.js',
+          'shared-libs/tombstone-utils/src/*.js',
+          'shared-libs/transitions/src/*.js',
+          'shared-libs/transition-utils/src/*.js',
+          'shared-libs/view-map-utils/src/*.js'
+        ],
+        options: {
+            destination: 'jsdocs/shared-libs'
+        }
+      },
+      distWebapp : {
+        src: [
+          'webapp/src/js/**/*.js'
+        ],
+        options: {
+            destination: 'jsdocs/webapp',
+            configure: 'node_modules/angular-jsdoc/common/conf.json',
+            template: 'node_modules/angular-jsdoc/angular-template',
+            readme: './README.md'
+        }
+      },
     },
   });
 

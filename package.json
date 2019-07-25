@@ -16,6 +16,7 @@
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "devDependencies": {
+    "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.7.5",
     "autoprefixer": "^9.3.1",
     "browserify-ngannotate": "^2.0.0",
