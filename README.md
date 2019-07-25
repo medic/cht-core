@@ -33,6 +33,12 @@ Before getting started, read about our [development workflow](https://github.com
 
 With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
+### Supported Operating Systems
+
+Developers are actively using both Linux and MacOS, so both of those platforms are well supported for development.
+
+We don't support Windows out of the box. However, you can try using the Windows Subsystem for Linux. See the [Windows Subsystem for Linux notes](https://github.com/medic/medic-docs/blob/master/development/using-windows.md) for how the installation instructions differ.
+
 ### Dependencies
 
 You will need to install the following:
