@@ -142,6 +142,15 @@ module.exports = function(grunt) {
           [couchConfig.withPathNoAuth('medic-test')]: 'build/ddocs/medic.json',
         },
       },
+      test_secondary: {
+        options: {
+          user: couchConfig.username,
+          pass: couchConfig.password,
+        },
+        files: {
+          [couchConfig.withPathNoAuth('medic-test')]: 'build/ddocs/medic/_attachments/ddocs/compiled.json',
+        },
+      },
       staging: {
         files: [
           {
@@ -993,6 +1002,9 @@ module.exports = function(grunt) {
     'exec:start-webdriver',
     'exec:reset-test-databases',
     'couch-push:test',
+    'copy:ddocs',
+    'couch-compile:secondary',
+    'couch-push:test_secondary',
     'exec:e2e-servers',
   ]);
 
