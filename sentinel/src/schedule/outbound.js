@@ -41,18 +41,20 @@ const queuedTasks = () =>
       const { validTasks, invalidTasks } = results.rows.reduce((acc, r, idx) => {
         const task = outboundTaskDocs[idx];
         if (r.doc) {
-           validTasks.push({
+          acc.validTasks.push({
             task: task,
             doc: r.doc
           });
-        } else if (!r.error === 'not_found') {
-          invalidTasks.push({
+        } else if (r.error === 'not_found') {
+          acc.invalidTasks.push({
             task: task,
             row: r
           });
         } else {
           throw Error(`Unexpected error retrieving a document: ${JSON.stringify(r)}`);
         }
+
+        return acc;
       }, {validTasks: [], invalidTasks: []});
 
       if (validTasks.length) {
@@ -103,7 +105,7 @@ const mapDocumentToPayload = (doc, config, key) => {
       try {
         srcValue = vm.runInNewContext(expr, {doc});
       } catch (err) {
-        throw Error(`Mapping error for '${key}/${dest}' JS error on source document: ${doc._id}: ${err}`);
+        throw Error(`Mapping error for '${key}/${dest}' JS error on source document: '${doc._id}': ${err}`);
       }
     } else {
       srcValue = objectPath.get({doc}, path);
@@ -111,7 +113,7 @@ const mapDocumentToPayload = (doc, config, key) => {
 
     if (required && srcValue === undefined) {
       const problem = expr ? 'expr evaluated to undefined' : `cannot find '${path}' on source document`;
-      throw Error(`Mapping error for '${key}/${dest}' on source document ${doc._id}: ${problem}`);
+      throw Error(`Mapping error for '${key}/${dest}' on source document '${doc._id}': ${problem}`);
     }
 
     if (srcValue !== undefined) {
@@ -236,29 +238,29 @@ const logIntoInfoDoc = (medicDocId, key) => {
   });
 };
 
-const singlePush = (taskDoc, medicDoc, config, key) => {
-  if (!config) {
-    // The outbound config entry has been deleted / renamed / something!
-    logger.warn(`Unable to push ${medicDoc._id} for ${key} because this outbound config no longer exists, clearing task`);
-    return removeConfigKeyFromTask(taskDoc, key);
-  }
+const singlePush = (taskDoc, medicDoc, config, key) => Promise.resolve()
+  .then(() => {
+    if (!config) {
+      // The outbound config entry has been deleted / renamed / something!
+      logger.warn(`Unable to push ${medicDoc._id} for ${key} because this outbound config no longer exists, clearing task`);
+      return removeConfigKeyFromTask(taskDoc, key);
+    }
 
-  const payload = mapDocumentToPayload(medicDoc, config, key);
-  return send(payload, config)
-    .then(() => {
-      // Worked, remove entry from queue and add link to info doc
-      logger.info(`Pushed ${medicDoc._id} to ${key}`);
+    const payload = mapDocumentToPayload(medicDoc, config, key);
+    return send(payload, config)
+      .then(() => {
+        // Worked, remove entry from queue and add link to info doc
+        logger.info(`Pushed ${medicDoc._id} to ${key}`);
 
-      return removeConfigKeyFromTask(taskDoc, key)
-        .then(() => logIntoInfoDoc(medicDoc._id, key));
-    })
-    .catch(err => {
-      // Failed
-      logger.error(`Failed to push ${medicDoc._id} to ${key}: %o`, err);
+        return removeConfigKeyFromTask(taskDoc, key)
+          .then(() => logIntoInfoDoc(medicDoc._id, key));
+      });
+  }).catch(err => {
+    // Failed
+    logger.error(`Failed to push ${medicDoc._id} to ${key}: %o`, err);
 
-      // Don't remove the entry from the task's queue so it will be tried again next time
-    });
-};
+    // Don't remove the entry from the task's queue so it will be tried again next time
+  });
 
 const removeInvalidTasks = invalidTasks => {
   logger.warn(`Found ${invalidTasks.length} tasks that could not have their associated records loaded:`);
@@ -268,6 +270,9 @@ const removeInvalidTasks = invalidTasks => {
   });
 
   logger.warn('Deleting invalid tasks');
+
+  // TODO
+  return Promise.resolve();
 };
 
 // Coordinates the attempted pushing of documents that need it

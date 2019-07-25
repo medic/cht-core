@@ -59,9 +59,70 @@ describe('outbound schedule', () => {
         });
     });
 
-    it('returns tasks separately if their doc cannot be resolved');
+    it('returns tasks separately if their doc cannot be resolved', () => {
+      const task = {
+        _id: 'task:outbound:some_doc_id',
+        doc_id: 'some_doc_id',
+        queue: ['some', 'task']
+      };
+      const error = {
+        key: 'some_doc_id',
+        error: 'not_found'
+      };
 
-    it('Errors if the task fails to resolve a document for some other reason apart from deletion');
+      const dbSentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
+      const dbMedicAllDocs = sinon.stub(db.medic, 'allDocs');
+
+      dbSentinelAllDocs.resolves({
+        rows: [{
+          doc: task
+        }]
+      });
+
+      dbMedicAllDocs.resolves({
+        rows: [error]
+      });
+
+      return outbound.__get__('queuedTasks')()
+        .then(results => {
+          assert.equal(lineage.callCount, 0);
+          assert.deepEqual(results, {
+            validTasks: [],
+            invalidTasks: [{task: task, row: error}]
+          });
+        });
+    });
+
+    it('Errors if the task fails to resolve a document for some other reason apart from deletion', () => {
+           const task = {
+        _id: 'task:outbound:some_doc_id',
+        doc_id: 'some_doc_id',
+        queue: ['some', 'task']
+      };
+      const error = {
+        key: 'some_doc_id',
+        error: 'CouchDB is now sentient and no longer wishes to serve your facile needs'
+      };
+
+      const dbSentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
+      const dbMedicAllDocs = sinon.stub(db.medic, 'allDocs');
+
+      dbSentinelAllDocs.resolves({
+        rows: [{
+          doc: task
+        }]
+      });
+
+      dbMedicAllDocs.resolves({
+        rows: [error]
+      });
+
+      return outbound.__get__('queuedTasks')()
+        .catch(err => err)
+        .then(err => {
+          assert.match(err.message, /Unexpected error retrieving a document/);
+        });
+    });
   });
 
   describe('mapDocumentToPayload', () => {
@@ -126,7 +187,7 @@ describe('outbound schedule', () => {
         }
       };
 
-      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), `Mapping error for 'test-config/foo': cannot find 'doc.fields.foo' on source document`);
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), `Mapping error for 'test-config/foo' on source document 'test-doc': cannot find 'doc.fields.foo' on source document`);
     });
 
     it('supports optional path mappings', () => {
@@ -496,12 +557,54 @@ describe('outbound schedule', () => {
           assert.equal(send.callCount, 0);
         });
     });
+
+    it('should not throw errors or exceptions if mapping fails', () => {
+      const config = {
+        some: 'config'
+      };
+
+      const task = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+
+      const doc = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+
+
+      mapDocumentToPayload.throws(new Error('oh no!'));
+
+      return outbound.__get__('singlePush')(task, doc, config, 'test-push-1');
+    });
+    it('should not throw errors or exceptions if sending fails', () => {
+      const config = {
+        some: 'config'
+      };
+
+      const task = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+
+      const doc = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+
+      mapDocumentToPayload.returns({map: 'called'});
+      send.rejects(new Error('oh no!'));
+
+      return outbound.__get__('singlePush')(task, doc, config, 'test-push-1');
+    });
   });
 
   describe('execute', () => {
     let configGet;
     let queuedTasks;
     let singlePush;
+    let removeInvalidTasks;
     let restores = [];
 
     beforeEach(() => {
@@ -512,6 +615,9 @@ describe('outbound schedule', () => {
 
       singlePush = sinon.stub();
       restores.push(outbound.__set__('singlePush', singlePush));
+
+      removeInvalidTasks = sinon.stub();
+      restores.push(outbound.__set__('removeInvalidTasks', removeInvalidTasks));
     });
 
     afterEach(() => restores.forEach(restore => restore()));
@@ -536,6 +642,11 @@ describe('outbound schedule', () => {
         doc_id: 'test-doc-2',
         queue: ['test-push-2']
       };
+      const task3 = {
+        _id: 'task:outbound:test-doc-3',
+        doc_id: 'test-doc-3',
+        queue: ['test-push-2']
+      };
 
       const doc1 = {
         _id: 'test-doc-1', some: 'data-1'
@@ -543,20 +654,28 @@ describe('outbound schedule', () => {
       const doc2 = {
         _id: 'test-doc-2', some: 'data-2'
       };
+      const error3 = {
+        key: 'test-doc-3',
+        error: 'not_found'
+      };
 
       configGet.returns(config);
       queuedTasks.resolves({
         validTasks: [{ task: task1, doc: doc1 }, { task: task2, doc: doc2 }],
-        invalidTasks: []
+        invalidTasks: [{task: task3, row: error3}]
       });
+
+      removeInvalidTasks.resolves();
 
       singlePush.resolves();
 
       return outbound.__get__('execute')()
         .then(() => {
           assert.equal(configGet.callCount, 1);
+          assert.equal(removeInvalidTasks.callCount, 1);
           assert.equal(singlePush.callCount, 2);
 
+          assert.deepEqual(removeInvalidTasks.args[0][0], [{task: task3, row: error3}]);
           assert.deepEqual(singlePush.args[0], [task1, doc1, {some: 'config'}, 'test-push-1']);
           assert.deepEqual(singlePush.args[1], [task2, doc2, {other: 'config'}, 'test-push-2']);
         });
