@@ -162,6 +162,23 @@ describe('Settings API', () => {
         });
     });
 
+
+    it('should validate app_settings against schema', () => {
+      return update({ locale: [] }, true)
+        .then(response => {
+          expect(response[0].message).toEqual('should be string');
+        })
+        .then(() => {
+          return utils.request({
+            path: '/api/v1/settings',
+            method: 'GET'
+          });
+        })
+        .then(response => {
+          expect(response.locale).not.toEqual([]);
+        });
+    });
+
   });
 
 });
