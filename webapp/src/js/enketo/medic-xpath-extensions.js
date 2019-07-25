@@ -16,46 +16,39 @@ var getValue = function(resultObject) {
 
 var now_and_today = function() { return { t: 'date', v: new Date() }; };
 
-Date.prototype.toISOLocalString = function() {
-    //2012-09-05T12:57:00.000-04:00 (ODK)
+var toISOLocalString = function(date) {
+  if (date.toString() === 'Invalid Date') {
+    return date.toString();
+  }
 
-    if ( this.toString() === 'Invalid Date' ) {
-        return this.toString();
-    }
+  var dt = new Date(date.getTime() - (date.getTimezoneOffset() * 60 * 1000))
+            .toISOString()
+            .replace('Z', module.exports.getTimezoneOffsetAsTime(date));
 
-    var dt = new Date( this.getTime() - ( this.getTimezoneOffset() * 60 * 1000 ) ).toISOString()
-        .replace( 'Z', this.getTimezoneOffsetAsTime() );
-
-    if ( dt.indexOf( 'T00:00:00.000' ) > 0 ) {
-        return dt.split( 'T' )[ 0 ];
-    } else {
-        return dt;
-    }
+  return dt;
 };
 
-Date.prototype.getTimezoneOffsetAsTime = function() {
-    var offsetMinutesTotal;
-    var hours;
-    var minutes;
-    var direction;
-    var pad2 = function( x ) {
-        return ( x < 10 ) ? '0' + x : x;
-    };
+var getTimezoneOffsetAsTime = function(date) {
+  var pad2 = function(x) {
+    return ( x < 10 ) ? '0' + x : x;
+  };
 
-    if ( this.toString() === 'Invalid Date' ) {
-        return this.toString();
-    }
+  if (date.toString() === 'Invalid Date') {
+    return date.toString();
+  }
 
-    offsetMinutesTotal = this.getTimezoneOffset();
+  const offsetMinutesTotal = date.getTimezoneOffset();
 
-    direction = ( offsetMinutesTotal < 0 ) ? '+' : '-';
-    hours = pad2( Math.abs( Math.floor( offsetMinutesTotal / 60 ) ) );
-    minutes = pad2( Math.abs( Math.floor( offsetMinutesTotal % 60 ) ) );
+  const direction = (offsetMinutesTotal < 0) ? '+' : '-';
+  const hours = pad2(Math.abs(Math.floor(offsetMinutesTotal / 60)));
+  const minutes = pad2(Math.abs(Math.floor(offsetMinutesTotal % 60)));
 
-    return direction + hours + ':' + minutes;
+  return direction + hours + ':' + minutes;
 };
 
 module.exports = {
+  getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
+  toISOLocalString: toISOLocalString,
   init: function(_zscoreUtil) {
     zscoreUtil = _zscoreUtil;
   },
@@ -77,9 +70,9 @@ module.exports = {
     toExternalResult: function(r) {
       if(r.t === 'date') {
         return {
-          resultType:XPathResult.STRING_TYPE,
-          numberValue:r.v.getTime(),
-          stringValue:r.v.toISOLocalString(),
+          resultType: XPathResult.STRING_TYPE,
+          numberValue: r.v.getTime(),
+          stringValue: module.exports.toISOLocalString(r.v),
         };
       }
     }  
