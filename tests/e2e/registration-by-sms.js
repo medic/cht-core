@@ -3,14 +3,8 @@ const utils = require('../utils'),
       helper = require('../helper'),
       moment = require('moment');
 
-const computeExpectedDate = async () => {
-  const reportedDate = await browser.executeAsyncScript(async () => {
-    const callback = arguments[arguments.length - 1];
-    const element = document.querySelector('.detail .relative-date-content');
-    const attribute = element.getAttribute('data-date-options');
-    callback(JSON.parse(attribute));
-  });
-
+const computeExpectedDate = () => {
+  const reportedDate = element(by.css('#reports-content .item-summary .relative-date-content')).getAttribute('data-record-id');
   const start = moment(reportedDate.date).startOf('day').subtract(12, 'weeks');
   const expectedDate = start.add(40, 'weeks');
 
@@ -297,7 +291,7 @@ describe('registration transition', () => {
       // wait for content to load
       browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)).isPresent(), 30000);
 
-      const expectedDate = await computeExpectedDate();
+      const expectedDate = computeExpectedDate();
 
       checkItemSummary();
       checkAutoResponse(expectedDate);
