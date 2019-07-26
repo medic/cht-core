@@ -569,7 +569,11 @@
                   ]
                 },
                 "params": {
-                  "type": "string"
+                  "oneOf": [
+                    { "type": "string" },
+                    { "type": "object" },
+                    { "type": "array" }
+                  ]
                 },
                 "bool_expr": {
                   "type": "string"
@@ -716,6 +720,7 @@
                     "recipient_1",
                     "recipient_2",
                     "recipient_3",
+                    "12345",
                     "reporting_unit",
                     "parent",
                     "clinic",
@@ -1058,10 +1063,10 @@
     "forms": {
       "type": "object",
       "propertyNames": {
-        "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
       },
       "patternProperties": {
-        "^[A-Za-z][A-Za-z0-9_]*$": {
+        "^[A-Za-z][A-Za-z0-9_-]*$": {
           "type": "object",
           "properties": {
             "meta": {
