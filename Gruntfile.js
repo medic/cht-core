@@ -483,14 +483,13 @@ module.exports = function(grunt) {
       },
       'setup-admin': {
         cmd:
-          `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
-          ` && curl -X PUT ${couchConfig.withPathNoAuth('_users')}` +
-          ` && curl -X PUT ${couchConfig.withPathNoAuth('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
+          ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
           ` && curl -X POST ${couchConfig.withPath('_users')} ` +
           ' -H "Content-Type: application/json" ' +
           ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}`,
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
+          ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'reset-test-databases': {
         stderr: false,
@@ -855,12 +854,66 @@ module.exports = function(grunt) {
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
     jsdoc : {
-      dist : {
-          src: ['webapp/src/js/**/*.js', 'admin/src/js/**/*.js'],
+      distAdmin : {
+          src: [
+            'admin/src/js/**/*.js'
+          ],
           options: {
-              destination: 'jsdoc-docs'
+              destination: 'jsdocs/admin',
+              configure: 'node_modules/angular-jsdoc/common/conf.json',
+              template: 'node_modules/angular-jsdoc/angular-template',
+              readme: './README.md'
           }
-      }
+      },
+      distApi : {
+        src: [
+          'api/src/**/*.js',
+          '!api/src/extracted-resources/**',
+        ],
+        options: {
+            destination: 'jsdocs/api'
+        }
+      },
+      distSentinel : {
+        src: [
+          'sentinel/src/**/*.js'
+        ],
+        options: {
+            destination: 'jsdocs/sentinel'
+        }
+      },
+      distSharedLibs : {
+        src: [
+          'shared-libs/bulk-docs-utils/src/*.js',
+          'shared-libs/lineage/src/*.js',
+          'shared-libs/memdown/src/*.js',
+          'shared-libs/message-utils/src/*.js',
+          'shared-libs/phone-number/src/*.js',
+          'shared-libs/registration-utils/src/*.js',
+          'shared-libs/search/src/*.js',
+          'shared-libs/server-checks/src/*.js',
+          'shared-libs/settings/src/*.js',
+          'shared-libs/task-utils/src/*.js',
+          'shared-libs/tombstone-utils/src/*.js',
+          'shared-libs/transitions/src/*.js',
+          'shared-libs/transition-utils/src/*.js',
+          'shared-libs/view-map-utils/src/*.js'
+        ],
+        options: {
+            destination: 'jsdocs/shared-libs'
+        }
+      },
+      distWebapp : {
+        src: [
+          'webapp/src/js/**/*.js'
+        ],
+        options: {
+            destination: 'jsdocs/webapp',
+            configure: 'node_modules/angular-jsdoc/common/conf.json',
+            template: 'node_modules/angular-jsdoc/angular-template',
+            readme: './README.md'
+        }
+      },
     },
   });
 

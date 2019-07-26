@@ -39,30 +39,43 @@ To get up and running quickly, [you can use Docker](https://github.com/medic/med
 
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
+### Supported Operating Systems
+
+Developers are actively using both Linux and MacOS, so both of those platforms are well supported for development.
+
+We don't support Windows out of the box. However, you can try using the Windows Subsystem for Linux. See the [Windows Subsystem for Linux notes](https://github.com/medic/medic-docs/blob/master/development/using-windows.md) for how the installation instructions differ.
+
 ### Dependencies
 
 You will need to install the following:
 
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
+- [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) v2.x
 
 ### Setup CouchDB on a single node
 
 NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
 
+### Build the webapp
+
+```shell
+git clone https://github.com/medic/medic
+cd medic
+npm ci
+```
+
 ### Enabling a secure CouchDB
 
 By default CouchDB runs in *admin party mode*, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
 
-First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
+First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
 
 Now, configure some security settings on CouchDB:
 
 ```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@127.0.0.1
-grunt secure-couchdb
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=couchdb@127.0.0.1 grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:
@@ -80,87 +93,81 @@ curl -X PUT "http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAM
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
-## Build and run
+### Required environment variables
 
-### Build the webapp
+Medic needs the following environment variables to be declared:
+ - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myAdminUser:myAdminPass@localhost:5984/medic`
+ - `COUCH_NODE_NAME`: the name of your CouchDB's node. This is likely to either be `couchdb@127.0.0,1` or `noname@nohost`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
+ - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
+ - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
 
-```shell
-git clone https://github.com/medic/medic
-cd medic
-npm ci
+How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
+
+```sh
+export COUCH_NODE_NAME=couchdb@127.0.0.1
+export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
-
-### Deploy all the apps
-
-Create a `.env` file in the app directory with the following contents
-
-```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@127.0.0.1
-```
-
-Then do an initial deploy of the webapp:
-
-```shell
-grunt dev-webapp
-# or just
-grunt
-```
-
-Once this is complete you can close it, and from now on you can just run:
-
-```shell
-npm start
-```
-
-which will start the webapp, api, and sentinel, and watch for changes in each app.
-
-### Deploy apps individually
-
-If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
 
 #### Deploy the webapp
 
-`grunt dev-webapp` will build and deploy the webapp, then watch for changes and redeploy when necessary.
+Webapp code is stored in CouchDB. To compile and deploy the current code, use `grunt`:
 
-#### Start medic-sentinel
-
-```shell
-cd sentinel
-npm ci
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+```sh
+grunt
 ```
 
-Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
+This will also watch for changes and redeploy as neccessary.
 
 #### Start medic-api
 
-```shell
-cd api
-npm ci
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+API is needed to access the application.
+
+Either start it directly with `node`:
+
+```sh
+cd ./api
+node server.js
 ```
 
-Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
+Or use `grunt` to have it watch for changes and restart as neccessary:
+
+```sh
+grunt dev-api
+```
+
+#### Start medic-sentinel
+
+Sentinel is reponsible for certain background tasks. It's not strictly required to access the application, but many features won't work without it.
+
+Either start it directly with `node`:
+
+```sh
+cd ./sentinel
+node server.js
+```
+
+Or use `grunt` to have it watch for changes and restart as neccessary:
+
+```sh
+grunt dev-sentinel
+```
 
 ### Try it out
 
 Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:5988/medic/login).
 
-### Testing locally with devices 
+### Testing locally with devices
 
 Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
 
-1. Create a ngrok account at https://ngrok.com/ 
+1. Create a ngrok account at https://ngrok.com/
 1. Follow instructions on downloading and linking your computer to your ngrok account.
 1. Start the webapp. This can be via docker, grunt, debug, horti, etc....
 1. Run ngrok and forward it towards the port you are running the webapp on.
     * EX: For running webapp in docker locally using the docker instructions above `$ ./ngrok http 443`. This will forward the traffic from your ngrok url on https to 443 on your local machine. </br>
     * EX: For running via horti, or grunt where the api starts on port 5988. `$ ./ngrok http 5988` This will forward the traffic from your ngrok url on https to 5988 on your local machine.
-    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988 
-1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.                
+    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988
+1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
 
 
 ### Data
@@ -208,7 +215,7 @@ To build reference documentation into a local folder `jsdoc-docs`: `grunt build-
 
 ## Configuring the standard application
 
-This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 
+This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further.
 
 This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
 
@@ -218,7 +225,7 @@ To import the standard configuration:
 
 1. Install medic-conf: `npm install -g medic-conf`
 2. Navigate to the configuration you want to import: `cd <medic-repo>/config/standard`
-1. Ensure the app/api is running. Specifically on localhost for these instructions. 
+1. Ensure the app/api is running. Specifically on localhost for these instructions.
 3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
