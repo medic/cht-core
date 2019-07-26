@@ -52,9 +52,15 @@ describe('accept_patient_reports', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { accept_patient_reports: false },
-      patient_reports: [{ form: 'FORM' }],
-      forms: { FORM: { } }
+      transitions: {
+        accept_patient_reports: false
+      },
+      patient_reports: [
+        { form: 'FORM' }
+      ],
+      forms: {
+        FORM: { }
+      }
     };
 
     const doc = {
@@ -197,7 +203,9 @@ describe('accept_patient_reports', () => {
 
   it('should add relevant messages', () => {
     const settings = {
-      transitions: { accept_patient_reports: true },
+      transitions: {
+        accept_patient_reports: true
+      },
       patient_reports: [
         {
           form: 'FORM',
@@ -207,7 +215,7 @@ describe('accept_patient_reports', () => {
               message: [{
                 locale: 'en',
                 content: 'Patient not found'
-              }],
+              }]
             },
             {
               event_type: 'report_accepted',
@@ -215,7 +223,7 @@ describe('accept_patient_reports', () => {
               message: [{
                 locale: 'en',
                 content: 'message_1'
-              }],
+              }]
             },
             {
               event_type: 'report_accepted',
@@ -224,7 +232,7 @@ describe('accept_patient_reports', () => {
               message: [{
                 locale: 'en',
                 content: 'message_2'
-              }],
+              }]
             },
             {
               event_type: 'report_accepted',
@@ -233,12 +241,14 @@ describe('accept_patient_reports', () => {
               message: [{
                 locale: 'en',
                 content: 'message_3'
-              }],
+              }]
             }
           ]
-        }
+        },
       ],
-      forms: { FORM: { } }
+      forms: {
+        FORM: { }
+      }
     };
 
     const doc1 = {

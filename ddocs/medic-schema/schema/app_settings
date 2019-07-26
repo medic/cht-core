@@ -3,39 +3,67 @@
   "properties": {
     "locales": {
       "oneOf": [
-        { "type": "null" },
+        {
+          "type": "null"
+        },
         {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "code": { "type": "string" },
-              "name": { "type": "string" }
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
             }
           }
         }
       ]
     },
-    "locale": { "type": "string" },
-    "locale_outgoing": { "type": "string" },
-    "date_format": { "type": "string" },
-    "reported_date_format": { "type": "string" },
-    "forms_only_mode": { "type": "boolean" },
+    "locale": {
+      "type": "string"
+    },
+    "locale_outgoing": {
+      "type": "string"
+    },
+    "date_format": {
+      "type": "string"
+    },
+    "reported_date_format": {
+      "type": "string"
+    },
+    "forms_only_mode": {
+      "type": "boolean"
+    },
     "default_responses": {
       "type": "object",
       "properties": {
-        "start_date": { "type": "string" }
+        "start_date": {
+          "type": "string"
+        }
       }
     },
-    "district_admins_access_unallocated_messages": { "type": "boolean" },
-    "public_access": { "type": "boolean" },
+    "district_admins_access_unallocated_messages": {
+      "type": "boolean"
+    },
+    "public_access": {
+      "type": "boolean"
+    },
     "default_country_code": {
       "oneOf": [
-        { "type": "string" },
-        { "type": "number" }
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
       ]
     },
-    "gateway_number": { "type": "string" },
+    "gateway_number": {
+      "type": "string"
+    },
     "schedule_morning_hours": {
       "type": "number",
       "minimum": 0,
@@ -50,7 +78,7 @@
       "type": "number",
       "minimum": 0,
       "exclusiveMaximum": 24
-     },
+    },
     "schedule_evening_minutes": {
       "type": "number",
       "minimum": 0,
@@ -63,252 +91,433 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_export_forms": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_export_contacts": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_export_feedback": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_analytics": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_data_records": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_unallocated_data_records": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_users": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_edit": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_log_out_on_android": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_update_messages": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_update_users": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_update_people": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_update_places": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_create_records": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway", "data_entry" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway",
+              "data_entry"
+            ]
           }
         },
         "can_access_gateway_api": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_create_users": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_create_people": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_create_places": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_tasks": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_tasks_tab": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_configure": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_messages": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_messages_tab": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_reports": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_reports_tab": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_analytics_tab": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_contacts": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_view_contacts_tab": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_edit_profile": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_delete_reports": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_bulk_delete_reports": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_update_reports": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_delete_contacts": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_delete_messages": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         },
         "can_delete_users": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [ "national_admin", "district_admin", "analytics", "gateway" ]
+            "enum": [
+              "national_admin",
+              "district_admin",
+              "analytics",
+              "gateway"
+            ]
           }
         }
       }
@@ -318,10 +527,18 @@
       "items": {
         "type": "object",
         "properties": {
-          "fromSuffix": { "type": "string" },
-          "toSuffix": { "type": "string" },
-          "text_expression": { "type": "string" },
-          "cron": { "type": "string" }
+          "fromSuffix": {
+            "type": "string"
+          },
+          "toSuffix": {
+            "type": "string"
+          },
+          "text_expression": {
+            "type": "string"
+          },
+          "cron": {
+            "type": "string"
+          }
         }
       }
     },
@@ -330,34 +547,56 @@
       "items": {
         "type": "object",
         "properties": {
-          "form": { "type": "string" },
+          "form": {
+            "type": "string"
+          },
           "events": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "name": { "type": "string" },
+                "name": {
+                  "type": "string"
+                },
                 "trigger": {
                   "type": "string",
-                  "enum": [ "add_birth_date", "add_patient", "assign_schedule", "clear_schedule", "add_expected_date" ]
+                  "enum": [
+                    "add_birth_date",
+                    "add_patient",
+                    "assign_schedule",
+                    "clear_schedule",
+                    "add_expected_date"
+                  ]
                 },
-                "params": { "type": "string" },
-                "bool_expr": { "type": "string" }
+                "params": {
+                  "type": "string"
+                },
+                "bool_expr": {
+                  "type": "string"
+                }
               }
             }
           },
           "validations": {
             "type": "object",
             "properties": {
-              "join_responses": { "type": "boolean" },
+              "join_responses": {
+                "type": "boolean"
+              },
               "list": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "property": { "type": "string" },
-                    "rule": { "type": "string" },
-                    "translation_key": { "type": "string" }
+                    "property": {
+                      "type": "string"
+                    },
+                    "rule": {
+                      "type": "string"
+                    },
+                    "translation_key": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -368,16 +607,28 @@
             "items": {
               "type": "object",
               "properties": {
-                "translation_key": { "type": "string" },
+                "translation_key": {
+                  "type": "string"
+                },
                 "event_type": {
                   "type": "string",
-                  "enum": [ "report_accepted", "registration_not_found" ]
+                  "enum": [
+                    "report_accepted",
+                    "registration_not_found"
+                  ]
                 },
                 "recipient": {
                   "type": "string",
-                  "enum": [ "reporting_unit", "parent", "clinic", "chw_phone" ]
+                  "enum": [
+                    "reporting_unit",
+                    "parent",
+                    "clinic",
+                    "chw_phone"
+                  ]
                 },
-                "bool_expr": { "type": "string" }
+                "bool_expr": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -389,34 +640,56 @@
       "items": {
         "type": "object",
         "properties": {
-          "form": { "type": "string" },
+          "form": {
+            "type": "string"
+          },
           "events": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "name": { "type": "string" },
+                "name": {
+                  "type": "string"
+                },
                 "trigger": {
                   "type": "string",
-                  "enum": [ "add_birth_date", "add_patient", "assign_schedule", "clear_schedule", "add_expected_date" ]
+                  "enum": [
+                    "add_birth_date",
+                    "add_patient",
+                    "assign_schedule",
+                    "clear_schedule",
+                    "add_expected_date"
+                  ]
                 },
-                "params": { "type": "string" },
-                "bool_expr": { "type": "string" }
+                "params": {
+                  "type": "string"
+                },
+                "bool_expr": {
+                  "type": "string"
+                }
               }
             }
           },
           "validations": {
             "type": "object",
             "properties": {
-              "join_responses": { "type": "boolean" },
+              "join_responses": {
+                "type": "boolean"
+              },
               "list": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "property": { "type": "string" },
-                    "rule": { "type": "string" },
-                    "translation_key": { "type": "string" }
+                    "property": {
+                      "type": "string"
+                    },
+                    "rule": {
+                      "type": "string"
+                    },
+                    "translation_key": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -427,16 +700,31 @@
             "items": {
               "type": "object",
               "properties": {
-                "translation_key": { "type": "string" },
+                "translation_key": {
+                  "type": "string"
+                },
                 "event_type": {
                   "type": "string",
-                  "enum": [ "report_accepted", "registration_not_found" ]
+                  "enum": [
+                    "report_accepted",
+                    "registration_not_found"
+                  ]
                 },
                 "recipient": {
                   "type": "string",
-                  "enum": [ "reporting_unit", "parent", "clinic", "chw_phone" ]
+                  "enum": [
+                    "recipient_1",
+                    "recipient_2",
+                    "recipient_3",
+                    "reporting_unit",
+                    "parent",
+                    "clinic",
+                    "chw_phone"
+                  ]
                 },
-                "bool_expr": { "type": "string" }
+                "bool_expr": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -448,24 +736,49 @@
       "items": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
-          "translation_key": { "type": "string" },
-          "summary": { "type": "string" },
-          "description": { "type": "string" },
-          "start_from": { "type": "string" },
+          "name": {
+            "type": "string"
+          },
+          "translation_key": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "start_from": {
+            "type": "string"
+          },
           "messages": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "translation_key": { "type": "string" },
-                "group": { "type": "number" },
-                "offset": { "type": "string" },
-                "send_day": { "type": "string" },
-                "send_time": { "type": "string" },
+                "translation_key": {
+                  "type": "string"
+                },
+                "group": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "string"
+                },
+                "send_day": {
+                  "type": "string"
+                },
+                "send_time": {
+                  "type": "string"
+                },
                 "recipient": {
                   "type": "string",
-                  "enum": [ "reporting_unit", "parent", "clinic", "chw_phone" ]
+                  "enum": [
+                    "reporting_unit",
+                    "parent",
+                    "clinic",
+                    "chw_phone"
+                  ]
                 }
               }
             }
@@ -476,21 +789,35 @@
     "notifications": {
       "type": "object",
       "properties": {
-        "off_form": { "type": "string" },
-        "on_form": { "type": "string" },
-        "confirm_deactivation": { "type": "boolean" },
+        "off_form": {
+          "type": "string"
+        },
+        "on_form": {
+          "type": "string"
+        },
+        "confirm_deactivation": {
+          "type": "boolean"
+        },
         "validations": {
           "type": "object",
           "properties": {
-            "join_responses": { "type": "boolean" },
+            "join_responses": {
+              "type": "boolean"
+            },
             "list": {
               "type": "array",
               "items": {
                 "type": "object",
                 "properties": {
-                  "property": { "type": "string" },
-                  "rule": { "type": "string" },
-                  "translation_key": { "type": "string" }
+                  "property": {
+                    "type": "string"
+                  },
+                  "rule": {
+                    "type": "string"
+                  },
+                  "translation_key": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -501,16 +828,29 @@
           "items": {
             "type": "object",
             "properties": {
-              "translation_key": { "type": "string" },
+              "translation_key": {
+                "type": "string"
+              },
               "event_type": {
                 "type": "string",
-                "enum": [ "on_mute", "on_unmute", "patient_not_found" ]
+                "enum": [
+                  "on_mute",
+                  "on_unmute",
+                  "patient_not_found"
+                ]
               },
               "recipient": {
                 "type": "string",
-                "enum": [ "reporting_unit", "parent", "clinic", "chw_phone" ]
+                "enum": [
+                  "reporting_unit",
+                  "parent",
+                  "clinic",
+                  "chw_phone"
+                ]
               },
-              "bool_expr": { "type": "string" }
+              "bool_expr": {
+                "type": "string"
+              }
             }
           }
         }
@@ -519,18 +859,186 @@
     "transitions": {
       "type": "object",
       "properties": {
-        "default_responses": { "type": "boolean" },
-        "update_clinics": { "type": "boolean" },
-        "accept_patient_reports": { "type": "boolean" },
-        "conditional_alerts": { "type": "boolean" },
-        "update_sent_by": { "type": "boolean" },
-        "registration": { "type": "boolean" },
-        "update_notifications": { "type": "boolean" },
-        "update_scheduled_reports": { "type": "boolean" },
-        "multi_report_alerts": { "type": "boolean" },
-        "update_sent_forms": { "type": "boolean" },
-        "generate_patient_id_on_people": { "type": "boolean" },
-        "death_reporting": { "type": "boolean" }
+        "default_responses": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "update_clinics": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "accept_patient_reports": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "conditional_alerts": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "update_sent_by": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "registration": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "update_notifications": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "update_scheduled_reports": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "multi_report_alerts": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "update_sent_forms": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "generate_patient_id_on_people": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "death_reporting": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
       }
     },
     "death_reporting": {
@@ -538,9 +1046,13 @@
       "properties": {
         "mark_deceased_forms": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
-        "date_field": { "type": "string" }
+        "date_field": {
+          "type": "string"
+        }
       }
     },
     "forms": {
@@ -555,9 +1067,15 @@
             "meta": {
               "type": "object",
               "properties": {
-                "code": { "type": "string" },
-                "icon": { "type": "string" },
-                "translation_key": { "type": "string" }
+                "code": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "translation_key": {
+                  "type": "string"
+                }
               }
             },
             "fields": {
@@ -575,7 +1093,9 @@
                         "short": {
                           "type": "object",
                           "properties": {
-                            "translation_key": { "type": "string" }
+                            "translation_key": {
+                              "type": "string"
+                            }
                           }
                         },
                         "tiny": {
@@ -584,16 +1104,22 @@
                             "pattern": "^[a-z]{2}$"
                           },
                           "patternProperties": {
-                            "^[a-z]{2}$": { "type": "string" }
+                            "^[a-z]{2}$": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
                     },
-                    "position": { "type": "number" },
+                    "position": {
+                      "type": "number"
+                    },
                     "flags": {
                       "type": "object",
                       "properties": {
-                        "input_digits_only": { "type": "boolean" }
+                        "input_digits_only": {
+                          "type": "boolean"
+                        }
                       }
                     },
                     "length": {
@@ -603,9 +1129,16 @@
                     },
                     "type": {
                       "type": "string",
-                      "enum": [ "string", "integer" ]
+                      "enum": [
+                        "string",
+                        "integer",
+                        "boolean",
+                        "date"
+                      ]
                     },
-                    "required": { "type": "boolean" }
+                    "required": {
+                      "type": "boolean"
+                    }
                   }
                 }
               }
@@ -617,29 +1150,50 @@
     "tasks": {
       "type": "object",
       "properties": {
-        "rules": { "type": "string" },
+        "rules": {
+          "type": "string"
+        },
         "targets": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
+            "enabled": {
+              "type": "boolean"
+            },
             "items": {
               "type": "array",
               "items": {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
+                  "id": {
+                    "type": "string"
+                  },
                   "type": {
                     "type": "string",
-                    "enum": [ "count", "percent" ]
+                    "enum": [
+                      "count",
+                      "percent"
+                    ]
                   },
                   "goal": {
                     "type": "number",
-                    "enum": [ -1, 100, 50 ]
+                    "enum": [
+                      -1,
+                      100,
+                      50
+                    ]
                   },
-                  "translation_key": { "type": "string" },
-                  "icon": { "type": "string" },
-                  "context": { "type": "string" },
-                  "subtitle_translation_key": { "type": "string" }
+                  "translation_key": {
+                    "type": "string"
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "context": {
+                    "type": "string"
+                  },
+                  "subtitle_translation_key": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -647,28 +1201,52 @@
         }
       }
     },
-    "outgoing_deny_list": { "type": "string" },
-    "outgoing_deny_with_alphas": { "type": "boolean" },
-    "outgoing_deny_shorter_than": { "type": "number" },
-    "multipart_sms_limit": { "type": "number" },
-    "contact_summary": { "type": "string" },
+    "outgoing_deny_list": {
+      "type": "string"
+    },
+    "outgoing_deny_with_alphas": {
+      "type": "boolean"
+    },
+    "outgoing_deny_shorter_than": {
+      "type": "number"
+    },
+    "multipart_sms_limit": {
+      "type": "number"
+    },
+    "contact_summary": {
+      "type": "string"
+    },
     "multi_report_alerts": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
-          "is_report_counted": { "type": "string" },
-          "num_reports_threshold": { "type": "number" },
-          "message": { "type": "string" },
+          "name": {
+            "type": "string"
+          },
+          "is_report_counted": {
+            "type": "string"
+          },
+          "num_reports_threshold": {
+            "type": "number"
+          },
+          "message": {
+            "type": "string"
+          },
           "recipients": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "time_window_in_days": { "type": "number" },
+          "time_window_in_days": {
+            "type": "number"
+          },
           "forms": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
