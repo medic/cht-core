@@ -1,31 +1,32 @@
 # The Core Framework of the Community Health Toolkit (CHT)
 
-These instructions are designed to help you run or develop on the CHT’s Core Framework, a technical resource contributed by Medic Mobile. 
+These instructions are designed to help you run or develop on the Core Framework, a technical resource of the [Community Health Toolkit (CHT)] (https://communityhealthtoolkit.org) contributed by Medic Mobile. 
 
-Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities. We build world-class, open-source software that supports health workers delivering equitable care that reaches everyone. Medic Mobile serves as the technical lead and a core contributor to the [Community Health Toolkit] (https://communityhealthtoolkit.org).
+Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
 
-To build community health applications using this framework, read our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md). For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
+For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
 
 ## Overview
 
-The `medic` repository is the core tool of the Medic Mobile stack and a central resource of the Community Health Toolkit. When health workers submit data — using text messages (SMS) or mobile applications — a web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md). 
 
-The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally or in the cloud by setting up the individual components or as a Docker container.
+The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.  
 
-Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of web APIs we need) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed, filtered, verified, and exported using a web application. The web applications confirm data submissions, generate unique IDs, and schedule automated reminder messages based on user-defined configurations. They are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
 
-For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
+Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
 ## Easy Deployment
 
-If you want to get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
+To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
 
 Once up and running you can [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
 
-If you want to develop against the underlying framework and set up components individually, follow the _Development Setup_ below.
+If you want to develop against the Core Framework and set up components individually, follow the _Development Setup_ below.
 
 ## Development Setup
 
