@@ -6,13 +6,26 @@ Medic Mobile is a nonprofit organization on a mission to improve health in the h
 
 For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
 
+## Table of Contents
+<!-- Table of contents -->
+  - [Overview](#overview)
+  - [Easy Deployment](#easy-deployment)
+  - [Development Setup](#development-setup)
+  - [Tests](#tests)
+  - [Configuring Medic](#configuring-medic)
+  - [Automated Deployment on Travis](#automated-deployment-on-travis)
+  - [Contributing](#contributing)
+  - [Build Status](#build-status)
+  - [Copyright](#copyright)
+  - [License](#license)
+
 ## Overview
 
 The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md). 
 
 The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.  
 
-Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed, filtered, verified, and exported using a web application. The web applications confirm data submissions, generate unique IDs, and schedule automated reminder messages based on user-defined configurations. They are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
+Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed, filtered, verified, and exported using a web application. They are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
 
 Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
 
