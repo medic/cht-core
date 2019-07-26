@@ -7,16 +7,13 @@ Medic Mobile is a nonprofit organization on a mission to improve health in the h
 For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
 
 ## Table of Contents
-<!-- Table of contents -->
+
   - [Overview](#overview)
   - [Easy Deployment](#easy-deployment)
   - [Development Setup](#development-setup)
   - [Tests](#tests)
-  - [Configuring Medic](#configuring-medic)
-  - [Automated Deployment on Travis](#automated-deployment-on-travis)
+  - [Configuring The Standard Application](#configuring-the-standard-application)
   - [Contributing](#contributing)
-  - [Build Status](#build-status)
-  - [Copyright](#copyright)
   - [License](#license)
 
 ## Overview
@@ -25,9 +22,9 @@ The CHT's Core Framework is a software architecture that makes it faster to buil
 
 The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.  
 
-Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed, filtered, verified, and exported using a web application. They are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
+Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed and exported using a web application. These web applications are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
 
-Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+Currently, the latest versions of Chrome, Chrome for Android and Firefox are functionally supported. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
 
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
@@ -35,17 +32,12 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 ## Easy Deployment
 
-To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
+To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md). You can then [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
 
-Once up and running you can [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
-
-If you want to develop against the Core Framework and set up components individually, follow the _Development Setup_ below.
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
-
-With the setup instructions below the tools will run directly on your machine, rather than via Docker.
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
 ### Dependencies
 
@@ -61,11 +53,11 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 
 ### Enabling a secure CouchDB
 
-By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
+By default CouchDB runs in *admin party mode*, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
 
 First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
 
-Now that's done, we must configure some security settings on CouchDB:
+Now, configure some security settings on CouchDB:
 
 ```shell
 COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
@@ -214,11 +206,11 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 To build reference documentation into a local folder `jsdoc-docs`: `grunt build-documentation`
 
-## Configuring Medic
+## Configuring the standard application
 
 This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 
 
-We include the "standard" configuration in this repo, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
+This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -235,7 +227,19 @@ Code is automatically published via [Travis CI](https://travis-ci.org/medic/medi
 
 ## Contributing
 
-At Medic Mobile we are the technical steward of the [Community Health Toolkit](https://communityhealthtoolkit.org). We welcome and appreciate contributions, and support new developers to use the tools whenever possible. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). For more info check out our [contributor guidelines](CONTRIBUTING.md).
+The Core Framework of the [Community Health Toolkit](https://communityhealthtoolkit.org) is powered by people like you. We appreciate your contributions, and are dedicated to supporting the developers who improve our tools whenever possible. 
+
+First time contributor? Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start. 
+
+Looking for other ways to help? You can also:
+* Improve documentation. Check out our style guide [here](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md)
+* Find and mark duplicate issues
+* Try to reproduce issues and help with troubleshooting
+* Or share a new idea or question with us!
+
+The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). You can even [request access](mailto:info@communityhealthtoolkit.org) to our community forum. 
+
+For more information check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 
