@@ -1,3 +1,6 @@
+/**
+ * @module db-batch
+ */
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
@@ -43,12 +46,12 @@ const runBatch = (ddoc, view, viewParams, iteratee) => {
 /**
  * Run an operation over all documents returned from the query in batches.
  *
- * viewName (string)    Name of the view, eg: "medic-client/doc_by_type".
- * viewParams (object)  Parameters to pass to the view query.
- *  - `limit` defaults to 100 and can be overriden.
- *  - `include_docs` defaults to `true` and cannot be overriden.
- *  - `startkey` and `startkey_docid` cannot be overriden.
- * iteratee (function)  Called to process an array of docs then invoke the given callback.
+ * @param {String} viewName Name of the view, eg: "medic-client/doc_by_type".
+ * @param {Object} viewParams Parameters to pass to the view query.
+ *    `include_docs` defaults to `true` and cannot be overridden.
+ *    `startkey` and `startkey_docid` cannot be overriden.
+ * @param {int} [viewParams.limit=100] the page size.
+ * @param {Function} iteratee Called to process an array of docs then invoke the given callback.
  */
 module.exports.view = (viewName, viewParams, iteratee) => {
   const [ddoc, view] = viewName.split('/');
