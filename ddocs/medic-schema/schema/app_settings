@@ -847,6 +847,7 @@
               "recipient": {
                 "type": "string",
                 "enum": [
+                  "12345",
                   "reporting_unit",
                   "parent",
                   "clinic",
