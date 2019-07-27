@@ -250,7 +250,7 @@ describe('registration', () => {
           ],
         },
       ],
-      "forms": {
+      'forms': {
         'FORM-A': {
 
         },
