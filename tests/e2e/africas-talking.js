@@ -12,6 +12,8 @@ const messageTo3 = '+64275555558';
 const messageContent1 = 'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016';
 const messageContent2 = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!';
 
+const INCOMING_KEY = 'yabbadabbadoo';
+
 const report = {
   type: 'data_record',
   from: '+64275555556',
@@ -130,12 +132,20 @@ const report = {
 
 describe('africas talking api', () => {
 
+  beforeAll(() => {
+    return utils.request({
+      method: 'PUT',
+      path: '/_node/couchdb@127.0.0.1/_config/medic-credentials/africastalking.com:incoming',
+      body: INCOMING_KEY
+    });
+  });
+
   describe('- gateway submits new WT sms messages', () => {
     const submitSms = body => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: '/api/v1/sms/africastalking/incoming-messages',
+        path: `/api/v1/sms/africastalking/incoming-messages?key=${INCOMING_KEY}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -187,7 +197,7 @@ describe('africas talking api', () => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: '/api/v1/sms/africastalking/delivery-reports',
+        path: `/api/v1/sms/africastalking/delivery-reports?key=${INCOMING_KEY}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
