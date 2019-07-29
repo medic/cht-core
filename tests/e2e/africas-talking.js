@@ -138,7 +138,7 @@ describe('africas talking api', () => {
       port: constants.COUCH_PORT,
       method: 'PUT',
       path: `/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com:incoming`,
-      body: INCOMING_KEY
+      body: `"${INCOMING_KEY}"`
     });
   });
 
