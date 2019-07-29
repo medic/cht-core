@@ -36,7 +36,7 @@ describe('Africa\'s Talking controller', () => {
     });
 
     it('returns error when key does not match', () => {
-      const req = { query: { query: 'wrong' } };
+      const req = { query: 'wrong' };
       sinon.stub(secureSettings, 'getCredentials').resolves('mykey');
       sinon.stub(serverUtils, 'error').returns();
       return controller.incomingMessages(req, res).then(() => {
