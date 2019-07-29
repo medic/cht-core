@@ -83,8 +83,7 @@ const contacts = [
 ];
 
 const transitionsConfig = {
-  patient_reports: [
-    {
+  patient_reports: [{
     form: 'TEMP',
     validations: {
       list: [
@@ -99,111 +98,79 @@ const transitionsConfig = {
       ],
       join_responses: false
     },
-    messages: [
-      {
-        event_type: 'registration_not_found',
-        message: [
-          {
-            locale: 'en',
-            content: 'Patient not found'
-          }
-        ],
-      },
-      {
+    messages: [{
+      event_type: 'registration_not_found',
+      message: [{
+        locale: 'en',
+        content: 'Patient not found'
+      }],
+    }, {
       event_type: 'report_accepted',
-      message: [
-        {
-          locale: 'en',
-          content: 'Temperature registered'
-        }
-      ],
-    }
-  ]
-  }
-],
-  alerts: [
-    {
+      message: [{
+        locale: 'en',
+        content: 'Temperature registered'
+      }],
+    }]
+  }],
+  alerts: [{
     form: 'TEMP',
     condition: 'doc.fields.temp > 39',
     message: 'Patient temperature high',
     recipient: 'reporting_unit'
-  }
-],
+  }],
   death_reporting: {
     mark_deceased_forms: ['DEATH'],
     date_field: 'reported_date'
   },
   muting: {
     mute_forms: ['MUTE'],
-    messages: [
-      {
+    messages: [{
       event_type: 'mute',
-      message: [
-        {
+      message: [{
         locale: 'en',
         content: 'Patient {{patient_id}} muted'
-      }
-    ],
-    }
-  ]
+      }],
+    }]
   },
   default_responses: { start_date: '2018-01-01' },
-  registrations: [
-    {
+  registrations: [{
     form: 'CHILD',
-    events: [
-      {
+    events: [{
       name: 'on_create',
       trigger: 'add_patient',
       params: { patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name' },
       bool_expr: ''
-    },
-    {
+    }, {
       name: 'on_create',
       trigger: 'assign_schedule',
       params: 'new patient',
       bool_expr: ''
-    }
-  ],
-    messages: [
-      {
+    }],
+    messages: [{
       event_type: 'report_accepted',
-      message: [
-        {
+      message: [{
         locale: 'en',
         content: 'Patient {{patient_id}} created'
-      }
-    ],
-    }
-  ],
-  }
-],
-  schedules: [
-    {
+      }],
+    }],
+  }],
+  schedules: [{
     name: 'new patient',
     start_from: 'reported_date',
-    messages: [
-      {
+    messages: [{
       offset: '1 month',
-      message: [
-        {
+      message: [{
         locale: 'en',
         content: 'Revisit patient {{patient_id}}'
-      }
-    ],
-  },
-  {
+      }],
+    }, {
       offset: '1 week',
-      message: [
-        {
+      message: [{
         locale: 'en',
         content: 'First visit'
-      }
-    ],
-    }
-  ]
-  }
-]
+      }],
+    }]
+  }]
 };
 
 const formsConfig = {
