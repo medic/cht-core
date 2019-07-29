@@ -58,7 +58,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
         body = JSON.parse(body);
         if (body.error) {
           const err = new Error(
-            `Request failed: ${options.path},\n  body: ${JSON.stringify(
+            `Request failed: ${JSON.stringify(options)},\n  body: ${JSON.stringify(
               options.body
             )}\n  response: ${JSON.stringify(body)}`
           );
