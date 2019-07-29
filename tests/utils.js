@@ -119,14 +119,14 @@ const updateSettings = updates => {
       Object.keys(updates).forEach(updatedField => {
         if (!_.has(originalSettings, updatedField)) {
           let field_type = updates[updatedField].constructor.name;
-          if (field_type === "Array") {
+          if (field_type === 'Array') {
             originalSettings[updatedField] = [];
-          } else if (field_type === "Object") {
+          } else if (field_type === 'Object') {
             originalSettings[updatedField] = {};
-          } else if (field_type === "Number") {
+          } else if (field_type === 'Number') {
             originalSettings[updatedField] = 0;
           } else {
-            originalSettings[updatedField] = "";
+            originalSettings[updatedField] = '';
           }
         }
       });
