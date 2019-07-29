@@ -30,7 +30,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
   const deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
-  options.port = constants.API_PORT;
+  options.port = options.port || constants.API_PORT;
   if (!noAuth) {
     options.auth = options.auth || auth.user + ':' + auth.pass;
   }

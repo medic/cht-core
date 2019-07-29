@@ -1,4 +1,5 @@
 const utils = require('../utils');
+const constants = require('../constants');
 const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
 const querystring = require('querystring');
@@ -134,6 +135,7 @@ describe('africas talking api', () => {
 
   beforeAll(() => {
     return utils.request({
+      port: constants.COUCH_PORT,
       method: 'PUT',
       path: '/_node/couchdb@127.0.0.1/_config/medic-credentials/africastalking.com:incoming',
       body: INCOMING_KEY
