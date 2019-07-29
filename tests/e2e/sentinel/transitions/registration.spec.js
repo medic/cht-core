@@ -214,50 +214,27 @@ describe('registration', () => {
 
   it('should create a patient with a random patient_id or prefilled value', () => {
     const settings = {
-      transitions: {
-        registration: true,
-      },
-      registrations: [
-        {
-          form: 'FORM-A',
-          events: [
-            {
-              name: 'on_create',
-              trigger: 'add_patient',
-              params: '',
-              bool_expr: ''
-            },
-          ],
-          messages: [
-
-          ],
-        },
-        {
-          form: 'FORM-B',
-          events: [
-            {
-              name: 'on_create',
-              trigger: 'add_patient',
-              params: {
-                patient_id_field: 'our_patient_id',
-                patient_name_field: 'our_patient_name'
-              },
-              bool_expr: ''
-            },
-          ],
-          messages: [
-
-          ],
-        },
-      ],
-      'forms': {
-        'FORM-A': {
-
-        },
-        'FORM-B': {
-
-        },
-      },
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM-A',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '',
+          bool_expr: ''
+        }],
+        messages: [],
+      }, {
+        form: 'FORM-B',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: { patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name' },
+          bool_expr: ''
+        }],
+        messages: [],
+      }],
+      forms: { 'FORM-A': { }, 'FORM-B': { }}
     };
 
     const doc1 = {
@@ -528,103 +505,73 @@ describe('registration', () => {
 
   it('should assign and clear schedules', () => {
     const settings = {
-      transitions: {
-        registration: true
-      },
-      registrations: [
-        {
-          form: 'FORM',
-          events: [
-              {
-              name: 'on_create',
-              trigger: 'assign_schedule',
-              params: ['sch1', 'sch2'],
-              bool_expr: ''
-            },
-            {
-              name: 'on_create',
-              trigger: 'clear_schedule',
-              params: ['sch1', 'sch2'],
-              bool_expr: ''
-            }
-          ],
-          messages: [
-
-          ],
-        }
-    ],
-      forms: {
-        FORM: {
-
-        }
-      },
-      schedules: [
-          {
-            name: 'sch1',
-            start_from: 'some_date_field',
-            messages: [
-              {
-                // this is in the past
-                group: 1,
-                offset: '5 days',
-                send_day: 'monday',
-                send_time: '09:00',
-                recipient: 'clinic',
-                message: [
-                  {
-                    locale: 'en',
-                    content: 'message1'
-                  }
-            ],
-          },
-          {
-            group: 2,
-            offset: '12 weeks',
-            send_day: '',
-            send_time: '',
-            recipient: 'clinic',
-            message: [
-              {
-                locale: 'en',
-                content: 'message2'
-              }
-            ],
-          },
-        ]
-        },
-        {
-          name: 'sch2',
-          start_from: 'reported_date',
-          messages: [
-            {
-              group: 1,
-              offset: '2 weeks',
-              send_day: 'friday',
-              send_time: '09:00',
-              recipient: 'clinic',
-              message: [
-                {
-                  locale: 'en',
-                  content: 'message3'
-                }
-              ],
-            },
-            {
-              group: 1,
-              offset: '5 years',
-              send_day: '',
-              send_time: '',
-              recipient: 'clinic',
-              message: [
-                  {
-                  locale: 'en',
-                  content: 'message4'
-                }
-              ],
-            },
-          ]
-        },
-      ]
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM',
+        events: [{
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: ['sch1', 'sch2'],
+          bool_expr: ''
+        }, {
+          name: 'on_create',
+          trigger: 'clear_schedule',
+          params: ['sch1', 'sch2'],
+          bool_expr: ''
+        }],
+        messages: [],
+      }],
+      forms: { FORM: { }},
+      schedules: [{
+        name: 'sch1',
+        start_from: 'some_date_field',
+        messages: [{
+          // this is in the past
+          group: 1,
+          offset: '5 days',
+          send_day: 'monday',
+          send_time: '09:00',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message1'
+          }],
+        }, {
+          group: 2,
+          offset: '12 weeks',
+          send_day: '',
+          send_time: '',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message2'
+          }],
+        }]
+      }, {
+        name: 'sch2',
+        start_from: 'reported_date',
+        messages: [{
+          group: 1,
+          offset: '2 weeks',
+          send_day: 'friday',
+          send_time: '09:00',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message3'
+          }],
+        }, {
+          group: 1,
+          offset: '5 years',
+          send_day: '',
+          send_time: '',
+          recipient: 'clinic',
+          message: [{
+            locale: 'en',
+            content: 'message4'
+          }],
+        }]
+      }]
     };
 
     const doc1 = {

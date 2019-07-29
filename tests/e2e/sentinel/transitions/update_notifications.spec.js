@@ -104,39 +104,31 @@ describe('update_notifications', () => {
 
   it('should add error when contact not found or validation fails', () => {
     const settings = {
-      'transitions': {
-        update_notifications: true
-      },
-      'notifications': {
+      transitions: { update_notifications: true },
+      notifications: {
         on_form: 'on',
         off_form: 'off',
-        messages: [
-            {
-            event_type: 'patient_not_found',
-            recipient: '12345',
-            message: [
-              {
-                locale: 'en',
-                content: 'Patient not found'
-              },
-            ],
-          }
-        ],
+        messages: [{
+          event_type: 'patient_not_found',
+          recipient: '12345',
+          message: [{
+            locale: 'en',
+            content: 'Patient not found'
+          }],
+        }],
         validations: {
           list: [
             {
               property: 'patient_id',
               rule: 'lenMin(5) && lenMax(10)',
-              message: [
-                {
-                  locale: 'en',
-                  content: 'Patient id incorrect'
-                }
-              ],
+              message: [{
+                locale: 'en',
+                content: 'Patient id incorrect'
+              }],
             },
           ],
           join_responses: false
-        },
+        }
       }
     };
 
@@ -202,35 +194,26 @@ describe('update_notifications', () => {
 
   it('should mute and unmute a person', () => {
     const settings = {
-      transitions: {
-        update_notifications: true
-      },
+      transitions: { update_notifications: true },
       notifications: {
         on_form: 'on',
         off_form: 'off',
-        messages: [
-          {
-            event_type: 'on_mute',
-            recipient: '12345',
-            message: [
-              {
-                locale: 'en',
-                content: 'Contact muted'
-              }
-            ],
-          },
-          {
-            event_type: 'on_unmute',
-            recipient: '12345',
-            message: [
-              {
-                locale: 'en',
-                content: 'Contact unmuted'
-              }
-            ],
-          }
-        ],
-      },
+        messages: [{
+          event_type: 'on_mute',
+          recipient: '12345',
+          message: [{
+            locale: 'en',
+            content: 'Contact muted'
+          }],
+        }, {
+          event_type: 'on_unmute',
+          recipient: '12345',
+          message: [{
+            locale: 'en',
+            content: 'Contact unmuted'
+          }],
+        }],
+      }
     };
 
     const mute1 = {
