@@ -18,19 +18,16 @@ const isXMLForm = doc => doc && doc._attachments && doc._attachments.xml;
 
 const isCollectForm = doc => doc && doc.context && doc.context.collect;
 
-/**
- * Take view data and prepare forms list for openrosa lib call that generates
- * the OpenRosa xformsList compatible XML.
- *
- * Forms are skipped if:
- * - no xml attachment is on the doc (presumably it's a JSON form)
- * - the doc does not have the `context.collect` property set - presumably it's
- *   an in-app form rather than one designed for medic-collect.
- *
- * @param {Object} data - couchdb view data
- * @param {Object} req - the request object
- * @api private
- */
+// Take view data and prepare forms list for openrosa lib call that generates
+// the OpenRosa xformsList compatible XML.
+//
+// Forms are skipped if:
+// - no xml attachment is on the doc (presumably it's a JSON form)
+// - the doc does not have the `context.collect` property set - presumably it's
+//   an in-app form rather than one designed for medic-collect.
+//
+// @param {Object} data - couchdb view data
+// @param {Object} req - the request object
 const listFormsXML = (data, req) => {
   const urls = data.rows
     .filter(row => isXMLForm(row.doc) && isCollectForm(row.doc))
@@ -50,14 +47,11 @@ const listFormsXML = (data, req) => {
   });
 };
 
-/*
- * Take view data and return simple list of forms in JSON format. The returned
- * data should be enough information to construct the request for the full
- * form. e.g. {{form_id}}.{{format}}
- *
- * @param {Object} data - couchdb view data
- * @api private
- */
+// Take view data and return simple list of forms in JSON format. The returned
+// data should be enough information to construct the request for the full
+// form. e.g. {{form_id}}.{{format}}
+//
+// @param {Object} data - couchdb view data
 const listFormsJSON = data => {
   const forms = data.rows
     .filter(row => isXMLForm(row.doc))

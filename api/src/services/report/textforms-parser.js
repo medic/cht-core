@@ -1,3 +1,12 @@
+/**
+ * This is a modified version of the TextForms parser.
+ *
+ * It returns all keys in lower case and only returns
+ * the value, not the type. The changes were made to
+ * make it compatible with the existing smsparser.
+ *
+ * @module textforms-parser
+ */
 const _ = require('underscore'),
       config = require('../../config'),
       embedRe = function(re) {
@@ -17,16 +26,6 @@ const _ = require('underscore'),
         '[\\s-!]*(.+?)?\\s*$'
       );
 
-/**
- * This is a modified version of the TextForms parser.
- *
- * It returns all keys in lower case and only returns
- * the value, not the type. The changes were made to
- * make it compatible with the existing smsparser.
- *
- * @class TextForms:
- */
-
 const lower = str => str && str.toLowerCase ? str.toLowerCase() : str;
 
 const startsWith = (lhs, rhs) => {
@@ -35,10 +34,7 @@ const startsWith = (lhs, rhs) => {
   );
 };
 
-/**
- * @name typeOf:
- * Determines the TextForms type for the string.
- */
+// Determines the TextForms type for the string.
 const typeOf = str => {
   if (str.match(reNumericOnly)) {
     return str.match(reDecimal) ? 'numeric' : 'integer';
@@ -46,11 +42,8 @@ const typeOf = str => {
   return 'string';
 };
 
-/**
- * @name formatAs:
- * Given a string `value` with type `type`, this function
- * "casts" `value` to the appropriate javascript type.
- */
+// Given a string `value` with type `type`, this function
+// casts" `value` to the appropriate javascript type.
 const formatAs = (type, value) => {
   switch (type) {
     case 'integer':
@@ -64,38 +57,33 @@ const formatAs = (type, value) => {
   }
 };
 
-/**
- * @name setResult:
- *  Insert a result in to the TextForms result buffer.
- *  If a result for `key` already exists, the value is
- *  promoted to an array and multiple values are stored
- *  in the sequence that they appeared.
- */
+// Insert a result in to the TextForms result buffer.
+// If a result for `key` already exists, the value is
+// promoted to an array and multiple values are stored
+// in the sequence that they appeared.
 const setResult = (result, key, value) => {
   key = key.toLowerCase();
   if (result[key] === undefined) {
-    /* Single pair result */
+    // Single pair result
     if (value && value.values instanceof Array) {
       result[key] = value.values.join('');
     } else {
       result[key] = value;
     }
   } else if (result[key] instanceof Array) {
-    /* Second-or-later pair result */
+    // Second-or-later pair result
     result[key].push(value);
   } else {
-    /* First pair result */
+    // First pair result
     result[key] = [ result[key], value ];
   }
 };
 
 
 /**
- * @param {Object|String} msg - sms_message document or sms message string
- * @returns {Object|{}} - A parsed object of the sms message or an empty
+ * @param {(Object|String)} msg - sms_message document or sms message string
+ * @returns {Object} - A parsed object of the sms message or an empty
  * object if parsing fails.
- *
- * @api public
  */
 exports.parse = msg => {
   if (!msg) {
@@ -106,41 +94,37 @@ exports.parse = msg => {
 
   const results = {};
   fields.forEach(field => {
-    /* Process message component:
-      Each component has a key (which is the field's name), plus
-      either: (1) a value written with an explicit whitespace
-      separator (stored in `other`) or (2) a value written with
-      an implicit separator (in `numeric`, and never a string). */
+    // Process message component:
+    // Each component has a key (which is the field's name), plus
+    // either: (1) a value written with an explicit whitespace
+    // separator (stored in `other`) or (2) a value written with
+    // an implicit separator (in `numeric`, and never a string).
     const m = field.match(reField);
 
-    /* Empty component:
-      Skip a completely-empty component (i.e. a non-match) */
-
+    // Empty component: Skip a completely-empty component (i.e. a non-match)
     if (!m) {
       return;
     }
 
-    /* Capture subgroups:
-      These refer to the `reField` regular expression. */
+    // Capture subgroups: These refer to the `reField` regular expression.
 
     const key = m[1];
     const date = m[2];
     let numeric = m[3];
     let other = m[4];
 
-    /* Whitespace-only value of `other`?:
-      Interpret as non-match, preventing pair formation (below). */
+    // Whitespace-only value of `other`?:
+    // Interpret as non-match, preventing pair formation (below).
 
     if (other !== undefined && other.trim() === '') {
       other = undefined;
     }
 
-    /* If `numeric` *and* `other` both match text:
-      This is either a field name that ends in a digit, a field
-      name with multiple values specified, or a single value in a
-      sequence (with an offset and value). This condition needs
-      to be disambiguated by comparing against a schema (later). */
-
+    // If `numeric` *and* `other` both match text:
+    // This is either a field name that ends in a digit, a field
+    // name with multiple values specified, or a single value in a
+    // sequence (with an offset and value). This condition needs
+    // to be disambiguated by comparing against a schema (later).
     if (other !== undefined && numeric !== undefined) {
 
       const numeric_type = typeOf(numeric);
@@ -158,25 +142,23 @@ exports.parse = msg => {
       return;
     }
 
-    /* Number written with explicit separator?
-      If there was an explicit space between the field's key
-      and a numeric value, "promote" the value to numeric. */
-
+    // Number written with explicit separator?
+    // If there was an explicit space between the field's key
+    // and a numeric value, "promote" the value to numeric.
     if (other && typeOf(other) !== 'string') {
       numeric = other;
       other = undefined;
     }
 
-    /* Data type detection:
-      Given numeric data, differentiate between an integer
-      and a decimal value. Otherwise, just store the string. */
-
+    // Data type detection:
+    // Given numeric data, differentiate between an integer
+    // and a decimal value. Otherwise, just store the string.
     if (numeric !== undefined) {
 
       const type = typeOf(numeric);
 
-      /* Differentiate integer from numeric:
-        The type here will never be string, per the regex. */
+      // Differentiate integer from numeric:
+      // The type here will never be string, per the regex.
       if (type === 'integer') {
         setResult(results, key, formatAs(type, numeric));
       } else {
@@ -186,7 +168,7 @@ exports.parse = msg => {
     } else if (date !== undefined) {
       setResult(results, key, formatAs('date', date));
     } else {
-      /* Store string as-is */
+      // Store string as-is
       setResult(results, key, other);
     }
   });
@@ -196,11 +178,10 @@ exports.parse = msg => {
 
 /**
  * @param {Object} def The form definition for this msg
- * @param {String|Object} msg The message or an object with a 'message'
+ * @param {(String|Object)} msg The message or an object with a 'message'
  *      property which contains the message
  * @returns {Object} A parsed object of the sms message or an empty
  *      object if parsing fails.
- * @api public
  */
 exports.parseCompact = (def, msg) => {
   if (!msg || !def || !def.fields) {
@@ -239,11 +220,10 @@ exports.parseCompact = (def, msg) => {
 
 /**
  * @param {Object} def The form definition for this msg
- * @param {String|Object} msg The message or an object with a 'message'
+ * @param {(String|Object)} msg The message or an object with a 'message'
  *      property which contains the message
  * @param {String} locale The locale string
  * @returns {Boolean} Returns true if the given msg is in compact format
- * @api public
  */
 exports.isCompact = (def, msg, locale) => {
   if (!msg || !def || !def.fields) {
@@ -266,7 +246,6 @@ exports.isCompact = (def, msg, locale) => {
 /**
  * @param {Object} doc - sms_message document
  * @returns {Array} - An array of values from the raw sms message
- * @api public
  */
 exports.parseArray = doc => {
 

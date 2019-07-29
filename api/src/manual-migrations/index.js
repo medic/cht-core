@@ -10,6 +10,8 @@
  *
  * Example:
  *  COUCH_URL=http://admin:pass@localhost:5984/medic node index xml-attachments,read-status,linked-contacts 105
+ *
+ * @module manual-migrations
  */
 const db = require('../db').medic,
   logger = require('../logger');

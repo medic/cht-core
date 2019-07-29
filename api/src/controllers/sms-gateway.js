@@ -1,5 +1,6 @@
 /**
  * This module implements GET and POST to support medic-gateway's API
+ * @module sms-gateway
  * @see https://github.com/medic/medic-gateway
  */
 const auth = require('../auth');
@@ -66,11 +67,22 @@ const addNewMessages = req => {
 const checkAuth = req => auth.check(req, 'can_access_gateway_api');
 
 module.exports = {
+  /**
+   * Check that the endpoint exists
+   * @param {Object} req The request
+   * @param {Object} res The response
+   */
   get: (req, res) => {
     return checkAuth(req)
       .then(() => res.json({ 'medic-gateway': true }))
       .catch(err => serverUtils.error(err, req, res));
   },
+  /**
+   * Stores new incoming messages, outgoing message status updates,
+   * and returns outgoing messages that are ready to be sent. 
+   * @param {Object} req The request
+   * @param {Object} res The response
+   */
   post: (req, res) => {
     return checkAuth(req)
       .then(() => addNewMessages(req))

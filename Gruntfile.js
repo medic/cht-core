@@ -855,15 +855,15 @@ module.exports = function(grunt) {
     },
     jsdoc : {
       distAdmin : {
-          src: [
-            'admin/src/js/**/*.js'
-          ],
-          options: {
-              destination: 'jsdocs/admin',
-              configure: 'node_modules/angular-jsdoc/common/conf.json',
-              template: 'node_modules/angular-jsdoc/angular-template',
-              readme: './README.md'
-          }
+        src: [
+          'admin/src/js/**/*.js'
+        ],
+        options: {
+          destination: 'jsdocs/admin',
+          configure: 'node_modules/angular-jsdoc/common/conf.json',
+          template: 'node_modules/angular-jsdoc/angular-template',
+          readme: './README.md'
+        }
       },
       distApi : {
         src: [
@@ -879,7 +879,7 @@ module.exports = function(grunt) {
           'sentinel/src/**/*.js'
         ],
         options: {
-            destination: 'jsdocs/sentinel'
+          destination: 'jsdocs/sentinel'
         }
       },
       distSharedLibs : {
@@ -900,7 +900,7 @@ module.exports = function(grunt) {
           'shared-libs/view-map-utils/src/*.js'
         ],
         options: {
-            destination: 'jsdocs/shared-libs'
+          destination: 'jsdocs/shared-libs'
         }
       },
       distWebapp : {
@@ -908,10 +908,10 @@ module.exports = function(grunt) {
           'webapp/src/js/**/*.js'
         ],
         options: {
-            destination: 'jsdocs/webapp',
-            configure: 'node_modules/angular-jsdoc/common/conf.json',
-            template: 'node_modules/angular-jsdoc/angular-template',
-            readme: './README.md'
+          destination: 'jsdocs/webapp',
+          configure: 'node_modules/angular-jsdoc/common/conf.json',
+          template: 'node_modules/angular-jsdoc/angular-template',
+          readme: './README.md'
         }
       },
     },
