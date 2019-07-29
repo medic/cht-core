@@ -404,6 +404,9 @@ const purgedDocsController = require('./controllers/purged-docs');
 app.get('/api/v1/server-side-purge/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
 app.get('/api/v1/server-side-purge/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
+// todo delete this
+app.get('/api/ssp/run', purgedDocsController.purge);
+
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
 const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy),

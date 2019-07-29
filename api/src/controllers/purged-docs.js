@@ -29,3 +29,14 @@ module.exports.checkpoint = (req, res) => {
     .writeCheckPointer(req.userCtx.roles, req.replicationId, req.query.seq)
     .then(() => res.json({ success: true }));
 };
+
+
+module.exports.purge = (req, res) => {
+  const auth = require('../auth');
+  if (!auth.isOnlineOnly(req.userCtx)) {
+    res.end();
+  }
+
+  serverSidePurge.purge();
+  res.end();
+};
