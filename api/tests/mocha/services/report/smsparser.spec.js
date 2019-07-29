@@ -1363,7 +1363,6 @@ describe('sms parser', () => {
       message: 'J1!c_imm!bcg#yes#ch#no'
     };
     const data = smsparser.parse(def, doc);
-    console.log(JSON.stringify(config.translate.args, null, 2));
     chai.expect(data).to.deep.equal({bcg: 'yes', ch:'no'});
     chai.expect(config.translate.callCount).to.equal(2);
   });
