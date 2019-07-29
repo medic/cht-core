@@ -52,7 +52,7 @@
         <div class="actions dropup" mm-auth mm-auth-any="[ actionBarCtrl.isAdmin, actionBar.left.childPlaces && 'can_create_places' ]">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-if="actionBar.left.childPlaces.length > 1" data-toggle="dropdown" mm-auth="can_create_places">
             <span class="fa fa-plus"></span>
-            <p translate>place.add.menu</p>
+            <p translate>Add place</p>
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-if="actionBar.left.childPlaces.length > 1" mm-auth="can_create_places">
             <li ng-repeat="child in actionBar.left.childPlaces | orderBy: 'id' track by child.id">
