@@ -117,7 +117,7 @@ describe('TasksContentCtrl', () => {
     watchCallback();
     setTimeout(() => {
       expect(ctrl.loadingForm).to.equal(false);
-      expect($scope.contentError).to.equal(true);
+      expect(ctrl.contentError).to.equal(true);
       done();
     });
   });
