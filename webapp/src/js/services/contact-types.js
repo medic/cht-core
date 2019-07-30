@@ -39,8 +39,12 @@ angular.module('inboxServices').service('ContactTypes', function(
      * Returns true if the given doc is a contact type.
      */
     includes: doc => {
-      return doc.type === 'contact' ||  // configurable hierarchy
-             isHardcodedType(doc.type); // hardcoded hierarchy
+      const type = doc && doc.type;
+      if (!type) {
+        return false;
+      }
+      return type === 'contact' ||   // configurable hierarchy
+             isHardcodedType(type);  // hardcoded
     },
 
     /**

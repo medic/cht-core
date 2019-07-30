@@ -112,6 +112,14 @@ describe('ContactTypes service', () => {
       chai.expect(service.includes({ type: 'xyz' })).to.equal(false);
     });
 
+    it('returns false for unknown type', () => {
+      chai.expect(service.includes({ })).to.equal(false);
+    });
+
+    it('returns false for null doc', () => {
+      chai.expect(service.includes()).to.equal(false);
+    });
+
   });
 
   describe('getChildren', () => {
