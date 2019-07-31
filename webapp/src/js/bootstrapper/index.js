@@ -141,7 +141,7 @@
     translator.setLocale(userCtx.locale);
 
     const onServiceWorkerInstalling = () => setUiStatus('DOWNLOAD_APP');
-    const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
+    const swRegistration = registerServiceWorker(onServiceWorkerInstalling).catch(() => {});
 
     const localDbName = getLocalDbName(dbInfo, userCtx.name);
     const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
