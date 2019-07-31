@@ -5,6 +5,7 @@
   "main": "bundle_templates.js",
   "dependencies": {
     "@octokit/rest": "^15.2.2",
+    "big-json": "^2.0.2",
     "csv": "^1.1.1",
     "fs": "0.0.2",
     "github": "^14.0.0",
