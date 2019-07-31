@@ -5,7 +5,7 @@ const auth = require('./auth')();
 const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
 
 class BaseConfig {
-  constructor(testSrcDir, { headless=false }={}) {
+  constructor(testSrcDir, { headless=true }={}) {
     const chromeArgs = [ '--window-size=1024,768' ];
     utils.setDebug(!headless);
     if (headless) {
