@@ -1,6 +1,6 @@
 # The Core Framework of the Community Health Toolkit (CHT)
 
-These instructions are designed to help you run or develop on the Core Framework, a technical resource of the [Community Health Toolkit (CHT)] (https://communityhealthtoolkit.org) contributed by Medic Mobile. 
+These instructions are designed to help you run or develop on the Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic Mobile. 
 
 Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
 
