@@ -527,7 +527,7 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update --versions.chrome=$(google-chrome-stable --version | cut -d " " -f 3) && ' +
+          './node_modules/.bin/webdriver-manager update && ' +
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
