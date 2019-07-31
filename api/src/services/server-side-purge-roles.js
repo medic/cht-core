@@ -4,6 +4,7 @@ const cache = require('./cache');
 const crypto = require('crypto');
 const request = require('request-promise-native');
 const registrationUtils = require('@medic/registration-utils');
+const viewMapUtils = require('@medic/view-map-utils');
 const config = require('../config');
 const logger = require('../logger');
 const { performance } = require('perf_hooks');
@@ -217,60 +218,98 @@ const updatePurgedDocs = (roles, ids, currentlyPurged, newPurged) => {
   }))
 };
 
-const batchedContactsPurge = (roles, purgeFn, startKeyDocId = '') => {
-  let nextKeyDocId;
-  let contacts;
-  const matchers = {};
-  const docIds = [];
+const CONTACT_TYPES = ['clinic', 'district_hospital', 'health_center', 'person'];
 
-  logger.debug(`Starting contacts purge batch with id ${startKeyDocId}`);
+const getRootContacts = () => {
+  return db.medic
+    .query('medic-client/doc_by_type', { key: ['district_hospital'] })
+    .then(result => result.rows.map(row => row.id));
+};
+
+const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '') => {
+  if (!rootIds.length) {
+    // WE ARE DONE
+    return;
+  }
+
+  rootId = rootId || rootIds.shift();
+  let nextKeyDocId;
+  const groups = {};
+  const docIds = [];
+  const subjectIds = [];
+
+  logger.debug(`Starting contacts purge batch for district ${rootId} with id ${startKeyDocId}`);
 
   const queryString = {
     limit: BATCH_SIZE,
-    keys: JSON.stringify([['district_hospital'], ['health_center'], ['clinic'], ['person']]),
+    keys:  JSON.stringify([[rootId]]),
     startkey_docid: startKeyDocId,
     include_docs: true
   };
 
   return request
-    .get(`${environment.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: queryString, json: true })
+    .get(`${environment.couchUrl}/_design/medic/_view/contacts_by_depth`, { qs: queryString, json: true })
     .then(result => {
-      contacts = result.rows.map(row => {
+      result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
           return;
         }
 
         nextKeyDocId = row.id;
         docIds.push(row.id);
-        return row.doc;
+
+        const contact = row.doc;
+        const contactSubjectIds = registrationUtils.getSubjectIds(contact);
+        subjectIds.push(...contactSubjectIds);
+        groups[contact._id] = { contact, subjectIds: contactSubjectIds, reports: [], messages: [] };
       });
 
-      const subjectIds = [];
-      contacts.forEach(contact => {
-        if (!contact) {
-          return;
-        }
-
-        subjectIds.push(...registrationUtils.getSubjectIds(contact).map(subject => ([subject])));
-        matchers[contact._id] = { contact, reports: [] };
-      });
-
-      return db.medic.query('medic-client/reports_by_subject', { keys: subjectIds, include_docs: true });
+      return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds, include_docs: true });
     })
     .then(result => {
       const reportsByContact = {};
+      const messagesByContact = {};
+      const keys = [];
+
       result.rows.forEach(row => {
-        const patientId = registrationUtils.getPatientId(row.doc);
-        if (!reportsByContact[patientId]) {
-          reportsByContact[patientId] = [];
+        // skip contacts, we already have those
+        if (CONTACT_TYPES.indexOf(row.doc.type) !== -1) {
+          return;
         }
-        reportsByContact[patientId].push(row.doc);
+        let key;
         docIds.push(row.id);
+
+        if (row.doc.form) {
+          // use patientId as a key, as to keep contact to report associations correct
+          key = registrationUtils.getPatientId(row.doc);
+          if (row.doc.needs_signoff && subjectIds.indexOf(key) === -1) {
+            // reports with needs_signoff will emit for the whole submitter lineage, but we only want to process them
+            // in the correct context, either associated to their patient or to their submitter, if the patient is not found
+            delete row.doc.needs_signoff;
+            key = viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(row.doc)[0][0];
+          }
+          reportsByContact[key] = reportsByContact[key] || [];
+          reportsByContact[key].push(row.doc);
+        } else {
+          key = row.key;
+          messagesByContact[key] = messagesByContact[key] || [];
+          messagesByContact[key].push(row.doc);
+        }
+
+        keys.push(key);
       });
 
-      Object.keys(reportsByContact).forEach(patientId => {
-        const contact = contacts.find(contact => registrationUtils.getSubjectIds(contact).includes(patientId));
-        matchers[contact._id].reports.push(...reportsByContact[patientId]);
+      keys.forEach(key => {
+        if (!messagesByContact[key] && !reportsByContact[key]) {
+          return;
+        }
+        const group = Object.values(groups).find(group => group.subjectIds.includes(key));
+        if (reportsByContact[key]) {
+          group.reports.push(...reportsByContact[key]);
+        }
+        if (messagesByContact[key]) {
+          group.messages.push(...messagesByContact[key]);
+        }
       });
 
       return getExistentPurgedDocs(roles, docIds);
@@ -278,14 +317,14 @@ const batchedContactsPurge = (roles, purgeFn, startKeyDocId = '') => {
     .then(currentlyPurged => {
       const purgedPerHash = {};
       const rolesHashes = Object.keys(roles);
-      Object.keys(matchers).forEach(id => {
+      Object.keys(groups).forEach(id => {
         rolesHashes.forEach(hash => {
-          if (!purgedPerHash[hash]) {
-            purgedPerHash[hash] = {};
-          }
+          purgedPerHash[hash] = purgedPerHash[hash] || {};
 
-          const allowedIds = [id, ...matchers[id].reports.map(r => r._id)];
-          purgeFn({ roles: roles[hash] }, matchers[id].contact, matchers[id].reports).forEach(id => {
+          const allowedIds = [id, ...groups[id].reports.map(r => r._id), ...groups[id].messages.map(r => r._id)];
+          const purgeResult = purgeFn({ roles: roles[hash] }, groups[id].contact, groups[id].reports, groups[id].messages);
+
+          purgeResult.forEach(id => {
             if (!allowedIds.includes(id)) {
               return;
             }
@@ -296,14 +335,17 @@ const batchedContactsPurge = (roles, purgeFn, startKeyDocId = '') => {
 
       return updatePurgedDocs(roles, docIds, currentlyPurged, purgedPerHash);
     })
-    .then(() => nextKeyDocId && batchedContactsPurge(roles, purgeFn, nextKeyDocId));
+    .then(() => {
+      return nextKeyDocId ?
+        batchedContactsPurge(roles, purgeFn, rootIds, rootId, nextKeyDocId) :
+        batchedContactsPurge(roles, purgeFn, rootIds)
+    });
 };
 
 const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
   let nextKeyDocId;
-  let reports;
+  let docs;
   const docIds = [];
-  const docs = {};
 
   logger.debug(`Starting unallocated purge batch with id ${startKeyDocId}`);
 
@@ -317,7 +359,7 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
   return request
     .get(`${environment.couchUrl}/_design/medic/_view/docs_by_replication_key`, { qs: queryString, json: true })
     .then(result => {
-      reports = result.rows.map(row => {
+      docs = result.rows.map(row => {
         if (row.id === startKeyDocId) {
           return;
         }
@@ -331,14 +373,14 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
     })
     .then(currentlyPurged => {
       const purgedPerHash = {};
-      const rolesHashes = Object.keys(roles);
-      reports.forEach(doc => {
-        rolesHashes.forEach(hash => {
-          if (!purgedPerHash[hash]) {
-            purgedPerHash[hash] = {};
-          }
+      docs.forEach(doc => {
+        Object.keys(roles).forEach(hash => {
+          purgedPerHash[hash] = purgedPerHash[hash] || {};
+          const purgeResult = doc.form ?
+            purgeFn({ roles: roles[hash] }, null, [doc], []) :
+            purgeFn({ roles: roles[hash] }, null, [], [doc]);
 
-          purgeFn({ roles: roles[hash] }, [], [doc]).forEach(id => {
+          purgeResult.forEach(id => {
             if (id !== doc._id) {
               return;
             }
@@ -367,7 +409,8 @@ const purge = () => {
       roles = result;
       return initPurgeDbs(roles);
     })
-    .then(() => batchedContactsPurge(roles, purgeFn))
+    .then(() => getRootContacts())
+    .then((rootIds) => batchedContactsPurge(roles, purgeFn, rootIds))
     .then(() => batchedUnallocatedPurge(roles, purgeFn))
     .then(() => {
       logger.info(`Server Side Purge completed successfully in ${ (performance.now() - start) / 1000 / 60 } minutes`);
