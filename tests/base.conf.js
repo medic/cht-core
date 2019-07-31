@@ -20,14 +20,12 @@ class BaseConfig {
       capabilities: {
         browserName: 'chrome',
         chromeOptions: {
+          // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
+          // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
+          // https://github.com/angular/protractor/issues/5261
+          w3c: false,
           args: chromeArgs
         },
-        // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
-        // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
-        // https://github.com/angular/protractor/issues/5261
-        'goog:chromeOptions': {
-          w3c: false
-        }
       },
       jasmineNodeOpts: {
         // makes default jasmine reporter not display dots for every spec
