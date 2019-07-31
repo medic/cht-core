@@ -717,10 +717,6 @@
                 "recipient": {
                   "type": "string",
                   "enum": [
-                    "recipient_1",
-                    "recipient_2",
-                    "recipient_3",
-                    "12345",
                     "reporting_unit",
                     "parent",
                     "clinic",
@@ -847,7 +843,6 @@
               "recipient": {
                 "type": "string",
                 "enum": [
-                  "12345",
                   "reporting_unit",
                   "parent",
                   "clinic",

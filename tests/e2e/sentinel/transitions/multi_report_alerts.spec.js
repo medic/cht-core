@@ -22,9 +22,9 @@ describe('multi_report_alerts', () => {
         is_report_counted: 'function(r, l) { return true }',
         num_reports_threshold: 1,
         message: 'multi_report_message',
-        recipients: 'new_report.from',
+        recipients: ['new_report.from'],
         time_window_in_days: 1,
-        forms: 'FORM'
+        forms: ['FORM']
       }],
       forms: { FORM: { } }
     };

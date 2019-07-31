@@ -211,7 +211,7 @@ describe('accept_patient_reports', () => {
             },
             {
               event_type: 'report_accepted',
-              recipient: 'recipient_1',
+              recipient: 'reporting_unit',
               message: [{
                 locale: 'en',
                 content: 'message_1'
@@ -219,7 +219,7 @@ describe('accept_patient_reports', () => {
             },
             {
               event_type: 'report_accepted',
-              recipient: 'recipient_2',
+              recipient: 'reporting_unit',
               bool_expr: 'doc.type === "data_record"',
               message: [{
                 locale: 'en',
@@ -228,7 +228,7 @@ describe('accept_patient_reports', () => {
             },
             {
               event_type: 'report_accepted',
-              recipient: 'recipient_3',
+              recipient: 'reporting_unit',
               bool_expr: 'doc.fields.something === true',
               message: [{
                 locale: 'en',
