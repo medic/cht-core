@@ -10,10 +10,10 @@ For the latest changes and release announcements see our [release notes](https:/
 ## Table of Contents
 
   - [Overview](#overview)
-  - [Easy Deployment](#easy-deployment)
-  - [Development Setup](#development-setup)
+  - [Easy deployment](#easy-deployment)
+  - [Development setup](#development-setup)
   - [Tests](#tests)
-  - [Configuring The Standard Application](#configuring-the-standard-application)
+  - [Configuring the standard application](#configuring-the-standard-application)
   - [Contributing](#contributing)
   - [License](#license)
 
