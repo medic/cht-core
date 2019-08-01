@@ -1,6 +1,5 @@
 const authorization = require('../services/authorization');
-const db = require('../db');
-const serverSidePurge = require('../services/server-side-purge-roles');
+const serverSidePurge = require('../services/server-side-purge');
 const serverUtils = require('../server-utils');
 
 module.exports.getPurgedDocs = (req, res) => {

@@ -89,7 +89,7 @@
 
   const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
     return localDb.id().then(id => {
-      POUCHDB_OPTIONS.remote.headers['medic-replication-id'] = id;
+      POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
     });
   };
 

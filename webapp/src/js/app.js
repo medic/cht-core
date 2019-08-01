@@ -165,22 +165,22 @@ const createReduxLoggerConfig = Selectors => ({
     local: { auto_compaction: true },
     remote: {
       skip_setup: true,
-      headers: {
-        'Accept': 'application/json'
-      },
       fetch: function(url, opts) {
         const parsedUrl = new URL(url);
         if (parsedUrl.pathname === '/') {
           parsedUrl.pathname = '/dbinfo';
           url = parsedUrl.toString();
         }
-        Object.keys(POUCHDB_OPTIONS.remote.headers).forEach(header => {
-          opts.headers.set(header, POUCHDB_OPTIONS.remote.headers[header]);
+        Object.keys(POUCHDB_OPTIONS.remote_headers).forEach(header => {
+          opts.headers.set(header, POUCHDB_OPTIONS.remote_headers[header]);
         });
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);
       },
     },
+    remote_headers: {
+      'Accept': 'application/json'
+    }
   };
   angular.module('inboxApp').constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 

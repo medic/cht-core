@@ -321,7 +321,9 @@ const difference = (array1, array2) => {
 };
 
 const filterPurgedIds = feed => {
-  return Promise.resolve();
+  if (!feed.initialReplication) {
+    return Promise.resolve();
+  }
 
   return serverSidePurge
     .getPurgedIds(feed.userCtx.roles, feed.allowedDocIds)

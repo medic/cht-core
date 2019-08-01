@@ -8,15 +8,15 @@ const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 angular
   .module('inboxServices')
   .factory('DBSync', function(
-    $interval,
     $http,
+    $interval,
     $log,
     $q,
     $window,
     Auth,
     DB,
-    Session,
-    POUCHDB_OPTIONS
+    POUCHDB_OPTIONS,
+    Session
   ) {
     'use strict';
     'ngInject';
@@ -48,6 +48,12 @@ angular
       );
     };
 
+    const getServerSidePurges = () => {
+      return processPurges().then(() => {
+        $log.debug(`Getting recent purges successful`);
+      });
+    };
+
     const DIRECTIONS = [
       {
         name: 'to',
@@ -60,53 +66,54 @@ angular
       {
         name: 'from',
         options: {},
-        allowed: () => $q.resolve(true)
+        allowed: () => $q.resolve(true),
+        hookAfter: getServerSidePurges
       }
     ];
 
     const processPurges = () => {
-      let lastSeq;
-      let ids;
       return $http
-        .get('/api/v1/server-side-purge/changes', { headers: POUCHDB_OPTIONS.remote.headers })
+        .get('/api/v1/server-side-purge/changes', { headers: POUCHDB_OPTIONS.remote_headers })
         .then(response => {
-          lastSeq = response.data.last_seq;
-          ids = response.data.purged_ids;
-          $log.debug(`Got ${ids.length} purges from the server`);
-          return DB().allDocs({ keys: ids });
-        })
+          const { purged_ids: ids, last_seq: lastSeq } = response.data;
+          if (!ids.length) {
+            return;
+          }
+          return purgeIds(ids, lastSeq).then(processPurges);
+        });
+    };
+
+    const purgeIds = (ids, seq) => {
+      return DB()
+        .allDocs({ keys: ids })
         .then(result => {
           const purgedDocs = [];
           result.rows.forEach(row => {
-            if (row.id && row.value.rev) {
+            if (row.id && row.value) {
               purgedDocs.push({ _id: row.id, _rev: row.value.rev, _deleted: true, purged: true });
             }
           });
-          console.log(purgedDocs);
           return DB().bulkDocs(purgedDocs);
         })
         .then(results => {
-          const errors = results.reduce((msg, result) => {
+          let errors = '';
+          results.forEach(result => {
             if (!result.ok) {
-              msg += result.id + ' with ' + result.message + '; ';
+              errors += result.id + ' with ' + result.message + '; ';
             }
-
-            return msg;
-          }, '');
+          });
           if (errors) {
             throw new Error(`Not all documents purged successfully: ${errors}`);
           }
 
           $log.debug(`Purged ${results.length} docs`);
-          return $http.get('/api/v1/server-side-purge/checkpoint', { params: { seq: lastSeq }, headers: POUCHDB_OPTIONS.remote.headers });
-        })
-        .then(() => ids.length && processPurges());
-    };
 
-    const getServerSidePurges = () => {
-      return processPurges().then(() => {
-        $log.debug(`Getting recent purges successful`);
-      });
+          const params = {
+            params: { seq },
+            headers: POUCHDB_OPTIONS.remote_headers
+          };
+          return $http.get('/api/v1/server-side-purge/checkpoint', params);
+        });
     };
 
     const replicate = function(direction) {
@@ -130,8 +137,8 @@ angular
             })
             .then(info => {
               $log.debug(`Replication ${direction.name} successful`, info);
-              if (direction.name === 'from') {
-                return getServerSidePurges();
+              if (direction.hookAfter && typeof direction.hookAfter === 'function') {
+                return direction.hookAfter();
               }
             })
             .catch(err => {
@@ -264,5 +271,7 @@ angular
         resetSyncInterval();
         return sync(force);
       },
+
+      opts: () => POUCHDB_OPTIONS
     };
   });
