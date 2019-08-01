@@ -600,6 +600,32 @@ describe('outbound schedule', () => {
     });
   });
 
+  describe('removeInvalidTasks', () => {
+    it('should delete tasks that it is passed', () => {
+      sinon.stub(db.sentinel, 'bulkDocs').resolves();
+
+      return outbound.__get__('removeInvalidTasks')([{
+        task: {
+          _id: 'task:outbound:test-doc-3',
+          doc_id: 'test-doc-3',
+          queue: ['test-push-2']
+        },
+        row: {
+          key: 'task:outbound:test-doc-3',
+          error: 'not_found'
+        }
+      }]).then(() => {
+        assert.equal(db.sentinel.bulkDocs.callCount, 1);
+        assert.deepEqual(db.sentinel.bulkDocs.args[0][0], [{
+         _id: 'task:outbound:test-doc-3',
+          doc_id: 'test-doc-3',
+          queue: ['test-push-2'],
+          _deleted: true
+        }]);
+      });
+    });
+  });
+
   describe('execute', () => {
     let configGet;
     let queuedTasks;
