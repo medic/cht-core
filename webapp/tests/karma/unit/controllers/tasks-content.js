@@ -113,7 +113,7 @@ describe('TasksContentCtrl', () => {
         content: 'nothing'
       }]
     };
-    XmlForm.resolves({ id: 'myform', doc: { title: 'My Form' } });
+    XmlForms.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
     createController();
     watchCallback();
     setTimeout(() => {
