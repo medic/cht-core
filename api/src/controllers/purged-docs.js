@@ -5,7 +5,7 @@ const serverUtils = require('../server-utils');
 module.exports.getPurgedDocs = (req, res) => {
   const opts = {
     checkPointerId: req.replicationId,
-    limit: req.query.limit
+    limit: req.query && req.query.limit
   };
   return authorization
     .getAuthorizationContext(req.userCtx)
@@ -13,7 +13,8 @@ module.exports.getPurgedDocs = (req, res) => {
     .then(allowedIds => serverSidePurge.getPurgedIdsSince(req.userCtx.roles, allowedIds, opts))
     .then(({ purgedDocIds, lastSeq }) => {
       res.json({ purged_ids: purgedDocIds, last_seq: lastSeq });
-    });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 };
 
 module.exports.checkpoint = (req, res) => {
@@ -26,7 +27,8 @@ module.exports.checkpoint = (req, res) => {
 
   return serverSidePurge
     .writeCheckPointer(req.userCtx.roles, req.replicationId, req.query.seq)
-    .then(() => res.json({ success: true }));
+    .then(() => res.json({ success: true }))
+    .catch(err => serverUtils.error(err, req, res));
 };
 
 

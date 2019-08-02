@@ -8,18 +8,20 @@ const viewMapUtils = require('@medic/view-map-utils');
 const config = require('../config');
 const logger = require('../logger');
 const { performance } = require('perf_hooks');
+const auth = require('../auth');
 
 const BATCH_SIZE = 1000;
 
 const purgeDbs = {};
+const sortedUniqueRoles = roles => ([...new Set(roles.sort())]);
 const getRoleHash = roles => crypto
   .createHash('md5')
-  .update(JSON.stringify(roles.sort()), 'utf8')
+  .update(JSON.stringify(sortedUniqueRoles(roles)), 'utf8')
   .digest('hex');
 
-const getPurgeDb = roles => {
+const getPurgeDb = (roles, force = false) => {
   const hash = typeof roles === 'string' ? roles : getRoleHash(roles);
-  if (!purgeDbs[hash]) {
+  if (!purgeDbs[hash] || force) {
     purgeDbs[hash] = db.get(`${environment.db}-purged-role-${hash}`);
   }
   return purgeDbs[hash];
@@ -113,17 +115,21 @@ const getRoles = () => {
   const list = {};
   const roles = {};
 
-  // todo restrict to just offline roles!!!
-
   return db.users
     .allDocs({ include_docs: true })
     .then(result => {
       result.rows.forEach(row => {
-        if (!row.doc.roles) {
+        if (!row.doc ||
+            !row.doc.roles ||
+            !Array.isArray(row.doc.roles) ||
+            !row.doc.roles.length ||
+            !auth.isOffline(roles)
+        ) {
           return;
         }
-        const r = JSON.stringify(row.doc.roles.sort());
-        list[r] = row.doc.roles;
+
+        const r = sortedUniqueRoles(row.doc.roles);
+        list[JSON.stringify(r)] = r;
       });
 
       Object.values(list).forEach(list => {
@@ -137,7 +143,7 @@ const getRoles = () => {
 
 const initPurgeDbs = (roles) => {
   return Promise.all(Object.keys(roles).map(hash => {
-    const purgeDb = getPurgeDb(hash);
+    const purgeDb = getPurgeDb(hash, true);
     return purgeDb.put({ _id: 'local/info', roles: roles[hash] }).catch(() => {}); // catch 409s here
   }));
 };
@@ -176,7 +182,6 @@ const getPurgeFn = () => {
   }
 
   try {
-    /* jshint -W061 */
     return eval(`(${purgeConfig.fn})`);
   } catch (err) {
     logger.error('Failed to parse purge function: %o', err);
@@ -228,7 +233,7 @@ const getRootContacts = () => {
 const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '') => {
   if (!rootIds.length) {
     // WE ARE DONE
-    return;
+    return Promise.resolve();
   }
 
   rootId = rootId || rootIds.shift();
@@ -246,6 +251,7 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
     include_docs: true
   };
 
+  // using http requests because PouchDB doesn't support `startkey_docid` in view queries
   return request
     .get(`${environment.couchUrl}/_design/medic/_view/contacts_by_depth`, { qs: queryString, json: true })
     .then(result => {
@@ -398,7 +404,6 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
 };
 
 const purge = () => {
-  let roles;
   logger.info('Running server side purge');
   const purgeFn = getPurgeFn();
   if (!purgeFn) {
@@ -407,23 +412,49 @@ const purge = () => {
   }
 
   const start = performance.now();
-  return getRoles()
-    .then(result => {
-      roles = result;
-      return initPurgeDbs(roles);
-    })
-    .then(() => getRootContacts())
-    .then((rootIds) => batchedContactsPurge(roles, purgeFn, rootIds))
-    .then(() => batchedUnallocatedPurge(roles, purgeFn))
-    .then(() => {
-      logger.info(`Server Side Purge completed successfully in ${ (performance.now() - start) / 1000 / 60 } minutes`);
-    });
+  return getRoles().then(roles => {
+    if (!roles || !Object.keys(roles).length) {
+      logger.info(`No offline users found. Not purging`);
+      return;
+    }
+
+    return initPurgeDbs(roles)
+      .then(() => getRootContacts())
+      .then(ids => batchedContactsPurge(roles, purgeFn, ids))
+      .then(() => batchedUnallocatedPurge(roles, purgeFn))
+      .then(() => {
+        logger.info(`Server Side Purge completed successfully in ${ (performance.now() - start) / 1000 / 60 } minutes`);
+      });
+  });
 };
 
 module.exports = {
   getPurgedIds,
   getPurgedIdsSince,
-  getCheckPointer,
   writeCheckPointer,
   purge,
 };
+
+
+// used for testing
+if (process.env.UNIT_TEST_ENV) {
+  Object.assign(module.exports, {
+    _purge: purge,
+    _getCheckPointer: getCheckPointer,
+    _getCacheKey: getCacheKey,
+    _getRoleHash: getRoleHash,
+    _getPurgeDb: getPurgeDb,
+    _getPurgedId: getPurgedId,
+    _extractId: extractId,
+    _getPurgedIdsFromChanges: getPurgedIdsFromChanges,
+    _getRoles: getRoles,
+    _initPurgeDbs: initPurgeDbs,
+    _getExistentPurgedDocs: getExistentPurgedDocs,
+    _getPurgeFn: getPurgeFn,
+    _updatePurgedDocs: updatePurgedDocs,
+    _getRootContacts: getRootContacts,
+    _batchedContactsPurge: batchedContactsPurge,
+    _batchedUnallocatedPurge: batchedUnallocatedPurge,
+  });
+}
+
