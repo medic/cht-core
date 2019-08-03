@@ -4,7 +4,8 @@ var A_DATE_IN_THE_PAST = 1454424982000,
 angular.module('inboxServices').factory('CheckDate',
   function(
     $http,
-    Modal
+    Modal,
+    Telemetry
   ) {
     'use strict';
     'ngInject';
@@ -27,12 +28,12 @@ angular.module('inboxServices').factory('CheckDate',
             return;
           }
 
-          var delta = Math.abs(timestamp - Date.now());
-          if (delta < MARGIN_OF_ERROR) {
+          var delta = Date.now() - timestamp;
+          if (Math.abs(delta) < MARGIN_OF_ERROR) {
             // Date/time differences of less than 10 minutes are not very concerning to us
             return;
           }
-
+          Telemetry.record('client-date-offset', delta);
           showModal({
             reportedLocalDate: new Date(),
             expectedLocalDate: new Date(timestamp)
