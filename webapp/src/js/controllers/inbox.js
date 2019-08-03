@@ -107,8 +107,6 @@ var _ = require('underscore'),
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    Session.init();
-
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
     } else {
@@ -202,7 +200,6 @@ var _ = require('underscore'),
         }
       },
     });
-    DBSync.sync();
 
     // BootstrapTranslator is used because $translator.onReady has not fired
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
@@ -213,6 +210,7 @@ var _ = require('underscore'),
       })
       .then(function() {
         $scope.dbWarmedUp = true;
+        initSecondaryServices();
 
         const dbWarmed = performance.now();
         Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
@@ -221,10 +219,20 @@ var _ = require('underscore'),
         delete $window.startupTimes;
       });
 
+    // initialisation tasks that can occur after the UI has been remdered
+    const initSecondaryServices = () {
+      // TODO order this and serialize?
+      Session.init();
+      CheckDate();
+      initUnreadCount();
+      initForms();
+      initTours();
+      DBSync.sync();
+    };
+
     Feedback.init();
 
     LiveListConfig($scope);
-    CheckDate();
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
@@ -377,12 +385,14 @@ var _ = require('underscore'),
     });
 
     $scope.unreadCount = {};
-    UnreadRecords(function(err, data) {
-      if (err) {
-        return $log.error('Error fetching read status', err);
-      }
-      $scope.unreadCount = data;
-    });
+    const initUnreadCount = () => {
+      UnreadRecords(function(err, data) {
+        if (err) {
+          return $log.error('Error fetching read status', err);
+        }
+        $scope.unreadCount = data;
+      });
+    };
 
     /**
      * Translates using the key if truthy using the old style label
@@ -393,59 +403,63 @@ var _ = require('underscore'),
     };
 
     // get the forms for the forms filter
-    $translate.onReady(function() {
-      JsonForms()
-        .then(function(jsonForms) {
-          var jsonFormSummaries = jsonForms.map(function(jsonForm) {
+    const initForms = () => {
+      $translate.onReady(function() {
+        JsonForms()
+          .then(function(jsonForms) {
+            var jsonFormSummaries = jsonForms.map(function(jsonForm) {
+              return {
+                code: jsonForm.code,
+                title: translateTitle(jsonForm.translation_key, jsonForm.name),
+                icon: jsonForm.icon,
+              };
+            });
+            XmlForms(
+              'FormsFilter',
+              { contactForms: false, ignoreContext: true },
+              function(err, xForms) {
+                if (err) {
+                  return $log.error('Error fetching form definitions', err);
+                }
+                var xFormSummaries = xForms.map(function(xForm) {
+                  return {
+                    code: xForm.internalId,
+                    title: translateTitle(xForm.translation_key, xForm.title),
+                    icon: xForm.icon,
+                  };
+                });
+                $scope.forms = xFormSummaries.concat(jsonFormSummaries);
+                $rootScope.$broadcast('formLoadingComplete');
+              }
+            );
+          })
+          .catch(function(err) {
+            $rootScope.$broadcast('formLoadingComplete');
+            $log.error('Failed to retrieve forms', err);
+          });
+
+        // get the forms for the Add Report menu
+        XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+          if (err) {
+            return $log.error('Error fetching form definitions', err);
+          }
+          Enketo.clearXmlCache();
+          $scope.nonContactForms = xForms.map(function(xForm) {
             return {
-              code: jsonForm.code,
-              title: translateTitle(jsonForm.translation_key, jsonForm.name),
-              icon: jsonForm.icon,
+              code: xForm.internalId,
+              icon: xForm.icon,
+              title: translateTitle(xForm.translation_key, xForm.title),
             };
           });
-          XmlForms(
-            'FormsFilter',
-            { contactForms: false, ignoreContext: true },
-            function(err, xForms) {
-              if (err) {
-                return $log.error('Error fetching form definitions', err);
-              }
-              var xFormSummaries = xForms.map(function(xForm) {
-                return {
-                  code: xForm.internalId,
-                  title: translateTitle(xForm.translation_key, xForm.title),
-                  icon: xForm.icon,
-                };
-              });
-              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
-              $rootScope.$broadcast('formLoadingComplete');
-            }
-          );
-        })
-        .catch(function(err) {
-          $rootScope.$broadcast('formLoadingComplete');
-          $log.error('Failed to retrieve forms', err);
-        });
-
-      // get the forms for the Add Report menu
-      XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
-        if (err) {
-          return $log.error('Error fetching form definitions', err);
-        }
-        Enketo.clearXmlCache();
-        $scope.nonContactForms = xForms.map(function(xForm) {
-          return {
-            code: xForm.internalId,
-            icon: xForm.icon,
-            title: translateTitle(xForm.translation_key, xForm.title),
-          };
         });
       });
-    });
+    };
 
-    Tour.getTours().then(function(tours) {
-      $scope.tours = tours;
-    });
+    const initTours = () => {
+      Tour.getTours().then(function(tours) {
+        $scope.tours = tours;
+      });
+    };
 
     $scope.openTourSelect = function() {
       return Modal({
