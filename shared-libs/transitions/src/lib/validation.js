@@ -1,3 +1,6 @@
+/**
+ * @module transitions/validation
+ */
 var _ = require('underscore'),
   async = require('async'),
   moment = require('moment'),
@@ -131,14 +134,9 @@ module.exports = {
       {}
     );
   },
-  /*
-     * Custom validations in addition to pupil but follows Pupil API
-     * */
+  // Custom validations in addition to pupil but follows Pupil API
   extra_validations: {
-    /*
-         * Check if fields on a doc are unique in the db, return true if unique
-         * false otherwise.
-         */
+    // Check if fields on a doc are unique in the db, return true if unique false otherwise.
     unique: (doc, validation, callback) => {
       _exists(doc, validation.funcArgs, null, (err, result) => {
         if (err) {
@@ -175,9 +173,7 @@ module.exports = {
         }
       );
     },
-    /*
-         * Check if the week is a valid ISO week given a year.
-         */
+    // Check if the week is a valid ISO week given a year.
     isISOWeek: (doc, validation, callback) => {
       const weekFieldName = validation.funcArgs[0];
       const yearFieldName = validation.funcArgs[1] || null;
@@ -250,11 +246,11 @@ module.exports = {
    * result.  Then we process the result once more to extract the custom
    * validation results and error messages.
    *
-   * @param ignores -
-   *   Optional array keys of doc that is always considered valid
-   *
-   * @callback Array of errors if validation failed, empty array otherwise.
-   * */
+   * @param {Object} doc The doc to validate
+   * @param {Object[]} [validations=[]] Validates to execute.
+   * @param {String[]} [ignores=[]] Keys of doc that is always considered valid
+   * @param {Function} callback Array of errors if validation failed, empty array otherwise.
+   */
   validate: function(doc, validations, ignores, callback) {
     var self = module.exports,
       result = {},
@@ -263,13 +259,10 @@ module.exports = {
     callback = callback || ignores;
     validations = validations || [];
 
-    /*
-         * Modify validation objects that are calling a custom validation
-         * function. Add function name and args and append the function name to
-         * the property value so pupil.validate() will still work and error
-         * messages can be generated.
-         *
-         **/
+    // Modify validation objects that are calling a custom validation
+    // function. Add function name and args and append the function name to
+    // the property value so pupil.validate() will still work and error
+    // messages can be generated.
     var names = Object.keys(self.extra_validations);
     _.each(validations, function(config, idx) {
       var entities;
@@ -314,9 +307,7 @@ module.exports = {
       return callback(errors);
     }
 
-    /*
-         * Run async/extra validations in series and collect results.
-         */
+    // Run async/extra validations in series and collect results.
     async.eachSeries(
       validations,
       function(v, cb) {
@@ -327,12 +318,10 @@ module.exports = {
           err,
           res
         ) {
-          /*
-                     * Be careful to not to make an invalid pupil result valid,
-                     * only assign false values. If async result is true then do
-                     * nothing since default is already true. Fields are valid
-                     * unless proven otherwise.
-                     */
+          // Be careful to not to make an invalid pupil result valid,
+          // only assign false values. If async result is true then do
+          // nothing since default is already true. Fields are valid
+          // unless proven otherwise.
           if (res === false) {
             result.results[v.property] = res;
           }
