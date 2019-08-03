@@ -154,16 +154,20 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           ctrl.setEnketoSavingStatus(false);
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-          ctrl.setEnketoError(msg);
+            ctrl.setEnketoError(msg);
           });
         });
     };
 
     // Wait for `selected` to be set during tasks generation and load the
     // form if we have no other description or instructions in the task.
-    $scope.$watch('selected', function() {
-      if (hasOneFormAndNoFields(ctrl.selectedTask)) {
-        $scope.performAction(ctrl.selectedTask.actions[0], true);
+    let loadingSelected = false;
+    $ngRedux.subscribe(() => {
+      if (!loadingSelected && ctrl.selectedTask) {
+        loadingSelected = true;
+        if (hasOneFormAndNoFields(ctrl.selectedTask)) {
+          $scope.performAction(ctrl.selectedTask.actions[0], true);
+        }
       }
     });
 

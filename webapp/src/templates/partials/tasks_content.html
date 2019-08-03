@@ -17,8 +17,10 @@
   <div class="col-sm-8 item-content" ng-show="tasksContentCtrl.selectedTask && !form && !tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm && !contentError">
     <div class="body">
       <div>
-        <h2>{{tasksContentCtrl.selectedTask.title | translateFrom:selected}}</h2>
         <ul>
+          <li>
+            <h2>{{tasksContentCtrl.selectedTask.title | translateFrom:selected}}</h2>
+          </li>
           <li>
             <label translate>task.date</label>
             <p ng-bind-html="tasksContentCtrl.selectedTask.date | simpleDate"></p>
