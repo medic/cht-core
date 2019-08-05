@@ -273,7 +273,7 @@ var _ = require('underscore'),
       if (weeks.approximate) {
         classes.push('approximate');
       }
-      var attr = classes.length ? ' class="' + classes.join(' ') + '"' : '';
+      var attr = classes.length ? ' class="weeks-pregnant ' + classes.join(' ') + '"' : '';
       return '<span' + attr + '>' + weeks.number + '</span>';
     };
   });
