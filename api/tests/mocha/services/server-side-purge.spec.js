@@ -5,8 +5,9 @@ const service = require('../../../src/services/server-side-purge');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
 //const cache = require('../../../src/cache');
-//const registrationUtils = require('@medic/registration-utils');
-//const viewMapUtils = require('@medic/view-map-utils');
+const registrationUtils = require('@medic/registration-utils');
+const viewMapUtils = require('@medic/view-map-utils');
+const tombstoneUtils = require('@medic/tombstone-utils');
 const config = require('../../../src/config');
 const auth = require('../../../src/auth');
 const request = require('request-promise-native');
@@ -211,12 +212,21 @@ describe('Server Side Purge service', () => {
     });
 
     describe('batchedContactsPurge', () => {
+      let orgEnv = {};
       let roles;
       let purgeFn;
 
       beforeEach(() => {
         roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
         purgeFn = sinon.stub();
+        orgEnv = {};
+        Object.assign(orgEnv, environment);
+        environment.couchUrl = 'http://a:p@localhost:6500/medic';
+        service._reset();
+      });
+
+      afterEach(() => {
+        Object.assign(environment, orgEnv);
       });
 
       it('should return immediately if no root contact ids are provided', () => {
@@ -227,7 +237,638 @@ describe('Server Side Purge service', () => {
         });
       });
 
+      it('should grab contacts_by_depth selecting the root contacts in sequence', () => {
+        sinon.stub(request, 'get').resolves({ rows: [] });
+        sinon.stub(db, 'get').resolves({});
+        sinon.stub(db.medic, 'query').resolves({ rows: [] });
+        const rootContactIds = ['first', 'second', 'third'];
 
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(3);
+          chai.expect(request.get.args[0]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[1]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['second']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[2]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['third']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+          chai.expect(rootContactIds).to.deep.equal([]);
+        });
+      });
+
+      it('should continue requesting descendents of root contact until no more new results are received', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: null },
+            { id: 'f1', value:  null },
+            { id: 'f2', value: 's2' },
+            { id: 'f3', value: 's3' },
+        ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f3', value: 's3' },
+            { id: 'f4', value: null },
+            { id: 'f5', value: 's5' },
+          ]});
+
+        request.get.onCall(2).resolves({ rows: [
+            { id: 'f5', value: 's5' },
+            { id: 'f6', value: null },
+            { id: 'f7', value: 's7' },
+            { id: 'f8', value: 's8' },
+          ]});
+
+        request.get.onCall(3).resolves({ rows: [
+            { id: 'f8', value: 's8' },
+          ]});
+
+        request.get.onCall(4).resolves({ rows: []});
+
+        sinon.stub(db.medic, 'query').resolves({ rows: [] });
+        const purgeDbChanges = sinon.stub().resolves({ results: [] });
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+        const rootContactIds = ['first', 'second'];
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(5);
+          chai.expect(request.get.args[0]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[1]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: 'f3'
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[2]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: 'f5'
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[3]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: 'f8'
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[4]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['second']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+        });
+      });
+
+      it('should set correct startkey_docid when last result is a tombstone', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: 'firsts' },
+            { id: 'f1', value: 's1' },
+            { id: 'f2', value: 's3' },
+            { id: 'f3-tombstone', value: 's3' },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f3-tombstone', value: 's3' },
+            { id: 'f4-tombstone', value: 's4' },
+            { id: 'f5', value: 's5' },
+          ]});
+
+        request.get.onCall(2).resolves({ rows: [
+            { id: 'f5', value: 's5' },
+            { id: 'f6-tombstone', value: 's6' },
+            { id: 'f7', value: 's7' },
+            { id: 'f8-tombstone', value: 's8' },
+          ]});
+
+        request.get.onCall(3).resolves({ rows: [
+            { id: 'f8-tombstone', value: 's9' },
+          ]});
+
+        request.get.onCall(4).resolves({ rows: []});
+
+        sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
+        sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
+
+        sinon.stub(db.medic, 'query').resolves({ rows: [] });
+        const purgeDbChanges = sinon.stub().resolves({ results: [] });
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+        const rootContactIds = ['first', 'second'];
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(5);
+          chai.expect(request.get.args[0]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[1]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: 'f3-tombstone'
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[2]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: 'f5'
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[3]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['first']),
+                startkey_docid: 'f8-tombstone'
+              },
+              json: true
+            }
+          ]);
+
+          chai.expect(request.get.args[4]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/contacts_by_depth',
+            {
+              qs: {
+                limit: 1000,
+                key:  JSON.stringify(['second']),
+                startkey_docid: ''
+              },
+              json: true
+            }
+          ]);
+        });
+      });
+
+      it('should get all docs_by_replication_key using the retrieved contacts and purge docs', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: null },
+            { id: 'f1', value: 's1' },
+            { id: 'f2', value: null },
+            { id: 'f4', value: 's4' },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f4', value: 's4' },
+          ]});
+
+        sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
+        sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+
+        const purgeDbChanges = sinon.stub().resolves({ results: [] });
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+        const rootContactIds = ['first'];
+
+        sinon.stub(db.medic, 'query');
+        db.medic.query.onCall(0).resolves({ rows: [
+            { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
+            { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic' }},
+            { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+            { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+            { id: 'f1-r2', key: 's1', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
+            { id: 'f1-m2', key: 'f1', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
+            { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' }},
+            { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
+            { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'f2' } },
+            { id: 'f4', key: 'f4', doc: { _id: 'f4', type: 'clinic' }},
+            { id: 'f4-m1', key: 'f4', doc: { _id: 'f4-m1', type: 'data_record', sms_message: 'b' } },
+            { id: 'f4-m2', key: 'f4', doc: { _id: 'f4-m2', type: 'data_record', sms_message: 'b' } },
+          ] });
+        db.medic.query.onCall(1).resolves({ rows: [] });
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(db.medic.query.callCount).to.equal(2);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([
+            'medic/docs_by_replication_key',
+            { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], include_docs: true }
+          ]);
+          chai.expect(purgeDbChanges.callCount).to.equal(2);
+          chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+            doc_ids: [
+              'purged:first', 'purged:f1', 'purged:f2', 'purged:f4', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
+              'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f4-m1', 'purged:f4-m2',
+            ],
+            batch_size: 13,
+            seq_interval: 12
+          }]);
+
+          chai.expect(purgeDbChanges.args[1]).to.deep.equal([{
+            doc_ids: [
+              'purged:first', 'purged:f1', 'purged:f2', 'purged:f4', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
+              'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f4-m1', 'purged:f4-m2',
+            ],
+            batch_size: 13,
+            seq_interval: 12
+          }]);
+
+          chai.expect(purgeFn.callCount).to.equal(8);
+          chai.expect(purgeFn.args[0]).to.deep.equal([
+            { roles: roles['a'] },
+            { _id: 'first', type: 'district_hospital' },
+            [],
+            []
+          ]);
+          chai.expect(purgeFn.args[1]).deep.to.equal([
+            { roles: roles['b'] },
+            { _id: 'first', type: 'district_hospital' },
+            [],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[2]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f1', type: 'clinic' },
+            [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }, { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' }],
+            [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }, { _id: 'f1-m2', type: 'data_record', sms_message: 'b' }]
+          ]);
+          chai.expect(purgeFn.args[3]).deep.to.equal([
+            { roles: roles['b'] },
+            { _id: 'f1', type: 'clinic' },
+            [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }, { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' }],
+            [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }, { _id: 'f1-m2', type: 'data_record', sms_message: 'b' }]
+          ]);
+
+          chai.expect(purgeFn.args[4]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f2', type: 'person' },
+            [{ _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' }, { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'f2' }],
+            []
+          ]);
+          chai.expect(purgeFn.args[5]).deep.to.equal([
+            { roles: roles['b'] },
+            { _id: 'f2', type: 'person' },
+            [{ _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' }, { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'f2' }],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[6]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f4', type: 'clinic' },
+            [],
+            [{ _id: 'f4-m1', type: 'data_record', sms_message: 'b' }, { _id: 'f4-m2', type: 'data_record', sms_message: 'b' }]
+          ]);
+          chai.expect(purgeFn.args[7]).deep.to.equal([
+            { roles: roles['b'] },
+            { _id: 'f4', type: 'clinic' },
+            [],
+            [{ _id: 'f4-m1', type: 'data_record', sms_message: 'b' }, { _id: 'f4-m2', type: 'data_record', sms_message: 'b' }]
+          ]);
+        });
+      });
+
+      it('should correctly group messages and reports for tombstones and tombstoned reports', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: null },
+            { id: 'f1-tombstone', value: 's1' },
+            { id: 'f2-tombstone', value: null },
+            { id: 'f3', value: null },
+            { id: 'f4-tombstone', value: 's4' },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f4-tombstone', value: 's4' },
+          ]});
+
+        sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
+        sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
+        sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+
+        const purgeDbChanges = sinon.stub().resolves({ results: [] });
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+        const rootContactIds = ['first'];
+
+        sinon.stub(db.medic, 'query');
+        db.medic.query.onCall(0).resolves({ rows: [
+            { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
+            { id: 'f1-tombstone', key: 'f1', doc: { _id: 'f1-tombstone', type: 'clinic' }},
+            { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+            { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+            { id: 'f1-r2', key: 's1', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
+            { id: 'f1-m2', key: 'f1', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
+            { id: 'f2-tombstone', key: 'f2', doc: { _id: 'f2', type: 'person' }},
+            { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
+            { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', sms_message: 'b' } },
+            { id: 'f3', key: 'f3', doc: { _id: 'f3', type: 'health_center' }},
+            { id: 'f3-m1-tombstone', key: 'f3', doc: { _id: 'f3-m1-tombstone', type: 'tombstone' } },
+            { id: 'f3-r1-tombstone', key: 'f3', doc: { _id: 'f3-r1-tombstone', type: 'tombstone' } },
+            { id: 'f3-m2', key: 'f3', doc: { _id: 'f3-m2', type: 'data_record', sms_message: 'b' } },
+            { id: 'f3-r2', key: 'f3', doc: { _id: 'f3-r2', type: 'data_record', sms_message: 'b' } },
+            { id: 'f4-tombstone', key: 'f4', doc: { _id: 'f4', type: 'person' }},
+          ] });
+        db.medic.query.onCall(1).resolves({ rows: [] });
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(db.medic.query.callCount).to.equal(2);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([
+            'medic/docs_by_replication_key',
+            { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], include_docs: true }
+          ]);
+          chai.expect(purgeDbChanges.callCount).to.equal(2);
+          chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+            doc_ids: [
+              'purged:first', 'purged:f3', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
+              'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f3-m2', 'purged:f3-r2'
+            ],
+            batch_size: 11,
+            seq_interval: 10
+          }]);
+
+          chai.expect(purgeDbChanges.args[1]).to.deep.equal([{
+            doc_ids: [
+              'purged:first', 'purged:f3', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
+              'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f3-m2', 'purged:f3-r2'
+            ],
+            batch_size: 11,
+            seq_interval: 10
+          }]);
+
+          chai.expect(purgeFn.callCount).to.equal(8);
+          chai.expect(purgeFn.args[0]).to.deep.equal([
+            { roles: roles['a'] },
+            { _id: 'first', type: 'district_hospital' },
+            [],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[2]).to.deep.equal([
+            { roles: roles['a'] },
+            { _deleted: true },
+            [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }, { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' }],
+            [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }, { _id: 'f1-m2', type: 'data_record', sms_message: 'b' }]
+          ]);
+
+          chai.expect(purgeFn.args[4]).to.deep.equal([
+            { roles: roles['a'] },
+            { _deleted: true },
+            [{ _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' }],
+            [{ _id: 'f2-r2', type: 'data_record', sms_message: 'b' }]
+          ]);
+
+          chai.expect(purgeFn.args[6]).to.deep.equal([
+            { roles: roles['a'] },
+            { _id: 'f3', type: 'health_center' },
+            [],
+            [{ _id: 'f3-m2', type: 'data_record', sms_message: 'b' }, { _id: 'f3-r2', type: 'data_record', sms_message: 'b' }]
+          ]);
+        });
+      });
+
+      it('should correctly group reports that emit their submitter', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: null },
+            { id: 'f1', value: 's1' },
+            { id: 'f2', value: 's2' },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f2', value: 's2' },
+          ]});
+
+        sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
+        sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+
+        const purgeDbChanges = sinon.stub().resolves({ results: [] });
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+        const rootContactIds = ['first'];
+
+        sinon.stub(db.medic, 'query');
+        db.medic.query.onCall(0).resolves({ rows: [
+            { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
+            { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic' }},
+            { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+            { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+            { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' }},
+            { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a' } },
+            { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b' } },
+            { id: 'f2-r3', key: 's2', doc: { _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' } },
+            { id: 'f2-m1', key: 'f2', doc: { _id: 'f2-m1', type: 'data_record' } },
+          ] });
+        db.medic.query.onCall(1).resolves({ rows: [] });
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(db.medic.query.callCount).to.equal(2);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([
+            'medic/docs_by_replication_key',
+            { keys: ['first', 'f1', 's1', 'f2', 's2'], include_docs: true }
+          ]);
+          chai.expect(purgeDbChanges.callCount).to.equal(2);
+          chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+            doc_ids: [
+              'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
+              'purged:f2-r1', 'purged:f2-r2', 'purged:f2-r3', 'purged:f2-m1'
+            ],
+            batch_size: 10,
+            seq_interval: 9
+          }]);
+
+          chai.expect(purgeFn.callCount).to.equal(10);
+          chai.expect(purgeFn.args[0]).to.deep.equal([
+            { roles: roles['a'] },
+            { _id: 'first', type: 'district_hospital' },
+            [],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[2]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f1', type: 'clinic' },
+            [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
+            [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
+          ]);
+
+          chai.expect(purgeFn.args[4]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f2', type: 'person' },
+            [{ _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' }],
+            [{ _id: 'f2-m1', type: 'data_record' }]
+          ]);
+
+          chai.expect(purgeFn.args[6]).deep.to.equal([
+            { roles: roles['a'] },
+            {},
+            [{ _id: 'f2-r1', type: 'data_record', form: 'a' }],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[8]).deep.to.equal([
+            { roles: roles['a'] },
+            {},
+            [{ _id: 'f2-r2', type: 'data_record', form: 'b' }],
+            []
+          ]);
+        });
+      });
+
+      it('should correctly ignore reports with needs_signoff', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: null },
+            { id: 'f1', value: 's1' },
+            { id: 'f2', value: null },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f2', value: null },
+          ]});
+
+        sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
+        sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+
+        const purgeDbChanges = sinon.stub().resolves({ results: [] });
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+        const rootContactIds = ['first'];
+
+        sinon.stub(db.medic, 'query');
+        db.medic.query.onCall(0).resolves({ rows: [
+            { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
+            { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic' }},
+            { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1', needs_signoff: true } },
+            { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+            { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' }},
+            { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'random', needs_signoff: true, submitter: 'f2' } },
+            { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'random', needs_signoff: true, submitter: 'other' } },
+            { id: 'f2-r3', key: 'f2', doc: { _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, submitter: 'f2' } },
+            { id: 'f2-r4', key: 'f2', doc: { _id: 'f2-r4', type: 'data_record', form: 'a', needs_signoff: true, submitter: 'other' } },
+          ] });
+        db.medic.query.onCall(1).resolves({ rows: [] });
+
+        const docsByReplicationKey = sinon.stub().callsFake((doc) => ([[ doc.patient_id || doc.submitter ]]));
+        sinon.stub(viewMapUtils, 'getViewMapFn').returns(docsByReplicationKey);
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(db.medic.query.callCount).to.equal(2);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([
+            'medic/docs_by_replication_key',
+            { keys: ['first', 'f1', 's1', 'f2'], include_docs: true }
+          ]);
+          chai.expect(purgeDbChanges.callCount).to.equal(2);
+          chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+            doc_ids: [
+              'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
+              'purged:f2-r1', 'purged:f2-r2', 'purged:f2-r3', 'purged:f2-r4'
+            ],
+            batch_size: 10,
+            seq_interval: 9
+          }]);
+
+          chai.expect(purgeFn.callCount).to.equal(8);
+          chai.expect(purgeFn.args[0]).to.deep.equal([
+            { roles: roles['a'] },
+            { _id: 'first', type: 'district_hospital' },
+            [],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[2]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f1', type: 'clinic' },
+            [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1', needs_signoff: true }],
+            [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
+          ]);
+
+          chai.expect(purgeFn.args[4]).deep.to.equal([
+            { roles: roles['a'] },
+            { _id: 'f2', type: 'person' },
+            [],
+            []
+          ]);
+
+          chai.expect(purgeFn.args[6]).deep.to.equal([
+            { roles: roles['a'] },
+            {},
+            [{ _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, submitter: 'f2' }],
+            []
+          ]);
+        });
+      });
     });
   });
 });

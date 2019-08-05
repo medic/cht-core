@@ -4,6 +4,7 @@ const cache = require('./cache');
 const crypto = require('crypto');
 const request = require('request-promise-native');
 const registrationUtils = require('@medic/registration-utils');
+const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const config = require('../config');
 const logger = require('../logger');
@@ -123,7 +124,7 @@ const getRoles = () => {
             !row.doc.roles ||
             !Array.isArray(row.doc.roles) ||
             !row.doc.roles.length ||
-            !auth.isOffline(roles)
+            !auth.isOffline(row.doc.roles)
         ) {
           return;
         }
@@ -149,6 +150,10 @@ const initPurgeDbs = (roles) => {
 };
 
 const getExistentPurgedDocs = (roles, ids) => {
+  if (!ids.length) {
+    return Promise.resolve({});
+  }
+
   const purgeIds = ids.map(id => getPurgedId(id));
   const roleHashes = Object.keys(roles);
   const changesOpts = {
@@ -222,8 +227,6 @@ const updatePurgedDocs = (roles, ids, currentlyPurged, newPurged) => {
   }));
 };
 
-const CONTACT_TYPES = ['clinic', 'district_hospital', 'health_center', 'person'];
-
 const getRootContacts = () => {
   return db.medic
     .query('medic-client/doc_by_type', { key: ['district_hospital'] })
@@ -231,7 +234,7 @@ const getRootContacts = () => {
 };
 
 const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '') => {
-  if (!rootIds.length) {
+  if (!rootIds.length && !rootId) {
     // WE ARE DONE
     return Promise.resolve();
   }
@@ -246,9 +249,8 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
 
   const queryString = {
     limit: BATCH_SIZE,
-    keys:  JSON.stringify([[rootId]]),
-    startkey_docid: startKeyDocId,
-    include_docs: true
+    key:  JSON.stringify([rootId]),
+    startkey_docid: startKeyDocId
   };
 
   // using http requests because PouchDB doesn't support `startkey_docid` in view queries
@@ -261,63 +263,95 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
         }
 
         nextKeyDocId = row.id;
-        docIds.push(row.id);
 
-        const contact = row.doc;
-        const contactSubjectIds = registrationUtils.getSubjectIds(contact);
-        subjectIds.push(...contactSubjectIds);
-        groups[contact._id] = { contact, subjectIds: contactSubjectIds, reports: [], messages: [] };
+        let contactId;
+        let contact = {};
+        if (tombstoneUtils.isTombstoneId(row.id)) {
+          // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
+          // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
+          contactId =  tombstoneUtils.extractStub(row.id).id;
+          contact = { _deleted: true };
+        } else {
+          contactId = row.id;
+          docIds.push(contactId);
+        }
+
+        const contactSubjects = [ contactId ];
+        if (row.value) {
+          contactSubjects.push(row.value);
+        }
+        subjectIds.push(...contactSubjects);
+        groups[contactId] = { contact, subjectIds: contactSubjects, reports: [], messages: [] };
       });
 
       return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds, include_docs: true });
     })
     .then(result => {
-      const reportsByContact = {};
-      const messagesByContact = {};
-      const keys = [];
+      const reportsByKey = {};
+      const messagesByKey = {};
+      const keys = new Set();
 
       result.rows.forEach(row => {
-        // skip contacts, we already have those
-        if (CONTACT_TYPES.indexOf(row.doc.type) !== -1) {
+        if (groups[row.id]) {
+          groups[row.id].contact = row.doc;
           return;
         }
+
+        // we don't purge tombstones
+        if (tombstoneUtils.isTombstoneId(row.id)) {
+          return;
+        }
+
         let key;
         docIds.push(row.id);
 
         if (row.doc.form) {
           // use patientId as a key, as to keep contact to report associations correct
           key = registrationUtils.getPatientId(row.doc);
-          if (row.doc.needs_signoff && subjectIds.indexOf(key) === -1) {
-            // reports with needs_signoff will emit for the whole submitter lineage, but we only want to process them
-            // in the correct context, either associated to their patient or to their submitter, if the patient is not found
+          const needsSignoff = row.doc.needs_signoff;
+          if (needsSignoff && !subjectIds.includes(key)) {
+            // reports with needs_signoff will emit for every contact from submitter lineage,
+            // but we only want to process once either associated to their patient or alone, if no patient_id
             delete row.doc.needs_signoff;
-            key = viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(row.doc)[0][0];
-          }
-          if (subjectIds.indexOf(key) === -1) {
-            return;
+            const viewKey = viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(row.doc)[0][0];
+            if (!subjectIds.includes(viewKey)) {
+              return;
+            }
+            row.doc.needs_signoff = needsSignoff;
           }
 
-          reportsByContact[key] = reportsByContact[key] || [];
-          reportsByContact[key].push(row.doc);
+          reportsByKey[key] = reportsByKey[key] || [];
+          reportsByKey[key].push(row.doc);
         } else {
           key = row.key;
-          messagesByContact[key] = messagesByContact[key] || [];
-          messagesByContact[key].push(row.doc);
+          messagesByKey[key] = messagesByKey[key] || [];
+          messagesByKey[key].push(row.doc);
         }
 
-        keys.push(key);
+        if (!subjectIds.includes(key)) {
+          groups[key] = { contact: {}, subjectIds: [key], reports: [], messages: [] };
+        }
+        keys.add(key);
       });
 
       keys.forEach(key => {
-        if (!messagesByContact[key] && !reportsByContact[key]) {
+        if (!messagesByKey[key] && !reportsByKey[key]) {
           return;
         }
-        const group = Object.values(groups).find(group => group.subjectIds.includes(key));
-        if (reportsByContact[key]) {
-          group.reports.push(...reportsByContact[key]);
+        if (!key) {
+          // reports that have no patient_id, create a group for each one to be processed individually
+          reportsByKey[key].forEach(report => {
+            groups[report._id] = { contact: {}, reports: [report], messages: [] };
+          });
+          return;
         }
-        if (messagesByContact[key]) {
-          group.messages.push(...messagesByContact[key]);
+
+        const group = Object.values(groups).find(group => group.subjectIds.includes(key));
+        if (reportsByKey[key]) {
+          group.reports.push(...reportsByKey[key]);
+        }
+        if (messagesByKey[key]) {
+          group.messages.push(...messagesByKey[key]);
         }
       });
 
@@ -326,12 +360,24 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
     .then(currentlyPurged => {
       const purgedPerHash = {};
       const rolesHashes = Object.keys(roles);
-      Object.keys(groups).forEach(id => {
+      Object.keys(groups).forEach(key => {
+        const group = groups[key];
         rolesHashes.forEach(hash => {
           purgedPerHash[hash] = purgedPerHash[hash] || {};
 
-          const allowedIds = [id, ...groups[id].reports.map(r => r._id), ...groups[id].messages.map(r => r._id)];
-          const purgeResult = purgeFn({ roles: roles[hash] }, groups[id].contact, groups[id].reports, groups[id].messages);
+          const allowedIds = [
+            group.contact._id,
+            ...group.reports.map(r => r._id),
+            ...group.messages.map(r => r._id)
+          ].filter(id => id);
+          if (!allowedIds.length) {
+            return;
+          }
+
+          const purgeResult = purgeFn({ roles: roles[hash] }, group.contact, group.reports, group.messages);
+          if (!purgeResult || !Array.isArray(purgeResult) || !purgeResult.length) {
+            return;
+          }
 
           purgeResult.forEach(id => {
             if (!allowedIds.includes(id)) {
@@ -360,7 +406,7 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
 
   const queryString = {
     limit: BATCH_SIZE,
-    keys: JSON.stringify(['_unassigned']),
+    key: JSON.stringify('_unassigned'),
     startkey_docid: startKeyDocId,
     include_docs: true
   };
@@ -402,6 +448,31 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
     })
     .then(() => nextKeyDocId && batchedUnallocatedPurge(roles, purgeFn, nextKeyDocId));
 };
+
+// purges documents that would be replicated by offline users
+// - reads all user documents from the `_users` database to comprise a list of unique sets of roles
+// - creates a database for each role set with the name `<main db name>-purged-role-<hash>` where `hash` is an md5 of
+// the JSON.Stringify-ed list of roles
+// - iterates over all contacts by querying `contacts_by_depth` using all root contact keys, in batches
+// - for every batch of contacts, queries `docs_by_replication_key` with the resulting `subject_ids`
+// - groups results by contact to generate a list of pairs containing :
+//    a) a contact document
+//    b) a list of reports which are about the contact (*not submitted by the contact*)
+//    c) a list of free form sms messages that the contact has sent or received
+// - every group is passed to the purge function for every unique role set
+// - the purge function returns a list of docs ids that should be purged
+// - for every group, we check which of the documents are currently purged
+// (by requesting _changes from the target purge database, using the list of corresponding ids)
+// - queries `docs_by_replication_key` with `_unassigned` key and runs purge over every unallocated doc, individually
+// - after running purge in every case, we compare the list of ids_to_purge with the ids_already_purged and:
+//     a) docs that are already purged and should stay purged, we do nothing
+//     b) docs that are already purged and should not be purged, we remove from purged db
+//     c) docs that are not purged and should be purged, we add to the purged db
+// - we intentionally skip purging "orphaned" docs (docs that emit in `docs_by_replication_key` but that are not
+// retrieved when systematically querying the view with all existent subjects), as these docs would not end up being
+// replicated
+// - we intentionally skip reports that `needs_signoff` when they are retrieved because of the `needs_signoff`
+// submitter lineage emit. As a consequence, orphaned reports with `needs_signoff` will not be purged
 
 const purge = () => {
   logger.info('Running server side purge');
@@ -455,6 +526,9 @@ if (process.env.UNIT_TEST_ENV) {
     _getRootContacts: getRootContacts,
     _batchedContactsPurge: batchedContactsPurge,
     _batchedUnallocatedPurge: batchedUnallocatedPurge,
+    _reset: () => {
+      Object.keys(purgeDbs).forEach(hash => delete purgeDbs[hash]);
+    }
   });
 }
 
