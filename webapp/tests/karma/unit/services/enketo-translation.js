@@ -11,311 +11,20 @@ describe('EnketoTranslation service', () => {
     });
   });
 
-  it('exists', () => {
-    assert.isDefined(service);
-  });
-
-  describe('XForm generation', () => {
-    it('generates a simple XForm when supplied with a simple schema', () => {
-      // given
-      const schema = {
-        type: 'person',
-        title: '{{name}}',
-        fields: {
-          name: {
-            type: 'string',
-          },
-        },
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model>' +
-            '<instance><data id="person" version="1">' +
-              '<person><name/></person>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/person/name" type="string"/></model></h:head>' +
-          '<h:body>' +
-            '<input ref="/data/person/name">' +
-              '<label>person.field.name</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('handles *required* fields', () => {
-      // given
-      const schema = {
-        type: 'person',
-        title: '{{name}}',
-        fields: {
-          name: {
-            type: 'string',
-            required: true,
-          }
-        }
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model>' +
-            '<instance><data id="person" version="1">' +
-              '<person><name/></person>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/person/name" required="true()" type="string"/></model></h:head>' +
-          '<h:body>' +
-            '<input ref="/data/person/name">' +
-              '<label>person.field.name</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('handles text data type', () => {
-      // given
-      const schema = {
-        type: 'dog',
-        title: '{{name}}',
-        fields: {
-          name: {
-            type: 'string',
-            required: true,
-          },
-          habits: {
-            type: 'text',
-          },
-        }
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model>' +
-            '<instance><data id="dog" version="1">' +
-              '<dog><name/><habits/></dog>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/dog/name" required="true()" type="string"/>' +
-            '<bind nodeset="/data/dog/habits" type="text"/>' +
-          '</model></h:head>' +
-          '<h:body>' +
-            '<input ref="/data/dog/name">' +
-              '<label>dog.field.name</label></input>' +
-            '<input appearance="multiline" ref="/data/dog/habits">' +
-              '<label>dog.field.habits</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('handles phone number data type', () => {
-      // given
-      const schema = {
-        type: 'contact',
-        title: '{{number}}',
-        fields: {
-          number: {
-            type: 'tel',
-          }
-        }
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance>' +
-            '<data id="contact" version="1">' +
-              '<contact><number/></contact>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/contact/number" type="tel"/></model></h:head>' +
-          '<h:body>' +
-            '<input ref="/data/contact/number">' +
-              '<label>contact.field.number</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('handles fields hidden in form', () => {
-      // given
-      const schema = {
-        type: 'contact',
-        title: '{{number}}',
-        fields: {
-          number: {
-            type: 'tel',
-          },
-          secret: {
-            hide_in_form: true,
-          },
-        }
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><data id="contact" version="1">' +
-              '<contact><number/><secret/></contact>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/contact/number" type="tel"/></model></h:head>' +
-          '<h:body>' +
-            '<input ref="/data/contact/number">' +
-              '<label>contact.field.number</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('handles db-reference fields', () => {
-      // given
-      const schema = {
-        type: 'person',
-        title: '{{name}}',
-        fields: {
-          loc: {
-            type: 'db:location',
-          },
-        },
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
-          '<h:head>' +
-          '<model><instance><data id="person" version="1">' +
-              '<person><loc/></person>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/person/loc" type="db:location"/></model></h:head>' +
-          '<h:body>' +
-            '<input appearance="db-object bind-id-only" ref="/data/person/loc">' +
-              '<label>person.field.loc</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('handles facility fields', () => {
-      // given
-      const schema = {
-        type: 'person',
-        title: '{{name}}',
-        fields: {
-          parent: {
-            type: 'facility',
-          },
-        },
-      };
-
-      // when
-      const xform = service.generateXform(schema);
-
-      // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
-          '<h:head>' +
-          '<model><instance><data id="person" version="1">' +
-              '<person><parent/></person>' +
-              '<meta><instanceID/></meta>' +
-            '</data></instance>' +
-            '<bind nodeset="/data/person/parent" type="facility"/></model></h:head>' +
-          '<h:body>' +
-            '<input ref="/data/person/parent">' +
-              '<label>person.field.parent</label></input>' +
-          '</h:body></h:html>');
-    });
-
-    it('generates a double XForm when supplied with an object-pair schema', () => {
-      // given
-      const schema = {
-        type: 'clinic',
-        title: 'name',
-        fields: {
-          name: {
-            type: 'string',
-            required: true,
-          },
-          external_id: {
-            type: 'string',
-          },
-          parent: {
-            type: 'db:district_hospital',
-          },
-          contact: {
-            type: 'db:person',
-            required: true,
-          },
-        },
-      };
-      const contactSchema = {
-        type: 'person',
-        title: 'name',
-        fields: {
-          name: {
-            type: 'string',
-            required: true,
-          },
-          phonenumber: {
-            type: 'tel',
-            required: true,
-          },
-        },
-      };
-
-      // when
-      const xform = service.generateXform(schema, { contact:contactSchema });
-
-      // then
-      assert.equal(xform,
-          '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><data id="clinic" version="1">' +
-          '<clinic><name/><external_id/><parent/><contact/></clinic>' +
-          '<contact><name/><phonenumber/></contact>' +
-          '<meta><instanceID/></meta>' +
-          '</data></instance>' +
-          '<bind nodeset="/data/clinic/name" required="true()" type="string"/>' +
-          '<bind nodeset="/data/clinic/external_id" type="string"/>' +
-          '<bind nodeset="/data/clinic/parent" type="db:district_hospital"/>' +
-          '<bind nodeset="/data/clinic/contact" required="true()" type="db:person"/>' +
-          '<bind nodeset="/data/contact" relevant="/data/clinic/contact = \'NEW\'"/>' +
-          '<bind nodeset="/data/contact/name" required="true()" type="string"/>' +
-          '<bind nodeset="/data/contact/phonenumber" required="true()" type="tel"/>' +
-          '</model></h:head>' +
-          '<h:body class="pages">' +
-          '<group appearance="field-list" ref="/data/clinic">' +
-          '<input ref="/data/clinic/name"><label>clinic.field.name</label></input>' +
-          '<input ref="/data/clinic/external_id"><label>clinic.field.external_id</label></input>' +
-          '<input appearance="db-object bind-id-only" ref="/data/clinic/parent"><label>clinic.field.parent</label></input>' +
-          '<input appearance="db-object bind-id-only allow-new" ref="/data/clinic/contact"><label>clinic.field.contact</label></input>' +
-          '</group>' +
-          '<group appearance="field-list" ref="/data/contact">' +
-          '<label>contact.type.person.new</label>' +
-          '<input ref="/data/contact/name"><label>person.field.name</label></input>' +
-          '<input ref="/data/contact/phonenumber"><label>person.field.phonenumber</label></input>' +
-          '</group>' +
-          '</h:body></h:html>');
-    });
-  });
-
   describe('#contactRecordToJs()', () => {
     it('should convert a simple record to JS', () => {
       // given
       const xml =
-        '<data id="person" version="1">' +
-          '<person>' +
-            '<name>Denise Degraffenreid</name>' +
-            '<phone>+123456789</phone>' +
-            '<parent>eeb17d6d-5dde-c2c0-a0f2a91e2d232c51</parent>' +
-          '</person>' +
-          '<meta>' +
-            '<instanceID>uuid:9bbd57b0-5557-4d69-915c-f8049c81f6d8</instanceID>' +
-          '<deprecatedID/></meta>' +
-        '</data>';
+        `<data id="person" version="1">
+          <person>
+            <name>Denise Degraffenreid</name>
+            <phone>+123456789</phone>
+            <parent>eeb17d6d-5dde-c2c0-a0f2a91e2d232c51</parent>
+          </person>
+          <meta>
+            <instanceID>uuid:9bbd57b0-5557-4d69-915c-f8049c81f6d8</instanceID>
+          <deprecatedID/></meta>
+        </data>`;
 
       // when
       const js = service.contactRecordToJs(xml);
@@ -334,20 +43,20 @@ describe('EnketoTranslation service', () => {
     it('should convert a complex record without new instance to JS', () => {
       // given
       const xml =
-        '<data id="clinic" version="1">' +
-          '<clinic>' +
-            '<name>A New Catchmnent Area</name>' +
-            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
-            '<contact>abc-123-xyz-987</contact>' +
-          '</clinic>' +
-          '<contact>' +
-            '<name></name>' +
-            '<phone></phone>' +
-          '</contact>' +
-          '<meta>' +
-            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
-          '</meta>' +
-        '</data>';
+        `<data id="clinic" version="1">
+          <clinic>
+            <name>A New Catchmnent Area</name>
+            <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
+            <contact>abc-123-xyz-987</contact>
+          </clinic>
+          <contact>
+            <name></name>
+            <phone></phone>
+          </contact>
+          <meta>
+            <instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>
+          </meta>
+        </data>`;
 
       // when
       const js = service.contactRecordToJs(xml);
@@ -370,20 +79,20 @@ describe('EnketoTranslation service', () => {
     it('should convert a complex record with new instance to JS', () => {
       // given
       const xml =
-        '<data id="clinic" version="1">' +
-          '<clinic>' +
-            '<name>A New Catchmnent Area</name>' +
-            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
-            '<contact>NEW</contact>' +
-          '</clinic>' +
-          '<contact>' +
-            '<name>Jeremy Fisher</name>' +
-            '<phone>+123456789</phone>' +
-          '</contact>' +
-          '<meta>' +
-            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
-          '</meta>' +
-        '</data>';
+        `<data id="clinic" version="1">
+          <clinic>
+            <name>A New Catchmnent Area</name>
+            <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
+            <contact>NEW</contact>
+          </clinic>
+          <contact>
+            <name>Jeremy Fisher</name>
+            <phone>+123456789</phone>
+          </contact>
+          <meta>
+            <instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>
+          </meta>
+        </data>`;
 
       // when
       const js = service.contactRecordToJs(xml);
@@ -406,31 +115,31 @@ describe('EnketoTranslation service', () => {
     it('should support repeated elements', () => {
       // given
       const xml =
-        '<data id="clinic" version="1">' +
-          '<clinic>' +
-            '<name>A House in the Woods</name>' +
-            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
-            '<contact>abc-123-xyz-987</contact>' +
-          '</clinic>' +
-          '<contact>' +
-            '<name>Mummy Bear</name>' +
-            '<phone>123</phone>' +
-          '</contact>' +
-          '<repeat>' +
-            '<child>' +
-              '<name>Daddy Bear</name>' +
-            '</child>' +
-            '<child>' +
-              '<name>Baby Bear</name>' +
-            '</child>' +
-            '<child>' +
-              '<name>Goldilocks</name>' +
-            '</child>' +
-          '</repeat>' +
-          '<meta>' +
-            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
-          '</meta>' +
-        '</data>';
+        `<data id="clinic" version="1">
+          <clinic>
+            <name>A House in the Woods</name>
+            <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
+            <contact>abc-123-xyz-987</contact>
+          </clinic>
+          <contact>
+            <name>Mummy Bear</name>
+            <phone>123</phone>
+          </contact>
+          <repeat>
+            <child>
+              <name>Daddy Bear</name>
+            </child>
+            <child>
+              <name>Baby Bear</name>
+            </child>
+            <child>
+              <name>Goldilocks</name>
+            </child>
+          </repeat>
+          <meta>
+            <instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>
+          </meta>
+        </data>`;
 
       // when
       const js = service.contactRecordToJs(xml);
@@ -461,35 +170,35 @@ describe('EnketoTranslation service', () => {
     it('should ignore text in repeated elements', () => {
       // given
       const xml =
-        '<data id="clinic" version="1">' +
-          '<clinic>' +
-            '<name>A House in the Woods</name>' +
-            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
-            '<contact>abc-123-xyz-987</contact>' +
-          '</clinic>' +
-          '<contact>' +
-            '<name>Mummy Bear</name>' +
-            '<phone>123</phone>' +
-          '</contact>' +
-          '<repeat>' +
-            'All text nodes should be ignored.' +
-            '<child>' +
-              '<name>Daddy Bear</name>' +
-            '</child>' +
-            'All text nodes should be ignored.' +
-            '<child>' +
-              '<name>Baby Bear</name>' +
-            '</child>' +
-            'All text nodes should be ignored.' +
-            '<child>' +
-              '<name>Goldilocks</name>' +
-            '</child>' +
-            'All text nodes should be ignored.' +
-          '</repeat>' +
-          '<meta>' +
-            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
-          '</meta>' +
-        '</data>';
+        `<data id="clinic" version="1">
+          <clinic>
+            <name>A House in the Woods</name>
+            <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
+            <contact>abc-123-xyz-987</contact>
+          </clinic>
+          <contact>
+            <name>Mummy Bear</name>
+            <phone>123</phone>
+          </contact>
+          <repeat>
+            All text nodes should be ignored.
+            <child>
+              <name>Daddy Bear</name>
+            </child>
+            All text nodes should be ignored.
+            <child>
+              <name>Baby Bear</name>
+            </child>
+            All text nodes should be ignored.
+            <child>
+              <name>Goldilocks</name>
+            </child>
+            All text nodes should be ignored.
+          </repeat>
+          <meta>
+            <instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>
+          </meta>
+        </data>`;
 
       // when
       const js = service.contactRecordToJs(xml);

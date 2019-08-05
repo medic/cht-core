@@ -32,12 +32,6 @@ function(newDoc, oldDoc, userCtx) {
     }
   };
 
-  var validatePerson = function(newDoc) {
-    if(!newDoc.reported_date) {
-      _err('reported_date property must be set.');
-    }
-  };
-
   var validateUserSettings = function(newDoc) {
     var id_parts = newDoc._id.split(':'),
         prefix = id_parts[0],
@@ -68,9 +62,6 @@ function(newDoc, oldDoc, userCtx) {
 
   if (userCtx.facility_id === newDoc._id) {
     _err('You are not authorized to edit your own place');
-  }
-  if (newDoc.type === 'person') {
-    validatePerson(newDoc);
   }
   if (newDoc.type === 'form') {
     validateForm(newDoc);

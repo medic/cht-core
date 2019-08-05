@@ -65,6 +65,7 @@ function (doc) {
         }
       }
       return;
+    case 'contact':
     case 'clinic':
     case 'district_hospital':
     case 'health_center':

@@ -10,7 +10,8 @@ var _ = require('underscore');
 */
 angular.module('inboxServices').factory('PlaceHierarchy',
   function(
-    ContactSchema,
+    Changes,
+    ContactTypes,
     Contacts,
     Settings
   ) {
@@ -73,17 +74,53 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       return firstNonStubNode(hierarchy);
     };
 
-    // By default exclude clinic (the lowest level) to increase performance.
-    var defaultHierarchyTypes = ContactSchema.getPlaceTypes().filter(function(type) {
-      return type !== 'clinic';
+    const contactTypes = Settings().then(settings => {
+      if (settings.place_hierarchy_types) {
+        return settings.place_hierarchy_types;
+      }
+      // By default exclude people and clinics (the lowest level)
+      // for performance reasons
+      return ContactTypes.getPlaceTypes().then(types => {
+        const ids = [];
+        types.forEach(type => {
+          if (type.parents) {
+            ids.push(...type.parents);
+          }
+        });
+        
+        registerChangesListener(ids);
+        return ids;
+      });
     });
 
-    return function() {
-      return Settings().then(function(settings) {
-        var types = settings.place_hierarchy_types || defaultHierarchyTypes;
-
-        return Contacts(types).then(buildHierarchy);
+    const registerChangesListener = typeIds => {
+      Changes({
+        key: 'place-hierarchy',
+        filter: change => typeIds.includes(change.doc.contact_type || change.doc.type),
+        callback: () => hierarchy = init().catch(err => notify(err))
       });
+    };
+
+    const notify = (err, hierarchy) => {
+      Object.keys(listeners).forEach(key => listeners[key](err, hierarchy));
+      return hierarchy;
+    };
+
+    const listeners = {};
+    const init = () => {
+      return contactTypes
+        .then(Contacts)
+        .then(buildHierarchy)
+        .then(hierarchy => notify(null, hierarchy));
+    };
+
+    let hierarchy = init();
+
+    return function(name, listener) {
+      return hierarchy
+        .then(result => listener(null, result))
+        .catch(err => listener(err))
+        .then(() => listeners[name] = listener);
     };
   }
 );

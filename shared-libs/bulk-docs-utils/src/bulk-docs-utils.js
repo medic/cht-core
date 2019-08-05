@@ -4,16 +4,17 @@ module.exports = function(dependencies) {
   var DB = dependencies.DB;
 
   function getParent(doc) {
-    if (doc.type === 'person' && doc.parent && doc.parent._id) {
-      return DB.get(doc.parent._id)
-        .catch(function(err) {
-          if (err.status === 404) {
-            return;
-          }
-          throw err;
-        });
+    const parentId = doc.parent && doc.parent._id;
+    if (!parentId) {
+      return Promise.resolve();
     }
-    return Promise.resolve();
+    return DB.get(parentId)
+      .catch(function(err) {
+        if (err.status === 404) {
+          return;
+        }
+        throw err;
+      });
   }
 
   return {

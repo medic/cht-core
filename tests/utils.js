@@ -150,13 +150,12 @@ const revertSettings = () => {
   });
 };
 
+const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
+
 const deleteAll = (except = []) => {
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
-    doc =>
-      ['translations', 'translations-backup', 'user-settings', 'info'].includes(
-        doc.type
-      ),
+    doc => PERMANENT_TYPES.includes(doc.type),
     'service-worker-meta',
     constants.USER_CONTACT_ID,
     'migration-log',
@@ -164,6 +163,7 @@ const deleteAll = (except = []) => {
     'branding',
     'partners',
     'settings',
+    /^form:contact:/,
     /^_design/
   );
   const ignoreFns = [];

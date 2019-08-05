@@ -873,12 +873,20 @@ a.fa:hover {
       width: 100%;
     }
 
-    .mm-icon {
+    > * {
       margin: 10px 0 0;
       flex-grow: 1;
       max-width: 120px;
       outline: 0;
       border-bottom: 5px solid transparent;
+
+      > .mm-icon {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+    }
+    .mm-icon {
       .fa {
         font-size: 30px;
       }
@@ -950,22 +958,22 @@ a.fa:hover {
   }
 }
 
-.messages .action-container .actions .mm-icon:hover {
+.messages .action-container .actions > :hover {
   border-bottom-color: @messages-color;
 }
 
-.reports .action-container .actions .mm-icon {
+.reports .action-container .actions > * {
   &:hover,
   &.active {
     border-bottom-color: @reports-color;
   }
 }
 
-.contacts .action-container .actions .mm-icon:hover {
+.contacts .action-container .actions > :hover {
   border-bottom-color: @contacts-color;
 }
 
-.action-container .actions .mm-icon.mm-icon-disabled:hover {
+.action-container .actions >.mm-icon-disabled:hover {
   border-bottom-color: transparent;
 }
 

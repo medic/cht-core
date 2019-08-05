@@ -26,6 +26,12 @@ const isUnmuteForm = form => {
 
 const getEventType = muted => muted ? 'mute' : 'unmute';
 
+const isContact = doc => {
+  const contactTypes = config.get('contact_types') || [];
+  const typeId = doc.contact_type || doc.type;
+  return contactTypes.some(type => type.id === typeId);
+};
+
 const isRelevantReport = (doc, info = {}) =>
   Boolean(doc &&
           doc.form &&
@@ -39,7 +45,7 @@ const isRelevantReport = (doc, info = {}) =>
 const isRelevantContact = (doc, info = {}) =>
   Boolean(doc &&
           !info._rev &&
-          ['person', 'clinic', 'health_center', 'district_hospital'].includes(doc.type) &&
+          isContact(doc) &&
           !doc.muted &&
           mutingUtils.isMutedInLineage(doc));
 
