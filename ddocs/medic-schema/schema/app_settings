@@ -2,25 +2,21 @@
   "type": "object",
   "properties": {
     "locales": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              }
-            }
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "disabled": {
+            "type": "boolean"
           }
         }
-      ]
+      }
     },
     "locale": {
       "type": "string"
@@ -522,6 +518,25 @@
         }
       }
     },
+    "roles": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+      },
+      "patternProperties": {
+        "^[A-Za-z][A-Za-z0-9_-]*$": {
+          "type": "object",
+          "Properties": {
+            "name": {
+              "type": "string"
+            },
+            "offline": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
     "replications": {
       "type": "array",
       "items": {
@@ -539,6 +554,117 @@
           "cron": {
             "type": "string"
           }
+        }
+      }
+    },
+    "replication_depth": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "depth": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "changes_controller": {
+      "type": "object",
+      "properties": {
+        "reiterate_changes": {
+          "type": "boolean"
+        },
+        "changes_limit": {
+          "type": "integer"
+        },
+        "debounce_interval": {
+          "type": "integer"
+        }
+      }
+    },
+    "muting": {
+      "type": "object",
+      "properties": {
+        "mute_forms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unmute_forms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validations": {
+          "type": "object",
+          "properties": {
+            "join_responses": {
+              "type": "boolean"
+            },
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "property": {
+                    "type": "string"
+                  },
+                  "rule": {
+                    "type": "string"
+                  },
+                  "translation_key": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "translation_key": {
+                "type": "string"
+              },
+              "event_type": {
+                "type": "string",
+                "enum": [
+                  "mute",
+                  "unmute",
+                  "already_muted",
+                  "already_unmuted",
+                  "contact_not_found"
+                ]
+              },
+              "recipient": {
+                "type": "string",
+                "enum": [
+                  "reporting_unit",
+                  "parent",
+                  "clinic",
+                  "chw_phone"
+                ]
+              },
+              "bool_expr": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "purging": {
+      "type": "object",
+      "properties": {
+        "fn": {
+          "type": "string"
         }
       }
     },
@@ -570,9 +696,15 @@
                 },
                 "params": {
                   "oneOf": [
-                    { "type": "string" },
-                    { "type": "object" },
-                    { "type": "array" }
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array"
+                    }
                   ]
                 },
                 "bool_expr": {
@@ -1134,7 +1266,8 @@
                         "string",
                         "integer",
                         "boolean",
-                        "date"
+                        "date",
+                        "complex"
                       ]
                     },
                     "required": {
@@ -1176,11 +1309,18 @@
                     ]
                   },
                   "goal": {
-                    "type": "number",
-                    "enum": [
-                      -1,
-                      100,
-                      50
+                    "oneOf": [
+                      {
+                        "type": "number",
+                        "enum": [
+                          -1
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
                     ]
                   },
                   "translation_key": {
@@ -1247,6 +1387,144 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "outbound": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+      },
+      "patternProperties": {
+        "^[A-Za-z][A-Za-z0-9_-]*$": {
+          "type": "object",
+          "relevant_to": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "object",
+            "properties": {
+              "base_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "auth": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "usename": {
+                    "type": "string"
+                  },
+                  "password-key": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                }
+              },
+              "path": {
+                "type": "string"
+              }
+            }
+          },
+          "mapping": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$"
+            },
+            "patternProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "expr": {
+                      "type": "string"
+                    },
+                    "optional": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "optional": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "sms": {
+      "type": "object",
+      "properties": {
+        "outgoing_service": {
+          "type": "string"
+        }
+      }
+    },
+    "uhc": {
+      "type": "object",
+      "properties": {
+        "contacts_default_sort": {
+          "type": "string"
+        },
+        "visit_count": {
+          "type": "object",
+          "properties": {
+            "month_start_date": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 31
+            },
+            "visit_count_goal": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "translations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "default": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "locale": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "default": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
