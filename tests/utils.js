@@ -30,7 +30,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
   const deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
-  options.port = constants.API_PORT;
+  options.port = options.port || constants.API_PORT;
   if (!noAuth) {
     options.auth = options.auth || auth.user + ':' + auth.pass;
   }
@@ -58,9 +58,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
         body = JSON.parse(body);
         if (body.error) {
           const err = new Error(
-            `Request failed: ${options.path},\n  body: ${JSON.stringify(
-              options.body
-            )}\n  response: ${JSON.stringify(body)}`
+            `Request failed: ${JSON.stringify(options)}\n  response: ${JSON.stringify(body)}`
           );
           err.responseBody = body;
           err.statusCode = res.statusCode;
