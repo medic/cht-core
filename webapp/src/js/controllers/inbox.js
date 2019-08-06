@@ -220,7 +220,7 @@ var _ = require('underscore'),
       });
 
     // initialisation tasks that can occur after the UI has been remdered
-    const initSecondaryServices = () {
+    const initSecondaryServices = () => {
       // TODO order this and serialize?
       Session.init();
       CheckDate();
