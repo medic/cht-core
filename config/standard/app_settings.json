@@ -3888,7 +3888,7 @@
     "update_sent_forms": false,
     "generate_patient_id_on_people": true,
     "death_reporting": true,
-    "resolve_pending": true
+    "resolve_pending": false
   },
   "death_reporting": {
     "mark_deceased_forms": [
