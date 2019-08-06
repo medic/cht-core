@@ -23,7 +23,7 @@ const getSelectedAnalytics = state => getAnalyticsState(state).selected;
 
 // Contacts
 const getContactsState = state => state.contacts;
-const getContactsLoadingSummary = state => getContactsState(state).contactsLoadingSummary;
+const getContactsLoadingSummary = state => getContactsState(state).loadingSummary;
 const getLoadingSelectedContactChildren = state => getContactsState(state).loadingSelectedChildren;
 const getLoadingSelectedContactReports = state => getContactsState(state).loadingSelectedReports;
 const getSelectedContact = state => getContactsState(state).selected;
