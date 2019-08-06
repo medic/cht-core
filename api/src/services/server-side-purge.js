@@ -145,7 +145,14 @@ const getRoles = () => {
 const initPurgeDbs = (roles) => {
   return Promise.all(Object.keys(roles).map(hash => {
     const purgeDb = getPurgeDb(hash, true);
-    return purgeDb.put({ _id: 'local/info', roles: roles[hash] }).catch(() => {}); // catch 409s here
+    return purgeDb
+      .put({ _id: 'local/info', roles: roles[hash] })
+      .catch(err => {
+        // we don't care about conflicts
+        if (err.status !== 409) {
+          throw err;
+        }
+      });
   }));
 };
 
@@ -496,23 +503,27 @@ const purge = () => {
   const purgeFn = getPurgeFn();
   if (!purgeFn) {
     logger.info('No purge function configured.');
-    return;
+    return Promise.resolve();
   }
 
   const start = performance.now();
-  return getRoles().then(roles => {
-    if (!roles || !Object.keys(roles).length) {
-      logger.info(`No offline users found. Not purging.`);
-      return;
-    }
-    return initPurgeDbs(roles)
-      .then(() => getRootContacts())
-      .then(ids => batchedContactsPurge(roles, purgeFn, ids))
-      .then(() => batchedUnallocatedPurge(roles, purgeFn))
-      .then(() => {
-        logger.info(`Server Side Purge completed successfully in ${ (performance.now() - start) / 1000 / 60 } minutes`);
-      });
-  });
+  return getRoles()
+    .then(roles => {
+      if (!roles || !Object.keys(roles).length) {
+        logger.info(`No offline users found. Not purging.`);
+        return;
+      }
+      return initPurgeDbs(roles)
+        .then(() => getRootContacts())
+        .then(ids => batchedContactsPurge(roles, purgeFn, ids))
+        .then(() => batchedUnallocatedPurge(roles, purgeFn))
+        .then(() => {
+          logger.info(`Server Side Purge completed successfully in ${ (performance.now() - start) / 1000 / 60 } minutes`);
+        });
+    })
+    .catch(err => {
+      logger.error('Error while running Server Side Purge: %o', err);
+    });
 };
 
 module.exports = {
@@ -521,30 +532,4 @@ module.exports = {
   writeCheckPointer,
   purge,
 };
-
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  Object.assign(module.exports, {
-    _purge: purge,
-    _getCheckPointer: getCheckPointer,
-    _getCacheKey: getCacheKey,
-    _getRoleHash: getRoleHash,
-    _getPurgeDb: getPurgeDb,
-    _getPurgedId: getPurgedId,
-    _extractId: extractId,
-    _getPurgedIdsFromChanges: getPurgedIdsFromChanges,
-    _getRoles: getRoles,
-    _initPurgeDbs: initPurgeDbs,
-    _getExistentPurgedDocs: getExistentPurgedDocs,
-    _getPurgeFn: getPurgeFn,
-    _updatePurgedDocs: updatePurgedDocs,
-    _getRootContacts: getRootContacts,
-    _batchedContactsPurge: batchedContactsPurge,
-    _batchedUnallocatedPurge: batchedUnallocatedPurge,
-    _reset: () => {
-      Object.keys(purgeDbs).forEach(hash => delete purgeDbs[hash]);
-    }
-  });
-}
 
