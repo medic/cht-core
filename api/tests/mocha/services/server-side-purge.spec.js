@@ -16,7 +16,10 @@ describe('Server Side Purge service', () => {
   beforeEach(() => {
 
   });
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    service._reset();
+    sinon.restore();
+  });
 
   describe('purging', () => {
     describe('getPurgeFn', () => {
@@ -211,8 +214,151 @@ describe('Server Side Purge service', () => {
       });
     });
 
+    describe('getExistentPurgedDocs', () => {
+      let purgeDbChanges;
+      beforeEach(() => {
+        purgeDbChanges = sinon.stub();
+        sinon.stub(db, 'get').returns({ changes: purgeDbChanges });
+      });
+
+      it('should work with no ids', () => {
+        return service._getExistentPurgedDocs(['a', 'b']).then(results => {
+          chai.expect(results).to.deep.equal({ 'a': {}, 'b': {} });
+          chai.expect(db.get.callCount).to.equal(0);
+        });
+      });
+
+      it('should request changes with purged ids for every purge db', () => {
+        const hashes = ['a', 'b', 'c'];
+        const ids = ['1', '2', '3', '4'];
+        purgeDbChanges.resolves({ results: [] });
+        return service._getExistentPurgedDocs(hashes, ids).then(results => {
+          chai.expect(results).to.deep.equal({ 'a': {}, 'b': {}, 'c': {} });
+          chai.expect(db.get.callCount).to.equal(3);
+          chai.expect(purgeDbChanges.callCount).to.equal(3);
+          chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+            doc_ids: ['purged:1', 'purged:2', 'purged:3', 'purged:4'],
+            batch_size: 5,
+            seq_interval: 4
+          }]);
+          chai.expect(purgeDbChanges.args[1]).to.deep.equal(purgeDbChanges.args[0]);
+          chai.expect(purgeDbChanges.args[2]).to.deep.equal(purgeDbChanges.args[0]);
+        });
+      });
+
+      it('should group purges by roles and id, skipping deleted purges', () => {
+        const hashes = ['a', 'b', 'c'];
+        const ids = ['1', '2', '3', '4', '5', '6'];
+
+        purgeDbChanges.onCall(0).resolves({
+          results: [
+            { id: 'purged:2', changes: [{ rev: '2-rev' }] },
+            { id: 'purged:3', changes: [{ rev: '3-rev' }] },
+            { id: 'purged:4', changes: [{ rev: '4-rev' }], deleted: true },
+            { id: 'purged:5', changes: [{ rev: '5-rev' }] },
+          ]
+        });
+
+        purgeDbChanges.onCall(1).resolves({
+          results: [
+            { id: 'purged:1', changes: [{ rev: '1-rev' }] },
+            { id: 'purged:6', changes: [{ rev: '6-rev' }] },
+          ]
+        });
+
+        purgeDbChanges.onCall(2).resolves({
+          results: [
+            { id: 'purged:1', changes: [{ rev: '1-rev' }], deleted: true },
+            { id: 'purged:3', changes: [{ rev: '3-rev' }] },
+            { id: 'purged:4', changes: [{ rev: '4-rev' }] },
+            { id: 'purged:6', changes: [{ rev: '6-rev' }], deleted: true },
+          ]
+        });
+
+        return service._getExistentPurgedDocs(hashes, ids).then(results => {
+          chai.expect(results).to.deep.equal({
+            'a': { '2': '2-rev', '3': '3-rev', '5': '5-rev' },
+            'b': { '1': '1-rev', '6': '6-rev' },
+            'c': { '3': '3-rev', '4': '4-rev' },
+          });
+        });
+      });
+    });
+
     describe('updatePurgedDocs', () => {
-      
+      let purgeDbBulkDocs;
+      beforeEach(() => {
+        purgeDbBulkDocs = sinon.stub();
+        sinon.stub(db, 'get').returns({ bulkDocs: purgeDbBulkDocs });
+      });
+
+      it('should update nothing if nothing provided', () => {
+        return service._updatePurgedDocs(['a'], ['1', '2', '3'], { 'a': {}}, { 'a': {}}).then(() => {
+          chai.expect(purgeDbBulkDocs.callCount).to.equal(0);
+        });
+      });
+
+      it('should add new purges and remove old purges', () => {
+        const roles = ['a', 'b'];
+        const ids = ['1', '2', '3', '4'];
+        const currentlyPurged = {
+          'a': {
+            '1': '1-rev',
+            '3': '3-rev',
+          },
+          'b': {
+            '2': '2-rev',
+            '4': '4-rev',
+          }
+        };
+
+        const newPurged = {
+          'a': {
+            '1': true,
+            '2': true,
+          },
+          b: {
+            '1': true,
+            '4': true,
+          }
+        };
+
+        return service._updatePurgedDocs(roles, ids, currentlyPurged, newPurged).then(() => {
+          chai.expect(purgeDbBulkDocs.callCount).to.equal(2);
+          chai.expect(purgeDbBulkDocs.args[0]).to.deep.equal([{ docs: [
+              { _id: 'purged:2' },
+              { _id: 'purged:3', _rev: '3-rev', _deleted: true }
+            ]}]);
+          chai.expect(purgeDbBulkDocs.args[1]).to.deep.equal([{ docs: [
+              { _id: 'purged:1' },
+              { _id: 'purged:2', _rev: '2-rev', _deleted: true }
+            ]}]);
+        });
+      });
+
+      it('should skip empty updates', () => {
+        const roles = ['a', 'b', 'c'];
+        const ids = ['1', '2', '3', '4'];
+        const currentlyPurged = {
+          'a': { '1': '1', '3': '3' },
+          'b': { '2': '2', '4': '4' },
+          'c': {  },
+        };
+
+        const newPurged = {
+          'a': { '1': true, '2': true },
+          'b': { '2': true, '4': true },
+          'c': { }
+        };
+
+        return service._updatePurgedDocs(roles, ids, currentlyPurged, newPurged).then(() => {
+          chai.expect(purgeDbBulkDocs.callCount).to.equal(1);
+          chai.expect(purgeDbBulkDocs.args[0]).to.deep.equal([{ docs: [
+              { _id: 'purged:2' },
+              { _id: 'purged:3', _rev: '3', _deleted: true }
+            ]}]);
+        });
+      });
     });
 
     describe('batchedContactsPurge', () => {
@@ -226,7 +372,6 @@ describe('Server Side Purge service', () => {
         orgEnv = {};
         Object.assign(orgEnv, environment);
         environment.couchUrl = 'http://a:p@localhost:6500/medic';
-        service._reset();
       });
 
       afterEach(() => {
@@ -905,25 +1050,25 @@ describe('Server Side Purge service', () => {
           ] });
         db.medic.query.onCall(1).resolves({ rows: [] });
 
-        const purgeDbChangesA = sinon.stub().resolves({
+        const dbA = { changes: sinon.stub(), bulkDocs: sinon.stub().resolves([]) };
+        const dbB = { changes: sinon.stub(), bulkDocs: sinon.stub().resolves([]) };
+        dbA.changes.resolves({
           results: [
             { id: 'purged:f1-r1', changes: [{ rev: '1' }] },
             { id: 'purged:f2-r2', changes: [{ rev: '2' }], deleted: true },
             { id: 'purged:f2-r3', changes: [{ rev: '2' }]}
           ]
         });
-        const purgeDbBulkDocsA = sinon.stub().resolves([]);
-        const purgeDbChangesB = sinon.stub().resolves({
+        dbB.changes.resolves({
           results: [
             { id: 'purged:f1-m1', changes: [{ rev: '1' }] },
             { id: 'purged:f2-r1', changes: [{ rev: '2' }], deleted: true },
             { id: 'purged:f2-m1', changes: [{ rev: '2' }]}
           ]
         });
-        const purgeDbBulkDocsB = sinon.stub().resolves([]);
         sinon.stub(db, 'get')
-          .onCall(0).returns({ changes: purgeDbChangesA, bulkDocs: purgeDbBulkDocsA })
-          .onCall(1).returns({ changes: purgeDbChangesB, bulkDocs: purgeDbBulkDocsB });
+          .onCall(0).returns(dbA)
+          .onCall(1).returns(dbB);
 
         purgeFn.withArgs({ roles: roles['a'] }, { _id: 'first', type: 'district_hospital' }).returns([]);
         purgeFn.withArgs({ roles: roles['b'] }, { _id: 'first', type: 'district_hospital' }).returns([]);
@@ -933,8 +1078,8 @@ describe('Server Side Purge service', () => {
         purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'person' }).returns(['f2-r1']);
 
         return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
-          chai.expect(purgeDbChangesA.callCount).to.equal(1);
-          chai.expect(purgeDbChangesA.args[0]).to.deep.equal([{
+          chai.expect(dbA.changes.callCount).to.equal(1);
+          chai.expect(dbA.changes.args[0]).to.deep.equal([{
             doc_ids: [
               'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
               'purged:f2-r1', 'purged:f2-r2', 'purged:f2-m1', 'purged:f2-r3'
@@ -943,8 +1088,8 @@ describe('Server Side Purge service', () => {
             seq_interval: 9
           }]);
 
-          chai.expect(purgeDbChangesB.callCount).to.equal(1);
-          chai.expect(purgeDbChangesB.args[0]).to.deep.equal([{
+          chai.expect(dbB.changes.callCount).to.equal(1);
+          chai.expect(dbB.changes.args[0]).to.deep.equal([{
             doc_ids: [
               'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
               'purged:f2-r1', 'purged:f2-r2', 'purged:f2-m1', 'purged:f2-r3'
@@ -955,16 +1100,16 @@ describe('Server Side Purge service', () => {
 
           chai.expect(purgeFn.callCount).to.equal(6);
 
-          chai.expect(purgeDbBulkDocsA.callCount).to.equal(1);
-          chai.expect(purgeDbBulkDocsA.args[0]).to.deep.equal([{ docs: [
+          chai.expect(dbA.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
             { _id: 'purged:f1-r1', _deleted: true, _rev: '1' },
             { _id: 'purged:f1-m1' },
             { _id: 'purged:f2-r1' },
             { _id: 'purged:f2-m1' },
             { _id: 'purged:f2-r3', _deleted: true, _rev: '2' }
           ]}]);
-          chai.expect(purgeDbBulkDocsB.callCount).to.equal(1);
-          chai.expect(purgeDbBulkDocsB.args[0]).to.deep.equal([{ docs: [
+          chai.expect(dbB.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [
             { _id: 'purged:f1-r1' },
             { _id: 'purged:f2-r1' },
             { _id: 'purged:f2-m1', _deleted: true, _rev: '2' }
@@ -999,13 +1144,11 @@ describe('Server Side Purge service', () => {
           ] });
         db.medic.query.onCall(1).resolves({ rows: [] });
 
-        const purgeDbChangesA = sinon.stub().resolves({ results: [] });
-        const purgeDbBulkDocsA = sinon.stub().resolves([]);
-        const purgeDbChangesB = sinon.stub().resolves({ results: []});
-        const purgeDbBulkDocsB = sinon.stub().resolves([]);
+        const dbA = { changes: sinon.stub().resolves({ results: [] }), bulkDocs: sinon.stub().resolves([])};
+        const dbB = { changes: sinon.stub().resolves({ results: [] }), bulkDocs: sinon.stub().resolves([])};
         sinon.stub(db, 'get')
-          .onCall(0).returns({ changes: purgeDbChangesA, bulkDocs: purgeDbBulkDocsA })
-          .onCall(1).returns({ changes: purgeDbChangesB, bulkDocs: purgeDbBulkDocsB });
+          .onCall(0).returns(dbA)
+          .onCall(1).returns(dbB);
 
         purgeFn.withArgs({ roles: roles['a'] }, { _id: 'first', type: 'district_hospital' }).returns(['a', 'b']);
         purgeFn.withArgs({ roles: roles['b'] }, { _id: 'first', type: 'district_hospital' }).returns(['c', 'd']);
@@ -1015,15 +1158,15 @@ describe('Server Side Purge service', () => {
         purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'clinic' }).returns(['f2']);
 
         return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
-          chai.expect(purgeDbChangesA.callCount).to.equal(1);
-          chai.expect(purgeDbChangesA.args[0]).to.deep.equal([{
+          chai.expect(dbA.changes.callCount).to.equal(1);
+          chai.expect(dbA.changes.args[0]).to.deep.equal([{
             doc_ids: ['purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1' ],
             batch_size: 6,
             seq_interval: 5
           }]);
 
-          chai.expect(purgeDbChangesB.callCount).to.equal(1);
-          chai.expect(purgeDbChangesB.args[0]).to.deep.equal([{
+          chai.expect(dbB.changes.callCount).to.equal(1);
+          chai.expect(dbB.changes.args[0]).to.deep.equal([{
             doc_ids: ['purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1' ],
             batch_size: 6,
             seq_interval: 5
@@ -1051,12 +1194,338 @@ describe('Server Side Purge service', () => {
             []
           ]);
 
-          chai.expect(purgeDbBulkDocsA.callCount).to.equal(1);
-          chai.expect(purgeDbBulkDocsA.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f1-m1' }] }]);
-          chai.expect(purgeDbBulkDocsB.callCount).to.equal(1);
-          chai.expect(purgeDbBulkDocsB.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f2' }, { _id: 'purged:f1-m1' }] }]);
+          chai.expect(dbA.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f1-m1' }] }]);
+          chai.expect(dbB.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f2' }, { _id: 'purged:f1-m1' }] }]);
         });
       });
+
+      it('should handle random results from purgefn', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'first', value: null },
+            { id: 'f1', value: 's1' },
+            { id: 'f2', value: null },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'f2', value: null },
+          ]});
+
+        sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
+        sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+
+        const rootContactIds = ['first'];
+
+        sinon.stub(db.medic, 'query');
+        db.medic.query.onCall(0).resolves({ rows: [
+            { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
+            { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic' }},
+            { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+            { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+            { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'clinic' }},
+          ] });
+        db.medic.query.onCall(1).resolves({ rows: [] });
+
+        const dbA = {
+          changes: sinon.stub().resolves({ results: [ { id: 'purged:f1-m1', changes: [{ rev: '1' }] } ] }),
+          bulkDocs: sinon.stub().resolves([])
+        };
+        const dbB = {
+          changes: sinon.stub().resolves({ results: [] }),
+          bulkDocs: sinon.stub().resolves([])
+        };
+        sinon.stub(db, 'get')
+          .onCall(0).returns(dbA)
+          .onCall(1).returns(dbB);
+
+        purgeFn.withArgs({ roles: roles['a'] }, { _id: 'first', type: 'district_hospital' }).returns('string');
+        purgeFn.withArgs({ roles: roles['b'] }, { _id: 'first', type: 'district_hospital' }).returns({});
+        purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f1', type: 'clinic' }).returns([]);
+        purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f1', type: 'clinic' }).returns(23);
+        purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'clinic' }).returns(false);
+        purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'clinic' }).returns(null);
+
+        return service._batchedContactsPurge(roles, purgeFn, rootContactIds).then(() => {
+          chai.expect(dbA.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{docs: [{_id: 'purged:f1-m1', _rev: '1', _deleted: true}]}]);
+          chai.expect(dbB.bulkDocs.callCount).to.equal(0);
+        });
+      });
+    });
+
+    describe('batchedUnallocatedPurge', () => {
+      let orgEnv = {};
+      let roles;
+      let purgeFn;
+
+      beforeEach(() => {
+        roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
+        purgeFn = sinon.stub();
+        orgEnv = {};
+        Object.assign(orgEnv, environment);
+        environment.couchUrl = 'http://a:p@localhost:6500/medic';
+      });
+
+      afterEach(() => {
+        Object.assign(environment, orgEnv);
+      });
+
+      it('should request first batch', () => {
+        sinon.stub(request, 'get').resolves({ rows:[] });
+        return service._batchedUnallocatedPurge(roles, purgeFn).then(() => {
+          chai.expect(request.get.callCount).to.equal(1);
+          chai.expect(request.get.args[0]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
+            {
+              qs: {
+                limit: 1000,
+                key: JSON.stringify('_unassigned'),
+                startkey_docid: '',
+                include_docs: true
+              },
+              json: true
+            }
+          ]);
+        });
+      });
+
+      it('should stop after no longer getting results', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+            { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+            { id: 'r3', doc: { _id: 'r3' } },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'r3', doc: { _id: 'r3' } },
+            { id: 'r4', doc: { _id: 'r4', form: 'a' } },
+            { id: 'r5', doc: { _id: 'r5' } },
+          ]});
+
+        request.get.onCall(2).resolves({ rows: [
+            { id: 'r5', doc: { _id: 'r5' } },
+          ]});
+
+        sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
+
+        return service._batchedUnallocatedPurge(roles, purgeFn).then(() => {
+          chai.expect(request.get.callCount).to.equal(3);
+          chai.expect(request.get.args[0]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
+            {
+              qs: {
+                limit: 1000,
+                key: JSON.stringify('_unassigned'),
+                startkey_docid: '',
+                include_docs: true
+              },
+              json: true
+            }]);
+
+          chai.expect(request.get.args[1]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
+            {
+              qs: {
+                limit: 1000,
+                key: JSON.stringify('_unassigned'),
+                startkey_docid: 'r3',
+                include_docs: true
+              },
+              json: true
+            }]);
+
+          chai.expect(request.get.args[2]).to.deep.equal([
+            'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
+            {
+              qs: {
+                limit: 1000,
+                key: JSON.stringify('_unassigned'),
+                startkey_docid: 'r5',
+                include_docs: true
+              },
+              json: true
+            }]);
+        });
+      });
+
+      it('should run purge function over every doc individually', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+            { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+            { id: 'r3', doc: { _id: 'r3' } },
+            { id: 'r4', doc: { _id: 'r4', form: 'a' } },
+            { id: 'r5', doc: { _id: 'r5' } },
+            { id: 'r6', doc: { _id: 'r6', form: 'a' } },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'r6', doc: { _id: 'r6' } },
+          ]});
+
+        sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
+
+        return service._batchedUnallocatedPurge(roles, purgeFn).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(purgeFn.callCount).to.equal(12);
+          chai.expect(purgeFn.args[0]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []]);
+          chai.expect(purgeFn.args[1]).to.deep.equal([{ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []]);
+          chai.expect(purgeFn.args[2]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []]);
+          chai.expect(purgeFn.args[3]).to.deep.equal([{ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []]);
+          chai.expect(purgeFn.args[4]).to.deep.equal([{ roles: roles['a'] }, {}, [], [{ _id: 'r3' }]]);
+          chai.expect(purgeFn.args[5]).to.deep.equal([{ roles: roles['b'] }, {}, [], [{ _id: 'r3' }]]);
+          chai.expect(purgeFn.args[6]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r4', form: 'a' }], []]);
+          chai.expect(purgeFn.args[8]).to.deep.equal([{ roles: roles['a'] }, {}, [], [{ _id: 'r5' }]]);
+          chai.expect(purgeFn.args[10]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r6', form: 'a' }], []]);
+        });
+      });
+
+      it('should save new purges and remove old purges', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+            { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+            { id: 'r3', doc: { _id: 'r3' } },
+            { id: 'r4', doc: { _id: 'r4', form: 'a' } },
+            { id: 'r5', doc: { _id: 'r5' } },
+            { id: 'r6', doc: { _id: 'r6', form: 'a' } },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'r6', doc: { _id: 'r6' } },
+          ]});
+
+        const dbA = { changes: sinon.stub(), bulkDocs: sinon.stub() };
+        const dbB = { changes: sinon.stub(), bulkDocs: sinon.stub() };
+        sinon.stub(db, 'get')
+          .onCall(0).returns(dbA)
+          .onCall(1).returns(dbB);
+
+        dbA.changes.resolves({ results: [
+            { id: 'purged:r1', changes: [{ rev: 'r1-rev' }] },
+            { id: 'purged:r2', changes: [{ rev: 'r2-rev' }] },
+            { id: 'purged:r5', changes: [{ rev: 'r5-rev' }], deleted: true },
+            { id: 'purged:r6', changes: [{ rev: 'r6-rev' }], deleted: true },
+          ]});
+
+        dbB.changes.resolves({ results: [
+            { id: 'purged:r2', changes: [{ rev: 'r2-rev' }] },
+            { id: 'purged:r4', changes: [{ rev: 'r4-rev' }] },
+            { id: 'purged:r5', changes: [{ rev: 'r5-rev' }], deleted: true },
+            { id: 'purged:r6', changes: [{ rev: 'r6-rev' }], deleted: true },
+          ]});
+
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['r2']);
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [], [{ _id: 'r3' }]).returns(['r3']);
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [], [{ _id: 'r5' }]).returns(['r5']);
+
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [], [{ _id: 'r3' }]).returns(['r3']);
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r4', form: 'a' }], []).returns(['r4']);
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r6', form: 'a' }], []).returns(['r6']);
+
+        return service._batchedUnallocatedPurge(roles, purgeFn).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(purgeFn.callCount).to.equal(12);
+          chai.expect(dbA.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
+              { _id: 'purged:r1', _rev: 'r1-rev', _deleted: true },
+              { _id: 'purged:r3' },
+              { _id: 'purged:r5' },
+            ]}]);
+          chai.expect(dbB.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [
+              { _id: 'purged:r2', _rev: 'r2-rev', _deleted: true },
+              { _id: 'purged:r3' },
+              { _id: 'purged:r6' },
+            ]}]);
+        });
+      });
+
+      it('should not allow purging of random docs', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+            { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+          ]});
+
+        const dbA = { changes: sinon.stub(), bulkDocs: sinon.stub() };
+        const dbB = { changes: sinon.stub(), bulkDocs: sinon.stub() };
+        sinon.stub(db, 'get')
+          .onCall(0).returns(dbA)
+          .onCall(1).returns(dbB);
+
+        dbA.changes.resolves({ results: [
+            { id: 'purged:r1', changes: [{ rev: 'r1-rev' }] },
+          ]});
+
+        dbB.changes.resolves({ results: []});
+
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['r1', 'r4', 'random']);
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['r3', 'r4', 'r2']);
+
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['random', '10', '11']);
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['oops', 'fifty', '22']);
+
+        return service._batchedUnallocatedPurge(roles, purgeFn).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(purgeFn.callCount).to.equal(4);
+          chai.expect(dbA.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [ { _id: 'purged:r2' }]}]);
+          chai.expect(dbB.bulkDocs.callCount).to.equal(0);
+        });
+      });
+
+      it('should handle random results from purgefn', () => {
+        sinon.stub(request, 'get');
+        request.get.onCall(0).resolves({ rows: [
+            { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+            { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+            { id: 'r3', doc: { _id: 'r3', form: 'a' } },
+          ]});
+
+        request.get.onCall(1).resolves({ rows: [
+            { id: 'r3', doc: { _id: 'r3', form: 'a' } },
+          ]});
+
+        const dbA = { changes: sinon.stub(), bulkDocs: sinon.stub() };
+        const dbB = { changes: sinon.stub(), bulkDocs: sinon.stub() };
+        sinon.stub(db, 'get')
+          .onCall(0).returns(dbA)
+          .onCall(1).returns(dbB);
+
+        dbA.changes.resolves({ results: [
+            { id: 'purged:r1', changes: [{ rev: 'r1-rev' }] },
+          ]});
+
+        dbB.changes.resolves({ results: []});
+
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns('rnd');
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns({});
+        purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r3', form: 'a' }], []).returns(22);
+
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(false);
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(null);
+        purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r3', form: 'a' }], []).returns([]);
+
+        return service._batchedUnallocatedPurge(roles, purgeFn).then(() => {
+          chai.expect(request.get.callCount).to.equal(2);
+          chai.expect(purgeFn.callCount).to.equal(6);
+          chai.expect(dbA.bulkDocs.callCount).to.equal(1);
+          chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [ { _id: 'purged:r1', _rev: 'r1-rev', _deleted: true }]}]);
+          chai.expect(dbB.bulkDocs.callCount).to.equal(0);
+        });
+      });
+    });
+
+    describe('purge', () => {
+
     });
   });
 });

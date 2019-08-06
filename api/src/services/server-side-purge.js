@@ -149,13 +149,29 @@ const initPurgeDbs = (roles) => {
   }));
 };
 
-const getExistentPurgedDocs = (roles, ids) => {
-  if (!ids.length) {
-    return Promise.resolve({});
+// provided a list of roles hashes and doc ids, will return the list of existent purged docs per role hash:
+// {
+//   hash1: {
+//     id1: rev_of_id_1,
+//     id2: rev_of_id_2,
+//     id3: rev_of_id_3,
+//   },
+//   hash2: {
+//     id3: rev_of_id_3,
+//     id5: rev_of_id_5,
+//     id6: rev_of_id_6,
+//   }
+// }
+
+const getExistentPurgedDocs = (roleHashes, ids) => {
+  const purged = {};
+  roleHashes.forEach(hash => purged[hash] = {});
+
+  if (!ids || !ids.length) {
+    return Promise.resolve(purged);
   }
 
   const purgeIds = ids.map(id => getPurgedId(id));
-  const roleHashes = Object.keys(roles);
   const changesOpts = {
     doc_ids: purgeIds,
     batch_size: purgeIds.length + 1,
@@ -165,10 +181,8 @@ const getExistentPurgedDocs = (roles, ids) => {
   return Promise
     .all(roleHashes.map(hash => getPurgeDb(hash).changes(changesOpts)))
     .then(results => {
-      const purged = {};
       results.forEach((result, idx) => {
         const hash = roleHashes[idx];
-        purged[hash] = {};
         result.results.forEach(change => {
           if (!change.deleted) {
             purged[hash][extractId(change.id)] = change.changes[0].rev;
@@ -193,15 +207,13 @@ const getPurgeFn = () => {
   }
 };
 
-const updatePurgedDocs = (roles, ids, currentlyPurged, newPurged) => {
+const updatePurgedDocs = (rolesHashes, ids, currentlyPurged, newPurged) => {
   const docs = {};
-  const rolesHashes = Object.keys(roles);
 
   ids.forEach(id => {
     rolesHashes.forEach(hash => {
-      if (!docs[hash]) {
-        docs[hash] = [];
-      }
+      docs[hash] = docs[hash] || [];
+
       const isPurged = currentlyPurged[hash][id];
       const shouldPurge = newPurged[hash][id];
 
@@ -244,6 +256,7 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
   const groups = {};
   const docIds = [];
   const subjectIds = [];
+  const rolesHashes = Object.keys(roles);
 
   logger.debug(`Starting contacts purge batch for district ${rootId} with id ${startKeyDocId}`);
 
@@ -355,13 +368,12 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
         }
       });
 
-      return getExistentPurgedDocs(roles, docIds);
+      return getExistentPurgedDocs(rolesHashes, docIds);
     })
     .then(currentlyPurged => {
       const purgedPerHash = {};
-      const rolesHashes = Object.keys(roles);
-      Object.keys(groups).forEach(key => {
-        const group = groups[key];
+
+      Object.values(groups).forEach(group => {
         rolesHashes.forEach(hash => {
           purgedPerHash[hash] = purgedPerHash[hash] || {};
 
@@ -388,7 +400,7 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
         });
       });
 
-      return updatePurgedDocs(roles, docIds, currentlyPurged, purgedPerHash);
+      return updatePurgedDocs(rolesHashes, docIds, currentlyPurged, purgedPerHash);
     })
     .then(() => {
       return nextKeyDocId ?
@@ -401,6 +413,7 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
   let nextKeyDocId;
   const docs = [];
   const docIds = [];
+  const rolesHashes = Object.keys(roles);
 
   logger.debug(`Starting unallocated purge batch with id ${startKeyDocId}`);
 
@@ -424,16 +437,20 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
         docs.push(row.doc);
       });
 
-      return getExistentPurgedDocs(roles, docIds);
+      return getExistentPurgedDocs(rolesHashes, docIds);
     })
     .then(currentlyPurged => {
       const purgedPerHash = {};
       docs.forEach(doc => {
-        Object.keys(roles).forEach(hash => {
+        rolesHashes.forEach(hash => {
           purgedPerHash[hash] = purgedPerHash[hash] || {};
           const purgeResult = doc.form ?
-            purgeFn({ roles: roles[hash] }, null, [doc], []) :
-            purgeFn({ roles: roles[hash] }, null, [], [doc]);
+            purgeFn({ roles: roles[hash] }, {}, [doc], []) :
+            purgeFn({ roles: roles[hash] }, {}, [], [doc]);
+
+          if (!purgeResult || !Array.isArray(purgeResult) || !purgeResult.length) {
+            return;
+          }
 
           purgeResult.forEach(id => {
             if (id !== doc._id) {
@@ -444,7 +461,7 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
         });
       });
 
-      return updatePurgedDocs(roles, docIds, currentlyPurged, purgedPerHash);
+      return updatePurgedDocs(rolesHashes, docIds, currentlyPurged, purgedPerHash);
     })
     .then(() => nextKeyDocId && batchedUnallocatedPurge(roles, purgeFn, nextKeyDocId));
 };
@@ -485,10 +502,9 @@ const purge = () => {
   const start = performance.now();
   return getRoles().then(roles => {
     if (!roles || !Object.keys(roles).length) {
-      logger.info(`No offline users found. Not purging`);
+      logger.info(`No offline users found. Not purging.`);
       return;
     }
-
     return initPurgeDbs(roles)
       .then(() => getRootContacts())
       .then(ids => batchedContactsPurge(roles, purgeFn, ids))
