@@ -66,6 +66,7 @@
   require('./place-hierarchy');
   require('./recurring-process-manager');
   require('./relative-date');
+  require('./repository');
   require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');

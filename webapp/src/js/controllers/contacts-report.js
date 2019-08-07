@@ -63,7 +63,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     var render = function(contact, options) {
       $scope.setSelected(contact, options);
       setCancelCallback();
-      return XmlForm($state.params.formId, { include_docs: true })
+      return XmlForm($state.params.formId)
         .then(function(form) {
           var instanceData = {
             source: 'contact',

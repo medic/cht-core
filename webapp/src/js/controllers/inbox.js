@@ -36,6 +36,7 @@ var _ = require('underscore'),
     Location,
     Modal,
     RecurringProcessManager,
+    Repository,
     ResourceIcons,
     RulesEngine,
     Selectors,
@@ -207,10 +208,9 @@ var _ = require('underscore'),
     // BootstrapTranslator is used because $translator.onReady has not fired
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
-    RulesEngine.init
-      .catch(function(err) {
-        $log.error('RuleEngine failed to Initialize', err);
-      })
+    Repository.init()
+      .then(() => RulesEngine.init)
+      .catch(err => $log.error('RuleEngine failed to Initialize', err))
       .then(function() {
         $scope.dbWarmedUp = true;
 

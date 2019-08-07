@@ -8,7 +8,7 @@ angular.module('services').factory('XmlForms',
     Auth,
     Changes,
     ContactSchema,
-    DB,
+    Repository,
     UserContact,
     XmlFormsContextUtils
   ) {
@@ -18,21 +18,7 @@ angular.module('services').factory('XmlForms',
 
     var listeners = {};
 
-    var getForms = function() {
-      return DB()
-        .query('medic-client/forms', { include_docs: true })
-        .then(function(res) {
-          return res.rows
-            .filter(function(row) {
-              return row.doc._attachments.xml;
-            })
-            .map(function(row) {
-              return row.doc;
-            });
-        });
-    };
-
-    var init = getForms();
+    let init = Repository.forms();
 
     var evaluateExpression = function(expression, doc, user, contactSummary) {
       var context = {
@@ -128,7 +114,7 @@ angular.module('services').factory('XmlForms',
         return change.id.indexOf('form:') === 0;
       },
       callback: function() {
-        init = getForms();
+        init = Repository.forms();
         init
           .then(notifyAll)
           .catch(function(err) {

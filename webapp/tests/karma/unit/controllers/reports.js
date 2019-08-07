@@ -15,7 +15,6 @@ describe('ReportsCtrl controller', () => {
       PlaceHierarchy,
       Search,
       Changes,
-      FormatDataRecord,
       changesCallback,
       changesFilter,
       searchFilters,
@@ -67,16 +66,6 @@ describe('ReportsCtrl controller', () => {
       $reset: liveListReset
     };
     MarkRead = () => {};
-    FormatDataRecord = data => {
-      return {
-        then: cb => {
-          cb(data);
-          return {
-            catch: () => {}
-          };
-        }
-      };
-    };
 
     Search = sinon.stub().resolves();
     PlaceHierarchy = sinon.stub().resolves([]);
@@ -106,7 +95,6 @@ describe('ReportsCtrl controller', () => {
         DeleteDocs: {},
         EditGroup: {},
         Export: () => {},
-        FormatDataRecord: FormatDataRecord,
         LiveList: LiveList,
         MarkRead: MarkRead,
         MessageState: {},

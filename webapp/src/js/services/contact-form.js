@@ -1,32 +1,33 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 angular.module('inboxServices').service('ContactForm',
   function(
     ContactSchema,
-    DB,
-    EnketoTranslation
+    EnketoTranslation,
+    Repository
   ) {
 
     'use strict';
     'ngInject';
 
-    var withAvailableForms = DB().query('medic-client/forms').then(function(res) {
-      return _.pluck(res.rows, 'id');
+    const withAvailableForms = Repository.forms().then(function(res) {
+      return _.pluck(res, 'id');
     });
 
-    var getFormById = function(availableForms, id) {
+    const getFormById = function(availableForms, id) {
+      /* something is wrong here */
       if (_.contains(availableForms, id)) {
-        return { id: id };
+        return { id };
       }
     };
 
-    var generateForm = function(type, extras) {
-      var schema = ContactSchema.get(type);
-      var xml = EnketoTranslation.generateXform(schema, extras);
-      return { xml: xml };
+    const generateForm = function(type, extras) {
+      const schema = ContactSchema.get(type);
+      const xml = EnketoTranslation.generateXform(schema, extras);
+      return { xml };
     };
 
-    var getFormFor = function(type, mode, extras) {
+    const getFormFor = function(type, mode, extras) {
       return withAvailableForms.then(function(availableForms) {
         return getFormById(availableForms, 'form:contact:' + type + ':' + mode) ||
                getFormById(availableForms, 'form:contact:' + type) ||

@@ -8,6 +8,7 @@ angular
     $q,
     $window,
     DB,
+    Repository,
     Session
   ) {
     'use strict';
@@ -102,12 +103,12 @@ angular
     var generateMetadataSection = function() {
       return $q.all([
           DB().get('_design/medic-client'),
-          DB().query('medic-client/forms', {include_docs: true})
-      ]).then(([ddoc, formResults]) => {
+          Repository.forms()
+      ]).then(([ddoc, formDocs]) => {
         const date = moment(getLastAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
-        const forms = formResults.rows.reduce((keyToVersion, row) => {
-          keyToVersion[row.key] = row.doc._rev;
+        const forms = formDocs.reduce((keyToVersion, formDoc) => {
+          keyToVersion[formDoc.internalId] = formDoc._rev;
 
           return keyToVersion;
         }, {});

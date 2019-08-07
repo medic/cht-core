@@ -1,24 +1,21 @@
 angular.module('inboxServices').factory('XmlForm',
   function(
-    DB
+    Repository
   ) {
 
     'use strict';
     'ngInject';
 
-    return function(internalId, options) {
-      options = options || {};
-      options.key = internalId;
-      return DB()
-        .query('medic-client/forms', options)
-        .then(function(result) {
-          if (!result.rows.length) {
+    return function(internalId) {
+      return Repository.forms(internalId)
+        .then(function(forms) {
+          if (!forms.length) {
             throw new Error('No form found for internalId: ' + internalId);
           }
-          if (result.rows.length > 1) {
+          if (forms.length > 1) {
             throw new Error('Multiple forms found for internalId: ' + internalId);
           }
-          return result.rows[0];
+          return forms[0];
         });
     };
   }
