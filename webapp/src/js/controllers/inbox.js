@@ -222,11 +222,11 @@ var _ = require('underscore'),
         Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
         delete $window.startupTimes;
-        initSecondaryServices();
+        lazyLoadTasks();
       });
 
     // initialisation tasks that can occur after the UI has been rendered
-    const initSecondaryServices = () => {
+    const lazyLoadTasks = () => {
       Session.init()
         .then(() => initForms())
         .then(() => initTours())
