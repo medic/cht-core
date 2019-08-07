@@ -14,7 +14,14 @@ const isDateStrValid = function(str) {
   return parseDate(str).isValid();
 };
 
-// todo test this
+/**
+ * Compute a list of elements that exist one array1 and do no exist in array2.
+ * Much more performant than underscore's alternative (for 20000 vs 15000 uuids array, runtime is 1106ms vs 15ms)
+ * @param {Array} array1
+ * @param {Array} array2
+ * @returns {Array}
+ */
+
 const difference = (array1, array2) => {
   array1 = array1.sort();
   array2 = array2.sort();
@@ -23,10 +30,12 @@ const difference = (array1, array2) => {
   let i = 0;
   let j = 0;
   while (i < array1.length) {
-    if (j >= array2.length || array1[i] < array2[j]) {
+    const a1 = String(array1[i]);
+    const a2 = String(array2[j]);
+    if (j >= array2.length || a1 < a2) {
       diff.push(array1[i]);
       i++;
-    } else if (array1[i] === array2[j]) {
+    } else if (a1 === a2) {
       i++;
       j++;
     } else {

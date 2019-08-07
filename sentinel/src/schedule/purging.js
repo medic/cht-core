@@ -28,7 +28,7 @@ module.exports = {
     const schedule = getSchedule(purgeConfig);
 
     if (!schedule) {
-      return;
+      return cb();
     }
 
     if (purgeInterval) {

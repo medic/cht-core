@@ -153,6 +153,7 @@ const updatePurgedDocs = (rolesHashes, ids, currentlyPurged, newPurged) => {
 };
 
 const getRootContacts = () => {
+  // todo integrate flexible hierarchy
   return db.medic
     .query('medic-client/doc_by_type', { key: ['district_hospital'] })
     .then(result => result.rows.map(row => row.id));

@@ -69,4 +69,12 @@ describe('Purging Utils', () => {
       chai.expect(utils.extractId('purged:my-uuid:purged:purged:')).to.equal('my-uuid:purged:purged:');
     });
   });
+
+  describe('sortedUniqueRoles', () => {
+    it('should return a sorted unique array', () => {
+      chai.expect(utils.sortedUniqueRoles([])).to.deep.equal([]);
+      chai.expect(utils.sortedUniqueRoles(['b', 'c', 'a'])).to.deep.equal(['a', 'b', 'c']);
+      chai.expect(utils.sortedUniqueRoles(['b', 'c', 'a', 'c', 'a', 'b', 'a'])).to.deep.equal(['a', 'b', 'c']);
+    });
+  });
 });
