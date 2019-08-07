@@ -56,6 +56,12 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
+    // Set this first so if there are any bugs in configuration we
+    // want to ensure dbsync still happens so they can be fixed
+    // automatically.
+    // Delay it by 10 seconds so it doesn't slow down initial load.
+    $timeout(() => DBSync.sync(), 10000);
+
     const dbFetch = $window.PouchDB.fetch;
     $window.PouchDB.fetch = function() {
       return dbFetch.apply(this, arguments)
@@ -210,24 +216,22 @@ var _ = require('underscore'),
       })
       .then(function() {
         $scope.dbWarmedUp = true;
-        initSecondaryServices();
 
         const dbWarmed = performance.now();
         Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
         Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
         delete $window.startupTimes;
+        initSecondaryServices();
       });
 
-    // initialisation tasks that can occur after the UI has been remdered
+    // initialisation tasks that can occur after the UI has been rendered
     const initSecondaryServices = () => {
-      // TODO order this and serialize?
-      Session.init();
-      CheckDate();
-      initUnreadCount();
-      initForms();
-      initTours();
-      DBSync.sync();
+      Session.init()
+        .then(() => initForms())
+        .then(() => initUnreadCount())
+        .then(() => initTours())
+        .then(() => CheckDate());
     };
 
     Feedback.init();
@@ -404,59 +408,57 @@ var _ = require('underscore'),
 
     // get the forms for the forms filter
     const initForms = () => {
-      $translate.onReady(function() {
-        JsonForms()
-          .then(function(jsonForms) {
-            var jsonFormSummaries = jsonForms.map(function(jsonForm) {
-              return {
-                code: jsonForm.code,
-                title: translateTitle(jsonForm.translation_key, jsonForm.name),
-                icon: jsonForm.icon,
-              };
-            });
-            XmlForms(
-              'FormsFilter',
-              { contactForms: false, ignoreContext: true },
-              function(err, xForms) {
-                if (err) {
-                  return $log.error('Error fetching form definitions', err);
-                }
-                var xFormSummaries = xForms.map(function(xForm) {
-                  return {
-                    code: xForm.internalId,
-                    title: translateTitle(xForm.translation_key, xForm.title),
-                    icon: xForm.icon,
-                  };
-                });
-                $scope.forms = xFormSummaries.concat(jsonFormSummaries);
-                $rootScope.$broadcast('formLoadingComplete');
-              }
-            );
-          })
-          .catch(function(err) {
-            $rootScope.$broadcast('formLoadingComplete');
-            $log.error('Failed to retrieve forms', err);
-          });
-
-        // get the forms for the Add Report menu
-        XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
-          if (err) {
-            return $log.error('Error fetching form definitions', err);
-          }
-          Enketo.clearXmlCache();
-          $scope.nonContactForms = xForms.map(function(xForm) {
+      return $translate.onReady()
+        .then(() => JsonForms())
+        .then(function(jsonForms) {
+          var jsonFormSummaries = jsonForms.map(function(jsonForm) {
             return {
-              code: xForm.internalId,
-              icon: xForm.icon,
-              title: translateTitle(xForm.translation_key, xForm.title),
+              code: jsonForm.code,
+              title: translateTitle(jsonForm.translation_key, jsonForm.name),
+              icon: jsonForm.icon,
             };
           });
+          XmlForms(
+            'FormsFilter',
+            { contactForms: false, ignoreContext: true },
+            function(err, xForms) {
+              if (err) {
+                return $log.error('Error fetching form definitions', err);
+              }
+              var xFormSummaries = xForms.map(function(xForm) {
+                return {
+                  code: xForm.internalId,
+                  title: translateTitle(xForm.translation_key, xForm.title),
+                  icon: xForm.icon,
+                };
+              });
+              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
+              $rootScope.$broadcast('formLoadingComplete');
+            }
+          );
+          // get the forms for the Add Report menu
+          XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
+            }
+            Enketo.clearXmlCache();
+            $scope.nonContactForms = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                icon: xForm.icon,
+                title: translateTitle(xForm.translation_key, xForm.title),
+              };
+            });
+          });
+        })
+        .catch(function(err) {
+          $rootScope.$broadcast('formLoadingComplete');
+          $log.error('Failed to retrieve forms', err);
         });
-      });
     };
 
     const initTours = () => {
-      Tour.getTours().then(function(tours) {
+      return Tour.getTours().then(function(tours) {
         $scope.tours = tours;
       });
     };
@@ -777,7 +779,7 @@ var _ = require('underscore'),
         );
       },
       callback: function() {
-        Session.init(showUpdateReady);
+        Session.init().then(() => showUpdateReady());
       },
     });
 

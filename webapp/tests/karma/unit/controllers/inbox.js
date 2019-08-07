@@ -28,7 +28,7 @@ describe('InboxCtrl controller', () => {
     };
 
     session = {
-      init: sinon.stub(),
+      init: sinon.stub().resolves(),
       isAdmin: sinon.stub(),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
@@ -218,6 +218,6 @@ describe('InboxCtrl controller', () => {
 
   it('InboxUserContent Changes listener callback should check current session', () => {
     changesListener['inbox-user-context'].callback();
-    chai.expect(session.init.callCount).to.equal(2);
+    chai.expect(session.init.callCount).to.equal(1);
   });
 });

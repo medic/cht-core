@@ -34,7 +34,7 @@ var COOKIE_NAME = 'userCtx',
       };
 
       var logout = function() {
-        $http.delete('/_session')
+        return $http.delete('/_session')
           .catch(function() {
             // Set cookie to force login before using app
             ipCookie('login', 'force', { path: '/' });
@@ -42,25 +42,20 @@ var COOKIE_NAME = 'userCtx',
           .then(navigateToLogin);
       };
 
-      var refreshUserCtx = function(callback) {
-        $http
+      var refreshUserCtx = function() {
+        return $http
           .get('/' + Location.dbName + '/login/identity')
-          .then(function() {
-            if (_.isFunction(callback)) {
-              callback();
-            }
-          })
           .catch(function() {
-            logout();
+            return logout();
           });
       };
 
-      var checkCurrentSession = function(callback) {
+      var checkCurrentSession = function() {
         var userCtx = getUserCtx();
         if (!userCtx || !userCtx.name) {
           return logout();
         }
-        $http.get('/_session')
+        return $http.get('/_session')
           .then(function(response) {
             var name = response.data &&
                        response.data.userCtx &&
@@ -71,7 +66,7 @@ var COOKIE_NAME = 'userCtx',
             }
             if (_.difference(userCtx.roles, response.data.userCtx.roles).length ||
                 _.difference(response.data.userCtx.roles, userCtx.roles).length) {
-              return refreshUserCtx(callback);
+              return refreshUserCtx();
             }
           })
           .catch(function(response) {
