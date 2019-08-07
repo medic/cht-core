@@ -94,7 +94,7 @@
   };
 
   const initPurgeCheckpoint = (db) => {
-    return db.fetch(`${getBaseUrl()}/api/v1/server-side-purge/checkpoint?seq=now`);
+    return db.fetch(`${getBaseUrl()}/api/v1/purging/checkpoint?seq=now`);
   };
 
   var initialReplication = function(localDb, remoteDb) {

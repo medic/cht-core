@@ -1,5 +1,5 @@
 const authorization = require('../services/authorization');
-const serverSidePurge = require('../services/server-side-purge');
+const purgedDocs = require('../services/purged-docs');
 const serverUtils = require('../server-utils');
 
 module.exports.getPurgedDocs = (req, res) => {
@@ -10,7 +10,7 @@ module.exports.getPurgedDocs = (req, res) => {
   return authorization
     .getAuthorizationContext(req.userCtx)
     .then(authContext => authorization.getAllowedDocIds(authContext, { includeTombstones: false }))
-    .then(allowedIds => serverSidePurge.getPurgedIdsSince(req.userCtx.roles, allowedIds, opts))
+    .then(allowedIds => purgedDocs.getPurgedIdsSince(req.userCtx.roles, allowedIds, opts))
     .then(({ purgedDocIds, lastSeq }) => {
       res.json({ purged_ids: purgedDocIds, last_seq: lastSeq });
     })
@@ -25,7 +25,7 @@ module.exports.checkpoint = (req, res) => {
     return serverUtils.error({ code: 400, reason: 'Missing required parameter seq' }, req, res);
   }
 
-  return serverSidePurge
+  return purgedDocs
     .writeCheckPointer(req.userCtx.roles, req.replicationId, req.query.seq)
     .then(() => res.json({ success: true }))
     .catch(err => serverUtils.error(err, req, res));
@@ -38,6 +38,6 @@ module.exports.purge = (req, res) => {
     res.end();
   }
 
-  serverSidePurge.purge();
+  purgedDocs.purge();
   res.end();
 };

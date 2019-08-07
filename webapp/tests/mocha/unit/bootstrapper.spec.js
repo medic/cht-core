@@ -188,7 +188,7 @@ describe('bootstrapper', () => {
         query_params: { initial_replication: true },
       });
       assert.equal(remoteFetch.callCount, 1);
-      assert.deepEqual(remoteFetch.args[0], ['http://localhost:5988/api/v1/server-side-purge/checkpoint?seq=now']);
+      assert.deepEqual(remoteFetch.args[0], ['http://localhost:5988/api/v1/purging/checkpoint?seq=now']);
 
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
@@ -229,7 +229,7 @@ describe('bootstrapper', () => {
         query_params: { initial_replication: true },
       });
       assert.equal(remoteFetch.callCount, 1);
-      assert.deepEqual(remoteFetch.args[0], ['http://localhost:5988/api/v1/server-side-purge/checkpoint?seq=now']);
+      assert.deepEqual(remoteFetch.args[0], ['http://localhost:5988/api/v1/purging/checkpoint?seq=now']);
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
       assert.equal(localAllDocs.callCount, 1);

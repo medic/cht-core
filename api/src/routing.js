@@ -401,8 +401,8 @@ app.putJson('/api/v1/settings', settings.put);
 
 const purgedDocsController = require('./controllers/purged-docs');
 
-app.get('/api/v1/server-side-purge/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
-app.get('/api/v1/server-side-purge/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
+app.get('/api/v1/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
+app.get('/api/v1/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
 // todo delete this
 app.get('/api/ssp/run', purgedDocsController.purge);

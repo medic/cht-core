@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const controller = require('../../../src/controllers/purged-docs');
 const authorization = require('../../../src/services/authorization');
-const serverSidePurge = require('../../../src/services/server-side-purge');
+const purgedDocs = require('../../../src/services/purged-docs');
 const serverUtils = require('../../../src/server-utils');
 
 let req;
@@ -56,7 +56,7 @@ describe('PurgedDocs controller', () => {
     it('should throw getPurgedIdsSince errors', () => {
       sinon.stub(authorization, 'getAuthorizationContext').resolves({ userCtx: req.userCtx });
       sinon.stub(authorization, 'getAllowedDocIds').resolves(['a', 'b', 'c']);
-      sinon.stub(serverSidePurge, 'getPurgedIdsSince').rejects({ some: 'err' });
+      sinon.stub(purgedDocs, 'getPurgedIdsSince').rejects({ some: 'err' });
 
       return controller.getPurgedDocs(req, res).then(() => {
         chai.expect(res.json.callCount).to.equal(0);
@@ -64,8 +64,8 @@ describe('PurgedDocs controller', () => {
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
         chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
         chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-        chai.expect(serverSidePurge.getPurgedIdsSince.callCount).to.equal(1);
-        chai.expect(serverSidePurge.getPurgedIdsSince.args[0]).to.deep.equal([
+        chai.expect(purgedDocs.getPurgedIdsSince.callCount).to.equal(1);
+        chai.expect(purgedDocs.getPurgedIdsSince.args[0]).to.deep.equal([
           ['role1', 'role2'],
           ['a', 'b', 'c'],
           { checkPointerId: 'localDbId', limit: 77 }
@@ -77,15 +77,15 @@ describe('PurgedDocs controller', () => {
       req = { userCtx: { name: 'a', roles: ['role1'] } };
       sinon.stub(authorization, 'getAuthorizationContext').resolves({ userCtx: req.userCtx });
       sinon.stub(authorization, 'getAllowedDocIds').resolves(['a', 'b', 'c']);
-      sinon.stub(serverSidePurge, 'getPurgedIdsSince').resolves({ purgedDocIds: [1, 2, 3], lastSeq: '123-seq' });
+      sinon.stub(purgedDocs, 'getPurgedIdsSince').resolves({ purgedDocIds: [1, 2, 3], lastSeq: '123-seq' });
 
       return controller.getPurgedDocs(req, res).then(() => {
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(serverUtils.error.callCount).to.equal(0);
         chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
         chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-        chai.expect(serverSidePurge.getPurgedIdsSince.callCount).to.equal(1);
-        chai.expect(serverSidePurge.getPurgedIdsSince.args[0]).to.deep.equal([
+        chai.expect(purgedDocs.getPurgedIdsSince.callCount).to.equal(1);
+        chai.expect(purgedDocs.getPurgedIdsSince.args[0]).to.deep.equal([
           ['role1'],
           ['a', 'b', 'c'],
           { checkPointerId: undefined, limit: undefined }
@@ -115,13 +115,13 @@ describe('PurgedDocs controller', () => {
     it('should throw wwritecheckpointer fails', () => {
       req.query.seq = 'some-since-seq';
       req.replicationId = 'anotherlocaldb';
-      sinon.stub(serverSidePurge, 'writeCheckPointer').rejects({ some: 'err' });
+      sinon.stub(purgedDocs, 'writeCheckPointer').rejects({ some: 'err' });
 
       return controller.checkpoint(req, res).then(() => {
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(serverSidePurge.writeCheckPointer.callCount).to.equal(1);
-        chai.expect(serverSidePurge.writeCheckPointer.args[0]).to.deep.equal([
+        chai.expect(purgedDocs.writeCheckPointer.callCount).to.equal(1);
+        chai.expect(purgedDocs.writeCheckPointer.args[0]).to.deep.equal([
           ['role1', 'role2'],
           'anotherlocaldb',
           'some-since-seq'
@@ -133,14 +133,14 @@ describe('PurgedDocs controller', () => {
 
     it('should write purge checkpointer', () => {
       req.query.seq = 'my-since-seq';
-      sinon.stub(serverSidePurge, 'writeCheckPointer').resolves();
+      sinon.stub(purgedDocs, 'writeCheckPointer').resolves();
 
       return controller.checkpoint(req, res).then(() => {
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ success: true }]);
         chai.expect(serverUtils.error.callCount).to.equal(0);
-        chai.expect(serverSidePurge.writeCheckPointer.callCount).to.equal(1);
-        chai.expect(serverSidePurge.writeCheckPointer.args[0]).to.deep.equal([
+        chai.expect(purgedDocs.writeCheckPointer.callCount).to.equal(1);
+        chai.expect(purgedDocs.writeCheckPointer.args[0]).to.deep.equal([
           ['role1', 'role2'],
           'localDbId',
           'my-since-seq'

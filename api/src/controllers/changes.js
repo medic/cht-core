@@ -11,7 +11,8 @@ const serverChecks = require('@medic/server-checks');
 const environment = require('../environment');
 const semver = require('semver');
 const usersService = require('../services/users');
-const serverSidePurge = require('../services/server-side-purge-roles');
+const purgedDocs = require('../services/purged-docs');
+const utils = require('./utils');
 
 let inited = false;
 let continuousFeed = false;
@@ -298,37 +299,16 @@ const initFeed = (req, res) => {
     });
 };
 
-const difference = (array1, array2) => {
-  array1 = array1.sort();
-  array2 = array2.sort();
-
-  const diff = [];
-  let i = 0;
-  let j = 0;
-  while (i < array1.length) {
-    if (j >= array2.length || array1[i] < array2[j]) {
-      diff.push(array1[i]);
-      i++;
-    } else if (array1[i] === array2[j]) {
-      i++;
-      j++;
-    } else {
-      j++;
-    }
-  }
-
-  return diff;
-};
 
 const filterPurgedIds = feed => {
   if (!feed.initialReplication) {
     return Promise.resolve();
   }
 
-  return serverSidePurge
+  return purgedDocs
     .getPurgedIds(feed.userCtx.roles, feed.allowedDocIds)
     .then(purgedIds => {
-      feed.allowedDocIds = difference(feed.allowedDocIds, purgedIds);
+      feed.allowedDocIds = utils.difference(feed.allowedDocIds, purgedIds);
     });
 };
 

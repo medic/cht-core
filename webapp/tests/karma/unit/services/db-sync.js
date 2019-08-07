@@ -181,7 +181,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
       http.get
-        .withArgs('/api/v1/server-side-purge/changes')
+        .withArgs('/api/v1/purging/changes')
         .resolves({ data: { purged_ids: [], last_seq: '123-123' } });
 
       replicationResult = () => Q.resolve({ some: 'info' });
@@ -195,7 +195,7 @@ describe('DBSync service', () => {
         expect(http.get.callCount).to.equal(1);
         console.log(http.get.args[0][1]);
         console.log(service.opts());
-        expect(http.get.args[0]).to.deep.equal(['/api/v1/server-side-purge/changes', { headers: POUCHDB_OPTIONS.remote_headers }]);
+        expect(http.get.args[0]).to.deep.equal(['/api/v1/purging/changes', { headers: POUCHDB_OPTIONS.remote_headers }]);
       });
     });
 
@@ -242,7 +242,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.reject('unauthorized'));
       http.get
-        .withArgs('/api/v1/server-side-purge/changes')
+        .withArgs('/api/v1/purging/changes')
         .resolves({ data: { purged_ids: [], last_seq: '123-123' } });
 
       const onUpdate = sinon.stub();
@@ -334,24 +334,24 @@ describe('DBSync service', () => {
 
     it('should request purge ids after successfull downwards replication', () => {
       http.get
-        .withArgs('/api/v1/server-side-purge/changes')
+        .withArgs('/api/v1/purging/changes')
         .resolves({ data: { purged_ids: [], last_seq: '111-111' }});
 
       return service.sync().then(() => {
         chai.expect(http.get.callCount).to.equal(1);
-        chai.expect(http.get.args[0]).to.deep.equal(['/api/v1/server-side-purge/changes', { headers: POUCHDB_OPTIONS.remote_headers }]);
+        chai.expect(http.get.args[0]).to.deep.equal(['/api/v1/purging/changes', { headers: POUCHDB_OPTIONS.remote_headers }]);
       });
     });
 
     it('should "purge" all returned ids', () => {
-      const purgeChanges = http.get.withArgs('/api/v1/server-side-purge/changes');
-      const purgeCheckpoint = http.get.withArgs('/api/v1/server-side-purge/checkpoint');
+      const purgeChanges = http.get.withArgs('/api/v1/purging/changes');
+      const purgeCheckpoint = http.get.withArgs('/api/v1/purging/checkpoint');
 
       purgeChanges
         .onCall(0).resolves({ data: { purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' }})
         .onCall(1).resolves({ data: { purged_ids: [], last_seq: '111-222' }});
 
-      purgeCheckpoint.withArgs('/api/v1/server-side-purge/checkpoint').resolves();
+      purgeCheckpoint.withArgs('/api/v1/purging/checkpoint').resolves();
 
       allDocs
         .withArgs({ keys: ['id1', 'id2', 'id3'] })
@@ -381,8 +381,8 @@ describe('DBSync service', () => {
     });
 
     it('should keep requesting purged ids untill no results are returned', () => {
-      const purgeChanges = http.get.withArgs('/api/v1/server-side-purge/changes');
-      const purgeCheckpoint = http.get.withArgs('/api/v1/server-side-purge/checkpoint');
+      const purgeChanges = http.get.withArgs('/api/v1/purging/changes');
+      const purgeCheckpoint = http.get.withArgs('/api/v1/purging/checkpoint');
 
       purgeChanges
         .onCall(0).resolves({ data: { purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' }})
@@ -390,7 +390,7 @@ describe('DBSync service', () => {
         .onCall(2).resolves({ data: { purged_ids: ['id7', 'id8', 'id9'], last_seq: '131-222' }})
         .onCall(3).resolves({ data: { purged_ids: [], last_seq: '131-222' }});
 
-      purgeCheckpoint.withArgs('/api/v1/server-side-purge/checkpoint').resolves();
+      purgeCheckpoint.withArgs('/api/v1/purging/checkpoint').resolves();
 
       const allDocsMock = ({ keys }) => Promise.resolve({ rows: keys.map(id => ({ id, key: id, value: { rev: `${id}-rev` } })) });
       allDocs.callsFake(allDocsMock);
@@ -429,14 +429,14 @@ describe('DBSync service', () => {
     });
 
     it('should skip updating docs that are not found', () => {
-      const purgeChanges = http.get.withArgs('/api/v1/server-side-purge/changes');
-      const purgeCheckpoint = http.get.withArgs('/api/v1/server-side-purge/checkpoint');
+      const purgeChanges = http.get.withArgs('/api/v1/purging/changes');
+      const purgeCheckpoint = http.get.withArgs('/api/v1/purging/checkpoint');
 
       purgeChanges
         .onCall(0).resolves({ data: { purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' }})
         .onCall(1).resolves({ data: { purged_ids: [], last_seq: '111-222' }});
 
-      purgeCheckpoint.withArgs('/api/v1/server-side-purge/checkpoint').resolves();
+      purgeCheckpoint.withArgs('/api/v1/purging/checkpoint').resolves();
 
       allDocs
         .withArgs({ keys: ['id1', 'id2', 'id3'] })
@@ -460,8 +460,8 @@ describe('DBSync service', () => {
     });
 
     it('should throw an error when purge save is not successful', () => {
-      const purgeChanges = http.get.withArgs('/api/v1/server-side-purge/changes');
-      const purgeCheckpoint = http.get.withArgs('/api/v1/server-side-purge/checkpoint');
+      const purgeChanges = http.get.withArgs('/api/v1/purging/changes');
+      const purgeCheckpoint = http.get.withArgs('/api/v1/purging/checkpoint');
 
       purgeChanges.resolves({ data: { purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' }});
 

@@ -73,7 +73,7 @@ angular
 
     const processPurges = () => {
       return $http
-        .get('/api/v1/server-side-purge/changes', { headers: POUCHDB_OPTIONS.remote_headers })
+        .get('/api/v1/purging/changes', { headers: POUCHDB_OPTIONS.remote_headers })
         .then(response => {
           const { purged_ids: ids, last_seq: lastSeq } = response.data;
           if (!ids.length) {
@@ -112,7 +112,7 @@ angular
             params: { seq },
             headers: POUCHDB_OPTIONS.remote_headers
           };
-          return $http.get('/api/v1/server-side-purge/checkpoint', params);
+          return $http.get('/api/v1/purging/checkpoint', params);
         });
     };
 

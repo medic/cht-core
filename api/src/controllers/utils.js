@@ -14,7 +14,31 @@ const isDateStrValid = function(str) {
   return parseDate(str).isValid();
 };
 
+// todo test this
+const difference = (array1, array2) => {
+  array1 = array1.sort();
+  array2 = array2.sort();
+
+  const diff = [];
+  let i = 0;
+  let j = 0;
+  while (i < array1.length) {
+    if (j >= array2.length || array1[i] < array2[j]) {
+      diff.push(array1[i]);
+      i++;
+    } else if (array1[i] === array2[j]) {
+      i++;
+      j++;
+    } else {
+      j++;
+    }
+  }
+
+  return diff;
+};
+
 module.exports = {
   parseDate: parseDate,
-  isDateStrValid: isDateStrValid
+  isDateStrValid: isDateStrValid,
+  difference,
 };

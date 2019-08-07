@@ -1,6 +1,7 @@
 const chai = require('chai'),
       utils = require('../../../src/controllers/utils'),
       sinon = require('sinon');
+//const _ = require('underscore');
 
 let clock;
 
@@ -53,6 +54,10 @@ describe('controller utils', () => {
         chai.expect(utils.isDateStrValid(val)).to.equal(true);
       });
     });
+  });
+
+  describe('difference', () => {
+    // todo complete tests
   });
 
 });

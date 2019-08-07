@@ -1,145 +1,19 @@
-const db = require('../db');
-const environment = require('../environment');
-const cache = require('./cache');
-const crypto = require('crypto');
+const config = require('../config');
 const request = require('request-promise-native');
 const registrationUtils = require('@medic/registration-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
-const viewMapUtils = require('@medic/view-map-utils');
-const config = require('../config');
-const logger = require('../logger');
+const serverSidePurgeUtils = require('@medic/purging-utils');
+const logger = require('./logger');
 const { performance } = require('perf_hooks');
-const auth = require('../auth');
+const db = require('../db');
 
-const BATCH_SIZE = 1000;
-
-const purgeDbs = {};
-const sortedUniqueRoles = roles => ([...new Set(roles.sort())]);
-const getRoleHash = roles => crypto
-  .createHash('md5')
-  .update(JSON.stringify(sortedUniqueRoles(roles)), 'utf8')
-  .digest('hex');
-
-const getPurgeDb = (roles, force = false) => {
-  const hash = typeof roles === 'string' ? roles : getRoleHash(roles);
+let purgeDbs = {};
+let purging = false;
+const getPurgeDb = (hash, force) => {
   if (!purgeDbs[hash] || force) {
-    purgeDbs[hash] = db.get(`${environment.db}-purged-role-${hash}`);
+    purgeDbs[hash] = db.get(serverSidePurgeUtils.getPurgeDbName(db.medicDbName, hash));
   }
   return purgeDbs[hash];
-};
-
-const getCacheKey = (roles, docIds) => {
-  const hash = crypto
-    .createHash('md5')
-    .update(JSON.stringify(docIds), 'utf8')
-    .digest('hex');
-
-  return `purged-${JSON.stringify(roles)}-${hash}`;
-};
-
-const getPurgedId = id => `purged:${id}`;
-const extractId = purgedId => purgedId.replace(/^purged:/, '');
-
-const getPurgedIdsFromChanges = result => {
-  const purgedIds = [];
-  result.results.forEach(change => {
-    if (!change.deleted) {
-      purgedIds.push(extractId(change.id));
-    }
-  });
-  return purgedIds;
-};
-
-const getPurgedIds = (roles, docIds) => {
-  const cacheKey = getCacheKey(roles, docIds);
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    cache.ttl(cacheKey);
-    return Promise.resolve(cached);
-  }
-
-  const purgeDb = getPurgeDb(roles);
-  const ids = docIds.map(getPurgedId);
-
-  return purgeDb
-    .changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length })
-    .then(result => getPurgedIdsFromChanges(result));
-};
-
-const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {
-  const purgeDb = getPurgeDb(roles);
-  const ids = docIds.map(getPurgedId);
-
-  return getCheckPointer(purgeDb, checkPointerId)
-    .then(checkPointer => {
-      const opts = {
-        doc_ids: ids,
-        batch_size: ids.length + 1,
-        limit: limit,
-        since: checkPointer.last_seq,
-        seq_interval: ids.length
-      };
-
-      return purgeDb.changes(opts);
-    })
-    .then(result => {
-      const purgedDocIds = getPurgedIdsFromChanges(result);
-      return {
-        purgedDocIds,
-        lastSeq: result.last_seq
-      };
-    });
-};
-
-const getCheckPointer = (db, checkPointerId) => db
-  .get(`_local/${checkPointerId}`)
-  .catch(() => ({
-    _id: `_local/${checkPointerId}`,
-    last_seq: 0
-  }));
-
-const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
-  const purgeDb = getPurgeDb(roles);
-
-  return Promise
-    .all([
-      getCheckPointer(purgeDb, checkPointerId),
-      purgeDb.info()
-    ])
-    .then(([ checkPointer, info ]) => {
-      checkPointer.last_seq = seq === 'now' ? info.update_seq : seq;
-      purgeDb.put(checkPointer);
-    });
-};
-
-const getRoles = () => {
-  const list = {};
-  const roles = {};
-
-  return db.users
-    .allDocs({ include_docs: true })
-    .then(result => {
-      result.rows.forEach(row => {
-        if (!row.doc ||
-            !row.doc.roles ||
-            !Array.isArray(row.doc.roles) ||
-            !row.doc.roles.length ||
-            !auth.isOffline(row.doc.roles)
-        ) {
-          return;
-        }
-
-        const r = sortedUniqueRoles(row.doc.roles);
-        list[JSON.stringify(r)] = r;
-      });
-
-      Object.values(list).forEach(list => {
-        const hash = getRoleHash(list);
-        roles[hash] = list;
-      });
-
-      return roles;
-    });
 };
 
 const initPurgeDbs = (roles) => {
@@ -154,6 +28,38 @@ const initPurgeDbs = (roles) => {
         }
       });
   }));
+};
+
+const BATCH_SIZE = 1000;
+
+const getRoles = () => {
+  const list = {};
+  const roles = {};
+
+  return db.users
+    .allDocs({ include_docs: true })
+    .then(result => {
+      result.rows.forEach(row => {
+        if (!row.doc ||
+            !row.doc.roles ||
+            !Array.isArray(row.doc.roles) ||
+            !row.doc.roles.length ||
+            !serverSidePurgeUtils.isOffline(config.get('roles'), row.doc.roles)
+        ) {
+          return;
+        }
+
+        const r = serverSidePurgeUtils.sortedUniqueRoles(row.doc.roles);
+        list[JSON.stringify(r)] = r;
+      });
+
+      Object.values(list).forEach(list => {
+        const hash = serverSidePurgeUtils.getRoleHash(list);
+        roles[hash] = list;
+      });
+
+      return roles;
+    });
 };
 
 // provided a list of roles hashes and doc ids, will return the list of existent purged docs per role hash:
@@ -178,7 +84,7 @@ const getExistentPurgedDocs = (roleHashes, ids) => {
     return Promise.resolve(purged);
   }
 
-  const purgeIds = ids.map(id => getPurgedId(id));
+  const purgeIds = ids.map(id => serverSidePurgeUtils.getPurgedId(id));
   const changesOpts = {
     doc_ids: purgeIds,
     batch_size: purgeIds.length + 1,
@@ -192,7 +98,7 @@ const getExistentPurgedDocs = (roleHashes, ids) => {
         const hash = roleHashes[idx];
         result.results.forEach(change => {
           if (!change.deleted) {
-            purged[hash][extractId(change.id)] = change.changes[0].rev;
+            purged[hash][serverSidePurgeUtils.extractId(change.id)] = change.changes[0].rev;
           }
         });
       });
@@ -230,9 +136,9 @@ const updatePurgedDocs = (rolesHashes, ids, currentlyPurged, newPurged) => {
       }
 
       if (isPurged) {
-        docs[hash].push({ _id: getPurgedId(id), _rev: isPurged, _deleted: true });
+        docs[hash].push({ _id: serverSidePurgeUtils.getPurgedId(id), _rev: isPurged, _deleted: true });
       } else {
-        docs[hash].push({ _id: getPurgedId(id) });
+        docs[hash].push({ _id: serverSidePurgeUtils.getPurgedId(id) });
       }
     });
   });
@@ -275,7 +181,7 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
 
   // using http requests because PouchDB doesn't support `startkey_docid` in view queries
   return request
-    .get(`${environment.couchUrl}/_design/medic/_view/contacts_by_depth`, { qs: queryString, json: true })
+    .get(`${db.couchUrl}/_design/medic/_view/contacts_by_depth`, { qs: queryString, json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -328,16 +234,16 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
         if (row.doc.form) {
           // use patientId as a key, as to keep contact to report associations correct
           key = registrationUtils.getPatientId(row.doc);
-          const needsSignoff = row.doc.needs_signoff;
-          if (needsSignoff && !subjectIds.includes(key)) {
+          if (row.doc.needs_signoff) {
             // reports with needs_signoff will emit for every contact from submitter lineage,
             // but we only want to process once either associated to their patient or alone, if no patient_id
-            delete row.doc.needs_signoff;
-            const viewKey = viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(row.doc)[0][0];
-            if (!subjectIds.includes(viewKey)) {
+            if (key && !subjectIds.includes(key)) {
               return;
             }
-            row.doc.needs_signoff = needsSignoff;
+            const submitter = row.doc.contact && row.doc.contact._id;
+            if (!key && !subjectIds.includes(submitter)) {
+              return;
+            }
           }
 
           reportsByKey[key] = reportsByKey[key] || [];
@@ -432,7 +338,7 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
   };
 
   return request
-    .get(`${environment.couchUrl}/_design/medic/_view/docs_by_replication_key`, { qs: queryString, json: true })
+    .get(`${db.couchUrl}/_design/medic/_view/docs_by_replication_key`, { qs: queryString, json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -473,6 +379,14 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
     .then(() => nextKeyDocId && batchedUnallocatedPurge(roles, purgeFn, nextKeyDocId));
 };
 
+const writePurgeLog = (roles, duration) => {
+  return db.sentinel.put({
+    _id: `purgelog:${new Date().getTime()}`,
+    roles: roles,
+    duration: duration
+  });
+};
+
 // purges documents that would be replicated by offline users
 // - reads all user documents from the `_users` database to comprise a list of unique sets of roles
 // - creates a database for each role set with the name `<main db name>-purged-role-<hash>` where `hash` is an md5 of
@@ -499,6 +413,10 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
 // submitter lineage emit. As a consequence, orphaned reports with `needs_signoff` will not be purged
 
 const purge = () => {
+  if (purging) {
+    return;
+  }
+  purging = true;
   logger.info('Running server side purge');
   const purgeFn = getPurgeFn();
   if (!purgeFn) {
@@ -518,18 +436,17 @@ const purge = () => {
         .then(ids => batchedContactsPurge(roles, purgeFn, ids))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
         .then(() => {
-          logger.info(`Server Side Purge completed successfully in ${ (performance.now() - start) / 1000 / 60 } minutes`);
+          const duration = (performance.now() - start);
+          logger.info(`Server Side Purge completed successfully in ${duration / 1000 / 60} minutes`);
+          return writePurgeLog(roles, duration);
         });
     })
     .catch(err => {
       logger.error('Error while running Server Side Purge: %o', err);
-    });
+    })
+    .finally(() => purging = false);
 };
 
 module.exports = {
-  getPurgedIds,
-  getPurgedIdsSince,
-  writeCheckPointer,
   purge,
 };
-
