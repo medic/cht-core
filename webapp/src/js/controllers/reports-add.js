@@ -93,6 +93,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       .then(function(model) {
         $log.debug('setting selected', model);
         $scope.setSelected(model);
+        ctrl.setLoadingContent(true);
         return $q.all([
           GetReportContent(model.doc),
           XmlForm(model.formInternalId, { include_docs: true })
