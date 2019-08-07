@@ -146,6 +146,7 @@ describe('view docs_by_replication_key', () => {
     {
       _id: 'report_with_patient_uuid',
       type: 'data_record',
+      form: 'V',
       contact: { _id: 'someuser' },
       fields: { patient_uuid: 'testpatient' }
     },

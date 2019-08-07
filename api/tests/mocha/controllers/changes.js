@@ -11,6 +11,7 @@ const config = require('../../../src/config');
 const serverChecks = require('@medic/server-checks');
 const environment = require('../../../src/environment');
 const logger = require('../../../src/logger');
+const purgedDocs = require('../../../src/services/purged-docs');
 
 require('chai').should();
 let testReq;
@@ -312,6 +313,33 @@ describe('Changes controller', () => {
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
         feed.allowedDocIds.should.deep.equal(allowedDocIds);
+      });
+    });
+
+    it('should filter allowedDocIds to not include purges when performing an initial replication', () => {
+      const subjectIds = ['s1', 's2', 's3'];
+      const allowedDocIds = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
+      const purgedIds = ['d2', 'd6', 'd3'];
+      const contactsByDepthKeys = [['facility_id']];
+      userCtx.roles = ['a', 'b'];
+
+      authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
+      authorization.getAllowedDocIds.resolves(allowedDocIds);
+      testReq.query = { initial_replication: true };
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves(purgedIds);
+
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        authorization.getAuthorizationContext.callCount.should.equal(1);
+        authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
+        authorization.getAllowedDocIds.callCount.should.equal(1);
+        authorization.getAllowedDocIds
+          .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
+          .callCount.should.equal(1);
+        const feed = controller._getNormalFeeds()[0];
+        purgedDocs.getPurgedIds.callCount.should.equal(1);
+        purgedDocs.getPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
+        feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
       });
     });
   });
