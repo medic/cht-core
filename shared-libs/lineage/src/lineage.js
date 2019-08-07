@@ -1,3 +1,6 @@
+/**
+ * @module lineage
+ */
 var _ = require('underscore');
 var RECURSION_LIMIT = 50;
 
@@ -390,21 +393,21 @@ module.exports = function(Promise, DB) {
     /**
      * Given a doc id get a doc and all parents, contact (and parents) and
      * patient (and parents)
-     * @param id The id of the doc
-     * @returns Promise
+     * @param {String} id The id of the doc
+     * @returns {Promise} A promise to return the hydrated doc.
      */
-    fetchHydratedDoc: fetchHydratedDoc,
+    fetchHydratedDoc: (id, callback) => fetchHydratedDoc(id, callback),
 
     /**
      * Given an array of minified docs bind the parents and contacts
-     * @param docs The array of docs to hydrate
-     * @returns Promise
+     * @param {Object[]} docs The array of docs to hydrate
+     * @returns {Promise}
      */
-    hydrateDocs: hydrateDocs,
+    hydrateDocs: docs => hydrateDocs(docs),
 
     /**
      * Remove all hyrdrated items and leave just the ids
-     * @param doc The doc to minify
+     * @param {Object} doc The doc to minify
      */
     minify: function(doc) {
       if (!doc) {

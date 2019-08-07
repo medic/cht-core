@@ -1,6 +1,7 @@
 /**
-* Our wrapper around google's libphonenumber.
-*/
+ * @module phone-number
+ * @description Our wrapper around google's libphonenumber.
+ */
 var phonenumber = require('google-libphonenumber'),
     CHARACTER_REGEX = /[a-z]/i;
 
@@ -46,6 +47,9 @@ var _init = function(settings, phone) {
 
 /**
  * Returns international format if valid number, or false if invalid.
+ * @param {Object} settings The configuration from the db
+ * @param {String} phone The phone number to normalize.
+ * @returns {(String|Boolean)} The normalized number or false if invalid.
  */
 exports.normalize = function(settings, phone) {
   try {
@@ -58,6 +62,9 @@ exports.normalize = function(settings, phone) {
 
 /**
  * Returns the number formatted for display, or false if invalid.
+ * @param {Object} settings The configuration from the db
+ * @param {String} phone The phone number to normalize.
+ * @returns {(String|Boolean)} The formatted number or false if invalid.
  */
 exports.format = function(settings, phone) {
   try {
@@ -71,6 +78,9 @@ exports.format = function(settings, phone) {
 /**
  * Returns true if valid number.
  * Allows dots, brackets, spaces, but not letters.
+ * @param {Object} settings The configuration from the db
+ * @param {String} phone The phone number to normalize.
+ * @returns {Boolean} Whether or not the number is valid.
  */
 exports.validate = function(settings, phone) {
   try {
@@ -83,6 +93,9 @@ exports.validate = function(settings, phone) {
 
 /**
  * Returns true if the two given numbers match.
+ * @param {String} a The first phone number
+ * @param {String} b The second phone number
+ * @returns {Boolean} Whether or not the numbers match
  */
 exports.same = function(a, b) {
   try {

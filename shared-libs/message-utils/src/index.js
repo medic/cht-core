@@ -1,3 +1,6 @@
+/**
+ * @module message-utils
+ */
 var _ = require('underscore'),
     uuid = require('uuid'),
     gsm = require('gsm'),
@@ -227,20 +230,21 @@ var truncateMessage = function(parts, max) {
 };
 
 /**
- * @param config A object of the entire app config
- * @param translate A function which returns a localised string when given
+ * @param {Object} config A object of the entire app config
+ * @param {Function} translate A function which returns a localised string when given
  *        a key and locale
- * @param doc The couchdb document this message relates to
- * @param content An object with one of `translationKey` or a `messages`
+ * @param {Object} doc The couchdb document this message relates to
+ * @param {Object} content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param recipient A string to determine who the message should be sent to.
+ * @param {String} recipient A string to determine who the message should be sent to.
  *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
  *        the name of a property in `fields` or on the doc, a path to a
  *        property on the doc.
- * @param extraContext (optional) An object with additional values to
+ * @param {Object} [extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), and `templateContext` (object) for any
  *        unstructured context additions.
+ * @returns {Object} The generated message object.
  */
 exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
@@ -281,6 +285,19 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
   return [ result ];
 };
 
+/**
+ * @param {Object} config A object of the entire app config
+ * @param {Function} translate A function which returns a localised string when given
+ *        a key and locale
+ * @param {Object} doc The couchdb document this message relates to
+ * @param {Object} content An object with one of `translationKey` or a `messages`
+ *        array for translation, or an already prepared `message` string.
+ * @param {Object} [extraContext={}] An object with additional values to
+ *        provide as a context for templating. Properties: `patient` (object),
+ *        `registrations` (array), and `templateContext` (object) for any
+ *        unstructured context additions.
+ * @returns {String} The message.
+ */
 exports.template = function(config, translate, doc, content, extraContext) {
   extraContext = extraContext || {};
   var locale = getLocale(config, doc);
@@ -304,6 +321,10 @@ exports.template = function(config, translate, doc, content, extraContext) {
   return render(config, template, context, locale);
 };
 
+/**
+ * @param {Object[]} The messages of the doc.
+ * @returns {Boolean} True if the message has errors.
+ */
 exports.hasError = function(messages) {
   return messages && messages[0] && messages[0].error;
 };

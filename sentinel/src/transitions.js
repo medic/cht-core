@@ -1,3 +1,6 @@
+/**
+ * @module transitions
+ */ 
 const async = require('async'),
       feed = require('./lib/feed'),
       db = require('./db'),
@@ -27,9 +30,7 @@ const detach = () => {
   }
 };
 
-/*
- *  Setup changes feed listener.
- */
+// Setup changes feed listener.
 const attach = () => {
   if (!changesFeed) {
     logger.info('transitions: processing enabled');
@@ -125,6 +126,9 @@ module.exports = {
   _attach: attach,
   _detach: detach,
   _deleteReadDocs: deleteReadDocs,
+  /**
+   * Loads the transitions and starts watching for db changes.
+   */
   loadTransitions: loadTransitions,
   _transitionsLib: transitionsLib
 };
