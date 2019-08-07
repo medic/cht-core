@@ -181,6 +181,7 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
   };
 
   // using http requests because PouchDB doesn't support `startkey_docid` in view queries
+  // using `startkey_docid` because using `skip` is *very* slow
   return request
     .get(`${db.couchUrl}/_design/medic/_view/contacts_by_depth`, { qs: queryString, json: true })
     .then(result => {
