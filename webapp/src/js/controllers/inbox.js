@@ -229,8 +229,8 @@ var _ = require('underscore'),
     const initSecondaryServices = () => {
       Session.init()
         .then(() => initForms())
-        .then(() => initUnreadCount())
         .then(() => initTours())
+        .then(() => initUnreadCount())
         .then(() => CheckDate());
     };
 
