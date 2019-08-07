@@ -44,6 +44,7 @@ const getPurgedIds = (roles, docIds) => {
   const cacheKey = getCacheKey(roles, docIds);
   const cached = cache.get(cacheKey);
   if (cached) {
+    // todo think of a way of invalidating these caches when sentinel runs a round of purge
     cache.ttl(cacheKey);
     return Promise.resolve(cached);
   }
@@ -54,7 +55,12 @@ const getPurgedIds = (roles, docIds) => {
   // requesting _changes instead of _all_docs because it's roughly twice faster
   return purgeDb
     .changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length })
-    .then(result => getPurgedIdsFromChanges(result));
+    .then(result => {
+      const purgeIds = getPurgedIdsFromChanges(result);
+      // todo think about storing the last_seq here so you don't rely on `now` when writing the checkpointer
+      cache.set(cacheKey, purgeIds);
+      return purgeIds;
+    });
 };
 
 const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {
