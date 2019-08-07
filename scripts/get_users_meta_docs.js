@@ -2,8 +2,7 @@ const inquirer = require('inquirer'),
       PouchDB = require('pouchdb-core'),
       fs = require('fs'),
       path = require('path'),
-      minimist = require('minimist'),
-      json = require('big-json');
+      minimist = require('minimist');
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
@@ -107,27 +106,21 @@ const actionQuestions = [{
 
   try {
     if (mode === 'batch') {
-      var allDocs = [];
-      for (;;) {
+      for (let i = 0;; i++) {
         docs = await fetchNextDocs();
         if (docs.length > 0) {
-          allDocs = allDocs.concat(docs);
-        } else {
-          if (allDocs.length === 0) {
-            console.log('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
-          } else {
-            const stringifyStream = json.createStringifyStream({
-              body: allDocs
-            });
-             
-            stringifyStream.on('data', function(strChunk) {
-                console.log(strChunk.toString('utf8'));
-            });
+          if (i === 0) {
+            console.log('[');
           }
+          docs.forEach(doc => console.log(JSON.stringify(doc, null, 2) + ','));
+        } else if (i === 0) {
+          console.log('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
+          break;
+        } else {
+          console.log('{}]');
           break;
         }
       }
-      //console.log(JSON.stringify(docs, null, 2));
     } else if (mode === 'interactive') {
       docs = await fetchNextDocs();
       if (docs.length === 0) {
@@ -149,7 +142,7 @@ const actionQuestions = [{
                 docIndex = 0;
               }
             }
-            //docIndex = Math.min(docs.length - 1, ++docIndex);
+
             console.log(JSON.stringify(docs[docIndex], null, 2));
             if (printMessage) {
               console.log('\x1b[31m%s\x1b[0m', `No next document. This is the last one.`);
@@ -165,7 +158,7 @@ const actionQuestions = [{
                 docIndex = docs.length - 1;
               }
             }
-            //docIndex = Math.max(0, --docIndex);
+
             console.log(JSON.stringify(docs[docIndex], null, 2));
             if (printMessage) {
               console.log('\x1b[31m%s\x1b[0m', `No previous document. This is the first one`);
