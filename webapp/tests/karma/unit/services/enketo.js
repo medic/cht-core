@@ -436,7 +436,9 @@ describe('Enketo service', () => {
       });
       dbGet.resolves(mockEnketoDoc('myform'));
       enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
       EnketoPrepopulationData.resolves('<data><patient_id>123</patient_id></data>');
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
