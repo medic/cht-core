@@ -91,6 +91,7 @@ const getExistentPurgedDocs = (roleHashes, ids) => {
     seq_interval: purgeIds.length
   };
 
+  // requesting _changes instead of _all_docs because it's roughly twice faster
   return Promise
     .all(roleHashes.map(hash => getPurgeDb(hash).changes(changesOpts)))
     .then(results => {

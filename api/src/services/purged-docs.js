@@ -51,6 +51,7 @@ const getPurgedIds = (roles, docIds) => {
   const purgeDb = getPurgeDb(roles);
   const ids = docIds.map(purgingUtils.getPurgedId);
 
+  // requesting _changes instead of _all_docs because it's roughly twice faster
   return purgeDb
     .changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length })
     .then(result => getPurgedIdsFromChanges(result));
