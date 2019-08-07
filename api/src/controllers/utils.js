@@ -15,7 +15,7 @@ const isDateStrValid = function(str) {
 };
 
 /**
- * Compute a list of elements that exist one array1 and do no exist in array2.
+ * Compute a list of elements that exist in array1 and do no exist in array2.
  * Much more performant than underscore's alternative (for 20000 vs 15000 uuids array, runtime is 1106ms vs 15ms)
  * @param {Array} array1
  * @param {Array} array2
