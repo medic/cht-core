@@ -61,13 +61,14 @@ describe('Server Side Purge service', () => {
       });
     });
 
-    it('should request changes from correct purge db depending on roles', () => {
+    it('should request changes from correct purge db depending on roles and save cache', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
       service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
       sinon.stub(cache, 'get').returns(false);
       sinon.stub(cache, 'ttl');
+      sinon.stub(cache, 'set');
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'get').returns(purgeDb);
       purgeDb.changes.resolves({
@@ -99,6 +100,9 @@ describe('Server Side Purge service', () => {
           batch_size: ids.length + 1,
           seq_interval: ids.length
         }]);
+
+        chai.expect(cache.set.callCount).to.equal(1);
+        chai.expect(cache.set.args[0]).to.deep.equal(['unique_cache_key', result]);
       });
     });
 

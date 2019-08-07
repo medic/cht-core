@@ -142,7 +142,13 @@ describe('view docs_by_replication_key', () => {
       type: 'data_record',
       contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' }}},
       fields: { patient_id: 'somepatient', needs_signoff: true },
-    }
+    },
+    {
+      _id: 'report_with_patient_uuid',
+      type: 'data_record',
+      contact: { _id: 'someuser' },
+      fields: { patient_uuid: 'testpatient' }
+    },
   ];
 
   const documentsToIgnore = [
@@ -219,7 +225,13 @@ describe('view docs_by_replication_key', () => {
       type: 'data_record',
       contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' }}},
       fields: { patient_id: 'somepatient', needs_signoff: false },
-    }
+    },
+    {
+      _id: 'report_with_patient_uuid_other_patient',
+      type: 'data_record',
+      contact: { _id: 'someuser' },
+      fields: { patient_uuid: 'not_the_testpatient' }
+    },
   ];
 
   // Should pass filter if unassigned = true
@@ -363,6 +375,11 @@ describe('view docs_by_replication_key', () => {
 
     it('Falls back to contact id when unknown patient', () => {
       expect(docByPlaceIds).toContain('report_with_unknown_patient_id');
+    });
+
+    it('should check for patient_uuid', () => {
+      expect(docByPlaceIds).toContain('report_with_patient_uuid');
+      expect(docByPlaceIds).not.toContain('report_with_patient_uuid_other_patient');
     });
 
     it('Falls back to contact id when invalid patient', () => {
