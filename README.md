@@ -159,17 +159,24 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 ### Testing locally with devices
 
-Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
+Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. Use either `serveo` or `ngrok` to make your developer build accessible from your Android device by giving it a trusted URL.
+
+1. Start the api. This can be via docker, grunt, debug, horti, etc.
+2. Start up serveo or ngrok (instructions below)
+3. This will output a generated URL which you can enter into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
+
+#### serveo
+
+* To connect to an API running via `grunt` or `horti`, execute `ssh -R 443:localhost:5988 serveo.net`
+* To connect to an API running via `Docker`, execute `ssh -R 443:localhost:443 serveo.net`
+
+#### ngrok
 
 1. Create a ngrok account at https://ngrok.com/
-1. Follow instructions on downloading and linking your computer to your ngrok account.
-1. Start the webapp. This can be via docker, grunt, debug, horti, etc....
-1. Run ngrok and forward it towards the port you are running the webapp on.
-    * EX: For running webapp in docker locally using the docker instructions above `$ ./ngrok http 443`. This will forward the traffic from your ngrok url on https to 443 on your local machine. </br>
-    * EX: For running via horti, or grunt where the api starts on port 5988. `$ ./ngrok http 5988` This will forward the traffic from your ngrok url on https to 5988 on your local machine.
-    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988
-1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
-
+2. Follow instructions on downloading and linking your computer to your ngrok account.
+3. Start ngrok
+  * To connect to an API running via `grunt` or `horti`, execute `./ngrok http 5988`
+  * To connect to an API running via `Docker`, execute `./ngrok http 443`
 
 ### Data
 
