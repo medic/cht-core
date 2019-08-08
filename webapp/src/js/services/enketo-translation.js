@@ -15,6 +15,19 @@ angular.module('inboxServices').service('EnketoTranslation',
           .find(node => node.nodeName === childNodeName);
     };
 
+    const getHiddenFieldList = (nodes, prefix, current) => {
+      nodes.forEach(node => {
+        const path = prefix + node.nodeName;
+        const attr = node.attributes.getNamedItem('tag');
+        if (attr && attr.value === 'hidden') {
+          current.push(path);
+        } else {
+          const children = withElements(node.childNodes);
+          getHiddenFieldList(children, path + '.', current);
+        }
+      });
+    };
+
     var nodesToJs = function(data, repeatPaths, path) {
       repeatPaths = repeatPaths || [];
       path = path || '';
@@ -104,12 +117,13 @@ angular.module('inboxServices').service('EnketoTranslation',
     return {
       getHiddenFieldList: function(model) {
         model = $.parseXML(model).firstChild;
-        return model && withElements(model.childNodes)
-          .filter(function(n) {
-            var attr = n.attributes.getNamedItem('tag');
-            return attr && attr.value === 'hidden';
-          })
-          .map(n => n.nodeName);
+        if (!model) {
+          return;
+        }
+        const children = withElements(model.childNodes);
+        const fields = [];
+        getHiddenFieldList(children, '', fields);
+        return fields;
       },
 
       reportRecordToJs: function(record, formXml) {
