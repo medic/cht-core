@@ -166,7 +166,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           ctrl.setLoadingContent(false);
           ctrl.setMessagesError(true);
           $log.error('Error fetching contact conversation', err);
-        })
+        });
     };
 
     var updateConversation = function(options) {
@@ -280,7 +280,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
     $('.tooltip').remove();
 
-console.log('message.id', $stateParams.id);
     // See $stateParams.id note at top of file
     selectContact($stateParams.id, $stateParams.type);
     $scope.$on('UpdateContactConversation', function(e, options) {
