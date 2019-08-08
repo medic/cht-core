@@ -1,5 +1,5 @@
 const request = require('request-promise-native');
-const RESULT_PARSE_REGEX = /^"(.+)"\n?$/;
+const RESULT_PARSE_REGEX = /^"(.*)"\n?$/;
 
 // This API gives weird psuedo-JSON results:
 //   "password"\n
