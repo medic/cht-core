@@ -115,9 +115,35 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         getContactable(id, type),
         MessageContacts.conversation(id)
       ])
+        .catch(function(err) {
+          if (err.code === 404) {
+            return $q.all([Promise.resolve(null), MessageContacts.conversation(id)]);
+          }
+
+          throw err;
+        })
         .then(function(results) {
           var contactModel = results[0];
           var conversation = results[1];
+          if (!contactModel) {
+            const firstTaskWithContact = _.find(conversation[0].doc.tasks, 
+              function(task) {
+                const message = task.messages && task.messages[0];
+                return message.contact._id === id;
+              }
+            );
+            const firstMessageWithContact = _.find(firstTaskWithContact.messages, 
+              function(message) {
+                return message.contact._id === id;
+              }
+            );
+            contactModel = {
+              doc: {
+                name: '',
+                phone: firstMessageWithContact.to
+              }
+            };
+          }
           if (ctrl.selectedMessage && ctrl.selectedMessage.id !== id) {
             // ignore response for previous request
             return;
@@ -140,7 +166,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           ctrl.setLoadingContent(false);
           ctrl.setMessagesError(true);
           $log.error('Error fetching contact conversation', err);
-        });
+        })
     };
 
     var updateConversation = function(options) {
@@ -254,7 +280,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
     $('.tooltip').remove();
 
-
+console.log('message.id', $stateParams.id);
     // See $stateParams.id note at top of file
     selectContact($stateParams.id, $stateParams.type);
     $scope.$on('UpdateContactConversation', function(e, options) {
