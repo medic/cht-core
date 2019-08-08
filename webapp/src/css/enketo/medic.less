@@ -250,22 +250,16 @@
       text-align: center;
     }
 
-    label {
-      margin: 0 10px;
-      .question-label {
-        display: block;
-      }
-      &.note:not(.disabled) + .note {
-        margin-top: 0;
-      }
+    label .question-label {
+      display: block;
     }
 
     .or-appearance-h1:not(.disabled) {
       padding: 5px;
+      padding-left: 2.5rem;
       text-align: center;
-      font-size: 15px;
       font-weight: bold;
-      margin-top: 0;
+      margin-top: 20px;
 
       &.or-appearance-red {
         background-color: @red;
@@ -288,17 +282,19 @@
         color: #fff;
       }
       i.fa {
-        font-size: 15px;
         position: absolute;
         left: 0;
-        margin: 5px 10px;
+        top: 0;
+        margin: 10px;
+      }
+      .question-label {
+        font-size: @font-extra-extra-large;
       }
     }
     .or-appearance-h2 {
       padding: 5px 0 5px;
       margin: 0 10px;
       text-align: center;
-      font-size: @font-extra-extra-large;
       font-weight: bold;
 
       &.or-appearance-red {
@@ -320,6 +316,9 @@
       &.or-appearance-lime {
         border-bottom: 2px solid @lime;
         color: @lime;
+      }
+      .question-label {
+        font-size: @font-extra-large;
       }
     }
     .or-appearance-h3 {
