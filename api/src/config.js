@@ -177,7 +177,9 @@ module.exports = {
           loadTranslations().then(() => initTransitionLib());
         } else if (change.id.startsWith('form:')) {
           logger.info('Detected form change - generating attachments');
-          generateXform.update(change.id);
+          generateXform.update(change.id).catch(err => {
+            logger.error('Failed to update xform: %o', err);
+          });
         }
       })
       .on('error', err => {
