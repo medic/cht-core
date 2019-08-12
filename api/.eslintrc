@@ -3,6 +3,9 @@
     "node": true
   },
   "plugins": ["compat"],
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
   "rules": {
     "no-console": "error"
   },
