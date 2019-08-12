@@ -127,40 +127,6 @@ describe('Session service', function() {
     done();
   });
 
-  it('refreshes user context cookie if a role change is detected', () => {
-    ipCookie.returns({ name: 'adm', roles: ['alpha', 'omega'] });
-    Location.dbName = 'DB_NAME';
-    $httpBackend.when('GET', '/DB_NAME/login/identity').respond(200);
-    $httpBackend.expect('GET', '/_session').respond(200, { userCtx: { name: 'adm', roles: ['beta'] } });
-    $httpBackend.expect('GET', '/_session').respond(200, { userCtx: { name: 'adm', roles: ['beta'] } });
-    $httpBackend.expect('GET', '/_session').respond(200, { userCtx: { name: 'adm', roles: ['beta'] } });
-    $httpBackend.expect('GET', '/_session').respond(200, { userCtx: { name: 'adm', roles: ['alpha', 'omega', 'beta'] } });
-    $httpBackend.expect('GET', '/_session').respond(200, { userCtx: { name: 'adm', roles: ['alpha'] } });
-    const callback = sinon.stub();
-
-    service.init(callback);
-    service.init();
-    service.init('something');
-    service.init(callback);
-    service.init(callback);
-
-    $httpBackend.flush();
-    chai.expect(callback.callCount).to.equal(3);
-  });
-
-  it('does not refresh user context if a role change is not detected', () => {
-    ipCookie.returns({ name: 'adm', roles: ['beta'] });
-    Location.dbName = 'DB_NAME';
-    $httpBackend.expect('GET', '/_session').respond(200, { userCtx: { name: 'adm', roles: ['beta'] } });
-    const callback = sinon.stub();
-
-    service.init(callback);
-    $httpBackend.flush(1);
-
-    chai.expect(callback.callCount).to.equal(0);
-    $httpBackend.verifyNoOutstandingExpectation();
-  });
-
   describe('isAdmin function', function() {
 
     it('returns false if not logged in', function(done) {
