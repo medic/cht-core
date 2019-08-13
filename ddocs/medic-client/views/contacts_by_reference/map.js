@@ -5,7 +5,8 @@ function(doc) {
     doc = doc.tombstone;
   }
 
-  if (doc.type === 'clinic' ||
+  if (doc.type === 'contact' ||
+      doc.type === 'clinic' ||
       doc.type === 'health_center' ||
       doc.type === 'district_hospital' ||
       doc.type === 'national_office' ||

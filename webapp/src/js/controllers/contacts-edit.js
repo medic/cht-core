@@ -7,9 +7,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $state,
     $timeout,
     $translate,
-    ContactForm,
     ContactSave,
-    ContactSchema,
+    ContactTypes,
     Enketo,
     GlobalActions,
     LineageModelGenerator,
@@ -43,6 +42,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
+    if (!$state.params.id) {
+      // adding a new contact, deselect the old one
+      $scope.clearSelected();
+      $scope.settingSelected();
+    }
     ctrl.setLoadingContent(true);
     ctrl.setShowContent(true);
     ctrl.setCancelCallback(function() {
@@ -53,32 +57,13 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       }
     });
 
-    var setTitle = function() {
-      var key = '';
-      if (ctrl.category === 'person') {
-        if (ctrl.contactId) {
-          key = 'contact.type.person.edit';
-        } else {
-          key = 'contact.type.person.new';
-        }
-      } else {
-        if (ctrl.contactId) {
-          key = 'contact.type.place.edit';
-        } else {
-          key = 'contact.type.place.new';
-        }
-      }
-      $translate.onReady().then(function() {
-        return $translate(key);
-      }).then(ctrl.setTitle);
-    };
-
     var getFormInstanceData = function() {
-      if (!ctrl.contact || !ctrl.contact.type) {
+      const type = ctrl.contact && (ctrl.contact.contact_type || ctrl.contact.type);
+      if (!type) {
         return null;
       }
       var result = {};
-      result[ctrl.contact.type] = ctrl.contact;
+      result[type] = ctrl.contact;
       return result;
     };
 
@@ -93,80 +78,68 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         });
     };
 
-    var getCategory = function(type) {
-      return type === 'person' ? 'person' : 'place';
-    };
-
     var getForm = function(contact) {
-      if (contact) {
-        ctrl.contact = contact;
-        ctrl.contactId = contact._id;
-        ctrl.category = getCategory(contact.type);
-        setTitle();
-        return ContactForm.forEdit(contact.type, { contact: ctrl.dependentPersonSchema });
-      }
+      let formId;
+      let titleKey;
+      const typeId = contact ? (contact.contact_type || contact.type) : $state.params.type;
+      return ContactTypes.get(typeId).then(type => {
+        if (!type) {
+          $log.error(`Unknown contact type "${typeId}"`);
+          return;
+        }
 
-      ctrl.contact = {
-        type: $state.params.type,
-        parent: $state.params.parent_id
-      };
+        if (contact) { // editing
+          ctrl.contact = contact;
+          ctrl.contactId = contact._id;
+          titleKey = type.edit_key;
+          formId = type.edit_form || type.create_form;
+        } else { // adding
+          ctrl.contact = {
+            type: 'contact',
+            contact_type: $state.params.type,
+            parent: $state.params.parent_id
+          };
+          ctrl.contactId = null;
+          formId = type.create_form;
+          titleKey = type.create_key;
+        }
 
-      ctrl.category = getCategory(ctrl.contact.type);
-      ctrl.contactId = null;
-      setTitle();
+        $translate.onReady()
+          .then(() => $translate(titleKey))
+          .then(ctrl.setTitle);
 
-      if (ctrl.contact.type) {
-        var extras = ctrl.contact.type === 'person' ? null : { contact: ctrl.dependentPersonSchema };
-        return ContactForm.forCreate(ctrl.contact.type, extras);
-      }
-      return $q.resolve();
+        return formId;
+      });
     };
 
     var markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
 
-    var renderForm = function(form) {
+    var renderForm = function(formId) {
       return $timeout(function() {
-        var container = $('#contact-form');
-        if (!form) {
+        if (!formId) {
           // Disable next and prev buttons
-          container.find('.form-footer .btn')
+          $('#contact-form')
+              .find('.form-footer .btn')
               .filter('.previous-page, .next-page')
               .addClass('disabled');
           return;
         }
         ctrl.setEnketoEditedStatus(false);
-        var instanceData = getFormInstanceData();
-        if (form.id) {
-          return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
-        }
-        return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData, markFormEdited);
+        return Enketo.renderContactForm('#contact-form', formId, getFormInstanceData(), markFormEdited);
       });
     };
 
     var setEnketoContact = function(formInstance) {
       ctrl.enketoContact = {
-        type: ctrl.contact.type,
+        type: ctrl.contact.contact_type || ctrl.contact.type,
         formInstance: formInstance,
         docId: ctrl.contactId,
       };
     };
 
-    ctrl.unmodifiedSchema = ContactSchema.get();
-    ctrl.dependentPersonSchema = ContactSchema.get('person');
-    delete ctrl.dependentPersonSchema.fields.parent;
-
     getContact()
-      .then(function(contact) {
-        if (!contact) {
-          // adding a new contact, deselect the old one
-          $scope.clearSelected();
-          ctrl.settingSelected();
-        }
-
-        return contact;
-      })
       .then(getForm)
       .then(renderForm)
       .then(setEnketoContact)
@@ -198,7 +171,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           }
 
           var type = ctrl.enketoContact.type;
-          return ContactSave(ctrl.unmodifiedSchema[type], form, docId, type)
+          return ContactSave(form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
               ctrl.setEnketoSavingStatus(false);

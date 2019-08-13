@@ -22,13 +22,13 @@ function assertChangeIds(changes) {
   // * filter out deleted entries - we never delete in our production code, but
   // some docs are deleted in the test setup/teardown
   //  * also filter out translation documents and other expected documents
-  changes = _.reject(changes, function(change) {
-    return change.deleted ||
-           change.id.startsWith('messages-') ||
-           DEFAULT_EXPECTED.indexOf(change.id) !== -1;
+  changes = changes.filter(change => {
+    return !change.deleted &&
+           !change.id.startsWith('messages-') &&
+           !change.id.startsWith('form:contact:') &&
+           !DEFAULT_EXPECTED.includes(change.id);
   });
-
-  var expectedIds = Array.prototype.slice.call(arguments, 1);
+  const expectedIds = Array.prototype.slice.call(arguments, 1);
   expect(_.unique(_.pluck(changes, 'id')).sort()).toEqual(expectedIds.sort());
 }
 
@@ -534,7 +534,11 @@ describe('changes handler', () => {
         .then(changes => {
           if (shouldBatchChangesRequests) {
             // requests should be limited
-            expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+            expect(changes.results.every(change => {
+              return expectedIds.includes(change.id) ||
+                     change.id.startsWith('messages-') ||
+                     change.id.startsWith('form:contact:');
+            })).toBe(true);
             // because we still process pending changes, it's not a given we will receive only 4 changes.
             expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
           } else {

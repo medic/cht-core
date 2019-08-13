@@ -1,3 +1,6 @@
+/**
+ * @module message-utils
+ */
 var _ = require('underscore'),
     uuid = require('uuid'),
     gsm = require('gsm'),
@@ -44,6 +47,11 @@ var getDistrictPhone = function(doc) {
   return district && district.contact && district.contact.phone;
 };
 
+const getParentPhone = function(doc, type) {
+  const parent = doc && getParent(doc, type);
+  return parent && parent.contact && parent.contact.phone;
+};
+
 var applyPhoneReplacement = function(config, phone) {
   var replacement = config.outgoing_phone_replace;
   if (!phone || !replacement || !replacement.match) {
@@ -83,14 +91,33 @@ var getRecipient = function(context, recipient) {
   var phone;
   if (recipient === 'reporting_unit') {
     phone = from;
+  } else if (recipient.startsWith('ancestor:')) {
+    const type = recipient.split(':')[1];
+    phone = getParentPhone(context.patient, type) ||
+            getParentPhone(context, type);
+  } else if (recipient === 'parent') {
+    const patient = context.patient || context;
+    const facility = patient.parent ? patient : patient.contact;
+    phone = facility.parent &&
+            facility.parent.parent &&
+            facility.parent.parent.contact &&
+            facility.parent.parent.contact.phone;
+  } else if (recipient === 'grandparent') {
+    const patient = context.patient || context;
+    const facility = patient.parent ? patient : patient.contact;
+    phone = facility.parent &&
+            facility.parent.parent &&
+            facility.parent.parent.parent &&
+            facility.parent.parent.parent.contact &&
+            facility.parent.parent.parent.contact.phone;
   } else if (recipient === 'clinic') {
     phone = getClinicPhone(context.patient) ||
             getClinicPhone(context) ||
             (context.contact && context.contact.phone);
-  } else if (recipient === 'health_center' || recipient === 'parent') {
+  } else if (recipient === 'health_center') {
     phone = getHealthCenterPhone(context.patient) ||
             getHealthCenterPhone(context);
-  } else if (recipient === 'district' || recipient === 'grandparent') {
+  } else if (recipient === 'district') {
     phone = getDistrictPhone(context.patient) ||
             getDistrictPhone(context);
   } else if (context.fields && context.fields[recipient]) {
@@ -203,20 +230,21 @@ var truncateMessage = function(parts, max) {
 };
 
 /**
- * @param config A object of the entire app config
- * @param translate A function which returns a localised string when given
+ * @param {Object} config A object of the entire app config
+ * @param {Function} translate A function which returns a localised string when given
  *        a key and locale
- * @param doc The couchdb document this message relates to
- * @param content An object with one of `translationKey` or a `messages`
+ * @param {Object} doc The couchdb document this message relates to
+ * @param {Object} content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param recipient A string to determine who the message should be sent to.
+ * @param {String} recipient A string to determine who the message should be sent to.
  *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
  *        the name of a property in `fields` or on the doc, a path to a
  *        property on the doc.
- * @param extraContext (optional) An object with additional values to
+ * @param {Object} [extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), and `templateContext` (object) for any
  *        unstructured context additions.
+ * @returns {Object} The generated message object.
  */
 exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
@@ -257,6 +285,19 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
   return [ result ];
 };
 
+/**
+ * @param {Object} config A object of the entire app config
+ * @param {Function} translate A function which returns a localised string when given
+ *        a key and locale
+ * @param {Object} doc The couchdb document this message relates to
+ * @param {Object} content An object with one of `translationKey` or a `messages`
+ *        array for translation, or an already prepared `message` string.
+ * @param {Object} [extraContext={}] An object with additional values to
+ *        provide as a context for templating. Properties: `patient` (object),
+ *        `registrations` (array), and `templateContext` (object) for any
+ *        unstructured context additions.
+ * @returns {String} The message.
+ */
 exports.template = function(config, translate, doc, content, extraContext) {
   extraContext = extraContext || {};
   var locale = getLocale(config, doc);
@@ -280,6 +321,10 @@ exports.template = function(config, translate, doc, content, extraContext) {
   return render(config, template, context, locale);
 };
 
+/**
+ * @param {Object[]} The messages of the doc.
+ * @returns {Boolean} True if the message has errors.
+ */
 exports.hasError = function(messages) {
   return messages && messages[0] && messages[0].error;
 };

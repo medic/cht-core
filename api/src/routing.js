@@ -75,6 +75,7 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 var formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
 
 app.set('strict routing', true);
+app.set('trust proxy', true);
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the

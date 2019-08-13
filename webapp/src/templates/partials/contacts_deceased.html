@@ -19,8 +19,8 @@
               <h3 translate>contact.deceased.title</h3>
             </div>
           </div>
-          <ul>
-            <mm-content-row ng-repeat="child in contactsDeceasedCtrl.selectedContact.children.deceased"
+          <ul ng-repeat="group in contactsDeceasedCtrl.selectedContact.children" ng-if="group.deceasedCount">
+            <mm-content-row ng-repeat="child in group.contacts" ng-if="child.deceased"
               id="child.doc._id"
               route="'contacts'"
               heading="child.doc.name"

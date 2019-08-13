@@ -9,7 +9,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     $templateCache,
     $timeout,
     $translate,
-    ContactSchema,
+    ContactTypes,
     LiveList,
     RulesEngine,
     TranslateFrom,
@@ -37,6 +37,20 @@ angular.module('inboxServices').factory('LiveListConfig',
         });
     };
 
+    const getContactTypeOrder = contact => {
+      if (contact.type === 'contact') {
+        const idx = ContactTypes.HARDCODED_TYPES.indexOf(contact.contact_type);
+        if (idx !== -1) {
+          // matches a hardcoded type - order by the index
+          return '' + idx;
+        }
+        // order by the name of the type
+        return contact.contact_type;
+      }
+      // backwards compatibility with hardcoded hierarchy
+      return '' + ContactTypes.HARDCODED_TYPES.indexOf(contact.type);
+    };
+
     // Configure LiveList service
     return function($scope) {
 
@@ -62,51 +76,53 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (c1.simprints && c2.simprints) {
             return c2.simprints.confidence - c1.simprints.confidence;
           }
-          if (c1.type !== c2.type) {
-            return ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type);
+          const c1Type = getContactTypeOrder(c1) || '';
+          const c2Type = getContactTypeOrder(c2) || '';
+          if (c1Type !== c2Type) {
+            return c1Type < c2Type ? -1 : 1;
           }
 
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
-        listItem: function(contact) {
+        listItem: function(contact, contactTypes) {
           if (!this.scope) {
             return;
           }
+          const typeId = contact.contact_type || contact.type;
+          const type = contactTypes.find(type => type.id === typeId);
           var scope = this.scope.$new(true);
           scope.id = contact._id;
           scope.route = 'contacts';
-          scope.icon = ContactSchema.get(contact.type).icon;
+          scope.icon = type && type.icon;
           scope.heading = contact.name;
           scope.primary = contact.home;
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
           scope.muted = contact.muted;
-          if (contact.type !== 'person') {
-            if (Number.isInteger(contact.lastVisitedDate) && contact.lastVisitedDate >= 0) {
-              if (contact.lastVisitedDate === 0) {
-                scope.overdue = true;
-                scope.summary = $translate.instant('contact.last.visited.unknown');
+          if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
+            if (contact.lastVisitedDate === 0) {
+              scope.overdue = true;
+              scope.summary = $translate.instant('contact.last.visited.unknown');
+            } else {
+              var now = new Date().getTime();
+              var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+              scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
+              scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+            }
+
+            var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+            scope.visits = {
+              count: $translate.instant('contacts.visits.count', { count: visitCount }),
+              summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
+            };
+
+            if (contact.visitCountGoal) {
+              if (!contact.visitCount) {
+                scope.visits.status = 'pending';
+              } else if (contact.visitCount < contact.visitCountGoal) {
+                scope.visits.status = 'started';
               } else {
-                var now = new Date().getTime();
-                var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
-                scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
-                scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
-              }
-
-              var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
-              scope.visits = {
-                count: $translate.instant('contacts.visits.count', { count: visitCount }),
-                summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
-              };
-
-              if (contact.visitCountGoal) {
-                if (!contact.visitCount) {
-                  scope.visits.status = 'pending';
-                } else if (contact.visitCount < contact.visitCountGoal) {
-                  scope.visits.status = 'started';
-                } else {
-                  scope.visits.status = 'done';
-                }
+                scope.visits.status = 'done';
               }
             }
           }
@@ -151,7 +167,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           }
           return r2.reported_date - r1.reported_date;
         },
-        listItem: function(report, removedDomElement) {
+        listItem: function(report, contactTypes, removedDomElement) {
           if (!this.scope) {
             return;
           }
@@ -278,12 +294,16 @@ angular.module('inboxServices').factory('LiveListConfig',
 angular.module('inboxServices').factory('LiveList',
   function(
     $timeout,
+    ContactTypes,
     ResourceIcons
   ) {
     'ngInject';
 
-    var api = {};
-    var indexes = {};
+    const api = {};
+    const indexes = {};
+    let contactTypes;
+
+    ContactTypes.getAll().then(types => contactTypes = types);
 
     function findSortedIndex(list, newItem, orderBy) {
       // start at the end of the list?
@@ -311,8 +331,8 @@ angular.module('inboxServices').factory('LiveList',
       }
     }
 
-    function listItemFor(idx, doc, removedDomElement) {
-      var li = $(idx.listItem(doc, removedDomElement));
+    function listItemFor(idx, doc, contactTypes, removedDomElement) {
+      var li = $(idx.listItem(doc, contactTypes, removedDomElement));
       if (doc._id === idx.selected) {
         li.addClass('selected');
       }
@@ -366,7 +386,7 @@ angular.module('inboxServices').factory('LiveList',
       for (let i = 0; i < items.length; ++i) {
         const item = items[i];
         const useCache = reuseExistingDom && idx.dom[item._id] && !idx.dom[item._id].invalidateCache;
-        const li = useCache ? idx.dom[item._id] : listItemFor(idx, item);
+        const li = useCache ? idx.dom[item._id] : listItemFor(idx, item, contactTypes);
         newDom[item._id] = li;
       }
       idx.dom = newDom;
@@ -393,7 +413,7 @@ angular.module('inboxServices').factory('LiveList',
         return;
       }
 
-      var li = listItemFor(idx, newItem, removedDomElement);
+      var li = listItemFor(idx, newItem, contactTypes, removedDomElement);
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
@@ -501,7 +521,7 @@ angular.module('inboxServices').factory('LiveList',
           // instead of yesterday
           for (let i = 0; i < idx.list.length; ++i) {
             const item = idx.list[i];
-            idx.dom[item._id] = listItemFor(idx, item);
+            idx.dom[item._id] = listItemFor(idx, item, contactTypes);
           }
 
           api[name].refresh();

@@ -13,61 +13,7 @@ describe('utils util', () => {
   afterEach(() => sinon.restore());
 
   const utils = require('../../../src/lib/utils');
-  describe('getClinicPhone', () => {
-    it('gets the phone number of the clinic', () => {
-      const phone = '123';
-      const doc = {
-        contact: {
-          parent: {
-            type: 'clinic',
-            contact: { phone: phone }
-          }
-        }
-      };
 
-      utils.getClinicPhone(doc).should.equal(phone);
-    });
-    it('gets the contact phone number if there is no clinic', () => {
-      const phone = '123';
-      const doc = {
-        contact: {
-          phone: phone
-        }
-      };
-
-      utils.getClinicPhone(doc).should.equal(phone);
-    });
-  });
-  it('getHealthCenterPhone works', () => {
-      const phone = '123';
-      const doc = {
-        contact: {
-          parent: {
-            type: 'health_center',
-            contact: {
-              phone: phone
-            }
-          }
-        }
-      };
-
-      utils.getHealthCenterPhone(doc).should.equal(phone);
-  });
-  it('getDistrictPhone works', () => {
-    const phone = '123';
-    const doc = {
-      contact: {
-        parent: {
-          type: 'district_hospital',
-          contact: {
-            phone: phone
-          }
-        }
-      }
-    };
-
-    utils.getDistrictPhone(doc).should.equal(phone);
-  });
   it('isNonEmptyString works', () => {
     utils.isNonEmptyString().should.equal(false);
     utils.isNonEmptyString('').should.equal(false);

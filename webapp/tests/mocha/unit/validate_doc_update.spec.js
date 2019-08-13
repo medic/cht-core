@@ -174,13 +174,4 @@ describe('validate doc update', () => {
     done();
   });
 
-  it('validate person requires reported_date', done => {
-    const userCtx = {
-      name: 'a',
-      roles: ['_admin']
-    };
-    assert.deepEqual(allowedOnClient(userCtx, { _id: 'a-place', type: 'person'}), disallowed('reported_date property must be set.'));
-    done();
-  });
-
 });

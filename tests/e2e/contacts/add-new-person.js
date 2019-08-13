@@ -1,7 +1,7 @@
-const commonElements = require('../../page-objects/common/common.po.js'),
-      contactPage = require('../../page-objects/contacts/contacts.po.js'),
-      helper = require('../../helper'),
-      utils = require('../../utils');
+const commonElements = require('../../page-objects/common/common.po.js');
+const contactPage = require('../../page-objects/contacts/contacts.po.js');
+const helper = require('../../helper');
+const utils = require('../../utils');
 
 describe('Add new person tests : ', () => {
   afterEach(done => {
@@ -15,11 +15,11 @@ describe('Add new person tests : ', () => {
     commonElements.goToPeople();
     expect(commonElements.isAt('contacts-list'));
     contactPage.addNewDistrict('BedeDistrict');
-    contactPage.completeNewPersonForm('Bede');
-    helper.waitUntilReady(element(by.css('div[ng-if="!contactsContentCtrl.loadingSelectedContactChildren"]')));
     const district = element(by.css('.card h2'));
+    helper.waitUntilReady(district);
     expect(district.getText()).toBe('BedeDistrict');
     const name = element(by.css('.children h4 span'));
+    helper.waitUntilReady(name);
     expect(name.getText()).toBe('Bede');
   });
 });

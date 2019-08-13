@@ -3,6 +3,7 @@ angular.module('services').factory('ImportContacts',
     $http,
     $q,
     CleanETag,
+    ContactTypes,
     DB,
     Location
   ) {
@@ -10,19 +11,44 @@ angular.module('services').factory('ImportContacts',
     'use strict';
     'ngInject';
 
+    const getPersonType = contact => {
+      return ContactTypes.getPersonTypes().then(types => {
+        const provided = contact.contact_type || contact.type;
+        if (provided) {
+          const type = types.find(type => type.id === provided);
+          if (type) {
+            return provided;
+          }
+          return $q.reject(new Error(`Unknown type "${provided}"" for person named "${contact.name}"`));
+        }
+        if (types.find(type => type.id === 'person')) {
+          // retained for backwards compatibility
+          return 'person';
+        }
+        return $q.reject(new Error(`Undefined type for person named "${contact.name}"`));
+      });
+    };
+
     var savePerson = function(doc) {
-      var person = {
-        type: 'person',
-        name: doc.contact.name,
-        phone: doc.contact.phone,
-        parent: doc
-      };
-      return DB()
-        .put(person)
-        .then(function(response) {
-          doc.contact.type = 'person';
-          doc.contact._id = response._id;
-          doc.contact._rev = response._rev;
+      return getPersonType(doc.contact)
+        .then(type => {
+          const person = {
+            name: doc.contact.name,
+            phone: doc.contact.phone,
+            parent: doc
+          };
+          if (type === 'person') {
+            person.type = type;
+          } else {
+            person.type = 'contact';
+            person.contact_type = type;
+          }
+          return DB()
+            .put(person)
+            .then(function(response) {
+              doc.contact._id = response._id;
+              doc.contact._rev = response._rev;
+            });
         });
     };
 

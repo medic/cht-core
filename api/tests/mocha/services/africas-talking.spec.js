@@ -88,7 +88,7 @@ describe('africas talking service', () => {
         chai.expect(config.get.callCount).to.equal(1);
         chai.expect(config.get.args[0][0]).to.equal('sms');
         chai.expect(secureSettings.getCredentials.callCount).to.equal(1);
-        chai.expect(secureSettings.getCredentials.args[0][0]).to.equal('africastalking.com');
+        chai.expect(secureSettings.getCredentials.args[0][0]).to.equal('africastalking.com:outgoing');
       });
     });
 

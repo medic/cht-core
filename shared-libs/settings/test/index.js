@@ -53,6 +53,15 @@ describe('Settings shared lib - getCredentials function', () => {
     });
   });
 
+  it('handles empty credentials', () => {
+    sinon.stub(lib, '_getServerUrl').returns('http://server.com');
+    sinon.stub(lib, '_getCouchNodeName').returns('nonode@noname');
+    sinon.stub(request, 'get').resolves('""\n');
+    return lib.getCredentials('mykey').then(actual => {
+      chai.expect(actual).to.equal('');
+    });
+  });
+
   it('parses response format', () => {
     sinon.stub(lib, '_getServerUrl').returns('http://server.com');
     sinon.stub(lib, '_getCouchNodeName').returns('nonode@noname');

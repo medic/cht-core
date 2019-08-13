@@ -10,6 +10,19 @@ const _ = require('underscore'),
 // set later to use local time
 later.date.localTime();
 
+const getLeafPlaceDocs = callback => {
+    const types = config.get('contact_types') || [];
+    const placeTypes = types.filter(type => !type.person);
+    const leafPlaceTypes = placeTypes.filter(type => {
+        return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
+    });
+    const keys = leafPlaceTypes.map(type => [ type.id ]);
+    db.medic.query('medic-client/contacts_by_type', {
+        keys: keys,
+        include_docs: true
+    }, callback);
+};
+
 function isConfigValid(config) {
     return Boolean(
         config.form &&
@@ -110,27 +123,20 @@ module.exports = {
             return null;
         }
     },
-    getClinics: function(options, callback) {
-        // gets all clinics
-        db.medic.query('medic-client/doc_by_type', {
-            startkey: [ 'clinic' ],
-            endkey: [ 'clinic', {} ],
-            include_docs: true
-        }, function(err, data) {
+    getLeafPlaces: (options, callback) => {
+        getLeafPlaceDocs((err, response) => {
             if (err) {
                 return callback(err);
             }
-            var docs = _.pluck(data.rows, 'doc');
-
             // filter them by the canSend function (i.e. not already sent, not
             // on cooldown from having received a form)
-            var clinics = _.filter(docs, function(clinic) {
-                return module.exports.canSend(options, clinic);
-            });
+            const leafPlaces = response.rows
+                .map(row => row.doc)
+                .filter(doc => module.exports.canSend(options, doc));
 
             lineage
-              .hydrateDocs(clinics)
-              .then(clinics => callback(null, clinics))
+              .hydrateDocs(leafPlaces)
+              .then(leafPlaces => callback(null, leafPlaces))
               .catch(callback);
         });
     },
@@ -146,7 +152,7 @@ module.exports = {
             };
 
         // add a message to the tasks property with the form/ts markers
-        const task = messages.addMessage(clinic, reminder, 'clinic', context);
+        const task = messages.addMessage(clinic, reminder, 'reporting_unit', context);
         if (task) {
             task.form = reminder.form;
             task.timestamp = moment.toISOString();
@@ -156,7 +162,7 @@ module.exports = {
         db.medic.put(clinic, callback);
     },
     sendReminders: function(options, callback) {
-        module.exports.getClinics(options, function(err, clinics) {
+        module.exports.getLeafPlaces(options, function(err, clinics) {
             if (err) {
                 callback(err);
             } else {

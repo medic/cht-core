@@ -4,16 +4,12 @@
 var _ = require('underscore');
 
 angular.module('inboxServices').factory('ContactChangeFilter',
-  function(ContactSchema) {
+  function(ContactTypes) {
     'ngInject';
     'use strict';
 
     var isValidInput = function(object) {
       return !!(object && object.doc);
-    };
-
-    var isContact = function(change) {
-      return !!change.doc.type && ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
     };
 
     var isReport = function(change) {
@@ -79,7 +75,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       isRelevantContact: function(change, contact) {
         return isValidInput(change) &&
                isValidInput(contact) &&
-               isContact(change) &&
+               ContactTypes.includes(change.doc) &&
                (isAncestor(change, contact) || isChild(change, contact) || wasChild(change, contact));
       },
       isDeleted: function(change) {

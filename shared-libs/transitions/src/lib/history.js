@@ -1,5 +1,6 @@
 /**
- * Utility to track duplicate keys in a certain period of time (periodMins).
+ * @module transitions/history
+ * @description Utility to track duplicate keys in a certain period of time (periodMins).
  * Removes expired keys after threshold is reached (purgeThreshold).
  **/
 const moment = require('moment');

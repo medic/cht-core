@@ -120,7 +120,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
 
     var findDistrict = function(place) {
-      while(place && place.type !== 'district_hospital') {
+      while(place && place.parent) {
         place = place.parent;
       }
       return place;

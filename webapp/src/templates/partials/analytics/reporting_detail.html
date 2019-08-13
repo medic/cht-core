@@ -82,7 +82,7 @@
   </div>
 </div>
 
-<div class="facility-select" ng-show="analyticsReportingDetailCtrl.place && analyticsReportingDetailCtrl.place.type === 'district_hospital' && !analyticsReportingDetailCtrl.loadingTotals">
+<div class="facility-select" ng-show="analyticsReportingDetailCtrl.place && !analyticsReportingDetailCtrl.place.parent && !analyticsReportingDetailCtrl.loadingTotals">
   <div class="row title" ng-show="analyticsReportingDetailCtrl.facilities.length">
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-1" translate>analytics.reporting.reports</div>

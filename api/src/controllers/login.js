@@ -118,13 +118,12 @@ const setLocaleCookie = (res, locale) => {
 const getRedirectUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
-  let url;
-  if (auth.hasAllPermissions(userCtx, 'can_configure') && environment.db !== 'medic-test') {
-    url = '/admin/';
-  } else {
-    url = '/';
+  if (auth.isOnlineOnly(userCtx) &&
+      auth.hasAllPermissions(userCtx, 'can_configure') &&
+      environment.db !== 'medic-test') {
+    return '/admin/';
   }
-  return url;
+  return '/';
 };
 
 const setCookies = (req, res, sessionRes) => {

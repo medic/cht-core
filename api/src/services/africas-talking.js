@@ -33,10 +33,10 @@ const getCredentials = () => {
     // invalid configuration
     return Promise.reject('No username configured. Refer to the Africa\'s Talking configuration documentation.');
   }
-  return secureSettings.getCredentials('africastalking.com')
+  return secureSettings.getCredentials('africastalking.com:outgoing')
     .then(apiKey => {
       if (!apiKey) {
-        return Promise.reject('No api configured. Refer to the Africa\'s Talking configuration documentation.');
+        return Promise.reject('No api key configured. Refer to the Africa\'s Talking configuration documentation.');
       }
       return { apiKey, username, from: settings.reply_to };
     });

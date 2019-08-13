@@ -1,8 +1,32 @@
-const utils = require('../lib/utils'),
-  db = require('../db'),
-  logger = require('../lib/logger'),
-  transitionUtils = require('./utils'),
-  NAME = 'update_scheduled_reports';
+const db = require('../db');
+const config = require('../config');
+const logger = require('../lib/logger');
+const transitionUtils = require('./utils');
+const NAME = 'update_scheduled_reports';
+
+const getLeafPlaceTypeIds = () => {
+  const types = config.get('contact_types') || [];
+  const placeTypes = types.filter(type => !type.person);
+  const leafPlaceTypes = placeTypes.filter(type => {
+    return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
+  });
+  return leafPlaceTypes.map(type => type.id);
+};
+
+/**
+ * Returns the ID of the parent iff that parent is a leaf type.
+ */
+const getParentId = contact => {
+  const parentType = contact &&
+                     contact.parent &&
+                     (contact.parent.contact_type || contact.parent.type);
+  if (parentType) {
+    const leafPlaceTypeIds = getLeafPlaceTypeIds();
+    if (leafPlaceTypeIds.includes(parentType)) {
+      return contact.parent._id;
+    }
+  }
+};
 
 module.exports = {
   filter: (doc, info = {}) => {
@@ -52,47 +76,48 @@ module.exports = {
   // also includes changed doc
   //
   _getDuplicates: doc => {
-    const options = { include_docs: true },
-          clinicId = utils.getClinicID(doc);
-    let view;
+    const parentId = getParentId(doc.contact);
+    if (!parentId) {
+      return Promise.resolve();
+    }
 
+    let view;
+    const options = { include_docs: true };
     if (doc.fields.week || doc.fields.week_number) {
       options.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
-        clinicId,
+        parentId,
       ];
       options.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
-        clinicId,
+        parentId,
         {},
       ];
-      view = 'reports_by_form_year_week_clinic_id_reported_date';
+      view = 'medic/reports_by_form_year_week_parent_reported_date';
     } else if (doc.fields.month || doc.fields.month_num) {
       options.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
-        clinicId,
+        parentId,
       ];
       options.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
-        clinicId,
+        parentId,
         {},
       ];
-      view = 'reports_by_form_year_month_clinic_id_reported_date';
-    }
-
-    if (!view || !clinicId) {
+      view = 'medic/reports_by_form_year_month_parent_reported_date';
+    } else {
       return Promise.resolve();
     }
 
-    return db.medic.query(`medic/${view}`, options).then(data => data && data.rows);
+    return db.medic.query(view, options).then(data => data && data.rows);
   },
   _isFormScheduled: function(doc) {
     return (
