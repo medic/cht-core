@@ -4,52 +4,79 @@
 const _ = require('underscore');
 const RECURSION_LIMIT = 50;
 
-  const extractParentIds = function(objWithParent) {
-    const ids = [];
-    while (objWithParent) {
-      ids.push(objWithParent._id);
-      objWithParent = objWithParent.parent;
-    }
+const extractParentIds = function(objWithParent) {
+  const ids = [];
+  while (objWithParent) {
+    ids.push(objWithParent._id);
+    objWithParent = objWithParent.parent;
+  }
 
-    return ids;
-  };
+  return ids;
+};
 
-  const fillParentsInDocs = function(doc, lineage) {
-    if (!doc || !lineage.length) {
-      return doc;
-    }
-
-    // Parent hierarchy starts at the contact for data_records
-    let currentParent;
-    if (doc.type === 'data_record') {
-      currentParent = doc.contact = lineage.shift() || doc.contact;
-    } else {
-      // It's a contact
-      currentParent = doc;
-    }
-
-    const parentIds = extractParentIds(currentParent.parent);
-    lineage.forEach(function(l, i) {
-      currentParent.parent = l || { _id: parentIds[i] };
-      currentParent = currentParent.parent;
-    });
-
+const fillParentsInDocs = function(doc, lineage) {
+  if (!doc || !lineage.length) {
     return doc;
-  };
+  }
 
-  const fillContactsInDocs = function(docs, contacts) {
-    if (!contacts || !contacts.length) {
-      return;
-    }
-    contacts.forEach(function(contactDoc) {
-      docs.forEach(function(doc) {
-        const id = doc && doc.contact && doc.contact._id;
-        if (id === contactDoc._id) {
-          doc.contact = contactDoc;
-        }
-      });
+  // Parent hierarchy starts at the contact for data_records
+  let currentParent;
+  if (doc.type === 'data_record') {
+    currentParent = doc.contact = lineage.shift() || doc.contact;
+  } else {
+    // It's a contact
+    currentParent = doc;
+  }
+
+  const parentIds = extractParentIds(currentParent.parent);
+  lineage.forEach(function(l, i) {
+    currentParent.parent = l || { _id: parentIds[i] };
+    currentParent = currentParent.parent;
+  });
+
+  return doc;
+};
+
+const fillContactsInDocs = function(docs, contacts) {
+  if (!contacts || !contacts.length) {
+    return;
+  }
+  contacts.forEach(function(contactDoc) {
+    docs.forEach(function(doc) {
+      const id = doc && doc.contact && doc.contact._id;
+      if (id === contactDoc._id) {
+        doc.contact = contactDoc;
+      }
     });
-  };
+  });
+};
+
+const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage) {
+  patientLineage = patientLineage || [];
+  const lineages = lineage.concat(patientLineage);
+  fillContactsInDocs(lineages, contacts);
+
+  const doc = lineage.shift();
+  fillParentsInDocs(doc, lineage);
+
+  if (patientLineage.length) {
+    const patientDoc = patientLineage.shift();
+    fillParentsInDocs(patientDoc, patientLineage);
+    doc.patient = patientDoc;
+  }
+
+  return doc;
+};
+
+const findPatientId = function(doc) {
+  return (
+    doc.type === 'data_record' &&
+    (
+      (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) ||
+      doc.patient_id
+    )
+  );
+};
 
 module.exports = function(Promise, DB) {
   const fetchContacts = function(lineage) {
@@ -62,7 +89,7 @@ module.exports = function(Promise, DB) {
           return !!id;
         })
     );
-
+  
     // Only fetch docs that are new to us
     const lineageContacts = [];
     const contactsToFetch = [];
@@ -76,38 +103,11 @@ module.exports = function(Promise, DB) {
         contactsToFetch.push(id);
       }
     });
-
+  
     return fetchDocs(contactsToFetch)
       .then(function(fetchedContacts) {
         return lineageContacts.concat(fetchedContacts);
       });
-  };
-
-  const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage) {
-    patientLineage = patientLineage || [];
-    const lineages = lineage.concat(patientLineage);
-    fillContactsInDocs(lineages, contacts);
-
-    const doc = lineage.shift();
-    fillParentsInDocs(doc, lineage);
-
-    if (patientLineage.length) {
-      const patientDoc = patientLineage.shift();
-      fillParentsInDocs(patientDoc, patientLineage);
-      doc.patient = patientDoc;
-    }
-
-    return doc;
-  };
-
-  const findPatientId = function(doc) {
-    return (
-      doc.type === 'data_record' &&
-      (
-        (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) ||
-        doc.patient_id
-      )
-    );
   };
 
   const fetchPatientLineage = function(record) {
@@ -136,11 +136,11 @@ module.exports = function(Promise, DB) {
     });
   };
 
-  const fetchLineageById = (id) => {
+  const fetchLineageById = function (id, includeSelf = true) {
     const options = {
-      startkey: [id],
+      startkey: includeSelf ? [id] : [id, 1],
       endkey: [id, {}],
-      include_docs: true
+      include_docs: true,
     };
     return DB.query('medic-client/docs_by_id_lineage', options)
       .then(function(result) {
@@ -150,11 +150,11 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchLineageByIds = function(ids) {
+  const fetchLineageByIds = function(ids, includeSelf = true) {
     /*
     TODO: Optimize this for online users when this is fixed - https://github.com/pouchdb/pouchdb/issues/6795
     */
-    const fetchAll = ids.map(id => fetchLineageById(id));
+    const fetchAll = ids.map(id => fetchLineageById(id, includeSelf));
     return Promise.all(fetchAll);
   };
 
@@ -168,22 +168,28 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDocs = function(ids) {
-    return fetchLineageByIds(ids)
-      .then(lineages => {
-        const hydratedDocs = lineages.map(lineage => {
-          if (lineage.length === 0) {
-            return;
-          }
+  const hydrateDocsFromLineages = function(lineages) {
+    if (!Array.isArray(lineages)) {
+      throw Error('invalid argument in hydrateDocsFromLineages: "lineages"');
+    }
 
-          return fetchPatientLineage(lineage[0])
-            .then(patientLineage => {
-              return fetchContacts(lineage.concat(patientLineage))
-                .then(contacts => mergeLineagesIntoDoc(lineage, contacts, patientLineage));
-            });
-        });
-        return Promise.all(hydratedDocs);
+    if (!lineages.length) {
+      return Promise.resolve([]);
+    }
+
+    const hydratedDocs = lineages.map(lineage => {
+      if (lineage.length === 0) {
+        return;
+      }
+
+      return fetchPatientLineage(lineage[0])
+      .then(patientLineage => {
+        return fetchContacts(lineage.concat(patientLineage))
+          .then(contacts => mergeLineagesIntoDoc(lineage, contacts, patientLineage));
       });
+    });
+
+    return Promise.all(hydratedDocs);
   };
 
   const fetchDocs = function(ids) {
@@ -233,7 +239,8 @@ module.exports = function(Promise, DB) {
      * @param {String} id The id of the doc
      * @returns {Promise} A promise to return the hydrated doc.
      */
-    fetchHydratedDoc: id => fetchHydratedDocs([id])
+    fetchHydratedDoc: id => fetchLineageByIds([id])
+      .then(lineages => hydrateDocsFromLineages(lineages))
       .then(result => result[0] || fetchDoc(id)),
 
     /**
@@ -248,8 +255,15 @@ module.exports = function(Promise, DB) {
       }
     
       const ids = docs.map(doc => doc._id);
-      return fetchHydratedDocs(ids)
-        .then(results => results.map((result, index) => result || docs[index]));
+      return fetchLineageByIds(ids, false)
+        .then(lineagesWithoutSelf => {
+          lineagesWithoutSelf.forEach((lineage, index) => {
+            const deepCopyOfDoc = JSON.parse(JSON.stringify(docs[index]));
+            lineage.unshift(deepCopyOfDoc);
+          });
+          return lineagesWithoutSelf;
+        })
+        .then(lineages => hydrateDocsFromLineages(lineages));
     },
 
     /**
@@ -280,9 +294,9 @@ module.exports = function(Promise, DB) {
      * @param {String} id The id of a document
      * @returns {Object[]} An array of documents.
      */
-    fetchLineageById,
+    fetchLineageById: id => fetchLineageById(id),
 
-    fetchLineageByIds,
+    fetchLineageByIds: ids => fetchLineageByIds(ids),
     minifyLineage,
     fillContactsInDocs,
     fillParentsInDocs,
