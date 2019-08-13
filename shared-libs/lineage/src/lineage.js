@@ -254,7 +254,7 @@ module.exports = function(Promise, DB) {
         return Promise.resolve([]);
       }
     
-      const ids = docs.map(doc => doc._id);
+      const ids = docs.map(doc => doc._id || doc.id);
       return fetchLineageByIds(ids, false)
         .then(lineagesWithoutSelf => {
           lineagesWithoutSelf.forEach((lineage, index) => {
