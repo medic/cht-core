@@ -7,6 +7,7 @@ The Core Framework of the Community Health Toolkit is powered by people like you
   - [Submitting code](#submitting-code)
   - [Disclosing vulnerabilities](#disclosing-vulnerabilities)
   - [Improving our documentation](#improving-our-documentation)
+  - [Code of conduct](#code-of-conduct)
 
 ## Communication
 We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://communityhealthtoolkit.org/forum) about the change you want to make before you start on code. Our Community Forum is especially helpful is you are a new contributor or find yourself unsure how to move forward with an issue.
@@ -79,9 +80,15 @@ If you believe you've found a security vulnerability in one of our products or p
 - Your name/handle and a link for recognition in our Hall of Fame.
 
 ### Improving our documentation
+
+**Note:** medic-docs does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submiting a pull request (PR) with any suggested changes. 
+
 Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md) then open a pull request with your suggested changes or additions.
 Want to talk about Documentation generally? Join our [Community Forum](https://communityhealthtoolkit.org/forum)!
 
+### Code of Conduct
+
+All maintainers and contributors are required to act according to our [Code of Conduct](https://github.com/medic/medic/blob/master/CODE_OF_CONDUCT.md). Thank you for your help building a positive community and a safe environment for everyone.
 
 #### License
 The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.
