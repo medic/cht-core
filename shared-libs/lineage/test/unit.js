@@ -305,12 +305,13 @@ describe('Lineage', function() {
     });
 
     it('works on docs without contacts or parents', function() {
+      query.resolves({ rows: [] });
       const docs = [
         { _id: 'a' },
         { _id: 'b' },
       ];
 
-      return lineage.hydrateDocs(docs).then((hydratedDocs) => {
+      return lineage.hydrateDocs(docs).then(hydratedDocs => {
         chai.expect(hydratedDocs).to.deep.equal(docs);
       });
     });

@@ -341,10 +341,10 @@ const deleteDocs = ids => {
   });
 };
 
-describe('Lineage', function() {
+describe('Lineage', () => {
   let lineage;
 
-  before(function() {
+  before(() => {
     return memdownMedic('../..')
       .then(database => {
         db = database;
@@ -353,13 +353,13 @@ describe('Lineage', function() {
       });
   });
 
-  after(function() {
+  after(() => {
     const docIds = fixtures.map(doc => doc._id);
     return deleteDocs(docIds);
   });
 
-  describe('fetchLineageById', function() {
-    it('returns correct lineage', function() {
+  describe('fetchLineageById', () => {
+    it('returns correct lineage', () => {
       return lineage.fetchLineageById(one_parent._id).then(result => {
         chai.expect(result).to.have.lengthOf(2);
         chai.expect(result[0]).excluding('_rev').to.deep.equal(one_parent);
@@ -368,8 +368,8 @@ describe('Lineage', function() {
     });
   });
 
-  describe('fetchLineageByIds', function() {
-    it('returns correct lineages', function() {
+  describe('fetchLineageByIds', () => {
+    it('returns correct lineages', () => {
       return lineage.fetchLineageByIds([one_parent._id]).then(result => {
         chai.expect(result).to.have.lengthOf(1);
         chai.expect(result[0]).to.have.lengthOf(2);
@@ -380,8 +380,8 @@ describe('Lineage', function() {
     });
   });
 
-  describe('fetchContacts', function() {
-    it('clones any reused contacts', function() {
+  describe('fetchContacts', () => {
+    it('clones any reused contacts', () => {
       const lineageDocs = [ circular_chw, circular_area ];
       return lineage.fetchContacts(lineageDocs).then(result => {
         chai.expect(result[0]._id).to.equal(circular_chw._id);
@@ -390,8 +390,8 @@ describe('Lineage', function() {
     });
   });
 
-  describe('fetchHydratedDoc', function() {
-    it('returns errors from query', function() {
+  describe('fetchHydratedDoc', () => {
+    it('returns errors from query', () => {
       return lineage.fetchHydratedDoc('abc').then(
         () => {
           throw new Error('should have thrown a 404');
@@ -402,13 +402,13 @@ describe('Lineage', function() {
       );
     });
 
-    it('returns unmodified doc when there is no lineage and no contact', function() {
+    it('returns unmodified doc when there is no lineage and no contact', () => {
       return lineage.fetchHydratedDoc('no_lineageContact').then(actual => {
         chai.expect(actual).excluding('_rev').to.deep.equal(no_lineageContact);
       });
     });
 
-    it('handles doc with unknown parent by leaving just the stub', function() {
+    it('handles doc with unknown parent by leaving just the stub', () => {
       return lineage.fetchHydratedDoc(stub_parents._id).then(actual => {
         chai.expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: stub_parents._id,
@@ -422,7 +422,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('handles doc with unknown contact by leaving just the stub', function() {
+    it('handles doc with unknown contact by leaving just the stub', () => {
       return lineage.fetchHydratedDoc(stub_contacts._id).then(actual => {
         chai.expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: stub_contacts._id,
@@ -436,13 +436,13 @@ describe('Lineage', function() {
       });
     });
 
-    it('handles missing contacts', function() {
+    it('handles missing contacts', () => {
       return lineage.fetchHydratedDoc(no_contact._id).then(actual => {
         chai.expect(actual).excluding('_rev').to.deep.equal(no_contact);
       });
     });
 
-    it('attaches the full lineage for reports', function() {
+    it('attaches the full lineage for reports', () => {
       return lineage.fetchHydratedDoc(report._id).then(actual => {
         chai.assert.checkDeepProperties(actual, {
           form: 'A',
@@ -535,7 +535,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('attaches the contacts', function() {
+    it('attaches the contacts', () => {
       return lineage.fetchHydratedDoc(place._id).then(actual => {
         chai.assert.checkDeepProperties(actual, {
           name: place.name,
@@ -553,7 +553,7 @@ describe('Lineage', function() {
     });
 
     // This is a classic use-case: report from CHW who is the contact for their own area
-    it('attaches re-used contacts, minify handles the circular references', function() {
+    it('attaches re-used contacts, minify handles the circular references', () => {
       return lineage.fetchHydratedDoc(circular_report._id).then(actual => {
         // The contact and the contact's parent's contact are the hydrated CHW
         chai.expect(actual.contact.parent.contact.hydrated).to.equal(true);
@@ -565,7 +565,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('minifying the result returns the starting document for a report', function() {
+    it('minifying the result returns the starting document for a report', () => {
       const reportCopy = cloneDeep(report);
       return lineage.fetchHydratedDoc(reportCopy._id).then(actual => {
         lineage.minify(actual);
@@ -573,7 +573,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('minifying the result returns the starting document for a place', function() {
+    it('minifying the result returns the starting document for a place', () => {
       const placeCopy = cloneDeep(place);
       return lineage.fetchHydratedDoc(placeCopy._id).then(actual => {
         lineage.minify(actual);
@@ -581,13 +581,13 @@ describe('Lineage', function() {
       });
     });
 
-    it('works for SMS reports', function() {
+    it('works for SMS reports', () => {
       return lineage.fetchHydratedDoc(sms_doc._id).then(actual => {
         chai.expect(actual).excluding('_rev').to.deep.equal(sms_doc);
       });
     });
 
-    it('handles doc with empty-object parent by removing it', function() {
+    it('handles doc with empty-object parent by removing it', () => {
       return lineage.fetchHydratedDoc(emptyObjectParent._id).then(actual => {
         chai.expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: emptyObjectParent._id,
@@ -599,8 +599,8 @@ describe('Lineage', function() {
     });
   });
 
-  describe('hydrateDocs', function() {
-    it('binds contacts and parents', function() {
+  describe('hydrateDocs', () => {
+    it('binds contacts and parents', () => {
       const docs = [ report, place ];
 
       return lineage.hydrateDocs(docs)
@@ -634,7 +634,7 @@ describe('Lineage', function() {
         });
     });
 
-    it('ignores db-fetch errors', function() {
+    it('ignores db-fetch errors', () => {
       const docs = [ report, place ];
 
       return deleteDocs([place_parent._id, report_parentContact._id])
@@ -671,7 +671,7 @@ describe('Lineage', function() {
         });
     });
 
-    it('minifying the result returns the starting documents', function() {
+    it('minifying the result returns the starting documents', () => {
       const docs = [ cloneDeep(report), cloneDeep(place) ];
 
       return lineage.hydrateDocs(docs)
@@ -683,19 +683,19 @@ describe('Lineage', function() {
         });
     });
 
-    it('processing a doc with itself as a parent errors out', function() {
+    it('processing a doc with itself as a parent errors out', () => {
       const docs = [ cloneDeep(child_is_parent) ];
 
       chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
 
-    it('processing a doc with itself as a grandparent errors out', function() {
+    it('processing a doc with itself as a grandparent errors out', () => {
       const docs = [ cloneDeep(child_is_grandparent) ];
 
       chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
 
-    it('processing a doc with itself as a grandparent referenced through intermediate docs errors out', function() {
+    it('processing a doc with itself as a grandparent referenced through intermediate docs errors out', () => {
       const docs = [ cloneDeep(child_is_great_grandparent), cloneDeep(cigg_parent), cloneDeep(cigg_grandparent) ];
 
       chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;

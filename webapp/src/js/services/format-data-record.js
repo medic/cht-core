@@ -43,11 +43,7 @@ angular
             return;
           }
           if (result.rows.length > 1) {
-            $log.warn(
-              'More than one patient person document for shortcode "' +
-                patientId +
-                '"'
-            );
+            $log.warn(`More than one patient person document for shortcode "${patientId}"`);
           }
           return lineage.fetchHydratedDoc(result.rows[0].id);
         });
