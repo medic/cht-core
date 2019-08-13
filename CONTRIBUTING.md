@@ -81,7 +81,7 @@ If you believe you've found a security vulnerability in one of our products or p
 
 ### Improving our documentation
 
-**Note:** medic-docs does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submiting a pull request (PR) with any suggested changes. 
+**Note:** medic-docs does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submitting a pull request (PR) with any suggested changes. 
 
 Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md) then open a pull request with your suggested changes or additions.
 Want to talk about Documentation generally? Join our [Community Forum](https://communityhealthtoolkit.org/forum)!
