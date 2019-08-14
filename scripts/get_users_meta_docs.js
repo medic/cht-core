@@ -25,7 +25,7 @@ Options:
     --type        Meta document type to fetch. 
 
 Example:
-    ${process.argv[1]} --interactive --type telemetry http://admin:pass@localhost:5984/medic-users-meta
+    ${process.argv[1]} --mode interactive --type telemetry http://admin:pass@localhost:5984/medic-users-meta
 `);
   process.exit(0);
 }
@@ -36,21 +36,21 @@ const couchUrl = argv['_'][0] || 'http://admin:pass@localhost:5984/medic-users-m
 
 const db = PouchDB(couchUrl);
 
-var nextOptions = { 
+const nextOptions = { 
   include_docs: true,
   limit : 100,
   startkey: `${type}-`,
   endkey: `${type}-\ufff0`,
 };
 
-var prevOptions = { 
+const prevOptions = { 
   include_docs: true,
   limit : 100,
   startkey: `${type}-`,
   endkey: `${type}-\ufff0`,
 };
 
-var prevStartKeys = [];
+let prevStartKeys = [];
 
 const fetchNextDocs = async () => {
   const response = await db.allDocs(nextOptions);
@@ -127,10 +127,12 @@ const actionQuestions = [{
         console.log('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
       } else {
         console.log(JSON.stringify(docs[docIndex], null, 2));
-        for (;;) {
-          const response = await inquirer.prompt(actionQuestions);
 
-          var printMessage = false;
+        let response;
+        do {
+          response = await inquirer.prompt(actionQuestions);
+
+          let printMessage = false;
           if (response.action === 'next') {
             if (++docIndex > docs.length - 1) {
               const nextDocs = await fetchNextDocs();
@@ -164,17 +166,29 @@ const actionQuestions = [{
               console.log('\x1b[31m%s\x1b[0m', `No previous document. This is the first one`);
             }
           } else if (response.action === 'save_current') {
-            let filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
+            const filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
             fs.writeFileSync(filePath, JSON.stringify(docs[docIndex], null, 2));
             console.log('\x1b[31m%s\x1b[0m', `Current document saved to ${filePath}`);
           } else if (response.action === 'save_all') {
-            let filePath = path.join(path.resolve(__dirname), `${type}.json`);
-            fs.writeFileSync(filePath, JSON.stringify(docs, null, 2));
+            const filePath = path.join(path.resolve(__dirname), `${type}.json`);
+
+            nextOptions.startkey = `${type}-`;
+            nextOptions.skip = 0;
+            for (let i = 0;; i++) {
+              docs = await fetchNextDocs();
+              if (docs.length > 0) {
+                if (i === 0) {
+                  fs.writeFileSync(filePath, '[');
+                }
+                docs.forEach(doc => fs.appendFileSync(filePath, JSON.stringify(doc, null, 2) + ','));
+              } else {
+                fs.appendFileSync(filePath, '{}]');
+                break;
+              }
+            }
             console.log('\x1b[31m%s\x1b[0m', `Documents saved to ${filePath}`);
-          } else if (response.action === 'quit') {  
-            break;
           }  
-        }
+        } while (response.action !== 'quit');
       }
     }
   } catch(err) {
