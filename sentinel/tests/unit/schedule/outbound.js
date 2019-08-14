@@ -93,7 +93,44 @@ describe('outbound schedule', () => {
         });
     });
 
-    it('Errors if the task fails to resolve a document for some other reason apart from deletion', () => {
+    it('returns tasks separately if their doc was deleted', () => {
+      const task = {
+        _id: 'task:outbound:some_doc_id',
+        doc_id: 'some_doc_id',
+        queue: ['some', 'task']
+      };
+      const error = {
+        key: 'some_doc_id',
+        value: {
+          deleted: true
+        },
+        doc: null
+      };
+
+      const dbSentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
+      const dbMedicAllDocs = sinon.stub(db.medic, 'allDocs');
+
+      dbSentinelAllDocs.resolves({
+        rows: [{
+          doc: task
+        }]
+      });
+
+      dbMedicAllDocs.resolves({
+        rows: [error]
+      });
+
+      return outbound.__get__('queuedTasks')()
+        .then(results => {
+          assert.equal(lineage.callCount, 0);
+          assert.deepEqual(results, {
+            validTasks: [],
+            invalidTasks: [{task: task, row: error}]
+          });
+        });
+    });
+
+    it('Errors if the task fails to resolve a document for some other reason', () => {
            const task = {
         _id: 'task:outbound:some_doc_id',
         doc_id: 'some_doc_id',
