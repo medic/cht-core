@@ -2,7 +2,8 @@ const auth = require('../auth'),
       serverUtils = require('../server-utils'),
       settingsService = require('../services/settings'),
       objectPath = require('object-path'),
-      Ajv = require('ajv');
+      Ajv = require('ajv'),
+      _ = require('underscore');
 
 const ajv = new Ajv({ allErrors: true });
 const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
@@ -44,7 +45,10 @@ module.exports = {
       })
       .then(() => settingsService.getSchema())
       .then(schema => {
-        const valid = ajv.validate(JSON.parse(schema), req.body);
+        if ('roles' in req.body){
+          schema.references.roles.items.enum = _.union(Object.keys(req.body.roles), schema.references.roles.items.enum);
+        }
+        const valid = ajv.validate(schema, req.body);
         if (!valid){
           throw {
             code: 400,

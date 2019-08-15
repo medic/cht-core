@@ -30,7 +30,7 @@ const doExtend = (target, source) => {
 module.exports = {
   getSchema: () => {
     return db.medic.get('_design/medic-schema')
-      .then(doc => doc.schema.app_settings)
+      .then(doc => JSON.parse(doc.schema.app_settings))
       .catch(err => {
         throw err;
       });
@@ -58,7 +58,7 @@ module.exports = {
         if (err.status === 404) {
           return { _id: 'settings' };
         }
-        throw err;
+        // throw err;
       })
       .then(doc => {
         if (!doc.settings) {
