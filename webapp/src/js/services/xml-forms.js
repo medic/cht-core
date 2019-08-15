@@ -7,7 +7,7 @@ angular.module('inboxServices').factory('XmlForms',
     $q,
     Auth,
     Changes,
-    ContactSchema,
+    ContactTypes,
     DB,
     UserContact,
     XmlFormsContextUtils
@@ -59,6 +59,30 @@ angular.module('inboxServices').factory('XmlForms',
         });
     };
 
+    const filterContactTypes = (context, doc) => {
+      if (!doc) {
+        return $q.resolve(true);
+      }
+      const contactType = doc.contact_type || doc.type;
+      return ContactTypes.get(contactType).then(type => {
+        if (!type) {
+          // not a contact type
+          return true;
+        }
+        if (type.person && (
+            (typeof context.person !== 'undefined' && !context.person) ||
+            (typeof context.person === 'undefined' && context.place))) {
+          return false;
+        }
+        if (!type.person && (
+            (typeof context.place !== 'undefined' && !context.place) ||
+            (typeof context.place === 'undefined' && context.person))) {
+          return false;
+        }
+        return true;
+      });
+    };
+
     var filter = function(form, options, user) {
       if (!options.includeCollect && form.context && form.context.collect) {
         return false;
@@ -80,35 +104,25 @@ angular.module('inboxServices').factory('XmlForms',
         return true;
       }
 
-      if (options.doc) {
-        var contactType = options.doc.type;
-        if (contactType === 'person' && (
-            (typeof form.context.person !== 'undefined' && !form.context.person) ||
-            (typeof form.context.person === 'undefined' && form.context.place))) {
+      return filterContactTypes(form.context, options.doc).then(validSoFar => {
+        if (!validSoFar) {
           return false;
         }
-        if (ContactSchema.getPlaceTypes().indexOf(contactType) !== -1 && (
-            (typeof form.context.place !== 'undefined' && !form.context.place) ||
-            (typeof form.context.place === 'undefined' && form.context.person))) {
+        if (form.context.expression &&
+            !evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
           return false;
         }
-      }
-
-      if (form.context.expression &&
-          !evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
-        return false;
-      }
-
-      if (!form.context.permission) {
-        return true;
-      }
-      return Auth(form.context.permission)
-        .then(function() {
+        if (!form.context.permission) {
           return true;
-        })
-        .catch(function() {
-          return false;
-        });
+        }
+        return Auth(form.context.permission)
+          .then(function() {
+            return true;
+          })
+          .catch(function() {
+            return false;
+          });
+      });
     };
 
     var notifyAll = function(forms) {

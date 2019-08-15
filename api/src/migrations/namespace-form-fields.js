@@ -1,6 +1,4 @@
-/**
- * For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
- */
+// For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
 
 var async = require('async'),
   _ = require('underscore'),

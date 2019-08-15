@@ -53,6 +53,10 @@ require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
 
+// directives we borrow from webapp
+angular.module('inboxDirectives', []);
+require('../../../webapp/src/js/directives/auth');
+
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
@@ -79,7 +83,7 @@ require('../../../webapp/src/js/services/cache');
 require('../../../webapp/src/js/services/calendar-interval');
 require('../../../webapp/src/js/services/changes');
 require('../../../webapp/src/js/services/contact-muted');
-require('../../../webapp/src/js/services/contact-schema');
+require('../../../webapp/src/js/services/contact-types');
 require('../../../webapp/src/js/services/contact-view-model-generator');
 require('../../../webapp/src/js/services/db');
 require('../../../webapp/src/js/services/export');
@@ -117,6 +121,7 @@ angular.module('adminApp', [
   'controllers',
   'directives',
   'filters',
+  'inboxDirectives',
   'inboxFilters',
   'inboxServices',
   'ipCookie',
@@ -146,7 +151,7 @@ angular.module('adminApp').config(function(
   $ngReduxProvider,
   $stateProvider,
   $translateProvider,
-  Reducers
+  RootReducer
 ) {
   'ngInject';
 
@@ -159,7 +164,7 @@ angular.module('adminApp').config(function(
   $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
 
-  $ngReduxProvider.createStoreWith(Reducers, []);
+  $ngReduxProvider.createStoreWith(RootReducer, []);
 
   $stateProvider
     .state('settings', {

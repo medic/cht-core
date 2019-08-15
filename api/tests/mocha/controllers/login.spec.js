@@ -204,7 +204,7 @@ describe('login controller', () => {
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.include('<form id="form" action="/lg/login" method="POST">');
+        chai.expect(send.args[0][0]).to.include('<form id="form" action="/medic/login" method="POST">');
       });
     });
   });
@@ -272,7 +272,7 @@ describe('login controller', () => {
       const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(false);
+      const isOnlineOnly = sinon.stub(auth, 'isOnlineOnly').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -283,7 +283,7 @@ describe('login controller', () => {
         chai.expect(post.args[0][0].auth.pass).to.equal('p4ss');
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
-        chai.expect(hasAllPermissions.callCount).to.equal(1);
+        chai.expect(isOnlineOnly.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.deep.equal('/');
@@ -322,7 +322,8 @@ describe('login controller', () => {
       });
     });
 
-    it('redict admin users to admin app after successful login', () => {
+    // probably an invalid config but we should handle it gracefully
+    it('redirect offline admin user to webapp after successful login - #5785', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
         statusCode: 200,
@@ -333,6 +334,33 @@ describe('login controller', () => {
       const status = sinon.stub(res, 'status').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      const isOnlineOnly = sinon.stub(auth, 'isOnlineOnly').returns(false);
+      const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(hasAllPermissions.callCount).to.equal(0);
+        chai.expect(isOnlineOnly.callCount).to.equal(1);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(302);
+        chai.expect(send.args[0][0]).to.equal('/');
+      });
+    });
+
+    it('redirect admin users to admin app after successful login', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const send = sinon.stub(res, 'send');
+      const status = sinon.stub(res, 'status').returns(res);
+      const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      const isOnlineOnly = sinon.stub(auth, 'isOnlineOnly').returns(true);
       const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
@@ -340,9 +368,10 @@ describe('login controller', () => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(hasAllPermissions.callCount).to.equal(1);
+        chai.expect(isOnlineOnly.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
-        chai.expect(send.args[0][0]).to.deep.equal('/admin/');
+        chai.expect(send.args[0][0]).to.equal('/admin/');
       });
     });
   });

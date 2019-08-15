@@ -28,7 +28,7 @@ describe('InboxCtrl controller', () => {
     };
 
     session = {
-      init: sinon.stub(),
+      init: sinon.stub().resolves(),
       isAdmin: sinon.stub(),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
@@ -191,8 +191,7 @@ describe('InboxCtrl controller', () => {
     chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
   });
 
-  it('should watch changes in facilities, translations, ddoc and user context', () => {
-    chai.expect(changesListener['inbox-facilities']).to.be.an('object');
+  it('should watch changes in translations, ddoc and user context', () => {
     chai.expect(changesListener['inbox-translations']).to.be.an('object');
     chai.expect(changesListener['inbox-ddoc']).to.be.an('object');
     chai.expect(changesListener['inbox-user-context']).to.be.an('object');
@@ -219,6 +218,6 @@ describe('InboxCtrl controller', () => {
 
   it('InboxUserContent Changes listener callback should check current session', () => {
     changesListener['inbox-user-context'].callback();
-    chai.expect(session.init.callCount).to.equal(2);
+    chai.expect(session.init.callCount).to.equal(1);
   });
 });

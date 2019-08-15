@@ -95,19 +95,24 @@ describe('infodoc', () => {
     });
 
     it('should generate infodocs when all are new', () => {
-      const changes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+      const changes = [
+        { id: 'a', doc: {_id: 'a', _rev: '1-abc'}},
+        { id: 'b', doc: {_id: 'b', _rev: '1-abc'}},
+        { id: 'c', doc: {_id: 'c', _rev: '1-abc'}}
+      ];
 
       sinon.stub(db.sentinel, 'allDocs')
-        .resolves({ rows: changes.map(doc => ({ key: `${doc.id}-info`, error: 'not_found' }))});
+        .resolves({ rows: changes.map(change => ({ key: `${change.id}-info`, error: 'not_found' }))});
       sinon.stub(db.medic, 'allDocs')
-        .resolves({ rows: changes.map(doc => ({ key: `${doc.id}-info`, error: 'not_found' }))});
+        .resolves({ rows: changes.map(change => ({ key: `${change.id}-info`, error: 'not_found' }))});
 
       return infodoc.bulkGet(changes).then(result => {
-        assert.deepEqual(result, [
-          { _id: 'a-info', type: 'info', doc_id: 'a', initial_replication_date: 'unknown'},
-          { _id: 'b-info', type: 'info', doc_id: 'b', initial_replication_date: 'unknown' },
-          { _id: 'c-info', type: 'info', doc_id: 'c', initial_replication_date: 'unknown' }
-        ]);
+        assert.deepInclude(result[0], { _id: 'a-info', type: 'info', doc_id: 'a' });
+        assert.ok(result[0].initial_replication_date instanceof Date);
+        assert.deepInclude(result[1], { _id: 'b-info', type: 'info', doc_id: 'b' });
+        assert.ok(result[1].initial_replication_date instanceof Date);
+        assert.deepInclude(result[2], { _id: 'c-info', type: 'info', doc_id: 'c' });
+        assert.ok(result[2].initial_replication_date instanceof Date);
 
         assert.equal(db.sentinel.allDocs.callCount, 1);
         assert.deepEqual(db.sentinel.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
@@ -116,8 +121,30 @@ describe('infodoc', () => {
       });
     });
 
+    it('sets the initial_replication_date to unknown if its not the first version', () => {
+      const changes = [
+        { id: 'a', doc: {_id: 'a', _rev: '2-abc'}},
+      ];
+
+      sinon.stub(db.sentinel, 'allDocs')
+        .resolves({ rows: changes.map(change => ({ key: `${change.id}-info`, error: 'not_found' }))});
+      sinon.stub(db.medic, 'allDocs')
+        .resolves({ rows: changes.map(change => ({ key: `${change.id}-info`, error: 'not_found' }))});
+
+      return infodoc.bulkGet(changes).then(result => {
+        assert.deepEqual(result, [{ _id: 'a-info', type: 'info', doc_id: 'a', initial_replication_date: 'unknown' }]);
+      });
+    });
+
     it('should work with a mix of all', () => {
-      const changes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }];
+      const changes = [
+        { id: 'a', doc: {_id: 'a', _rev: '1-abc' }},
+        { id: 'b', doc: {_id: 'b', _rev: '1-abc' }},
+        { id: 'c', doc: {_id: 'c', _rev: '1-abc' }},
+        { id: 'd', doc: {_id: 'd', _rev: '1-abc' }},
+        { id: 'e', doc: {_id: 'e', _rev: '1-abc' }},
+        { id: 'f', doc: {_id: 'f', _rev: '1-abc' }}
+      ];
 
       sinon.stub(db.sentinel, 'allDocs')
         .resolves({ rows: [
@@ -137,14 +164,12 @@ describe('infodoc', () => {
           ]});
 
       return infodoc.bulkGet(changes).then(result => {
-        assert.deepEqual(result, [
-          { _id: 'a-info', _rev: 'a-r', doc_id: 'a' },
-          { _id: 'd-info', _rev: 'd-r', doc_id: 'd' },
-          { _id: 'b-info', _rev: 'b-r', doc_id: 'b', legacy: true },
-          { _id: 'c-info', doc_id: 'c', initial_replication_date: 'unknown', type: 'info' },
-          { _id: 'e-info', doc_id: 'e', initial_replication_date: 'unknown', type: 'info' },
-          { _id: 'f-info', _rev: 'f-r', doc_id: 'f', legacy: true },
-        ]);
+        assert.deepInclude(result[0], { _id: 'a-info', _rev: 'a-r', doc_id: 'a' });
+        assert.deepInclude(result[1], { _id: 'd-info', _rev: 'd-r', doc_id: 'd' });
+        assert.deepInclude(result[2], { _id: 'b-info', _rev: 'b-r', doc_id: 'b', legacy: true });
+        assert.deepInclude(result[3], { _id: 'c-info', doc_id: 'c', type: 'info' });
+        assert.deepInclude(result[4], { _id: 'e-info', doc_id: 'e', type: 'info' });
+        assert.deepInclude(result[5], { _id: 'f-info', _rev: 'f-r', doc_id: 'f', legacy: true });
 
         assert.equal(db.sentinel.allDocs.callCount, 1);
         assert.deepEqual(

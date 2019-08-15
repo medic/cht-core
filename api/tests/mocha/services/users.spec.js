@@ -754,6 +754,7 @@ describe('Users service', () => {
           _id: 'efg'
         }
       });
+      sinon.stub(people, 'isAPerson').returns(true);
       service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Contact is not within place.');
@@ -780,6 +781,7 @@ describe('Users service', () => {
           _id: 'efg'
         }
       });
+      sinon.stub(people, 'isAPerson').returns(true);
       sinon.stub(service, '_createContact').resolves();
       sinon.stub(service, '_storeUpdatedPlace').resolves();
       sinon.stub(service, '_createUser').resolves();

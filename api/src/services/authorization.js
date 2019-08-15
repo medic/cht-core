@@ -191,9 +191,8 @@ const getAuthorizationContext = (userCtx) => {
   });
 };
 
-/**
- * Method to ensure users don't see reports submitted by their boss about the user
- */
+
+// Method to ensure users don't see reports submitted by their boss about the user
 const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   if (!subject || !submitter) {
     return false;
@@ -233,7 +232,7 @@ const getAllowedDocIds = (feed) => {
       }
     });
 
-    return validatedIds;
+    return _.uniq(validatedIds);
   });
 };
 

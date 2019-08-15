@@ -4,6 +4,7 @@ const _ = require('underscore'),
   http = require('http'),
   path = require('path'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
+const specReporter = require('jasmine-spec-reporter').SpecReporter;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -15,6 +16,7 @@ const db = new PouchDB(
 );
 
 let originalSettings;
+let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -28,7 +30,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
   const deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
-  options.port = constants.API_PORT;
+  options.port = options.port || constants.API_PORT;
   if (!noAuth) {
     options.auth = options.auth || auth.user + ':' + auth.pass;
   }
@@ -56,9 +58,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
         body = JSON.parse(body);
         if (body.error) {
           const err = new Error(
-            `Request failed: ${options.path},\n  body: ${JSON.stringify(
-              options.body
-            )}\n  response: ${JSON.stringify(body)}`
+            `Request failed: ${JSON.stringify(options)}\n  response: ${JSON.stringify(body)}`
           );
           err.responseBody = body;
           err.statusCode = res.statusCode;
@@ -74,7 +74,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
         if (body === 'Server error') {
           errorMessage += 'Check medic-api logs for details.';
         } else {
-          errorMessage += `Response body: ${body}`;
+          errorMessage += `Response status: ${res.statusCode}, body: ${body}`;
         }
 
         const err = new Error(errorMessage);
@@ -148,13 +148,12 @@ const revertSettings = () => {
   });
 };
 
+const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
+
 const deleteAll = (except = []) => {
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
-    doc =>
-      ['translations', 'translations-backup', 'user-settings', 'info'].includes(
-        doc.type
-      ),
+    doc => PERMANENT_TYPES.includes(doc.type),
     'service-worker-meta',
     constants.USER_CONTACT_ID,
     'migration-log',
@@ -162,6 +161,7 @@ const deleteAll = (except = []) => {
     'branding',
     'partners',
     'settings',
+    /^form:contact:/,
     /^_design/
   );
   const ignoreFns = [];
@@ -197,7 +197,9 @@ const deleteAll = (except = []) => {
     )
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
-      console.log(`Deleting docs: ${ids}`);
+      if (e2eDebug) {
+        console.log(`Deleting docs: ${ids}`);
+      }
       return module.exports
         .request({
           path: path.join('/', constants.DB_NAME, '_bulk_docs'),
@@ -206,7 +208,9 @@ const deleteAll = (except = []) => {
           headers: { 'content-type': 'application/json' },
         })
         .then(response => {
-          console.log(`Deleted docs: ${JSON.stringify(response)}`);
+          if (e2eDebug) {
+            console.log(`Deleted docs: ${JSON.stringify(response)}`);
+          }
         });
     });
 };
@@ -333,6 +337,13 @@ module.exports = {
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '_');
     },
+  }),
+
+  specReporter: new specReporter({
+    spec: {
+      displayStacktrace: true,
+      displayDuration: true
+    }
   }),
 
   requestOnTestDb: (options, debug, notJson) => {
@@ -560,4 +571,6 @@ module.exports = {
   // @param {Array} usernames - list of users to be deleted
   // @return {Promise}
   deleteUsers: deleteUsers,
+
+  setDebug: debug => e2eDebug = debug
 };

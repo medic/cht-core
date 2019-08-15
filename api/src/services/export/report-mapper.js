@@ -5,21 +5,19 @@ const _ = require('underscore'),
       search = require('@medic/search')(Promise, db.medic),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
-/**
- * Flattens a given object into an object where the keys are dot-notation
- * paths to the flattened values:
- * {
- *   "foo": {
- *     "bar": "smang"
- *   }
- * }
- *
- * becomes:
- *
- * {
- *   "foo.bar": "smang"
- * }
- */
+// Flattens a given object into an object where the keys are dot-notation
+// paths to the flattened values:
+// {
+//   "foo": {
+//     "bar": "smang"
+//   }
+// }
+//
+// becomes:
+//
+// {
+//   "foo.bar": "smang"
+// }
 const flatten = (fields, prepend=[]) => {
   return Object.keys(fields).reduce((acc, k) => {
     const path = [...prepend, k];

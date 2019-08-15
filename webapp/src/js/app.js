@@ -70,17 +70,17 @@ const minifySelected = selected => {
 
   docsToMinify.forEach(lineage.minify);
 };
-const makeLoggable = object => {
-  if (Array.isArray(object.selected)) {
-    object.selected.forEach(minifySelected);
-  } else {
-    minifySelected(object.selected);
+const makeSelectedLoggable = selected => {
+  if (Array.isArray(selected)) {
+    selected.forEach(minifySelected);
+  } else if (selected) {
+    minifySelected(selected);
   }
 };
-const reduxLoggerConfig = {
+const createReduxLoggerConfig = Selectors => ({
   actionTransformer: function(action) {
     const loggableAction = cloneDeep(action);
-    makeLoggable(loggableAction.payload);
+    makeSelectedLoggable(loggableAction.payload && loggableAction.payload.selected);
     try {
       JSON.stringify(loggableAction);
     } catch(error) {
@@ -90,7 +90,10 @@ const reduxLoggerConfig = {
   },
   stateTransformer: function(state) {
     let loggableState = cloneDeep(state);
-    makeLoggable(loggableState);
+    ['Analytics', 'Contact', 'Message', 'Reports', 'Task'].forEach(module => {
+      const fnName = 'getSelected' + module;
+      makeSelectedLoggable(Selectors[fnName](loggableState));
+    });
     try {
       JSON.stringify(loggableState);
     } catch(error) {
@@ -99,7 +102,7 @@ const reduxLoggerConfig = {
     return loggableState;
   },
   collapsed: true
-};
+});
 
 (function() {
   'use strict';
@@ -126,7 +129,8 @@ const reduxLoggerConfig = {
     $stateProvider,
     $translateProvider,
     $urlRouterProvider,
-    Reducers
+    RootReducer,
+    Selectors
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
@@ -148,9 +152,9 @@ const reduxLoggerConfig = {
     var middlewares = [reduxThunk];
     if (isDevelopment) {
       var reduxLogger = require('redux-logger');
-      middlewares.push(reduxLogger.createLogger(reduxLoggerConfig));
+      middlewares.push(reduxLogger.createLogger(createReduxLoggerConfig(Selectors)));
     }
-    $ngReduxProvider.createStoreWith(Reducers, middlewares);
+    $ngReduxProvider.createStoreWith(RootReducer, middlewares);
   });
 
   angular.module('inboxApp').constant('APP_CONFIG', {

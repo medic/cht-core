@@ -1,11 +1,16 @@
 describe('ContactChangeFilter service', () => {
 
   let service;
+  let contactTypesIncludes;
 
   beforeEach(() => {
+    contactTypesIncludes = sinon.stub().returns(true);
     module('inboxApp');
-    inject(_ContactChangeFilter_ => {
-      service = _ContactChangeFilter_;
+    module($provide => {
+      $provide.value('ContactTypes', { includes: contactTypesIncludes });
+    });
+    inject($injector => {
+      service = $injector.get('ContactChangeFilter');
     });
   });
 
@@ -33,7 +38,9 @@ describe('ContactChangeFilter service', () => {
   });
 
   describe('isRelevantContact', () => {
-    it('returns false when not a contact', () => {
+    it('returns false when not a contact type', () => {
+      contactTypesIncludes.returns(false);
+
       const change1 = { doc: { parent: { _id: '123'} } };
       const change2 = { doc: { parent: { _id: '123'}, type: 'data_record' } };
       const change3 = { doc: {} };

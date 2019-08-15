@@ -1,34 +1,46 @@
-var sinon = require('sinon'),
-    assert = require('chai').assert,
-    transitionUtils = require('../../src/transitions/utils');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const config = require('../../src/config');
+const transitionUtils = require('../../src/transitions/utils');
+const transition = require('../../src/transitions/generate_patient_id_on_people');
 
-var transition = require('../../src/transitions/generate_patient_id_on_people');
+const types = [
+  { id: 'person', person: true },
+  { id: 'place' }
+];
 
-describe('generate patient id on people', () => {
+describe('generate_patient_id_on_people transition', () => {
+  beforeEach(() => sinon.stub(config, 'get').returns(types));
   afterEach(() => sinon.restore());
 
-  it('Adds patient_id to people', () => {
+  it('adds patient_id to people', () => {
     sinon.stub(transitionUtils, 'addUniqueId');
     transition.onMatch({}, {}, {}, {});
     assert.equal(transitionUtils.addUniqueId.callCount, 1);
   });
 
-  it('Filter only accepts people without a patient_id', () => {
-    assert.equal(transition.filter({
-      type: 'person'
-    }), true);
+  describe('filter', () => {
 
-    assert.equal(transition.filter({
-      type: 'person',
-      patient_id: '12345'
-    }), false);
+    it('accepts person contact types', () => {
+      const doc = { type: 'person' };
+      assert.equal(!!transition.filter(doc), true);
+    });
 
-    assert.equal(transition.filter({
-      type: 'not-a-person'
-    }), false);
+    it('ignores docs that already have a patient_id', () => {
+      const doc = { type: 'person', patient_id: '12345' };
+      assert.equal(!!transition.filter(doc), false);
+    });
 
-    assert.equal(transition.filter({
-      no: 'type'
-    }), false);
+    it('ignores docs with unknown type', () => {
+      const doc = { };
+      assert.equal(!!transition.filter(doc), false);
+    });
+
+    it('ignores docs with place type', () => {
+      const doc = { type: 'clinic' };
+      assert.equal(!!transition.filter(doc), false);
+    });
+
   });
+
 });

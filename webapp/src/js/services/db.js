@@ -63,9 +63,6 @@ angular.module('inboxServices').factory('DB',
     };
 
     const get = ({ remote=isOnlineOnly, meta=false, usersMeta=false }={}) => {
-      if (!Session.userCtx()) {
-        return Session.navigateToLogin();
-      }
       const name = getDbName(remote, meta, usersMeta);
       if (!cache[name]) {
         cache[name] = pouchDB(name, getParams(remote, meta, usersMeta));

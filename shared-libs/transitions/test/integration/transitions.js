@@ -217,7 +217,7 @@ describe('functional transitions', () => {
     });
 
     it('should throw infodoc errors', done => {
-      const doc = { _id: 'my_id', type: 'data_record', form: 'v' };
+      const doc = { _id: 'my_id', _rev: '1-abc', type: 'data_record', form: 'v' };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
       sinon.stub(db.sentinel, 'get')
         .resolves({})
@@ -253,6 +253,7 @@ describe('functional transitions', () => {
 
       const doc = {
         _id: 'my_id',
+        _rev: '1-abc',
         reported_date: new Date().valueOf()
       };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
@@ -289,6 +290,7 @@ describe('functional transitions', () => {
 
       const doc = {
         _id: 'my_id',
+        _rev: '1-abc',
         form: 'V',
         from: '123456',
         type: 'data_record',
@@ -338,6 +340,7 @@ describe('functional transitions', () => {
 
       const doc = {
         _id: 'my_id',
+        _rev: '1-abc',
         form: 'V',
         from: '123456',
         type: 'data_record',
@@ -409,7 +412,9 @@ describe('functional transitions', () => {
 
       const docs = [
         {
-          id: 'has alert', //intentionally not _id
+          id: 'has alert', // intentionally not _id, just used to identify the doc later in assertions
+                           // in this scenario these docs have not yet been saved to Couch, coming straight
+                           // from the SMS api
           form: 'V',
           from: 'phone1',
           type: 'data_record',

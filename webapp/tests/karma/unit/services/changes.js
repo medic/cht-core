@@ -6,7 +6,7 @@ describe('Changes service', function() {
       changesCalls,
       log,
       dispatch,
-      getState,
+      getLastChangedDoc,
       session;
 
   var onProvider = function(db) {
@@ -33,6 +33,7 @@ describe('Changes service', function() {
     session = { isOnlineOnly: sinon.stub(), userCtx: sinon.stub().returns({ name: 'user' }) };
 
     module('inboxApp');
+    KarmaUtils.setupMockStore();
     module(function ($provide) {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.factory('DB', function() {
@@ -58,10 +59,10 @@ describe('Changes service', function() {
       });
       $provide.value('$log', log);
     });
-    inject(function(_Changes_, $ngRedux, Actions) {
+    inject(function(_Changes_, $ngRedux, GlobalActions, Selectors) {
       service = _Changes_;
-      dispatch = Actions($ngRedux.dispatch);
-      getState = $ngRedux.getState;
+      dispatch = GlobalActions($ngRedux.dispatch);
+      getLastChangedDoc = () => Selectors.getLastChangedDoc($ngRedux.getState());
       service().then(done);
     });
   });
@@ -301,25 +302,25 @@ describe('Changes service', function() {
         switch (change.id) {
           case '1':
             chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getState().lastChangedDoc._id).to.equal('2');
+            chai.expect(getLastChangedDoc()._id).to.equal('2');
             break;
           case '2':
             chai.expect(change.doc._id).to.equal('2');
             chai.expect(change.doc.data).to.equal(1);
-            chai.expect(getState().lastChangedDoc).to.equal(false);
+            chai.expect(getLastChangedDoc()).to.equal(false);
             break;
           case '3':
             chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getState().lastChangedDoc).to.equal(false);
+            chai.expect(getLastChangedDoc()).to.equal(false);
             break;
           case '4':
             chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getState().lastChangedDoc._id).to.equal('5');
+            chai.expect(getLastChangedDoc()._id).to.equal('5');
             break;
           case '5':
             chai.expect(change.doc._id).to.equal('5');
             chai.expect(change.doc.data).to.equal(2);
-            chai.expect(getState().lastChangedDoc).to.equal(false);
+            chai.expect(getLastChangedDoc()).to.equal(false);
             break;
           default:
             done('Received invalid change');
@@ -358,25 +359,25 @@ describe('Changes service', function() {
         switch (change.id) {
           case '1':
             chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getState().lastChangedDoc._id).to.equal('2');
+            chai.expect(getLastChangedDoc()._id).to.equal('2');
             break;
           case '2':
             chai.expect(change.doc._id).to.equal('2');
             chai.expect(change.doc.data).to.equal(0);
-            chai.expect(getState().lastChangedDoc).to.equal(false);
+            chai.expect(getLastChangedDoc()).to.equal(false);
             break;
           case '3':
             chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getState().lastChangedDoc).to.equal(false);
+            chai.expect(getLastChangedDoc()).to.equal(false);
             break;
           case '4':
             chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getState().lastChangedDoc._id).to.equal('5');
+            chai.expect(getLastChangedDoc()._id).to.equal('5');
             break;
           case '5':
             chai.expect(change.doc._id).to.equal('5');
             chai.expect(change.doc.data).to.equal(0);
-            chai.expect(getState().lastChangedDoc).to.equal(false);
+            chai.expect(getLastChangedDoc()).to.equal(false);
             break;
           default:
             done('Received invalid change');

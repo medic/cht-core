@@ -23,7 +23,7 @@ describe('AnalyticsCtrl controller', function() {
     scope = $rootScope.$new();
     scope.filterModel = { };
     scope.clearSelected = function() {};
-    getSelected = () => Selectors.getSelected($ngRedux.getState());
+    getSelected = () => Selectors.getSelectedAnalytics($ngRedux.getState());
     createController = function(startState) {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,

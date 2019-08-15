@@ -5,6 +5,7 @@
   "env": {
     "jasmine": true,
     "jquery": true,
-    "node": true
+    "node": true,
+    "browser": true
   }
 }

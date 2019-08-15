@@ -10,14 +10,16 @@ angular.module('inboxDirectives').directive('mmResetFilter', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state),
-          selected: Selectors.getSelected(state)
+          selectMode: Selectors.getSelectMode(state)
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: '$ctrl'
+    controllerAs: 'resetFilterCtrl',
+    bindToController: {
+      selected: '<'
+    }
   };
 });

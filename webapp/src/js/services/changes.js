@@ -22,8 +22,8 @@ angular.module('inboxServices').factory('Changes',
     $ngRedux,
     $q,
     $timeout,
-    Actions,
     DB,
+    GlobalActions,
     Selectors,
     Session
   ) {
@@ -38,9 +38,9 @@ angular.module('inboxServices').factory('Changes',
       lastChangedDoc: Selectors.getLastChangedDoc(state),
     });
     const mapDispatchToTarget = (dispatch) => {
-      const actions = Actions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
-        setLastChangedDoc: actions.setLastChangedDoc
+        setLastChangedDoc: globalActions.setLastChangedDoc
       };
     };
 

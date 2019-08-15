@@ -7,14 +7,14 @@ describe('SendMessage service', function() {
       allDocs,
       post,
       query,
-      Actions;
+      GlobalActions;
 
   beforeEach(function () {
     allDocs = sinon.stub();
     post = sinon.stub();
     query = sinon.stub();
     Settings = sinon.stub();
-    Actions = { setLastChangedDoc: sinon.stub() };
+    GlobalActions = { setLastChangedDoc: sinon.stub() };
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -27,7 +27,7 @@ describe('SendMessage service', function() {
         return Promise.resolve({ phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', Settings);
-      $provide.value('Actions', () => Actions);
+      $provide.value('GlobalActions', () => GlobalActions);
     });
     inject(function(_SendMessage_) {
       service = _SendMessage_;
@@ -91,8 +91,8 @@ describe('SendMessage service', function() {
           to: '+5552',
           contact: { _id: recipient._id }
         });
-        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
-        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([post.args[0][0]]);
+        chai.expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([post.args[0][0]]);
         done();
       })
       .catch(done);
@@ -197,8 +197,8 @@ describe('SendMessage service', function() {
         });
         chai.expect    (post.args[0][0].tasks[0].messages[0].uuid)
           .to.not.equal(post.args[0][0].tasks[1].messages[0].uuid);
-        chai.expect(Actions.setLastChangedDoc.callCount).to.equal(1);
-        chai.expect(Actions.setLastChangedDoc.args[0]).to.deep.equal([post.args[0][0]]);
+        chai.expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
+        chai.expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([post.args[0][0]]);
         done();
       }).catch(done);
   });

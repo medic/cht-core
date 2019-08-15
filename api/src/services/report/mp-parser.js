@@ -1,3 +1,6 @@
+/**
+ * @module mp-parser
+ */
 const _ = require('underscore');
 
 const zip = (a, b) => {
@@ -12,10 +15,8 @@ const zip = (a, b) => {
 /**
  * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
- * @returns {Object|{}} - A parsed object of the sms message or an empty
+ * @returns {Object} - A parsed object of the sms message or an empty
  * object if parsing fails.
- *
- * @api public
  */
 exports.parse = (def, doc) => {
   const parts = doc.message.split('#'),

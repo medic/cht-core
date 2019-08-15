@@ -10,16 +10,12 @@ angular.module('inboxServices').factory('ChildFacility',
       var params = {
         include_docs: true
       };
-      if (parent.type === 'district_hospital') {
-        // filter on district
-        params.startkey = [ parent._id ];
-        params.endkey = [ parent._id, {} ];
-      } else if (parent.type === 'health_center') {
-        // filter on health center
+      if (parent.parent) {
         params.startkey = [ parent.parent._id, parent._id ];
         params.endkey = [ parent.parent._id, parent._id, {} ];
       } else {
-        throw new Error('Doc not currently supported.');
+        params.startkey = [ parent._id ];
+        params.endkey = [ parent._id, {} ];
       }
       return DB().query('medic-client/total_clinics_by_facility', params);
     };

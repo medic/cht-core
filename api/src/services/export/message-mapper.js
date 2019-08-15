@@ -141,9 +141,8 @@ module.exports = {
       .then(hydrate);
   },
   getDocIds: (options) => {
-    return db.medic.query('medic-sms/tasks_messages', options)
-      .then(result => result.rows)
-      .then(rows => rows.map(row => row.id));
+    return db.medic.query('medic/messages_by_state', options)
+      .then(result => result.rows.map(row => row.id));
   },
   map: (filters, options) => {
     return Promise.resolve({

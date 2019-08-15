@@ -13,7 +13,7 @@ angular
     $scope,
     $translate,
     $uibModalInstance,
-    ContactSchema,
+    ContactTypes,
     CreateUser,
     DB,
     Languages,
@@ -94,14 +94,15 @@ angular
         $log.error('Error determining user model', err);
       });
 
-    $uibModalInstance.rendered.then(function() {
-      // only the #edit-user-profile modal has these fields
-      Select2Search($('#edit-user-profile [name=contactSelect]'), 'person');
-      Select2Search(
-        $('#edit-user-profile [name=facilitySelect]'),
-        ContactSchema.getPlaceTypes()
-      );
-    });
+    $uibModalInstance.rendered
+      .then(() => ContactTypes.getAll())
+      .then(function(contactTypes) {
+        // only the #edit-user-profile modal has these fields
+        const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
+        Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
+        const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
+        Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes);
+      });
 
     var validateRequired = function(fieldName, fieldDisplayName) {
       if (!$scope.editUserModel[fieldName]) {

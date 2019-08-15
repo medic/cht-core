@@ -13,7 +13,7 @@
     <link rel="manifest" href="/manifest.json">
     <title></title>
   </head>
-  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl as $ctrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': $ctrl.selectMode}">
+  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl as inboxCtrl" ng-class="{'show-content': inboxCtrl.showContent, 'bootstrapped': inboxCtrl.version && dbWarmedUp, 'select-mode': inboxCtrl.selectMode}">
     <div class="bootstrap-layer">
       <div>
         <div class="loader"></div>
@@ -24,7 +24,7 @@
     <mm-actionbar></mm-actionbar>
 
     <div class="container-fluid">
-      <ng-include src="'templates/partials/header.html'"></ng-include>
+      <mm-header admin-url="inboxCtrl.adminUrl"></mm-header>
       <div class="row content" ui-view></div>
     </div>
 

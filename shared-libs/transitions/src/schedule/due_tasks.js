@@ -35,15 +35,15 @@ const getTemplateContext = (doc, callback) => {
 
 module.exports = {
   execute: callback => {
-    var now = moment(date.getDate()),
-      overdue = now.clone().subtract(7, 'days');
+    const now = moment(date.getDate());
+    const overdue = now.clone().subtract(7, 'days');
 
     db.medic.query(
-      'medic/due_tasks',
+      'medic/messages_by_state',
       {
         include_docs: true,
-        endkey: now.toISOString(),
-        startkey: overdue.toISOString(),
+        endkey: [ 'scheduled', now.valueOf() ],
+        startkey: [ 'scheduled', overdue.valueOf() ],
       },
       function(err, result) {
         if (err) {
@@ -52,10 +52,10 @@ module.exports = {
 
         const objs = result.rows.reduce((objs, row) => {
           if (!objs[row.id]) {
-            row.keys = [];
+            row.dueDates = [];
             objs[row.id] = row;
           }
-          objs[row.id].keys.push(row.key);
+          objs[row.id].dueDates.push(moment(row.key[1]).toISOString());
 
           return objs;
         }, {});
@@ -74,7 +74,7 @@ module.exports = {
                   var updatedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
-                    if (obj.keys.includes(task.due)) {
+                    if (obj.dueDates.includes(task.due)) {
                       if (!task.messages) {
                         const content = {
                           translationKey: task.message_key,

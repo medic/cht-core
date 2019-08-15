@@ -36,6 +36,12 @@ describe('view docs_by_replication_key', () => {
       _id: 'testuser',
       reported_date: 1,
       type: 'person',
+      parent: { _id: 'testuserplace' }
+    },
+    {
+      _id: 'testuserplace',
+      reported_date: 1,
+      type: 'clinic'
     },
     {
       _id: 'test_kujua_message',
@@ -131,6 +137,11 @@ describe('view docs_by_replication_key', () => {
           _id: 'testuser'
         }
       },
+    }, {
+      _id: 'needs_signoff_within_branch',
+      type: 'data_record',
+      contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' }}},
+      fields: { patient_id: 'somepatient', needs_signoff: true },
     }
   ];
 
@@ -196,6 +207,18 @@ describe('view docs_by_replication_key', () => {
         contact: 'not_the_testuser',
         _deleted: true
       },
+    },
+    {
+      _id: 'needs_signoff_outside_branch',
+      type: 'data_record',
+      contact: { _id: 'user2', parent: { _id: 'parent2', parent: { _id: 'not_testuserplace', parent: {}}}},
+      fields: { patient_id: 'somepatient', needs_signoff: true },
+    },
+    {
+      _id: 'needs_signoff_within_branch_falsy',
+      type: 'data_record',
+      contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' }}},
+      fields: { patient_id: 'somepatient', needs_signoff: false },
     }
   ];
 
@@ -283,11 +306,11 @@ describe('view docs_by_replication_key', () => {
         }
         console.log('…done');
 
-        getChanges(['_all', 'testuser', 'testplace', 'testpatient'])
+        getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace'])
           .then(docs => {
             docByPlaceIds = docs;
 
-            getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient'])
+            getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace'])
               .then(docs => {
                 docByPlaceIds_unassigned = docs;
                 done();
@@ -344,6 +367,12 @@ describe('view docs_by_replication_key', () => {
 
     it('Falls back to contact id when invalid patient', () => {
       expect(docByPlaceIds).toContain('report_with_invalid_patient_id');
+    });
+
+    it('should return data_records with needs_signoff from same branch', () => {
+      expect(docByPlaceIds).toContain('needs_signoff_within_branch');
+      expect(docByPlaceIds).not.toContain('needs_signoff_within_branch_falsy');
+      expect(docByPlaceIds).not.toContain('needs_signoff_outside_branch');
     });
   });
 

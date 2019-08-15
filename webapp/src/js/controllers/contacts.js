@@ -14,13 +14,14 @@ const PAGE_SIZE = 50;
     $state,
     $stateParams,
     $translate,
-    Actions,
     Auth,
     Changes,
-    ContactSchema,
     ContactSummary,
+    ContactTypes,
+    ContactsActions,
     Export,
     GetDataRecords,
+    GlobalActions,
     LiveList,
     Search,
     SearchFilters,
@@ -37,37 +38,41 @@ const PAGE_SIZE = 50;
   ) {
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
-        selected: Selectors.getSelected(state)
+        selectedContact: Selectors.getSelectedContact(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      const contactsActions = ContactsActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setSelected: actions.setSelected,
-        updateSelected: actions.updateSelected,
-        loadSelectedChildren: actions.loadSelectedChildren,
-        loadSelectedReports: actions.loadSelectedReports,
-        setLoadingSelectedChildren: actions.setLoadingSelectedChildren,
-        setLoadingSelectedReports: actions.setLoadingSelectedReports
+        clearCancelCallback: globalActions.clearCancelCallback,
+        loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
+        loadSelectedContactReports: contactsActions.loadSelectedContactReports,
+        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
+        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
+        setSelectedContact: contactsActions.setSelectedContact,
+        updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var liveList = LiveList.contacts;
 
     LiveList.$init($scope, 'contacts', 'contact-search');
 
-    $scope.loading = true;
-    ctrl.setSelected(null);
+    ctrl.appending = false;
+    ctrl.error = false;
+    ctrl.loading = true;
+    ctrl.setSelectedContact(null);
     $scope.filters = {};
     var defaultTypeFilter = {};
     var usersHomePlace;
     var additionalListItem = false;
+    let childPlaces = [];
 
     $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
@@ -76,7 +81,7 @@ const PAGE_SIZE = 50;
 
     var _initScroll = function() {
       scrollLoader.init(function() {
-        if (!$scope.loading && $scope.moreItems) {
+        if (!ctrl.loading && $scope.moreItems) {
           _query({
             paginating: true,
             reuseExistingDom: true,
@@ -92,12 +97,12 @@ const PAGE_SIZE = 50;
       }
 
       if (!options.silent) {
-        $scope.loading = true;
-        $scope.error = false;
+        ctrl.loading = true;
+        ctrl.error = false;
       }
 
       if (options.paginating) {
-        $scope.appending = true;
+        ctrl.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
@@ -144,10 +149,10 @@ const PAGE_SIZE = 50;
             additionalListItem =
               !$scope.filters.search &&
               !$scope.filters.simprintsIdentities &&
-              (additionalListItem || !$scope.appending) &&
+              (additionalListItem || !ctrl.appending) &&
               homeIndex === -1;
 
-            if (!$scope.appending) {
+            if (!ctrl.appending) {
               if (homeIndex !== -1) {
                 // move it to the top
                 contacts.splice(homeIndex, 1);
@@ -183,41 +188,55 @@ const PAGE_SIZE = 50;
           liveList.set(mergedList, !!options.reuseExistingDom);
 
           _initScroll();
-          $scope.loading = false;
-          $scope.appending = false;
+          ctrl.loading = false;
+          ctrl.appending = false;
           $scope.hasContacts = liveList.count() > 0;
           setActionBarData();
         })
         .catch(function(err) {
-          $scope.error = true;
-          $scope.loading = false;
-          $scope.appending = false;
+          ctrl.error = true;
+          ctrl.loading = false;
+          ctrl.appending = false;
           $log.error('Error searching for contacts', err);
         });
     };
 
-    var getActionBarDataForChild = function(docType) {
-      var selectedChildPlaceType = ContactSchema.getChildPlaceType(docType);
-      if (!selectedChildPlaceType) {
-        return $q.resolve();
+    const getChildTypes = function(model) {
+      if (!model.type) {
+        $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
+        return [];
       }
-      var schema = ContactSchema.get(selectedChildPlaceType);
-      return {
-        addPlaceLabel: schema.addButtonLabel,
-        type: selectedChildPlaceType,
-        icon: schema ? schema.icon : '',
-      };
+      return ContactTypes.getChildren(model.type.id).then(childTypes => {
+        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
+        const models = [];
+        if (grouped.places) {
+          models.push({
+            menu_key: 'Add place',
+            menu_icon: 'fa-building',
+            permission: 'can_create_places',
+            types: grouped.places
+          });
+        }
+        if (grouped.persons) {
+          models.push({
+            menu_key: 'Add person',
+            menu_icon: 'fa-user',
+            permission: 'can_create_people',
+            types: grouped.persons
+          });
+        }
+        return models;
+      });
     };
 
     // only admins can edit their own place
     var getCanEdit = function(selectedDoc) {
+      if (Session.isAdmin()) {
+        return true;
+      }
       return setupPromise
-        .then(function() {
-          return Session.isAdmin() || usersHomePlace._id !== selectedDoc._id;
-        })
-        .catch(function() {
-          return false;
-        });
+        .then(() => usersHomePlace._id !== selectedDoc._id)
+        .catch(() => false);
     };
 
     var translateTitle = function(key, label) {
@@ -234,7 +253,7 @@ const PAGE_SIZE = 50;
 
     const getTasks = () => {
       return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selected, 'ContactsCtrl', receiveTasks))
+        .then(() => TasksForContact(ctrl.selectedContact, 'ContactsCtrl', receiveTasks))
         .catch(() => $log.debug('Not authorized to view tasks'));
     };
 
@@ -246,97 +265,92 @@ const PAGE_SIZE = 50;
           tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
         }
       });
-      ctrl.updateSelected({ tasks });
-      ctrl.updateSelected({ tasksByContact });
+      ctrl.updateSelectedContact({ tasks });
+      ctrl.updateSelectedContact({ tasksByContact });
     };
 
-    $scope.setSelected = function(selected, options) {
+    const getTitle = selected => {
+      const title = (selected.type && selected.type.name_key) ||
+                    'contact.profile';
+      return $translate(title).catch(() => title);
+    };
+
+    // Don't allow deletion if this contact has any children
+    const canDelete = selected => {
+      return !selected.children ||
+             selected.children.every(group => !group.contacts || !group.contacts.length);
+    };
+
+    $scope.setSelected = function(selected, contactViewModelOptions) {
       liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedChildren(true);
-      ctrl.setLoadingSelectedReports(true);
-      ctrl.setSelected(selected);
+      ctrl.setLoadingSelectedContact();
+      ctrl.setSelectedContact(selected);
       ctrl.clearCancelCallback();
-      var title = '';
-      if (ctrl.selected.doc.type === 'person') {
-        title = 'contact.profile';
-      } else {
-        title = ContactSchema.get(ctrl.selected.doc.type).label;
-      }
-      $scope.loadingSummary = true;
+      const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
+
+      ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
-          $translate(title).catch(() => title),
-          getActionBarDataForChild(ctrl.selected.doc.type),
-          getCanEdit(ctrl.selected.doc),
+          getTitle(ctrl.selectedContact),
+          getCanEdit(ctrl.selectedContact.doc),
+          getChildTypes(ctrl.selectedContact)
         ])
-        .then(function(results) {
-          $scope.setTitle(results[0]);
-          if (results[1]) {
-            ctrl.updateSelected({ doc: { child: results[1] }});
-          }
-          var canEdit = results[2];
+        .then(([ title, canEdit, childTypes ]) => {
+          $scope.setTitle(title);
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [ctrl.selected.doc],
-            sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
+            selected: [ctrl.selectedContact.doc],
+            sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
+            childTypes: childTypes
           });
 
-          return ctrl.loadSelectedChildren(options)
-            .then(ctrl.loadSelectedReports)
+          return lazyLoadedContactData
             .then(function() {
               return $q.all([
-                ContactSummary(ctrl.selected.doc, ctrl.selected.reports, ctrl.selected.lineage),
+                ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
                 Settings(),
                 getTasks()
               ])
-              .then(function(results) {
-                $scope.loadingSummary = false;
-                var summary = results[0];
-                ctrl.updateSelected({ summary: summary });
-                var options = { doc: ctrl.selected.doc, contactSummary: summary.context };
+              .then(([ summary, settings ]) => {
+                ctrl.setContactsLoadingSummary(false);
+                ctrl.updateSelectedContact({ summary: summary });
+                const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
                 XmlForms('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
-                  var showUnmuteModal = function(formId) {
-                    return ctrl.selected.doc &&
-                          ctrl.selected.doc.muted &&
-                          !isUnmuteForm(results[1], formId);
+                  const showUnmuteModal = function(formId) {
+                    return ctrl.selectedContact.doc &&
+                          ctrl.selectedContact.doc.muted &&
+                          !isUnmuteForm(settings, formId);
                   };
-                  var formSummaries =
-                    forms &&
-                    forms.map(function(xForm) {
-                      return {
-                        code: xForm.internalId,
-                        title: translateTitle(xForm.translation_key, xForm.title),
-                        icon: xForm.icon,
-                        showUnmuteModal: showUnmuteModal(xForm.internalId)
-                      };
-                    });
-                  var canDelete =
-                    !ctrl.selected.children ||
-                    ((!ctrl.selected.children.places ||
-                      ctrl.selected.children.places.length === 0) &&
-                      (!ctrl.selected.children.persons ||
-                        ctrl.selected.children.persons.length === 0));
+                  const formSummaries = forms && forms.map(function(xForm) {
+                    return {
+                      code: xForm.internalId,
+                      title: translateTitle(xForm.translation_key, xForm.title),
+                      icon: xForm.icon,
+                      showUnmuteModal: showUnmuteModal(xForm.internalId)
+                    };
+                  });
                   $scope.setRightActionBar({
-                    selected: [ctrl.selected.doc],
+                    selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
-                    sendTo: ctrl.selected.doc.type === 'person' ? ctrl.selected.doc : '',
-                    canEdit: canEdit,
-                    canDelete: canDelete,
+                    sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
+                    canEdit,
+                    canDelete: canDelete(ctrl.selectedContact),
+                    childTypes,
                   });
                 });
               });
-          });
+            });
         })
         .catch(function(e) {
           $log.error('Error setting selected contact');
           $log.error(e);
-          ctrl.updateSelected({ error: true });
+          ctrl.updateSelectedContact({ error: true });
           $scope.setRightActionBar();
         });
     };
@@ -346,7 +360,7 @@ const PAGE_SIZE = 50;
     });
 
     const clearSelection = () => {
-      ctrl.setSelected(null);
+      ctrl.setSelectedContact(null);
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
     };
@@ -357,7 +371,7 @@ const PAGE_SIZE = 50;
         clearSelection();
       }
 
-      $scope.loading = true;
+      ctrl.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;
         liveList = LiveList['contact-search'];
@@ -384,37 +398,36 @@ const PAGE_SIZE = 50;
 
     $scope.simprintsEnabled = Simprints.enabled();
     $scope.simprintsIdentify = function() {
-      $scope.loading = true;
+      ctrl.loading = true;
       Simprints.identify().then(function(identities) {
         $scope.filters.simprintsIdentities = identities;
         $scope.search();
       });
     };
 
+    const getChildren = () => {
+      let p;
+      if (usersHomePlace) {
+        // backwards compatibility with pre-flexible hierarchy users
+        const homeType = usersHomePlace.contact_type || usersHomePlace.type;
+        p = ContactTypes.getChildren(homeType);
+      } else if (Session.isAdmin()) {
+        p = ContactTypes.getChildren();
+      } else {
+        return Promise.resolve([]);
+      }
+      return p.then(children => children.filter(child => !child.person));
+    };
+
     var setActionBarData = function() {
-      var data = {
+      $scope.setLeftActionBar({
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
+        childPlaces: childPlaces,
         exportFn: function() {
           Export('contacts', $scope.filters, { humanReadable: true });
         },
-      };
-      var type;
-      if (usersHomePlace) {
-        type = ContactSchema.getChildPlaceType(usersHomePlace.type);
-      } else if (Session.isAdmin()) {
-        type = ContactSchema.getPlaceTypes()[0];
-      }
-      if (type) {
-        defaultTypeFilter = { types: { selected: [type] } };
-        var schema = ContactSchema.get(type);
-        data.addPlaceLabel = schema.addButtonLabel;
-        data.userChildPlace = {
-          type: type,
-          icon: schema ? schema.icon : '',
-        };
-      }
-      $scope.setLeftActionBar(data);
+      });
     };
 
     var getUserHomePlaceSummary = function() {
@@ -447,16 +460,27 @@ const PAGE_SIZE = 50;
     };
 
     var setupPromise = $q
-      .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
+      .all([
+        getUserHomePlaceSummary(),
+        canViewLastVisitedDate(),
+        Settings()
+      ])
       .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
         usersHomePlace = homePlaceSummary;
         $scope.lastVisitedDateExtras = viewLastVisitedDate;
         $scope.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
-
         if ($scope.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
           $scope.sortDirection = $scope.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
-
+        return getChildren();
+      })
+      .then(children => {
+        childPlaces = children;
+        defaultTypeFilter = {
+          types: {
+            selected: childPlaces.map(type => type.id)
+          }
+        };
         setActionBarData();
         return $scope.search();
       });
@@ -512,7 +536,7 @@ const PAGE_SIZE = 50;
       },
       filter: function(change) {
         return (
-          (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
+          ContactTypes.includes(change.doc) ||
           (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc)
         );

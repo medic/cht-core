@@ -13,7 +13,7 @@
 
 .enketo {
   #form-title {
-    border-bottom: 1px solid @seperator-color;
+    border-bottom: 1px solid @separator-color;
   }
   h2 {
     font-size: @font-extra-extra-large;
@@ -250,22 +250,16 @@
       text-align: center;
     }
 
-    label {
-      margin: 0 10px;
-      .question-label {
-        display: block;
-      }
-      &.note:not(.disabled) + .note {
-        margin-top: 0;
-      }
+    label .question-label {
+      display: block;
     }
 
     .or-appearance-h1:not(.disabled) {
       padding: 5px;
+      padding-left: 2.5rem;
       text-align: center;
-      font-size: 15px;
       font-weight: bold;
-      margin-top: 0;
+      margin-top: 20px;
 
       &.or-appearance-red {
         background-color: @red;
@@ -288,17 +282,19 @@
         color: #fff;
       }
       i.fa {
-        font-size: 15px;
         position: absolute;
         left: 0;
-        margin: 5px 10px;
+        top: 0;
+        margin: 10px;
+      }
+      .question-label {
+        font-size: @font-extra-extra-large;
       }
     }
     .or-appearance-h2 {
       padding: 5px 0 5px;
       margin: 0 10px;
       text-align: center;
-      font-size: @font-extra-extra-large;
       font-weight: bold;
 
       &.or-appearance-red {
@@ -320,6 +316,9 @@
       &.or-appearance-lime {
         border-bottom: 2px solid @lime;
         color: @lime;
+      }
+      .question-label {
+        font-size: @font-extra-large;
       }
     }
     .or-appearance-h3 {
@@ -383,6 +382,10 @@
   // Overwrite Enketo styles for Chrome 72+: https://github.com/medic/medic/issues/5380
   .question input[type=checkbox]:checked {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' stroke='%234f93ce' fill='%234f93ce' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M25.1 12.5l-3.4-3.3-8 8-2.9-3-3.4 3.4 6.3 6.3z'/%3E%3C/svg%3E");
+  }
+  
+  .pages.or .or-repeat-info[role="page"] {
+    display: block;
   }
 }
 

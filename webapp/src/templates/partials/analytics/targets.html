@@ -2,12 +2,12 @@
   <div class="item-content empty-selection" ng-show="targetsDisabled">
     <div translate>targets.disabled</div>
   </div>
-  <div class="item-content empty-selection" ng-show="!targetsDisabled && loading">
+  <div class="item-content empty-selection" ng-show="!targetsDisabled && analyticsTargetsCtrl.loading">
     <div>
       <div class="loader"></div>
     </div>
   </div>
-  <div class="targets" ng-show="!targetsDisabled && !loading">
+  <div class="targets" ng-show="!targetsDisabled && !analyticsTargetsCtrl.loading">
     <div class="target" ng-repeat="target in targets" ng-class="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value.pass >= target.goal) || (target.value.percent >= target.goal) }">
       <div class="heading">
         <div class="icon" ng-bind-html="target.icon | resourceIcon"></div>

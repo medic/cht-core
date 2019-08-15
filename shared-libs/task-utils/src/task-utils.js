@@ -1,3 +1,6 @@
+/**
+ * @module task-utils
+ */
 var matchedLastHistory = function(task, state) {
   if (!task.state_history.length) {
     return false;
@@ -6,19 +9,21 @@ var matchedLastHistory = function(task, state) {
   return task.state_history[task.state_history.length - 1].state === state;
 };
 
-/**
- * Updates Task state, timestamp, state details and state history.
- * @returns {boolean} Returns true if task state or task history is changed, otherwise returns false.
- */
-var setTaskState = function(task, state, details) {
+var setTaskState = function(task, state, details, gatewayRef) {
   task.state_history = task.state_history || [];
 
-  if (task.state === state && (!details || task.state_details === details) && matchedLastHistory(task, state)) {
+  if (
+    task.state === state &&
+    matchedLastHistory(task, state) &&
+    (!details || task.state_details === details) &&
+    (!gatewayRef || task.gateway_ref === gatewayRef)
+  ) {
     return false;
   }
 
   task.state = state;
   task.state_details = details;
+  task.gateway_ref = gatewayRef;
   task.state_history.push({
     state: state,
     state_details: details,
@@ -29,5 +34,13 @@ var setTaskState = function(task, state, details) {
 };
 
 module.exports = {
-  setTaskState: setTaskState
+  /**
+   * Updates Task state, timestamp, gateway reference, state details and state history.
+   * @param {Object} task The task to update
+   * @param {String} state The state to change to
+   * @param {String} [details] Any additional information about the state change.
+   * @param {String} [gatewayRef] The gateway ID
+   * @returns {boolean} Returns true if task state or task history is changed, otherwise returns false.
+   */
+  setTaskState: (task, state, details, gatewayRef) => setTaskState(task, state, details, gatewayRef)
 };

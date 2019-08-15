@@ -12,14 +12,6 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@medic/bulk-docs-utils": "^1.0.0",
-    "@medic/lineage": "^1.0.0",
-    "@medic/message-utils": "^1.0.2",
-    "@medic/phone-number": "^1.0.0",
-    "@medic/registration-utils": "^1.1.1",
-    "@medic/search": "^1.1.1",
-    "@medic/task-utils": "^1.0.0",
-    "@medic/translation-utils": "^1.0.1",
     "@uirouter/angularjs": "^1.0.21",
     "angular": "^1.7.5",
     "angular-cookie": "^4.1.0",
@@ -31,12 +23,14 @@
     "angular-translate": "^2.18.1",
     "angular-ui-bootstrap": "^2.5.6",
     "async": "^2.6.1",
+    "bikram-sambat": "^1.5.0",
     "bikram-sambat-bootstrap": "^1.4.2",
     "bootstrap": "^3.3.7",
     "bootstrap-daterangepicker": "^2.1.30",
     "bootstrap-tour": "^0.12.0",
     "enketo-core": "4.41.6",
     "font-awesome": "^4.7.0",
+    "google-libphonenumber": "^3.2.1",
     "gsm": "^0.1.4",
     "jquery": "3.2.x",
     "lodash": "^4.17.11",
@@ -54,15 +48,13 @@
     "pouchdb-browser": "^7.0.0",
     "pouchdb-debug": "^7.0.0",
     "redux": "^4.0.1",
+    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "select2": "4.0.3",
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.9.1",
     "uuid": "^3.3.2"
-  },
-  "devDependencies": {
-    "redux-logger": "^3.0.6"
   },
   "resolutions": {
     "**/jquery": "3.2.x",

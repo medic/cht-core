@@ -8,6 +8,7 @@ angular.module('inboxServices').service('MRDT',
     'ngInject';
 
     var current;
+    var timeTaken;
 
     return {
       enabled: function() {
@@ -29,8 +30,11 @@ angular.module('inboxServices').service('MRDT',
       },
       respond: function(image) {
         if (current) {
-          current.resolve(image);
+          current.resolve({image: image, timeTaken: timeTaken});
         }
+      },
+      respondTimeTaken: function(data) {
+        timeTaken = data;
       },
     };
   }

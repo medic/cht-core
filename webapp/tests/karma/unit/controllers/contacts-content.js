@@ -1,7 +1,7 @@
 describe('ContactsContentCtrl', () => {
   'use strict';
 
-  let actions,
+  let contactsActions,
       controller,
       stateParams,
       scope,
@@ -19,7 +19,10 @@ describe('ContactsContentCtrl', () => {
     });
     const model = {
       doc: doc,
-      children: { persons: childRows }
+      children: [{
+        type: { id: 'person', person: true },
+        contacts: childRows
+      }]
     };
 
     getContact.returns(Promise.resolve());
@@ -46,12 +49,12 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions) => {
-    actions = Actions($ngRedux.dispatch);
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions) => {
+    contactsActions = ContactsActions($ngRedux.dispatch);
 
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = selected => actions.setSelected(selected);
+    scope.setSelected = selected => contactsActions.setSelectedContact(selected);
     scope.clearSelected = sinon.stub();
     scope.settingSelected = sinon.stub();
     state = {
@@ -93,7 +96,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     const runChangeFeedProcessTest = () => {
-      stateParams = { id: doc._id};
+      stateParams = { id: doc._id };
       stubGetContact(doc,  []);
       return createController().setupPromise;
     };

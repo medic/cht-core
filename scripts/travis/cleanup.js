@@ -12,33 +12,44 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 const db = new PouchDB(`${UPLOAD_URL}/${BUILDS_SERVER}`);
 
 const get = () => {
-  console.log(`Getting builds...`);
+  console.log('Getting builds...');
   return db.allDocs({ endkey: END_KEY, limit: MAX_BUILDS_TO_DELETE });
 };
 
 const markDeleted = response => {
-  return response.rows.map(row => {
-    return {
-      _id: row.id,
-      _rev: row.value.rev,
-      _deleted: true
-    };
-  });
+  return response.rows
+    .filter(row => row.id.startsWith('medic:medic:'))
+    .map(row => {
+      return {
+        _id: row.id,
+        _rev: row.value.rev,
+        _deleted: true
+      };
+    });
 };
 
 const remove = docs => {
   if (docs.length) {
     console.log(`Deleting the oldest ${docs.length} builds...`);
-    return db.bulkDocs(docs);
+    return db.bulkDocs(docs).then(results => {
+      const failed = results.filter(result => !result.ok);
+      if (failed.length) {
+        console.error('Failed to delete these builds:');
+        console.error(JSON.stringify(failed, null, 2));
+        throw new Error('Failed trying to delete docs');
+      }
+    });
   }
 };
 
-const cleanDb = () => {
-  console.log('Compacting DB...');
-  return db.compact();
-};
+process.on('unhandledRejection', error => {
+  console.error('unhandledRejection', error);
+});
 
 get()
-  .then(markDeleted)
-  .then(remove)
-  .then(cleanDb);
+  .then(docs => markDeleted(docs))
+  .then(docs => remove(docs))
+  .catch(err => {
+    console.error(`Error deleting old travis builds: "${err.message}"`);
+    process.exit(1);
+  });

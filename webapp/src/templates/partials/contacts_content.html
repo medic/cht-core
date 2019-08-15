@@ -1,40 +1,39 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="contactsContentCtrl.loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!$ctrl.selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!contactsContentCtrl.selectedContact && !contactsContentCtrl.loadingContent">
     <div translate>No contact selected</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="$ctrl.selected && $ctrl.selected.error && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="contactsContentCtrl.selectedContact && contactsContentCtrl.selectedContact.error && !contactsContentCtrl.loadingContent">
     <div translate>contact.select.error</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="$ctrl.selected && !$ctrl.selected.error && !loadingContent">
+  <div class="col-sm-8 item-content" ng-show="contactsContentCtrl.selectedContact && !contactsContentCtrl.selectedContact.error && !contactsContentCtrl.loadingContent">
     <div class="material">
       <div class="body meta">
         <div class="card">
-          <div class="row heading" ng-class="{ 'deceased': $ctrl.selected.doc.date_of_death, muted: $ctrl.selected.doc.muted }">
-            <span ng-bind-html="$ctrl.selected.icon | resourceIcon"></span>
+          <div class="row heading" ng-class="{ 'deceased': contactsContentCtrl.selectedContact.doc.date_of_death, muted: contactsContentCtrl.selectedContact.doc.muted }">
+            <span ng-bind-html="contactsContentCtrl.selectedContact.type.icon | resourceIcon"></span>
             <div class="heading-content">
-              <h2>{{$ctrl.selected.doc.name}}</h2>
-              <div ng-if="$ctrl.selected.doc.date_of_death" translate>contact.deceased.title</div>
-              <div class="primary-contact" ng-show="$ctrl.selected.isPrimaryContact">
-                <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
-                <span ng-if="$ctrl.selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-                <span ng-if="$ctrl.selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+              <h2>{{contactsContentCtrl.selectedContact.doc.name}}</h2>
+              <div ng-if="contactsContentCtrl.selectedContact.doc.date_of_death" translate>contact.deceased.title</div>
+              <div class="primary-contact" ng-show="contactsContentCtrl.selectedContact.isPrimaryContact">
+                <i class="fa fa-star primary"></i>
+                <span translate>{{contactsContentCtrl.selectedContact.type.primary_contact_key || 'Primary contact'}}</span>
               </div>
-              <div class="muted" ng-if="$ctrl.selected.doc.muted" translate>contact.muted</div>
+              <div class="muted" ng-if="contactsContentCtrl.selectedContact.doc.muted" translate>contact.muted</div>
             </div>
           </div>
 
-          <div class="loader" ng-if="loadingSummary"></div>
-          <div class="row flex grid" ng-if="!loadingSummary">
-            <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in $ctrl.selected.summary.fields">
+          <div class="loader" ng-if="contactsContentCtrl.contactsLoadingSummary"></div>
+          <div class="row flex grid" ng-if="!contactsContentCtrl.contactsLoadingSummary">
+            <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in contactsContentCtrl.selectedContact.summary.fields">
               <div class="cell {{field.label | lowercase}}">
                 <span ng-if="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
                 <div>
@@ -48,7 +47,7 @@
           </div>
         </div>
 
-        <div ng-repeat="card in $ctrl.selected.summary.cards">
+        <div ng-repeat="card in contactsContentCtrl.selectedContact.summary.cards">
           <div class="card">
             <div class="action-header cell">
               <h3 translate>{{card.label}}</h3>
@@ -70,76 +69,38 @@
         </div>
       </div>
 
-      <div class="card children persons" ng-if="selected.doc.type !== 'person'">
+      <div class="card children" ng-repeat="group in contactsContentCtrl.selectedContact.children">
         <div class="action-header cell">
-          <div ng-show="$ctrl.selected.doc.type !== 'clinic'" class="col-xs-12">
-            <h3 translate>People</h3>
+          <div class="col-xs-10">
+            <h3 translate>{{group.type.group_key}}</h3>
           </div>
-          <div ng-show="$ctrl.selected.doc.type === 'clinic'" class="col-xs-10">
-            <h3 translate>clinic.field.children</h3>
-          </div>
-          <div ng-show="$ctrl.selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+          <div ng-if="group.type.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
         </div>
 
-        <div class="loader" ng-if="$ctrl.loadingSelectedChildren"></div>
-        <div ng-if="!$ctrl.loadingSelectedChildren">
-          <div ng-if="!$ctrl.selected.children.persons.length && !$ctrl.selected.children.deceased.length" translate class="cell col">
-            contact.no.children
-          </div>
-          <div ng-if="$ctrl.selected.children.persons.length || $ctrl.selected.children.deceased.length">
-            <ul ng-if="$ctrl.selected.doc.type !== 'clinic'">
-              <mm-content-row ng-repeat="child in $ctrl.selected.children.persons"
-                id="child.doc._id"
-                route="'contacts'"
-                heading="child.doc.name"
-                summary="child.doc.title"
-                primary-contact="child.isPrimaryContact"
-                is-muted="child.doc.muted"
-                display-muted="true"
-              />
-            </ul>
-            <ul ng-if="$ctrl.selected.doc.type === 'clinic'">
-              <mm-content-row ng-repeat="child in $ctrl.selected.children.persons"
-                id="child.doc._id"
-                route="'contacts'"
-                heading="child.doc.name"
-                dob="child.doc.date_of_birth"
-                primary-contact="child.isPrimaryContact"
-                task-count="$ctrl.selected.tasksByContact[child.doc._id]"
-                is-muted="child.doc.muted"
-                display-muted="true"
-              />
-            </ul>
-            <ul class="action deceased">
-              <li ng-if="$ctrl.selected.children.deceased.length" class="content-row deceased">
-                <a ui-sref="contacts.deceased({ id: $ctrl.selected._id })">
-                  <span translate translate-values="{ count: $ctrl.selected.children.deceased.length }">contact.deceased.view</span>
-                  <i class="fa fa-chevron-right"></i>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <ul>
+          <mm-content-row ng-repeat="child in group.contacts" ng-if="!child.deceased"
+            id="child.doc._id"
+            route="'contacts'"
+            heading="child.doc.name"
+            summary="child.doc.title"
+            primary-contact="child.isPrimaryContact"
+            dob="child.doc.date_of_birth"
+            task-count="child.taskCount"
+            is-muted="child.doc.muted"
+            display-muted="true"
+          />
+        </ul>
+        <ul class="action deceased">
+          <li ng-if="group.deceasedCount > 0" class="content-row deceased">
+            <a ui-sref="contacts.deceased({ id: contactsContentCtrl.selectedContact.doc._id })">
+              <span translate translate-values="{ count: group.deceasedCount }">contact.deceased.view</span>
+              <i class="fa fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
       </div>
 
-      <div ng-if="$ctrl.selected.children.places">
-        <div class="card children">
-          <div class="action-header cell">
-            <h3 translate>{{$ctrl.selected.children.childPlacesLabel}}</h3>
-          </div>
-          <ul>
-            <mm-content-row ng-repeat="child in $ctrl.selected.children.places"
-              id="child.doc._id"
-              route="'contacts'"
-              heading="child.doc.name"
-              is-muted="child.doc.muted"
-              display-muted="true"
-            />
-          </ul>
-        </div>
-      </div>
-
-      <div ng-if="$ctrl.selected.tasks" mm-auth="can_view_tasks">
+      <div ng-if="contactsContentCtrl.selectedContact.tasks" mm-auth="can_view_tasks">
         <div class="card tasks">
           <div class="action-header cell">
             <h3 translate>Tasks</h3>
@@ -150,15 +111,15 @@
             </span>
           </div>
           <ul>
-            <mm-content-row ng-repeat="task in $ctrl.selected.tasks | filter:filterTasks as filteredTasks"
+            <mm-content-row ng-repeat="task in contactsContentCtrl.selectedContact.tasks | filter:filterTasks as filteredTasks"
               id="task._id"
               route="'tasks'"
               icon="task.icon"
               date="task.date"
               overdue="task.isLate"
               hide-time="true"
-              heading="$ctrl.selected.doc.type === 'clinic' ? (task.contact && task.contact.name) : task.title"
-              summary="$ctrl.selected.doc.type === 'clinic' ? task.title : ''"
+              heading="contactsContentCtrl.selectedContact.children.length ? (task.contact && task.contact.name) : task.title"
+              summary="contactsContentCtrl.selectedContact.children.length ? task.title : ''"
               warning="task.priorityLabel"
             />
           </ul>
@@ -181,16 +142,16 @@
               <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
             </span>
           </div>
-          <div class="loader" ng-if="$ctrl.loadingSelectedReports"></div>
-          <div ng-if="!$ctrl.loadingSelectedReports">
+          <div class="loader" ng-if="contactsContentCtrl.loadingSelectedContactReports"></div>
+          <div ng-if="!contactsContentCtrl.loadingSelectedContactReports">
             <ul>
-              <mm-content-row ng-repeat="report in $ctrl.selected.reports | filter:filterReports as filteredReports track by report._id"
+              <mm-content-row ng-repeat="report in contactsContentCtrl.selectedContact.reports | filter:filterReports as filteredReports track by report._id"
                 id="report._id"
                 route="'reports'"
                 icon="report | formIconName:forms"
                 date="report.reported_date"
-                heading="$ctrl.selected.doc.type === 'person' ? (report | summary:forms) : report.heading"
-                summary="$ctrl.selected.doc.type === 'person' ? '' : (report | summary:forms)"
+                heading="contactsContentCtrl.selectedContact.children.length ? report.heading : (report | summary:forms)"
+                summary="contactsContentCtrl.selectedContact.children.length ? (report | summary:forms) : ''"
                 show-status="true"
                 valid="report.valid"
                 verified="report.verified"

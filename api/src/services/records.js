@@ -12,14 +12,12 @@ const empty = val => {
          val === undefined;
 };
 
-/**
- * Determine locale/language of a record based on a locale value:
- *  - Set on the document
- *  - Reported in a form field named `locale`
- *  - Configured in the gateway and set on message post
- *  - Configured in the settings
- *  - Defaults to 'en'
- */
+// Determine locale/language of a record based on a locale value:
+//  - Set on the document
+//  - Reported in a form field named `locale`
+//  - Configured in the gateway and set on message post
+//  - Configured in the settings
+//  - Defaults to 'en'
 const getLocale = record => {
   return record.locale ||
          (record.fields && record.fields.locale) ||
@@ -28,14 +26,12 @@ const getLocale = record => {
          'en';
 };
 
-/*
- * Append error to data record if it doesn't already exist. we don't need
- * redundant errors. Error objects should always have a code and message
- * attributes.
- *
- * @param {Object} record - data record
- * @param {String|Object} error - error object or code matching key in messages
- */
+// Append error to data record if it doesn't already exist. we don't need
+// redundant errors. Error objects should always have a code and message
+// attributes.
+//
+// @param {Object} record - data record
+// @param {String|Object} error - error object or code matching key in messages
 const addError = (record, error) => {
   if (!record || !error) {
     return;
@@ -59,13 +55,11 @@ const addError = (record, error) => {
   record.errors.push(error);
 };
 
-/*
- * Try to parse sent_timestamp field and use it for reported_date.
- * Particularly useful when re-importing data from gateway to
- * maintain accurate reported_date field.
- *
- * return unix timestamp integer or undefined
- */
+// Try to parse sent_timestamp field and use it for reported_date.
+// Particularly useful when re-importing data from gateway to
+// maintain accurate reported_date field.
+//
+// return unix timestamp integer or undefined
 const parseSentTimestamp = ts => {
   if (typeof ts === 'number') {
     return ts;
@@ -81,11 +75,9 @@ const parseSentTimestamp = ts => {
   }
 };
 
-/**
- * @param {String} form - form code
- * @param {Object} form_data - parsed form data
- * @returns {String} - Reporting Unit ID value (case insensitive)
- */
+// @param {String} form - form code
+// @param {Object} form_data - parsed form data
+// @returns {String} - Reporting Unit ID value (case insensitive)
 const getRefID = (form, form_data) => {
   const forms = config.get('forms');
   const def = forms && forms[form];
@@ -99,12 +91,9 @@ const getRefID = (form, form_data) => {
   return val;
 };
 
-/**
- * @param {Object} formData - parsed form data
- * @param {Object} options from initial POST
- * @returns {Object} - data record
- * @api private
- */
+// @param {Object} formData - parsed form data
+// @param {Object} options from initial POST
+// @returns {Object} - data record
 const getDataRecord = (formData, options) => {
 
   const form = options.form,

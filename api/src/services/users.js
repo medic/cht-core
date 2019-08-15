@@ -92,7 +92,7 @@ const getFacilities = () => {
 const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
-      if (doc.type !== 'person') {
+      if (!people.isAPerson(doc)) {
         return Promise.reject(error400('Wrong type, contact is not a person.','contact.type.wrong'));
       }
       if (!module.exports._hasParent(doc, placeID)) {

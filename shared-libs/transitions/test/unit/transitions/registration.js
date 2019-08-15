@@ -171,7 +171,56 @@ describe('registration', () => {
       });
     });
 
-    it('errors if the configuration doesnt point to an id', () => {
+    it('trigger creates a new contact with the given type', done => {
+      const change = {
+        doc: {
+          _id: 'def',
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: '+555123',
+          fields: { patient_name: 'jack' },
+          birth_date: '2017-03-31T01:15:09.000Z',
+        },
+      };
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      // return expected view results when searching for contacts_by_phone
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+        rows: [
+          {
+            doc: {
+              _id: 'abc',
+              parent: { _id: 'papa' },
+            },
+          },
+        ],
+      });
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const eventConfig = {
+        form: 'R',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '{ "contact_type": "patient" }'
+        }],
+      };
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(transition, 'validate').callsArgWith(2);
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+        doc.patient_id = '05649';
+        callback();
+      });
+
+      transition.onMatch(change).then(() => {
+        saveDoc.callCount.should.equal(1);
+        saveDoc.args[0][0].type.should.equal('contact');
+        saveDoc.args[0][0].contact_type.should.equal('patient');
+        done();
+      });
+    });
+
+    it('errors if the configuration does not point to an id', () => {
       const patientId = '05648';
       const doc = {
         type: 'data_record',
@@ -427,7 +476,7 @@ describe('registration', () => {
       } catch (e) {
         (e instanceof Error).should.equal(true);
         e.message.should.equal(
-          'Configuration error. patient_id_field cannot be set to patient_id'
+          'Configuration error in R.add_patient: patient_id_field cannot be set to patient_id'
         );
         done();
       }
@@ -721,6 +770,96 @@ describe('registration', () => {
         );
         done();
       }
+    });
+
+    it('fails if the configured contact type is not known', done => {
+      const eventConfig = [{
+        form: 'R',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '{ "contact_type": "unknown" }'
+        }],
+      }];
+      const contactTypes = [{ id: 'known' }];
+
+      sinon.stub(config, 'get')
+        .withArgs('registrations').returns(eventConfig)
+        .withArgs('contact_types').returns(contactTypes);
+      try {
+        transition.init();
+        done(new Error('Expected validation error'));
+      } catch (e) {
+        (e instanceof Error).should.equal(true);
+        e.message.should.equal('Configuration error in R.add_patient: trigger would create a doc with an unknown contact type "unknown"');
+        done();
+      }
+    });
+
+    it('fails if the configured contact type is not a person', done => {
+      const eventConfig = [{
+        form: 'R',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '{ "contact_type": "place" }'
+        }],
+      }];
+      const contactTypes = [{ id: 'place' }];
+
+      sinon.stub(config, 'get')
+        .withArgs('registrations').returns(eventConfig)
+        .withArgs('contact_types').returns(contactTypes);
+      try {
+        transition.init();
+        done(new Error('Expected validation error'));
+      } catch (e) {
+        (e instanceof Error).should.equal(true);
+        e.message.should.equal('Configuration error in R.add_patient: trigger would create a doc with a place contact type "place"');
+        done();
+      }
+    });
+
+    it('fails if the default "person" contact type is not known', done => {
+      const eventConfig = [{
+        form: 'R',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: ''
+        }],
+      }];
+      const contactTypes = [{ id: 'place' }];
+
+      sinon.stub(config, 'get')
+        .withArgs('registrations').returns(eventConfig)
+        .withArgs('contact_types').returns(contactTypes);
+      try {
+        transition.init();
+        done(new Error('Expected validation error'));
+      } catch (e) {
+        (e instanceof Error).should.equal(true);
+        e.message.should.equal('Configuration error in R.add_patient: trigger would create a doc with an unknown contact type "person"');
+        done();
+      }
+    });
+
+    it('succeeds for known person type', done => {
+      const eventConfig = [{
+        form: 'R',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '{ "contact_type": "patient" }'
+        }],
+      }];
+      const contactTypes = [{ id: 'patient', person: true }];
+
+      sinon.stub(config, 'get')
+        .withArgs('registrations').returns(eventConfig)
+        .withArgs('contact_types').returns(contactTypes);
+      transition.init();
+      done();
     });
   });
 

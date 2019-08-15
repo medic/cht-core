@@ -1,6 +1,6 @@
-<div class="loader" ng-if="loading"></div>
+<div class="loader" ng-if="loading" mm-auth="can_configure"></div>
 
-<div ng-if="!loading">
+<div ng-if="!loading" mm-auth="can_configure">
 
   <p ng-if="error" class="alert alert-danger" role="alert" translate>error.settings.loading</p>
 

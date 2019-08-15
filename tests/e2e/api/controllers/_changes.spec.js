@@ -22,13 +22,13 @@ function assertChangeIds(changes) {
   // * filter out deleted entries - we never delete in our production code, but
   // some docs are deleted in the test setup/teardown
   //  * also filter out translation documents and other expected documents
-  changes = _.reject(changes, function(change) {
-    return change.deleted ||
-           change.id.startsWith('messages-') ||
-           DEFAULT_EXPECTED.indexOf(change.id) !== -1;
+  changes = changes.filter(change => {
+    return !change.deleted &&
+           !change.id.startsWith('messages-') &&
+           !change.id.startsWith('form:contact:') &&
+           !DEFAULT_EXPECTED.includes(change.id);
   });
-
-  var expectedIds = Array.prototype.slice.call(arguments, 1);
+  const expectedIds = Array.prototype.slice.call(arguments, 1);
   expect(_.unique(_.pluck(changes, 'id')).sort()).toEqual(expectedIds.sort());
 }
 
@@ -94,7 +94,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chwville',
-      type: 'district_hospital',
+      type: 'clinic',
       name: 'Chwville',
       parent: 'fixture:chw-bossville'
     },
@@ -103,6 +103,16 @@ const users = [
       name: 'CHW'
     },
     roles: ['district_admin', 'analytics']
+  },
+  {
+    username: 'supervisor',
+    password: password,
+    place: 'PARENT_PLACE',
+    contact: {
+      _id: 'fixture:user:supervisor',
+      name: 'Supervisor'
+    },
+    roles: ['district_admin']
   },
   {
     username: 'steve',
@@ -524,7 +534,11 @@ describe('changes handler', () => {
         .then(changes => {
           if (shouldBatchChangesRequests) {
             // requests should be limited
-            expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+            expect(changes.results.every(change => {
+              return expectedIds.includes(change.id) ||
+                     change.id.startsWith('messages-') ||
+                     change.id.startsWith('form:contact:');
+            })).toBe(true);
             // because we still process pending changes, it's not a given we will receive only 4 changes.
             expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
           } else {
@@ -1140,6 +1154,209 @@ describe('changes handler', () => {
               'fixture:chwville',
               'should-be-visible',
               'should-also-be-visible')));
+
+    describe('Needs signoff', () => {
+      beforeEach(done => {
+        const patient = {
+          _id: 'clinic_patient',
+          type: 'person',
+          reported_date: 1,
+          parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+        };
+        const healthCenterPatient = {
+          _id: 'health_center_patient',
+          type: 'person',
+          reported_date: 1,
+          parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+        };
+        utils.saveDocs([patient, healthCenterPatient]).then(done);
+      });
+
+      it('should do nothing when not truthy or not present', () => {
+        const clinicReport = {
+          _id: 'clinic_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient' },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          }
+        };
+        const clinicReport2 = {
+          _id: 'clinic_report_2',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: false },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          }
+        };
+        const healthCenterReport = {
+          _id: 'health_center_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'health_center_patient', needs_signoff: ''},
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw-boss',
+            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          }
+        };
+        const bobReport = {
+          _id: 'bob_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: null },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:bob',
+           parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+          }
+        };
+
+        return utils
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
+          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .then(() => Promise.all([
+            requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
+            requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
+            requestChanges('supervisor'), // supervisor > parent_place
+            requestChanges('bob'), // bob > bobbille > parent_place
+          ]))
+          .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
+            assertChangeIds(chwChanges,
+              'org.couchdb.user:chw',
+              'fixture:user:chw',
+              'fixture:chwville',
+              'clinic_patient',
+              'clinic_report',
+              'clinic_report_2');
+
+            assertChangeIds(chwBossChanges,
+              'org.couchdb.user:chw-boss',
+              'fixture:user:chw-boss',
+              'fixture:chw-bossville',
+              'fixture:chwville',
+              'health_center_patient',
+              'health_center_report');
+
+            assertChangeIds(supervisorChanges,
+              'org.couchdb.user:supervisor',
+              'fixture:user:supervisor',
+              'fixture:chw-bossville',
+              'fixture:managerville',
+              'fixture:clareville',
+              'fixture:steveville',
+              'fixture:bobville',
+              'PARENT_PLACE');
+
+            assertChangeIds(bobChanges,
+              'org.couchdb.user:bob',
+              'fixture:bobville',
+              'fixture:user:bob',
+              'bob_report');
+          });
+      });
+
+      it('should replicate to all ancestors when present and truthy', () => {
+        const clinicReport = {
+          _id: 'clinic_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: true },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          }
+        };
+        const clinicReport2 = {
+          _id: 'clinic_report_2',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          }
+        };
+        const healthCenterReport = {
+          _id: 'health_center_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw-boss',
+            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          }
+        };
+        const bobReport = {
+          _id: 'bob_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:bob',
+            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+          }
+        };
+
+        return utils
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
+          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .then(() => Promise.all([
+            requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
+            requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
+            requestChanges('supervisor'), // supervisor > parent_place
+            requestChanges('bob'), // bob > bobbille > parent_place
+          ]))
+          .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
+            assertChangeIds(chwChanges,
+              'org.couchdb.user:chw',
+              'fixture:user:chw',
+              'fixture:chwville',
+              'clinic_patient',
+              'clinic_report',
+              'clinic_report_2');
+
+            assertChangeIds(chwBossChanges,
+              'org.couchdb.user:chw-boss',
+              'fixture:user:chw-boss',
+              'fixture:chw-bossville',
+              'fixture:chwville',
+              'health_center_patient',
+              'health_center_report',
+              'clinic_report',
+              'clinic_report_2');
+            assertChangeIds(supervisorChanges,
+              'org.couchdb.user:supervisor',
+              'fixture:user:supervisor',
+              'fixture:chw-bossville',
+              'fixture:managerville',
+              'fixture:clareville',
+              'fixture:steveville',
+              'fixture:bobville',
+              'PARENT_PLACE',
+              'health_center_report',
+              'clinic_report',
+              'clinic_report_2',
+              'bob_report');
+
+            assertChangeIds(bobChanges,
+              'org.couchdb.user:bob',
+              'fixture:bobville',
+              'fixture:user:bob',
+              'bob_report');
+          });
+      });
+    });
   });
 
   it('should not return reports about your place by someone above you in the hierarchy', () =>

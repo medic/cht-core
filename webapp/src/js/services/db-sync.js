@@ -81,14 +81,6 @@ angular
             .on('error', function(err) {
               $log.error(`Error replicating ${direction.name} remote server`, err);
             })
-            .on('complete', function(info) {
-              const authError = !info.ok &&
-                info.errors &&
-                info.errors.some(error => error.status === 401);
-              if (authError) {
-                Session.navigateToLogin();
-              }
-            })
             .then(info => {
               $log.debug(`Replication ${direction.name} successful`, info);
               return;

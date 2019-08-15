@@ -12,7 +12,6 @@ angular.module('inboxServices').service('Enketo',
     $timeout,
     $translate,
     $window,
-    Actions,
     AddAttachment,
     ContactSummary,
     DB,
@@ -21,6 +20,7 @@ angular.module('inboxServices').service('Enketo',
     ExtractLineage,
     FileReader,
     GetReportContent,
+    GlobalActions,
     Language,
     LineageModelGenerator,
     Search,
@@ -45,9 +45,9 @@ angular.module('inboxServices').service('Enketo',
 
     const self = this;
     const mapDispatchToTarget = (dispatch) => {
-      const actions = Actions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
-        setLastChangedDoc: actions.setLastChangedDoc
+        setLastChangedDoc: globalActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);
@@ -64,18 +64,13 @@ angular.module('inboxServices').service('Enketo',
     var inited = init();
 
     var replaceJavarosaMediaWithLoaders = function(id, form) {
-      form.find('img,video,audio').each(function() {
+      form.find('[data-media-src]').each(function() {
         var elem = $(this);
-        var src = elem.attr('src');
-        if (!(/^jr:\/\//.test(src))) {
-          return;
-        }
-        // Change URL to fragment to prevent browser trying to load it
-        elem.attr('src', '#' + src);
+        var src = elem.attr('data-media-src');
         elem.css('visibility', 'hidden');
         elem.wrap('<div class="loader">');
         DB()
-          .getAttachment(id, src.substring(5))
+          .getAttachment(id, src)
           .then(function(blob) {
             var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
@@ -95,8 +90,8 @@ angular.module('inboxServices').service('Enketo',
         XSLT.transform('openrosa2xmlmodel.xsl', xml)
       ])
       .then(function(results) {
-        var $html = $(results[0]);
-        var model = results[1];
+        const $html = $(results[0].replace(/ src="jr:\/\//gi, ' data-media-src="'));
+        const model = results[1];
         $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
@@ -210,6 +205,14 @@ angular.module('inboxServices').service('Enketo',
       return LineageModelGenerator.contact(contact._id)
         .then(function(model) {
           return model.lineage;
+        })
+        .catch(function(err) {
+          if (err.code === 404) {
+            $log.warn(`Enketo failed to get lineage of contact '${contact._id}' because document does not exist`, err);
+            return [];
+          }
+
+          throw err;
         });
     };
 
@@ -366,21 +369,6 @@ angular.module('inboxServices').service('Enketo',
     };
 
     this.renderContactForm = renderForm;
-
-    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
-      return $q.all([inited, Language()])
-        .then(function(results) {
-          return translateXml(xmlString, results[1]);
-        })
-        .then(transformXml)
-        .then(function(doc) {
-          return renderFromXmls(doc, selector, instanceData);
-        })
-        .then(function(form) {
-          registerEditedListener(selector, editedListener);
-          return form;
-        });
-    };
 
     var xmlToDocs = function(doc, record) {
 

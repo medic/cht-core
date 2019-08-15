@@ -2,18 +2,21 @@ describe('Contacts service', () => {
 
   'use strict';
 
-  let service,
-      dbQuery;
+  let service;
+  let dbQuery;
 
   beforeEach(() => {
     module('inboxApp');
     dbQuery = sinon.stub();
+    const placeTypes = [
+      { id: 'district_hospital' },
+      { id: 'health_center' },
+      { id: 'clinic' }
+    ];
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
       $provide.value('Cache', options => options.get);
-      $provide.value('ContactSchema', {
-        getPlaceTypes: () => [ 'district_hospital', 'health_center', 'clinic' ]
-      });
+      $provide.value('ContactTypes', { getPlaceTypes: () => Promise.resolve(placeTypes) });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject($injector => {

@@ -45,14 +45,15 @@ window.KarmaUtils = {
     };
   },
   setupMockStore: function(initialState) {
-    angular.module('inboxApp').config(function($ngReduxProvider, Reducers) {
+    angular.module('inboxApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
-      $ngReduxProvider.createStoreWith(Reducers, [ReduxThunk.default], [], initialState); // eslint-disable-line no-undef
+      $ngReduxProvider.createStoreWith(RootReducer, [ReduxThunk.default], [], initialState); // eslint-disable-line no-undef
     });
     // If actual DB is run it causes a full page refresh which causes karma to error
     module(function ($provide) {
       'ngInject';
       $provide.value('DB', function() {});
+      $provide.value('ContactViewModelGenerator', function() {});
       $provide.value('Session', {
         userCtx: () => { return {}; }
       });

@@ -5,9 +5,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope,
     $state,
     $translate,
-    Actions,
     Enketo,
     Geolocation,
+    GlobalActions,
     Selectors,
     Snackbar,
     Telemetry,
@@ -27,17 +27,18 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selected: Selectors.getSelected(state)
+        loadingContent: Selectors.getLoadingContent(state),
+        selectedTask: Selectors.getSelectedTask(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
-      var actions = Actions(dispatch);
+      var globalActions = GlobalActions(dispatch);
       return {
-        clearCancelCallback: actions.clearCancelCallback,
-        setCancelCallback: actions.setCancelCallback,
-        setEnketoEditedStatus: actions.setEnketoEditedStatus,
-        setEnketoSavingStatus: actions.setEnketoSavingStatus,
-        setEnketoError: actions.setEnketoError
+        clearCancelCallback: globalActions.clearCancelCallback,
+        setCancelCallback: globalActions.setCancelCallback,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
+        setEnketoError: globalActions.setEnketoError
       };
     };
     var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -74,22 +75,22 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         } else {
           Enketo.unload($scope.form);
           $scope.form = null;
-          $scope.loadingForm = false;
+          ctrl.loadingForm = false;
           $scope.contentError = false;
           ctrl.clearCancelCallback();
         }
       });
       $scope.contentError = false;
       if (action.type === 'report') {
-        $scope.loadingForm = true;
+        ctrl.loadingForm = true;
         $scope.formId = action.form;
         XmlForm(action.form, { include_docs: true })
           .then(function(formDoc) {
             ctrl.setEnketoEditedStatus(false);
-            Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
+            return Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
               .then(function(formInstance) {
                 $scope.form = formInstance;
-                $scope.loadingForm = false;
+                ctrl.loadingForm = false;
                 if (formDoc.doc.translation_key) {
                   $scope.setTitle($translate.instant(formDoc.doc.translation_key));
                 } else {
@@ -107,9 +108,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
               });
           })
           .catch(function(err) {
-            $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
+            ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
             $scope.contentError = true;
-            $scope.loadingForm = false;
+            ctrl.loadingForm = false;
             $log.error('Error loading form.', err);
           });
       } else if (action.type === 'contact') {
@@ -161,8 +162,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     // Wait for `selected` to be set during tasks generation and load the
     // form if we have no other description or instructions in the task.
     $scope.$watch('selected', function() {
-      if (hasOneFormAndNoFields(ctrl.selected)) {
-        $scope.performAction(ctrl.selected.actions[0], true);
+      if (hasOneFormAndNoFields(ctrl.selectedTask)) {
+        $scope.performAction(ctrl.selectedTask.actions[0], true);
       }
     });
 

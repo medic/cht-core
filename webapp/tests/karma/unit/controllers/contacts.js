@@ -5,7 +5,7 @@ describe('Contacts controller', () => {
     buttonLabel,
     contactsLiveList,
     childType,
-    contactSchema,
+    contactTypes,
     createController,
     district,
     forms,
@@ -35,7 +35,7 @@ describe('Contacts controller', () => {
     isDbAdmin,
     liveListInit,
     liveListReset,
-    actions,
+    contactsActions,
     getSelected,
     tasksForContact;
 
@@ -44,7 +44,7 @@ describe('Contacts controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, Actions, Selectors) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, Selectors) => {
     deadListFind = sinon.stub();
     deadListContains = sinon.stub();
     deadList = () => {
@@ -88,25 +88,15 @@ describe('Contacts controller', () => {
     scope.clearSelection = sinon.stub();
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
-    contactSchema = {
-      get: sinon.stub(),
-      getChildPlaceType: sinon.stub(),
-      getPlaceTypes: sinon.stub(),
-      getTypes: sinon.stub(),
+    contactTypes = {
+      getChildren: sinon.stub(),
+      includes: sinon.stub()
     };
-    contactSchema.get.returns({
-      icon: icon,
-      addButtonLabel: buttonLabel,
-      label: typeLabel,
-    });
-    contactSchema.getChildPlaceType.returns(childType);
-    contactSchema.getPlaceTypes.returns(['district_hospital']);
-    contactSchema.getTypes.returns([
-      'person',
-      'district_hospital',
-      'clinic',
-      'health_center',
-    ]);
+    contactTypes.getChildren.resolves([{
+      id: childType,
+      icon: icon
+    }]);
+    contactTypes.includes.returns(false);
     xmlForms = sinon.stub();
     forms = [{ internalId: 'a-form', icon: 'an-icon', title: 'A Form' }];
     xmlForms.callsArgWith(2, null, forms); // call the callback
@@ -140,14 +130,12 @@ describe('Contacts controller', () => {
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
 
-    actions = Actions($ngRedux.dispatch);
-    const stubbedActions = {
-      loadSelectedChildren: sinon.stub().returns(Promise.resolve()),
-      loadSelectedReports: sinon.stub().returns(Promise.resolve())
+    contactsActions = ContactsActions($ngRedux.dispatch);
+    const stubbedContactsActions = {
+      loadSelectedContactChildren: sinon.stub().returns(Promise.resolve()),
+      loadSelectedContactReports: sinon.stub().returns(Promise.resolve())
     };
-    getSelected = () => {
-      return Selectors.getSelected($ngRedux.getState());
-    };
+    getSelected = () => Selectors.getSelectedContact($ngRedux.getState());
 
     tasksForContact = sinon.stub();
 
@@ -163,10 +151,10 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
-        Actions: () => Object.assign({}, actions, stubbedActions),
+        ContactsActions: () => Object.assign({}, contactsActions, stubbedContactsActions),
         Auth: auth,
         Changes: changes,
-        ContactSchema: contactSchema,
+        ContactTypes: contactTypes,
         ContactSummary: contactSummary,
         Export: () => {},
         GetDataRecords: getDataRecords,
@@ -196,11 +184,13 @@ describe('Contacts controller', () => {
   }));
 
   it('sets title', () => {
+    const selected = {
+      doc: district,
+      type: { id: 'place', name_key: typeLabel }
+    };
     return createController()
       .getSetupPromiseForTesting()
-      .then(() => {
-        return scope.setSelected({ doc: district });
-      })
+      .then(() => scope.setSelected(selected))
       .then(() => {
         assert(scope.setTitle.called, 'title should be set');
         assert.equal(
@@ -216,13 +206,11 @@ describe('Contacts controller', () => {
     const testContactSelection = selected => {
       return createController()
         .getSetupPromiseForTesting()
-        .then(() => {
-          return scope.setSelected(selected);
-        });
+        .then(() => scope.setSelected(selected));
     };
 
     it('set selected contact', () => {
-      return testContactSelection({ doc: district }).then(() => {
+      return testContactSelection({ doc: district, type: { id: 'place' } }).then(() => {
         assert.checkDeepProperties(getSelected().doc, district);
         assert(scope.setRightActionBar.called);
         assert(scope.setRightActionBar.args[0][0].selected);
@@ -231,7 +219,7 @@ describe('Contacts controller', () => {
 
     it('throws an error, sets a scope variable and resets the action bar when contact cannot be selected', () => {
       contactSummary.returns(Promise.reject());
-      return testContactSelection({ doc: district })
+      return testContactSelection({ doc: district, type: { id: 'place' } })
         .then(() => {
           throw new Error('Expected error to be thrown');
         })
@@ -292,43 +280,39 @@ describe('Contacts controller', () => {
   });
 
   describe('sets right actionBar', () => {
-    const testRightActionBar = (selected, assertions) => {
+    const testRightActionBar = (selected, person, assertions) => {
+      selected.reportLoader = Promise.resolve();
+      selected.type = person ? { id: 'person', person: true } : { id: 'place' };
       return createController()
         .getSetupPromiseForTesting()
+        .then(() => scope.setSelected(selected))
         .then(() => {
-          return scope.setSelected(selected);
-        })
-        .then(() => {
-          assert(
-            scope.setRightActionBar.called,
-            'right actionBar should be set'
-          );
-          const actionBarArgs = scope.setRightActionBar.getCall(1).args[0];
-          assertions(actionBarArgs);
+          assert(scope.setRightActionBar.called, 'right actionBar should be set');
+          assertions(scope.setRightActionBar.getCall(1).args[0]);
         });
     };
 
     it('with the selected doc', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
+      return testRightActionBar({ doc: district }, true, actionBarArgs => {
         assert.checkDeepProperties(actionBarArgs.selected[0], district);
       });
     });
 
     it('for the New Place button', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
-        assert.equal(actionBarArgs.selected[0].child.type, childType);
-        assert.equal(actionBarArgs.selected[0].child.icon, icon);
-        assert.equal(
-          actionBarArgs.selected[0].child.addPlaceLabel,
-          buttonLabel
-        );
+      return testRightActionBar({ doc: district }, true, actionBarArgs => {
+        assert.deepEqual(actionBarArgs.childTypes, [{
+          menu_icon: 'fa-building',
+          menu_key: 'Add place',
+          permission: 'can_create_places',
+          types: [ { id: childType, icon: icon } ]
+        }]);
       });
     });
 
     it('no New Place button if no child type', () => {
-      contactSchema.getChildPlaceType.returns(undefined);
-      return testRightActionBar({ doc: person }, actionBarArgs => {
-        assert.equal(actionBarArgs.selected[0].child, undefined);
+      contactTypes.getChildren.resolves([]);
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
+        assert.deepEqual(actionBarArgs.childTypes, []);
         // But the other buttons are there!
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
@@ -338,19 +322,19 @@ describe('Contacts controller', () => {
     });
 
     it('for the Message and Call buttons', () => {
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.checkDeepProperties(actionBarArgs.sendTo, person);
       });
     });
 
     it('no Message and Call buttons if doc is not person', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
+      return testRightActionBar({ doc: district }, false, actionBarArgs => {
         assert.equal(actionBarArgs.sendTo, '');
       });
     });
 
     it('for the New Action button', () => {
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
       });
@@ -358,43 +342,35 @@ describe('Contacts controller', () => {
 
     it(`sets the actionbar partially if it couldn't get forms`, () => {
       xmlForms.callsArgWith(2, { error: 'no forms brew' }); // call the callback
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.equal(actionBarArgs.relevantForms, undefined);
         assert.checkDeepProperties(actionBarArgs.sendTo, person);
         assert.equal(actionBarArgs.selected[0]._id, person._id);
-        assert.equal(actionBarArgs.selected[0].child.type, childType);
-        assert.equal(actionBarArgs.selected[0].child.icon, icon);
-        assert.equal(
-          actionBarArgs.selected[0].child.addPlaceLabel,
-          buttonLabel
-        );
+        assert.deepEqual(actionBarArgs.childTypes, [{
+          menu_icon: 'fa-building',
+          menu_key: 'Add place',
+          permission: 'can_create_places',
+          types: [ { id: childType, icon: icon } ]
+        }]);
       });
     });
 
     it('disables editing for own place', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
+      return testRightActionBar({ doc: district }, true, actionBarArgs => {
         assert.equal(actionBarArgs.canEdit, false);
       });
     });
 
     it('enables editing for not own place', () => {
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.equal(actionBarArgs.canEdit, true);
       });
     });
 
-    it('disables deleting for places with child places', () => {
+    it('disables deleting for places with children', () => {
       return testRightActionBar(
-        { doc: district, children: { places: [district] } },
-        actionBarArgs => {
-          assert.equal(actionBarArgs.canDelete, false);
-        }
-      );
-    });
-
-    it('disables deleting for places with child people', () => {
-      return testRightActionBar(
-        { doc: district, children: { persons: [person] } },
+        { doc: district, children: [ { contacts: [ district ] } ] },
+        true,
         actionBarArgs => {
           assert.equal(actionBarArgs.canDelete, false);
         }
@@ -403,7 +379,18 @@ describe('Contacts controller', () => {
 
     it('enables deleting for leaf nodes', () => {
       return testRightActionBar(
-        { doc: district, children: { persons: [], places: [] } },
+        { doc: district, children: [] },
+        true,
+        actionBarArgs => {
+          assert.equal(actionBarArgs.canDelete, true);
+        }
+      );
+    });
+
+    it('enables deleting for nodes with no children', () => {
+      return testRightActionBar(
+        { doc: district, children: [ { contacts: [] } ] },
+        true,
         actionBarArgs => {
           assert.equal(actionBarArgs.canDelete, true);
         }
@@ -413,11 +400,14 @@ describe('Contacts controller', () => {
     describe('translates form titles', () => {
       const testTranslation = (form, expectedTitle) => {
         xmlForms.callsArgWith(2, null, [form]);
+        const selected = {
+          type: { id: 'childType' },
+          doc: district,
+          reportLoader: Promise.resolve()
+        };
         return createController()
           .getSetupPromiseForTesting()
-          .then(() => {
-            return scope.setSelected({ doc: district, reportLoader: Promise.resolve() });
-          })
+          .then(() => scope.setSelected(selected))
           .then(() => {
             assert(
               scope.setRightActionBar.called,
@@ -468,11 +458,15 @@ describe('Contacts controller', () => {
           }
         });
 
+        const selected = {
+          type: { id: 'childType' },
+          doc: { _id: 'my-contact', muted: false },
+          reportLoader: Promise.resolve()
+        };
+
         return createController()
           .getSetupPromiseForTesting()
-          .then(() => {
-            return scope.setSelected({ doc: { _id: 'my-contact', muted: false }, reportLoader: Promise.resolve() });
-          })
+          .then(() => scope.setSelected(selected))
           .then(() => {
             assert(
               scope.setRightActionBar.called,
@@ -498,12 +492,15 @@ describe('Contacts controller', () => {
             unmute_forms: ['unmute']
           }
         });
+        const selected = {
+          type: { id: 'childType' },
+          doc: { _id: 'my-contact', muted: true },
+          reportLoader: Promise.resolve()
+        };
 
         return createController()
           .getSetupPromiseForTesting()
-          .then(() => {
-            return scope.setSelected({ doc: { _id: 'my-contact', muted: true }, reportLoader: Promise.resolve() });
-          })
+          .then(() => scope.setSelected(selected))
           .then(() => {
             assert(
               scope.setRightActionBar.called,
@@ -615,8 +612,9 @@ describe('Contacts controller', () => {
         .getSetupPromiseForTesting()
         .then(() => {
           assert.deepEqual(searchService.args[0][1], {
-            types: { selected: ['district_hospital'] },
+            types: { selected: ['childType'] },
           });
+          assert.equal(contactTypes.getChildren.args[0].length, 0);
           const lhs = contactsLiveList.getList();
           assert.equal(
             lhs.length,
@@ -809,6 +807,7 @@ describe('Contacts controller', () => {
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
+          contactTypes.includes.returns(true);
           assert.equal(changesFilter({ doc: { type: 'person' } }), true);
           assert.equal(changesFilter({ doc: { type: 'clinic' } }), true);
           assert.equal(changesFilter({ doc: { type: 'health_center' } }), true);

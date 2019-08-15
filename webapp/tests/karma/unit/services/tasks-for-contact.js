@@ -10,25 +10,28 @@ describe('TasksForContact service', function() {
     translate,
     translateFrom;
 
+  const PERSON_TYPE = { id: 'person', person: true, parents: ['clinic'] };
+  const CLINIC_TYPE = { id: 'clinic', parents: ['health_center'] };
+  const HEALTH_CENTER_TYPE = { id: 'health_center' };
+
   beforeEach(function() {
     module('inboxApp');
 
     docId = 'dockyMcDocface';
     childPersonId = 'hillary';
 
-    var log = { error: console.error, debug: console.info };
-    module(function($provide) {
-      $provide.value('$log', log);
-    });
-
     rulesEngineListen = sinon.stub();
     stubRulesEngine = function(err, tasks) {
       rulesEngineListen.callsArgWith(2, err, tasks);
     };
     translateFrom = sinon.stub();
+
+    const contactTypes = [ PERSON_TYPE, CLINIC_TYPE, HEALTH_CENTER_TYPE ];
     module(function($provide) {
+      $provide.value('$q', Q);
       $provide.value('RulesEngine', { listen: rulesEngineListen, enabled: true });
       $provide.value('TranslateFrom', translateFrom);
+      $provide.value('ContactTypes', { getAll: sinon.stub().resolves(contactTypes) });
     });
 
     inject(function(_TasksForContact_, _RulesEngine_, _$translate_) {
@@ -46,8 +49,9 @@ describe('TasksForContact service', function() {
     rulesEngine.enabled = false;
     var task = { _id: 'aa', contact: { _id: docId } };
     const model = {
-      doc: { _id: docId, type: 'person' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: PERSON_TYPE
     };
     stubRulesEngine(null, [task]);
 
@@ -62,8 +66,9 @@ describe('TasksForContact service', function() {
     var task = { _id: 'aa', contact: { _id: docId } };
     stubRulesEngine(null, [task]);
     const model = {
-      doc: { _id: docId, type: 'person' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: PERSON_TYPE
     };
 
     service(model, 'listenerName', (tasks) => {
@@ -77,8 +82,9 @@ describe('TasksForContact service', function() {
     var task = { _id: 'aa', contact: { _id: docId } };
     stubRulesEngine(null, [task]);
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: CLINIC_TYPE
     };
 
     service(model, 'listenerName', (tasks) => {
@@ -92,18 +98,24 @@ describe('TasksForContact service', function() {
     var task = { _id: 'aa', contact: { _id: docId } };
     stubRulesEngine(null, [task]);
     const model = {
-      doc: { _id: docId, type: 'health_center' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: HEALTH_CENTER_TYPE
     };
 
     service(model, 'listenerName', (tasks) => {
-      chai.assert(!tasks);
-      done();
+      try {
+        chai.assert(!tasks);
+        done();
+      } catch(e) {
+        done(e);
+      }
     });
   });
 
   it('displays tasks for selected clinic and child persons', function(done) {
     const tasks = [
+      // relevant
       {
         _id: 'taskForParent',
         date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
@@ -124,6 +136,7 @@ describe('TasksForContact service', function() {
         date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
         contact: { _id: 'child1' }
       },
+      // not relevant
       {
         _id: 'taskForRandom',
         date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
@@ -136,15 +149,20 @@ describe('TasksForContact service', function() {
     ];
 
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [{ id: 'child1' }, { id: 'child2' }] }
+      doc: { _id: docId },
+      children: [ { type: PERSON_TYPE, contacts: [{ _id: 'child1' }, { _id: 'child2' }] } ],
+      type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName', (newTasks) => {
+      try {
       chai.assert.equal(rulesEngineListen.callCount, 1);
       chai.assert.equal(newTasks.length, 4);
       chai.assert.sameMembers(newTasks, tasks.slice(0, 4));
       done();
+    } catch(e) {
+      done(e);
+    }
     });
   });
 
@@ -162,8 +180,9 @@ describe('TasksForContact service', function() {
       }
     ];
     const model = {
-      doc: { _id: docId, type: 'person' },
-      children: { persons: [{ id: childPersonId }] }
+      doc: { _id: docId },
+      children: [{ type: PERSON_TYPE, contacts: [{ _id: childPersonId }] }],
+      type: PERSON_TYPE
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName', (newTasks) => {
@@ -182,8 +201,9 @@ describe('TasksForContact service', function() {
       }
     ];
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [{ id: childPersonId }] }
+      doc: { _id: docId },
+      children: [{ type: PERSON_TYPE, contacts: [{ _id: childPersonId }] }],
+      type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName', (newTasks) => {
@@ -207,8 +227,9 @@ describe('TasksForContact service', function() {
     ];
     stubRulesEngine(null, tasks);
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: CLINIC_TYPE
     };
     service(model, 'listenerName', (newTasks) => {
       chai.assert.deepEqual(newTasks, [tasks[1], tasks[0]]);
@@ -232,8 +253,9 @@ describe('TasksForContact service', function() {
       }
     ];
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName', (newTasks) => {
@@ -263,8 +285,9 @@ describe('TasksForContact service', function() {
     stubRulesEngine(null, tasks);
     var callCount = 0;
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [] }
+      doc: { _id: docId },
+      children: [],
+      type: CLINIC_TYPE
     };
     service(model, 'listenerName', (newTasks) => {
       if (callCount === 0) {
@@ -278,24 +301,26 @@ describe('TasksForContact service', function() {
         done('callback called too many times!');
       }
       callCount++;
-    });
-    var changesCallback = rulesEngineListen.args[0][2];
+    })
+      .then(() => {
+        var changesCallback = rulesEngineListen.args[0][2];
 
-    // mark #2 resolved
-    changesCallback(null, [{
-      _id: 2,
-      resolved: true,
-      date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-      contact: { _id: docId }
-    }]);
+        // mark #2 resolved
+        changesCallback(null, [{
+          _id: 2,
+          resolved: true,
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: docId }
+        }]);
 
-    // mark #3 deleted
-    changesCallback(null, [{
-      _id: 3,
-      deleted: true,
-      date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-      contact: { _id: docId }
-    }]);
+        // mark #3 deleted
+        changesCallback(null, [{
+          _id: 3,
+          deleted: true,
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: docId }
+        }]);
+      });
   });
 
   it('should translate tasks labels', (done) => {
@@ -318,8 +343,9 @@ describe('TasksForContact service', function() {
     ];
 
     const model = {
-      doc: { _id: docId, type: 'clinic' },
-      children: { persons: [{ id: childPersonId, doc: { _id: childPersonId } }] }
+      doc: { _id: docId },
+      children: [{ type: PERSON_TYPE, contacts: [{ _id: childPersonId }] }],
+      type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
     service(model, 'listenerName', (newTasks) => {
