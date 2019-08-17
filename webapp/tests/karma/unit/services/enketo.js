@@ -164,6 +164,7 @@ describe('Enketo service', () => {
 
     it('return error when form initialisation fails', function(done) {
       UserContact.resolves({ contact_id: '123' });
+      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment.resolves('xml');
       transform
         .onFirstCall().resolves('<div>my form</div>')

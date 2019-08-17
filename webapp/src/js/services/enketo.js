@@ -129,13 +129,16 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var withForm = function(form, language) {
-      const id = form._id;
+    var withForm = function(id, language) {
       if (!xmlCache[id]) {
         xmlCache[id] = {};
       }
       if (!xmlCache[id][language]) {
-        xmlCache[id][language] = getFormXml(form, language)
+        xmlCache[id][language] = DB()
+          .get(id)
+          .then(function(form) {
+            return getFormXml(form, language);
+          })
           .then(transformXml);
       }
       return xmlCache[id][language].then(function(form) {
