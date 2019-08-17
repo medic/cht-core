@@ -9,12 +9,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $translate,
     ContactSave,
     ContactTypes,
+    DB,
     Enketo,
     GlobalActions,
     LineageModelGenerator,
     Selectors,
-    Snackbar,
-    XmlForms
+    Snackbar
   ) {
 
     'use strict';
@@ -128,7 +128,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           return;
         }
         ctrl.setEnketoEditedStatus(false);
-        return XmlForms.get(formId);
+        return DB().get(formId);
       })
       .then(form => {
         return Enketo.renderContactForm('#contact-form', form, getFormInstanceData(), markFormEdited);
