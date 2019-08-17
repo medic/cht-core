@@ -195,6 +195,7 @@ describe('XmlForms service', () => {
       dbQuery.returns(Promise.resolve({ rows: given }));
       UserContact.returns(Promise.resolve());
       const service = $injector.get('XmlForms');
+      getContactType.resolves({ person: true });
       return service.list({ doc: { type: 'person' } }).then(actual => {
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
         chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
@@ -268,6 +269,7 @@ describe('XmlForms service', () => {
       dbQuery.returns(Promise.resolve({ rows: given }));
       UserContact.returns(Promise.resolve());
       const service = $injector.get('XmlForms');
+      getContactType.resolves({ person: false });
       return service.list({ doc: { type: 'district_hospital' } }).then(actual => {
         chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
           'zero',
@@ -310,6 +312,7 @@ describe('XmlForms service', () => {
       dbQuery.returns(Promise.resolve({ rows: given }));
       UserContact.returns(Promise.resolve({ name: 'Frank' }));
       const service = $injector.get('XmlForms');
+      getContactType.resolves({ person: false });
       return service.list({ doc: { color: 'blue' } }).then(actual => {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
@@ -345,6 +348,7 @@ describe('XmlForms service', () => {
       dbQuery.returns(Promise.resolve({ rows: given }));
       UserContact.returns(Promise.resolve());
       const service = $injector.get('XmlForms');
+      getContactType.resolves({ person: true });
       return service.list({ doc: { sex: 'female', type: 'person' } }).then(actual => {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
@@ -379,6 +383,7 @@ describe('XmlForms service', () => {
       dbQuery.returns(Promise.resolve({ rows: given }));
       UserContact.returns(Promise.resolve());
       const service = $injector.get('XmlForms');
+      getContactType.resolves({ person: true });
       return service.list({ doc: { sex: 'female' } }).then(actual => {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0]).to.deep.equal(given[1].doc);

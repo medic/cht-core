@@ -84,6 +84,30 @@ angular.module('inboxServices').factory('XmlForms',
       });
     };
 
+    const filterContactTypes = (context, doc) => {
+      if (!doc) {
+        return $q.resolve(true);
+      }
+      const contactType = doc.contact_type || doc.type;
+      return ContactTypes.get(contactType).then(type => {
+        if (!type) {
+          // not a contact type
+          return true;
+        }
+        if (type.person && (
+            (typeof context.person !== 'undefined' && !context.person) ||
+            (typeof context.person === 'undefined' && context.place))) {
+          return false;
+        }
+        if (!type.person && (
+            (typeof context.place !== 'undefined' && !context.place) ||
+            (typeof context.place === 'undefined' && context.person))) {
+          return false;
+        }
+        return true;
+      });
+    };
+
     const filter = function(form, options, user) {
       if (!options.includeCollect && form.context && form.context.collect) {
         return false;
@@ -105,39 +129,33 @@ angular.module('inboxServices').factory('XmlForms',
         return true;
       }
 
-      if (options.doc) {
-        const contactType = options.doc.type;
-        if (contactType === 'person' && (
-            (typeof form.context.person !== 'undefined' && !form.context.person) ||
-            (typeof form.context.person === 'undefined' && form.context.place))) {
+      return filterContactTypes(form.context, options.doc).then(validSoFar => {
+        if (!validSoFar) {
           return false;
+        }
+        if (form.context.expression) {
+          try {
+            return evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
+          } catch(err) {
+            $log.error(`Unable to evaluate expression for form: ${form._id}`, err);
+            return false;
+          }
         }
         if (form.context.expression &&
             !evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
           return false;
         }
-      }
-
-      if (form.context.expression) {
-        try {
-          return evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
-        } catch(err) {
-          $log.error(`Unable to evaluate expression for form: ${form._id}`, err);
-          return false;
-        }
-      }
-
-      if (!form.context.permission) {
-        return true;
-      }
-      return Auth(form.context.permission)
-        .then(function() {
+        if (!form.context.permission) {
           return true;
         }
-        .catch(function() {
-          return false;
-        });
-      };
+        return Auth(form.context.permission)
+          .then(function() {
+            return true;
+          })
+          .catch(function() {
+            return false;
+          });
+      });
     };
 
     const notifyAll = function(forms) {
