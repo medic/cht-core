@@ -6,7 +6,7 @@
     "test": "test"
   },
   "scripts": {
-    "eslint": "eslint *.json contact-summary*.js test/*.js",
+    "eslint": "eslint **.json **.js",
     "test": "npm run eslint && npm run test-contact-summary && npm run test-unit",
     "test-contact-summary": "medic-contact-summary-test . test/contact-summary",
     "test-unit": "mocha --require test/mocha-setup.js --reporter progress test/*.spec.js",

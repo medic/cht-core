@@ -11,7 +11,9 @@
   "globals": {
     "contact": true,
     "reports": true,
-    "lineage": true
+    "lineage": true,
+    "Utils": true,
+    "no-global-assign": true,
   },
   "overrides": [
     {
