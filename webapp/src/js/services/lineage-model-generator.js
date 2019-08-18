@@ -13,11 +13,13 @@ var lineageFactory = require('@medic/lineage');
 angular.module('inboxServices').factory('LineageModelGenerator',
   function(
     $q,
+    $window,
     DB
   ) {
     'ngInject';
     'use strict';
     var lineage = lineageFactory($q,DB());
+    $window.lineage = lineage;
 
     var get = function(id) {
       return lineage.fetchLineageById(id)

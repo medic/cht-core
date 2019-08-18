@@ -108,6 +108,12 @@ module.exports = function(Promise, DB) {
       return result;
     };
 
+    const convertArrayToMapKeyedById = array => array.reduce((agg, element) => {
+      const id = element._id || element.id;
+      agg[id] = element;
+      return agg;
+    }, {});
+    
     const lineageIds = getLineageIdsFromDocs(docs);
     return fetchDocs(_.flatten(lineageIds))
       .then(convertArrayToMapKeyedById)
@@ -315,8 +321,3 @@ const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage) {
   return doc;
 };
 
-const convertArrayToMapKeyedById = array => array.reduce((agg, element) => {
-  const id = element._id || element.id;
-  agg[id] = element;
-  return agg;
-}, {});
