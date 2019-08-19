@@ -35,12 +35,29 @@ const nonAsciiDoc = {
   reported_date: 1496068842996
 };
 
+const configurableHierarchyDoc = {
+  _id: '3e32235b-7111-4a69-a0a1-b3094f257892',
+  _rev: '1-e19cb2355b26c5f71abd1cc67b4b1bc0',
+  name: 'jessie',
+  date_of_birth: '',
+  phone: '+254777444333',
+  alternate_phone: '',
+  notes: '',
+  parent: {
+    _id: 'd978f02c-093b-4266-81cd-3983749f9c99'
+  },
+  type: 'contact',
+  contact_type: 'chp',
+  reported_date: 1496068842996
+};
+
+let map;
+
 describe('contacts_by_type_freetext view', () => {
 
-  it('indexes doc name and type', () => {
-    // given
-    const map = utils.loadView('medic-client', 'contacts_by_type_freetext');
+  beforeEach(() => map = utils.loadView('medic-client', 'contacts_by_type_freetext'));
 
+  it('indexes doc name and type', () => {
     // when
     const emitted = map(doc);
 
@@ -51,9 +68,6 @@ describe('contacts_by_type_freetext view', () => {
   });
 
   it('indexes non-ascii doc name', () => {
-    // given
-    const map = utils.loadView('medic-client', 'contacts_by_type_freetext');
-
     // when
     const emitted = map(nonAsciiDoc);
 
@@ -63,9 +77,6 @@ describe('contacts_by_type_freetext view', () => {
   });
 
   it('does not index words of less than 3 chars', () => {
-    // given
-    const map = utils.loadView('medic-client', 'contacts_by_type_freetext');
-
     // when
     const emitted = map(doc);
 
@@ -74,15 +85,20 @@ describe('contacts_by_type_freetext view', () => {
   });
 
   it('does not index non-contact docs', () => {
-    // given
-    const map = utils.loadView('medic-client', 'contacts_by_type_freetext');
-
     // when
     const emitted = map({ type: 'data_record', name: 'do not index me'});
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
     assert.equal(emitted.length, 0);
+  });
+
+  it('returns configurable type', () => {
+    // when
+    const emitted = map(configurableHierarchyDoc);
+
+    // then
+    utils.assertIncludesPair(emitted, ['chp', 'jessie']);
   });
 
 });
