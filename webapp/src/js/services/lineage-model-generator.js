@@ -18,7 +18,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
   ) {
     'ngInject';
     'use strict';
-    var lineage = lineageFactory($q,DB());
+    var lineage = lineageFactory($q, DB());
     $window.lineage = lineage;
 
     var get = function(id) {
@@ -100,7 +100,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
       reportSubjects: function(ids) {
         return lineage.fetchLineageByIds(ids)
           .then(function(docsList) {
-            return docsList.map(function(docs){
+            return docsList.map(function(docs) {
               return {
                 _id: docs[0]._id,
                 doc: docs.shift(),

@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const lineageFactory = require('../src/lineage');
+const lineageFactory = require('../src');
 
 describe('Lineage', function() {
   let lineage,
