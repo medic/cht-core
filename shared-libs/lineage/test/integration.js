@@ -290,41 +290,6 @@ const sms_doc = {
   }
 };
 
-const fixtures = [
-  child_is_great_grandparent,
-  cigg_parent,
-  cigg_grandparent,
-  child_is_parent,
-  child_is_grandparent,
-  circular_area,
-  circular_chw,
-  circular_report,
-  dummyDoc,
-  dummyDoc2,
-  emptyObjectParent,
-  no_contact,
-  no_lineageContact,
-  one_parent,
-  place_parent,
-  place_parentContact,
-  place_grandparent,
-  place_grandparentContact,
-  place_contact,
-  place,
-  report_parent,
-  report_parentContact,
-  report_grandparent,
-  report_grandparentContact,
-  report_contact,
-  report_patient,
-  report,
-  report2,
-  report3,
-  report4,
-  stub_contacts,
-  stub_parents,
-  sms_doc
-];
 const deleteDocs = ids => {
   return db.allDocs({
     keys: ids,
@@ -344,7 +309,42 @@ const deleteDocs = ids => {
 describe('Lineage', () => {
   let lineage;
 
-  before(() => {
+  beforeEach(() => {
+    const fixtures = [
+      child_is_great_grandparent,
+      cigg_parent,
+      cigg_grandparent,
+      child_is_parent,
+      child_is_grandparent,
+      circular_area,
+      circular_chw,
+      circular_report,
+      dummyDoc,
+      dummyDoc2,
+      emptyObjectParent,
+      no_contact,
+      no_lineageContact,
+      one_parent,
+      place_parent,
+      place_parentContact,
+      place_grandparent,
+      place_grandparentContact,
+      place_contact,
+      place,
+      report_parent,
+      report_parentContact,
+      report_grandparent,
+      report_grandparentContact,
+      report_contact,
+      report_patient,
+      report,
+      report2,
+      report3,
+      report4,
+      stub_contacts,
+      stub_parents,
+      sms_doc
+    ];
     return memdownMedic('../..')
       .then(database => {
         db = database;
@@ -353,8 +353,8 @@ describe('Lineage', () => {
       });
   });
 
-  after(() => {
-    const docIds = fixtures.map(doc => doc._id);
+  afterEach(async () => {
+    const docIds = (await db.allDocs()).rows.map(doc => doc._id);
     return deleteDocs(docIds);
   });
 
@@ -480,30 +480,6 @@ describe('Lineage', () => {
       });
     });
 
-    it('attaches patient lineage when using patient_id field that contains a uuid', () => {
-      return lineage.fetchHydratedDoc(report3._id).then(actual => {
-        chai.assert.checkDeepProperties(actual, {
-          form: 'A',
-          patient: {
-            name: report_patient.name,
-            parent: { name: report_contact.name }
-          },
-          contact: {
-            name: report_contact.name,
-            parent: {
-              name: report_parent.name,
-              contact: { phone: '+123' },
-              parent: {
-                name: report_grandparent.name,
-                contact: { phone: '+456' }
-              }
-            }
-          },
-          parent: undefined
-        });
-      });
-    });
-
     it('should work when patient is not found', () => {
       return lineage.fetchHydratedDoc(report4._id).then(actual => {
         chai.expect(actual.patient).to.equal(undefined);
@@ -591,7 +567,7 @@ describe('Lineage', () => {
 
   describe('hydrateDocs', () => {
     it('binds contacts and parents', () => {
-      const docs = [ report, place ];
+      const docs = [ cloneDeep(report), cloneDeep(place) ];
 
       return lineage.hydrateDocs(docs)
         .then(([ hydratedReport, hydratedPlace ]) => {
@@ -625,7 +601,7 @@ describe('Lineage', () => {
     });
 
     it('ignores db-fetch errors', () => {
-      const docs = [ report, place ];
+      const docs = [ cloneDeep(report), cloneDeep(place) ];
 
       return deleteDocs([place_parent._id, report_parentContact._id])
         .then(() => lineage.hydrateDocs(docs))
