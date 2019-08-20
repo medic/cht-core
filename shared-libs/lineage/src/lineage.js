@@ -4,6 +4,8 @@ const {
   reduceArrayToMapKeyedById,
 } = require('./shared');
 
+let promise = Promise;
+
 /*
 Given a set of document ids, fetch the corresponding docs and associated parents
 
@@ -11,7 +13,7 @@ Since PouchDB doesn't support the "queries" interface in CouchDB 2.x, fetchLinea
 This function is therefore an implementation of the logic in docs_by_id_lineage which parallelizes via two allDocs requests regardless of the number of docs
 */
 const fetchLineageByIds = function(DB, ids) {
-  return fetchDocs(DB, ids).then(idToDocMap => fetchLineageForDocs(DB, Object.values(idToDocMap)));
+  return fetchDocs(promise, DB, ids).then(idToDocMap => fetchLineageForDocs(DB, Object.values(idToDocMap)));
 };
 
 const fetchLineageForDocs = function(DB, docs) {
@@ -20,7 +22,7 @@ const fetchLineageForDocs = function(DB, docs) {
   const mergeFetchedDocsWithKnownDocs = fetchedDocs => Object.assign(reduceArrayToMapKeyedById(docs), fetchedDocs);
   const hydrateLineageIds = lineageDocs => lineageIds.map(lineage => lineage.map(lineageId => lineageDocs[lineageId]));
   
-  return fetchDocs(DB, idsToFetch)
+  return fetchDocs(promise, DB, idsToFetch)
     .then(mergeFetchedDocsWithKnownDocs)
     .then(hydrateLineageIds);
 };
@@ -53,4 +55,7 @@ const extractParentIds = function(objWithParent) {
   return ids;
 };
 
-module.exports = { fetchLineageByIds };
+module.exports = {
+  injectPromise: injectedPromise => promise = injectedPromise,
+  fetchLineageByIds
+};

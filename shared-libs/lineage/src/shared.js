@@ -8,13 +8,13 @@ const reduceArrayToMapKeyedById = arrayOfDocs => arrayOfDocs.reduce((agg, elemen
   return agg;
 }, {});
 
-const fetchDocs = (DB, keys) => {
+const fetchDocs = (promise, DB, keys) => {
   if (!Array.isArray(keys)) {
     throw Error('invalid keys');
   }
 
   if (keys.length === 0) {
-    return Promise.resolve({});
+    return promise.resolve({});
   }
 
   return DB.allDocs({ keys, include_docs: true })

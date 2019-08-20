@@ -1,8 +1,10 @@
 const _ = require('underscore');
-const { fetchDocs, reduceArrayToMapKeyedById } = require('./shared');
+const { fetchDocs, reduceArrayToMapKeyedById: keyById } = require('./shared');
+
+let promise = Promise;
 
 const fetchHydratedDoc = (DB, id, options) => {
-  return fetchDocs(DB, [id])
+  return fetchDocs(promise, DB, [id])
     .then(docs => {
       if (Object.keys(docs).length === 0) {
         throw {
@@ -22,30 +24,32 @@ const hydrateDocs = (DB, docs, options) => {
     .then(partiallyHydrated => hydrateRemainingComponents(DB, partiallyHydrated, options));
 };
 
+/*
+Hydrates all the parts of the document that are present.
+To fully hydrate a document, this needs to be called twice
+*/
 const hydrateRemainingComponents = (DB, docs, options) => {
-  // get all the objects within the docs that need hydrating
   return fetchHydratableComponents(DB, docs, options)
     .then(components => {
-      const isDocAlreadyHydrated = doc => {
-        const attributesInUnhydratedDocs = ['_id', '_rev', 'parent'];
+      const isAlreadyHydrated = doc => {
+        const attributesInUnhydratedDocs = ['_id', '_rev', 'parent', 'contact'];
         return Object.keys(doc).some(key => !attributesInUnhydratedDocs.includes(key));
       };
-      const previouslyHydratedComponents = Object.assign(
-        reduceArrayToMapKeyedById(docs),
-        reduceArrayToMapKeyedById(components.map(component => component.ref).filter(component => isDocAlreadyHydrated(component)))
-      );
-      const unknownIds = _.uniq(components.map(component => component.id).filter(id => !previouslyHydratedComponents[id]));
+      const docMap = keyById(docs);
+      const existingHydratedComponents = keyById(components.map(component => component.ref).filter(component => isAlreadyHydrated(component)));
+      const unknownIds = _.uniq(components.map(component => component.id).filter(id => !docMap[id] && !existingHydratedComponents[id]));
 
-      return fetchDocs(DB, unknownIds).then(fetchedDocs => {
-        const allKnownDocs = Object.assign(previouslyHydratedComponents, fetchedDocs);
+      return fetchDocs(promise, DB, unknownIds).then(fetchedDocs => {
+        const allKnownDocs = Object.assign(docMap, existingHydratedComponents, fetchedDocs);
         mergeDataIntoHydratableComponents(docs, components, allKnownDocs);
         return docs;
       });
     });
 };
 
+// get all the pieces within the docs that need hydrating
 const fetchHydratableComponents = (DB, docs, options = { patients: true }) => {
-  const patientResult = options.patients ? fetchPatients(DB, docs) : Promise.resolve([]);
+  const patientResult = options.patients ? fetchPatients(DB, docs) : promise.resolve([]);
   
   return patientResult.then(patientComponents => {
     const remainingComponents = docs.map((doc, index) => extractHydratableParentComponents(doc, [index]));
@@ -71,7 +75,7 @@ const fetchPatients = function(DB, reports) {
   let promiseToFetch;
   
   if (patientIds.length === 0 && patientUuids.length === 0) {
-    return Promise.resolve([]);
+    return promise.resolve([]);
   }
 
   // if there are only patientIds, query with include_docs
@@ -79,25 +83,25 @@ const fetchPatients = function(DB, reports) {
     promiseToFetch = fetchContactsByPatientIds(DB, patientIds, true);
   } 
   
-  // if there are only patientUuids, only do allDocs
+  // if there are only patientUuids, skip the query and do allDocs
   else if (patientIds.length === 0 && patientUuids.length > 0) {
     promiseToFetch = fetchContactsByPatientUuids(DB, patientUuids);
   }
 
-  // if there are both, query without include_docs and then merge ids into allDocs call
+  // if there are patientUuids and patientIds, query without include_docs and then merge ids into allDocs call
   else {
     promiseToFetch = fetchContactsByPatientIds(DB, patientIds, false)
       .then(mapOfPatientIdToContactId => {
         const uuidsFromFetch = Object.values(mapOfPatientIdToContactId).map(fetched => fetched.id);
         const uuidsToFetch = _.uniq([...uuidsFromFetch, patientUuids]);
-        return fetchDocs(DB, uuidsToFetch)
+        return fetchDocs(promise, DB, uuidsToFetch)
           // the result contains a mapping of both { id -> uuid } and { uuid -> contact doc }
           .then(result => Object.assign(result, mapOfPatientIdToContactId)); 
       });
   }
 
   return promiseToFetch.then(result => {
-    const resolveContactFromPatientData = patientData => {
+    const resolveContactDocFromPatientData = patientData => {
       const { patientId, patientUuid } = patientData;
       if (patientUuid) {
         return result[patientUuid];
@@ -106,15 +110,17 @@ const fetchPatients = function(DB, reports) {
       const ambiguousDoc = result[patientId];
       if (ambiguousDoc) {
         if (ambiguousDoc.doc) {
+          // the document is present for include_docs: true (only patientIds)
           return ambiguousDoc.doc;
         } else {
+          // second lookup when include_docs: false
           return result[ambiguousDoc.id];
         }
       }
     };
 
     reports.forEach((report, index) => {
-      const patientContact = resolveContactFromPatientData(reportPatientData[index]);
+      const patientContact = resolveContactDocFromPatientData(reportPatientData[index]);
       if (patientContact) {
         report.patient = patientContact;
       }
@@ -125,14 +131,14 @@ const fetchPatients = function(DB, reports) {
 };
 
 // { contact._id -> result }
-const fetchContactsByPatientUuids = (DB, patientUuids) => fetchDocs(DB, patientUuids);
+const fetchContactsByPatientUuids = (DB, patientUuids) => fetchDocs(promise, DB, patientUuids);
 
 // { patient_id -> result }
 const fetchContactsByPatientIds = (DB, patientIds, includeDocs) => {
   const keys = _.uniq(patientIds.filter(r => r)).map(patientId => [ 'shortcode', patientId ]);
 
   if (keys.length === 0) {
-    return Promise.resolve({});
+    return promise.resolve({});
   }
 
   const options = { keys };
@@ -151,10 +157,13 @@ const fetchContactsByPatientIds = (DB, patientIds, includeDocs) => {
     .then(result => reduceArrayToMapByKey(result.rows));
 };
 
-const extractHydratableParentComponents = function(objWithParent, basePath) {
-  const hydratable = [];
-
+const extractHydratableParentComponents = function(objWithParent, basePath, hydratable = []) {
   if (!objWithParent) {
+    return hydratable;
+  }
+
+  // avoid circular hierarchies
+  if (hydratable.some(component => component.ref === objWithParent)) {
     return hydratable;
   }
 
@@ -168,7 +177,7 @@ const extractHydratableParentComponents = function(objWithParent, basePath) {
     addComponent(objWithParent);
   }
 
-  const scanForHydratableComponents = attribute => {
+  const scanAttribute = attribute => {
     const objectToScan = objWithParent[attribute];
 
     // if one of the hydrated components is an empty object, it should be removed
@@ -177,11 +186,11 @@ const extractHydratableParentComponents = function(objWithParent, basePath) {
       return;
     }
 
-    hydratable.push(...extractHydratableParentComponents(objWithParent[attribute], [...basePath, attribute]));
+    extractHydratableParentComponents(objWithParent[attribute], [...basePath, attribute], hydratable);
   };
-  scanForHydratableComponents('contact');
-  scanForHydratableComponents('parent');
-  scanForHydratableComponents('patient');
+  scanAttribute('contact');
+  scanAttribute('parent');
+  scanAttribute('patient');
 
   return hydratable;
 };
@@ -204,13 +213,12 @@ const mergeDataIntoHydratableComponents = (docs, components, allKnownDocs) => {
     const data = allKnownDocs[component.id];
     if (data) {
       Object.assign(objectAtPath, data);
-    } else {
-      console.warn(`No data found for id:${component.id}`);
     }
   }
 };
 
 module.exports = {
+  injectPromise: injectedPromise => promise = injectedPromise,
   fetchHydratedDoc,
   hydrateDocs,
 };

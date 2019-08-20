@@ -3,10 +3,13 @@
  */
 
 const { minify, minifyLineage } = require('./minification');
-const { fetchLineageByIds } = require('./lineage');
-const { fetchHydratedDoc, hydrateDocs } = require('./hydration');
+const { fetchLineageByIds, injectPromise: injectLineagePromise } = require('./lineage');
+const { fetchHydratedDoc, hydrateDocs, injectPromise: injectHydrationPromise } = require('./hydration');
 
-module.exports = function(Promise, DB) {
+module.exports = function(promise, DB) {
+  injectHydrationPromise(promise);
+  injectLineagePromise(promise);
+
   return {
     /**
      * Remove all hydrated items and leave just the ids
