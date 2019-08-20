@@ -432,7 +432,7 @@ const purge = () => {
     .catch(err => {
       logger.error('Error while running Server Side Purge: %o', err);
     })
-    .finally(() => purging = false);
+    .then(() => purging = false);
 };
 
 module.exports = {
