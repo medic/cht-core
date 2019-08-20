@@ -326,6 +326,7 @@ describe('Changes controller', () => {
       authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
       testReq.query = { initial_replication: true };
+      sinon.stub(purgedDocs, 'init');
       sinon.stub(purgedDocs, 'getPurgedIds').resolves(purgedIds);
 
       controller.request(testReq, testRes);
@@ -337,6 +338,7 @@ describe('Changes controller', () => {
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
+        purgedDocs.init.callCount.should.deep.equal(1);
         purgedDocs.getPurgedIds.callCount.should.equal(1);
         purgedDocs.getPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));

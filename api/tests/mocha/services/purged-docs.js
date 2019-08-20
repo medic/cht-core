@@ -8,15 +8,28 @@ const cache = require('../../../src/services/cache');
 const purgingUtils = require('@medic/purging-utils');
 
 let service;
+let recursiveOn;
 
 describe('Server Side Purge service', () => {
   beforeEach(() => {
+    recursiveOn = sinon.stub();
+    recursiveOn.callsFake(() => {
+      const promise = sinon.stub().resolves();
+      promise.on = recursiveOn;
+      return promise;
+    });
+    let sentinelChanges = sinon.stub().returns({ on: recursiveOn });
+    sinon.stub(db.sentinel, 'changes').returns(sentinelChanges);
     service = rewire('../../../src/services/purged-docs');
   });
   afterEach(() => {
     const purgeDbs = service.__get__('purgeDbs');
     Object.keys(purgeDbs).forEach(hash => delete purgeDbs[hash]);
     sinon.restore();
+  });
+
+  describe('init', () => {
+    //todo
   });
 
   describe('getPurgedIds', () => {

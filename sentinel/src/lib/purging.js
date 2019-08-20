@@ -20,7 +20,7 @@ const initPurgeDbs = (roles) => {
   return Promise.all(Object.keys(roles).map(hash => {
     const purgeDb = getPurgeDb(hash, true);
     return purgeDb
-      .put({ _id: 'local/info', roles: roles[hash] })
+      .put({ _id: '_local/info', roles: roles[hash] })
       .catch(err => {
         // we don't care about conflicts
         if (err.status !== 409) {
@@ -153,38 +153,27 @@ const updatePurgedDocs = (rolesHashes, ids, currentlyPurged, newPurged) => {
   }));
 };
 
-const getRootContacts = () => {
-  // todo integrate flexible hierarchy
-  return db.medic
-    .query('medic-client/doc_by_type', { key: ['district_hospital'] })
-    .then(result => result.rows.map(row => row.id));
-};
-
-const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '') => {
-  if (!rootIds.length && !rootId) {
-    // WE ARE DONE
-    return Promise.resolve();
-  }
-
-  rootId = rootId || rootIds.shift();
+const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '') => {
   let nextKeyDocId;
+  let nextKey;
   const groups = {};
   const docIds = [];
   const subjectIds = [];
   const rolesHashes = Object.keys(roles);
 
-  logger.debug(`Starting contacts purge batch for district ${rootId} with id ${startKeyDocId}`);
+  logger.debug(`Starting contacts purge batch starting with key ${startKey} with id ${startKeyDocId}`);
 
   const queryString = {
     limit: BATCH_SIZE,
-    key:  JSON.stringify([rootId]),
-    startkey_docid: startKeyDocId
+    start_key: JSON.stringify(startKey),
+    startkey_docid: startKeyDocId,
+    include_docs: true,
   };
 
   // using http requests because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
   return request
-    .get(`${db.couchUrl}/_design/medic/_view/contacts_by_depth`, { qs: queryString, json: true })
+    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: queryString, json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -192,23 +181,23 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
         }
 
         nextKeyDocId = row.id;
+        nextKey = row.key;
 
         let contactId;
-        let contact = {};
+        let contact = row.doc;
+        let contactSubjects;
         if (tombstoneUtils.isTombstoneId(row.id)) {
           // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
           // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
           contactId =  tombstoneUtils.extractStub(row.id).id;
           contact = { _deleted: true };
+          contactSubjects = registrationUtils.getSubjectIds(row.doc.tombstone);
         } else {
           contactId = row.id;
           docIds.push(contactId);
+          contactSubjects = registrationUtils.getSubjectIds(contact);
         }
 
-        const contactSubjects = [ contactId ];
-        if (row.value) {
-          contactSubjects.push(row.value);
-        }
         subjectIds.push(...contactSubjects);
         groups[contactId] = { contact, subjectIds: contactSubjects, reports: [], messages: [] };
       });
@@ -222,7 +211,6 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
 
       result.rows.forEach(row => {
         if (groups[row.id]) {
-          groups[row.id].contact = row.doc;
           return;
         }
 
@@ -318,11 +306,7 @@ const batchedContactsPurge = (roles, purgeFn, rootIds, rootId, startKeyDocId = '
 
       return updatePurgedDocs(rolesHashes, docIds, currentlyPurged, purgedPerHash);
     })
-    .then(() => {
-      return nextKeyDocId ?
-        batchedContactsPurge(roles, purgeFn, rootIds, rootId, nextKeyDocId) :
-        batchedContactsPurge(roles, purgeFn, rootIds);
-    });
+    .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId));
 };
 
 const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
@@ -383,8 +367,10 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
 };
 
 const writePurgeLog = (roles, duration) => {
+  const date = new Date();
   return db.sentinel.put({
-    _id: `purgelog:${new Date().getTime()}`,
+    _id: `purgelog:${date.valueOf()}`,
+    date: date.toISOString(),
     roles: roles,
     duration: duration
   });
@@ -394,7 +380,7 @@ const writePurgeLog = (roles, duration) => {
 // - reads all user documents from the `_users` database to comprise a list of unique sets of roles
 // - creates a database for each role set with the name `<main db name>-purged-role-<hash>` where `hash` is an md5 of
 // the JSON.Stringify-ed list of roles
-// - iterates over all contacts by querying `contacts_by_depth` using all root contact keys, in batches
+// - iterates over all contacts by querying `medic-client/contacts_by_type` in batches
 // - for every batch of contacts, queries `docs_by_replication_key` with the resulting `subject_ids`
 // - groups results by contact to generate a list of pairs containing :
 //    a) a contact document
@@ -419,7 +405,6 @@ const purge = () => {
   if (purging) {
     return;
   }
-  purging = true;
   logger.info('Running server side purge');
   const purgeFn = getPurgeFn();
   if (!purgeFn) {
@@ -427,6 +412,7 @@ const purge = () => {
     return Promise.resolve();
   }
 
+  purging = true;
   const start = performance.now();
   return getRoles()
     .then(roles => {
@@ -435,8 +421,7 @@ const purge = () => {
         return;
       }
       return initPurgeDbs(roles)
-        .then(() => getRootContacts())
-        .then(ids => batchedContactsPurge(roles, purgeFn, ids))
+        .then(() => batchedContactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
         .then(() => {
           const duration = (performance.now() - start);

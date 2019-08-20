@@ -65,9 +65,20 @@ const getInfoDocs = (docIds = []) => {
   return requestOnSentinelTestDb(opts).then(response => response.rows.map(row => row.doc));
 };
 
+const deletePurgeDbs = () => {
+  const options = {
+    path: '/_all_dbs'
+  };
+  return utils.request(options).then(dbs => {
+    const dbsToDelete = dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
+    return Promise.all(dbsToDelete.map(db => utils.request({ path: `/${db}`, method: 'DELETE' })));
+  });
+};
+
 module.exports = {
   waitForSentinel: waitForSentinel,
   requestOnSentinelTestDb: requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
-  getInfoDocs: getInfoDocs
+  getInfoDocs: getInfoDocs,
+  deletePurgeDbs: deletePurgeDbs
 };

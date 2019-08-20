@@ -305,6 +305,7 @@ const filterPurgedIds = feed => {
     return Promise.resolve();
   }
 
+  purgedDocs.init();
   return purgedDocs
     .getPurgedIds(feed.userCtx.roles, feed.allowedDocIds)
     .then(purgedIds => {

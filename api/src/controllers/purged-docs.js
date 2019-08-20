@@ -30,14 +30,3 @@ module.exports.checkpoint = (req, res) => {
     .then(() => res.json({ success: true }))
     .catch(err => serverUtils.error(err, req, res));
 };
-
-
-module.exports.purge = (req, res) => {
-  const auth = require('../auth');
-  if (!auth.isOnlineOnly(req.userCtx)) {
-    res.end();
-  }
-
-  purgedDocs.purge();
-  res.end();
-};

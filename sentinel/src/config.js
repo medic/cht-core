@@ -42,7 +42,11 @@ const initFeed = () => {
     .on('change', change => {
       if (change.id === 'settings') {
         logger.info('Reloading configuration');
-        initConfig();
+        initConfig().then(() => {
+          if (config['reschedule']) {
+            require('./schedule').checkSchedule();
+          }
+        });
       } else if (change.id.startsWith('messages-')) {
         logger.info('Detected translations change - reloading');
         loadTranslations().then(() => initTransitionLib());

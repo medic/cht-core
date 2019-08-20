@@ -3,6 +3,7 @@ const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
 const cache = require('./cache');
 const crypto = require('crypto');
+const logger = require('../logger');
 
 const purgeDbs = {};
 const getPurgeDb = (roles) => {
@@ -20,6 +21,13 @@ const getCacheKey = (roles, docIds) => {
     .digest('hex');
 
   return `purged-${JSON.stringify(roles)}-${hash}`;
+};
+
+const regex = new RegExp(/^purged-.+-.+$/);
+// clears all purge caches
+const clearCache = () => {
+  const keysToDelete = cache.keys().filter(key => regex.test(key));
+  cache.del(keysToDelete);
 };
 
 const getPurgedIdsFromChanges = result => {
@@ -44,7 +52,6 @@ const getPurgedIds = (roles, docIds) => {
   const cacheKey = getCacheKey(roles, docIds);
   const cached = cache.get(cacheKey);
   if (cached) {
-    // todo think of a way of invalidating these caches when sentinel runs a round of purge
     cache.ttl(cacheKey);
     return Promise.resolve(cached);
   }
@@ -113,9 +120,33 @@ const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
     });
 };
 
+const listen = () => {
+  db.sentinel
+    .changes({ live: true, since: 'now' })
+    .on('change', change => {
+      if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
+        clearCache();
+      }
+    })
+    .on('error', err => {
+      logger.error('Error watching sentinel changes, restarting: %o', err);
+      listen();
+    });
+};
+
+let inited = false;
+const init = () => {
+  if (inited) {
+    return;
+  }
+  listen();
+  inited = true;
+};
+
 module.exports = {
   getPurgedIds,
   getPurgedIdsSince,
-  writeCheckPointer
+  writeCheckPointer,
+  init,
 };
 
