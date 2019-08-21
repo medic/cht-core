@@ -91,7 +91,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var getContactable = function(id, type) {
       if (type === 'contact') {
         return LineageModelGenerator.contact(id)
-                                    .catch(function(err) {
+                                    .catch(err => {
                                       if (err.code === 404) {
                                         return Promise.resolve();
                                       }
@@ -129,7 +129,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
             const firstTaskWithContact = conversation[0].doc.tasks.find( 
               function(task) {
                 const message = task.messages && task.messages[0];
-                return message.contact._id === id;
+                return message && message.contact && message.contact._id === id;
               }
             );
             const firstMessageWithContact = firstTaskWithContact.messages.find( 
