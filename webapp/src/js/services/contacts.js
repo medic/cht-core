@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    parallel = require('async/parallel');
+const _ = require('underscore');
 
 angular.module('inboxServices').factory('Contacts',
   function(
@@ -38,22 +37,21 @@ angular.module('inboxServices').factory('Contacts',
      */
     return function(types) {
       if (!types) {
+        // For admins this involves downloading a _huge_ amount of data.
         return $q.reject(new Error('Call made to Contacts requesting no types'));
       }
       return init.then(cacheByType => {
-        const deferred = $q.defer();
-        const relevantCaches = types.map(type => cacheByType[type]);
-        if (!relevantCaches.length) {
-          // For admins this involves downloading a _huge_ amount of data.
-          return deferred.reject(new Error('Call made to Contacts requesting Person data or unknown contact types'));
-        }
-        parallel(relevantCaches, function(err, results) {
-          if (err) {
-            return deferred.reject(err);
-          }
-          deferred.resolve(_.flatten(results));
+        const relevantCaches = types.map(type => {
+          const deferred = $q.defer();
+          cacheByType[type]((err, result) => {
+            if (err) {
+              return deferred.reject(err);
+            }
+            deferred.resolve(result);
+          });
+          return deferred.promise;
         });
-        return deferred.promise;
+        return $q.all(relevantCaches).then(results => _.flatten(results));
       });
 
     };

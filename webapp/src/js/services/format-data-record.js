@@ -251,7 +251,7 @@ angular
         if (def.validate && def.validate.is_numeric_month) {
           if (def.list) {
             for (var i in def.list) {
-              if (def.list.hasOwnProperty(i)) {
+              if (Object.prototype.hasOwnProperty.call(def.list, i)) {
                 var item = def.list[i];
                 if (item[0] === val) {
                   return translate(settings, item[1], locale);

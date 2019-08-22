@@ -9,10 +9,10 @@
     "test": "mocha ./test"
   },
   "dependencies": {
-    "google-libphonenumber": "^3.2.1"
+    "google-libphonenumber": "^3.2.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^5.2.0"
+    "mocha": "^6.1.4"
   }
 }

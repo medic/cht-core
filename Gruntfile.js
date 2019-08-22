@@ -284,9 +284,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer')({
-            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
-          }),
+          require('autoprefixer')(),
         ],
       },
       dist: {

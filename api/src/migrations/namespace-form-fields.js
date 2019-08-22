@@ -81,14 +81,21 @@ module.exports = {
       .then(settings => {
         forms = settings.forms;
 
-        var currentSkip = 0;
+        let currentSkip = 0;
+        let keepGoing = true;
         async.doWhilst(
           function(callback) {
-            runBatch(batchSize, currentSkip, callback);
+            runBatch(batchSize, currentSkip, (err, again) => {
+              if (err) {
+                return callback(err);
+              }
+              keepGoing = again;
+              callback();
+            });
           },
-          function(keepGoing) {
+          function(cb) {
             currentSkip += batchSize;
-            return keepGoing;
+            return cb(null, keepGoing);
           },
           callback
         );
