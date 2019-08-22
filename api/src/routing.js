@@ -48,6 +48,7 @@ const _ = require('underscore'),
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({ limit: '32mb' });
+const jsonQueryParser = require('./middleware/query-parser').json;
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
@@ -424,11 +425,12 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request,
   allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, onlineUserProxy, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, jsonQueryParser, allDocsHandler);
 app.post(
   allDocsPath,
   onlineUserProxy,
   jsonParser,
+  jsonQueryParser,
   allDocsHandler
 );
 
@@ -438,6 +440,7 @@ app.post(
   routePrefix + '_bulk_get(/*)?',
   onlineUserProxy,
   jsonParser,
+  jsonQueryParser,
   bulkGetHandler
 );
 
@@ -447,6 +450,7 @@ app.post(
   routePrefix + '_bulk_docs(/*)?',
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
+  jsonQueryParser,
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -461,6 +465,7 @@ const dbDocHandler = require('./controllers/db-doc'),
 app.get(
   ddocPath,
   onlineUserProxy,
+  jsonQueryParser,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -468,12 +473,14 @@ app.get(
 app.get(
   docPath,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
+  jsonQueryParser,
   dbDocHandler.request
 );
 app.post(
   routePrefix,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser, // request body must be json
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -481,18 +488,21 @@ app.put(
   docPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.delete(
   docPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );

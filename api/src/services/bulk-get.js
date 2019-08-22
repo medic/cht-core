@@ -1,6 +1,6 @@
-const authorization = require('./authorization'),
-      db = require('../db'),
-      _ = require('underscore');
+const authorization = require('./authorization');
+const db = require('../db');
+const _ = require('underscore');
 
 // filters response from CouchDB only to include successfully read and allowed docs
 const filterResults = (authorizationContext, result) => {
