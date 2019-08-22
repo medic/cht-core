@@ -360,6 +360,16 @@ module.exports = {
     return request(options, { debug: debug, notJson: notJson });
   },
 
+  requestOnTestMetaDb: (options, debug, notJson) => {
+    if (typeof options === 'string') {
+      options = {
+        path: options,
+      };
+    }
+    options.path = `/medic-user-${options.userName}-meta${options.path || ''}`;
+    return request(options, { debug: debug, notJson: notJson });
+  },
+
   requestOnMedicDb: (options, debug, notJson) => {
     if (typeof options === 'string') {
       options = { path: options };

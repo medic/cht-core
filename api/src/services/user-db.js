@@ -43,7 +43,7 @@ module.exports = {
    * @param {String} username
    * @returns {String} The name of the user db
    */
-  getDbName: username => `medic-user-${escapeUsername(username)}-meta`,
+  getDbName: username => `${environment.db}-user-${escapeUsername(username)}-meta`,
   
   /**
    * @param {String} dbName

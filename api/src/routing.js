@@ -497,7 +497,14 @@ app.all(
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
-const metaPathPrefix = '/medic-user-*-meta/';
+const metaPathPrefix = `/${environment.db}-user-*-meta/`;
+
+app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
+  }
+  next();
+});
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
@@ -508,6 +515,7 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
 app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
+
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
