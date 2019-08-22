@@ -41,7 +41,6 @@ angular.module('inboxServices').factory('Contacts',
         return $q.reject(new Error('Call made to Contacts requesting no types'));
       }
       return init.then(cacheByType => {
-        const deferred = $q.defer();
         const relevantCaches = types.map(type => {
           const deferred = $q.defer();
           cacheByType[type]((err, result) => {

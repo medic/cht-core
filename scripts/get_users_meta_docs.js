@@ -1,3 +1,4 @@
+/* eslint-disable */
 const inquirer = require('inquirer'),
       PouchDB = require('pouchdb-core'),
       fs = require('fs'),
@@ -195,3 +196,4 @@ const actionQuestions = [{
     console.log(err);
   }
 })();
+/* eslint-enable */
