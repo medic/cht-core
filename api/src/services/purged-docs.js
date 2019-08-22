@@ -64,7 +64,6 @@ const getPurgedIds = (roles, docIds) => {
     .changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length })
     .then(result => {
       const purgeIds = getPurgedIdsFromChanges(result);
-      // todo think about storing the last_seq here so you don't rely on `now` when writing the checkpointer
       cache.set(cacheKey, purgeIds);
       return purgeIds;
     });
@@ -120,6 +119,11 @@ const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
     });
 };
 
+const info = (roles) => {
+  const purgeDb = getPurgeDb(roles);
+  return purgeDb.info();
+};
+
 const listen = () => {
   db.sentinel
     .changes({ live: true, since: 'now' })
@@ -148,5 +152,6 @@ module.exports = {
   getPurgedIdsSince,
   writeCheckPointer,
   init,
+  info,
 };
 

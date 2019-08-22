@@ -3,6 +3,7 @@ const auth = require('../../auth')(),
       reports = require('../../page-objects/reports/reports.po.js'),
       utils = require('../../utils'),
       loginPage = require('../../page-objects/login/login.po.js');
+const sentinelUtils = require('../sentinel/utils');
 
 describe('Purging on login', () => {
 
@@ -146,16 +147,19 @@ describe('Purging on login', () => {
   };
 
   beforeAll(done => {
-    return Promise.all([
-      utils.saveDocs(initialReports.concat(initialDocs)),
-      utils.request({
+    let seq;
+    return utils
+      .saveDocs(initialReports.concat(initialDocs))
+      .then(() => utils.request({
         path: `/_users/org.couchdb.user:${restrictedUserName}`,
         method: 'PUT',
         body: JSON.stringify(restrictedUser)
-      }),
-      utils.updateSettings({purge: { fn: purgeFn.toString() }})
-    ])
-    .then(() => done()).catch(done.fail);
+      }))
+      .then(() => sentinelUtils.getCurrentSeq())
+      .then(result => seq = result)
+      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' }, reschedule: true }))
+      .then(() => sentinelUtils.waitForPurgeCompletion(seq))
+      .then(() => done()).catch(done.fail);
   });
 
   afterAll(done => {

@@ -75,10 +75,29 @@ const deletePurgeDbs = () => {
   });
 };
 
+const waitForPurgeCompletion = seq => {
+  const params = {
+    since: seq,
+    feed: 'longpoll',
+  };
+  return requestOnSentinelTestDb('/_changes?' + querystring.stringify(params))
+    .then(result => {
+      if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
+        return;
+      }
+
+      return waitForPurgeCompletion(result.last_seq);
+    });
+};
+
+const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update_seq);
+
 module.exports = {
   waitForSentinel: waitForSentinel,
   requestOnSentinelTestDb: requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
   getInfoDocs: getInfoDocs,
-  deletePurgeDbs: deletePurgeDbs
+  deletePurgeDbs: deletePurgeDbs,
+  waitForPurgeCompletion: waitForPurgeCompletion,
+  getCurrentSeq: getCurrentSeq,
 };

@@ -57,10 +57,10 @@ describe('Purging Schedule', () => {
     done();
   });
 
-  it('should create purge interval', (done) => {
+  it('should create purge timeout', (done) => {
     sinon.stub(config, 'get').returns({ cron: '* * something' });
     sinon.stub(later.parse, 'cron').returns('my schedule');
-    sinon.stub(later, 'setInterval');
+    sinon.stub(later, 'setTimeout');
 
     scheduler.execute(() => {
 
@@ -68,32 +68,32 @@ describe('Purging Schedule', () => {
     chai.expect(config.get.callCount).to.equal(1);
     chai.expect(later.parse.cron.callCount).to.equal(1);
     chai.expect(later.parse.cron.args[0]).to.deep.equal(['* * something']);
-    chai.expect(later.setInterval.callCount).to.equal(1);
-    chai.expect(later.setInterval.args[0]).to.deep.equal([purgeLib.purge, 'my schedule']);
+    chai.expect(later.setTimeout.callCount).to.equal(1);
+    chai.expect(later.setTimeout.args[0]).to.deep.equal([purgeLib.purge, 'my schedule']);
     done();
   });
 
-  it('should clear previous interval when re-running', (done) => {
+  it('should clear previous timeout when re-running', (done) => {
     sinon.stub(config, 'get').returns({ cron: '* * something' });
     sinon.stub(later.parse, 'cron').returns('my schedule');
-    const interval = { clear: sinon.stub() };
-    sinon.stub(later, 'setInterval').returns(interval);
+    const timeout = { clear: sinon.stub() };
+    sinon.stub(later, 'setTimeout').returns(timeout);
 
     scheduler.execute(() => {
       chai.expect(config.get.callCount).to.equal(1);
       chai.expect(later.parse.cron.callCount).to.equal(1);
       chai.expect(later.parse.cron.args[0]).to.deep.equal(['* * something']);
-      chai.expect(later.setInterval.callCount).to.equal(1);
-      chai.expect(later.setInterval.args[0]).to.deep.equal([purgeLib.purge, 'my schedule']);
-      chai.expect(interval.clear.callCount).to.equal(0);
+      chai.expect(later.setTimeout.callCount).to.equal(1);
+      chai.expect(later.setTimeout.args[0]).to.deep.equal([purgeLib.purge, 'my schedule']);
+      chai.expect(timeout.clear.callCount).to.equal(0);
 
       scheduler.execute(() => {
         chai.expect(config.get.callCount).to.equal(2);
         chai.expect(later.parse.cron.callCount).to.equal(2);
         chai.expect(later.parse.cron.args[1]).to.deep.equal(['* * something']);
-        chai.expect(later.setInterval.callCount).to.equal(2);
-        chai.expect(later.setInterval.args[1]).to.deep.equal([purgeLib.purge, 'my schedule']);
-        chai.expect(interval.clear.callCount).to.equal(1);
+        chai.expect(later.setTimeout.callCount).to.equal(2);
+        chai.expect(later.setTimeout.args[1]).to.deep.equal([purgeLib.purge, 'my schedule']);
+        chai.expect(timeout.clear.callCount).to.equal(1);
         done();
       });
     });

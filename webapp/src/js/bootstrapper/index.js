@@ -2,9 +2,10 @@
 
   'use strict';
 
-  const purger = require('./purger');
   const registerServiceWorker = require('./swRegister');
   const translator = require('./translator');
+  const utils = require('./utils');
+  const serverSidePurge = require('./server-side-purge');
 
   const ONLINE_ROLE = 'mm-online';
 
@@ -34,18 +35,11 @@
     }
   };
 
-  const getBaseUrl = () => {
-    // parse the URL to determine the remote and local database names
-    const location = window.location;
-    const port = location.port ? ':' + location.port : '';
-    return `${location.protocol}//${location.hostname}${port}`;
-  };
-
   const getDbInfo = function() {
     const dbName = 'medic';
     return {
       name: dbName,
-      remote: `${getBaseUrl()}/${dbName}`
+      remote: `${utils.getBaseUrl()}/${dbName}`
     };
   };
 
@@ -93,22 +87,22 @@
     });
   };
 
-  const initPurgeCheckpoint = (db) => {
-    return db.fetch(`${getBaseUrl()}/api/v1/purging/checkpoint?seq=now`);
-  };
-
   var initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
-    var replicator = localDb.replicate
-      .from(remoteDb, {
-        live: false,
-        retry: false,
-        heartbeat: 10000,
-        timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-        query_params: { initial_replication: true }
-      });
+
+    return serverSidePurge
+      .info()
+      .then(info => {
+        const replicator = localDb.replicate
+          .from(remoteDb, {
+            live: false,
+            retry: false,
+            heartbeat: 10000,
+            timeout: 1000 * 60 * 10, // try for ten minutes then give up,
+            query_params: { initial_replication: true }
+          });
 
     replicator
       .on('change', function(info) {
@@ -116,14 +110,14 @@
         setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
       });
 
-    return replicator
-      .then(() => initPurgeCheckpoint(remoteDb))
-      .then(function() {
-        var duration = Date.now() - dbSyncStartTime;
+        return replicator.then(() => serverSidePurge.checkpoint(info));
+      })
+      .then(() => {
+        const duration = Date.now() - dbSyncStartTime;
         console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
         if (dbSyncStartData) {
-          var dbSyncEndData = getDataUsage();
-          var rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+          const dbSyncEndData = getDataUsage();
+          const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
           console.info('Initial sync received ' + rx + 'B of data');
         }
       });
@@ -210,6 +204,7 @@
     let isInitialReplicationNeeded;
     Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
       .then(function(resolved) {
+        serverSidePurge.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
@@ -223,17 +218,21 @@
             });
         }
       })
-      .then(() => purger(localDb, userCtx, isInitialReplicationNeeded)
-        .on('start', () => setUiStatus('PURGE_INIT'))
-        .on('progress', function(progress) {
-          setUiStatus('PURGE_INFO', {
-            count: progress.purged,
-            percent: Math.floor((progress.processed / progress.total) * 100)
+      .then(() => {
+        return serverSidePurge
+          .shouldPurge(localDb)
+          .then(shouldPurge => {
+            if (!shouldPurge) {
+              return;
+            }
+
+            return serverSidePurge
+              .purge(localDb)
+              .on('start', () => setUiStatus('PURGE_INIT'))
+              .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+              .catch(console.error);
           });
-        })
-        .on('optimise', () => setUiStatus('PURGE_AFTER'))
-        .catch(console.error)
-      )
+      })
       .then(() => setUiStatus('STARTING_APP'))
       .catch(err => err)
       .then(function(err) {

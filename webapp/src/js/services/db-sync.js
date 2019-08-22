@@ -1,21 +1,19 @@
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
 const DDOC_PREFIX = ['_design/'];
-const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
+const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/server-side-purge').LAST_REPLICATED_SEQ_KEY;
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 angular
   .module('inboxServices')
   .factory('DBSync', function(
-    $http,
     $interval,
     $log,
     $q,
     $window,
     Auth,
     DB,
-    POUCHDB_OPTIONS,
     Session
   ) {
     'use strict';
@@ -48,12 +46,6 @@ angular
       );
     };
 
-    const getServerSidePurges = () => {
-      return processPurges().then(() => {
-        $log.debug(`Getting recent purges successful`);
-      });
-    };
-
     const DIRECTIONS = [
       {
         name: 'to',
@@ -66,55 +58,9 @@ angular
       {
         name: 'from',
         options: {},
-        allowed: () => $q.resolve(true),
-        hookAfter: getServerSidePurges
+        allowed: () => $q.resolve(true)
       }
     ];
-
-    const processPurges = () => {
-      return $http
-        .get('/api/v1/purging/changes', { headers: POUCHDB_OPTIONS.remote_headers })
-        .then(response => {
-          const { purged_ids: ids, last_seq: lastSeq } = response.data;
-          if (!ids.length) {
-            return;
-          }
-          return purgeIds(ids, lastSeq).then(processPurges);
-        });
-    };
-
-    const purgeIds = (ids, seq) => {
-      return DB()
-        .allDocs({ keys: ids })
-        .then(result => {
-          const purgedDocs = [];
-          result.rows.forEach(row => {
-            if (row.id && row.value) {
-              purgedDocs.push({ _id: row.id, _rev: row.value.rev, _deleted: true, purged: true });
-            }
-          });
-          return DB().bulkDocs(purgedDocs);
-        })
-        .then(results => {
-          let errors = '';
-          results.forEach(result => {
-            if (!result.ok) {
-              errors += result.id + ' with ' + result.message + '; ';
-            }
-          });
-          if (errors) {
-            throw new Error(`Not all documents purged successfully: ${errors}`);
-          }
-
-          $log.debug(`Purged ${results.length} docs`);
-
-          const params = {
-            params: { seq },
-            headers: POUCHDB_OPTIONS.remote_headers
-          };
-          return $http.get('/api/v1/purging/checkpoint', params);
-        });
-    };
 
     const replicate = function(direction) {
       return direction.allowed()
@@ -137,9 +83,7 @@ angular
             })
             .then(info => {
               $log.debug(`Replication ${direction.name} successful`, info);
-              if (direction.hookAfter && typeof direction.hookAfter === 'function') {
-                return direction.hookAfter();
-              }
+              return;
             })
             .catch(err => {
               $log.error(`Error replicating ${direction.name} remote server`, err);
@@ -271,7 +215,5 @@ angular
         resetSyncInterval();
         return sync(force);
       },
-
-      opts: () => POUCHDB_OPTIONS
     };
   });

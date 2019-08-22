@@ -166,7 +166,6 @@ const createReduxLoggerConfig = Selectors => ({
     remote: {
       skip_setup: true,
       fetch: function(url, opts) {
-        console.log(url);
         const parsedUrl = new URL(url);
         if (parsedUrl.pathname === '/') {
           parsedUrl.pathname = '/dbinfo';

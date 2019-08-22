@@ -4,7 +4,7 @@ const purgeLib = require('../lib/purging');
 
 // set later to use local time
 later.date.localTime();
-let purgeInterval;
+let purgeTimeout;
 
 const getSchedule = config => {
   // fetch a schedule based on the configuration, parsing it as a "cron"
@@ -31,10 +31,10 @@ module.exports = {
       return cb();
     }
 
-    if (purgeInterval) {
-      purgeInterval.clear();
+    if (purgeTimeout) {
+      purgeTimeout.clear();
     }
-    purgeInterval = later.setInterval(purgeLib.purge, schedule);
+    purgeTimeout = later.setTimeout(purgeLib.purge, schedule);
     cb();
   },
 };

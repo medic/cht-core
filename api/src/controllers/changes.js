@@ -301,10 +301,6 @@ const initFeed = (req, res) => {
 
 
 const filterPurgedIds = feed => {
-  if (!feed.initialReplication) {
-    return Promise.resolve();
-  }
-
   purgedDocs.init();
   return purgedDocs
     .getPurgedIds(feed.userCtx.roles, feed.allowedDocIds)

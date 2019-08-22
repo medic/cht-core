@@ -30,3 +30,10 @@ module.exports.checkpoint = (req, res) => {
     .then(() => res.json({ success: true }))
     .catch(err => serverUtils.error(err, req, res));
 };
+
+module.exports.info = (req, res) => {
+  return purgedDocs
+    .info(req.userCtx.roles)
+    .then(info => res.json(info))
+    .catch(err => serverUtils.error(err, req, res));
+};
