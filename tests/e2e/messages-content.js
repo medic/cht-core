@@ -24,7 +24,9 @@ describe('Display message', () => {
 
   afterEach(done => {
     utils.resetBrowser();
-    done();
+    utils
+      .deleteAllDocs()
+      .then(done);
   });
 
   afterAll(done => {
