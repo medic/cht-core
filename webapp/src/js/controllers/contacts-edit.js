@@ -116,7 +116,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     var markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
-
+    
+    var resetFormError = function() {
+        ctrl.setEnketoError(null);
+    };
+                                              
     var renderForm = function(formId) {
       return $timeout(function() {
         if (!formId) {
@@ -142,6 +146,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         docId: $scope.contactId,
       };
     };
+                                              
+    resetFormError();
 
     getContact()
       .then(getForm)
