@@ -184,6 +184,15 @@ const requestChanges = (username, params = {}) => {
   return utils.requestOnTestDb(options);
 };
 
+const getPurgeInfo = username => {
+  const options = {
+    path: `/purging`,
+    auth: `${username}:${password}`,
+    headers: { 'medic-replication-id': username }
+  };
+  return utils.request(options);
+};
+
 const writePurgeCheckpoint = (username, seq) => {
   const options = {
     path: `/purging/checkpoint?seq=${seq || 'now'}`,
@@ -378,13 +387,23 @@ describe('server side purge', () => {
     let seqUser2;
 
     return Promise
-      .all([requestPurges('user1'), requestPurges('user2')])
-      .then(([purgedDocsUser1, purgedDocsUser2]) => {
+      .all([
+        requestPurges('user1'),
+        requestPurges('user2'),
+        getPurgeInfo('user1'),
+        getPurgeInfo('user2')
+      ])
+      .then(([purgedDocsUser1, purgedDocsUser2, infoUser1, infoUser2]) => {
         // reverse purges
         chai.expect(purgedDocsUser1.purged_ids).to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
         chai.expect(purgedDocsUser2.purged_ids).to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
-        seqUser1 = purgedDocsUser1.last_seq;
-        seqUser2 = purgedDocsUser2.last_seq;
+        chai.expect(infoUser1.update_seq).to.equal(purgedDocsUser1.last_seq);
+        chai.assert(infoUser1.update_seq);
+        chai.expect(infoUser2.update_seq).to.equal(purgedDocsUser2.last_seq);
+        chai.assert(infoUser2.update_seq);
+
+        seqUser1 = infoUser1.update_seq;
+        seqUser2 = infoUser2.update_seq;
       })
       .then(() => Promise.all([
         writePurgeCheckpoint('user1', seqUser1),

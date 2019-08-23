@@ -39,18 +39,21 @@ const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
 module.exports.shouldPurge = (localDb, userCtx) => {
   return Promise
     .all([ localDb.get('settings'), getPurgeLog(localDb), localDb.info() ])
-    .then(([ { settings: purge }, purgelog, info ]) => {
+    .then(([ { settings: { purge } }, purgelog, info ]) => {
       // purge not running on the server
       if (!purge) {
+        console.debug('Not purging: Purge not configured.');
         return false;
       }
 
       // if user roles have changed
       if (purgelog && purgelog.roles && purgelog.roles !== sortedUniqueRoles(userCtx.roles)) {
+        console.debug('Purging: user roles changed since last purge');
         return true;
       }
 
       let dayInterval = parseInt(purge.run_every_days);
+
       if (Number.isNaN(dayInterval)) {
         dayInterval = 7;
       }
@@ -58,15 +61,19 @@ module.exports.shouldPurge = (localDb, userCtx) => {
       const lastPurge = purgelog.date;
       const purgedRecently = lastPurge && (new Date().getTime() - daysToMs(dayInterval)) < lastPurge;
       if (purgedRecently) {
+        console.debug('Not purging: purge ran recently');
         return false;
       }
 
       const highestSyncSeq = parseInt(window.localStorage.getItem(module.exports.LAST_REPLICATED_SEQ_KEY));
       if (!highestSyncSeq || Number.isNaN(highestSyncSeq)) {
+        console.debug('Not purging: local db not synced');
         return false;
       }
 
-      return parseInt(info.update_seq) <= highestSyncSeq;
+      const shouldPurge = parseInt(info.update_seq) <= highestSyncSeq;
+      console.debug(shouldPurge ? 'Purging' : 'Not purging: local db not synced');
+      return shouldPurge;
     });
 };
 
@@ -140,7 +147,7 @@ const purgeIds = (db, ids) => {
     .then(result => {
       const purgedDocs = [];
       result.rows.forEach(row => {
-        if (row.id && row.value) {
+        if (row.id && row.value && !row.value.deleted) {
           purgedDocs.push({ _id: row.id, _rev: row.value.rev, _deleted: true, purged: true });
         }
       });

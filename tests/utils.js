@@ -616,4 +616,6 @@ module.exports = {
       return rpn.post('http://localhost:31337/sentinel/start');
     }
   },
+
+  refreshToGetNewSettings: refreshToGetNewSettings,
 };

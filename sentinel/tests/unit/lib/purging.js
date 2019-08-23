@@ -16,8 +16,6 @@ describe('ServerSidePurge', () => {
   });
 
   afterEach(() => {
-    const purgeDbs = service.__get__('purgeDbs');
-    Object.keys(purgeDbs).forEach(hash => delete purgeDbs[hash]);
     sinon.restore();
   });
 
@@ -184,7 +182,7 @@ describe('ServerSidePurge', () => {
     });
   });
 
-  describe('getExistentPurgedDocs', () => {
+  describe('getAlreadyPurgedDocs', () => {
     let purgeDbChanges;
 
     beforeEach(() => {
@@ -193,7 +191,7 @@ describe('ServerSidePurge', () => {
     });
 
     it('should work with no ids', () => {
-      return service.__get__('getExistentPurgedDocs')(['a', 'b']).then(results => {
+      return service.__get__('getAlreadyPurgedDocs')(['a', 'b']).then(results => {
         chai.expect(results).to.deep.equal({ 'a': {}, 'b': {} });
         chai.expect(db.get.callCount).to.equal(0);
       });
@@ -201,7 +199,7 @@ describe('ServerSidePurge', () => {
 
     it('should throw db errors', () => {
       purgeDbChanges.rejects({ some: 'err' });
-      return service.__get__('getExistentPurgedDocs')(['a', 'b'], [1, 2]).catch(err => {
+      return service.__get__('getAlreadyPurgedDocs')(['a', 'b'], [1, 2]).catch(err => {
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
     });
@@ -210,7 +208,7 @@ describe('ServerSidePurge', () => {
       const hashes = ['a', 'b', 'c'];
       const ids = ['1', '2', '3', '4'];
       purgeDbChanges.resolves({ results: [] });
-      return service.__get__('getExistentPurgedDocs')(hashes, ids).then(results => {
+      return service.__get__('getAlreadyPurgedDocs')(hashes, ids).then(results => {
         chai.expect(results).to.deep.equal({ 'a': {}, 'b': {}, 'c': {} });
         chai.expect(db.get.callCount).to.equal(3);
         chai.expect(purgeDbChanges.callCount).to.equal(3);
@@ -253,7 +251,7 @@ describe('ServerSidePurge', () => {
         ]
       });
 
-      return service.__get__('getExistentPurgedDocs')(hashes, ids).then(results => {
+      return service.__get__('getAlreadyPurgedDocs')(hashes, ids).then(results => {
         chai.expect(results).to.deep.equal({
           'a': { '2': '2-rev', '3': '3-rev', '5': '5-rev' },
           'b': { '1': '1-rev', '6': '6-rev' },
@@ -868,7 +866,7 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should correctly ignore reports with needs_signoff', () => {
+    it('should correctly ignore reports with needs_signoff when they emit submitter lineage', () => {
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ rows: [
           { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: 'district_hospital' } },

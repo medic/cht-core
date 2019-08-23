@@ -27,6 +27,9 @@ const regex = new RegExp(/^purged-.+-.+$/);
 // clears all purge caches
 const clearCache = () => {
   const keysToDelete = cache.keys().filter(key => regex.test(key));
+  if (!keysToDelete.length) {
+    return;
+  }
   cache.del(keysToDelete);
 };
 
@@ -124,17 +127,18 @@ const info = (roles) => {
   return purgeDb.info();
 };
 
-const listen = () => {
+const listen = (seq = 'now') => {
   db.sentinel
-    .changes({ live: true, since: 'now' })
+    .changes({ live: true, since: seq })
     .on('change', change => {
+      seq = change.seq;
       if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
         clearCache();
       }
     })
     .on('error', err => {
       logger.error('Error watching sentinel changes, restarting: %o', err);
-      listen();
+      listen(seq);
     });
 };
 

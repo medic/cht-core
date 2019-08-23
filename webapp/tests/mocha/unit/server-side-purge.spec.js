@@ -376,15 +376,16 @@ describe('ServerSidePurge', () => {
       const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint')).resolves({ json: sinon.stub() });
 
       purgeChanges
-        .onCall(0).resolves({ json: sinon.stub().resolves({ purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' })})
+        .onCall(0).resolves({ json: sinon.stub().resolves({ purged_ids: ['id1', 'id2', 'id3', 'id4'], last_seq: '111-222' })})
         .onCall(1).resolves({ json: sinon.stub().resolves({ purged_ids: [], last_seq: '111-222' })});
 
       localDb.allDocs
-        .withArgs({ keys: ['id1', 'id2', 'id3'] })
+        .withArgs({ keys: ['id1', 'id2', 'id3', 'id4'] })
         .resolves({ rows: [
             { key: 'id1', error: 'whatever' },
             { key: 'id2', error: 'not_found', reason: 'deleted' },
             { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
+            { id: 'id4', key: 'id3', value: { rev: '13-abc', deleted: true } },
           ]});
 
       localDb.bulkDocs.resolves([]);
@@ -419,7 +420,7 @@ describe('ServerSidePurge', () => {
       return serverSidePurge.purge(localDb, userCtx).then(() => {
         chai.expect(purgeChanges.callCount).to.equal(2);
         chai.expect(localDb.allDocs.callCount).to.equal(1);
-        chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3'] }]);
+        chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3', 'id4'] }]);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
         chai.expect(localDb.bulkDocs.args[0]).to.deep.equal([[{ _id: 'id3', _rev: '13-abc', _deleted: true, purged: true }]]);
         chai.expect(purgeCheckpoint.callCount).to.equal(1);

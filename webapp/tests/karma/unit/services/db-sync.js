@@ -18,8 +18,6 @@ describe('DBSync service', () => {
   let replicationResult;
   let getItem;
   let setItem;
-  let POUCHDB_OPTIONS;
-  let bulkDocs;
 
   beforeEach(() => {
     replicationResult = Q.resolve;
@@ -42,11 +40,6 @@ describe('DBSync service', () => {
     Auth = sinon.stub();
     setItem = sinon.stub();
     getItem = sinon.stub();
-    POUCHDB_OPTIONS = {
-      remote_headers: { 'medic-replication-id': 'some-random-uuid', some: 'thing' },
-      local: {}
-    };
-    bulkDocs = sinon.stub();
 
     module('inboxApp');
     module($provide => {
@@ -54,8 +47,7 @@ describe('DBSync service', () => {
         replicate: { to, from },
         allDocs: allDocs,
         sync: sync,
-        info: info,
-        bulkDocs: bulkDocs
+        info: info
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
@@ -64,7 +56,6 @@ describe('DBSync service', () => {
       } );
       $provide.value('Auth', Auth);
       $provide.value('$window', { localStorage: { setItem, getItem } });
-      $provide.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
     });
     inject((_DBSync_, _$interval_) => {
       service = _DBSync_;

@@ -18,8 +18,7 @@ describe('Server Side Purge service', () => {
       promise.on = recursiveOn;
       return promise;
     });
-    let sentinelChanges = sinon.stub().returns({ on: recursiveOn });
-    sinon.stub(db.sentinel, 'changes').returns(sentinelChanges);
+    sinon.stub(db.sentinel, 'changes').returns({ on: recursiveOn });
     service = rewire('../../../src/services/purged-docs');
   });
   afterEach(() => {
@@ -29,7 +28,79 @@ describe('Server Side Purge service', () => {
   });
 
   describe('init', () => {
-    //todo
+    it('should listen to sentinel changes once', () => {
+      service.init();
+      chai.expect(db.sentinel.changes.callCount).to.equal(1);
+      chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
+      service.init();
+      service.init();
+      chai.expect(db.sentinel.changes.callCount).to.equal(1);
+    });
+
+    it('should process changes correctly', () => {
+      let onChangeCallback;
+      recursiveOn.withArgs('change').callsFake((e, callback) => {
+        onChangeCallback = callback;
+        const promise = sinon.stub().resolves();
+        promise.on = recursiveOn;
+        return promise;
+      });
+      service.init();
+
+      chai.expect(onChangeCallback).to.be.a('function');
+      sinon.stub(cache, 'del');
+      sinon.stub(cache, 'keys').returns([]);
+
+      onChangeCallback({ id: 'random-info', seq: 1 });
+      chai.expect(cache.keys.callCount).to.equal(0);
+      onChangeCallback({ id: 'random-other-info', seq: 2 });
+      chai.expect(cache.keys.callCount).to.equal(0);
+      onChangeCallback({ id: 'purgelog:some-random-date', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
+      chai.expect(cache.keys.callCount).to.equal(0);
+      onChangeCallback({ id: 'purgelog:some-other-date', changes: [{ rev: '1-something' }], seq: 4 });
+      chai.expect(cache.keys.callCount).to.equal(1);
+      chai.expect(cache.del.callCount).to.equal(0);
+
+      cache.keys.returns(['key1', 'othercache', 'wow']);
+      onChangeCallback({ id: 'purgelog:111', changes: [{ rev: '1-bla123' }], seq: 5 });
+      chai.expect(cache.keys.callCount).to.equal(2);
+      chai.expect(cache.del.callCount).to.equal(0);
+
+      cache.keys.returns(['purged-roles-ids', 'key1', 'other', 'purged-other-more', 'purged-some', 'purgednot']);
+      onChangeCallback({ id: 'purgelog:2222', changes: [{ rev: '1-post' }], seq: 6 });
+      chai.expect(cache.keys.callCount).to.equal(3);
+      chai.expect(cache.del.callCount).to.equal(1);
+      chai.expect(cache.del.args[0]).to.deep.equal([['purged-roles-ids', 'purged-other-more']]);
+    });
+
+    it('should restart listener on error', () => {
+      let onChangeCallback;
+      let onErrorCallback;
+
+      recursiveOn.withArgs('change').callsFake((e, callback) => {
+        onChangeCallback = callback;
+        const promise = sinon.stub().resolves();
+        promise.on = recursiveOn;
+        return promise;
+      });
+      recursiveOn.withArgs('error').callsFake((e, callback) => {
+        onErrorCallback = callback;
+        const promise = sinon.stub().resolves();
+        promise.on = recursiveOn;
+        return promise;
+      });
+
+      service.init();
+      chai.expect(db.sentinel.changes.callCount).to.equal(1);
+      chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
+      onErrorCallback();
+      chai.expect(db.sentinel.changes.callCount).to.equal(2);
+      chai.expect(db.sentinel.changes.args[1]).to.deep.equal([{ live: true, since: 'now' }]);
+      onChangeCallback({ id: 'some-info', changes: [{ rev: '1-post' }], seq: 6 });
+      onErrorCallback();
+      chai.expect(db.sentinel.changes.callCount).to.equal(3);
+      chai.expect(db.sentinel.changes.args[2]).to.deep.equal([{ live: true, since: 6 }]);
+    });
   });
 
   describe('getPurgedIds', () => {
