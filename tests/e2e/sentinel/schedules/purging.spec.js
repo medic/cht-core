@@ -397,10 +397,11 @@ describe('server side purge', () => {
         // reverse purges
         chai.expect(purgedDocsUser1.purged_ids).to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
         chai.expect(purgedDocsUser2.purged_ids).to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
-        chai.expect(infoUser1.update_seq).to.equal(purgedDocsUser1.last_seq);
         chai.assert(infoUser1.update_seq);
-        chai.expect(infoUser2.update_seq).to.equal(purgedDocsUser2.last_seq);
         chai.assert(infoUser2.update_seq);
+
+        chai.expect(parseInt(infoUser1.update_seq)).to.equal(parseInt(purgedDocsUser1.last_seq));
+        chai.expect(parseInt(infoUser2.update_seq)).to.equal(parseInt(purgedDocsUser2.last_seq));
 
         seqUser1 = infoUser1.update_seq;
         seqUser2 = infoUser2.update_seq;
@@ -411,8 +412,10 @@ describe('server side purge', () => {
       ]))
       .then(() => Promise.all([requestPurges('user1'), requestPurges('user2')]))
       .then(([purgedDocsUser1, purgedDocsUser2]) => {
-        chai.expect(purgedDocsUser1).to.deep.equal({ purged_ids: [], last_seq: seqUser1 });
-        chai.expect(purgedDocsUser2).to.deep.equal({ purged_ids: [], last_seq: seqUser2 });
+        chai.expect(purgedDocsUser1.purged_ids).to.deep.equal([]);
+        chai.expect(purgedDocsUser2.purged_ids).to.deep.equal([]);
+        chai.expect(parseInt(purgedDocsUser1.last_seq)).to.equal(parseInt(seqUser1));
+        chai.expect(parseInt(purgedDocsUser2.last_seq)).to.equal(parseInt(seqUser2));
       });
   });
 
