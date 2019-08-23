@@ -284,6 +284,7 @@ describe('Purging on login', () => {
 
     browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
     commonElements.sync();
+    commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
 
     browser.wait(() => utils.revertSettings(true).then(() => true));
@@ -313,6 +314,7 @@ describe('Purging on login', () => {
 
     utils.resetBrowser();
     helper.waitForAngularComplete();
+    commonElements.goToReports();
     getPurgeLog().then(result => {
       // purge ran again and it purged the bad form
       chai.expect(result._rev).to.equal('0-2');
