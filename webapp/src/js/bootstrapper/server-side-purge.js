@@ -1,11 +1,11 @@
 const utils = require('./utils');
-const purgingUtils = require('@medic/purging-utils');
 
 const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
 
 module.exports.LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 
+const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles.sort())]);
 const purgeFetch = (url) => {
   return fetch(url, { headers: opts.remote_headers }).then(res => res.json());
 };
@@ -46,9 +46,7 @@ module.exports.shouldPurge = (localDb, userCtx) => {
       }
 
       // if user roles have changed
-      if (purgelog &&
-          purgelog.roles &&
-          purgelog.roles !== JSON.stringify(purgingUtils.sortedUniqueRoles(userCtx.roles))) {
+      if (purgelog && purgelog.roles && purgelog.roles !== sortedUniqueRoles(userCtx.roles)) {
         return true;
       }
 
@@ -122,7 +120,7 @@ const writePurgeLog = (localDb, totalPurged, userCtx) => {
     const info = {
       date: new Date().getTime(),
       count: totalPurged,
-      roles: JSON.stringify(purgingUtils.sortedUniqueRoles(userCtx.roles))
+      roles: sortedUniqueRoles(userCtx.roles)
     };
     Object.assign(purgeLog, info);
     purgeLog.history.unshift(info);
