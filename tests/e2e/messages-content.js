@@ -198,7 +198,7 @@ describe('Display message', () => {
         return utils.deleteDocs(CONTACTS.map(contact => contact._id));
       });
 
-      helper.waitForAngularComplete();//browser.sleep(100);
+      browser.sleep(1000);
 
       expect(getElementText('.name')).toBe('Unknown sender');
       expect(getElementText('.phone')).toBe(ALICE.phone);
