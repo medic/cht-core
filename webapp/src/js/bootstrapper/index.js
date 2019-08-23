@@ -220,14 +220,14 @@
       })
       .then(() => {
         return serverSidePurge
-          .shouldPurge(localDb)
+          .shouldPurge(localDb, userCtx)
           .then(shouldPurge => {
             if (!shouldPurge) {
               return;
             }
 
             return serverSidePurge
-              .purge(localDb)
+              .purge(localDb, userCtx)
               .on('start', () => setUiStatus('PURGE_INIT'))
               .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
               .catch(console.error);

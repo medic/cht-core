@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const purgingUtils = require('@medic/purging-utils');
 
 const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
@@ -35,13 +36,20 @@ module.exports.checkpoint = (seq = 'now') => {
 };
 
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
-module.exports.shouldPurge = (localDb) => {
+module.exports.shouldPurge = (localDb, userCtx) => {
   return Promise
     .all([ localDb.get('settings'), getPurgeLog(localDb), localDb.info() ])
     .then(([ { settings: purge }, purgelog, info ]) => {
       // purge not running on the server
       if (!purge) {
         return false;
+      }
+
+      // if user roles have changed
+      if (purgelog &&
+          purgelog.roles &&
+          purgelog.roles !== JSON.stringify(purgingUtils.sortedUniqueRoles(userCtx.roles))) {
+        return true;
       }
 
       let dayInterval = parseInt(purge.run_every_days);
@@ -64,7 +72,7 @@ module.exports.shouldPurge = (localDb) => {
     });
 };
 
-module.exports.purge = (localDb) => {
+module.exports.purge = (localDb, userCtx) => {
   const handlers = {};
   const baseUrl = utils.getBaseUrl();
   let totalPurged = 0;
@@ -84,9 +92,11 @@ module.exports.purge = (localDb) => {
         }
 
         return purgeIds(localDb, ids)
-          .then(nbr => totalPurged += nbr)
-          .then(() => module.exports.checkpoint(lastSeq))
-          .then(() => emit('progress', { purged: totalPurged }))
+          .then(nbr => {
+            totalPurged += nbr;
+            emit('progress', { purged: totalPurged });
+            return module.exports.checkpoint(lastSeq);
+          })
           .then(() => batchedPurge());
       });
   };
@@ -95,7 +105,7 @@ module.exports.purge = (localDb) => {
   const p = Promise
     .resolve()
     .then(() => batchedPurge())
-    .then(() => writePurgeLog(localDb, totalPurged))
+    .then(() => writePurgeLog(localDb, totalPurged, userCtx))
     .then(() => emit('done', { totalPurged }));
 
   p.on = (type, callback) => {
@@ -107,11 +117,12 @@ module.exports.purge = (localDb) => {
   return p;
 };
 
-const writePurgeLog = (localDb, totalPurged) => {
+const writePurgeLog = (localDb, totalPurged, userCtx) => {
   return getPurgeLog(localDb).then(purgeLog => {
     const info = {
       date: new Date().getTime(),
-      count: totalPurged
+      count: totalPurged,
+      roles: JSON.stringify(purgingUtils.sortedUniqueRoles(userCtx.roles))
     };
     Object.assign(purgeLog, info);
     purgeLog.history.unshift(info);
@@ -125,7 +136,6 @@ const writePurgeLog = (localDb, totalPurged) => {
 };
 
 const purgeIds = (db, ids) => {
-  console.debug('Purging ids', ids);
   let nbrPurged;
   return db
     .allDocs({ keys: ids })
