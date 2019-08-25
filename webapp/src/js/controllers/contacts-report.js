@@ -71,7 +71,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           };
           ctrl.setEnketoEditedStatus(false);
           return Enketo
-            .render('#contact-report', form._id, instanceData, markFormEdited)
+            .render('#contact-report', form, instanceData, markFormEdited)
             .then(function(formInstance) {
               $scope.setTitle(TranslateFrom(form.title));
               $scope.form = formInstance;
