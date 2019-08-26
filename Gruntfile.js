@@ -739,6 +739,11 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
+      'release-e2e-tests':{
+        options:{
+          configFile: 'tests/relase.tests.conf.js'
+        }
+      },
       'e2e-tests': {
         options: {
           configFile: 'tests/e2e.tests.conf.js',
@@ -997,6 +1002,11 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-tests',
+  ]);
+
+  grunt.registerTask('release-e2e', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:release-e2e-tests',
   ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
