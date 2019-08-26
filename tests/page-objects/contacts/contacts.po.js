@@ -11,14 +11,16 @@ const personNotes = element(by.css('[name="/data/contact/notes"]'));
 const submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
 const newPersonButton = element(by.css('[name="/data/init/create_new_person"][value="new_person"]'));
 const writeName = element(by.css('[name="/data/district_hospital/is_name_generated"][value="false"]'));
+const contactName = element(by.css('.heading-content'));
 
 module.exports = {
 
+  contactName,
   getSubmitButton: () => submitButton,
 
-  addNewDistrict: districtName => {
+  addNewDistrict: async districtName => {
     helper.waitUntilReady(newDistrictButton);
-    newDistrictButton.click();
+    await newDistrictButton.click();
     helper.waitElementToBeVisible(newPersonButton);
     newPersonButton.click();
     newPersonTextBox.sendKeys('Bede');
@@ -27,7 +29,7 @@ module.exports = {
     helper.waitElementToBeVisible(writeName);
     writeName.click();
     newPlaceName.sendKeys(districtName);
-    submitButton.click();
+    await submitButton.click();
   },
 
   addHealthCenter: () => {

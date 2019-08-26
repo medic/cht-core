@@ -4,9 +4,10 @@ const constants = require('./constants');
 const auth = require('./auth')();
 const contactForms = require('./contact-forms.json');
 const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
+const applyConfig = require('./apply-config');
 
 class BaseConfig {
-  constructor(testSrcDir, { headless=true }={}) {
+  constructor(testSrcDir, { headless=true }={}, pathToConfig) {
     const chromeArgs = [ '--window-size=1024,768' ];
     utils.setDebug(!headless);
     if (headless) {
@@ -50,10 +51,17 @@ class BaseConfig {
         jasmine.getEnv().addReporter(utils.specReporter);
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
-
+        
+        // wait for startup to complete
         browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
-        browser.driver.sleep(10000); // wait for startup to complete
+        browser.driver.sleep(10000).then(() => {
+          if (pathToConfig){
+            browser.driver.wait(applyConfig(pathToConfig), 135 * 1000, 'failed applying config');
+          }
+        });
 
+        
+        
         afterEach(() => {
           browser.manage().logs().get('browser').then(logs => {
             logs
@@ -130,3 +138,4 @@ const setupUser = () => {
       return utils.saveDoc(doc);
     });
 };
+
