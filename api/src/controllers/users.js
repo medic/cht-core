@@ -205,4 +205,6 @@ module.exports = {
       limit: usersService.DOC_IDS_WARN_LIMIT
     }));
   }
+
+  // todo after https://github.com/medic/medic/pull/5793 is merged, update the user-info endpoint to exclude purged docs
 };

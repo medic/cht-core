@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const sortedUniqueRoles = roles => ([...new Set(roles.sort())]);
+const sortedUniqueRoles = roles => ([...new Set(roles)].sort());
 const getRoleHash = roles => crypto
   .createHash('md5')
   .update(JSON.stringify(sortedUniqueRoles(roles)), 'utf8')

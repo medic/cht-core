@@ -5,7 +5,7 @@ const MAX_HISTORY_LENGTH = 10;
 
 module.exports.LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 
-const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles.sort())]);
+const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 const purgeFetch = (url) => {
   return fetch(url, { headers: opts.remote_headers }).then(res => res.json());
 };
