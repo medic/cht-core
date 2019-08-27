@@ -5,7 +5,7 @@
   const registerServiceWorker = require('./swRegister');
   const translator = require('./translator');
   const utils = require('./utils');
-  const serverSidePurge = require('./server-side-purge');
+  const purger = require('./purger');
 
   const ONLINE_ROLE = 'mm-online';
 
@@ -92,7 +92,7 @@
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
 
-    return serverSidePurge
+    return purger
       .info()
       .then(info => {
         const replicator = localDb.replicate
@@ -110,7 +110,7 @@
         setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
       });
 
-        return replicator.then(() => serverSidePurge.checkpoint(info));
+        return replicator.then(() => purger.checkpoint(info));
       })
       .then(() => {
         const duration = Date.now() - dbSyncStartTime;
@@ -204,7 +204,7 @@
     let isInitialReplicationNeeded;
     Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
       .then(function(resolved) {
-        serverSidePurge.setOptions(POUCHDB_OPTIONS);
+        purger.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
@@ -219,18 +219,18 @@
         }
       })
       .then(() => {
-        return serverSidePurge
+        return purger
           .shouldPurge(localDb, userCtx)
           .then(shouldPurge => {
             if (!shouldPurge) {
               return;
             }
 
-            return serverSidePurge
+            return purger
               .purge(localDb, userCtx)
               .on('start', () => setUiStatus('PURGE_INIT'))
               .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-              .catch(console.error);
+              .catch(err => console.error('Error attempting to purge', err));
           });
       })
       .then(() => setUiStatus('STARTING_APP'))

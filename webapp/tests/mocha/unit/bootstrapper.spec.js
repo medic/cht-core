@@ -7,7 +7,7 @@ const sinon = require('sinon'),
       };
 const rewire = require('rewire');
 const bootstrapper = rewire('../../../src/js/bootstrapper');
-const serverSidePurge = require('../../../src/js/bootstrapper/server-side-purge');
+const purger = require('../../../src/js/bootstrapper/purger');
 
 let originalDocument;
 let originalWindow;
@@ -120,8 +120,8 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
     localId.resolves('some-randomn-uuid');
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -134,25 +134,25 @@ describe('bootstrapper', () => {
           'medic-replication-id': 'some-randomn-uuid'
         }
       });
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
-      assert.equal(serverSidePurge.shouldPurge.callCount, 1);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.equal(purger.shouldPurge.callCount, 1);
       done();
     });
   });
 
-  it('should initialize serverSidePurge with correct options', done => {
+  it('should initialize purger with correct options', done => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
     localId.resolves('some-randomn-uuid');
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
-      assert.deepEqual(serverSidePurge.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
       done();
     });
   });
@@ -161,8 +161,8 @@ describe('bootstrapper', () => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -182,10 +182,10 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
@@ -219,9 +219,9 @@ describe('bootstrapper', () => {
         query_params: { initial_replication: true },
       });
 
-      assert.equal(serverSidePurge.info.callCount, 1);
-      assert.equal(serverSidePurge.checkpoint.callCount, 1);
-      assert.deepEqual(serverSidePurge.checkpoint.args[0], ['some-info']);
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
 
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
@@ -234,10 +234,10 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves();
     localGet.withArgs('settings').onCall(0).rejects();
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
@@ -265,9 +265,9 @@ describe('bootstrapper', () => {
         query_params: { initial_replication: true },
       });
 
-      assert.equal(serverSidePurge.info.callCount, 1);
-      assert.equal(serverSidePurge.checkpoint.callCount, 1);
-      assert.deepEqual(serverSidePurge.checkpoint.args[0], ['some-info']);
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
 
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
@@ -324,7 +324,7 @@ describe('bootstrapper', () => {
 
   it('returns redirect to login error when no userCtx cookie found', done => {
     localGet.withArgs('_design/medic-client').rejects();
-    sinon.stub(serverSidePurge, 'setOptions');
+    sinon.stub(purger, 'setOptions');
 
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
@@ -344,9 +344,9 @@ describe('bootstrapper', () => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').rejects();
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
 
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
@@ -365,9 +365,9 @@ describe('bootstrapper', () => {
   it('returns other errors in initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').rejects();
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
 
     const localReplicateResult = Promise.reject({ status: 404 });
     localReplicateResult.on = () => {};
@@ -385,10 +385,10 @@ describe('bootstrapper', () => {
 
   it('returns error if ddoc is not found after successful initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
 
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('settings').rejects();
@@ -405,7 +405,7 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.message, 'Initial replication failed');
       assert.equal(localGet.callCount, 4);
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
+      assert.equal(purger.setOptions.callCount, 1);
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
       done();
@@ -436,18 +436,18 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
     localId.resolves('some-randomn-uuid');
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
     let purgeOn;
     purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
-    sinon.stub(serverSidePurge, 'purge').returns({ on: purgeOn });
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
-      assert.deepEqual(serverSidePurge.setOptions.args[0], [pouchDbOptions]);
-      assert.equal(serverSidePurge.shouldPurge.callCount, 1);
-      assert.equal(serverSidePurge.purge.callCount, 0);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 0);
       done();
     });
   });
@@ -457,13 +457,13 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves();
     localGet.withArgs('settings').onCall(0).rejects();
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
     let purgeOn;
     purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
-    sinon.stub(serverSidePurge, 'purge').returns({ on: purgeOn });
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
@@ -474,9 +474,9 @@ describe('bootstrapper', () => {
       assert.equal(localReplicate.callCount, 1);
       assert.equal(localReplicate.args[0][0].remote, true);
 
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
-      assert.equal(serverSidePurge.shouldPurge.callCount, 1);
-      assert.equal(serverSidePurge.purge.callCount, 0);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 0);
 
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
@@ -489,11 +489,11 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves();
     localGet.withArgs('settings').onCall(0).rejects();
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'info').resolves('some-info');
-    sinon.stub(serverSidePurge, 'checkpoint').resolves();
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(true);
-    sinon.stub(serverSidePurge, 'purge').returns({ on: purgeOn });
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
@@ -521,10 +521,10 @@ describe('bootstrapper', () => {
         query_params: { initial_replication: true },
       });
 
-      assert.equal(serverSidePurge.info.callCount, 1);
-      assert.equal(serverSidePurge.checkpoint.callCount, 1);
-      assert.deepEqual(serverSidePurge.checkpoint.args[0], ['some-info']);
-      assert.equal(serverSidePurge.purge.callCount, 1);
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
+      assert.equal(purger.purge.callCount, 1);
 
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
@@ -538,16 +538,16 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
     localId.resolves('some-randomn-uuid');
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(true);
-    sinon.stub(serverSidePurge, 'purge').returns({ on: purgeOn });
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
-      assert.deepEqual(serverSidePurge.setOptions.args[0], [pouchDbOptions]);
-      assert.equal(serverSidePurge.shouldPurge.callCount, 1);
-      assert.equal(serverSidePurge.purge.callCount, 1);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 1);
       done();
     });
   });
@@ -558,17 +558,17 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
     localId.resolves('some-randomn-uuid');
-    sinon.stub(serverSidePurge, 'setOptions');
-    sinon.stub(serverSidePurge, 'shouldPurge').resolves(true);
-    sinon.stub(serverSidePurge, 'purge').returns({ on: purgeOn });
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
     purgeOn.onCall(1).rejects({ some: 'err' });
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(serverSidePurge.setOptions.callCount, 1);
-      assert.deepEqual(serverSidePurge.setOptions.args[0], [pouchDbOptions]);
-      assert.equal(serverSidePurge.shouldPurge.callCount, 1);
-      assert.equal(serverSidePurge.purge.callCount, 1);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 1);
       done();
     });
   });

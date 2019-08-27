@@ -148,18 +148,151 @@ const updatePurgedDocs = (rolesHashes, ids, alreadyPurged, toPurge) => {
     if (!docs[hash] || !docs[hash].length) {
       return Promise.resolve([]);
     }
-
     return getPurgeDb(hash).bulkDocs({ docs: docs[hash] });
   }));
+};
+
+const validPurgeResults = (result) => result && Array.isArray(result);
+
+const assignContactToGroups = (row, groups, subjectIds) => {
+  const group = {
+    reports: [],
+    messages: [],
+    ids: []
+  };
+  let key;
+  let contact = row.doc;
+  if (tombstoneUtils.isTombstoneId(row.id)) {
+    // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
+    // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
+    key =  tombstoneUtils.extractStub(row.id).id;
+    group.contact = { _deleted: true };
+    group.subjectIds = registrationUtils.getSubjectIds(row.doc.tombstone);
+  } else {
+    key = row.id;
+    group.contact = row.doc;
+    group.subjectIds = registrationUtils.getSubjectIds(contact);
+    group.ids.push(row.id);
+  }
+
+  groups[key] = group;
+  subjectIds.push(...group.subjectIds);
+};
+
+const getRecordGroupInfo = (row, groups, subjectIds) => {
+  if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
+    return;
+  }
+
+  if (tombstoneUtils.isTombstoneId(row.id)) { // we don't purge tombstones
+    return;
+  }
+
+  if (row.doc.form) {
+    const subjectId = registrationUtils.getPatientId(row.doc);
+    if (row.doc.needs_signoff) {
+      // reports with needs_signoff will emit for every contact from their submitter lineage,
+      // but we only want to process them once, either associated to their patient or alone, if no patient_id
+
+      if (subjectId && !subjectIds.includes(subjectId)) {
+        // if the report has a subject, but it is not amongst the list of keys we requested, we hit the emit
+        // for the contact or it's lineage via the `needs_signoff` path. Skip.
+        return;
+      }
+      const submitter = row.doc.contact && row.doc.contact._id;
+      if (!subjectId && !subjectIds.includes(submitter)) {
+        // if the report doesn't have a subject, we want to process it when we hit the emit for the submitter.
+        // if the report submitter is not amongst our request keys, we hit an emit for the submitter's lineage. Skip.
+        return;
+      }
+    }
+
+    // use patient_id as a key, as to keep subject to report associations correct
+    // reports without a subject are processed separately
+    const key = subjectId === row.key ? subjectId : row.id;
+    return { key, report: row.doc };
+  } else {
+    // messages only emit once, either their sender or receiver
+    return { key: row.key, message: row.doc };
+  }
+};
+
+const getRecordsByKey = (rows, groups, subjectIds) => {
+  const recordsByKey = {};
+  rows.forEach(row => {
+    const groupInfo = getRecordGroupInfo(row, groups, subjectIds);
+    if (!groupInfo) {
+      return;
+    }
+    const { key, report, message } = groupInfo;
+    recordsByKey[key] = recordsByKey[key] || { reports: [], messages: [] };
+
+    return report ?
+           recordsByKey[key].reports.push(report) :
+           recordsByKey[key].messages.push(message);
+  });
+  return recordsByKey;
+};
+
+const assignRecordsToGroups = (recordsByKey, groups) => {
+  Object.keys(recordsByKey).forEach(key => {
+    const records = recordsByKey[key];
+    const group = Object.values(groups).find(group => group.subjectIds.includes(key));
+    if (!group) {
+      // reports that have no subject are processed separately
+      records.reports.forEach(report => {
+        groups[report._id] = { contact: {}, reports: [report], messages: [], ids: [], subjectIds: [] };
+      });
+      return;
+    }
+
+    group.reports.push(...records.reports);
+    group.messages.push(...records.messages);
+  });
+};
+
+const getIdsFromGroups = (groups) => {
+  const ids = [];
+  Object.values(groups).forEach(group => {
+    group.ids.push(...group.messages.map(message => message._id));
+    group.ids.push(...group.reports.map(message => message._id));
+    ids.push(...group.ids);
+  });
+  return ids;
+};
+
+const getDocsToPurge = (purgeFn, groups, roles) => {
+  const rolesHashes = Object.keys(roles);
+  const toPurge = {};
+
+  Object.values(groups).forEach(group => {
+    rolesHashes.forEach(hash => {
+      toPurge[hash] = toPurge[hash] || {};
+      if (!group.ids.length) {
+        return;
+      }
+
+      const idsToPurge = purgeFn({ roles: roles[hash] }, group.contact, group.reports, group.messages);
+      if (!validPurgeResults(idsToPurge)) {
+        return;
+      }
+
+      idsToPurge.forEach(id => {
+        toPurge[hash][id] = group.ids.includes(id);
+      });
+    });
+  });
+
+  return toPurge;
 };
 
 const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '') => {
   let nextKeyDocId;
   let nextKey;
   const groups = {};
-  const docIds = [];
   const subjectIds = [];
   const rolesHashes = Object.keys(roles);
+  let docIds;
 
   logger.debug(`Starting contacts purge batch starting with key ${startKey} with id ${startKeyDocId}`);
 
@@ -179,136 +312,21 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
         if (row.id === startKeyDocId) {
           return;
         }
-
-        nextKeyDocId = row.id;
-        nextKey = row.key;
-
-        let contactId;
-        let contact = row.doc;
-        let contactSubjects;
-        if (tombstoneUtils.isTombstoneId(row.id)) {
-          // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
-          // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
-          contactId =  tombstoneUtils.extractStub(row.id).id;
-          contact = { _deleted: true };
-          contactSubjects = registrationUtils.getSubjectIds(row.doc.tombstone);
-        } else {
-          contactId = row.id;
-          docIds.push(contactId);
-          contactSubjects = registrationUtils.getSubjectIds(contact);
-        }
-
-        subjectIds.push(...contactSubjects);
-        groups[contactId] = { contact, subjectIds: contactSubjects, reports: [], messages: [] };
+        ({ id: nextKeyDocId, key: nextKey } = row);
+        assignContactToGroups(row, groups, subjectIds);
       });
 
       return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds, include_docs: true });
     })
     .then(result => {
-      const reportsByKey = {};
-      const messagesByKey = {};
-      const keys = new Set();
-
-      result.rows.forEach(row => {
-        if (groups[row.id]) {
-          // groups keys are contact ids, we already know everything about contacts
-          return;
-        }
-
-        if (tombstoneUtils.isTombstoneId(row.id)) {
-          // we don't purge tombstones
-          return;
-        }
-
-        let key;
-        docIds.push(row.id);
-
-        if (row.doc.form) {
-          // use patient_id as a key, as to keep subject to report associations correct
-          key = registrationUtils.getPatientId(row.doc);
-          if (row.doc.needs_signoff) {
-            // reports with needs_signoff will emit for every contact from their submitter lineage,
-            // but we only want to process them once, either associated to their patient or alone, if no patient_id
-
-            if (key && !subjectIds.includes(key)) {
-              // if the report has a subject, but it is not amongst the list of keys we requested, we hit the emit
-              // for the contact or it's lineage via the `needs_signoff` path. Skip.
-              return;
-            }
-            const submitter = row.doc.contact && row.doc.contact._id;
-            if (!key && !subjectIds.includes(submitter)) {
-              // if the report doesn't have a subject, we want to process it when we hit the emit for the submitter.
-              // if the report submitter is not amongst our request keys, we hit an emit for the submitter's lineage. Skip.
-              return;
-            }
-          }
-
-          reportsByKey[key] = reportsByKey[key] || [];
-          reportsByKey[key].push(row.doc);
-        } else {
-          // messages only emit once, either their sender or receiver
-          key = row.key;
-          messagesByKey[key] = messagesByKey[key] || [];
-          messagesByKey[key].push(row.doc);
-        }
-
-        if (key && !subjectIds.includes(key)) {
-          // reports with errors that emitted the submitter id instead of the subject id
-          groups[key] = { contact: {}, subjectIds: [key], reports: [], messages: [] };
-        }
-        keys.add(key);
-      });
-
-      keys.forEach(key => {
-        if (!messagesByKey[key] && !reportsByKey[key]) {
-          return;
-        }
-        if (!key) {
-          // reports that have no subject are processed separately
-          reportsByKey[key].forEach(report => {
-            groups[report._id] = { contact: {}, reports: [report], messages: [] };
-          });
-          return;
-        }
-
-        const group = Object.values(groups).find(group => group.subjectIds.includes(key));
-        if (reportsByKey[key]) {
-          group.reports.push(...reportsByKey[key]);
-        }
-        if (messagesByKey[key]) {
-          group.messages.push(...messagesByKey[key]);
-        }
-      });
+      const recordsByKey = getRecordsByKey(result.rows, groups, subjectIds);
+      assignRecordsToGroups(recordsByKey, groups);
+      docIds = getIdsFromGroups(groups);
 
       return getAlreadyPurgedDocs(rolesHashes, docIds);
     })
     .then(alreadyPurged => {
-      const toPurge = {};
-
-      Object.values(groups).forEach(group => {
-        rolesHashes.forEach(hash => {
-          toPurge[hash] = toPurge[hash] || {};
-
-          const allowedIds = [ group.contact._id, ...group.reports.map(r => r._id), ...group.messages.map(r => r._id)]
-            .filter(id => id);
-          if (!allowedIds.length) {
-            return;
-          }
-
-          const idsToPurge = purgeFn({ roles: roles[hash] }, group.contact, group.reports, group.messages);
-          if (!idsToPurge || !Array.isArray(idsToPurge) || !idsToPurge.length) {
-            return;
-          }
-
-          idsToPurge.forEach(id => {
-            if (!allowedIds.includes(id)) {
-              return;
-            }
-            toPurge[hash][id] = true;
-          });
-        });
-      });
-
+      const toPurge = getDocsToPurge(purgeFn, groups, roles);
       return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
     })
     .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId));
@@ -353,16 +371,10 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
             purgeFn({ roles: roles[hash] }, {}, [doc], []) :
             purgeFn({ roles: roles[hash] }, {}, [], [doc]);
 
-          if (!purgeIds || !Array.isArray(purgeIds) || !purgeIds.length) {
+          if (!validPurgeResults(purgeIds)) {
             return;
           }
-
-          purgeIds.forEach(id => {
-            if (id !== doc._id) {
-              return;
-            }
-            toPurge[hash][id] = true;
-          });
+          toPurge[hash][doc._id] = purgeIds.includes(doc._id);
         });
       });
 

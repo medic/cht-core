@@ -4,13 +4,13 @@ const rewire = require('rewire');
 
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
-const cache = require('../../../src/services/cache');
+const cacheService = require('../../../src/services/cache');
 const purgingUtils = require('@medic/purging-utils');
 
 let service;
 let recursiveOn;
 
-describe('Server Side Purge service', () => {
+describe('Purged Docs service', () => {
   beforeEach(() => {
     recursiveOn = sinon.stub();
     recursiveOn.callsFake(() => {
@@ -21,23 +21,23 @@ describe('Server Side Purge service', () => {
     sinon.stub(db.sentinel, 'changes').returns({ on: recursiveOn });
     service = rewire('../../../src/services/purged-docs');
   });
+
   afterEach(() => {
     const purgeDbs = service.__get__('purgeDbs');
     Object.keys(purgeDbs).forEach(hash => delete purgeDbs[hash]);
     sinon.restore();
   });
 
-  describe('init', () => {
+  describe('listen', () => {
     it('should listen to sentinel changes once', () => {
-      service.init();
+      const listen = service.__get__('listen');
+      listen();
       chai.expect(db.sentinel.changes.callCount).to.equal(1);
       chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
-      service.init();
-      service.init();
-      chai.expect(db.sentinel.changes.callCount).to.equal(1);
     });
 
     it('should process changes correctly', () => {
+      const listen = service.__get__('listen');
       let onChangeCallback;
       recursiveOn.withArgs('change').callsFake((e, callback) => {
         onChangeCallback = callback;
@@ -45,35 +45,32 @@ describe('Server Side Purge service', () => {
         promise.on = recursiveOn;
         return promise;
       });
-      service.init();
+      listen();
+      const cache = {
+        flushAll: sinon.stub(),
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
 
       chai.expect(onChangeCallback).to.be.a('function');
-      sinon.stub(cache, 'del');
-      sinon.stub(cache, 'keys').returns([]);
 
       onChangeCallback({ id: 'random-info', seq: 1 });
-      chai.expect(cache.keys.callCount).to.equal(0);
+      chai.expect(cache.flushAll.callCount).to.equal(0);
       onChangeCallback({ id: 'random-other-info', seq: 2 });
-      chai.expect(cache.keys.callCount).to.equal(0);
+      chai.expect(cache.flushAll.callCount).to.equal(0);
       onChangeCallback({ id: 'purgelog:some-random-date', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
-      chai.expect(cache.keys.callCount).to.equal(0);
+      chai.expect(cache.flushAll.callCount).to.equal(0);
       onChangeCallback({ id: 'purgelog:some-other-date', changes: [{ rev: '1-something' }], seq: 4 });
-      chai.expect(cache.keys.callCount).to.equal(1);
-      chai.expect(cache.del.callCount).to.equal(0);
+      chai.expect(cache.flushAll.callCount).to.equal(1);
 
-      cache.keys.returns(['key1', 'othercache', 'wow']);
       onChangeCallback({ id: 'purgelog:111', changes: [{ rev: '1-bla123' }], seq: 5 });
-      chai.expect(cache.keys.callCount).to.equal(2);
-      chai.expect(cache.del.callCount).to.equal(0);
+      chai.expect(cache.flushAll.callCount).to.equal(2);
 
-      cache.keys.returns(['purged-roles-ids', 'key1', 'other', 'purged-other-more', 'purged-some', 'purgednot']);
       onChangeCallback({ id: 'purgelog:2222', changes: [{ rev: '1-post' }], seq: 6 });
-      chai.expect(cache.keys.callCount).to.equal(3);
-      chai.expect(cache.del.callCount).to.equal(1);
-      chai.expect(cache.del.args[0]).to.deep.equal([['purged-roles-ids', 'purged-other-more']]);
+      chai.expect(cache.flushAll.callCount).to.equal(3);
     });
 
     it('should restart listener on error', () => {
+      const listen = service.__get__('listen');
       let onChangeCallback;
       let onErrorCallback;
 
@@ -90,7 +87,7 @@ describe('Server Side Purge service', () => {
         return promise;
       });
 
-      service.init();
+      listen();
       chai.expect(db.sentinel.changes.callCount).to.equal(1);
       chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
       onErrorCallback();
@@ -133,8 +130,11 @@ describe('Server Side Purge service', () => {
       const ids = [1, 2, 3, 4, 5, 6];
       const cachedPurgedIds = [1, 4, 6];
       service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      sinon.stub(cache, 'get').returns(cachedPurgedIds);
-      sinon.stub(cache, 'ttl');
+      const cache = {
+        get: sinon.stub().returns(cachedPurgedIds),
+        ttl: sinon.stub()
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
 
       return service.getPurgedIds(['a', 'b'], ids).then(result => {
         chai.expect(result).to.deep.equal(cachedPurgedIds);
@@ -150,9 +150,12 @@ describe('Server Side Purge service', () => {
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
       service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      sinon.stub(cache, 'get').returns(false);
-      sinon.stub(cache, 'ttl');
-      sinon.stub(cache, 'set');
+      const cache = {
+        get: sinon.stub().returns(false),
+        ttl: sinon.stub(),
+        set: sinon.stub()
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'get').returns(purgeDb);
       purgeDb.changes.resolves({
@@ -192,8 +195,12 @@ describe('Server Side Purge service', () => {
 
     it('should skip deleted purges', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
-      sinon.stub(cache, 'get').returns(false);
-      sinon.stub(cache, 'ttl');
+      const cache = {
+        get: sinon.stub().returns(false),
+        ttl: sinon.stub(),
+        set: sinon.stub(),
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'get').returns(purgeDb);
       purgeDb.changes.resolves({
@@ -220,8 +227,12 @@ describe('Server Side Purge service', () => {
 
     it('should throw db changes errors', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
-      sinon.stub(cache, 'get').returns(false);
-      sinon.stub(cache, 'ttl');
+      const cache = {
+        get: sinon.stub().returns(false),
+        ttl: sinon.stub(),
+        set: sinon.stub(),
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'get').returns(purgeDb);
       purgeDb.changes.rejects({ some: 'err' });

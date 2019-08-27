@@ -1,10 +1,11 @@
 const db = require('../db');
 const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
-const cache = require('./cache');
+const cacheService = require('./cache');
 const crypto = require('crypto');
 const logger = require('../logger');
 
+const CACHE_NAME = 'purged-docs';
 const purgeDbs = {};
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
@@ -23,15 +24,7 @@ const getCacheKey = (roles, docIds) => {
   return `purged-${JSON.stringify(roles)}-${hash}`;
 };
 
-const regex = new RegExp(/^purged-.+-.+$/);
-// clears all purge caches
-const clearCache = () => {
-  const keysToDelete = cache.keys().filter(key => regex.test(key));
-  if (!keysToDelete.length) {
-    return;
-  }
-  cache.del(keysToDelete);
-};
+const clearCache = () => cacheService.instance(CACHE_NAME).flushAll();
 
 const getPurgedIdsFromChanges = result => {
   const purgedIds = [];
@@ -52,6 +45,7 @@ const getPurgedIds = (roles, docIds) => {
     return Promise.resolve([]);
   }
 
+  const cache = cacheService.instance(CACHE_NAME);
   const cacheKey = getCacheKey(roles, docIds);
   const cached = cache.get(cacheKey);
   if (cached) {
@@ -142,20 +136,14 @@ const listen = (seq = 'now') => {
     });
 };
 
-let inited = false;
-const init = () => {
-  if (inited) {
-    return;
-  }
+if (!process.env.UNIT_TEST_ENV) {
   listen();
-  inited = true;
-};
+}
 
 module.exports = {
   getPurgedIds,
   getPurgedIdsSince,
   writeCheckPointer,
-  init,
   info,
 };
 

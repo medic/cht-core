@@ -1,4 +1,4 @@
-const serverSidePurge = require('../../../src/js/bootstrapper/server-side-purge');
+const purger = require('../../../src/js/bootstrapper/purger');
 const sinon = require('sinon');
 const chai = require('chai');
 const moment = require('moment');
@@ -13,7 +13,7 @@ let originalFetch;
 let localDb;
 let userCtx;
 
-describe('ServerSidePurge', () => {
+describe('Purger', () => {
   afterEach(() => {
     originalFetch ? fetch = originalFetch : fetch = undefined;
     originalWindow ? fetch = originalWindow : window = undefined;
@@ -43,7 +43,7 @@ describe('ServerSidePurge', () => {
     };
 
     fetch = sinon.stub();
-    serverSidePurge.setOptions(pouchDbOptions);
+    purger.setOptions(pouchDbOptions);
     localDb = {
       get: sinon.stub(),
       allDocs: sinon.stub(),
@@ -58,7 +58,7 @@ describe('ServerSidePurge', () => {
   describe('info', () => {
     it('should request info', () => {
       fetch.resolves({ json: sinon.stub().resolves({ some: 'info', update_seq: '22-seq' }) });
-      return serverSidePurge.info().then(result => {
+      return purger.info().then(result => {
         chai.expect(result).to.equal('22-seq');
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
@@ -70,7 +70,7 @@ describe('ServerSidePurge', () => {
 
     it('should throw fetch errors', () => {
       fetch.rejects({ some: 'error' });
-      return serverSidePurge.info().catch(err => {
+      return purger.info().catch(err => {
         chai.expect(err).to.deep.equal({ some: 'error' });
       });
     });
@@ -79,7 +79,7 @@ describe('ServerSidePurge', () => {
   describe('checkpoint', () => {
     it('should throw fetch errors', () => {
       fetch.rejects({ some: 'error' });
-      return serverSidePurge.checkpoint().catch(err => {
+      return purger.checkpoint().catch(err => {
         chai.expect(err).to.deep.equal({ some: 'error' });
         chai.expect(fetch.callCount).to.equal(1);
       });
@@ -87,7 +87,7 @@ describe('ServerSidePurge', () => {
 
     it('should call purge checkpoint with `now` when no seq provided', () => {
       fetch.resolves({ json: sinon.stub().resolves() });
-      return serverSidePurge.checkpoint().then(() => {
+      return purger.checkpoint().then(() => {
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
           'http://localhost:5988/purging/checkpoint?seq=now',
@@ -98,7 +98,7 @@ describe('ServerSidePurge', () => {
 
     it('should call purge checkpoint with provided seq', () => {
       fetch.resolves({ json: sinon.stub().resolves() });
-      return serverSidePurge.checkpoint('my-seq').then(() => {
+      return purger.checkpoint('my-seq').then(() => {
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
           'http://localhost:5988/purging/checkpoint?seq=my-seq',
@@ -112,7 +112,7 @@ describe('ServerSidePurge', () => {
     it('should throw db errors', () => {
       localDb.get.withArgs('settings').rejects({ some: 'error' });
       localDb.get.withArgs('_local/purgelog').rejects({ some: 'err' });
-      return serverSidePurge.shouldPurge(localDb, userCtx).catch(err => {
+      return purger.shouldPurge(localDb, userCtx).catch(err => {
         chai.expect(err).to.deep.equal({ some: 'error' });
         chai.expect(localDb.get.callCount).to.equal(2);
         chai.expect(localDb.get.args).to.deep.equal([['settings'], ['_local/purgelog']]);
@@ -123,7 +123,7 @@ describe('ServerSidePurge', () => {
       localDb.get.withArgs('settings').resolves({ settings: {} });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
         chai.expect(localDb.get.callCount).to.equal(2);
         chai.expect(localDb.get.args).to.deep.equal([['settings'], ['_local/purgelog']]);
@@ -134,7 +134,7 @@ describe('ServerSidePurge', () => {
       localDb.get.withArgs('settings').resolves({  });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
 
-      return serverSidePurge.shouldPurge(localDb).catch(err => {
+      return purger.shouldPurge(localDb).catch(err => {
         chai.assert(err);
       });
     });
@@ -143,7 +143,7 @@ describe('ServerSidePurge', () => {
       localDb.get.withArgs('settings').resolves({ settings: {} });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
       });
     });
@@ -153,7 +153,7 @@ describe('ServerSidePurge', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: {} } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate });
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
       });
     });
@@ -163,7 +163,7 @@ describe('ServerSidePurge', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: { run_every_days: 10 } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate });
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
       });
     });
@@ -176,7 +176,7 @@ describe('ServerSidePurge', () => {
       window.localStorage.getItem.returns('1233');
       userCtx.roles = ['b', 'a', 'a', 'b'];
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
         chai.expect(window.localStorage.getItem.callCount).to.equal(1);
         chai.expect(window.localStorage.getItem.args[0]).to.deep.equal(['medic-last-replicated-seq']);
@@ -190,7 +190,7 @@ describe('ServerSidePurge', () => {
       localDb.info.resolves({ update_seq: '1234' });
       window.localStorage.getItem.returns('1234');
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
       });
     });
@@ -204,7 +204,7 @@ describe('ServerSidePurge', () => {
       window.localStorage.getItem.returns('1234');
       userCtx.roles = ['c', 'a'];
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
       });
     });
@@ -218,7 +218,7 @@ describe('ServerSidePurge', () => {
       window.localStorage.getItem.returns('1234');
       userCtx.roles = ['a', 'x'];
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
       });
     });
@@ -230,7 +230,7 @@ describe('ServerSidePurge', () => {
       localDb.info.resolves({ update_seq: '1234' });
       userCtx.roles = ['a', 'x'];
 
-      return serverSidePurge.shouldPurge(localDb, userCtx).then(result => {
+      return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
       });
     });
@@ -263,7 +263,7 @@ describe('ServerSidePurge', () => {
       clock.tick(10000);
       userCtx.roles = ['two', 'one', 'two', 'one', 'three'];
 
-      return serverSidePurge.purge(localDb, userCtx).then(() => {
+      return purger.purge(localDb, userCtx).then(() => {
         chai.expect(purgeChanges.callCount).to.equal(2);
         chai.expect(purgeChanges.args[0][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers });
         chai.expect(purgeChanges.args[1][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers });
@@ -323,7 +323,7 @@ describe('ServerSidePurge', () => {
       clock.tick(5000);
       userCtx.roles = ['b', 'c', 'a'];
 
-      return serverSidePurge.purge(localDb, userCtx).then(() => {
+      return purger.purge(localDb, userCtx).then(() => {
         chai.expect(purgeChanges.callCount).to.equal(4);
 
         chai.expect(localDb.allDocs.callCount).to.equal(3);
@@ -417,7 +417,7 @@ describe('ServerSidePurge', () => {
       clock.tick(5000);
       userCtx.roles = ['c', 'b', 'a', 'a', 'b', '1', '3'];
 
-      return serverSidePurge.purge(localDb, userCtx).then(() => {
+      return purger.purge(localDb, userCtx).then(() => {
         chai.expect(purgeChanges.callCount).to.equal(2);
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3', 'id4'] }]);
@@ -470,7 +470,7 @@ describe('ServerSidePurge', () => {
         { id: 'id3', error: 'whatever' }
       ]);
 
-      return serverSidePurge.purge(localDb, userCtx).catch((err) => {
+      return purger.purge(localDb, userCtx).catch((err) => {
         chai.expect(err.message.startsWith('Not all documents purged successfully')).to.equal(true);
         chai.expect(purgeChanges.callCount).to.equal(1);
         chai.expect(localDb.allDocs.callCount).to.equal(1);

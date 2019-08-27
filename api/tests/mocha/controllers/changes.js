@@ -79,7 +79,6 @@ describe('Changes controller', () => {
     sinon.stub(config, 'get').returns(defaultSettings);
     sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
 
-    sinon.stub(purgedDocs, 'init');
     sinon.stub(purgedDocs, 'getPurgedIds').resolves([]);
 
     ChangesEmitter = function(opts) {
@@ -340,7 +339,6 @@ describe('Changes controller', () => {
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
-        purgedDocs.init.callCount.should.deep.equal(1);
         purgedDocs.getPurgedIds.callCount.should.equal(1);
         purgedDocs.getPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
@@ -367,7 +365,6 @@ describe('Changes controller', () => {
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
-        purgedDocs.init.callCount.should.deep.equal(1);
         purgedDocs.getPurgedIds.callCount.should.equal(1);
         purgedDocs.getPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));

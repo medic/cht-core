@@ -610,8 +610,10 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f1', 'purged:f2', 'purged:f4', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
-            'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f4-m1', 'purged:f4-m2',
+            'purged:first',
+            'purged:f1', 'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
+            'purged:f2', 'purged:f2-r1', 'purged:f2-r2',
+            'purged:f4', 'purged:f4-m1', 'purged:f4-m2',
           ],
           batch_size: 13,
           seq_interval: 12
@@ -619,8 +621,10 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeDbChanges.args[1]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f1', 'purged:f2', 'purged:f4', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
-            'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f4-m1', 'purged:f4-m2',
+            'purged:first',
+            'purged:f1', 'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
+            'purged:f2', 'purged:f2-r1', 'purged:f2-r2',
+            'purged:f4', 'purged:f4-m1', 'purged:f4-m2',
           ],
           batch_size: 13,
           seq_interval: 12
@@ -732,8 +736,10 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f3', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
-            'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f3-m2', 'purged:f3-r2'
+            'purged:first',
+            'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
+            'purged:f2-r2', 'purged:f2-r1',
+            'purged:f3', 'purged:f3-m2', 'purged:f3-r2'
           ],
           batch_size: 11,
           seq_interval: 10
@@ -741,8 +747,10 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeDbChanges.args[1]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f3', 'purged:f1-r1', 'purged:f1-m1', 'purged:f1-r2',
-            'purged:f1-m2', 'purged:f2-r1', 'purged:f2-r2', 'purged:f3-m2', 'purged:f3-r2'
+            'purged:first',
+            'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
+            'purged:f2-r2', 'purged:f2-r1',
+            'purged:f3', 'purged:f3-m2', 'purged:f3-r2'
           ],
           batch_size: 11,
           seq_interval: 10
@@ -821,8 +829,9 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
-            'purged:f2-r1', 'purged:f2-r2', 'purged:f2-r3', 'purged:f2-m1'
+            'purged:first',
+            'purged:f1', 'purged:f1-m1', 'purged:f1-r1',
+            'purged:f2', 'purged:f2-m1', 'purged:f2-r3', 'purged:f2-r1', 'purged:f2-r2',
           ],
           batch_size: 10,
           seq_interval: 9
@@ -908,11 +917,12 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
-            'purged:f2-r1', 'purged:f2-r2', 'purged:f2-r3', 'purged:f2-r4'
+            'purged:first',
+            'purged:f1', 'purged:f1-m1',  'purged:f1-r1',
+            'purged:f2', 'purged:f2-r3',
           ],
-          batch_size: 10,
-          seq_interval: 9
+          batch_size: 7,
+          seq_interval: 6
         }]);
 
         chai.expect(purgeFn.callCount).to.equal(8);
@@ -1006,8 +1016,9 @@ describe('ServerSidePurge', () => {
         chai.expect(dbA.changes.callCount).to.equal(1);
         chai.expect(dbA.changes.args[0]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
-            'purged:f2-r1', 'purged:f2-r2', 'purged:f2-m1', 'purged:f2-r3'
+            'purged:first',
+            'purged:f1', 'purged:f1-m1', 'purged:f1-r1',
+            'purged:f2', 'purged:f2-m1', 'purged:f2-r1', 'purged:f2-r2', 'purged:f2-r3',
           ],
           batch_size: 10,
           seq_interval: 9
@@ -1016,8 +1027,9 @@ describe('ServerSidePurge', () => {
         chai.expect(dbB.changes.callCount).to.equal(1);
         chai.expect(dbB.changes.args[0]).to.deep.equal([{
           doc_ids: [
-            'purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1',
-            'purged:f2-r1', 'purged:f2-r2', 'purged:f2-m1', 'purged:f2-r3'
+            'purged:first',
+            'purged:f1', 'purged:f1-m1', 'purged:f1-r1',
+            'purged:f2', 'purged:f2-m1', 'purged:f2-r1', 'purged:f2-r2', 'purged:f2-r3',
           ],
           batch_size: 10,
           seq_interval: 9
@@ -1027,17 +1039,17 @@ describe('ServerSidePurge', () => {
 
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
         chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
-            { _id: 'purged:f1-r1', _deleted: true, _rev: '1' },
             { _id: 'purged:f1-m1' },
-            { _id: 'purged:f2-r1' },
+            { _id: 'purged:f1-r1', _deleted: true, _rev: '1' },
             { _id: 'purged:f2-m1' },
-            { _id: 'purged:f2-r3', _deleted: true, _rev: '2' }
+            { _id: 'purged:f2-r1' },
+            { _id: 'purged:f2-r3', _deleted: true, _rev: '2' },
           ]}]);
         chai.expect(dbB.bulkDocs.callCount).to.equal(1);
         chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [
             { _id: 'purged:f1-r1' },
+            { _id: 'purged:f2-m1', _deleted: true, _rev: '2' },
             { _id: 'purged:f2-r1' },
-            { _id: 'purged:f2-m1', _deleted: true, _rev: '2' }
           ]}]);
       });
     });
@@ -1083,14 +1095,14 @@ describe('ServerSidePurge', () => {
       return service.__get__('batchedContactsPurge')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
         chai.expect(dbA.changes.args[0]).to.deep.equal([{
-          doc_ids: ['purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1' ],
+          doc_ids: ['purged:first', 'purged:f1', 'purged:f1-m1', 'purged:f1-r1', 'purged:f2',  ],
           batch_size: 6,
           seq_interval: 5
         }]);
 
         chai.expect(dbB.changes.callCount).to.equal(1);
         chai.expect(dbB.changes.args[0]).to.deep.equal([{
-          doc_ids: ['purged:first', 'purged:f1', 'purged:f2', 'purged:f1-r1', 'purged:f1-m1' ],
+          doc_ids: ['purged:first', 'purged:f1', 'purged:f1-m1', 'purged:f1-r1', 'purged:f2',  ],
           batch_size: 6,
           seq_interval: 5
         }]);
@@ -1120,7 +1132,7 @@ describe('ServerSidePurge', () => {
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
         chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f1-m1' }] }]);
         chai.expect(dbB.bulkDocs.callCount).to.equal(1);
-        chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f2' }, { _id: 'purged:f1-m1' }] }]);
+        chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [{ _id: 'purged:f1-m1' }, { _id: 'purged:f2' } ] }]);
       });
     });
 

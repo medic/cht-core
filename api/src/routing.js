@@ -33,6 +33,7 @@ const _ = require('underscore'),
   africasTalking = require('./controllers/africas-talking'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
+  purgedDocsController = require('./controllers/purged-docs'),
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -398,8 +399,6 @@ app.get('/api/v1/settings', settings.get);
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
-
-const purgedDocsController = require('./controllers/purged-docs');
 
 app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
