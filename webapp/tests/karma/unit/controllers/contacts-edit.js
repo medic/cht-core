@@ -49,7 +49,8 @@ describe('Contacts Edit controller', () => {
         'Enketo': sinon.stub(),
         'LineageModelGenerator': { contact: sinon.stub().resolves() },
         'Snackbar': sinon.stub(),
-        'SessionStorage': sessionStorage
+        'SessionStorage': sessionStorage,
+        'XmlForms': sinon.stub().resolves()
       });
     };
   }));

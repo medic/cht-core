@@ -16,7 +16,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Selectors,
     Snackbar,
     Telemetry,
-    XmlForm
+    XmlForms
   ) {
 
     'ngInject';
@@ -95,10 +95,10 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         ctrl.setLoadingContent(true);
         return $q.all([
           GetReportContent(model.doc),
-          XmlForm(model.formInternalId, { include_docs: true })
+          XmlForms.get(model.formInternalId)
         ]).then(function(results) {
           ctrl.setEnketoEditedStatus(false);
-          Enketo.render('#report-form', results[1].id, results[0], markFormEdited)
+          Enketo.render('#report-form', results[1], results[0], markFormEdited)
             .then(function(form) {
               ctrl.form = form;
               ctrl.setLoadingContent(false);
