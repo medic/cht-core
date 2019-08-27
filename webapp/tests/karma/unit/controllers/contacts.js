@@ -2,7 +2,6 @@ describe('Contacts controller', () => {
   'use strict';
 
   let assert = chai.assert,
-    buttonLabel,
     contactsLiveList,
     childType,
     contactTypes,
@@ -79,7 +78,6 @@ describe('Contacts controller', () => {
     person = { _id: 'lkasdfh', name: 'Alon', type: 'person' };
     childType = 'childType';
     icon = 'fa-la-la-la-la';
-    buttonLabel = 'ClICK ME!!';
     typeLabel = 'District';
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
@@ -220,7 +218,6 @@ describe('Contacts controller', () => {
       return testContactSelection({ doc: district, type: { id: 'place' } }).then(() => {
         assert.checkDeepProperties(getSelectedContact().doc, district);
         assert(ctrl.setRightActionBar.called);
-        assert(ctrl.setRightActionBar.args[0][0].selected);
       });
     });
 
@@ -298,12 +295,6 @@ describe('Contacts controller', () => {
         });
     };
 
-    it('with the selected doc', () => {
-      return testRightActionBar({ doc: district }, true, actionBarArgs => {
-        assert.checkDeepProperties(actionBarArgs.selected[0], district);
-      });
-    });
-
     it('for the New Place button', () => {
       return testRightActionBar({ doc: district }, true, actionBarArgs => {
         assert.deepEqual(actionBarArgs.childTypes, [{
@@ -317,14 +308,12 @@ describe('Contacts controller', () => {
 
     it('no New Place button if no child type', () => {
       contactTypes.getChildren.resolves([]);
-      const selectedContact = getSelectedContact();
       return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.deepEqual(actionBarArgs.childTypes, []);
         // But the other buttons are there!
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
         assert.deepEqual(actionBarArgs.sendTo, person);
-        assert.equal(selectedContact.doc._id, person._id);
       });
     });
 
@@ -533,12 +522,7 @@ describe('Contacts controller', () => {
         .then(() => {
           assert(ctrl.setLeftActionBar.called, 'left actionBar should be set');
           const actionBarArgs = ctrl.setLeftActionBar.getCall(0).args[0];
-          assert.deepEqual(actionBarArgs.userChildPlace, {
-            type: childType,
-            icon: icon,
-          });
           assert.equal(actionBarArgs.userFacilityId, district._id);
-          assert.equal(actionBarArgs.addPlaceLabel, buttonLabel);
         });
     });
 
