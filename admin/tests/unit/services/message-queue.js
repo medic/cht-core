@@ -238,7 +238,8 @@ describe('MessageQueue service', function() {
           doc: {
             _id: 'report_id1',
             reported_date: 100,
-            form: 'form_name'
+            form: 'form_name',
+            type: 'data_record',
           },
           value: {
             sms: {
