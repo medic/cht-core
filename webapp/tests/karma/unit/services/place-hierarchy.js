@@ -2,19 +2,22 @@ describe('PlaceHierarchy service', () => {
 
   'use strict';
 
-  let service,
-      Contacts,
-      settings;
+  let service;
+  let Contacts;
+  let settings;
 
   beforeEach(() => {
     module('inboxApp');
     Contacts = sinon.stub();
     settings = {};
+    const placeTypes = [
+      { id: 'district_hospital' },
+      { id: 'health_center', parents: [ 'district_hospital' ] },
+      { id: 'clinic', parents: [ 'health_center' ] }
+    ];
     module($provide => {
       $provide.value('Contacts', Contacts);
-      $provide.value('ContactSchema', {
-        getPlaceTypes: () => [ 'district_hospital', 'health_center', 'clinic' ]
-      });
+      $provide.value('ContactTypes', { getPlaceTypes: () => Promise.resolve(placeTypes) });
       $provide.value('Settings', () => Promise.resolve(settings));
     });
     inject($injector => {
@@ -29,9 +32,7 @@ describe('PlaceHierarchy service', () => {
   it('returns errors from Contacts service', done => {
     Contacts.returns(Promise.reject('boom'));
     service()
-      .then(() => {
-        done(new Error('error expected'));
-      })
+      .then(() => done(new Error('error expected')))
       .catch(err => {
         chai.expect(err).to.equal('boom');
         done();
@@ -113,11 +114,10 @@ describe('PlaceHierarchy service', () => {
     });
   });
 
-  it('Only hoists when there is one stub child', () => {
+  it('only hoists when there is one stub child', () => {
     const clinic1 = { _id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}};
     const clinic2 = { _id: 'clinic2', parent: {_id: 'health_center2', parent: {_id: 'district_hospital'}}};
     const health_center = {_id: 'health_center', parent: {_id: 'district_hospital'}};
-    // const district_hospital = {_id: 'district_hospital'};
 
     Contacts.returns(Promise.resolve([clinic1, clinic2, health_center]));
     return service().then(actual => {
@@ -139,4 +139,5 @@ describe('PlaceHierarchy service', () => {
       }]);
     });
   });
+
 });

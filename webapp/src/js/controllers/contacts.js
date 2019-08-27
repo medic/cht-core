@@ -16,8 +16,8 @@ const PAGE_SIZE = 50;
     $translate,
     Auth,
     Changes,
-    ContactSchema,
     ContactSummary,
+    ContactTypes,
     ContactsActions,
     Export,
     GetDataRecords,
@@ -72,6 +72,7 @@ const PAGE_SIZE = 50;
     var defaultTypeFilter = {};
     var usersHomePlace;
     var additionalListItem = false;
+    let childPlaces = [];
 
     $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
@@ -200,28 +201,42 @@ const PAGE_SIZE = 50;
         });
     };
 
-    var getActionBarDataForChild = function(docType) {
-      var selectedChildPlaceType = ContactSchema.getChildPlaceType(docType);
-      if (!selectedChildPlaceType) {
-        return $q.resolve();
+    const getChildTypes = function(model) {
+      if (!model.type) {
+        $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
+        return [];
       }
-      var schema = ContactSchema.get(selectedChildPlaceType);
-      return {
-        addPlaceLabel: schema.addButtonLabel,
-        type: selectedChildPlaceType,
-        icon: schema ? schema.icon : '',
-      };
+      return ContactTypes.getChildren(model.type.id).then(childTypes => {
+        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
+        const models = [];
+        if (grouped.places) {
+          models.push({
+            menu_key: 'Add place',
+            menu_icon: 'fa-building',
+            permission: 'can_create_places',
+            types: grouped.places
+          });
+        }
+        if (grouped.persons) {
+          models.push({
+            menu_key: 'Add person',
+            menu_icon: 'fa-user',
+            permission: 'can_create_people',
+            types: grouped.persons
+          });
+        }
+        return models;
+      });
     };
 
     // only admins can edit their own place
     var getCanEdit = function(selectedDoc) {
+      if (Session.isAdmin()) {
+        return true;
+      }
       return setupPromise
-        .then(function() {
-          return Session.isAdmin() || usersHomePlace._id !== selectedDoc._id;
-        })
-        .catch(function() {
-          return false;
-        });
+        .then(() => usersHomePlace._id !== selectedDoc._id)
+        .catch(() => false);
     };
 
     var translateTitle = function(key, label) {
@@ -254,6 +269,18 @@ const PAGE_SIZE = 50;
       ctrl.updateSelectedContact({ tasksByContact });
     };
 
+    const getTitle = selected => {
+      const title = (selected.type && selected.type.name_key) ||
+                    'contact.profile';
+      return $translate(title).catch(() => title);
+    };
+
+    // Don't allow deletion if this contact has any children
+    const canDelete = selected => {
+      return !selected.children ||
+             selected.children.every(group => !group.contacts || !group.contacts.length);
+    };
+
     $scope.setSelected = function(selected, contactViewModelOptions) {
       liveList.setSelected(selected.doc._id);
       ctrl.setLoadingSelectedContact();
@@ -261,32 +288,23 @@ const PAGE_SIZE = 50;
       ctrl.clearCancelCallback();
       const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
 
-      let title = '';
-      if (ctrl.selectedContact.doc.type === 'person') {
-        title = 'contact.profile';
-      } else {
-        title = ContactSchema.get(ctrl.selectedContact.doc.type).label;
-      }
       ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
-          $translate(title).catch(() => title),
-          getActionBarDataForChild(ctrl.selectedContact.doc.type),
+          getTitle(ctrl.selectedContact),
           getCanEdit(ctrl.selectedContact.doc),
+          getChildTypes(ctrl.selectedContact)
         ])
-        .then(function(results) {
-          $scope.setTitle(results[0]);
-          if (results[1]) {
-            ctrl.updateSelectedContact({ doc: { child: results[1] }});
-          }
-          const canEdit = results[2];
+        .then(([ title, canEdit, childTypes ]) => {
+          $scope.setTitle(title);
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
             selected: [ctrl.selectedContact.doc],
-            sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
+            sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit,
+            canEdit: canEdit,
+            childTypes: childTypes
           });
 
           return lazyLoadedContactData
@@ -296,19 +314,18 @@ const PAGE_SIZE = 50;
                 Settings(),
                 getTasks()
               ])
-              .then(function(results) {
+              .then(([ summary, settings ]) => {
                 ctrl.setContactsLoadingSummary(false);
-                const summary = results[0];
                 ctrl.updateSelectedContact({ summary: summary });
                 const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
-                XmlForms('ContactsCtrl', options, function(err, forms) {
+                XmlForms.listen('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
                   const showUnmuteModal = function(formId) {
                     return ctrl.selectedContact.doc &&
                           ctrl.selectedContact.doc.muted &&
-                          !isUnmuteForm(results[1], formId);
+                          !isUnmuteForm(settings, formId);
                   };
                   const formSummaries = forms && forms.map(function(xForm) {
                     return {
@@ -318,22 +335,17 @@ const PAGE_SIZE = 50;
                       showUnmuteModal: showUnmuteModal(xForm.internalId)
                     };
                   });
-                  const canDelete =
-                    !ctrl.selectedContact.children ||
-                    ((!ctrl.selectedContact.children.places ||
-                      ctrl.selectedContact.children.places.length === 0) &&
-                      (!ctrl.selectedContact.children.persons ||
-                        ctrl.selectedContact.children.persons.length === 0));
                   $scope.setRightActionBar({
                     selected: [ctrl.selectedContact.doc],
                     relevantForms: formSummaries,
-                    sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
+                    sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
                     canEdit,
-                    canDelete,
+                    canDelete: canDelete(ctrl.selectedContact),
+                    childTypes,
                   });
                 });
               });
-          });
+            });
         })
         .catch(function(e) {
           $log.error('Error setting selected contact');
@@ -393,30 +405,29 @@ const PAGE_SIZE = 50;
       });
     };
 
+    const getChildren = () => {
+      let p;
+      if (usersHomePlace) {
+        // backwards compatibility with pre-flexible hierarchy users
+        const homeType = usersHomePlace.contact_type || usersHomePlace.type;
+        p = ContactTypes.getChildren(homeType);
+      } else if (Session.isAdmin()) {
+        p = ContactTypes.getChildren();
+      } else {
+        return Promise.resolve([]);
+      }
+      return p.then(children => children.filter(child => !child.person));
+    };
+
     var setActionBarData = function() {
-      var data = {
+      $scope.setLeftActionBar({
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
+        childPlaces: childPlaces,
         exportFn: function() {
           Export('contacts', $scope.filters, { humanReadable: true });
         },
-      };
-      var type;
-      if (usersHomePlace) {
-        type = ContactSchema.getChildPlaceType(usersHomePlace.type);
-      } else if (Session.isAdmin()) {
-        type = ContactSchema.getPlaceTypes()[0];
-      }
-      if (type) {
-        defaultTypeFilter = { types: { selected: [type] } };
-        var schema = ContactSchema.get(type);
-        data.addPlaceLabel = schema.addButtonLabel;
-        data.userChildPlace = {
-          type: type,
-          icon: schema ? schema.icon : '',
-        };
-      }
-      $scope.setLeftActionBar(data);
+      });
     };
 
     var getUserHomePlaceSummary = function() {
@@ -449,16 +460,27 @@ const PAGE_SIZE = 50;
     };
 
     var setupPromise = $q
-      .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
+      .all([
+        getUserHomePlaceSummary(),
+        canViewLastVisitedDate(),
+        Settings()
+      ])
       .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
         usersHomePlace = homePlaceSummary;
         $scope.lastVisitedDateExtras = viewLastVisitedDate;
         $scope.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
-
         if ($scope.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
           $scope.sortDirection = $scope.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
-
+        return getChildren();
+      })
+      .then(children => {
+        childPlaces = children;
+        defaultTypeFilter = {
+          types: {
+            selected: childPlaces.map(type => type.id)
+          }
+        };
         setActionBarData();
         return $scope.search();
       });
@@ -514,7 +536,7 @@ const PAGE_SIZE = 50;
       },
       filter: function(change) {
         return (
-          (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
+          ContactTypes.includes(change.doc) ||
           (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc)
         );

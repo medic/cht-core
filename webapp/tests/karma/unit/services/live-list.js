@@ -1,4 +1,4 @@
-describe('LiveListSrv', function() {
+describe('LiveList service', function() {
   'use strict';
 
   function SIMPLE_ORDER_FUNCTION() {
@@ -50,10 +50,9 @@ describe('LiveListSrv', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
-      $provide.value('ResourceIcons', {
-        replacePlaceholders: function() {}
-      });
+    module(function($provide) {
+      $provide.value('ResourceIcons', { replacePlaceholders: () => {} });
+      $provide.value('ContactTypes', { getAll: () => Promise.resolve() });
     });
     inject(function(_LiveList_) {
       service = _LiveList_;

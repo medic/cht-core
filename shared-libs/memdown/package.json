@@ -8,9 +8,9 @@
   "license": "Apache-2.0",
   "devDependencies": {},
   "dependencies": {
-    "pouchdb-core": "^7.0.0",
-    "pouchdb-adapter-memory": "^7.0.0",
-    "pouchdb-mapreduce": "^7.0.0",
+    "pouchdb-adapter-memory": "^7.1.1",
+    "pouchdb-core": "^7.1.1",
+    "pouchdb-mapreduce": "^7.1.1",
     "uuid": "^3.3.2"
   }
 }

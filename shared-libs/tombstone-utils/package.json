@@ -10,8 +10,8 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^5.2.0",
-    "sinon": "^7.1.1"
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2"
   },
   "dependencies": {
     "underscore": "^1.9.1"

@@ -58,7 +58,7 @@
 
 }
 
-.dropup .mm-dropdown-menu {
+.dropup .dropdown-menu.mm-dropdown-menu {
   padding: 0;
   border-top: 5px solid @grey;
   border-radius: 0;
@@ -99,6 +99,10 @@
       max-height: 300px;
       overflow-x: hidden;
     }
+    a:before,
+    li:before {
+      content: none;
+    }
     li {
       a,
       &.dropdown-header {
@@ -115,8 +119,18 @@
       a:before {
         content: '\f096'; // http://fontawesome.io/icon/square-o/
       }
-      .selected:before {
+      &.selected a:before {
         content: '\f046'; // http://fontawesome.io/icon/check-square-o/
+      }
+      &.disabled {
+        &,
+        a {
+          color: @inactive-color;
+          cursor: default;
+        }
+        a:hover {
+          background-color: inherit;
+        }
       }
     }
     .dropdown-child a {
@@ -250,7 +264,7 @@
     .mm-dropdown-menu-modal
   }
 
-  .open.dropup .mm-dropdown-menu {
+  .dropup .mm-dropdown-menu {
     position: absolute;
     top: auto;
     bottom: 100%;
@@ -269,5 +283,8 @@
 @media (max-width: 400px) {
   .open .mm-dropdown-menu {
     top: 101px;
+  }
+  .dropup .mm-dropdown-menu {
+    top: auto;
   }
 }

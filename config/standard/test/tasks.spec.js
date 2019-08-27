@@ -104,8 +104,8 @@ describe('Standard Configuration Tasks', function() {
 
   let nootilsManager, Contact, session;
 
-  before(() => {
-    nootilsManager = NootilsManager({ user:TEST_USER });
+  before(async () => {
+    nootilsManager = await NootilsManager({ user:TEST_USER });
     Contact = nootilsManager.Contact;
     session = nootilsManager.session;
   });

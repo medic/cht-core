@@ -1,21 +1,40 @@
 # Contributing
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-At Medic Mobile we welcome and appreciate community contributions.
+The Core Framework of the Community Health Toolkit is powered by people like you. Your contributions help us create open source technology for a new model of healthcare that reaches everyone.
+
+## [Ways to contribute](#ways-to-contribute)
+  - [First time contributor? Start here!](#first-time-contributor)
+  - [Submitting code](#submitting-code)
+  - [Improving our documentation](#improving-our-documentation)
+  - [Disclosing vulnerabilities](#disclosing-vulnerabilities)
+  
+
+## Communication
+We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://communityhealthtoolkit.org/forum) about the change you want to make before you start on code. Our Community Forum is especially helpful is you are a new contributor or find yourself unsure how to move forward with an issue.
 
 ## Ways to contribute
 
-### Communication
-
-If you have an idea or a question we'd love to hear from you! The easiest way to get in touch is by raising issues in the [medic Github repo](https://github.com/medic/medic/issues). You can also reach out on our community Slack channel. You can request access via [this _Community Health Toolkit_ page](https://communityhealthtoolkit.org/slack).
+### First time contributor?
+Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start. Looking for other ways to help? You can also:
+* Improve our [documentation](#improving-our-documentation)
+* Find and mark duplicate issues
+* Try to reproduce issues and help with troubleshooting
+* Or [share a new idea or question](https://communityhealthtoolkit.org/forum) with us!
+* **Working on your first Pull Request?** Check out [How to Contribute to an Open Source Project on GitHub](https://egghead.io/lessons/javascript-introduction-to-github)
 
 ### Submitting code
+**Note:** We recommend you raise an issue on Github or start a conversation on our Community Forum about the change you want to make before you start on code.
 
-1. Before starting on code we recommend you raise an issue or message us on [Slack](https://communityhealthtoolkit.org/slack) to start a discussion about the change you want to make. Existing issues that have been identified as good for first time contributors are labeled with ["Help Wanted"](https://github.com/medic/medic/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22).
-2. When working on your submission read our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) to help understand how we work.
-3. When you're happy with the code be sure to run tests and precommit checks.
-4. Now submit a PR with a full description of the issue you're solving and if possible including a link to the GitHub issue.
-5. [Our CI](https://travis-ci.org/medic/) will automatically schedule a build. Keep an eye on the build to make sure it passes.
-6. Your PR will be reviewed by a Medic team member. Most PRs have at least one change requested before they're merged so don't be offended if your change doesn't get accepted on the first try!
+1. Read our [Development Workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) to understand how we work, and review our [Code Style Guide](https://github.com/medic/medic-docs/blob/master/development/style-guide.md) before you begin.
+2. Before you submit a pull request, please make sure your contribution passes all tests. Test failures need to be addressed before we can merge your contribution.
+3. Provide detail about the issue you are solving in the pull request description. Note: If your pull request addresses a specific issue, please reference it using medic/<repo>#<issue number>
+4. Our CI will automatically schedule a build; monitor the build to ensure it passes.
+5. Your PR will be reviewed by one of the repository's maintainers. Most PRs have at least one change requested before they're merged so don't be offended if your change doesn't get accepted on the first try!
+
+### Improving our documentation
+Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md) then open a pull request with your suggested changes or additions.
+Want to talk about Documentation generally? Join our [Community Forum](https://communityhealthtoolkit.org/forum)!
 
 ### Disclosing vulnerabilities
 
@@ -34,7 +53,7 @@ We require that all researchers:
 If you follow these guidelines when reporting an issue to us, we commit to:
 
 - Not pursue or support any legal action related to your research;
-- Work with you to understand and resolve the issue quickly (including an initial confirmation of your report within 72 hours of submission); 
+- Work with you to understand and resolve the issue quickly (including an initial confirmation of your report within 72 hours of submission);
 - Recognize your contribution on our Security Researcher Hall of Fame, if you are the first to report the issue and we make a code or configuration change based on the issue.
 
 #### Scope
@@ -65,6 +84,7 @@ If you believe you've found a security vulnerability in one of our products or p
 - Description of the location and potential impact of the vulnerability;
 - A detailed description of the steps required to reproduce the vulnerability (proof of concept source code, screenshots, and compressed screen captures are all helpful to us); and
 - Your name/handle and a link for recognition in our Hall of Fame.
+
 
 #### License
 The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.

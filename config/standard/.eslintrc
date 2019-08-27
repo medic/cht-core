@@ -1,7 +1,6 @@
 {
   "env": {
     "es6": true,
-    "mocha": true,
     "node": true
   },
   "extends": "eslint:recommended",
@@ -9,9 +8,12 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
-  "rules": {
-    "no-undef": "off",
-    "no-unused-vars": "off"
+  "globals": {
+    "contact": true,
+    "reports": true,
+    "lineage": true,
+    "Utils": true,
+    "no-global-assign": true,
   },
   "overrides": [
     {

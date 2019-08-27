@@ -3,6 +3,7 @@ const controller = require('../../../src/controllers/create-user-db'),
       auth = require('../../../src/auth'),
       userDb = require('../../../src/services/user-db'),
       serverUtils = require('../../../src/server-utils'),
+      environment = require('../../../src/environment'),
       sinon = require('sinon');
 
 describe('create-user-db controller', () => {
@@ -25,7 +26,7 @@ describe('create-user-db controller', () => {
   });
 
   it('returns error when putting an invalid db name', () => {
-    const req = { url: '/medic-user-supersecret-meta/' };
+    const req = { url: `/${environment.db}-user-supersecret-meta/` };
     const res = {};
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'gareth' });
     const error = sinon.stub(serverUtils, 'error').returns();
@@ -36,7 +37,7 @@ describe('create-user-db controller', () => {
   });
 
   it('creates the database and sets permissions', () => {
-    const req = { url: '/medic-user-gareth-meta/' };
+    const req = { url: `/${environment.db}-user-gareth-meta/` };
     const res = { json: sinon.stub() };
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'gareth' });
     const create = sinon.stub(userDb, 'create').resolves();

@@ -118,42 +118,42 @@ describe('reminders', () => {
       });
   });
 
-  it('sendReminders calls getClinics', done => {
-      const getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, []);
+  it('sendReminders calls getLeafPlaces', done => {
+      const getLeafPlaces = sinon.stub(reminders, 'getLeafPlaces').callsArgWith(1, null, []);
 
       reminders.sendReminders({}, function(err) {
-          assert(getClinics.called);
+          assert(getLeafPlaces.called);
           assert.equal(err, null);
           done();
       });
   });
 
-  it('getClinics calls db view and hydrates docs', done => {
+  it('getLeafPlaces calls db view and hydrates docs', done => {
       sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-          rows: [
-              {
-                  doc: {
-                      id: 'xxx'
-                  }
-              }
-          ]
+          rows: [ { doc: { id: 'xxx' } } ]
       });
+      sinon.stub(config, 'get').returns([
+          { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
+          { id: 'clinic', parents: [ 'health_center' ] },            // queried
+          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
+          { id: 'district_hospital' }
+      ]);
       sinon.stub(reminders._lineage, 'hydrateDocs').resolves([{ id: 'xxx', contact: 'maria' }]);
 
-      reminders.getClinics({
-          reminder: {}
-      }, function(err, clinics) {
+      reminders.getLeafPlaces({ reminder: {} }, function(err, clinics) {
           assert(_.isArray(clinics));
           assert.equal(clinics.length, 1);
           assert.deepEqual(clinics, [{ id: 'xxx', contact: 'maria' }]);
           assert.equal(db.medic.query.callCount, 1);
+          assert.equal(db.medic.query.args[0][0], 'medic-client/contacts_by_type');
+          assert.deepEqual(db.medic.query.args[0][1].keys, [[ 'clinic' ]]);
           assert.equal(reminders._lineage.hydrateDocs.callCount, 1);
           assert.deepEqual(reminders._lineage.hydrateDocs.args[0], [[{ id: 'xxx' }]]);
           done();
       });
   });
 
-  it('getClinics ignores clinics with matching sent_reminders', done => {
+  it('getLeafPlaces ignores clinics with matching sent_reminders', done => {
       const now = moment().startOf('hour');
 
       sinon.stub(db.medic, 'query').callsArgWith(2, null, {
@@ -199,7 +199,7 @@ describe('reminders', () => {
           ]
       });
 
-      reminders.getClinics({
+      reminders.getLeafPlaces({
           reminder:{
               moment: now,
               form: 'XXX'
@@ -207,7 +207,6 @@ describe('reminders', () => {
       }, function(err, clinics) {
           var ids = _.pluck(clinics, 'id');
           assert.deepEqual(['xxx', 'yyy', 'yyz'], ids);
-          assert.equal(clinics.length, 3);
           done();
       });
   });
@@ -221,7 +220,7 @@ describe('reminders', () => {
               id: 'yyy'
           }
       ];
-      sinon.stub(reminders, 'getClinics').callsArgWith(1, null, clinics);
+      sinon.stub(reminders, 'getLeafPlaces').callsArgWith(1, null, clinics);
       const sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
       reminders.sendReminders({}, function() {
           assert.equal(sendReminder.callCount, 2);

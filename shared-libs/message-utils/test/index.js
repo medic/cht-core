@@ -85,6 +85,10 @@ describe('messageUtils', () => {
         utils._getRecipient(doc, 'grandparent')
           .should.equal(grandparentPhone);
       });
+      it('resolves ancestor: correctly', () => {
+        utils._getRecipient(doc, 'ancestor:health_center')
+          .should.equal(parentPhone);
+      });
       it('resolves clinic based on patient if given', () => {
         const context = {
           patient: {

@@ -1,6 +1,6 @@
-const db = require('../db'),
-      authorization = require('./authorization'),
-      _ = require('underscore');
+const db = require('../db');
+const authorization = require('./authorization');
+const _ = require('underscore');
 
 const getStoredDoc = (params, method, query, isAttachment) => {
   if (!params || !params.docId) {
@@ -12,14 +12,6 @@ const getStoredDoc = (params, method, query, isAttachment) => {
   // use `req.query.rev` for attachment requests
   // `db-doc` PUT and DELETE requests will require latest `rev` to be allowed
   if ((method === 'GET' || isAttachment) && query) {
-    // open_revs can be either a json stringified array or `all`
-    if (query.open_revs && query.open_revs !== 'all') {
-      try {
-        query.open_revs = JSON.parse(query.open_revs);
-      } catch (err) {
-        return Promise.reject({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
-      }
-    }
     options = _.omit(query, 'latest');
   }
 

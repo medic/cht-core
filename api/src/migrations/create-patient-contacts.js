@@ -217,8 +217,8 @@ module.exports = {
             process.stdout.write('[' + progressCount + '/' + total + '] ');
             batchCreatePatientContacts(batch, settings, callback);
           },
-          function() {
-            return registrationsForPatientShortcode.length;
+          function(cb) {
+            return cb(null, registrationsForPatientShortcode.length);
           },
           callback
         );

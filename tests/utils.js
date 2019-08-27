@@ -30,7 +30,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
   const deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
-  options.port = constants.API_PORT;
+  options.port = options.port || constants.API_PORT;
   if (!noAuth) {
     options.auth = options.auth || auth.user + ':' + auth.pass;
   }
@@ -58,9 +58,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
         body = JSON.parse(body);
         if (body.error) {
           const err = new Error(
-            `Request failed: ${options.path},\n  body: ${JSON.stringify(
-              options.body
-            )}\n  response: ${JSON.stringify(body)}`
+            `Request failed: ${JSON.stringify(options)}\n  response: ${JSON.stringify(body)}`
           );
           err.responseBody = body;
           err.statusCode = res.statusCode;
@@ -150,13 +148,12 @@ const revertSettings = () => {
   });
 };
 
+const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
+
 const deleteAll = (except = []) => {
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
-    doc =>
-      ['translations', 'translations-backup', 'user-settings', 'info'].includes(
-        doc.type
-      ),
+    doc => PERMANENT_TYPES.includes(doc.type),
     'service-worker-meta',
     constants.USER_CONTACT_ID,
     'migration-log',
@@ -164,6 +161,7 @@ const deleteAll = (except = []) => {
     'branding',
     'partners',
     'settings',
+    /^form:contact:/,
     /^_design/
   );
   const ignoreFns = [];
@@ -359,6 +357,16 @@ module.exports = {
     if (pathAndReqType !== '/GET') {
       options.path = '/' + constants.DB_NAME + (options.path || '');
     }
+    return request(options, { debug: debug, notJson: notJson });
+  },
+
+  requestOnTestMetaDb: (options, debug, notJson) => {
+    if (typeof options === 'string') {
+      options = {
+        path: options,
+      };
+    }
+    options.path = `/medic-user-${options.userName}-meta${options.path || ''}`;
     return request(options, { debug: debug, notJson: notJson });
   },
 

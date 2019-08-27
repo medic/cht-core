@@ -3,6 +3,28 @@ const chalk = require('chalk');
 const get = require('./get');
 const pkg = require('../../../package.json');
 
+const extractPlaceholdersFromFile = (file, extraPlaceholders = {}) => {
+  const content = fs.readFileSync(file, 'utf8');
+
+  const result = {};
+  content
+    .split('\n')
+    .forEach((line, index) => {
+      const key = line.split('=')[0].trim();
+      var placeholders = line.match(/{{.+?}}/g);
+      if (placeholders) {
+        placeholders = placeholders
+                          .sort()
+                          .concat(extraPlaceholders[key] ? extraPlaceholders[key].placeholders : [])
+                          .filter((el, i, a) => i === a.indexOf(el));
+        result[key] = {placeholders, index};
+      } else if (extraPlaceholders[key]) {
+        result[key] = extraPlaceholders[key];
+      }
+    });
+    return result;  
+};
+
 module.exports = {
   capitalize: (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -10,22 +32,11 @@ module.exports = {
   error: (msg) => {
     console.log(`${chalk.red('Error: ')}${msg}`);
   },
-  extractPlaceholders: (file) => {
-    const content = fs.readFileSync(file, 'utf8');
+  extractPlaceholders: (file, extraPlaceholdersFile) => {
+    const extraPlaceholders = extraPlaceholdersFile ? extractPlaceholdersFromFile(extraPlaceholdersFile) : {};
+    const placeholders = extractPlaceholdersFromFile(file, extraPlaceholders);
 
-    const result = {};
-    content
-      .toString()
-      .split('\n')
-      .forEach((line, index) => {
-        const placeholders = line.match(/{{.+?}}/g);
-        if (placeholders) {
-          placeholders.sort();
-          const key = line.split('=')[0].trim();
-          result[key] = {placeholders, index};
-        }
-      });
-      return result;
+    return placeholders;
   },
   log: (msg) => {
     console.log(msg);

@@ -1,21 +1,24 @@
-var MS_IN_DAY = extras.MS_IN_DAY;
-var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
-var DAYS_IN_PNC = extras.DAYS_IN_PNC;
-var immunizationForms = extras.immunizationForms;
-var postnatalForms = extras.postnatalForms;
-var isFormSubmittedInWindow = extras.isFormSubmittedInWindow;
-var isChildUnder5 = extras.isChildUnder5;
-var isHealthyDelivery = extras.isHealthyDelivery;
-var isNewestPregnancy = extras.isNewestPregnancy;
-var getNewestDeliveryTimestamp = extras.getNewestDeliveryTimestamp;
-var getNewestPregnancyTimestamp = extras.getNewestPregnancyTimestamp;
-var countANCVisits = extras.countANCVisits;
-var isFacilityDelivery = extras.isFacilityDelivery;
-var isWomanInActivePncPeriod = extras.isWomanInActivePncPeriod;
-var deliveryForms = extras.deliveryForms;
-var countReportsSubmittedInWindow = extras.countReportsSubmittedInWindow;
-var countDoses = extras.countDoses;
-var isBcgReported = extras.isBcgReported;
+const {
+  MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC,
+  immunizationForms,
+  postnatalForms,
+  isFormSubmittedInWindow,
+  isChildUnder5,
+  isHealthyDelivery,
+  isNewestPregnancy,
+  getNewestDeliveryTimestamp,
+  getNewestPregnancyTimestamp,
+  countANCVisits,
+  now,
+  isFacilityDelivery,
+  isWomanInActivePncPeriod,
+  deliveryForms,
+  countReportsSubmittedInWindow,
+  countDoses,
+  isBcgReported,
+} = require('./nools-extras');
 
 module.exports = [
   // Pregnancy related widgets
@@ -55,16 +58,7 @@ module.exports = [
 
     appliesTo: 'reports',
     appliesIf: isNewestPregnancy,
-    emitCustom: function(inst, c, r) {
-      var instance = createTargetInstance(
-        'pregnancy-registrations-this-month',
-        r,
-        true
-      );
-      // use contact id to avoid counting multiple pregnancies for same person
-      instance._id = c.contact._id + '~' + 'pregnancy-registrations-this-month';
-      emitTargetInstance(instance);
-    },
+    idType: 'contact',
     date: 'reported',
   },
 
@@ -364,28 +358,17 @@ module.exports = [
       return immunizationForms.indexOf(r.form) !== -1;
     },
     date: 'reported',
-    emitCustom: function(inst, c, r) {
-      var i, instance;
+    emitCustom: function(emit, inst, c, r) {
       if (r.form === 'immunization_visit' || r.form === 'imm') {
         // Multiple vaccine doses can be reported in a single XForm (app or collect)
         var totalDoses = countDoses(r);
-        for (i = 0; i < totalDoses; i++) {
-          instance = createTargetInstance(
-            'imm-vaccines-given-this-month',
-            r,
-            true
-          );
-          instance._id += i;
-          emitTargetInstance(instance);
+        for (let i = 0; i < totalDoses; i++) {
+          inst._id += i;
+          emit(inst);
         }
       } else {
         // For TextForms each vaccine is separate report
-        instance = createTargetInstance(
-          'imm-vaccines-given-this-month',
-          r,
-          true
-        );
-        emitTargetInstance(instance);
+        emit(inst);
       }
     },
   },

@@ -1,6 +1,7 @@
 // Only used by /scripts/delete_clinics_for_place.js
 function (doc) {
-  if (doc.type === 'clinic' ||
+  if (doc.type === 'contact' ||
+      doc.type === 'clinic' ||
       doc.type === 'health_center' ||
       doc.type === 'district_hospital' ||
       doc.type === 'national_office') {

@@ -284,9 +284,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer')({
-            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
-          }),
+          require('autoprefixer')(),
         ],
       },
       dist: {
@@ -853,28 +851,28 @@ module.exports = function(grunt) {
       'build/ddocs/medic-admin/_attachments/js/templates.js':
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
-    jsdoc : {
-      distAdmin : {
+    jsdoc: {
+      admin: {
         src: [
           'admin/src/js/**/*.js'
         ],
         options: {
           destination: 'jsdocs/admin',
           configure: 'node_modules/angular-jsdoc/common/conf.json',
-          template: 'node_modules/angular-jsdoc/angular-template',
-          readme: './README.md'
+          template: 'node_modules/angular-jsdoc/angular-template'
         }
       },
-      distApi : {
+      api: {
         src: [
           'api/src/**/*.js',
           '!api/src/extracted-resources/**',
         ],
         options: {
-            destination: 'jsdocs/api'
+          destination: 'jsdocs/api',
+          readme: 'api/README.md'
         }
       },
-      distSentinel : {
+      sentinel: {
         src: [
           'sentinel/src/**/*.js'
         ],
@@ -882,28 +880,13 @@ module.exports = function(grunt) {
           destination: 'jsdocs/sentinel'
         }
       },
-      distSharedLibs : {
-        src: [
-          'shared-libs/bulk-docs-utils/src/*.js',
-          'shared-libs/lineage/src/*.js',
-          'shared-libs/memdown/src/*.js',
-          'shared-libs/message-utils/src/*.js',
-          'shared-libs/phone-number/src/*.js',
-          'shared-libs/registration-utils/src/*.js',
-          'shared-libs/search/src/*.js',
-          'shared-libs/server-checks/src/*.js',
-          'shared-libs/settings/src/*.js',
-          'shared-libs/task-utils/src/*.js',
-          'shared-libs/tombstone-utils/src/*.js',
-          'shared-libs/transitions/src/*.js',
-          'shared-libs/transition-utils/src/*.js',
-          'shared-libs/view-map-utils/src/*.js'
-        ],
+      'shared-libs': {
+        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src') + '/**/*.js'),
         options: {
           destination: 'jsdocs/shared-libs'
         }
       },
-      distWebapp : {
+      webapp: {
         src: [
           'webapp/src/js/**/*.js'
         ],

@@ -16,6 +16,7 @@ module.exports = function() {
     this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
         var extensions = openrosaExtensions(translator.t);
         extensions.func = _.extend(extensions.func, medicExtensions.func);
+        extensions.process = _.extend(extensions.process, medicExtensions.process);
         var wrappedXpathEvaluator = function(v) {
             // Node requests (i.e. result types greater than 3 (BOOLEAN)
             // should be processed unaltered, as they are passed this

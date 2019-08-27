@@ -45,6 +45,13 @@ var _ = require('underscore');
         });
       };
 
+      /**
+       * @ngdoc service
+       * @name AnalyticsModules
+       * @description Finds all the enabled analytics modules
+       * @memberof inboxServices
+       * @returns {Promise} A Promise to return an array of object.
+       */
       return function() {
         return $q.all([ Settings(), ScheduledForms() ])
           .then(function(results) {

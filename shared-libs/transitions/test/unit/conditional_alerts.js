@@ -154,7 +154,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([{
       doc: {
         reported_date: 1390427075750,
         form: 'STCK',
@@ -189,7 +189,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([{
       key: 'somekey',
       doc: {
         reported_date: 1390427075750,
@@ -218,7 +218,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([{
       key: 'somekey',
       doc: {
         s1_avail: 9,
@@ -262,7 +262,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([{
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([{
       key: 'something',
       doc: {
         s1_avail: 9,
@@ -306,7 +306,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([]);
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
@@ -334,7 +334,7 @@ describe('conditional alerts', () => {
       }
     });
 
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([]);
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
@@ -362,7 +362,7 @@ describe('conditional alerts', () => {
         recipient: '+5555555'
       }
     });
-    sinon.stub(utils, 'getReportsWithSameClinicAndForm').resolves([
+    sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([
       {
         key: 'a',
         doc: {

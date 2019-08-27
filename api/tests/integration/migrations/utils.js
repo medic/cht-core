@@ -53,7 +53,7 @@ const matches = (expected, actual) => {
       return false;
     }
     for (k in expected) {
-      if (expected.hasOwnProperty(k)) {
+      if (Object.prototype.hasOwnProperty.call(expected, k)) {
         if (!matches(expected[k], actual[k])) {
           return false;
         }

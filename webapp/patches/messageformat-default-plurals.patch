@@ -1,34 +1,37 @@
-*** ./webapp/node_modules/messageformat/lib/plurals.js	Sat Oct 26 10:15:00 1985
---- ./webapp/node_modules/messageformat/lib/plurals2.js	Mon Jun 10 10:10:19 2019
+*** /home/gareth/Desktop/plurals.js	2019-06-25 16:28:59.920684743 +1200
+--- /home/gareth/Desktop/plurals.patched.js	2019-06-25 16:44:23.967022810 +1200
 ***************
-*** 23,34 ****
+*** 38,50 ****
     return fn;
   }
-
-  function get(locale, noPluralKeyChecks) {
-    for (var l = locale; l; l = l.replace(/[-_]?[^-_]*$/, '')) {
-      var pf = plurals[l];
-      if (pf) return wrapPluralFunc(l, pf, noPluralKeyChecks)
+  
+  function getPlural(locale, noPluralKeyChecks) {
+!   for (let lc = String(locale); lc; lc = lc.replace(/[-_]?[^-_]*$/, '')) {
+      const pf = _plurals.default[lc];
+      if (pf) return wrapPluralFunc(lc, pf, noPluralKeyChecks);
     }
+  
 !   throw new Error('Localisation function not found for locale ' + JSON.stringify(locale));
   }
-
-  function getAll(noPluralKeyChecks) {
---- 23,39 ----
+  
+  function getAllPlurals(noPluralKeyChecks) {
+--- 38,56 ----
     return fn;
   }
-
+  
 + function defaultPluralFunc(n, ord) {
 +   if (ord) return 'other';
 +   return 'other';
 + }
-+
-  function get(locale, noPluralKeyChecks) {
-    for (var l = locale; l; l = l.replace(/[-_]?[^-_]*$/, '')) {
-      var pf = plurals[l];
-      if (pf) return wrapPluralFunc(l, pf, noPluralKeyChecks)
++ 
+  function getPlural(locale, noPluralKeyChecks) {
+!   let lc;
+!   for (lc = String(locale); lc; lc = lc.replace(/[-_]?[^-_]*$/, '')) {
+      const pf = _plurals.default[lc];
+      if (pf) return wrapPluralFunc(lc, pf, noPluralKeyChecks);
     }
-!   return wrapPluralFunc(l, defaultPluralFunc, noPluralKeyChecks);
+  
+!   return wrapPluralFunc(lc, defaultPluralFunc, noPluralKeyChecks);
   }
-
-  function getAll(noPluralKeyChecks) {
+  
+  function getAllPlurals(noPluralKeyChecks) {

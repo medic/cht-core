@@ -1,16 +1,6 @@
-var _ = require('underscore');
-
-/**
-  Returns all places, in a hierarchy tree.
-  E.g.
-  [
-      { doc: c, children: [{ doc: b, children: [] }] },
-      { doc: f, children: [] }
-    ]
-*/
 angular.module('inboxServices').factory('PlaceHierarchy',
   function(
-    ContactSchema,
+    ContactTypes,
     Contacts,
     Settings
   ) {
@@ -19,8 +9,8 @@ angular.module('inboxServices').factory('PlaceHierarchy',
     'ngInject';
 
     // E.g. [ grandparentId, parentId, placeId ]
-    var getIdLineage = function(place) {
-      var path = [];
+    const getIdLineage = function(place) {
+      const path = [];
       while(place && place._id) {
         path.splice(0, 0, place._id);
         place = place.parent;
@@ -28,15 +18,9 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       return path;
     };
 
-    var getNodeFromArray = function(id, array) {
-      return _.find(array, function(r) {
-          return r.doc._id === id;
-      });
-    };
-
-    var addLineageToHierarchy = function(placeToSort, lineage, children) {
+    const addLineageToHierarchy = function(placeToSort, lineage, children) {
       lineage.forEach(function(idInLineage) {
-        var node = getNodeFromArray(idInLineage, children);
+        let node = children.find(child => child.doc._id === idInLineage);
 
         if (!node) {
           node = { doc: { _id: idInLineage, stub: true }, children: []};
@@ -54,7 +38,7 @@ angular.module('inboxServices').factory('PlaceHierarchy',
 
     // For restricted users. Hoist the highest place they have access to, to the
     // top of the tree.
-    var firstNonStubNode = function(children) {
+    const firstNonStubNode = function(children) {
       // Only hoist if there is one child. This will be the case for CHWs. There
       // may be situations where the first child is a stub but there are more
       // children, in which case we want to expose that in the UI.
@@ -65,25 +49,50 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       }
     };
 
-    var buildHierarchy = function(places) {
-      var hierarchy = [];
+    const buildHierarchy = function(places) {
+      const hierarchy = [];
       places.forEach(function(placeToSort) {
         addLineageToHierarchy(placeToSort, getIdLineage(placeToSort), hierarchy);
       });
       return firstNonStubNode(hierarchy);
     };
 
-    // By default exclude clinic (the lowest level) to increase performance.
-    var defaultHierarchyTypes = ContactSchema.getPlaceTypes().filter(function(type) {
-      return type !== 'clinic';
-    });
+    const getContacts = () => {
+      return Settings()
+        .then(settings => {
+          if (settings.place_hierarchy_types) {
+            return settings.place_hierarchy_types;
+          }
+          // Exclude people and clinics (the lowest level)
+          // for performance reasons
+          return ContactTypes.getPlaceTypes().then(types => {
+            const ids = [];
+            types.forEach(type => {
+              if (type.parents) {
+                ids.push(...type.parents);
+              }
+            });
+            return ids;
+          });
+        })
+        .then(types => Contacts(types));
+    };
 
+    /**
+     * @ngdoc service
+     * @name PlaceHierarchy
+     * @memberof inboxServices
+     * @description Returns a Promise to return all places excluding
+     *  the leaf types, in a hierarchy tree.
+     *   E.g.
+     *    [
+     *      { doc: c, children: [{ doc: b, children: [] }] },
+     *      { doc: f, children: [] }
+     *    ]
+     */
     return function() {
-      return Settings().then(function(settings) {
-        var types = settings.place_hierarchy_types || defaultHierarchyTypes;
-
-        return Contacts(types).then(buildHierarchy);
-      });
+      return getContacts()
+        .then(places => buildHierarchy(places));
     };
   }
 );

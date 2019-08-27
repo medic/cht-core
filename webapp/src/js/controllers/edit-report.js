@@ -6,6 +6,7 @@ angular.module('inboxControllers').controller('EditReportCtrl',
     $log,
     $scope,
     $uibModalInstance,
+    ContactTypes,
     Select2Search,
     UpdateFacility
   ) {
@@ -13,16 +14,18 @@ angular.module('inboxControllers').controller('EditReportCtrl',
     'use strict';
     'ngInject';
 
-    $uibModalInstance.rendered.then(function() {
-      Select2Search($('#edit-report [name=facility]'), 'person', {
-        allowNew: false,
-        initialValue: ($scope.model.report.contact &&
-                       $scope.model.report.contact._id) ||
-                      $scope.model.report.from
-      }).catch(function(err) {
-        $log.error('Error initialising select2', err);
-      });
-    });
+    $uibModalInstance.rendered
+      .then(() => ContactTypes.getPersonTypes())
+      .then(types => {
+        types = types.map(type => type.id);
+        const options = {
+          allowNew: false,
+          initialValue: ($scope.model.report.contact && $scope.model.report.contact._id) ||
+                        $scope.model.report.from
+        };
+        return Select2Search($('#edit-report [name=facility]'), types, options);
+      })
+      .catch(err => $log.error('Error initialising select2', err));
 
     $scope.cancel = function() {
       $uibModalInstance.dismiss();

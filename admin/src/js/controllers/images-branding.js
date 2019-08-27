@@ -3,17 +3,20 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
     $log,
     $scope,
     $translate,
-    DB
+    AddAttachment,
+    DB,
+    Translate
   ) {
 
     'ngInject';
     'use strict';
 
-    const BRANDING_ID = 'branding';
+    const DOC_ID = 'branding';
+    const MAX_FILE_SIZE = 100000; // 100KB
 
-    $('#image-upload .choose').on('click', _ev => {
+    $('#logo-upload .choose').on('click', _ev => {
       _ev.preventDefault();
-      $('#image-upload .uploader').click();
+      $('#logo-upload .uploader').click();
     });
 
     $('#favicon-upload .choose').on('click', _ev => {
@@ -21,93 +24,107 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
       $('#favicon-upload .uploader').click();
     });
 
-    $scope.error = null;
     $scope.loading = true;
-    $scope.favicon = null;
-    $scope.logo = 'logo';
-
-    const renderResources = () => {
-      const fav = $scope.doc._attachments[$scope.doc.resources.favicon];
-      $scope.favicon = `<img src="data:${fav.content_type};base64,${fav.data}" />`;
-      $scope.loading = false;
-    };
 
     const getResourcesDoc = () => {
-      return DB().get(BRANDING_ID, { attachments: true });
-    };
-
-    getResourcesDoc()
-      .then(doc => {
-        $scope.doc = doc;
-        renderResources();
-      })
-      .catch(err => {
-        $log.error('Error fetching resources file', err);
-      });
-
-    const addAttachment = (file, resource) => {
-      $scope.submitting = true;
-      DB()
-        .putAttachment(BRANDING_ID, file.name, $scope.doc._rev, file, file.type)
-        .then(getResourcesDoc)
+      return DB().get(DOC_ID, { attachments: true })
         .then(doc => {
-          doc.resources[resource] = file.name;
           $scope.doc = doc;
-          return DB().put(doc);
-        })
-        .then(response => {
-          $scope.doc._rev = response.rev;
-          $scope.submitting = false;
-          renderResources();
+          $scope.favicon = doc._attachments[doc.resources.favicon];
         })
         .catch(err => {
-          $log.error('Error uploading image', err);
-          $scope.submitting = false;
-          $scope.error = $translate.instant('Error saving settings');
+          $log.error('Error fetching resources file', err);
+        })
+        .then(() => {
+          $scope.loading = false;
         });
     };
 
-    $scope.submit = (name) => {
-      $scope.error = null;
-      if (!$scope.doc) {
-        $scope.error = $translate.instant('Error saving settings');
-        return;
-      }
+    getResourcesDoc();
 
-      var files = null;
-      if (name === 'logo') {
-        files = $('#image-upload .uploader')[0].files;
-      } else {
-        files = $('#favicon-upload .uploader')[0].files;
-      }
-      if (!files || files.length === 0) {
-        $scope.error = $translate.instant('field is required', {
-          field: $translate.instant('image')
-        });
-      }
-      // File must be less than 100KB
-      if (files[0].size > 100000) {
-        $scope.error = 'File must be less than 100KB';
-      }
-      if ($scope.error) {
-        return;
-      }
-      addAttachment(files[0], name);
-      
-    };
-
-    $scope.submitTitle = () => {
-      $scope.error = null;
+    const validateTitle = () => {
       if (!$scope.doc.title) {
-        $scope.error = $translate.instant('field is required', {
-          field: $translate.instant('Title')
+        Translate.fieldIsRequired('branding.title.field').then(msg => {
+          $scope.error = msg;
         });
+        return false;
+      }
+      return true;
+    };
+
+    const validateFile = file => {
+      if (file.size > MAX_FILE_SIZE) {
+        const readable = (MAX_FILE_SIZE / 1000) + 'KB';
+        $translate('error.file.size', { size: readable }).then(msg => {
+          $scope.error = msg;
+        });
+        return false;
+      }
+      return true;
+    };
+
+    const getFile = selector => {
+      const files = $(`${selector} .uploader`)[0].files;
+      return files && files.length && files[0];
+    };
+
+    const updateImage = (file, id) => {
+      if (!file) {
+        // valid but null op
+        return true;
+      }
+      if (!validateFile(file)) {
+        return false;
+      }
+      AddAttachment($scope.doc, file.name, file, file.type);
+      $scope.doc.resources[id] = file.name;
+      return true;
+    };
+
+    const updateLogo = () => updateImage(getFile('#logo-upload'), 'logo');
+
+    const updateFavicon = () => updateImage(getFile('#favicon-upload'), 'favicon');
+
+    const removeObsoleteAttachments = () => {
+      const current = $scope.doc._attachments;
+      const updated = {};
+      ['logo', 'favicon'].forEach(key => {
+        const name = $scope.doc.resources[key];
+        if (name) {
+          updated[name] = current[name];
+        }
+      });
+      $scope.doc._attachments = updated;
+    };
+
+    $scope.submit = () => {
+      $scope.error = null;
+
+      if (!$scope.doc) {
+        $log.error('Doc not found on scope when saving branding images');
+        $translate('Error saving settings').then(msg => $scope.error = msg);
         return;
       }
-      DB().put($scope.doc)
+
+      if (!validateTitle() ||
+          !updateLogo() ||
+          !updateFavicon()) {
+        return;
+      }
+
+      removeObsoleteAttachments();
+
+      $scope.submitting = true;
+      return DB().put($scope.doc)
+        .then(() => getResourcesDoc())
         .catch(err => {
-          $log.error(err);
-          $scope.error = $translate.instant('Error saving settings');
+          $log.error('Error saving branding doc', err);
+          $translate('Error saving settings').then(msg => {
+            $scope.error = msg;
+          });
+        })
+        .then(() => {
+          $scope.submitting = false;
         });
     };
   }

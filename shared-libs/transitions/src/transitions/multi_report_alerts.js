@@ -21,7 +21,7 @@ const vm = require('vm'),
 
 const getAlertConfig = () => config.get(TRANSITION_NAME);
 
-/* Returned list does not include the change.doc. */
+// Returned list does not include the change.doc
 const fetchReports = (
   latestTimestamp,
   timeWindowInDays,
@@ -240,9 +240,7 @@ const validateConfig = () => {
   }
 };
 
-/**
- * Returns { countedReportsIds, newReports, phones }.
- */
+// Returns { countedReportsIds, newReports, phones }.
 const getCountedReportsAndPhones = (alert, latestReport) => {
   const script = vm.createScript(
     `(${alert.is_report_counted})(report, latestReport)`
@@ -295,13 +293,11 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
   );
 };
 
-/**
- * Returns Promise({ numFetched, countedReports, oldReportIds }):
- * numFetched: skip value for batch
- * countedReports: reports in batch that 'count', determined by the script logic
- * oldReportIds: report ids that have counted towards previous alerts, see generateMessages()
- *   These may include ids for documents returned in countedReports.
- */
+// Returns Promise({ numFetched, countedReports, oldReportIds }):
+// numFetched: skip value for batch
+// countedReports: reports in batch that 'count', determined by the script logic
+// oldReportIds: report ids that have counted towards previous alerts, see generateMessages()
+//   These may include ids for documents returned in countedReports.
 const getCountedReportsBatch = (script, latestReport, alert, skip) => {
   const options = { skip: skip, limit: BATCH_SIZE };
   return fetchReports(
@@ -329,7 +325,7 @@ const getCountedReportsBatch = (script, latestReport, alert, skip) => {
   });
 };
 
-/* Return true if the doc has been changed. */
+// Return true if the doc has been changed
 const runOneAlert = (alert, latestReport) => {
   if (
     alert.forms &&

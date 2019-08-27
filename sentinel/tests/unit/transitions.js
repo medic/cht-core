@@ -37,7 +37,7 @@ describe('transitions', () => {
 
     const processChange = sinon.stub(transitions._transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
-    transitions._changeQueue.drain = () => {
+    transitions._changeQueue.drain(() => {
       assert.equal(processChange.callCount, 1);
       assert.equal(processChange.args[0][0].id, 'abc');
       assert.equal(processChange.args[0][0].seq, 55);
@@ -45,7 +45,7 @@ describe('transitions', () => {
       assert.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
       assert.equal(insert.args[0][0].processed_seq, 55);
       done();
-    };
+    });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 0);
@@ -75,7 +75,7 @@ describe('transitions', () => {
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
     const processChange = sinon.stub(transitions._transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
-    transitions._changeQueue.drain = () => {
+    transitions._changeQueue.drain(() => {
       assert.equal(sentinelGet.callCount, 2);
       assert.equal(medicGet.callCount, 4);
       assert.equal(processChange.callCount, 1);
@@ -91,7 +91,7 @@ describe('transitions', () => {
       assert.equal(sentinelPut.args[0][0]._id, '_local/sentinel-meta-data');
       assert.equal(sentinelPut.args[0][0].processed_seq, 55);
       done();
-    };
+    });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 22);
@@ -113,7 +113,7 @@ describe('transitions', () => {
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
     const processChange = sinon.stub(transitions._transitionsLib, 'processChange').callsArg(1);
     // wait for the queue processor
-    transitions._changeQueue.drain = () => {
+    transitions._changeQueue.drain(() => {
       assert.equal(get.callCount, 2);
       assert.equal(processChange.callCount, 1);
       assert.equal(processChange.args[0][0].id, 'abc');
@@ -122,7 +122,7 @@ describe('transitions', () => {
       assert.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
       assert.equal(insert.args[0][0].processed_seq, 55);
       done();
-    };
+    });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 22);
@@ -153,7 +153,7 @@ describe('transitions', () => {
       on.args[0][1]({ id: 'somechange', seq: 55, deleted: true });
     });
 
-    transitions._changeQueue.drain = () => {
+    transitions._changeQueue.drain(() => {
       return Promise.resolve().then(() => {
         assert.equal(tombstoneUtils.processChange.callCount, 1);
         assert.deepEqual(tombstoneUtils.processChange.args[0][2], {
@@ -167,7 +167,7 @@ describe('transitions', () => {
           done();
         });
       });
-    };
+    });
   });
 
   it('does not advance metadata document if creating tombstone fails', done => {
@@ -192,7 +192,7 @@ describe('transitions', () => {
       on.args[0][1]({ id: 'somechange', seq: 55, deleted: true });
     });
 
-    transitions._changeQueue.drain = () => {
+    transitions._changeQueue.drain(() => {
       return Promise.resolve().then(() => {
         assert.equal(tombstoneUtils.processChange.callCount, 1);
         assert.deepEqual(tombstoneUtils.processChange.args[0][2], {
@@ -205,7 +205,7 @@ describe('transitions', () => {
           done();
         });
       });
-    };
+    });
   });
 
   it('deleteInfo doc handles missing info doc', () => {
@@ -229,6 +229,7 @@ describe('transitions', () => {
   });
 
   it('deleteReadDocs handles missing read doc', () => {
+    db.medicDbName = 'medic';
     const given = { id: 'abc' };
     const metaDb = {
       remove: sinon.stub(),
@@ -239,14 +240,14 @@ describe('transitions', () => {
         ]
       }),
     };
-    sinon.stub(db, 'allDbs').resolves(['medic-user-gareth-meta']);
+    sinon.stub(db, 'allDbs').resolves([`${db.medicDbName}-user-gareth-meta`]);
     sinon.stub(db, 'get').returns(metaDb);
     return transitions
       ._deleteReadDocs(given)
       .then(() => {
         assert.equal(db.allDbs.callCount, 1);
         assert.equal(db.get.callCount, 1);
-        assert.deepEqual(db.get.args[0], ['medic-user-gareth-meta']);
+        assert.deepEqual(db.get.args[0], [`${db.medicDbName}-user-gareth-meta`]);
         assert.equal(metaDb.allDocs.callCount, 1);
         assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
         assert.equal(metaDb.remove.callCount, 0);
@@ -254,6 +255,7 @@ describe('transitions', () => {
   });
 
   it('deleteReadDocs deletes read doc for all users', () => {
+    db.medicDbName = 'medic';
     const given = { id: 'abc' };
     const metaDb = {
       allDocs: sinon.stub().resolves({
@@ -265,16 +267,16 @@ describe('transitions', () => {
       remove: sinon.stub().resolves()
     };
     const list = sinon.stub(db, 'allDbs').resolves([
-      'medic-user-gareth-meta',
-      'medic-user-jim-meta',
-      'medic', // not a user db - must be ignored
+      `${db.medicDbName}-user-gareth-meta`,
+      `${db.medicDbName}-user-jim-meta`,
+      db.medicDbName, // not a user db - must be ignored
     ]);
     const use = sinon.stub(db, 'get').returns(metaDb);
     return transitions._deleteReadDocs(given).then(() => {
       assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
-      assert.equal(use.args[0][0], 'medic-user-gareth-meta');
-      assert.equal(use.args[1][0], 'medic-user-jim-meta');
+      assert.equal(use.args[0][0], `${db.medicDbName}-user-gareth-meta`);
+      assert.equal(use.args[1][0], `${db.medicDbName}-user-jim-meta`);
       assert.equal(metaDb.allDocs.callCount, 2);
       assert.equal(metaDb.allDocs.args[0][0].keys.length, 2);
       assert.equal(metaDb.allDocs.args[0][0].keys[0], 'read:report:abc');
@@ -307,7 +309,7 @@ describe('transitions', () => {
       on.args[0][1]({ id: 'somechange', seq: 55 });
     });
 
-    transitions._changeQueue.drain = () => {
+    transitions._changeQueue.drain(() => {
       return Promise.resolve().then(() => {
         assert.equal(transitions._transitionsLib.processChange.callCount, 1);
         assert.deepEqual(transitions._transitionsLib.processChange.args[0][0], { id: 'somechange', seq: 55 });
@@ -317,6 +319,6 @@ describe('transitions', () => {
           done();
         });
       });
-    };
+    });
   });
 });

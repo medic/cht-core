@@ -281,6 +281,19 @@ describe('bulk-docs handler', () => {
         expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions).toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions.ids.length).toEqual(4);
+
+        offlineRequestOptions.path = '/_bulk_get?revs=false';
+        return utils.requestOnTestDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result.results.length).toEqual(2);
+        expect(result.results[0].id).toEqual('a1');
+        expect(result.results[0].docs[0].ok._attachments).toBeTruthy();
+        expect(result.results[0].docs[0].ok._revisions).not.toBeTruthy();
+
+        expect(result.results[1].id).toEqual('a2');
+        expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
+        expect(result.results[1].docs[0].ok._revisions).not.toBeTruthy();
       });
   });
 

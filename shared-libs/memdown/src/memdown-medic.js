@@ -1,6 +1,7 @@
 /**
- * Initialise an in-memory PouchDB instance using ddocs defined at the supplied
- * path.
+ * @module memdown-medic
+ * @description Initialise an in-memory PouchDB instance using ddocs
+ * defined at the supplied path.
  *
  * USAGE
  * 	memdownMedic = require('@medic/memdown');

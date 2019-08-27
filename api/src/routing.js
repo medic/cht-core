@@ -48,6 +48,7 @@ const _ = require('underscore'),
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({ limit: '32mb' });
+const jsonQueryParser = require('./middleware/query-parser').json;
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
@@ -75,6 +76,7 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 var formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
 
 app.set('strict routing', true);
+app.set('trust proxy', true);
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
@@ -423,11 +425,12 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request,
   allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, onlineUserProxy, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, jsonQueryParser, allDocsHandler);
 app.post(
   allDocsPath,
   onlineUserProxy,
   jsonParser,
+  jsonQueryParser,
   allDocsHandler
 );
 
@@ -437,6 +440,7 @@ app.post(
   routePrefix + '_bulk_get(/*)?',
   onlineUserProxy,
   jsonParser,
+  jsonQueryParser,
   bulkGetHandler
 );
 
@@ -446,6 +450,7 @@ app.post(
   routePrefix + '_bulk_docs(/*)?',
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
+  jsonQueryParser,
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -460,6 +465,7 @@ const dbDocHandler = require('./controllers/db-doc'),
 app.get(
   ddocPath,
   onlineUserProxy,
+  jsonQueryParser,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -467,12 +473,14 @@ app.get(
 app.get(
   docPath,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
+  jsonQueryParser,
   dbDocHandler.request
 );
 app.post(
   routePrefix,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser, // request body must be json
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -480,23 +488,33 @@ app.put(
   docPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.delete(
   docPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
-const metaPathPrefix = '/medic-user-*-meta/';
+const metaPathPrefix = `/${environment.db}-user-*-meta/`;
+
+app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
+  }
+  next();
+});
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
@@ -507,6 +525,7 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
 app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
+
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;

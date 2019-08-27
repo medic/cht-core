@@ -5,6 +5,7 @@ describe('ContactSave service', () => {
   let service;
   let bulkDocs;
   let get;
+  let ContactTypes;
   let EnketoTranslation;
   let ExtractLineage;
   let GlobalActions;
@@ -14,6 +15,7 @@ describe('ContactSave service', () => {
       contactRecordToJs: sinon.stub(),
     };
 
+    ContactTypes = { isHardcodedType: sinon.stub().returns(false) };
     ExtractLineage = sinon.stub();
     bulkDocs = sinon.stub();
     get = sinon.stub();
@@ -26,6 +28,7 @@ describe('ContactSave service', () => {
         bulkDocs: bulkDocs,
         get: get
       }));
+      $provide.value('ContactTypes', ContactTypes);
       $provide.value('EnketoTranslation', EnketoTranslation);
       $provide.value('ExtractLineage', ExtractLineage);
       $provide.value('GlobalActions', () => GlobalActions);
@@ -38,7 +41,6 @@ describe('ContactSave service', () => {
   it('fetches and binds db types and minifies string contacts', () => {
 
     // given
-    const schema = { fields: { contact: { type: 'db:person' } } };
     const form = { getDataStr: () => '<data></data>' };
     const docId = null;
     const type = 'some-contact-type';
@@ -46,12 +48,12 @@ describe('ContactSave service', () => {
     EnketoTranslation.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'abc' }
     });
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     get.returns(Promise.resolve({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } }));
     ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
 
     // when
-    return service(schema, form, docId, type)
+    return service(form, docId, type)
       .then(() => {
 
         // then
@@ -77,7 +79,6 @@ describe('ContactSave service', () => {
   it('fetches and binds db types and minifies object contacts', () => {
 
     // given
-    const schema = { fields: { contact: { type: 'db:person' } } };
     const form = { getDataStr: () => '<data></data>' };
     const docId = null;
     const type = 'some-contact-type';
@@ -85,12 +86,12 @@ describe('ContactSave service', () => {
     EnketoTranslation.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
     });
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     get.returns(Promise.resolve({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } }));
     ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
 
     // when
-    return service(schema, form, docId, type)
+    return service(form, docId, type)
       .then(() => {
 
         // then
@@ -116,15 +117,14 @@ describe('ContactSave service', () => {
   it('should include parent ID in repeated children', () => {
 
     // given
-    const schema = { fields: { sis: { type: 'db:sister' } } };
     const form = { getDataStr: () => '<data></data>' };
     const docId = null;
     const type = 'some-contact-type';
 
     EnketoTranslation.contactRecordToJs.returns({
-      doc: { _id: 'main1', type: 'main', sis: 'NEW', contact: 'this-would-be-the-chw-id'},
+      doc: { _id: 'main1', type: 'main', contact: 'NEW'},
       siblings: {
-        sis: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
+        contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
       },
       repeats: {
         child_data: [ { _id: 'kid1', type: 'child', parent: 'PARENT', } ],
@@ -136,10 +136,10 @@ describe('ContactSave service', () => {
       return contact;
     });
 
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
 
     // when
-    return service(schema, form, docId, type)
+    return service(form, docId, type)
       .then(() => {
 
         // then

@@ -68,6 +68,7 @@ angular.module('inboxDirectives').directive('mmAuth', function(
       }
     };
 
+    element.addClass('hidden');
     const result = staticChecks();
     if (result === true) {
       dynamicChecks(true);

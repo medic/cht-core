@@ -53,6 +53,7 @@ window.KarmaUtils = {
     module(function ($provide) {
       'ngInject';
       $provide.value('DB', function() {});
+      $provide.value('ContactViewModelGenerator', function() {});
       $provide.value('Session', {
         userCtx: () => { return {}; }
       });
