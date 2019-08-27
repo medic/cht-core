@@ -3,8 +3,6 @@ const utils = require('./utils');
 const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
 
-module.exports.LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
-
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 const purgeFetch = (url) => {
   return fetch(url, { headers: opts.remote_headers }).then(res => res.json());
@@ -38,8 +36,8 @@ module.exports.checkpoint = (seq = 'now') => {
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
 module.exports.shouldPurge = (localDb, userCtx) => {
   return Promise
-    .all([ localDb.get('settings'), getPurgeLog(localDb), localDb.info() ])
-    .then(([ { settings: { purge } }, purgelog, info ]) => {
+    .all([ localDb.get('settings'), getPurgeLog(localDb) ])
+    .then(([ { settings: { purge } }, purgelog ]) => {
       // purge not running on the server
       if (!purge) {
         console.debug('Not purging: Purge not configured.');
@@ -65,15 +63,8 @@ module.exports.shouldPurge = (localDb, userCtx) => {
         return false;
       }
 
-      const highestSyncSeq = parseInt(window.localStorage.getItem(module.exports.LAST_REPLICATED_SEQ_KEY));
-      if (!highestSyncSeq || Number.isNaN(highestSyncSeq)) {
-        console.debug('Not purging: local db not synced');
-        return false;
-      }
-
-      const shouldPurge = parseInt(info.update_seq) <= highestSyncSeq;
-      console.debug(shouldPurge ? 'Purging' : 'Not purging: local db not synced');
-      return shouldPurge;
+      console.debug('Purging');
+      return true;
     });
 };
 

@@ -249,18 +249,9 @@ describe('Purging on login', () => {
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
 
-    getPurgeLog().then(result => {
-      // no purge log as we didn't purge
-      chai.expect(result.status).to.equal(404);
-      chai.expect(result.error).to.equal(true);
-    });
-    commonElements.sync();
-    utils.resetBrowser();
-    helper.waitForAngularComplete();
-
     let purgeDate;
     getPurgeLog().then(result => {
-      // purge ran but there's nothing to purge
+      // purge ran but after initial replication, nothing to purge
       chai.expect(result._rev).to.equal('0-1');
       chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
       chai.expect(result.history.length).to.equal(1);
@@ -277,7 +268,7 @@ describe('Purging on login', () => {
     helper.waitForAngularComplete();
 
     getPurgeLog().then(result => {
-      // purge didn't run again
+      // purge didn't run again on next refresh
       chai.expect(result._rev).to.equal('0-1');
       chai.expect(result.date).to.equal(purgeDate);
     });
@@ -312,9 +303,6 @@ describe('Purging on login', () => {
     utils.refreshToGetNewSettings();
     commonElements.calm();
 
-    utils.resetBrowser();
-    helper.waitForAngularComplete();
-    commonElements.goToReports();
     getPurgeLog().then(result => {
       // purge ran again and it purged the bad form
       chai.expect(result._rev).to.equal('0-2');
@@ -328,6 +316,7 @@ describe('Purging on login', () => {
         date: result.date
       });
     });
+    commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2]);
     reports.expectReportsToNotExist([badFormId, badFormId2]);
   });

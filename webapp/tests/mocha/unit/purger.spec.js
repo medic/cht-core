@@ -37,9 +37,6 @@ describe('Purger', () => {
         pathname: '/',
         href: 'http://localhost:5988/'
       },
-      localStorage: {
-        getItem: sinon.stub()
-      }
     };
 
     fetch = sinon.stub();
@@ -48,7 +45,6 @@ describe('Purger', () => {
       get: sinon.stub(),
       allDocs: sinon.stub(),
       bulkDocs: sinon.stub(),
-      info: sinon.stub(),
       put: sinon.stub(),
     };
     userCtx = { roles: [] };
@@ -168,40 +164,19 @@ describe('Purger', () => {
       });
     });
 
-    it('should return false when local db is not synced upwards', () => {
-      const purgeDate = moment().subtract('10', 'days').valueOf();
-      localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
-      localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'b']) });
-      localDb.info.resolves({ update_seq: '1234' });
-      window.localStorage.getItem.returns('1233');
-      userCtx.roles = ['b', 'a', 'a', 'b'];
-
-      return purger.shouldPurge(localDb, userCtx).then(result => {
-        chai.expect(result).to.equal(false);
-        chai.expect(window.localStorage.getItem.callCount).to.equal(1);
-        chai.expect(window.localStorage.getItem.args[0]).to.deep.equal(['medic-last-replicated-seq']);
-      });
-    });
-
-    it('should return true when db is synced and purge never ran', () => {
+    it('should return true when purge never ran', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
-
-      localDb.info.resolves({ update_seq: '1234' });
-      window.localStorage.getItem.returns('1234');
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
       });
     });
 
-    it('should return true when db is synced and purge ran before the default interval', () => {
+    it('should return true when purge ran before the default interval', () => {
       const purgeDate = moment().subtract('9', 'days').valueOf();
       localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'c']) });
-
-      localDb.info.resolves({ update_seq: '1234' });
-      window.localStorage.getItem.returns('1234');
       userCtx.roles = ['c', 'a'];
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
@@ -209,13 +184,10 @@ describe('Purger', () => {
       });
     });
 
-    it('should return true when db is synced and purge ran before the configured interval', () => {
+    it('should return true when purge ran before the configured interval', () => {
       const purgeDate = moment().subtract('41', 'days').valueOf();
       localDb.get.withArgs('settings').resolves({ settings: { purge: { run_every_days: 40 } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'x']) });
-
-      localDb.info.resolves({ update_seq: '1234' });
-      window.localStorage.getItem.returns('1234');
       userCtx.roles = ['a', 'x'];
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
@@ -227,7 +199,6 @@ describe('Purger', () => {
       const purgeDate = moment().subtract('1', 'days').valueOf();
       localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'b', 'x']) });
-      localDb.info.resolves({ update_seq: '1234' });
       userCtx.roles = ['a', 'x'];
 
       return purger.shouldPurge(localDb, userCtx).then(result => {

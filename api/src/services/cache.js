@@ -12,7 +12,14 @@ module.exports.instance = (name, opts = {}) => {
     const options = Object.assign({}, defaultOpts, opts);
     caches.set(name, new NodeCache(options));
   }
-
   return caches.get(name);
+};
+
+module.exports.clear = (name) => {
+  if (!caches.has(name)) {
+    return;
+  }
+  caches.get(name).flushAll();
+  caches.delete(name);
 };
 
