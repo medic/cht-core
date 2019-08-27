@@ -444,6 +444,78 @@ describe('db-doc handler', () => {
         });
     });
 
+    it('GET with various params', () => {
+      const revs = {
+        allowed_attach: [],
+        denied_attach: [],
+      };
+
+      return utils
+        .saveDocs([
+          {
+            _id: 'allowed_attach',
+            type: 'clinic',
+            parent: { _id: 'fixture:offline' },
+            name: 'allowed attach',
+          },
+          {
+            _id: 'denied_attach',
+            type: 'clinic',
+            parent: { _id: 'fixture:online' },
+            name: 'denied attach',
+          },
+        ])
+        .then(results => {
+          return Promise.all(
+            results.map(result => {
+              revs[result.id].push(result.rev);
+              return utils.requestOnTestDb({
+                path: `/${result.id}/att_name?rev=${result.rev}`,
+                method: 'PUT',
+                body: 'my attachment content',
+                headers: { 'Content-Type': 'text/plain' },
+              });
+            })
+          );
+        })
+        .then(results => {
+          results.forEach(result => revs[result.id].push(result.rev));
+          return Promise.all([
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach?rev=${revs.allowed_attach[0]}&attachments=true&revs=true` }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach?rev=${revs.allowed_attach[1]}&attachments=true&revs=false` }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach?attachments=false&revs=true&revs_info=true` }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach?rev=${revs.denied_attach[0]}&attachments=true&revs=true` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach?rev=${revs.denied_attach[1]}&attachments=true&revs=false` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach?attachments=true&revs=true&revs_info=true` }, offlineRequestOptions)).catch(err => err),
+          ]);
+        })
+        .then(results => {
+          expect(results[0]._attachments).not.toBeDefined();
+          expect(results[0]._revisions).toBeDefined();
+          expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`).toEqual(revs.allowed_attach[0]);
+
+          expect(results[1]._attachments).toBeDefined();
+          expect(results[1]._attachments.att_name).toBeDefined();
+          expect(results[1]._attachments.att_name.data).toBeDefined();
+          expect(results[1]._revisions).not.toBeDefined();
+          expect(results[1]._revs_info).not.toBeDefined();
+
+          expect(results[2]._attachments).toBeDefined();
+          expect(results[2]._attachments.att_name).toBeDefined();
+          expect(results[2]._attachments.att_name.data).not.toBeDefined();
+          expect(results[2]._attachments.att_name.stub).toEqual(true);
+          expect(results[2]._revisions).toBeDefined();
+          expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`).toEqual(revs.allowed_attach[1]);
+          expect(results[2]._revs_info).toBeDefined();
+          expect(results[2]._revs_info.length).toEqual(results[2]._revisions.ids.length);
+          expect(results[2]._revs_info[0]).toEqual({ rev: revs.allowed_attach[1], status: 'available' });
+
+          expect(results[3].statusCode).toEqual(403);
+          expect(results[4].statusCode).toEqual(403);
+          expect(results[5].statusCode).toEqual(403);
+        });
+    });
+
     it('POST', () => {
       _.extend(offlineRequestOptions, {
         method: 'POST',

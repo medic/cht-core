@@ -62,30 +62,42 @@
 .button-text() {
   color: @button-text-color;
   text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 2px;
-  svg path {
-    fill: @button-text-color;
+  svg {
+    circle,
+    path {
+      fill: @button-text-color;
+    }
   }
 }
 
 .button-text-hover() {
   color: @white;
-  svg path {
-    fill: @white;
+  svg {
+    circle,
+    path {
+      fill: @white;
+    }
   }
 }
 
 .button-text-disabled() {
   color: @label-color;
-  svg path {
-    fill: @label-color;
+  svg {
+    circle,
+    path {
+      fill: @label-color;
+    }
   }
 }
 
 .button-text-inverse() {
   color: @button-text-inverse-color;
   text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
-  svg path {
-    fill: @button-text-inverse-color;
+  svg {
+    circle,
+    path {
+      fill: @button-text-inverse-color;
+    }
   }
 }
 

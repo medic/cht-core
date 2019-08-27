@@ -185,10 +185,45 @@ const filterAllowedDocs = (authorizationContext, docs) => {
       return this.doc._id;
     },
   }));
-
   return authorization
     .filterAllowedDocs(authorizationContext, docs)
     .map(docObj => docObj.doc);
+};
+
+const getExistentDocs = docs => {
+  const docIds = docs.map(doc => doc._id).filter(id => id);
+  const existentDocs = {};
+
+  return db.medic
+    .allDocs({ keys: docIds, include_docs: true })
+    .then(result => {
+      const tombstoneIds = [];
+      result.rows.forEach(row => {
+        if (row.doc) {
+          return existentDocs[row.id] = row.doc;
+        }
+
+        if (row.value && row.value.deleted) {
+          tombstoneIds.push(authorization.generateTombstoneId(row.id, row.value.rev));
+        }
+      });
+
+      if (!tombstoneIds.length) {
+        return { rows: [] };
+      }
+
+      // get all tombstone docs to check if user is allowed to edit the deleted docs
+      return db.medic.allDocs({ keys: tombstoneIds, include_docs: true });
+    })
+    .then(result => {
+      result.rows.forEach(row => {
+        if (row.doc) {
+          existentDocs[authorization.convertTombstoneId(row.id)] = row.doc;
+        }
+      });
+
+      return existentDocs;
+    });
 };
 
 // Filters the list of request docs to the ones that satisfy the following conditions:
@@ -202,14 +237,12 @@ const filterRequestDocs = (authorizationContext, docs) => {
   // prevent offline users from creating or updating docs they will not be allowed to see
   const allowedRequestDocs = filterAllowedDocs(authorizationContext, docs);
 
-  return filterNewDocs(
-    authorizationContext.allowedDocIds,
-    allowedRequestDocs
-  ).then(allowedNewDocs => {
-    const allowedDocs = allowedRequestDocs.filter(
-      doc => authorizationContext.allowedDocIds.indexOf(doc._id) !== -1
-    );
-    allowedDocs.push.apply(allowedDocs, allowedNewDocs);
+  return getExistentDocs(allowedRequestDocs).then(existentDocs => {
+    const allowedDocs = allowedRequestDocs.filter(doc => {
+      const existentDoc = doc._id && existentDocs[doc._id];
+      return !existentDoc ||
+             authorization.allowedDoc(doc._id, authorizationContext, authorization.getViewResults(existentDoc));
+    });
 
     return allowedDocs;
   });
@@ -259,20 +292,9 @@ module.exports = {
   // offline users will only create/update/delete documents they are allowed to see and will be allowed to see
   // mimics CouchDB response format, stubbing forbidden docs and respecting requested `docs` sequence
   filterOfflineRequest: (userCtx, docs) => {
-    let authorizationContext;
-
     return authorization
       .getAuthorizationContext(userCtx)
-      .then(context => {
-        authorizationContext = context;
-        return authorization.getAllowedDocIds(authorizationContext);
-      })
-      .then(allowedDocIds => {
-        authorizationContext.allowedDocIds = authorization.convertTombstoneIds(
-          allowedDocIds
-        );
-        return filterRequestDocs(authorizationContext, docs);
-      });
+      .then(authorizationContext => filterRequestDocs(authorizationContext, docs));
   },
 
   // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter

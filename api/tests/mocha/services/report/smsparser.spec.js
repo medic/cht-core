@@ -1334,4 +1334,37 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({name: 'jane'});
   });
 
+  it('stop input valuesfrom getting translated', () => {
+    const def = {
+      meta: {
+        code: 'c_imm'
+      },
+      fields: {
+        bcg: {
+          type: 'string',
+          labels: {
+            tiny: 'bcg'
+          }
+        },
+        ch: {
+          type: 'string',
+          labels: {
+            tiny: 'ch'
+          } 
+        }
+      }
+    };
+    sinon.stub(config, 'translate')
+      .withArgs('bcg').returns('bcg')
+      .withArgs('ch').returns('ch')
+      .withArgs('no').returns('no')
+      .withArgs('yes').returns('yes');
+    const doc = {
+      message: 'J1!c_imm!bcg#yes#ch#no'
+    };
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({bcg: 'yes', ch:'no'});
+    chai.expect(config.translate.callCount).to.equal(2);
+  });
+
 });

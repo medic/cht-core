@@ -9,10 +9,10 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^4.2.0",
-    "chai-exclude": "^1.0.12",
+    "chai-exclude": "^2.0.1",
     "jsverify": "^0.8.4",
-    "mocha": "^5.2.0",
-    "sinon": "^7.1.1"
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2"
   },
   "dependencies": {
     "@medic/lineage": "file:../lineage",
@@ -20,9 +20,9 @@
     "@medic/phone-number": "file:../phone-number",
     "@medic/registration-utils": "file:../registration-utils",
     "@medic/task-utils": "file:../task-utils",
-    "async": "^2.6.1",
-    "bikram-sambat": "^1.5.0",
-    "bikram-sambat-bootstrap": "^1.4.2",
+    "async": "^3.1.0",
+    "bikram-sambat": "^1.6.0",
+    "bikram-sambat-bootstrap": "^1.5.0",
     "google-libphonenumber": "^3.2.1",
     "gsm": "^0.1.4",
     "moment": "^2.22.2",

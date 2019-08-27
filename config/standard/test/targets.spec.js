@@ -13,8 +13,8 @@ let reportIdCounter;
 describe('Standard Configuration Targets', function() {
   let nootilsManager, Contact, session;
 
-  before(() => {
-    nootilsManager = NootilsManager({
+  before(async () => {
+    nootilsManager = await NootilsManager({
       user: {
         parent: {
           type: 'health_center',
@@ -1100,7 +1100,7 @@ describe('Standard Configuration Targets', function() {
                 pass: true
               },
               {
-                _id: 'r1~imm-vaccines-given-this-month',
+                _id: 'child-1~imm-vaccines-given-this-month',
                 deleted: false,
                 type: 'imm-vaccines-given-this-month',
                 pass: true
@@ -1202,7 +1202,7 @@ describe('Standard Configuration Targets', function() {
                 pass: true
               },
               {
-                _id: 'report-1~imm-vaccines-given-this-month0',
+                _id: 'child-1~imm-vaccines-given-this-month0',
                 deleted: false,
                 type: 'imm-vaccines-given-this-month',
                 pass: true,

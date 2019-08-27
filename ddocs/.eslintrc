@@ -1,9 +1,9 @@
 {
   "extends": "eslint:recommended",
-  "env": {
-    "couchdb/couchdb": true,
-  },
   "plugins": ["couchdb"],
+  "rules": {
+    "semi": "off"
+  },
   "parserOptions": {
     "ecmaVersion": 5,
   }

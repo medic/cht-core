@@ -1,10 +1,9 @@
-<p class="text-danger">{{error}}</p>
 <div>
   <form id="partner-upload">
     <legend translate>partner.logo.upload</legend>
     <div class="form-group required">
       <label for="name" translate>partner.name.field</label>
-      <input type="text" name="name" class="form-control" ng-required="required" ng-model="name">
+      <input type="text" name="name" class="form-control medium" ng-required="required" ng-model="name">
     </div>
     <div class="form-group required">
       <label translate>partner.logo.field</label>
@@ -22,6 +21,7 @@
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
       <div class="loader inline small" ng-show="submitting"></div>
+      <p class="error">{{error}}</p>
     </div>
   </form>
 </div>
