@@ -740,30 +740,45 @@ module.exports = function(grunt) {
     },
     protractor: {
       'release-e2e-tests':{
-        options:{
-          configFile: 'tests/relase.tests.conf.js'
+        options: {
+          args: {
+            params: {
+              pathToConfig: `${__dirname}/config/standard`
+            },
+            suite: 'release'
+          },
+          configFile: 'tests/conf.js'
         }
       },
       'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests.conf.js',
-        },
+          args: {
+            suite: 'e2e'
+          },
+          configFile: 'tests/conf.js'
+        }
       },
       'e2e-tests-debug': {
         options: {
-          configFile: 'tests/e2e.tests.debug.conf.js',
-        },
+          configFile: 'tests/conf.js',
+          args: {
+            suite: 'e2e'
+          },
+          capabilities: {
+            chromeOptions: {
+              args: ['window-size=1024,768']
+            }
+          }
+        }
       },
       'performance-tests-and-services': {
         options: {
-          configFile: 'tests/performance.tests-and-services.conf.js',
-        },
-      },
-      'performance-tests-only': {
-        options: {
-          configFile: 'tests/performance.tests-only.conf.js',
-        },
-      },
+          args: {
+            suite: 'performance'
+          },
+          configFile: 'tests/conf.js'
+        }
+      }
     },
     mochaTest: {
       unit: {
