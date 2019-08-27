@@ -45,7 +45,7 @@ const queuedTasks = () =>
             task: task,
             doc: r.doc
           });
-        } else if (r.error === 'not_found' || r.value.deleted) {
+        } else if (r.error === 'not_found' || (r.value && r.value.deleted)) {
           acc.invalidTasks.push({
             task: task,
             row: r
