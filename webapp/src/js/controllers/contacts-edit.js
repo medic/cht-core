@@ -9,6 +9,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $translate,
     ContactSave,
     ContactTypes,
+    DB,
     Enketo,
     GlobalActions,
     LineageModelGenerator,
@@ -127,7 +128,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           return;
         }
         ctrl.setEnketoEditedStatus(false);
-        return Enketo.renderContactForm('#contact-form', formId, getFormInstanceData(), markFormEdited);
+        return DB().get(formId);
+      })
+      .then(form => {
+        return Enketo.renderContactForm('#contact-form', form, getFormInstanceData(), markFormEdited);
       });
     };
 

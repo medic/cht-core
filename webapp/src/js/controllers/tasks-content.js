@@ -12,7 +12,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     Snackbar,
     Telemetry,
     TranslateFrom,
-    XmlForm
+    XmlForms
   ) {
 
     'use strict';
@@ -84,17 +84,17 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       if (action.type === 'report') {
         ctrl.loadingForm = true;
         $scope.formId = action.form;
-        XmlForm(action.form, { include_docs: true })
+        XmlForms.get(action.form)
           .then(function(formDoc) {
             ctrl.setEnketoEditedStatus(false);
-            return Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
+            return Enketo.render('#task-report', formDoc, action.content, markFormEdited)
               .then(function(formInstance) {
                 $scope.form = formInstance;
-                ctrl.loadingForm = false;
-                if (formDoc.doc.translation_key) {
-                  $scope.setTitle($translate.instant(formDoc.doc.translation_key));
+                $scope.loadingForm = false;
+                if (formDoc.translation_key) {
+                  $scope.setTitle($translate.instant(formDoc.translation_key));
                 } else {
-                  $scope.setTitle(TranslateFrom(formDoc.doc.title));
+                  $scope.setTitle(TranslateFrom(formDoc.title));
                 }
               })
               .then(() => {

@@ -318,7 +318,7 @@ const PAGE_SIZE = 50;
                 ctrl.setContactsLoadingSummary(false);
                 ctrl.updateSelectedContact({ summary: summary });
                 const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
-                XmlForms('ContactsCtrl', options, function(err, forms) {
+                XmlForms.listen('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
