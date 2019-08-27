@@ -45,7 +45,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     if (!$state.params.id) {
       // adding a new contact, deselect the old one
       $scope.clearSelected();
-      $scope.settingSelected();
+      ctrl.settingSelected();
     }
     ctrl.setLoadingContent(true);
     ctrl.setShowContent(true);
