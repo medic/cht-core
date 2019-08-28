@@ -163,7 +163,7 @@ angular
 
     $scope.selectReport = function(report) {
       if (!report) {
-        $scope.clearSelected();
+        ctrl.clearSelected();
         return;
       }
       $scope.setLoadingContent(report);
@@ -177,7 +177,7 @@ angular
           }
         })
         .catch(function(err) {
-          $scope.clearSelected();
+          ctrl.clearSelected();
           $log.error('Error selecting report', err);
         });
     };

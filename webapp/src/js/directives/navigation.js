@@ -4,18 +4,21 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/navigation.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           cancelCallback: Selectors.getCancelCallback(state),
           enketoSaving: Selectors.getEnketoSavingStatus(state),
           title: Selectors.getTitle(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        return GlobalActions(dispatch);
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
