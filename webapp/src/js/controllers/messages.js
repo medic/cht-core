@@ -105,10 +105,6 @@ angular
         $log.error('Error fetching contact', err);
       });
 
-    $scope.$on('ClearSelected', function() {
-      ctrl.setSelectedMessage(null);
-    });
-
     var changeListener = Changes({
       key: 'messages-list',
       callback: function() {

@@ -15,14 +15,13 @@ angular.module('inboxServices').service('ContactSave',
     'ngInject';
 
     const self = this;
-    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
       const globalActions = GlobalActions(dispatch);
       return {
         setLastChangedDoc: globalActions.setLastChangedDoc
       };
     };
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
+    $ngRedux.connect(null, mapDispatchToTarget)(self);
 
     function generateFailureMessage(bulkDocsResult) {
       return _.reduce(bulkDocsResult, function(msg, result) {

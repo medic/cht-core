@@ -34,6 +34,7 @@ var _ = require('underscore');
         const globalActions = GlobalActions(dispatch);
         const tasksActions = TasksActions(dispatch);
         return {
+          clearSelected: globalActions.clearSelected,
           setSelectedTask: tasksActions.setSelectedTask,
           setShowContent: globalActions.setShowContent,
           setTitle: globalActions.setTitle,
@@ -59,7 +60,7 @@ var _ = require('underscore');
       $scope.setSelected = function(id) {
         if (!id) {
           LiveList.tasks.clearSelected();
-          $scope.clearSelected();
+          ctrl.clearSelected();
           return;
         }
         var task = _.findWhere(LiveList.tasks.getList(), { _id: id });
@@ -73,10 +74,6 @@ var _ = require('underscore');
       ctrl.refreshTaskList = function() {
         $window.location.reload();
       };
-
-      $scope.$on('ClearSelected', function() {
-        ctrl.setSelectedTask(null);
-      });
 
       $timeout(function() {
         LiveList.tasks.refresh();
@@ -102,7 +99,7 @@ var _ = require('underscore');
       };
       LiveList.tasks.notifyError = function() {
         ctrl.error = true;
-        $scope.clearSelected();
+        ctrl.clearSelected();
       };
 
       $scope.$on('query', function() {

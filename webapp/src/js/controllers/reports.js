@@ -46,23 +46,7 @@ angular
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const reportsActions = ReportsActions(dispatch);
-      return {
-        addSelectedReport: reportsActions.addSelectedReport,
-        clearFilters: globalActions.clearFilters,
-        removeSelectedReport: reportsActions.removeSelectedReport,
-        setFilters: globalActions.setFilters,
-        setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
-        setLastChangedDoc: globalActions.setLastChangedDoc,
-        setLeftActionBar: globalActions.setLeftActionBar,
-        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setRightActionBar: reportsActions.setRightActionBar,
-        setSelected: reportsActions.setSelected,
-        setSelectedReports: reportsActions.setSelectedReports,
-        setTitle: reportsActions.setTitle,
-        setVerifyingReport: reportsActions.setVerifyingReport,
-        settingSelected: globalActions.settingSelected,
-        updateUnreadCount: globalActions.updateUnreadCount
-      };
+      return Object.assign({}, globalActions, reportsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
@@ -232,7 +216,7 @@ angular
       // does not clear selection when someone is editing a form
       if((ctrl.filters.search || Object.keys(ctrl.filters).length > 1) && !ctrl.enketoEdited) {
         $state.go('reports.detail', { id: null }, { notify: false });
-        clearSelection();
+        ctrl.clearSelection();
       }
       if ($scope.isMobile() && ctrl.showContent) {
         // leave content shown
@@ -264,18 +248,6 @@ angular
     $scope.$on('ToggleVerifyingReport', function() {
       ctrl.setVerifyingReport(!ctrl.verifyingReport);
       ctrl.setRightActionBar();
-    });
-
-    const clearSelection = () => {
-      ctrl.setSelectedReports([]);
-      LiveList.reports.clearSelected();
-      LiveList['report-search'].clearSelected();
-      $('#reports-list input[type="checkbox"]').prop('checked', false);
-      ctrl.setVerifyingReport(false);
-    };
-
-    $scope.$on('ClearSelected', function() {
-      clearSelection();
     });
 
     $scope.$on('EditReport', function() {
@@ -460,7 +432,7 @@ angular
     };
 
     $scope.$on('SelectAll', function() {
-      $scope.setLoadingContent(true);
+      ctrl.setLoadingShowContent(true);
       Search('reports', ctrl.filters, { limit: 500, hydrateContactNames: true })
         .then(function(summaries) {
           var selected = summaries.map(function(summary) {

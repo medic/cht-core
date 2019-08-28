@@ -2,8 +2,11 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
+    $state,
+    $stateParams,
     $timeout,
     ActionUtils,
+    LiveList,
     Selectors
   ) {
     'use strict';
@@ -142,6 +145,11 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
       }
 
+      function setLoadingShowContent(id) {
+        setLoadingContent(id);
+        setShowContent(true);
+      }
+
       function settingSelected(refreshing) {
         setLoadingContent(false);
         $timeout(function() {
@@ -155,10 +163,40 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      /**
+       * Unset the selected item without navigation
+       */
+      function unsetSelected() {
+        setShowContent(false);
+        setLoadingContent(false);
+        setShowActionBar(false);
+        setTitle();
+        dispatch({ type: actionTypes.CLEAR_SELECTED });
+        LiveList['contacts'].clearSelected();
+        LiveList['contact-search'].clearSelected();
+        LiveList['reports'].clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+      }
+
+      /**
+       * Clear the selected item - may update the URL
+       */
+      function clearSelected() {
+        if ($state.current.name === 'contacts.deceased') {
+          $state.go('contacts.detail', { id: $stateParams.id });
+        } else if ($stateParams.id) {
+          $state.go($state.current.name, { id: null });
+        } else {
+          unsetSelected();
+        }
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
         clearRightActionBar,
+        clearSelected,
         setAndroidAppVersion,
         setCancelCallback,
         setCurrentTab,
@@ -173,6 +211,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setLeftActionBar,
         setLastChangedDoc,
         setLoadingContent,
+        setLoadingShowContent,
         setLoadingSubActionBar,
         setRightActionBar,
         setRightActionBarVerified,
@@ -184,6 +223,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setVersion,
         updateReplicationStatus,
         updateUnreadCount,
+        unsetSelected,
 
         settingSelected
       };

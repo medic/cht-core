@@ -19,6 +19,8 @@ module.exports = function(state, action) {
           messages: state.selected.messages.concat(action.payload.message)
         })
       });
+    case actionTypes.CLEAR_SELECTED:
+      return Object.assign({}, state, { selected: null });
     case actionTypes.REMOVE_SELECTED_MESSAGE:
       filteredMessages = _.filter(state.selected.messages, message => message.id !== action.payload.id);
       return Object.assign({}, state, {

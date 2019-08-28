@@ -126,6 +126,14 @@ angular.module('inboxServices').factory('ReportsActions',
         });
       }
 
+      function clearSelection() {
+        setSelectedReports([]);
+        setVerifyingReport(false);
+        LiveList.reports.clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+      }
+
       return {
         addSelectedReport,
         removeSelectedReport,
@@ -135,6 +143,7 @@ angular.module('inboxServices').factory('ReportsActions',
         updateSelectedReportItem,
         setVerifyingReport,
 
+        clearSelection,
         setRightActionBar,
         setTitle,
         setSelected

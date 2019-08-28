@@ -47,21 +47,7 @@ var _ = require('underscore'),
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const contactsActions = ContactsActions(dispatch);
-      return {
-        clearCancelCallback: globalActions.clearCancelCallback,
-        clearFilters: globalActions.clearFilters,
-        clearRightActionBar: globalActions.clearRightActionBar,
-        loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
-        loadSelectedContactReports: contactsActions.loadSelectedContactReports,
-        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
-        setLeftActionBar: globalActions.setLeftActionBar,
-        setLoadingSelectedContactChildren: contactsActions.setLoadingSelectedContactChildren,
-        setLoadingSelectedContactReports: contactsActions.setLoadingSelectedContactReports,
-        setRightActionBar: globalActions.setRightActionBar,
-        setSelectedContact: contactsActions.setSelectedContact,
-        setTitle: globalActions.setTitle,
-        updateSelectedContact: contactsActions.updateSelectedContact
-      };
+      return Object.assign({}, globalActions, contactsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
@@ -346,20 +332,10 @@ var _ = require('underscore'),
         });
     };
 
-    $scope.$on('ClearSelected', function() {
-      clearSelection();
-    });
-
-    const clearSelection = () => {
-      ctrl.setSelectedContact(null);
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
     ctrl.search = function() {
       if(ctrl.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        ctrl.clearSelection();
       }
 
       ctrl.loading = true;

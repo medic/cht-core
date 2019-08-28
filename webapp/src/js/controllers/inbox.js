@@ -14,7 +14,6 @@ var _ = require('underscore'),
     $rootScope,
     $scope,
     $state,
-    $stateParams,
     $timeout,
     $transitions,
     $translate,
@@ -90,6 +89,7 @@ var _ = require('underscore'),
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
+        clearSelected: globalActions.clearSelected,
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
@@ -104,6 +104,7 @@ var _ = require('underscore'),
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
         setVersion: globalActions.setVersion,
+        unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus
       };
     };
@@ -268,7 +269,7 @@ var _ = require('underscore'),
         if (ctrl.cancelCallback) {
           $scope.navigationCancel();
         } else {
-          $scope.clearSelected();
+          ctrl.clearSelected();
         }
       });
     });
@@ -285,7 +286,7 @@ var _ = require('underscore'),
       const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
       // unset selected when states have different base state and only when source state has selected property
       if (parentState && !trans.to().name.startsWith(parentState)) {
-        $scope.unsetSelected();
+        ctrl.unsetSelected();
       }
     });
 
@@ -317,35 +318,6 @@ var _ = require('underscore'),
           ctrl.cancelCallback();
         }
       });
-    };
-
-    /**
-     * Unset the selected item without navigation
-     */
-    $scope.unsetSelected = function() {
-      ctrl.setShowContent(false);
-      ctrl.setLoadingContent(false);
-      ctrl.setShowActionBar(false);
-      ctrl.setTitle();
-      $scope.$broadcast('ClearSelected');
-    };
-
-    /**
-     * Clear the selected item - may update the URL
-     */
-    $scope.clearSelected = function() {
-      if ($state.current.name === 'contacts.deceased') {
-        $state.go('contacts.detail', { id: $stateParams.id });
-      } else if ($stateParams.id) {
-        $state.go($state.current.name, { id: null });
-      } else {
-        $scope.unsetSelected();
-      }
-    };
-
-    $scope.setLoadingContent = function(id) {
-      ctrl.setLoadingContent(id);
-      ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {
@@ -615,7 +587,7 @@ var _ = require('underscore'),
 
     $scope.setSelectMode = function(value) {
       ctrl.setSelectMode(value);
-      $scope.clearSelected();
+      ctrl.clearSelected();
       $state.go('reports.detail', { id: null });
     };
 

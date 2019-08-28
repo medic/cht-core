@@ -17,6 +17,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, {
         selected: state.selected.concat(action.payload.selected)
       });
+    case actionTypes.CLEAR_SELECTED:
+      return Object.assign({}, state, { selected: [], verifyingReport: false });
     case actionTypes.REMOVE_SELECTED_REPORT:
       filteredSelected = _.filter(state.selected, selected => selected._id !== action.payload.id);
       return Object.assign({}, state, { selected: filteredSelected });
