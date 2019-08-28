@@ -75,20 +75,15 @@ describe('Purger', () => {
   describe('checkpoint', () => {
     it('should throw fetch errors', () => {
       fetch.rejects({ some: 'error' });
-      return purger.checkpoint().catch(err => {
+      return purger.checkpoint('seq').catch(err => {
         chai.expect(err).to.deep.equal({ some: 'error' });
         chai.expect(fetch.callCount).to.equal(1);
       });
     });
 
-    it('should call purge checkpoint with `now` when no seq provided', () => {
-      fetch.resolves({ json: sinon.stub().resolves() });
+    it('should not call purge checkpoint when no seq provided', () => {
       return purger.checkpoint().then(() => {
-        chai.expect(fetch.callCount).to.equal(1);
-        chai.expect(fetch.args[0]).to.deep.equal([
-          'http://localhost:5988/purging/checkpoint?seq=now',
-          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
-        ]);
+        chai.expect(fetch.callCount).to.equal(0);
       });
     });
 
@@ -105,39 +100,76 @@ describe('Purger', () => {
   });
 
   describe('shouldPurge', () => {
-    it('should throw db errors', () => {
+    it('should return false on local db errors', () => {
       localDb.get.withArgs('settings').rejects({ some: 'error' });
       localDb.get.withArgs('_local/purgelog').rejects({ some: 'err' });
-      return purger.shouldPurge(localDb, userCtx).catch(err => {
-        chai.expect(err).to.deep.equal({ some: 'error' });
-        chai.expect(localDb.get.callCount).to.equal(2);
-        chai.expect(localDb.get.args).to.deep.equal([['settings'], ['_local/purgelog']]);
-      });
-    });
-
-    it('should not throw an error when the purgelog is not found', () => {
-      localDb.get.withArgs('settings').resolves({ settings: {} });
-      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
-
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
         chai.expect(localDb.get.callCount).to.equal(2);
         chai.expect(localDb.get.args).to.deep.equal([['settings'], ['_local/purgelog']]);
+        chai.expect(fetch.callCount).to.equal(1);
+        chai.expect(fetch.args[0]).to.deep.equal([
+          'http://localhost:5988/purging',
+          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
+        ]);
       });
     });
 
-    it('should throw an error when settings doc is malformed', () => {
+    it('should not throw an error when the purgelog is not found', () => {
+      localDb.get.withArgs('settings').resolves({ settings: { purge: {} } });
+      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
+
+      return purger.shouldPurge(localDb, userCtx).then(result => {
+        chai.expect(result).to.equal(true);
+        chai.expect(localDb.get.callCount).to.equal(2);
+        chai.expect(localDb.get.args).to.deep.equal([['settings'], ['_local/purgelog']]);
+        chai.expect(fetch.callCount).to.equal(1);
+      });
+    });
+
+    it('should return false when settings doc is malformed', () => {
       localDb.get.withArgs('settings').resolves({  });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
-      return purger.shouldPurge(localDb).catch(err => {
-        chai.assert(err);
+      return purger.shouldPurge(localDb).then(result => {
+        chai.expect(result).to.equal(false);
+      });
+    });
+
+    it('should catch connectivity errors', () => {
+      localDb.get.withArgs('settings').resolves({ settings: { purge: {} } });
+      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      fetch.rejects({ some: 'err' });
+
+      return purger.shouldPurge(localDb).then(result => {
+        chai.expect(result).to.equal(false);
+        chai.expect(localDb.get.callCount).to.equal(2);
+        chai.expect(localDb.get.args).to.deep.equal([['settings'], ['_local/purgelog']]);
+        chai.expect(fetch.callCount).to.equal(1);
+        chai.expect(fetch.args[0]).to.deep.equal([
+          'http://localhost:5988/purging',
+          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
+        ]);
       });
     });
 
     it('should return false when purge is not configured', () => {
       localDb.get.withArgs('settings').resolves({ settings: {} });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
+
+      return purger.shouldPurge(localDb, userCtx).then(result => {
+        chai.expect(result).to.equal(false);
+      });
+    });
+
+    it('should return false when purge db does not exist', () => {
+      localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
+      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      fetch.resolves({ json: sinon.stub().resolves(false) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
@@ -148,6 +180,7 @@ describe('Purger', () => {
       const purgeDate = moment().subtract('3', 'days').valueOf();
       localDb.get.withArgs('settings').resolves({ settings: { purge: {} } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate });
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
@@ -158,6 +191,7 @@ describe('Purger', () => {
       const purgeDate = moment().subtract('8', 'days').valueOf();
       localDb.get.withArgs('settings').resolves({ settings: { purge: { run_every_days: 10 } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate });
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(false);
@@ -167,6 +201,7 @@ describe('Purger', () => {
     it('should return true when purge never ran', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
@@ -178,6 +213,7 @@ describe('Purger', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'c']) });
       userCtx.roles = ['c', 'a'];
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
@@ -189,6 +225,7 @@ describe('Purger', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: { run_every_days: 40 } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'x']) });
       userCtx.roles = ['a', 'x'];
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);
@@ -200,6 +237,7 @@ describe('Purger', () => {
       localDb.get.withArgs('settings').resolves({ settings: { purge: { } } });
       localDb.get.withArgs('_local/purgelog').resolves({ date: purgeDate, roles: JSON.stringify(['a', 'b', 'x']) });
       userCtx.roles = ['a', 'x'];
+      fetch.resolves({ json: sinon.stub().resolves({ update_seq: '123' }) });
 
       return purger.shouldPurge(localDb, userCtx).then(result => {
         chai.expect(result).to.equal(true);

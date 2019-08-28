@@ -26,21 +26,29 @@ module.exports.setOptions = options => {
 };
 
 module.exports.info = () => {
-  return purgeFetch(`${utils.getBaseUrl()}/purging`).then(res => res.update_seq);
+  return purgeFetch(`${utils.getBaseUrl()}/purging`).then(res => res && res.update_seq);
 };
 
-module.exports.checkpoint = (seq = 'now') => {
+module.exports.checkpoint = (seq) => {
+  if (!seq) {
+    return Promise.resolve();
+  }
   return purgeFetch(`${utils.getBaseUrl()}/purging/checkpoint?seq=${seq}`);
 };
 
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
 module.exports.shouldPurge = (localDb, userCtx) => {
   return Promise
-    .all([ localDb.get('settings'), getPurgeLog(localDb) ])
-    .then(([ { settings: { purge } }, purgelog ]) => {
+    .all([ localDb.get('settings'), getPurgeLog(localDb), module.exports.info() ])
+    .then(([ { settings: { purge } }, purgelog, info ]) => {
       // purge not running on the server
       if (!purge) {
         console.debug('Not purging: Purge not configured.');
+        return false;
+      }
+
+      if (!info) {
+        console.debug('Not purging: Purge has not run on the server.');
         return false;
       }
 
@@ -65,6 +73,10 @@ module.exports.shouldPurge = (localDb, userCtx) => {
 
       console.debug('Purging');
       return true;
+    })
+    .catch(err => {
+      console.debug('Not purging:', err);
+      return false;
     });
 };
 

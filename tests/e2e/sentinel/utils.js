@@ -69,9 +69,17 @@ const deletePurgeDbs = () => {
   const options = {
     path: '/_all_dbs'
   };
+  return getPurgeDbs().then(dbs => {
+    return Promise.all(dbs.map(db => utils.request({ path: `/${db}`, method: 'DELETE' })));
+  });
+};
+
+const getPurgeDbs = () => {
+  const options = {
+    path: '/_all_dbs'
+  };
   return utils.request(options).then(dbs => {
-    const dbsToDelete = dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
-    return Promise.all(dbsToDelete.map(db => utils.request({ path: `/${db}`, method: 'DELETE' })));
+    return dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
   });
 };
 
@@ -100,4 +108,5 @@ module.exports = {
   deletePurgeDbs: deletePurgeDbs,
   waitForPurgeCompletion: waitForPurgeCompletion,
   getCurrentSeq: getCurrentSeq,
+  getPurgeDbs: getPurgeDbs,
 };

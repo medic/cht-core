@@ -210,6 +210,13 @@ const requestPurges = username => {
   };
   return utils.request(options);
 };
+const requestPurgeInfo = username => {
+  const options = {
+    path: '/purging',
+    auth: `${username}:${password}`,
+  };
+  return utils.request(options);
+};
 
 const getChangeIds = changes => changes.map(change => change.id);
 
@@ -450,6 +457,32 @@ describe('server side purge', () => {
       .then(() => requestPurges('user1'))
       .then(purgedDocs => {
         chai.expect(purgedDocs.purged_ids.length).to.equal(0);
+      });
+  });
+
+  it('should not auto create purge dbs when user roles change', () => {
+    const opts = {
+      path: '/api/v1/users/user1',
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: {
+        roles: ['district_admin', 'random']
+      }
+    };
+
+    let purgeDbs;
+    return sentinelUtils
+      .getPurgeDbs()
+      .then(dbs => purgeDbs = dbs)
+      .then(() => utils.request(opts))
+      .then(() => Promise.all([ requestPurgeInfo('user1'),  requestPurges('user1')]))
+      .then(([ info, purgedDocs ]) => {
+        chai.expect(info).to.equal(false);
+        chai.expect(purgedDocs).to.deep.equal({});
+      })
+      .then(() => sentinelUtils.getPurgeDbs())
+      .then(dbs => {
+        chai.expect(dbs).to.deep.equal(purgeDbs);
       });
   });
 });
