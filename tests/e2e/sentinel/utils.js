@@ -66,9 +66,6 @@ const getInfoDocs = (docIds = []) => {
 };
 
 const deletePurgeDbs = () => {
-  const options = {
-    path: '/_all_dbs'
-  };
   return getPurgeDbs().then(dbs => {
     return Promise.all(dbs.map(db => utils.request({ path: `/${db}`, method: 'DELETE' })));
   });
