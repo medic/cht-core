@@ -1333,7 +1333,7 @@ describe('mutingUtils', () => {
           _id: 'a',
           parent: {
             _id: 'parent',
-            muted: 'sometime this year'
+            muted: moment(1000)
           }
         }
       };
@@ -1342,7 +1342,7 @@ describe('mutingUtils', () => {
       infodoc.bulkGet.resolves([ info ]);
       infodoc.bulkUpdate.resolves();
 
-      return mutingUtils.updateMutingHistory(contact, moment(1234)).then(() => {
+      return mutingUtils.updateMutingHistory(contact, moment(1001), moment(1234)).then(() => {
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
         chai.expect(infodoc.get.callCount).to.equal(1);
         chai.expect(infodoc.get.args[0][0]).to.deep.equal({ id: 'parent' });
@@ -1434,7 +1434,7 @@ describe('mutingUtils', () => {
         _id: 'a',
         parent: {
           _id: 'b',
-          muted: 'aaa'
+          muted: moment(1000)
         }
       };
 
@@ -1442,7 +1442,7 @@ describe('mutingUtils', () => {
       infodoc.bulkGet.resolves([{}]);
       infodoc.bulkUpdate.resolves();
 
-      return mutingUtils.updateMutingHistory(contact, 'something').then(() => {
+      return mutingUtils.updateMutingHistory(contact, moment(1001), 'something').then(() => {
         chai.expect(infodoc.get.callCount).to.equal(1);
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
         chai.expect(infodoc.get.args[0][0]).to.deep.equal({ id: 'b' });

@@ -111,8 +111,8 @@ const updateMutingHistories = (contacts, muted, reportId) => {
     .then(infoDocs => infodoc.bulkUpdate(infoDocs));
 };
 
-const updateMutingHistory = (contact, muted) => {
-  const mutedParentId = isMutedInLineage(contact, contact.reported_date);
+const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
+  const mutedParentId = isMutedInLineage(contact, initialReplicationDatetime);
 
   return infodoc
     .get({ id: mutedParentId })

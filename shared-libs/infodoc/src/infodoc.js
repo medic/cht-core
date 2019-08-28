@@ -102,12 +102,12 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
 
           // Infodocs that aren't in the Medic DB. This could mean there isn't one at all, or it
           // could be that there was one without transition data back in sentinel
-          missing.forEach(row => {
-            const docId = getDocId(row._id);
+          missing.forEach(missingDoc => {
+            const docId = getDocId(missingDoc._id);
 
-            const collectedInfoDoc = infoDocs.find(i => i._id === row._id);
-            const infoDoc = collectedInfoDoc || blankInfoDoc(docId);
+            const collectedInfoDoc = infoDocs.find(i => i._id === missingDoc._id);
             const change = changes.find(change => change.id === docId);
+            const infoDoc = collectedInfoDoc || blankInfoDoc(docId, !change.doc._rev && Date.now());
 
             infoDoc.transitions = (change.doc && change.doc.transitions) || {};
 
