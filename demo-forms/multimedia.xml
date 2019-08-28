@@ -4,8 +4,13 @@
 		<model>
 			<itext>
         <translation lang="en">
+					<!-- Attach sample media files to form doc -->
+					<!-- Good media samples available here: https://sample-videos.com -->
 					<text id="somevideo">
 						<value form="video">jr://video.mp4</value>
+					</text>
+					<text id="someimage">
+						<value form="image">jr://image.jpg</value>
 					</text>
 				</translation>
 			</itext>
@@ -19,8 +24,13 @@
 		</model>
 	</h:head>
 	<h:body class="pages">
-		<input ref="q2">
-		  <label ref="jr:itext('somevideo')"/>
-		</input>
+		<group appearance="field-list" ref="g">
+			<input ref="q2">
+			  <label ref="jr:itext('somevideo')"/>
+			</input>
+			<input ref="q3">
+			  <label ref="jr:itext('someimage')"/>
+			</input>
+		</group>
 	</h:body>
 </h:html>

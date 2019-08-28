@@ -5,6 +5,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
     $q,
     $scope,
     $state,
+    ContactTypes,
     Contacts,
     GlobalActions,
     ScheduledForms,
@@ -33,9 +34,15 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
       quantity: 3
     });
 
+    const getTopLevelPlaces = () => {
+      return ContactTypes.getChildren()
+        .then(placeTypes => placeTypes.map(type => type.id))
+        .then(typeIds => Contacts(typeIds));
+    };
+
     $q.all([
       ScheduledForms(),
-      Contacts([ 'district_hospital' ])
+      getTopLevelPlaces()
     ])
       .then(function(results) {
         var forms = results[0];

@@ -11,7 +11,6 @@ module.exports = function(state, action) {
     state = initialState;
   }
 
-  let filteredMessages;
   switch (action.type) {
     case actionTypes.ADD_SELECTED_MESSAGE:
       return Object.assign({}, state, {
@@ -21,11 +20,12 @@ module.exports = function(state, action) {
       });
     case actionTypes.CLEAR_SELECTED:
       return Object.assign({}, state, { selected: null });
-    case actionTypes.REMOVE_SELECTED_MESSAGE:
-      filteredMessages = _.filter(state.selected.messages, message => message.id !== action.payload.id);
+    case actionTypes.REMOVE_SELECTED_MESSAGE: {
+      const filteredMessages = _.filter(state.selected.messages, message => message.id !== action.payload.id);
       return Object.assign({}, state, {
         selected: Object.assign({}, state.selected, { messages: filteredMessages })
       });
+    }
     case actionTypes.SET_MESSAGES_ERROR:
       return Object.assign({}, state, { error: action.payload.error });
     case actionTypes.SET_SELECTED_MESSAGE:

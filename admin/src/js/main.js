@@ -53,6 +53,10 @@ require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
 
+// directives we borrow from webapp
+angular.module('inboxDirectives', []);
+require('../../../webapp/src/js/directives/auth');
+
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
@@ -79,7 +83,7 @@ require('../../../webapp/src/js/services/cache');
 require('../../../webapp/src/js/services/calendar-interval');
 require('../../../webapp/src/js/services/changes');
 require('../../../webapp/src/js/services/contact-muted');
-require('../../../webapp/src/js/services/contact-schema');
+require('../../../webapp/src/js/services/contact-types');
 require('../../../webapp/src/js/services/contact-view-model-generator');
 require('../../../webapp/src/js/services/db');
 require('../../../webapp/src/js/services/export');
@@ -108,6 +112,9 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
+require('../../../webapp/src/js/services/user-contact');
+require('../../../webapp/src/js/services/xml-forms');
+require('../../../webapp/src/js/services/xml-forms-context-utils');
 require('../../../webapp/src/js/actions');
 require('../../../webapp/src/js/selectors');
 require('../../../webapp/src/js/reducers');
@@ -117,6 +124,7 @@ angular.module('adminApp', [
   'controllers',
   'directives',
   'filters',
+  'inboxDirectives',
   'inboxFilters',
   'inboxServices',
   'ipCookie',

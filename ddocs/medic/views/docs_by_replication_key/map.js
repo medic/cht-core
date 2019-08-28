@@ -54,13 +54,18 @@ function (doc) {
       emit(subject, value);
       if (doc.fields &&
           doc.fields.needs_signoff &&
-          doc.contact &&
-          doc.contact._id &&
-          doc.contact._id !== subject
+          doc.contact
       ) {
-        emit(doc.contact._id, value);
+        var contact = doc.contact;
+        while (contact) {
+          if (contact._id && contact._id !== subject) {
+            emit(contact._id, value);
+          }
+          contact = contact.parent;
+        }
       }
       return;
+    case 'contact':
     case 'clinic':
     case 'district_hospital':
     case 'health_center':

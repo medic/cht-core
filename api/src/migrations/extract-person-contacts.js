@@ -5,60 +5,55 @@ var async = require('async'),
   people = require('../controllers/people'),
   places = require('../controllers/places');
 
-/**
- * WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
- * OFFLINE BEFORE RUNNING IT!
- * See upgrade checklist : https://github.com/medic/medic/issues/2400
- *
- * This migration updates old-style contacts (`contact: { name:..., phone: ...}`) to new-style contacts
- * (`contact: {_id:..., name:..., phone: ..., parent: ...}`).
- * It updates them all the way up the parent chain inside each doc.
- * How it works :
- * - migrate in hierarchical order : district_hospitals, then health_centers, then clinics
- * - for each place, replace the `parent` field by the content of the current parent doc :
- * this updates contacts in the `parent` field.
- * - update the contact for the place : create a corresponding `person` doc, and assign it to the
- * `contact` field.
- */
-
-/**
- * Migrates the `contact` of the facility from old style to new, and creates the corresponding `person` doc.
- * Before :
- * Facility :
- * {
- *    _id: ...,
- *    type: health_center,
- *    name: myfacility,
- *    contact: { name: Alice, phone: 123} // old-style contact
- *  }
- *
- * After :
- * Person is created:
- * {
- *    _id: ...,
- *    type: person,
- *    name: Alice,
- *    phone: 123,
- *    created_date: 12345678
- *    parent: { <contents of facility doc except facility.contact (no loops!)> }
- * }
- * Facility :
- * {
- *    _id: ...,
- *    name: myfacility,
- *    type: health_center,
- *    contact: { <contents of person doc> } // new-style contact
-      // doc.contact.parent should actually contain the doc itself, but
-      // doc.contact.parent.contact should not be included
- *  }
- *
- * For creating the person, we use `people.createPerson` rather than db.medic.insert in order to set
- * `create_date` and any other necessary edits.
- * To set the parent of the new person, `people.createPerson` takes a place Id as argument, and
- * fetches the existing place doc to set it as parent. So we start by deleting the contact field from the
- * parent doc, and saving that doc, so that it can be used as parent for the new person.
- * Then we reset the contact field on that parent doc, with `places.updatePlace`.
- */
+// WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
+// OFFLINE BEFORE RUNNING IT!
+// See upgrade checklist : https://github.com/medic/medic/issues/2400
+//
+// This migration updates old-style contacts (`contact: { name:..., phone: ...}`) to new-style contacts
+// (`contact: {_id:..., name:..., phone: ..., parent: ...}`).
+// It updates them all the way up the parent chain inside each doc.
+// How it works :
+// - migrate in hierarchical order : district_hospitals, then health_centers, then clinics
+// - for each place, replace the `parent` field by the content of the current parent doc :
+// this updates contacts in the `parent` field.
+// - update the contact for the place : create a corresponding `person` doc, and assign it to the
+// `contact` field.
+// Migrates the `contact` of the facility from old style to new, and creates the corresponding `person` doc.
+// Before :
+// Facility :
+// {
+//    _id: ...,
+//    type: health_center,
+//    name: myfacility,
+//    contact: { name: Alice, phone: 123} // old-style contact
+//  }
+//
+// After :
+// Person is created:
+// {
+//    _id: ...,
+//    type: person,
+//    name: Alice,
+//    phone: 123,
+//    created_date: 12345678
+//    parent: { <contents of facility doc except facility.contact (no loops!)> }
+// }
+// Facility :
+// {
+//    _id: ...,
+//    name: myfacility,
+//    type: health_center,
+//    contact: { <contents of person doc> } // new-style contact
+//    // doc.contact.parent should actually contain the doc itself, but
+//    // doc.contact.parent.contact should not be included
+//  }
+//
+// For creating the person, we use `people.createPerson` rather than db.medic.insert in order to set
+// `create_date` and any other necessary edits.
+// To set the parent of the new person, `people.createPerson` takes a place Id as argument, and
+// fetches the existing place doc to set it as parent. So we start by deleting the contact field from the
+// parent doc, and saving that doc, so that it can be used as parent for the new person.
+// Then we reset the contact field on that parent doc, with `places.updatePlace`.
 var createPerson = function(id, callback) {
   var checkContact = function(facility, callback) {
     if (!facility.contact || facility.contact._id) {
@@ -139,12 +134,7 @@ var createPerson = function(id, callback) {
       .then(() => callback())
       .catch(() => {
         // we tried our best - log the details and exit
-        logger.error(
-          `Failed to restore contact on facility
-            ${facilityId}
-            , contact:
-            ${JSON.stringify(oldContact)}`
-        );
+        logger.error(`Failed to restore contact on facility "${facilityId}", contact: ${JSON.stringify(oldContact)}`);
       });
   };
 
@@ -181,59 +171,56 @@ var createPerson = function(id, callback) {
 
 // For a given doc, update its parent to the latest version of the parent doc.
 // Note that since we migrate in order of depth, the grandparents will be already updated.
-/**
- * Updates the `parent` of the facility, which can be outdated since we've migrated the parent's contact.
- * Before :
- * Facility :
- * {
- *    _id: ...,
- *    type: health_center,
- *    name: myfacility,
- *    parent: {
- *        _id: ...,
- *        type: district_hospital,
- *        name: myparent,
- *        contact: { name: Alice, phone: 123} // old-style contact
- *    }
- * }
- * Parent of the facility :
- * {
- *     _id: ...,
- *     type: district_hospital,
- *     name: myparent,
- *     contact: { // new-style contact
- *         _id: ...,
- *         type: person,
- *         name: Alice,
- *         phone: 123,
- *         created_date: 12345678
- *         parent: { ... }
- *     }
- * }
- *
- * After :
- * Facility :
- * {
- *    _id: ...,
- *    type: health_center,
- *    name: myfacility,
- *    parent: {
- *        _id: ...,
- *        type: district_hospital,
- *        name: myparent,
- *        contact: { // new-style contact
- *            _id: ...,
- *            type: person,
- *            name: Alice,
- *            phone: 123,
- *            created_date: 12345678
- *            parent: { ... }
- *        }
- *    }
- * }
- * Parent of the facility : unchanged.
- *
- */
+// Updates the `parent` of the facility, which can be outdated since we've migrated the parent's contact.
+// Before :
+// Facility :
+// {
+//    _id: ...,
+//    type: health_center,
+//    name: myfacility,
+//    parent: {
+//        _id: ...,
+//        type: district_hospital,
+//        name: myparent,
+//        contact: { name: Alice, phone: 123} // old-style contact
+//    }
+// }
+// Parent of the facility :
+// {
+//     _id: ...,
+//     type: district_hospital,
+//     name: myparent,
+//     contact: { // new-style contact
+//         _id: ...,
+//         type: person,
+//         name: Alice,
+//         phone: 123,
+//         created_date: 12345678
+//         parent: { ... }
+//     }
+// }
+//
+// After :
+// Facility :
+// {
+//    _id: ...,
+//    type: health_center,
+//    name: myfacility,
+//    parent: {
+//        _id: ...,
+//        type: district_hospital,
+//        name: myparent,
+//        contact: { // new-style contact
+//            _id: ...,
+//            type: person,
+//            name: Alice,
+//            phone: 123,
+//            created_date: 12345678
+//            parent: { ... }
+//        }
+//    }
+// }
+// Parent of the facility : unchanged.
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
     if (!facility.parent) {

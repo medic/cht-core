@@ -1,6 +1,4 @@
-/**
- * For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
- */
+// For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
 
 var async = require('async'),
   _ = require('underscore'),
@@ -83,14 +81,21 @@ module.exports = {
       .then(settings => {
         forms = settings.forms;
 
-        var currentSkip = 0;
+        let currentSkip = 0;
+        let keepGoing = true;
         async.doWhilst(
           function(callback) {
-            runBatch(batchSize, currentSkip, callback);
+            runBatch(batchSize, currentSkip, (err, again) => {
+              if (err) {
+                return callback(err);
+              }
+              keepGoing = again;
+              callback();
+            });
           },
-          function(keepGoing) {
+          function(cb) {
             currentSkip += batchSize;
-            return keepGoing;
+            return cb(null, keepGoing);
           },
           callback
         );

@@ -19,7 +19,10 @@ describe('ContactsContentCtrl', () => {
     });
     const model = {
       doc: doc,
-      children: { persons: childRows }
+      children: [{
+        type: { id: 'person', person: true },
+        contacts: childRows
+      }]
     };
 
     getContact.returns(Promise.resolve());
@@ -92,7 +95,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     const runChangeFeedProcessTest = () => {
-      stateParams = { id: doc._id};
+      stateParams = { id: doc._id };
       stubGetContact(doc,  []);
       return createController().setupPromise;
     };

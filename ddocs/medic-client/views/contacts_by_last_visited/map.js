@@ -8,13 +8,12 @@ function(doc) {
 
     // Is a visit report about a family
     emit(doc.fields.visited_contact_uuid, visited_date);
-  } else if (doc.type === 'clinic') {
-    // Is a family
-    emit(doc._id, 0);
-  } else if (doc.type === 'health_center' ||
+  } else if (doc.type === 'contact' ||
+             doc.type === 'clinic' ||
+             doc.type === 'health_center' ||
              doc.type === 'district_hospital' ||
              doc.type === 'person') {
-    // Is other contact type
-    emit(doc._id, -1);
+    // Is a contact type
+    emit(doc._id, 0);
   }
 }

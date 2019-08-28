@@ -1,3 +1,6 @@
+/**
+ * @module smsparser
+ */
 const config = require('../../config'),
   mpParser = require('./mp-parser'),
   javarosaParser = require('./javarosa-parser'),
@@ -6,8 +9,9 @@ const config = require('../../config'),
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
+// Devanagari
 const T_TABLE = {
-  /* Devanagari */ '०': '0',
+  '०': '0',
   '१': '1',
   '२': '2',
   '३': '3',
@@ -25,21 +29,12 @@ const standardiseDigits = original => {
   return original && original.toString().replace(/[०-९]/g, digitReplacer);
 };
 
-/**
- * Determine if a message is using the Muvuku format.
- *
- * @param {String} msg sms message
- * @returns {Boolean} The parsed message code string or undefined
- * @api private
- */
 const isMuvukuFormat = (exports.isMuvukuFormat = msg => {
   return typeof msg === 'string' && MUVUKU_REGEX.test(msg);
 });
 
-/*
- * Escape regex characters, helps to prevent injection issues when accepting
- * user input.
- */
+// Escape regex characters, helps to prevent injection issues when accepting
+// user input.
 const regexEscape = s => {
   if (typeof s !== 'string') {
     return s;
@@ -47,11 +42,9 @@ const regexEscape = s => {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
-/*
- * Remove the form code from the beginning of the message since it does
- * not belong to the TextForms format but is just a convention to
- * identify the message.
- */
+// Remove the form code from the beginning of the message since it does
+// not belong to the TextForms format but is just a convention to
+// identify the message.
 const stripFormCode = (code, msg) => {
   if (typeof code !== 'string') {
     return msg;
@@ -62,15 +55,8 @@ const stripFormCode = (code, msg) => {
   );
 };
 
-/**
- * Get parser based on code, the first part of a Muvuku header, which helps us
- * know how to parse the data.
- *
- * @param {Object} def - form definition
- * @param {Object} doc - sms_message document
- * @returns {Function|undefined} The parser function or undefined
- * @api private
- */
+// Get parser based on code, the first part of a Muvuku header, which helps us
+// know how to parse the data.
 const getParser = (exports.getParser = (def, doc) => {
   const code = def && def.meta && def.meta.code;
   let msg = doc.message;
@@ -96,15 +82,13 @@ const getParser = (exports.getParser = (def, doc) => {
   }
 });
 
-/**
- * Uses the keys to create a deep key on the obj.
- * Assigns the val to the key in the obj.
- * If key already exists, only assign value.
- *
- * @param {Object} obj - object in which value is assigned to key
- * @param {Array} keys - keys in dot notation (e.g. ['some','thing','else'])
- * @param {String} val - value to be assigned to the generated key
- */
+// Uses the keys to create a deep key on the obj.
+// Assigns the val to the key in the obj.
+// If key already exists, only assign value.
+//
+// @param {Object} obj - object in which value is assigned to key
+// @param {Array} keys - keys in dot notation (e.g. ['some','thing','else'])
+// @param {String} val - value to be assigned to the generated key
 const createDeepKey = (obj, keys, val) => {
   if (keys.length === 0) {
     return;
@@ -159,19 +143,16 @@ exports.parseField = (field, raw) => {
       if (raw === '') {
         return null;
       }
-      // store list value since it has more meaning.
-      // TODO we don't have locale data inside this function so calling
-      // translate does not resolve locale.
       if (field.list) {
         for (let i of field.list) {
           const item = field.list[i];
           if (item[0] === raw) {
-            return config.translate(item[1]);
+            return item[1];
           }
         }
         logger.warn(`Option not available for ${raw} in list.`);
       }
-      return config.translate(raw);
+      return raw;
     case 'date':
       if (!raw) {
         return null;
@@ -204,11 +185,9 @@ exports.parseField = (field, raw) => {
 /**
  * @param {Object} def - form definition
  * @param {Object} doc - sms_message document
- * @returns {Object|{}} - A parsed object of the sms message or an empty
+ * @returns {Object} - A parsed object of the sms message or an empty
  * object if parsing fails. Currently supports textforms and muvuku formatted
  * messages.
- *
- * @api public
  */
 exports.parse = (def, doc) => {
   let msgData,
@@ -269,8 +248,7 @@ exports.parse = (def, doc) => {
 /**
  * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
- * @returns {Array|[]} - An array of values from the raw sms message
- * @api public
+ * @returns {Array} - An array of values from the raw sms message
  */
 exports.parseArray = (def, doc) => {
   const parser = getParser(def, doc),
@@ -297,7 +275,6 @@ exports.parseArray = (def, doc) => {
  *
  * @param {String} msg - sms message
  * @returns {String} uppercased form code or undefined if we can't parse it
- * @api public
  */
 exports.getFormCode = msg => {
   if (typeof msg !== 'string') {
@@ -323,9 +300,8 @@ exports.getFormCode = msg => {
  * @param {String} form         - form id
  * @param {Array}  key          - key of the field separated by '.'
  * @param {Object} data_record  - record into which the data is merged
- * @param {Object} formData    - data from the SMS
+ * @param {Object} formData     - data from the SMS
  *                                to be merged into the data record
- * @api public
  */
 exports.merge = (form, key, data_record, formData) => {
   // support creating subobjects on the record if form defines key with dot

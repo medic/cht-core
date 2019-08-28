@@ -1,4 +1,3 @@
-/* globals XSLTProcessor */
 angular.module('inboxServices').service('XSLT',
   function(
     $http,

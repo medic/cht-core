@@ -23,6 +23,8 @@ const personBis = Object.assign({}, person, {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402-bis',
   simprints_id: 22,
   date_of_death: 10,
+  type: 'contact',
+  contact_type: 'patient',
   name: '',
   phone: '0123456789',
   muted: true
@@ -188,7 +190,6 @@ const jsonDBis = Object.assign({}, jsonD, {
   })
 });
 
-
 const jsonHousehold = {
   _id: '5294b4c0-7499-41d5-b8d9-c548381799c0',
   _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
@@ -224,6 +225,7 @@ describe('doc_summaries_by_id view', () => {
         name: 'patient1',
         phone: '',
         type: 'person',
+        contact_type: undefined,
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         simprints_id: undefined,
         date_of_death: undefined,
@@ -237,7 +239,8 @@ describe('doc_summaries_by_id view', () => {
         _rev: '3-b99ee0615633d44f414362c8bf21454a',
         name: '0123456789',
         phone: '0123456789',
-        type: 'person',
+        type: 'contact',
+        contact_type: 'patient',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         simprints_id: 22,
         date_of_death: 10,

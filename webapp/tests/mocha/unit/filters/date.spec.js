@@ -161,16 +161,25 @@ describe('date filter', function() {
 
   });
 
-  describe('weeksPregnant', function() {
+  describe('weeksPregnant', () => {
 
     const weeksPregnant = filter.weeksPregnant();
 
-    it('should return nicely-formatted output', function() {
+    it('adds class for full term', () => {
       // given
-      const weeks = { number: 99 };
+      const weeks = { number: 37 };
 
       // expect
-      assert.equal(weeksPregnant(weeks), '<span class="upcoming-edd">99</span>');
+      assert.equal(weeksPregnant(weeks), '<span class="weeks-pregnant upcoming-edd">37</span>');
+    });
+
+
+    it('adds class for approximate dates', () => {
+      // given
+      const weeks = { number: 37, approximate: true };
+
+      // expect
+      assert.equal(weeksPregnant(weeks), '<span class="weeks-pregnant upcoming-edd approximate">37</span>');
     });
 
   });

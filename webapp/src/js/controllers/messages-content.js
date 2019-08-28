@@ -73,7 +73,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       var markers = content.find('.marker');
       var scrollTo;
       if (markers.length) {
-        scrollTo = markers.filter(':first').offset().top - 150;
+        scrollTo = markers[0].offsetTop - 50;
       } else {
         scrollTo = content[0].scrollHeight;
       }

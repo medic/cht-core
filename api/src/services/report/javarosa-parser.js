@@ -1,3 +1,6 @@
+/**
+ * @module javarosa-parser
+ */
 const _ = require('underscore'),
           config = require('../../config');
 
@@ -6,10 +9,8 @@ const _ = require('underscore'),
  *
  * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
- * @returns {Object|{}} - A parsed object of the sms message or an empty
+ * @returns {Object - A parsed object of the sms message or an empty
  * object if parsing fails.
- *
- * @api public
  */
 exports.parse = (def, doc) => {
   const data = doc.message.split('!').slice(2).join('!'),
@@ -36,11 +37,9 @@ exports.parse = (def, doc) => {
     }
   }
 
-  /*
-   * Loop through form definition fields and build object when tiny label
-   * matches. Also in field values remove escape characters on escaped
-   * delimiters.
-   */
+   // Loop through form definition fields and build object when tiny label
+   // matches. Also in field values remove escape characters on escaped
+   // delimiters.
   _.each(def.fields, (field, key) => {
     // ignore fields without tiny labels
     if (!field.labels || !field.labels.tiny) {

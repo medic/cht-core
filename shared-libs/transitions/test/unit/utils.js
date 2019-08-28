@@ -18,14 +18,14 @@ describe('utils', () => {
     const result = [{_id: 'someRowId'}];
 
     db.medic.query
-      .withArgs('medic/reports_by_form_and_clinic', {
+      .withArgs('medic/reports_by_form_and_parent', {
         startkey: [formName, clinicId],
         endkey: [formName, clinicId],
         include_docs: true
       })
       .resolves({ rows: result });
 
-    return utils.getReportsWithSameClinicAndForm({
+    return utils.getReportsWithSameParentAndForm({
       formName: formName,
       doc: {
         contact: {
@@ -233,22 +233,22 @@ describe('utils', () => {
     it('returns false for reports from unknown clinic', () => {
       const doc = { form: 'R', type: 'data_record' };
       sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false }});
-      sinon.spy(utils, 'getClinicPhone');
+      sinon.spy(utils, 'hasKnownSender');
       assert(!utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
       assert.equal(config.get.args[0][0], 'forms');
-      assert.equal(utils.getClinicPhone.callCount, 1);
-      assert.deepEqual(utils.getClinicPhone.args[0], [doc]);
+      assert.equal(utils.hasKnownSender.callCount, 1);
+      assert.deepEqual(utils.hasKnownSender.args[0], [doc]);
     });
 
     it('returns true for reports for public forms from unknown clinic', () => {
       const doc = { form: 'R', type: 'data_record' };
       sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: true } });
-      sinon.spy(utils, 'getClinicPhone');
+      sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
       assert.equal(config.get.args[0][0], 'forms');
-      assert.equal(utils.getClinicPhone.callCount, 0);
+      assert.equal(utils.hasKnownSender.callCount, 0);
     });
 
     it('returns true for xforms reports', () => {
@@ -262,19 +262,19 @@ describe('utils', () => {
     it('returns true for reports for non-public forms from known clinics', () => {
       const doc = { form: 'R', type: 'data_record' };
       sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
-      sinon.stub(utils, 'getClinicPhone').returns('123456');
+      sinon.stub(utils, 'hasKnownSender').returns(true);
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
-      assert.equal(utils.getClinicPhone.callCount, 1);
+      assert.equal(utils.hasKnownSender.callCount, 1);
     });
 
     it('returns true for reports for non-public forms from known submitters', () => {
       const doc = { form: 'R', type: 'data_record', contact: { phone: '12345' } };
       sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
-      sinon.spy(utils, 'getClinicPhone');
+      sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
-      assert.equal(utils.getClinicPhone.callCount, 1);
+      assert.equal(utils.hasKnownSender.callCount, 1);
     });
   });
 });

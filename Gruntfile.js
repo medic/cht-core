@@ -1,6 +1,7 @@
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
+const path = require('path');
 
 const {
   TRAVIS_TAG,
@@ -40,6 +41,21 @@ const getSharedLibDirs = () => {
   return fs
     .readdirSync('shared-libs')
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
+};
+
+const copySharedLibs = [
+  'rm -rf ../shared-libs/*/node_modules/@medic',
+  'mkdir ./node_modules/@medic',
+  'cp -RP ../shared-libs/* ./node_modules/@medic'
+].join( '&& ');
+
+const linkSharedLibs = dir => {
+  const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
+  const symlinkPath = lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
+  return [
+    'mkdir ./node_modules/@medic',
+    ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
+  ].join(' && ');
 };
 
 module.exports = function(grunt) {
@@ -168,6 +184,11 @@ module.exports = function(grunt) {
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'moment': './webapp/node_modules/moment/moment',
+            'google-libphonenumber': './webapp/node_modules/google-libphonenumber',
+            'gsm': './webapp/node_modules/gsm',
+            'object-path': './webapp/node_modules/object-path',
+            'bikram-sambat': './webapp/node_modules/bikram-sambat',
+            '@medic/phone-number': './webapp/node_modules/@medic/phone-number'
           },
         },
       },
@@ -178,6 +199,11 @@ module.exports = function(grunt) {
           transform: ['browserify-ngannotate'],
           alias: {
             'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
+            'gsm': './admin/node_modules/gsm',
+            'object-path': './admin/node_modules/object-path',
+            'bikram-sambat': './admin/node_modules/bikram-sambat',
+            '@medic/phone-number': './admin/node_modules/@medic/phone-number'
           },
         },
       },
@@ -258,9 +284,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer')({
-            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
-          }),
+          require('autoprefixer')(),
         ],
       },
       dist: {
@@ -391,9 +415,11 @@ module.exports = function(grunt) {
           .map(module =>
             [
               `cd ${module}`,
-              `rm -rf node_modules`,
               `npm ci --production`,
+              `${copySharedLibs}`,
+              `npm dedupe`,
               `npm pack`,
+              `ls -l medic-${module}-0.1.0.tgz`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')
@@ -406,6 +432,9 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
+            if (pkg.sharedLibs) {
+              pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
+            }
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
@@ -437,11 +466,11 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel sentinel/server.js',
+          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel --watch "shared-libs/**/src/**" sentinel/server.js',
       },
       'blank-link-check': {
         cmd: `echo "Checking for dangerous _blank links..." &&
@@ -452,14 +481,13 @@ module.exports = function(grunt) {
       },
       'setup-admin': {
         cmd:
-          `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
-          ` && curl -X PUT ${couchConfig.withPathNoAuth('_users')}` +
-          ` && curl -X PUT ${couchConfig.withPathNoAuth('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
+          ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
           ` && curl -X POST ${couchConfig.withPath('_users')} ` +
           ' -H "Content-Type: application/json" ' +
           ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}`,
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
+          ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'reset-test-databases': {
         stderr: false,
@@ -484,14 +512,14 @@ module.exports = function(grunt) {
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci)`
+                  (cd shared-libs/${lib} && npm ci --production)`
             )
             .join(' && ');
         }
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
@@ -535,13 +563,11 @@ module.exports = function(grunt) {
       },
       'shared-lib-unit': {
         cmd: () => {
-          return getSharedLibDirs()
-            .map(
-              lib =>
-                `echo Testing shared library: ${lib} &&
-                 (cd shared-libs/${lib} && npm ci && npm test)`
-            )
-            .join(' && ');
+          const sharedLibs = getSharedLibDirs();
+          return [
+            ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
+            ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
+          ].join(' && ');
         },
       },
       // To monkey patch a library...
@@ -574,6 +600,17 @@ module.exports = function(grunt) {
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
+      'envify': {
+        cmd: () => {
+          if (!TRAVIS_BUILD_NUMBER) {
+            return 'echo "Not building on Travis so not envifying"';
+          }
+          return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && ' +
+                 'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
+                 'rm inbox.tmp.js && ' +
+                 'echo "Envify complete"';
+        }
+      }
     },
     watch: {
       options: {
@@ -814,6 +851,53 @@ module.exports = function(grunt) {
       'build/ddocs/medic-admin/_attachments/js/templates.js':
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
+    jsdoc: {
+      admin: {
+        src: [
+          'admin/src/js/**/*.js'
+        ],
+        options: {
+          destination: 'jsdocs/admin',
+          configure: 'node_modules/angular-jsdoc/common/conf.json',
+          template: 'node_modules/angular-jsdoc/angular-template'
+        }
+      },
+      api: {
+        src: [
+          'api/src/**/*.js',
+          '!api/src/extracted-resources/**',
+        ],
+        options: {
+          destination: 'jsdocs/api',
+          readme: 'api/README.md'
+        }
+      },
+      sentinel: {
+        src: [
+          'sentinel/src/**/*.js'
+        ],
+        options: {
+          destination: 'jsdocs/sentinel'
+        }
+      },
+      'shared-libs': {
+        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src') + '/**/*.js'),
+        options: {
+          destination: 'jsdocs/shared-libs'
+        }
+      },
+      webapp: {
+        src: [
+          'webapp/src/js/**/*.js'
+        ],
+        options: {
+          destination: 'jsdocs/webapp',
+          configure: 'node_modules/angular-jsdoc/common/conf.json',
+          template: 'node_modules/angular-jsdoc/angular-template',
+          readme: './README.md'
+        }
+      },
+    },
   });
 
   // Build tasks
@@ -845,8 +929,9 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
-    'build-node-modules',
     'build-common',
+    'exec:envify',
+    'build-node-modules',
     'minify',
     'couch-compile:primary',
   ]);
@@ -965,8 +1050,6 @@ module.exports = function(grunt) {
     'install-dependencies',
     'static-analysis',
     'build',
-    'build-admin',
-    'install-dependencies',
     'mochaTest:api-integration',
     'unit',
     'exec:test-standard'
@@ -1023,5 +1106,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
     'dev-webapp',
+  ]);
+
+  grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
+    'jsdoc'
   ]);
 };

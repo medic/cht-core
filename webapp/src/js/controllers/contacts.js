@@ -1,6 +1,8 @@
 var _ = require('underscore'),
   scrollLoader = require('../modules/scroll-loader');
 
+const PAGE_SIZE = 50;
+
 (function() {
   'use strict';
 
@@ -14,8 +16,8 @@ var _ = require('underscore'),
     $translate,
     Auth,
     Changes,
-    ContactSchema,
     ContactSummary,
+    ContactTypes,
     ContactsActions,
     Export,
     GetDataRecords,
@@ -63,6 +65,7 @@ var _ = require('underscore'),
     var defaultTypeFilter = {};
     var usersHomePlace;
     var additionalListItem = false;
+    let childPlaces = [];
 
     ctrl.sortDirection = ctrl.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
@@ -82,7 +85,9 @@ var _ = require('underscore'),
 
     var _query = function(options) {
       options = options || {};
-      options.limit = options.limit || 50;
+      if (!options.limit || options.limit < PAGE_SIZE) {
+        options.limit = PAGE_SIZE;
+      }
 
       if (!options.silent) {
         ctrl.loading = true;
@@ -189,28 +194,42 @@ var _ = require('underscore'),
         });
     };
 
-    var getActionBarDataForChild = function(docType) {
-      var selectedChildPlaceType = ContactSchema.getChildPlaceType(docType);
-      if (!selectedChildPlaceType) {
-        return $q.resolve();
+    const getChildTypes = function(model) {
+      if (!model.type) {
+        $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
+        return [];
       }
-      var schema = ContactSchema.get(selectedChildPlaceType);
-      return {
-        addPlaceLabel: schema.addButtonLabel,
-        type: selectedChildPlaceType,
-        icon: schema ? schema.icon : '',
-      };
+      return ContactTypes.getChildren(model.type.id).then(childTypes => {
+        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
+        const models = [];
+        if (grouped.places) {
+          models.push({
+            menu_key: 'Add place',
+            menu_icon: 'fa-building',
+            permission: 'can_create_places',
+            types: grouped.places
+          });
+        }
+        if (grouped.persons) {
+          models.push({
+            menu_key: 'Add person',
+            menu_icon: 'fa-user',
+            permission: 'can_create_people',
+            types: grouped.persons
+          });
+        }
+        return models;
+      });
     };
 
     // only admins can edit their own place
     var getCanEdit = function(selectedDoc) {
+      if (Session.isAdmin()) {
+        return true;
+      }
       return setupPromise
-        .then(function() {
-          return Session.isAdmin() || usersHomePlace._id !== selectedDoc._id;
-        })
-        .catch(function() {
-          return false;
-        });
+        .then(() => usersHomePlace._id !== selectedDoc._id)
+        .catch(() => false);
     };
 
     var translateTitle = function(key, label) {
@@ -243,86 +262,81 @@ var _ = require('underscore'),
       ctrl.updateSelectedContact({ tasksByContact });
     };
 
-    $scope.setSelected = function(selected, options) {
+    const getTitle = selected => {
+      const title = (selected.type && selected.type.name_key) ||
+                    'contact.profile';
+      return $translate(title).catch(() => title);
+    };
+
+    // Don't allow deletion if this contact has any children
+    const canDelete = selected => {
+      return !selected.children ||
+             selected.children.every(group => !group.contacts || !group.contacts.length);
+    };
+
+    $scope.setSelected = function(selected, contactViewModelOptions) {
       liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedContactChildren(true);
-      ctrl.setLoadingSelectedContactReports(true);
+      ctrl.setLoadingSelectedContact();
       ctrl.setSelectedContact(selected);
       ctrl.clearCancelCallback();
-      var title = '';
-      if (ctrl.selectedContact.doc.type === 'person') {
-        title = 'contact.profile';
-      } else {
-        title = ContactSchema.get(ctrl.selectedContact.doc.type).label;
-      }
+      const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
+
       ctrl.setContactsLoadingSummary(true);
       return $q
         .all([
-          $translate(title).catch(() => title),
-          getActionBarDataForChild(ctrl.selectedContact.doc.type),
+          getTitle(ctrl.selectedContact),
           getCanEdit(ctrl.selectedContact.doc),
+          getChildTypes(ctrl.selectedContact)
         ])
-        .then(function(results) {
-          ctrl.setTitle(results[0]);
-          if (results[1]) {
-            ctrl.updateSelectedContact({ doc: { child: results[1] }});
-          }
-          var canEdit = results[2];
+        .then(([ title, canEdit, childTypes ]) => {
+          ctrl.setTitle(title);
 
           ctrl.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
+            sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
+            childTypes: childTypes
           });
 
-          return ctrl.loadSelectedContactChildren(options)
-            .then(ctrl.loadSelectedContactReports)
+          return lazyLoadedContactData
             .then(function() {
               return $q.all([
                 ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
                 Settings(),
                 getTasks()
               ])
-              .then(function(results) {
+              .then(([ summary, settings ]) => {
                 ctrl.setContactsLoadingSummary(false);
-                var summary = results[0];
                 ctrl.updateSelectedContact({ summary: summary });
-                var options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
-                XmlForms('ContactsCtrl', options, function(err, forms) {
+                const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
+                XmlForms.listen('ContactsCtrl', options, function(err, forms) {
                   if (err) {
                     $log.error('Error fetching relevant forms', err);
                   }
-                  var showUnmuteModal = function(formId) {
+                  const showUnmuteModal = function(formId) {
                     return ctrl.selectedContact.doc &&
                           ctrl.selectedContact.doc.muted &&
-                          !isUnmuteForm(results[1], formId);
+                          !isUnmuteForm(settings, formId);
                   };
-                  var formSummaries =
-                    forms &&
-                    forms.map(function(xForm) {
-                      return {
-                        code: xForm.internalId,
-                        title: translateTitle(xForm.translation_key, xForm.title),
-                        icon: xForm.icon,
-                        showUnmuteModal: showUnmuteModal(xForm.internalId)
-                      };
-                    });
-                  var canDelete =
-                    !ctrl.selectedContact.children ||
-                    ((!ctrl.selectedContact.children.places ||
-                      ctrl.selectedContact.children.places.length === 0) &&
-                      (!ctrl.selectedContact.children.persons ||
-                        ctrl.selectedContact.children.persons.length === 0));
+                  const formSummaries = forms && forms.map(function(xForm) {
+                    return {
+                      code: xForm.internalId,
+                      title: translateTitle(xForm.translation_key, xForm.title),
+                      icon: xForm.icon,
+                      showUnmuteModal: showUnmuteModal(xForm.internalId)
+                    };
+                  });
                   ctrl.setRightActionBar({
                     relevantForms: formSummaries,
-                    sendTo: ctrl.selectedContact.doc.type === 'person' ? ctrl.selectedContact.doc : '',
-                    canEdit: canEdit,
-                    canDelete: canDelete,
+                    sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
+                    canEdit,
+                    canDelete: canDelete(ctrl.selectedContact),
+                    childTypes,
                   });
                 });
               });
-          });
+            });
         })
         .catch(function(e) {
           $log.error('Error setting selected contact');
@@ -372,30 +386,29 @@ var _ = require('underscore'),
       });
     };
 
+    const getChildren = () => {
+      let p;
+      if (usersHomePlace) {
+        // backwards compatibility with pre-flexible hierarchy users
+        const homeType = usersHomePlace.contact_type || usersHomePlace.type;
+        p = ContactTypes.getChildren(homeType);
+      } else if (Session.isAdmin()) {
+        p = ContactTypes.getChildren();
+      } else {
+        return Promise.resolve([]);
+      }
+      return p.then(children => children.filter(child => !child.person));
+    };
+
     var setActionBarData = function() {
-      var data = {
+      ctrl.setLeftActionBar({
         hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
+        childPlaces: childPlaces,
         exportFn: function() {
           Export('contacts', ctrl.filters, { humanReadable: true });
         },
-      };
-      var type;
-      if (usersHomePlace) {
-        type = ContactSchema.getChildPlaceType(usersHomePlace.type);
-      } else if (Session.isAdmin()) {
-        type = ContactSchema.getPlaceTypes()[0];
-      }
-      if (type) {
-        defaultTypeFilter = { types: { selected: [type] } };
-        var schema = ContactSchema.get(type);
-        data.addPlaceLabel = schema.addButtonLabel;
-        data.userChildPlace = {
-          type: type,
-          icon: schema ? schema.icon : '',
-        };
-      }
-      ctrl.setLeftActionBar(data);
+      });
     };
 
     var getUserHomePlaceSummary = function() {
@@ -428,16 +441,27 @@ var _ = require('underscore'),
     };
 
     var setupPromise = $q
-      .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
+      .all([
+        getUserHomePlaceSummary(),
+        canViewLastVisitedDate(),
+        Settings()
+      ])
       .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
         usersHomePlace = homePlaceSummary;
         ctrl.lastVisitedDateExtras = viewLastVisitedDate;
         ctrl.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
-
         if (ctrl.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
           ctrl.sortDirection = ctrl.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
-
+        return getChildren();
+      })
+      .then(children => {
+        childPlaces = children;
+        defaultTypeFilter = {
+          types: {
+            selected: childPlaces.map(type => type.id)
+          }
+        };
         setActionBarData();
         return ctrl.search();
       });
@@ -493,7 +517,7 @@ var _ = require('underscore'),
       },
       filter: function(change) {
         return (
-          (change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1) ||
+          ContactTypes.includes(change.doc) ||
           (change.deleted && liveList.contains(change.id)) ||
           isRelevantVisitReport(change.doc)
         );

@@ -1,37 +1,50 @@
-# Medic Mobile
+# The Core Framework of the Community Health Toolkit (CHT)
 
-These instructions should help you get setup to run or develop on Medic Mobile's Community Health Application Framework. For latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes).
+These instructions are designed to help you run or develop on the Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic Mobile. 
 
-If you are interested in building community health applications using this framework a good place to start is the guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
+Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
+
+For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes). Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+
+
+## Table of Contents
+
+  - [Overview](#overview)
+  - [Easy deployment](#easy-deployment)
+  - [Development setup](#development-setup)
+  - [Tests](#tests)
+  - [Configuring the standard application](#configuring-the-standard-application)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Overview
 
-Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
+The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md). 
 
-The `medic` repository is the core tool of the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.  
 
-The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally or in the cloud by setting up the individual components or as a Docker container.
+Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed and exported using a web application. These web applications are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
 
-Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of web APIs we need) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
-
-For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
 ## Easy Deployment
 
-If you want to get up and running with no fuss, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
+To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md). You can then [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
 
-Once up and running you can [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
-
-If you want to develop against the underlying framework of Medic and set up components individually, follow the _Development Setup_ below.
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
-With the setup instructions below the tools will run directly on your machine, rather than via Docker.
+### Supported Operating Systems
+
+Developers are actively using both Linux and MacOS, so both of those platforms are well supported for development. We don't support Windows out of the box. However, you can try using the Windows Subsystem for Linux. See the [Windows Subsystem for Linux notes](https://github.com/medic/medic-docs/blob/master/development/using-windows.md) for how the installation instructions differ.
+
+### Supported Browsers
+
+Currently, the latest versions of Chrome, Chrome for Android and Firefox are functionally supported. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
 
 ### Dependencies
 
@@ -39,24 +52,31 @@ You will need to install the following:
 
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
+- [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) v2.x
 
 ### Setup CouchDB on a single node
 
 NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
 
-### Enabling a secure CouchDB
-
-By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
-
-First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
-
-Now that's done, we must configure some security settings on CouchDB:
+### Build the webapp
 
 ```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@127.0.0.1
-grunt secure-couchdb
+git clone https://github.com/medic/medic
+cd medic
+npm ci
+```
+
+### Enabling a secure CouchDB
+
+By default CouchDB runs in *admin party mode*, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
+
+First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+
+Now, configure some security settings on CouchDB:
+
+```shell
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=couchdb@127.0.0.1 grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:
@@ -74,87 +94,81 @@ curl -X PUT "http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAM
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
-## Build and run
+### Required environment variables
 
-### Build the webapp
+Medic needs the following environment variables to be declared:
+ - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myAdminUser:myAdminPass@localhost:5984/medic`
+ - `COUCH_NODE_NAME`: the name of your CouchDB's node. This is likely to either be `couchdb@127.0.0,1` or `noname@nohost`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
+ - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
+ - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
 
-```shell
-git clone https://github.com/medic/medic
-cd medic
-npm ci
+How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
+
+```sh
+export COUCH_NODE_NAME=couchdb@127.0.0.1
+export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
-
-### Deploy all the apps
-
-Create a `.env` file in the app directory with the following contents
-
-```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-COUCH_NODE_NAME=couchdb@127.0.0.1
-```
-
-Then do an initial deploy of the webapp:
-
-```shell
-grunt dev-webapp
-# or just
-grunt
-```
-
-Once this is complete you can close it, and from now on you can just run:
-
-```shell
-npm start
-```
-
-which will start the webapp, api, and sentinel, and watch for changes in each app.
-
-### Deploy apps individually
-
-If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
 
 #### Deploy the webapp
 
-`grunt dev-webapp` will build and deploy the webapp, then watch for changes and redeploy when necessary.
+Webapp code is stored in CouchDB. To compile and deploy the current code, use `grunt`:
 
-#### Start medic-sentinel
-
-```shell
-cd sentinel
-npm ci
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+```sh
+grunt
 ```
 
-Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
+This will also watch for changes and redeploy as neccessary.
 
 #### Start medic-api
 
-```shell
-cd api
-npm ci
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+API is needed to access the application.
+
+Either start it directly with `node`:
+
+```sh
+cd ./api
+node server.js
 ```
 
-Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
+Or use `grunt` to have it watch for changes and restart as neccessary:
+
+```sh
+grunt dev-api
+```
+
+#### Start medic-sentinel
+
+Sentinel is reponsible for certain background tasks. It's not strictly required to access the application, but many features won't work without it.
+
+Either start it directly with `node`:
+
+```sh
+cd ./sentinel
+node server.js
+```
+
+Or use `grunt` to have it watch for changes and restart as neccessary:
+
+```sh
+grunt dev-sentinel
+```
 
 ### Try it out
 
 Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:5988/medic/login).
 
-### Testing locally with devices 
+### Testing locally with devices
 
-Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Community Health Application Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
+Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. These steps will make your developer build accessible from your Android device by giving it a trusted URL created by _ngrok_.
 
-1. Create a ngrok account at https://ngrok.com/ 
+1. Create a ngrok account at https://ngrok.com/
 1. Follow instructions on downloading and linking your computer to your ngrok account.
 1. Start the webapp. This can be via docker, grunt, debug, horti, etc....
 1. Run ngrok and forward it towards the port you are running the webapp on.
     * EX: For running webapp in docker locally using the docker instructions above `$ ./ngrok http 443`. This will forward the traffic from your ngrok url on https to 443 on your local machine. </br>
     * EX: For running via horti, or grunt where the api starts on port 5988. `$ ./ngrok http 5988` This will forward the traffic from your ngrok url on https to 5988 on your local machine.
-    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988 
-1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.                
+    * Example output from ngrok: Forwarding https://1661304e.ngrok.io -> http://localhost:5988
+1. You can then enter the ngrok generated url(https://1661304e.ngrok.io) into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
 
 
 ### Data
@@ -196,11 +210,15 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`.
 
 [Travis](https://travis-ci.org/medic/medic) runs `grunt ci` every time some new code is pushed to github.
 
-## Configuring Medic
+### Build documentation
 
-This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further. 
+To build reference documentation into a local folder `jsdoc-docs`: `grunt build-documentation`
 
-We include the "standard" configuration in this repo, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
+## Configuring the standard application
+
+This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further.
+
+This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -208,7 +226,7 @@ To import the standard configuration:
 
 1. Install medic-conf: `npm install -g medic-conf`
 2. Navigate to the configuration you want to import: `cd <medic-repo>/config/standard`
-1. Ensure the app/api is running. Specifically on localhost for these instructions. 
+1. Ensure the app/api is running. Specifically on localhost for these instructions.
 3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
@@ -217,7 +235,19 @@ Code is automatically published via [Travis CI](https://travis-ci.org/medic/medi
 
 ## Contributing
 
-At Medic Mobile we are the technical steward of the [Community Health Toolkit](https://communityhealthtoolkit.org). We welcome and appreciate contributions, and support new developers to use the tools whenever possible. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). For more info check out our [contributor guidelines](CONTRIBUTING.md).
+The Core Framework of the [Community Health Toolkit](https://communityhealthtoolkit.org) is powered by people like you. We appreciate your contributions, and are dedicated to supporting the developers who improve our tools whenever possible. 
+
+First time contributor? Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start. 
+
+Looking for other ways to help? You can also:
+* Improve documentation. Check out our style guide [here](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md)
+* Find and mark duplicate issues
+* Try to reproduce issues and help with troubleshooting
+* Or share a new idea or question with us!
+
+The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). You can even [request access](mailto:info@communityhealthtoolkit.org) to our community forum. 
+
+For more information check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 

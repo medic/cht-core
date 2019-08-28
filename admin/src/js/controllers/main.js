@@ -10,10 +10,23 @@ angular.module('controllers').controller('MainCtrl',
     Session
   ) {
     'ngInject';
+
+    // Override $window.PouchDB.fetch
+    const dbFetch = $window.PouchDB.fetch;
+    $window.PouchDB.fetch = function() {
+      return dbFetch.apply(this, arguments)
+        .then(function(response) {
+          if (response.status === 401) {
+            Session.navigateToLogin();
+          }
+          return response;
+        });
+    };   
+    
     $translate.use('en');
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
-    Auth('can_configure')
+    Auth.any([['can_configure'], ['can_view_outgoing_messages'], ['can_export_all']])
     .then(function() {
       $scope.authorized = true;
     })

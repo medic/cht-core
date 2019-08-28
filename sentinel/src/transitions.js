@@ -1,3 +1,6 @@
+/**
+ * @module transitions
+ */ 
 const async = require('async'),
       feed = require('./lib/feed'),
       db = require('./db'),
@@ -27,9 +30,7 @@ const detach = () => {
   }
 };
 
-/*
- *  Setup changes feed listener.
- */
+// Setup changes feed listener.
 const attach = () => {
   if (!changesFeed) {
     logger.info('transitions: processing enabled');
@@ -97,7 +98,7 @@ const deleteReadDocs = change => {
   );
 
   return db.allDbs().then(dbs => {
-    const userDbs = dbs.filter(db => db.indexOf('medic-user-') === 0);
+    const userDbs = dbs.filter(dbName => dbName.indexOf(`${db.medicDbName}-user-`) === 0);
     return userDbs.reduce((p, userDb) => {
       return p.then(() => {
         const metaDb = db.get(userDb);
@@ -125,6 +126,9 @@ module.exports = {
   _attach: attach,
   _detach: detach,
   _deleteReadDocs: deleteReadDocs,
+  /**
+   * Loads the transitions and starts watching for db changes.
+   */
   loadTransitions: loadTransitions,
   _transitionsLib: transitionsLib
 };

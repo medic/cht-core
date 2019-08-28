@@ -28,7 +28,7 @@ angular.module('inboxServices').service('Enketo',
     TranslateFrom,
     UserContact,
     XSLT,
-    XmlForm,
+    XmlForms,
     ZScore
   ) {
     'use strict';
@@ -36,7 +36,6 @@ angular.module('inboxServices').service('Enketo',
 
     var objUrls = [];
     var xmlCache = {};
-    var FORM_ATTACHMENT_NAME = 'xml';
 
     var currentForm;
     this.getCurrentForm = function() {
@@ -63,19 +62,14 @@ angular.module('inboxServices').service('Enketo',
     };
     var inited = init();
 
-    var replaceJavarosaMediaWithLoaders = function(id, form) {
-      form.find('img,video,audio').each(function() {
+    var replaceJavarosaMediaWithLoaders = function(formDoc, formHtml) {
+      formHtml.find('[data-media-src]').each(function() {
         var elem = $(this);
-        var src = elem.attr('src');
-        if (!(/^jr:\/\//.test(src))) {
-          return;
-        }
-        // Change URL to fragment to prevent browser trying to load it
-        elem.attr('src', '#' + src);
+        var src = elem.attr('data-media-src');
         elem.css('visibility', 'hidden');
         elem.wrap('<div class="loader">');
         DB()
-          .getAttachment(id, src.substring(5))
+          .getAttachment(formDoc._id, src.substring(5))
           .then(function(blob) {
             var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
@@ -84,7 +78,7 @@ angular.module('inboxServices').service('Enketo',
             elem.unwrap();
           })
           .catch(function(err) {
-            $log.error('Error fetching media file', id, src, err);
+            $log.error('Error fetching media file', formDoc._id, src, err);
           });
       });
     };
@@ -95,8 +89,8 @@ angular.module('inboxServices').service('Enketo',
         XSLT.transform('openrosa2xmlmodel.xsl', xml)
       ])
       .then(function(results) {
-        var $html = $(results[0]);
-        var model = results[1];
+        const $html = $(results[0].replace(/ src="jr:\/\//gi, ' data-media-src="'));
+        const model = results[1];
         $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
@@ -123,27 +117,25 @@ angular.module('inboxServices').service('Enketo',
       return xml;
     };
 
-    var getFormAttachment = function(id) {
-      return DB().getAttachment(id, FORM_ATTACHMENT_NAME)
+    var getFormAttachment = function(doc) {
+      const name = XmlForms.findXFormAttachmentName(doc);
+      return DB().getAttachment(doc._id, name)
         .then(FileReader.utf8);
     };
 
     var getFormXml = function(form, language) {
-      return getFormAttachment(form._id).then(function(text) {
+      return getFormAttachment(form).then(function(text) {
         return translateXml(text, language, form.title);
       });
     };
 
-    var withForm = function(id, language) {
+    var withForm = function(form, language) {
+      const id = form._id;
       if (!xmlCache[id]) {
         xmlCache[id] = {};
       }
       if (!xmlCache[id][language]) {
-        xmlCache[id][language] = DB()
-          .get(id)
-          .then(function(form) {
-            return getFormXml(form, language);
-          })
+        xmlCache[id][language] = getFormXml(form, language)
           .then(transformXml);
       }
       return xmlCache[id][language].then(function(form) {
@@ -210,6 +202,14 @@ angular.module('inboxServices').service('Enketo',
       return LineageModelGenerator.contact(contact._id)
         .then(function(model) {
           return model.lineage;
+        })
+        .catch(function(err) {
+          if (err.code === 404) {
+            $log.warn(`Enketo failed to get lineage of contact '${contact._id}' because document does not exist`, err);
+            return [];
+          }
+
+          throw err;
         });
     };
 
@@ -344,13 +344,11 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderForm = function(selector, id, instanceData, editedListener) {
+    var renderForm = function(selector, form, instanceData, editedListener) {
       return Language()
-        .then(function(language) {
-          return withForm(id, language);
-        })
+        .then(language => withForm(form, language))
         .then(function(doc) {
-          replaceJavarosaMediaWithLoaders(id, doc.html);
+          replaceJavarosaMediaWithLoaders(form, doc.html);
           return renderFromXmls(doc, selector, instanceData);
         })
         .then(function(form) {
@@ -359,28 +357,13 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    this.render = function(selector, id, instanceData, editedListener) {
+    this.render = function(selector, form, instanceData, editedListener) {
       return $q.all([inited, getUserContact()]).then(function() {
-        return renderForm(selector, id, instanceData, editedListener);
+        return renderForm(selector, form, instanceData, editedListener);
       });
     };
 
     this.renderContactForm = renderForm;
-
-    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
-      return $q.all([inited, Language()])
-        .then(function(results) {
-          return translateXml(xmlString, results[1]);
-        })
-        .then(transformXml)
-        .then(function(doc) {
-          return renderFromXmls(doc, selector, instanceData);
-        })
-        .then(function(form) {
-          registerEditedListener(selector, editedListener);
-          return form;
-        });
-    };
 
     var xmlToDocs = function(doc, record) {
 
@@ -469,10 +452,8 @@ angular.module('inboxServices').service('Enketo',
 
       docsToStore.unshift(doc);
 
-      return XmlForm(doc.form)
-        .then(function(form) {
-          return getFormAttachment(form.id);
-        })
+      return XmlForms.get(doc.form)
+        .then(getFormAttachment)
         .then(function(form) {
           doc.fields = EnketoTranslation.reportRecordToJs(record, form);
           return docsToStore;

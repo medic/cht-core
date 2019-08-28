@@ -146,8 +146,8 @@ var changeDocIds = function(auditDb, callback) {
         callback();
       });
     },
-    function() {
-      return again;
+    function(cb) {
+      return cb(null, again);
     },
     callback
   );

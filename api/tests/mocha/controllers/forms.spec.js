@@ -40,6 +40,7 @@ describe('forms controller', () => {
         rows: [
           {
             doc: {
+              internalId: 'a',
               _attachments: {
                 xml: {
                   content_type: 'xml',
@@ -79,6 +80,7 @@ describe('forms controller', () => {
       mockFormsInDb(
         {
           _id: 'form:stock',
+          internalId: 'stock',
           _attachments: {
             xml: {
               content_type: 'application/octet-stream',
@@ -91,6 +93,7 @@ describe('forms controller', () => {
         },
         {
           _id: 'form:visit',
+          internalId: 'visit',
           _attachments: {
             xml: {
               content_type: 'application/octet-stream',
@@ -119,6 +122,7 @@ describe('forms controller', () => {
     it('ignores non xml attachments', () => {
       mockFormsInDb({
         _id: 'form:stock',
+        internalId: 'stock',
         _attachments: {
           xml: {
             content_type: 'application/octet-stream',

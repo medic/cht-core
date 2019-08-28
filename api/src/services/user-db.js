@@ -1,3 +1,7 @@
+/**
+ * @module user-db
+ */
+
 const request = require('request-promise-native');
 const url = require('url');
 const db = require('../db');
@@ -28,37 +32,48 @@ const ddoc = {
   }
 };
 
-const setSecurity = (dbName, username) => {
-  return request.put({
-    url: url.format({
-      protocol: environment.protocol,
-      hostname: environment.host,
-      port: environment.port,
-      pathname: `${dbName}/_security`,
-    }),
-    auth: {
-      user: environment.username,
-      pass: environment.password
-    },
-    json: true,
-    body: {
-      admins: { names: [ username ], roles: [] },
-      members: { names: [ username ], roles: [] }
-    }
-  });
-};
-
-/**
- * Replaces characters that are invalid in a couchdb database name
- * with parens around the UTF-16 code number, eg: "." becomes "(46)"
- */
+// Replaces characters that are invalid in a couchdb database name
+//with parens around the UTF-16 code number, eg: "." becomes "(46)"
 const escapeUsername = name => name.replace(DB_NAME_BLACKLIST, match => {
   return `(${match.charCodeAt(0)})`;
 });
 
 module.exports = {
-  getDbName: username => `medic-user-${escapeUsername(username)}-meta`,
-  setSecurity: setSecurity,
+  /**
+   * @param {String} username
+   * @returns {String} The name of the user db
+   */
+  getDbName: username => `${environment.db}-user-${escapeUsername(username)}-meta`,
+  
+  /**
+   * @param {String} dbName
+   * @param {String} username
+   * @returns {Promise} The put request
+   */
+  setSecurity: (dbName, username) => {
+    return request.put({
+      url: url.format({
+        protocol: environment.protocol,
+        hostname: environment.host,
+        port: environment.port,
+        pathname: `${dbName}/_security`,
+      }),
+      auth: {
+        user: environment.username,
+        pass: environment.password
+      },
+      json: true,
+      body: {
+        admins: { names: [ username ], roles: [] },
+        members: { names: [ username ], roles: [] }
+      }
+    });
+  },
+
+  /**
+   * @param {String} username
+   * @returns {Promise} The request to create the db.
+   */
   create: username => {
     const dbName = module.exports.getDbName(username);
     return db.exists(dbName).then(found => {
@@ -66,7 +81,7 @@ module.exports = {
         const database = db.get(dbName);
         return database.put(ddoc)
           .then(() => {
-            return setSecurity(dbName, username);
+            return module.exports.setSecurity(dbName, username);
           });
       }
     });

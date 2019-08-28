@@ -19,14 +19,13 @@
       <div class="body meta">
         <div class="card">
           <div class="row heading" ng-class="{ 'deceased': contactsContentCtrl.selectedContact.doc.date_of_death, muted: contactsContentCtrl.selectedContact.doc.muted }">
-            <span ng-bind-html="contactsContentCtrl.selectedContact.icon | resourceIcon"></span>
+            <span ng-bind-html="contactsContentCtrl.selectedContact.type.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{contactsContentCtrl.selectedContact.doc.name}}</h2>
               <div ng-if="contactsContentCtrl.selectedContact.doc.date_of_death" translate>contact.deceased.title</div>
               <div class="primary-contact" ng-show="contactsContentCtrl.selectedContact.isPrimaryContact">
-                <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
-                <span ng-if="contactsContentCtrl.selectedContact.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-                <span ng-if="contactsContentCtrl.selectedContact.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+                <i class="fa fa-star primary"></i>
+                <span translate>{{contactsContentCtrl.selectedContact.type.primary_contact_key || 'Primary contact'}}</span>
               </div>
               <div class="muted" ng-if="contactsContentCtrl.selectedContact.doc.muted" translate>contact.muted</div>
             </div>
@@ -70,73 +69,35 @@
         </div>
       </div>
 
-      <div class="card children persons" ng-if="selected.doc.type !== 'person'">
+      <div class="card children" ng-repeat="group in contactsContentCtrl.selectedContact.children">
         <div class="action-header cell">
-          <div ng-show="contactsContentCtrl.selectedContact.doc.type !== 'clinic'" class="col-xs-12">
-            <h3 translate>People</h3>
+          <div class="col-xs-10">
+            <h3 translate>{{group.type.group_key}}</h3>
           </div>
-          <div ng-show="contactsContentCtrl.selectedContact.doc.type === 'clinic'" class="col-xs-10">
-            <h3 translate>clinic.field.children</h3>
-          </div>
-          <div ng-show="contactsContentCtrl.selectedContact.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+          <div ng-if="group.type.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
         </div>
 
-        <div class="loader" ng-if="contactsContentCtrl.loadingSelectedContactChildren"></div>
-        <div ng-if="!contactsContentCtrl.loadingSelectedContactChildren">
-          <div ng-if="!contactsContentCtrl.selectedContact.children.persons.length && !contactsContentCtrl.selectedContact.children.deceased.length" translate class="cell col">
-            contact.no.children
-          </div>
-          <div ng-if="contactsContentCtrl.selectedContact.children.persons.length || contactsContentCtrl.selectedContact.children.deceased.length">
-            <ul ng-if="contactsContentCtrl.selectedContact.doc.type !== 'clinic'">
-              <mm-content-row ng-repeat="child in contactsContentCtrl.selectedContact.children.persons"
-                id="child.doc._id"
-                route="'contacts'"
-                heading="child.doc.name"
-                summary="child.doc.title"
-                primary-contact="child.isPrimaryContact"
-                is-muted="child.doc.muted"
-                display-muted="true"
-              />
-            </ul>
-            <ul ng-if="contactsContentCtrl.selectedContact.doc.type === 'clinic'">
-              <mm-content-row ng-repeat="child in contactsContentCtrl.selectedContact.children.persons"
-                id="child.doc._id"
-                route="'contacts'"
-                heading="child.doc.name"
-                dob="child.doc.date_of_birth"
-                primary-contact="child.isPrimaryContact"
-                task-count="$ctrl.selected.tasksByContact[child.doc._id]"
-                is-muted="child.doc.muted"
-                display-muted="true"
-              />
-            </ul>
-            <ul class="action deceased">
-              <li ng-if="contactsContentCtrl.selectedContact.children.deceased.length" class="content-row deceased">
-                <a ui-sref="contacts.deceased({ id: contactsContentCtrl.selectedContact._id })">
-                  <span translate translate-values="{ count: contactsContentCtrl.selectedContact.children.deceased.length }">contact.deceased.view</span>
-                  <i class="fa fa-chevron-right"></i>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div ng-if="contactsContentCtrl.selectedContact.children.places">
-        <div class="card children">
-          <div class="action-header cell">
-            <h3 translate>{{contactsContentCtrl.selectedContact.children.childPlacesLabel}}</h3>
-          </div>
-          <ul>
-            <mm-content-row ng-repeat="child in contactsContentCtrl.selectedContact.children.places"
-              id="child.doc._id"
-              route="'contacts'"
-              heading="child.doc.name"
-              is-muted="child.doc.muted"
-              display-muted="true"
-            />
-          </ul>
-        </div>
+        <ul>
+          <mm-content-row ng-repeat="child in group.contacts" ng-if="!child.deceased"
+            id="child.doc._id"
+            route="'contacts'"
+            heading="child.doc.name"
+            summary="child.doc.title"
+            primary-contact="child.isPrimaryContact"
+            dob="child.doc.date_of_birth"
+            task-count="child.taskCount"
+            is-muted="child.doc.muted"
+            display-muted="true"
+          />
+        </ul>
+        <ul class="action deceased">
+          <li ng-if="group.deceasedCount > 0" class="content-row deceased">
+            <a ui-sref="contacts.deceased({ id: contactsContentCtrl.selectedContact.doc._id })">
+              <span translate translate-values="{ count: group.deceasedCount }">contact.deceased.view</span>
+              <i class="fa fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
       </div>
 
       <div ng-if="contactsContentCtrl.selectedContact.tasks" mm-auth="can_view_tasks">
@@ -157,8 +118,8 @@
               date="task.date"
               overdue="task.isLate"
               hide-time="true"
-              heading="contactsContentCtrl.selectedContact.doc.type === 'clinic' ? (task.contact && task.contact.name) : task.title"
-              summary="contactsContentCtrl.selectedContact.doc.type === 'clinic' ? task.title : ''"
+              heading="contactsContentCtrl.selectedContact.children.length ? (task.contact && task.contact.name) : task.title"
+              summary="contactsContentCtrl.selectedContact.children.length ? task.title : ''"
               warning="task.priorityLabel"
             />
           </ul>
@@ -189,8 +150,8 @@
                 route="'reports'"
                 icon="report | formIconName:forms"
                 date="report.reported_date"
-                heading="contactsContentCtrl.selectedContact.doc.type === 'person' ? (report | summary:forms) : report.heading"
-                summary="contactsContentCtrl.selectedContact.doc.type === 'person' ? '' : (report | summary:forms)"
+                heading="contactsContentCtrl.selectedContact.children.length ? report.heading : (report | summary:forms)"
+                summary="contactsContentCtrl.selectedContact.children.length ? (report | summary:forms) : ''"
                 show-status="true"
                 valid="report.valid"
                 verified="report.verified"

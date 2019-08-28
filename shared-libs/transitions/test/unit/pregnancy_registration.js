@@ -104,34 +104,29 @@ describe('patient registration', () => {
 
   it('filter fails with no clinic phone and private form', () => {
       var doc = { form: 'p', type: 'data_record'};
-      sinon.stub(utils, 'getClinicPhone').returns(null);
       sinon.stub(utils, 'getForm').returns({ public_form: false });
       assert(!transition.filter(doc));
   });
 
   it('filter does not fail if doc has errors', () => {
-      var doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ] };
-      sinon.stub(utils, 'getClinicPhone').returns('somephone');
+      var doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ], contact: { phone: '+123' } };
       sinon.stub(utils, 'getForm').returns({ public_form: true });
       assert(transition.filter(doc));
   });
 
   it('filter fails if form is unknown', () => {
-      var doc = { form: 'x' , type: 'data_record'};
-      sinon.stub(utils, 'getClinicPhone').returns('somephone');
+      var doc = { form: 'x' , type: 'data_record', contact: { phone: '+123' }};
       assert(!transition.filter(doc));
   });
 
   it('filter succeeds with no clinic phone if public form', () => {
       var doc = { form: 'p' , type: 'data_record'};
-      sinon.stub(utils, 'getClinicPhone').returns(null);
       sinon.stub(utils, 'getForm').returns({ public_form: true });
       assert(transition.filter(doc));
   });
 
   it('filter succeeds with populated doc', () => {
-      var doc = { form: 'p' , type: 'data_record'};
-      sinon.stub(utils, 'getClinicPhone').returns('somephone');
+      var doc = { form: 'p' , type: 'data_record', contact: { phone: '+123' }};
       sinon.stub(utils, 'getForm').returns({});
       assert(transition.filter(doc));
   });

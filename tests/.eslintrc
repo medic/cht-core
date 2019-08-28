@@ -6,5 +6,13 @@
     "jasmine": true,
     "jquery": true,
     "node": true
+  },
+  "plugins": [
+    "no-only-tests",
+    "jasmine"
+  ],
+  "rules": {
+    "no-only-tests/no-only-tests": "error",
+    "jasmine/no-focused-tests": "error"
   }
 }

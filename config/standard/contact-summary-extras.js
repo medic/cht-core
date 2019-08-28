@@ -146,6 +146,10 @@ var IMMUNIZATION_LIST = [
   'dpt'
 ];
 
+function isReportValid(report) {
+  return report && !(report.errors && report.errors.length);
+}
+
 function count(arr, fn) {
   var c = 0;
   for(var i=0; i<arr.length; ++i) {
@@ -385,93 +389,120 @@ function getSubsequentVisits(r) {
   return subsequentVisits;
 }
 
-function getTreatmentEnrollmentDate(){
-  var date = '';
-  reports.forEach(function(r){
-    if (r.form === 'treatment_enrollment'){
-      var d = new Date(0);
-      d.setUTCSeconds(r.reported_date/1000);
-      date = d.toISOString().slice(0, 10);
+function getMostRecentNutritionEnrollment(){
+  // returns the most recent enrollment report and a corresponding exit report that was submitted after enrollment
+  var nutrition_reports = {
+    enrollment: null,
+    exit: null
+  };
+  var exits = [];
+  reports.forEach(function(r) {
+    if (r.form === 'nutrition_screening' &&
+        !r.deleted &&
+        (!nutrition_reports.enrollment || (r.reported_date > nutrition_reports.enrollment.reported_date && r.fields.treatment.enroll === 'yes'))) {
+      nutrition_reports.enrollment = r;
+    }
+    // note any exit reports we may find for active enrollment verification
+    if (r.form === 'nutrition_exit'){
+      exits.push(r);
     }
   });
+
+  // verify they haven't been exited after enrollment
+  if (nutrition_reports.enrollment){
+    nutrition_reports.exit = exits.find(function(r){
+      return r.reported_date > nutrition_reports.enrollment.reported_date;
+    });
+  }
+  return nutrition_reports;
+}
+
+function getTreatmentEnrollmentDate(){
+  var date = '';
+  var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
+  if (enrollment_report){
+    var d = new Date(0);
+    d.setUTCSeconds(enrollment_report.reported_date/1000);
+    date = d.toISOString().slice(0, 10);
+  }
   return date;
 }
 
 function getTreatmentProgram(){
   var treatment_program = '';
-  reports.forEach(function(r){
-    if (r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.program){
-      treatment_program = r.fields.enrollment.program;
-    }
-  });
+  var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
+  var exit_report = getMostRecentNutritionEnrollment().exit;
+  if (enrollment_report && !exit_report) treatment_program = enrollment_report.fields.treatment.program;
   return treatment_program;
 }
 
-function getNutritionScreeningReport(){
-  var screening_report = reports.find(function(r){
-    return r.form === 'nutrition_screening';
-  });
-  return screening_report;
-}
-
-function countFollowups(){
+function countNutritionFollowups(){
   var count = 0;
+  var enrollment = getMostRecentNutritionEnrollment().enrollment;
+  // only count follow up visits after enrollment
   reports.forEach(function(r){
-    if (r.form === 'nutrition_followup' && r.fields.task === 'visit'){
+    if (r.form === 'nutrition_followup' && r.reported_date > enrollment.reported_date){
       count = count + 1;
     }
   });
   return count;
 }
 
-function getFollowupExitReport(){
-  return reports.find(function(r){
-    return r.form === 'nutrition_followup' && r.fields.task && r.fields.task === 'exit';
+function getMostRecentReport(reports, form) {
+  var result = null;
+  reports.forEach(function(r) {
+    if (form.indexOf(r.form) >= 0 &&
+        !r.deleted &&
+        (!result || r.reported_date > result.reported_date)) {
+      result = r;
+    }
   });
+  return result;
 }
 
 module.exports = {
-  now: now,
-  pregnancyForms: pregnancyForms,
-  antenatalForms: antenatalForms,
-  deliveryForms: deliveryForms,
-  postnatalForms: postnatalForms,
-  immunizationForms: immunizationForms,
-  MS_IN_DAY: MS_IN_DAY,
-  MAX_DAYS_IN_PREGNANCY: MAX_DAYS_IN_PREGNANCY,
-  DAYS_IN_PNC: DAYS_IN_PNC,
-  IMMUNIZATION_DOSES: IMMUNIZATION_DOSES,
-  IMMUNIZATION_LIST: IMMUNIZATION_LIST,
-  count: count,
-  isVaccineInLineage: isVaccineInLineage,
-  isCoveredByUseCaseInLineage: isCoveredByUseCaseInLineage,
-  contains: contains,
-  isCoveredByUseCase: isCoveredByUseCase,
-  isFacilityDelivery: isFacilityDelivery,
-  isNonFacilityDelivery: isNonFacilityDelivery,
-  getBirthDate: getBirthDate,
-  getPNCperiod: getPNCperiod,
-  isHighRiskPregnancy: isHighRiskPregnancy,
-  isHighRiskPostnatal: isHighRiskPostnatal,
-  getDeliveryCode: getDeliveryCode,
-  initImmunizations: initImmunizations,
-  addImmunizations: addImmunizations,
-  countDosesReceived: countDosesReceived,
-  countDosesPossible: countDosesPossible,
-  isSingleDose: isSingleDose,
-  countReportsSubmittedInWindow: countReportsSubmittedInWindow,
-  addDate: addDate,
-  getOldestReport: getOldestReport,
-  isActivePregnancy: isActivePregnancy,
-  getSubsequentDeliveries: getSubsequentDeliveries,
-  getSubsequentPregnancies: getSubsequentPregnancies,
-  getAgeInMonths: getAgeInMonths,
-  getNewestDelivery: getNewestDelivery,
-  getNewestPncPeriod: getNewestPncPeriod,
-  getSubsequentVisits: getSubsequentVisits,
-  getTreatmentEnrollmentDate: getTreatmentEnrollmentDate,
-  getTreatmentProgram: getTreatmentProgram,
-  getNutritionScreeningReport: getNutritionScreeningReport,
-  countFollowups: countFollowups,
-  getFollowupExitReport: getFollowupExitReport,
+  now,
+  pregnancyForms,
+  antenatalForms,
+  deliveryForms,
+  postnatalForms,
+  immunizationForms,
+  MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC,
+  IMMUNIZATION_DOSES,
+  IMMUNIZATION_LIST,
+  count,
+  isVaccineInLineage,
+  isCoveredByUseCaseInLineage,
+  contains,
+  isCoveredByUseCase,
+  isFacilityDelivery,
+  isNonFacilityDelivery,
+  getBirthDate,
+  isReportValid,
+  getPNCperiod,
+  isHighRiskPregnancy,
+  isHighRiskPostnatal,
+  getDeliveryCode,
+  initImmunizations,
+  addImmunizations,
+  countDosesReceived,
+  countDosesPossible,
+  isSingleDose,
+  countReportsSubmittedInWindow,
+  addDate,
+  getOldestReport,
+  isActivePregnancy,
+  getSubsequentDeliveries,
+  getSubsequentPregnancies,
+  getAgeInMonths,
+  getNewestDelivery,
+  getNewestPncPeriod,
+  getSubsequentVisits,
+  getTreatmentEnrollmentDate,
+  getTreatmentProgram,
+  countNutritionFollowups,
+  getMostRecentReport,
+  getMostRecentNutritionEnrollment,
 };

@@ -2,11 +2,13 @@ const fs = require('fs');
 const utils = require('./utils');
 const constants = require('./constants');
 const auth = require('./auth')();
+const contactForms = require('./contact-forms.json');
 const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
 
 class BaseConfig {
   constructor(testSrcDir, { headless=true }={}) {
     const chromeArgs = [ '--window-size=1024,768' ];
+    utils.setDebug(!headless);
     if (headless) {
       chromeArgs.push('--headless', '--disable-gpu');
     }
@@ -19,8 +21,16 @@ class BaseConfig {
       capabilities: {
         browserName: 'chrome',
         chromeOptions: {
+          // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
+          // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
+          // https://github.com/angular/protractor/issues/5261
+          w3c: false,
           args: chromeArgs
-        }
+        },
+      },
+      jasmineNodeOpts: {
+        // makes default jasmine reporter not display dots for every spec
+        print: () => {}
       },
       beforeLaunch: function() {
         process.on('uncaughtException', function() {
@@ -37,6 +47,7 @@ class BaseConfig {
         });
       },
       onPrepare: () => {
+        jasmine.getEnv().addReporter(utils.specReporter);
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
@@ -99,11 +110,13 @@ const login = browser => {
 };
 
 const setupSettings = () => {
-  return utils.request({
-    path: '/api/v1/settings',
-    method: 'PUT',
-    body: JSON.stringify({ setup_complete: true }),
-    headers: { 'Content-Type': 'application/json' }
+  return utils.saveDocs(contactForms).then(() => { // saves the standard contact forms
+    return utils.request({
+      path: '/api/v1/settings',
+      method: 'PUT',
+      body: JSON.stringify({ setup_complete: true }),
+      headers: { 'Content-Type': 'application/json' }
+    });
   });
 };
 

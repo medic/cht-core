@@ -1,6 +1,7 @@
 /**
- * Initialise an in-memory PouchDB instance using ddocs defined at the supplied
- * path.
+ * @module memdown-medic
+ * @description Initialise an in-memory PouchDB instance using ddocs
+ * defined at the supplied path.
  *
  * USAGE
  * 	memdownMedic = require('@medic/memdown');
@@ -13,8 +14,9 @@
  */
 const fs = require('fs');
 const uuid = require('uuid/v4');
-const memdown = require('memdown');
-const PouchDB = require('pouchdb').defaults({ db: memdown });
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-memory'));
+PouchDB.plugin(require('pouchdb-mapreduce'));
 
 let ddocs;
 
@@ -55,7 +57,7 @@ module.exports = (rootDir='./') => {
   if (!ddocs) {
     ddocs = filesIn(`${rootDir}/ddocs`).map(loadDdoc);
   }
-  const db = new PouchDB(uuid());
+  const db = new PouchDB(uuid(), { adapter: 'memory' });
   return Promise.all(ddocs.map(ddoc => db.put(ddoc)))
     .then(() => db);
 };

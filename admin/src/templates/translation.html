@@ -1,4 +1,4 @@
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs" mm-auth="can_configure">
   <li role="presentation" ui-sref-active="active">
     <a ui-sref="translation.languages" translate>Languages</a>
   </li>
@@ -6,4 +6,4 @@
     <a ui-sref="translation.application" translate>Application Text</a>
   </li>
 </ul>
-<div class="tab-content" ui-view="tab"></div>
+<div class="tab-content" ui-view="tab" mm-auth="can_configure"></div>

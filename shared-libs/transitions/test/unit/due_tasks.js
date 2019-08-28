@@ -23,31 +23,31 @@ describe('due tasks', () => {
   });
 
   it('set all due scheduled tasks to pending', done => {
-    const due = moment().toISOString(),
-          due1 = moment().subtract(2, 'day').toISOString(),
-          due2 = moment().subtract(3, 'day').toISOString(),
-          notDue = moment().add(7, 'days').toISOString();
+    const due = moment(),
+          due1 = moment().subtract(2, 'day'),
+          due2 = moment().subtract(3, 'day'),
+          notDue = moment().add(7, 'days');
     var id = 'xyz';
 
     var doc = {
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message: 'x'
         },
         {
-          due: notDue,
+          due: notDue.toISOString(),
           state: 'scheduled',
           message: 'y'
         },
         {
-          due: due1,
+          due: due1.toISOString(),
           state: 'scheduled',
           message: 'z'
         },
         {
-          due: due2,
+          due: due2.toISOString(),
           state: 'scheduled',
           message: 't'
         },
@@ -57,17 +57,17 @@ describe('due tasks', () => {
       rows: [
         {
           id: id,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: doc,
         },
         {
           id: id,
-          key: due1,
+          key: [ 'scheduled', due1.valueOf() ],
           doc: doc,
         },
         {
           id: id,
-          key: due2,
+          key: [ 'scheduled', due2.valueOf() ],
           doc: doc,
         }
       ],
@@ -79,16 +79,17 @@ describe('due tasks', () => {
       .returns(Promise.resolve([doc]));
     var setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute( function(err) {
+    schedule.execute(function(err) {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       var saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 4);
       assert.equal(setTaskState.callCount, 3);
-      assert(setTaskState.calledWithMatch({ due: due, state: 'scheduled' }, 'pending'));
-      assert(setTaskState.calledWithMatch({ due: due1, state: 'scheduled' }, 'pending'));
-      assert(setTaskState.calledWithMatch({ due: due2, state: 'scheduled' }, 'pending'));
+
+      assert(setTaskState.calledWithMatch({ due: due.toISOString(), state: 'scheduled' }, 'pending'));
+      assert(setTaskState.calledWithMatch({ due: due1.toISOString(), state: 'scheduled' }, 'pending'));
+      assert(setTaskState.calledWithMatch({ due: due2.toISOString(), state: 'scheduled' }, 'pending'));
 
       assert.equal(hydrate.callCount, 1);
       assert.deepEqual(hydrate.args[0][0], [doc]);
@@ -97,20 +98,18 @@ describe('due tasks', () => {
   });
 
   it('set all due scheduled tasks to pending and handles repeated rows', done => {
-    var due = moment().toISOString();
-    var notDue = moment()
-      .add(7, 'days')
-      .toISOString();
+    var due = moment();
+    var notDue = moment().add(7, 'days');
     var id = 'xyz';
     var doc = {
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message: 'x'
         },
         {
-          due: notDue,
+          due: notDue.toISOString(),
           state: 'scheduled',
           message: 'y'
         },
@@ -123,12 +122,12 @@ describe('due tasks', () => {
       rows: [
         {
           id: id,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: doc,
         },
         {
           id: id,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: doc,
         },
       ],
@@ -145,7 +144,7 @@ describe('due tasks', () => {
       assert.equal(setTaskState.callCount, 1);
       assert(
         setTaskState.calledWithMatch(
-          { due: due, state: 'scheduled' },
+          { due: due.toISOString(), state: 'scheduled' },
           'pending'
         )
       );
@@ -156,13 +155,13 @@ describe('due tasks', () => {
   });
 
   it('set all due scheduled tasks to pending and handles nonrepeated rows', done => {
-    var due = moment().toISOString();
+    var due = moment();
     var id1 = 'xyz';
     var id2 = 'abc';
     var doc1 = {
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message: 'x'
         },
@@ -171,7 +170,7 @@ describe('due tasks', () => {
     var doc2 = {
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message: 'y'
         },
@@ -182,12 +181,12 @@ describe('due tasks', () => {
       rows: [
         {
           id: id1,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: doc1,
         },
         {
           id: id2,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: doc2,
         },
       ],
@@ -208,17 +207,15 @@ describe('due tasks', () => {
       assert.equal(saveDoc.callCount, 2);
       assert.equal(setTaskState.callCount, 2);
       assert(
-        setTaskState.alwaysCalledWithMatch({ due: due, state: 'scheduled' })
+        setTaskState.alwaysCalledWithMatch({ due: due.toISOString(), state: 'scheduled' })
       );
       done();
     });
   });
 
   it('generates the messages for all due scheduled tasks', done => {
-    const due = moment().toISOString();
-    const notDue = moment()
-      .add(7, 'days')
-      .toISOString();
+    const due = moment();
+    const notDue = moment().add(7, 'days');
     const id = 'xyz';
     const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
@@ -248,13 +245,13 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
         },
         {
-          due: notDue,
+          due: notDue.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
@@ -280,13 +277,13 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
         },
         {
-          due: notDue,
+          due: notDue.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
@@ -297,7 +294,7 @@ describe('due tasks', () => {
       rows: [
         {
           id: id,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: minified,
         },
       ],
@@ -333,7 +330,7 @@ describe('due tasks', () => {
   });
 
   it('does not generate messages if they are already generated', done => {
-    const due = moment().toISOString();
+    const due = moment();
     const id = 'xyz';
     const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
@@ -361,7 +358,7 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
@@ -393,7 +390,7 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
@@ -410,7 +407,7 @@ describe('due tasks', () => {
       rows: [
         {
           id: id,
-          key: due,
+          key: [ 'scheduled', due.valueOf() ],
           doc: minified,
         },
       ],
@@ -442,7 +439,7 @@ describe('due tasks', () => {
   });
 
   it('should not crash when registrations are found, but patient is not', done => {
-    const due = moment().toISOString(),
+    const due = moment(),
           phone = '123456789';
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
@@ -464,7 +461,7 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
@@ -491,7 +488,7 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
@@ -499,7 +496,9 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [
+      { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
+    ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put');
 
@@ -520,7 +519,7 @@ describe('due tasks', () => {
   });
 
   it('should not update task state and not save messages when messages lib errors', done => {
-    const due = moment().toISOString(),
+    const due = moment(),
           phone = '123456789';
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
@@ -542,13 +541,13 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
         },
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           messages: [{ message: 'visit-ad', to: phone }]
         }
@@ -574,20 +573,22 @@ describe('due tasks', () => {
       },
       scheduled_tasks: [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           message_key: 'visit-1',
           recipient: 'clinic',
         },
         {
-          due: due,
+          due: due.toISOString(),
           state: 'scheduled',
           messages: [{ message: 'visit-ad', to: phone }]
         }
       ],
     };
 
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [
+      { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
+    ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
 
@@ -605,23 +606,23 @@ describe('due tasks', () => {
       assert.equal(utils.setTaskState.callCount, 1);
       assert.deepEqual(utils.setTaskState.args[0], [
         {
-          due: due,
+          due: due.toISOString(),
           state: 'pending',
-          messages: [{ message: 'visit-ad', to: phone}]
+          messages: [{ message: 'visit-ad', to: phone }]
         },
         'pending'
       ]);
       assert.equal(db.medic.put.callCount, 1);
       assert.equal(db.medic.put.args[0][0].scheduled_tasks.length, 2);
       assert.deepEqual(db.medic.put.args[0][0].scheduled_tasks[0], {
-        due: due,
+        due: due.toISOString(),
         state: 'scheduled',
         message_key: 'visit-1',
         recipient: 'clinic',
       });
 
       assert.deepEqual(db.medic.put.args[0][0].scheduled_tasks[1], {
-        due: due,
+        due: due.toISOString(),
         state: 'pending',
         messages: [{ message: 'visit-ad', to: phone}]
       });

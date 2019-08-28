@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-    registrationUtils = require('@medic/registration-utils');
+const _ = require('underscore');
+const registrationUtils = require('@medic/registration-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -7,6 +7,7 @@ var _ = require('underscore'),
  * {
  *   _id: <doc uuid>,
  *   doc: <doc>,
+ *   type: <object of the configuration of this contant type>,
  *   lineage: <array of contact's parents>,
  *   children: <array of contact's children>,
  *   reports: <array of reports about the contact>,
@@ -20,7 +21,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     $q,
     $translate,
     ContactMuted,
-    ContactSchema,
+    ContactTypes,
     DB,
     GetDataRecords,
     LineageModelGenerator,
@@ -29,7 +30,35 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     'ngInject';
     'use strict';
 
-    var NAME_COMPARATOR = function(lhs, rhs) {
+    const TYPE_COMPARATOR = (lhs, rhs) => {
+      const lhsPerson = lhs.type && lhs.type.person;
+      const rhsPerson = rhs.type && rhs.type.person;
+      if (lhsPerson && !rhsPerson) {
+        return -1;
+      }
+      if (!lhsPerson && rhsPerson) {
+        return 1;
+      }
+      const lhsId = lhs.type && lhs.type.id || '';
+      const rhsId = rhs.type && rhs.type.id || '';
+      return lhsId.localeCompare(rhsId);
+    };
+
+    const PRIMARY_CONTACT_COMPARATOR = (lhs, rhs) => {
+      if (lhs.isPrimaryContact) {
+        return -1;
+      }
+      if (rhs.isPrimaryContact) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const NAME_COMPARATOR = (lhs, rhs) => {
+      const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
+      if (primary !== 0) {
+        return primary;
+      }
       if (!lhs.doc.name && !rhs.doc.name) {
         return 0;
       }
@@ -42,7 +71,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return lhs.doc.name.localeCompare(rhs.doc.name);
     };
 
-    var AGE_COMPARATOR = function(lhs, rhs) {
+    const AGE_COMPARATOR = (lhs, rhs) => {
+      const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
+      if (primary !== 0) {
+        return primary;
+      }
       if (lhs.doc.date_of_birth &&
           rhs.doc.date_of_birth &&
           lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
@@ -57,7 +90,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return NAME_COMPARATOR(lhs, rhs);
     };
 
-    var REPORTED_DATE_COMPARATOR = function(lhs, rhs) {
+    const REPORTED_DATE_COMPARATOR = (lhs, rhs) => {
       if (lhs.reported_date > rhs.reported_date) {
         return -1;
       }
@@ -74,21 +107,15 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return lhs.doc.muted ? 1 : -1;
     };
 
-    var setPrimaryContact = function(model) {
-      var parent = model.lineage && model.lineage.length && model.lineage[0];
-      model.isPrimaryContact = parent &&
-        parent.contact &&
-        (parent.contact._id === model.doc._id);
+    const setPrimaryContact = model => {
+      const immediateParent = model.lineage && model.lineage.length && model.lineage[0];
+      model.isPrimaryContact = immediateParent &&
+        immediateParent.contact &&
+        immediateParent.contact._id === model.doc._id;
     };
 
-    var setSchemaFields = function(model) {
-      var schema = ContactSchema.get(model.doc.type);
-      model.icon = schema.icon;
-      model.label = schema.label;
-    };
-
-    var setMutedState = function(model) {
-      model.doc.muted = ContactMuted(model.doc, model.lineage);
+    const setMutedState = modelToMute => {
+      modelToMute.doc.muted = ContactMuted(modelToMute.doc, modelToMute.lineage);
     };
 
     // muted state is inherited, but only set when online via Sentinel transition
@@ -97,125 +124,121 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         children.forEach(child => child.doc.muted = child.doc.muted || model.doc.muted);
       }
       return children;
-
     };
 
-    var splitContactsByType = function(children) {
-      return _.groupBy(children, function(child) {
-        if (child.doc.type === 'person') {
-          if (child.doc.date_of_death) {
-            return 'deceased';
-          }
-          return 'persons';
-        }
-        return 'places';
-      });
+    const groupChildrenByType = children => {
+      return _.groupBy(children, child => child.doc.contact_type || child.doc.type);
     };
 
-    const getPrimaryContact = function(doc, children) {
-      var contactId = doc && doc.contact && doc.contact._id;
+    const addPrimaryContact = function(doc, children) {
+      const contactId = doc && doc.contact && doc.contact._id;
       if (!contactId) {
-        return $q.resolve();
+        return children;
       }
 
-      const persons = children.persons || [];
-      const idx = _.findIndex(persons, person => person.doc._id === contactId);
-      if (idx !== -1) {
-        return $q.resolve({
-          idx,
-          doc: persons[idx].doc
-        });
+      const primaryContact = children.find(child => child.doc._id === contactId);
+      if (primaryContact) {
+        primaryContact.isPrimaryContact = true;
+        return children;
       }
 
       // If the primary contact is not a child, fetch the document
       return DB().get(contactId)
-        .then(doc => ({ idx, doc }))
+        .then(doc => {
+          children.push({
+            doc: doc,
+            isPrimaryContact: true
+          });
+          return children;
+        })
         .catch(function(err) {
           if (err.status === 404 || err.error === 'not_found') {
-            return;
+            return children;
           }
           throw err;
         });
     };
 
-    var sortPrimaryContactToTop = function(model, children) {
-      return getPrimaryContact(model.doc, children)
-        .then(function (primaryContact) {
-          if (!primaryContact) {
-            return;
-          }
-          const newChild = {
-            id: primaryContact.doc._id,
-            doc: primaryContact.doc,
-            isPrimaryContact: true
-          };
-          if (!children.persons) {
-            children.persons = [ newChild ];
-            return;
-          }
-          const persons = children.persons;
-          // remove existing child
-          if (primaryContact.idx !== -1) {
-            persons.splice(primaryContact.idx, 1);
-          }
-          // push the primary contact on to the start of the array
-          persons.unshift(newChild);
-        })
-        .then(function() {
-          return children;
-        });
+    const sortChildren = function(model, childModels) {
+      childModels.forEach(group => {
+        const comparator = group.type && group.type.sort_by_dob ? AGE_COMPARATOR : NAME_COMPARATOR;
+        group.contacts.sort(_.partial(MUTED_COMPARATOR, comparator));
+      });
+      childModels.sort(TYPE_COMPARATOR);
+      return childModels;
     };
 
-    var sortChildren = function(model, children) {
-      if (children.places) {
-        children.places.sort(_.partial(MUTED_COMPARATOR, NAME_COMPARATOR));
+    const getPersonChildTypes = (types, parentId) => {
+      if (!parentId) {
+        return [];
       }
-      if (children.persons) {
-        var personComparator = model.doc.type === 'clinic' ? AGE_COMPARATOR : NAME_COMPARATOR;
-        children.persons.sort(_.partial(MUTED_COMPARATOR, personComparator));
-      }
-      return sortPrimaryContactToTop(model, children);
+      const childTypes = types.filter(type => {
+        return type.person &&
+               type.parents &&
+               type.parents.includes(parentId);
+      });
+      return childTypes;
     };
 
-    const getChildren = (contactId, { getChildPlaces } = {}) => {
+    const getChildren = (model, types, { getChildPlaces } = {}) => {
       const options = { include_docs: true };
+      const contactId = model.doc._id;
       if (getChildPlaces) {
         // get all types
         options.startkey = [ contactId ];
         options.endkey = [ contactId, {} ];
       } else {
-        // just get people
-        options.key = [ contactId, 'person' ];
+        // just get person children
+        const childTypes = getPersonChildTypes(types, model.type && model.type.id);
+        if (!childTypes.length) {
+          return $q.resolve([]);
+        }
+        options.keys = childTypes.map(type => [ contactId, type.id ]);
       }
       return DB().query('medic-client/contacts_by_parent', options)
         .then(response => response.rows);
     };
 
-    var loadChildren = function(model, options) {
-      model.children = {};
-      if (model.doc.type === 'person') {
-        return $q.resolve({});
-      }
-
-      return getChildren(model.doc._id, options)
-        .then(children => setChildrenMutedState(model, children))
-        .then(splitContactsByType)
-        .then(function(children) {
-          if (children.places && children.places.length) {
-            var childPlacesSchema = ContactSchema.get(children.places[0].doc.type);
-            children.childPlacesLabel = childPlacesSchema.pluralLabel;
-            children.childPlacesIcon = childPlacesSchema.icon;
-          }
-          return sortChildren(model, children);
-        });
+    const buildChildModels = (groups, types) => {
+      return Object.keys(groups).map(typeId => {
+        return {
+          contacts: groups[typeId],
+          type: types.find(type => type.id === typeId),
+          deceasedCount: 0
+        };
+      });
     };
 
-    var addPatientName = function(reports, contacts) {
+    const markDeceased = (model, childModels) => {
+      childModels.forEach(group => {
+        group.contacts.forEach(child => {
+          if (child.doc.date_of_death) {
+            group.deceasedCount++;
+            child.deceased = true;
+          }
+        });
+      });
+      return childModels;
+    };
+
+    const loadChildren = function(model, options) {
+      model.children = [];
+      return ContactTypes.getAll().then(types => {
+        return getChildren(model, types, options)
+          .then(children => setChildrenMutedState(model, children))
+          .then(children => addPrimaryContact(model.doc, children))
+          .then(children => groupChildrenByType(children))
+          .then(groups => buildChildModels(groups, types))
+          .then(childModels => markDeceased(model, childModels))
+          .then(childModels => sortChildren(model, childModels));
+      });
+    };
+
+    const addPatientName = function(reports, contacts) {
       reports.forEach(function(report) {
         if (report.fields && !report.fields.patient_name) {
-          var patientId = report.fields.patient_id ||
-                          report.patient_id;
-          var patient = _.findWhere(contacts, { patient_id: patientId });
+          const patientId = report.fields.patient_id || report.patient_id;
+          const patient = contacts.find(contact => contact.patient_id === patientId);
           if (patient) {
             report.fields.patient_name = patient.name;
           }
@@ -223,7 +246,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var getHeading = function(report) {
+    const getHeading = function(report) {
       if (report.validSubject && report.subject && report.subject.value) {
         return report.subject.value;
       }
@@ -233,43 +256,38 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return $translate.instant('report.subject.unknown');
     };
 
-    var addHeading = function(reports) {
-      var reportIds = _.pluck(reports, '_id');
-      return GetDataRecords(reportIds)
-              .then(function(dataRecords) {
-                dataRecords.forEach(function(dataRecord) {
-                  var report = _.find(reports, { '_id': dataRecord._id });
-                  if (report) {
-                    report.heading = getHeading(dataRecord);
-                  }
-                });
-
-                return reports;
-              });
+    const addHeading = function(reports) {
+      const reportIds = _.pluck(reports, '_id');
+      return GetDataRecords(reportIds).then(function(dataRecords) {
+        dataRecords.forEach(function(dataRecord) {
+          const report = reports.find(report => report._id === dataRecord._id);
+          if (report) {
+            report.heading = getHeading(dataRecord);
+          }
+        });
+        return reports;
+      });
     };
 
-    var getReports = function(contactDocs) {
-      var subjectIds = [];
+    const getReports = function(contactDocs) {
+      const subjectIds = [];
       contactDocs.forEach(function(doc) {
         subjectIds.push(registrationUtils.getSubjectIds(doc));
       });
-      subjectIds = _.flatten(subjectIds);
-      return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
-        .then(function(reports) {
-          reports.forEach(function(report) {
-            report.valid = !report.errors || !report.errors.length;
-          });
-          return reports;
+      const searchOptions = { subjectIds: _.flatten(subjectIds) };
+      return Search('reports', searchOptions, { include_docs: true }).then(function(reports) {
+        reports.forEach(function(report) {
+          report.valid = !report.errors || !report.errors.length;
         });
+        return reports;
+      });
     };
 
-    var loadReports = function(model) {
-      var contacts = [ model.doc ];
-      [ 'persons', 'deceased' ].forEach(function(type) {
-        if (model.children[type]) {
-          model.children[type].forEach(function(child) {
-            contacts.push(child.doc);
-          });
+    const loadReports = function(model) {
+      const contacts = [ model.doc ];
+      model.children.forEach(group => {
+        if (group.type && group.type.person) {
+          group.contacts.forEach(contact => contacts.push(contact.doc));
         }
       });
       return getReports(contacts)
@@ -281,12 +299,23 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
+    const setType = function(model, types) {
+      const typeId = model.doc.contact_type || model.doc.type;
+      model.type = types.find(type => type.id === typeId);
+    };
+
     return {
       getContact: function(id, options) {
-        return LineageModelGenerator.contact(id, options)
-          .then(function(model) {
+        return $q.all([
+          ContactTypes.getAll(),
+          LineageModelGenerator.contact(id, options)
+        ])
+          .then(function(results) {
+            const types = results[0];
+            const model = results[1];
+            
+            setType(model, types);
             setPrimaryContact(model);
-            setSchemaFields(model);
             setMutedState(model);
 
             return model;

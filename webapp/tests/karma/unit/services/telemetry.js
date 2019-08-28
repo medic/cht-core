@@ -151,14 +151,15 @@ describe('Telemetry service', () => {
           version: '3.0.0'
         }
       });
-      DB.query.withArgs('medic-client/forms', {include_docs: true}).resolves({
+      DB.query.resolves({
         rows: [
           {
             id: 'form:anc_followup',
             key: 'anc_followup',
             doc: {
               _id: 'form:anc_followup',
-              _rev: '1-abc'
+              _rev: '1-abc',
+              internalId: 'anc_followup'
             }
           }
         ]
@@ -205,6 +206,9 @@ describe('Telemetry service', () => {
             height: 1024,
           },
         });
+        chai.expect(DB.query.callCount).to.equal(1);
+        chai.expect(DB.query.args[0][0]).to.equal('medic-client/doc_by_type');
+        chai.expect(DB.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
       });
     });
 
@@ -239,9 +243,7 @@ describe('Telemetry service', () => {
           version: '3.0.0'
         }
       });
-      DB.query.withArgs('medic-client/forms', {include_docs: true}).resolves({
-        rows: []
-      });
+      DB.query.resolves({ rows: [] });
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';

@@ -14,6 +14,7 @@ angular.module('inboxDirectives').component('mmReportsList', {
 
     $scope.$on('$destroy', unsubscribe);
   },
+  controllerAs: 'reportsListCtrl',
   bindings: {
     appending: '<',
     error: '<',

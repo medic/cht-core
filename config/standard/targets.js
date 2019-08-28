@@ -1,11 +1,24 @@
-var MS_IN_DAY = extras.MS_IN_DAY;
-var MAX_DAYS_IN_PREGNANCY = extras.MAX_DAYS_IN_PREGNANCY;
-var DAYS_IN_PNC = extras.DAYS_IN_PNC;
-var immunizationForms = extras.immunizationForms;
-var postnatalForms = extras.postnatalForms;
-var isFormSubmittedInWindow = extras.isFormSubmittedInWindow;
-var isChildUnder5 = extras.isChildUnder5;
-var isHealthyDelivery = extras.isHealthyDelivery;
+const {
+  MS_IN_DAY,
+  MAX_DAYS_IN_PREGNANCY,
+  DAYS_IN_PNC,
+  immunizationForms,
+  postnatalForms,
+  isFormSubmittedInWindow,
+  isChildUnder5,
+  isHealthyDelivery,
+  isNewestPregnancy,
+  getNewestDeliveryTimestamp,
+  getNewestPregnancyTimestamp,
+  countANCVisits,
+  now,
+  isFacilityDelivery,
+  isWomanInActivePncPeriod,
+  deliveryForms,
+  countReportsSubmittedInWindow,
+  countDoses,
+  isBcgReported,
+} = require('./nools-extras');
 
 module.exports = [
   // Pregnancy related widgets
@@ -20,9 +33,9 @@ module.exports = [
 
     appliesTo: 'reports',
     appliesIf: function(c, r) {
-      if (!extras.isNewestPregnancy(c, r)) return false;
+      if (!isNewestPregnancy(c, r)) return false;
 
-      if (extras.getNewestDeliveryTimestamp(c) < extras.getNewestPregnancyTimestamp(c))
+      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c))
         return true;
 
       var lmp = new Date(r.lmp_date);
@@ -44,17 +57,8 @@ module.exports = [
     subtitle_translation_key: 'targets.this_month.subtitle',
 
     appliesTo: 'reports',
-    appliesIf: extras.isNewestPregnancy,
-    emitCustom: function(inst, c, r) {
-      var instance = createTargetInstance(
-        'pregnancy-registrations-this-month',
-        r,
-        true
-      );
-      // use contact id to avoid counting multiple pregnancies for same person
-      instance._id = c.contact._id + '~' + 'pregnancy-registrations-this-month';
-      emitTargetInstance(instance);
-    },
+    appliesIf: isNewestPregnancy,
+    idType: 'contact',
     date: 'reported',
   },
 
@@ -87,7 +91,7 @@ module.exports = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = extras.countANCVisits(
+      var visits = countANCVisits(
         c.reports,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
@@ -110,7 +114,7 @@ module.exports = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = extras.countANCVisits(
+      var visits = countANCVisits(
         c.reports,
         r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
         r.reported_date
@@ -132,7 +136,7 @@ module.exports = [
     appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
-    passesIf: extras.isFacilityDelivery,
+    passesIf: isFacilityDelivery,
     date: 'now',
   },
 
@@ -151,7 +155,7 @@ module.exports = [
 
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: extras.isWomanInActivePncPeriod,
+    appliesIf: isWomanInActivePncPeriod,
   },
 
   // PNC: PNC registrations this month
@@ -187,7 +191,7 @@ module.exports = [
     appliesIf: function(c, r) {
       return (
         postnatalForms.indexOf(r.form) !== -1 ||
-        (extras.deliveryForms.indexOf(r.form) !== -1 &&
+        (deliveryForms.indexOf(r.form) !== -1 &&
           r.fields.delivery_code &&
           r.fields.delivery_code.toUpperCase() === 'F')
       );
@@ -207,12 +211,12 @@ module.exports = [
       "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: extras.isWomanInActivePncPeriod,
+    appliesIf: isWomanInActivePncPeriod,
     passesIf: function(c) {
       return !isFormSubmittedInWindow(
         c.reports,
         postnatalForms,
-        extras.getNewestDeliveryTimestamp(c),
+        getNewestDeliveryTimestamp(c),
         now.getTime()
       );
     },
@@ -287,13 +291,13 @@ module.exports = [
 
       // PNC: WOMEN WITH 3 PNC VISITS, ALL TIME
       // Women who had 3 PNC visits confirmed during their 6-week PNC period (includes V forms and postnatal visit forms) - all-time
-      var postnatalVisits = extras.countReportsSubmittedInWindow(
+      var postnatalVisits = countReportsSubmittedInWindow(
         c.reports,
         postnatalForms,
         startPNCperiod.getTime(),
         endPNCperiod.getTime()
       );
-      if (extras.isFacilityDelivery(r)) {
+      if (isFacilityDelivery(r)) {
         postnatalVisits++;
       }
 
@@ -354,28 +358,17 @@ module.exports = [
       return immunizationForms.indexOf(r.form) !== -1;
     },
     date: 'reported',
-    emitCustom: function(inst, c, r) {
-      var i, instance;
+    emitCustom: function(emit, inst, c, r) {
       if (r.form === 'immunization_visit' || r.form === 'imm') {
         // Multiple vaccine doses can be reported in a single XForm (app or collect)
-        var totalDoses = extras.countDoses(r);
-        for (i = 0; i < totalDoses; i++) {
-          instance = createTargetInstance(
-            'imm-vaccines-given-this-month',
-            r,
-            true
-          );
-          instance._id += i;
-          emitTargetInstance(instance);
+        var totalDoses = countDoses(r);
+        for (let i = 0; i < totalDoses; i++) {
+          inst._id += i;
+          emit(inst);
         }
       } else {
         // For TextForms each vaccine is separate report
-        instance = createTargetInstance(
-          'imm-vaccines-given-this-month',
-          r,
-          true
-        );
-        emitTargetInstance(instance);
+        emit(inst);
       }
     },
   },
@@ -395,7 +388,7 @@ module.exports = [
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: function(c) {
-      var visits = extras.countReportsSubmittedInWindow(
+      var visits = countReportsSubmittedInWindow(
         c.reports,
         immunizationForms,
         now.getTime() - 92 * MS_IN_DAY,
@@ -444,10 +437,10 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: extras.isBcgReported,
+    passesIf: isBcgReported,
   },
 
-  // Nutrition: children under 5 screened for growth monitoring
+  // Children under 5 screened for growth monitoring
   {
     id: 'nutrition-children-screened-growth-monitoring',
     translation_key: 'targets.growth_monitoring.title',
@@ -463,7 +456,7 @@ module.exports = [
         return r.form === 'G';
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
 
   // Nutrition: children under 5 underweight
@@ -479,17 +472,17 @@ module.exports = [
     appliesIf: isChildUnder5,
     passesIf: function(c){
       return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && r.fields.zscore.zscore_wfa < -2;
+        return r.form === 'nutrition_screening' && r.fields.measurements.wfa < -2;
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
-
 
   // children under 5 stunted growth
   {
     id: 'children-stunted',
     translation_key: 'targets.stunted.title',
+    context: 'ctx1',
     subtitle_translation_key: 'targets.this_month.subtitle',
     type: 'count',
     icon: 'child',
@@ -499,12 +492,11 @@ module.exports = [
     appliesIf: isChildUnder5,
     passesIf: function(c){
       return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && r.fields.zscore.zscore_hfa < -2;
+        return r.form === 'nutrition_screening' && r.fields.measurements.hfa < -2;
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
-
 
   // Nutrition: children active MAM
   {
@@ -519,12 +511,11 @@ module.exports = [
     appliesIf: isChildUnder5,
     passesIf: function(c){
       return c.reports.some(function(r){
-        return r.form === 'treatment_enrollment' && r.fields.zscore && ( (r.fields.zscore.zscore_wfh >= -3 && r.fields.zscore.zscore_wfh < -2) || (r.fields.zscore.muac >= 11.5 && r.fields.zscore.muac < 12.4) );
+        return r.form === 'nutrition_screening' && ( (r.fields.measurements.wfh >= -3 && r.fields.measurements.wfh < -2) || (r.fields.measurements.muac >= 11.5 && r.fields.measurements.muac < 12.4) );
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
-
 
   // Nutrition: children active SAM
   {
@@ -539,12 +530,11 @@ module.exports = [
     appliesIf: isChildUnder5,
     passesIf: function(c){
       return c.reports.some(function(r){
-        return r.form === 'treatment_enrollment' && r.fields.zscore && (r.fields.zscore.zscore_wfh < -3 || r.fields.zscore.muac < 11.5);
+        return r.form === 'nutrition_screening' && (r.fields.measurements.wfh < -3 || r.fields.measurements.muac < 11.5);
       });
     },
-    // date: 'reported',
+    date: 'reported',
   },
-
 
   // children active OTP
   {
@@ -562,8 +552,8 @@ module.exports = [
       var death = false;
       var off = false;
       c.reports.forEach(function(r){
-        if (r.form === 'treatment_enrollment'){
-          otp = r.fields.enrollment && r.fields.enrollment.program && r.fields.enrollment.program === 'OTP';
+        if (r.form === 'nutrition_screening'){
+          otp = r.fields.treatment.program && r.fields.treatment.program === 'OTP';
         } else if (r.form === 'off'){
           off = r.fields.off && r.fields.off.reason === 'defaulter';
         } else if (r.form === 'death_confirmation'){
@@ -572,9 +562,8 @@ module.exports = [
       });
       return otp && !off && !death;
     },
-    // date: 'reported',
+    date: 'reported',
   },
-
 
   // children active SFP
   {
@@ -592,8 +581,8 @@ module.exports = [
       var death = false;
       var off = false;
       c.reports.forEach(function(r){
-        if (r.form === 'treatment_enrollment'){
-          sfp = r.fields.enrollment && r.fields.enrollment.program && r.fields.enrollment.program === 'SFP';
+        if (r.form === 'nutrition_screening'){
+          sfp = r.fields.treatment.program && r.fields.treatment.program === 'SFP';
         } else if (r.form === 'off'){
           off = r.fields.off && r.fields.off.reason === 'defaulter';
         } else if (r.form === 'death_confirmation'){
@@ -602,6 +591,6 @@ module.exports = [
       });
       return sfp && !off && !death;
     },
-    // date: 'reported',
+    date: 'reported',
   },
 ];

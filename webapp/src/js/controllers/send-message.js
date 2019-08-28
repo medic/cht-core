@@ -8,7 +8,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     $scope,
     $translate,
     $uibModalInstance,
-    ContactSchema,
+    ContactTypes,
     Select2Search,
     SendMessage,
     Settings,
@@ -76,17 +76,17 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       });
     };
 
-    var templateResult = function(row) {
+    var templateResult = function(contactTypes, row) {
       if (row.text) {
         // Either Select2 detritus such as 'Searching…', or any custom value
         // you enter, such as a raw phone number
         return row.text;
       }
 
-      var type = row.doc.type;
-      var icon = ContactSchema.get()[type].icon,
-          contact;
+      const typeId = row.doc.contact_type || row.doc.type;
+      const type = contactTypes.find(type => type.id === typeId);
 
+      let contact;
       if (row.everyoneAt) {
         // TODO: maybe with everyone at we want to change the icon to something else?
         contact = format.sender({
@@ -97,7 +97,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         contact = format.sender(row.doc);
       }
 
-      return $('<span class="fa fa-fw ' + icon + '"></span>' + contact);
+      return $('<span class="fa fa-fw ' + type.icon + '"></span>' + contact);
     };
 
     var templateSelection = function(row) {
@@ -114,35 +114,45 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     };
 
     var initPhoneField = function($phone, initialValue) {
-      return Settings().then(function(settings) {
-        return Select2Search($phone, ContactSchema.getTypes(), {
-          tags: true,
-          templateResult: templateResult,
-          templateSelection: templateSelection,
-          initialValue: initialValue,
-          sendMessageExtras: function(results) {
-            return _.chain(results)
-              .map(function (result) {
-                if (result.doc.type === ContactSchema.get().person.type) {
-                  return result;
-                }
-                return [
-                  result,
-                  {
-                    id: 'everyoneAt:' + result.id,
-                    doc: result.doc,
-                    everyoneAt: true
+      return $q.all([
+        Settings(),
+        ContactTypes.getAll()
+      ])
+        .then(results => {
+          const settings = results[0];
+          const contactTypes = results[1];
+          const personTypes = contactTypes
+            .filter(type => type.person)
+            .map(type => type.id);
+          const searchIds = contactTypes.map(type => type.id);
+          return Select2Search($phone, searchIds, {
+            tags: true,
+            templateResult: _.partial(templateResult, contactTypes),
+            templateSelection: templateSelection,
+            initialValue: initialValue,
+            sendMessageExtras: function(results) {
+              return _.chain(results)
+                .map(function (result) {
+                  if (personTypes.includes(result.doc.contact_type || result.doc.type)) {
+                    return result;
                   }
-                ];
-              })
-              .flatten()
-              .filter(function(result) {
-                return validatePhoneNumber(settings, result);
-              })
-              .value();
-          }
+                  return [
+                    result,
+                    {
+                      id: 'everyoneAt:' + result.id,
+                      doc: result.doc,
+                      everyoneAt: true
+                    }
+                  ];
+                })
+                .flatten()
+                .filter(function(result) {
+                  return validatePhoneNumber(settings, result);
+                })
+                .value();
+            }
+          });
         });
-      });
     };
 
     $uibModalInstance.rendered.then(function() {

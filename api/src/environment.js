@@ -3,7 +3,9 @@ const url = require('url'),
       { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
-  module.exports = {};
+  module.exports = {
+    serverUrl: ''
+  };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
@@ -31,3 +33,9 @@ if (UNIT_TEST_ENV) {
   );
   process.exit(1);
 }
+
+let deployInfo;
+module.exports.setDeployInfo = newDeployInfo => {
+  deployInfo = newDeployInfo;
+};
+module.exports.getDeployInfo = () => deployInfo;

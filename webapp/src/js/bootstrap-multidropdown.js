@@ -29,24 +29,30 @@
     }
 
     var $element = $(this);
+
+    var getVal = function(selector) {
+      return $element.find(selector).map(function() {
+        return $(this).find('> a').data('value');
+      }).get();
+    };
+
     state = {
       blockSelectHide: false,
       val: function() {
-        return $element.find('[role=menuitem].selected').map(function() {
-          return $(this).data('value');
-        }).get();
+        return getVal('li.selected:not(.disabled)');
       },
       options: function() {
-        return $element.find('[role=menuitem]').map(function() {
-          return $(this).data('value');
-        }).get();
+        return getVal('li:not(.disabled)');
       },
       reset: function() {
-        $element.find('[role=menuitem].selected').removeClass('selected');
+        $element.find('li').removeClass('selected disabled');
         updateMultipleSelect();
       },
       selectAll: function() {
-        $element.find('[role=menuitem]').addClass('selected');
+        $element.find('.dropdown-menu > ul > li')
+          .addClass('selected')
+          .find('li')
+          .addClass('selected disabled');
         updateMultipleSelect();
       }
     };
@@ -54,8 +60,8 @@
     var updateMultipleSelect = function() {
       return options.label(
         {
-          total: $element.find('[role=menuitem]'),
-          selected: $element.find('[role=menuitem].selected'),
+          total: $element.find('li'),
+          selected: $element.find('li.selected'),
           menu: $element
         },
         function(result) {
@@ -70,12 +76,17 @@
       state.blockSelectHide = true;
     };
 
-    var selectItem = function() {
+    var selectItem = function(e) {
+      e.stopPropagation();
+      e.preventDefault();
       var item = $(this);
       item.blur();
-      item.closest('li')
-          .find('[role=menuitem]')
-          .toggleClass('selected', !item.is('.selected'));
+      if (item.closest('li').is('.disabled')) {
+        return;
+      }
+      const update = !item.is('.selected');
+      item.find('li').toggleClass('disabled selected', update);
+      item.toggleClass('selected', update);
       updateSelected();
     };
 
@@ -93,7 +104,7 @@
         e.preventDefault();
       }
     });
-    $element.on('click', '[role=menuitem]', selectItem);
+    $element.on('click', 'li', selectItem);
     $element.on('hide.bs.dropdown', hideMenu);
 
     updateMultipleSelect();

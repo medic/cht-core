@@ -102,12 +102,12 @@ angular
     var generateMetadataSection = function() {
       return $q.all([
           DB().get('_design/medic-client'),
-          DB().query('medic-client/forms', {include_docs: true})
+          DB().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
       ]).then(([ddoc, formResults]) => {
         const date = moment(getLastAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
-          keyToVersion[row.key] = row.doc._rev;
+          keyToVersion[row.doc.internalId] = row.doc._rev;
 
           return keyToVersion;
         }, {});

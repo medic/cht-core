@@ -13,6 +13,7 @@ angular.module('inboxDirectives').component('mmResetFilter', {
 
     $scope.$on('$destroy', unsubscribe);
   },
+  controllerAs: 'resetFilterCtrl',
   bindings: {
     resetFilterModel: '<',
     selected: '<'

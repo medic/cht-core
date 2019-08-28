@@ -2,10 +2,9 @@ describe('Contacts controller', () => {
   'use strict';
 
   let assert = chai.assert,
-    buttonLabel,
     contactsLiveList,
     childType,
-    contactSchema,
+    contactTypes,
     createController,
     district,
     forms,
@@ -79,30 +78,19 @@ describe('Contacts controller', () => {
     person = { _id: 'lkasdfh', name: 'Alon', type: 'person' };
     childType = 'childType';
     icon = 'fa-la-la-la-la';
-    buttonLabel = 'ClICK ME!!';
     typeLabel = 'District';
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.clearSelection = sinon.stub();
-    contactSchema = {
-      get: sinon.stub(),
-      getChildPlaceType: sinon.stub(),
-      getPlaceTypes: sinon.stub(),
-      getTypes: sinon.stub(),
+    contactTypes = {
+      getChildren: sinon.stub(),
+      includes: sinon.stub()
     };
-    contactSchema.get.returns({
-      icon: icon,
-      addButtonLabel: buttonLabel,
-      label: typeLabel,
-    });
-    contactSchema.getChildPlaceType.returns(childType);
-    contactSchema.getPlaceTypes.returns(['district_hospital']);
-    contactSchema.getTypes.returns([
-      'person',
-      'district_hospital',
-      'clinic',
-      'health_center',
-    ]);
+    contactTypes.getChildren.resolves([{
+      id: childType,
+      icon: icon
+    }]);
+    contactTypes.includes.returns(false);
     xmlForms = sinon.stub();
     forms = [{ internalId: 'a-form', icon: 'an-icon', title: 'A Form' }];
     xmlForms.callsArgWith(2, null, forms); // call the callback
@@ -148,9 +136,7 @@ describe('Contacts controller', () => {
       loadSelectedContactChildren: sinon.stub().returns(Promise.resolve()),
       loadSelectedContactReports: sinon.stub().returns(Promise.resolve())
     };
-    getSelectedContact = () => {
-      return Selectors.getSelectedContact($ngRedux.getState());
-    };
+    getSelectedContact = () => Selectors.getSelectedContact($ngRedux.getState());
 
     tasksForContact = sinon.stub();
 
@@ -168,7 +154,7 @@ describe('Contacts controller', () => {
         $translate: $translate,
         Auth: auth,
         Changes: changes,
-        ContactSchema: contactSchema,
+        ContactTypes: contactTypes,
         ContactSummary: contactSummary,
         ContactsActions: () => Object.assign({}, contactsActions, stubbedContactsActions),
         Export: () => {},
@@ -194,18 +180,20 @@ describe('Contacts controller', () => {
         Tour: () => {},
         TranslateFrom: key => `TranslateFrom:${key}`,
         UserSettings: userSettings,
-        XmlForms: xmlForms,
+        XmlForms: { listen: xmlForms },
       });
     };
   }));
 
   it('sets title', () => {
+    const selected = {
+      doc: district,
+      type: { id: 'place', name_key: typeLabel }
+    };
     const ctrl = createController();
     return ctrl
       .getSetupPromiseForTesting()
-      .then(() => {
-        return scope.setSelected({ doc: district });
-      })
+      .then(() => scope.setSelected(selected))
       .then(() => {
         assert(ctrl.setTitle.called, 'title should be set');
         assert.equal(
@@ -223,20 +211,19 @@ describe('Contacts controller', () => {
       ctrl = createController();
       return ctrl
         .getSetupPromiseForTesting()
-        .then(() => {
-          return scope.setSelected(selected);
-        });
+        .then(() => scope.setSelected(selected));
     };
 
     it('set selected contact', () => {
-      return testContactSelection({ doc: district }).then(() => {
-        assert.checkDeepProperties(getSelectedContact(), { doc: district });
+      return testContactSelection({ doc: district, type: { id: 'place' } }).then(() => {
+        assert.checkDeepProperties(getSelectedContact().doc, district);
+        assert(ctrl.setRightActionBar.called);
       });
     });
 
     it('throws an error, sets a scope variable and resets the action bar when contact cannot be selected', () => {
       contactSummary.returns(Promise.reject());
-      return testContactSelection({ doc: district })
+      return testContactSelection({ doc: district, type: { id: 'place' } })
         .then(() => {
           throw new Error('Expected error to be thrown');
         })
@@ -295,67 +282,55 @@ describe('Contacts controller', () => {
   });
 
   describe('sets right actionBar', () => {
-    const testRightActionBar = (selected, assertions) => {
+    const testRightActionBar = (selected, person, assertions) => {
+      selected.reportLoader = Promise.resolve();
+      selected.type = person ? { id: 'person', person: true } : { id: 'place' };
       const ctrl = createController();
       return ctrl
         .getSetupPromiseForTesting()
+        .then(() => scope.setSelected(selected))
         .then(() => {
-          return scope.setSelected(selected);
-        })
-        .then(() => {
-          assert(
-            ctrl.setRightActionBar.called,
-            'right actionBar should be set'
-          );
+          assert(ctrl.setRightActionBar.called, 'right actionBar should be set');
           assertions(ctrl.setRightActionBar.getCall(1).args[0]);
         });
     };
 
-    it('with the selected doc', () => {
-      return testRightActionBar({ doc: district }, () => {
-        assert.checkDeepProperties(getSelectedContact(), { doc: district });
-      });
-    });
-
     it('for the New Place button', () => {
-      return testRightActionBar({ doc: district }, () => {
-        const selectedContact = getSelectedContact();
-        assert.equal(selectedContact.doc.child.type, childType);
-        assert.equal(selectedContact.doc.child.icon, icon);
-        assert.equal(
-          selectedContact.doc.child.addPlaceLabel,
-          buttonLabel
-        );
+      return testRightActionBar({ doc: district }, true, actionBarArgs => {
+        assert.deepEqual(actionBarArgs.childTypes, [{
+          menu_icon: 'fa-building',
+          menu_key: 'Add place',
+          permission: 'can_create_places',
+          types: [ { id: childType, icon: icon } ]
+        }]);
       });
     });
 
     it('no New Place button if no child type', () => {
-      contactSchema.getChildPlaceType.returns(undefined);
-      return testRightActionBar({ doc: person }, actionBarArgs => {
-        const selectedContact = getSelectedContact();
-        assert.equal(selectedContact.doc.child, undefined);
+      contactTypes.getChildren.resolves([]);
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
+        assert.deepEqual(actionBarArgs.childTypes, []);
         // But the other buttons are there!
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
         assert.deepEqual(actionBarArgs.sendTo, person);
-        assert.equal(selectedContact.doc._id, person._id);
       });
     });
 
     it('for the Message and Call buttons', () => {
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.checkDeepProperties(actionBarArgs.sendTo, person);
       });
     });
 
     it('no Message and Call buttons if doc is not person', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
+      return testRightActionBar({ doc: district }, false, actionBarArgs => {
         assert.equal(actionBarArgs.sendTo, '');
       });
     });
 
     it('for the New Action button', () => {
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.equal(actionBarArgs.relevantForms.length, 1);
         assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
       });
@@ -363,44 +338,34 @@ describe('Contacts controller', () => {
 
     it(`sets the actionbar partially if it couldn't get forms`, () => {
       xmlForms.callsArgWith(2, { error: 'no forms brew' }); // call the callback
-      return testRightActionBar({ doc: person }, actionBarArgs => {
-        const selectedContact = getSelectedContact();
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.equal(actionBarArgs.relevantForms, undefined);
         assert.checkDeepProperties(actionBarArgs.sendTo, person);
-        assert.equal(selectedContact.doc._id, person._id);
-        assert.equal(selectedContact.doc.child.type, childType);
-        assert.equal(selectedContact.doc.child.icon, icon);
-        assert.equal(
-          selectedContact.doc.child.addPlaceLabel,
-          buttonLabel
-        );
+        assert.deepEqual(actionBarArgs.childTypes, [{
+          menu_icon: 'fa-building',
+          menu_key: 'Add place',
+          permission: 'can_create_places',
+          types: [ { id: childType, icon: icon } ]
+        }]);
       });
     });
 
     it('disables editing for own place', () => {
-      return testRightActionBar({ doc: district }, actionBarArgs => {
+      return testRightActionBar({ doc: district }, true, actionBarArgs => {
         assert.equal(actionBarArgs.canEdit, false);
       });
     });
 
     it('enables editing for not own place', () => {
-      return testRightActionBar({ doc: person }, actionBarArgs => {
+      return testRightActionBar({ doc: person }, true, actionBarArgs => {
         assert.equal(actionBarArgs.canEdit, true);
       });
     });
 
-    it('disables deleting for places with child places', () => {
+    it('disables deleting for places with children', () => {
       return testRightActionBar(
-        { doc: district, children: { places: [district] } },
-        actionBarArgs => {
-          assert.equal(actionBarArgs.canDelete, false);
-        }
-      );
-    });
-
-    it('disables deleting for places with child people', () => {
-      return testRightActionBar(
-        { doc: district, children: { persons: [person] } },
+        { doc: district, children: [ { contacts: [ district ] } ] },
+        true,
         actionBarArgs => {
           assert.equal(actionBarArgs.canDelete, false);
         }
@@ -409,7 +374,18 @@ describe('Contacts controller', () => {
 
     it('enables deleting for leaf nodes', () => {
       return testRightActionBar(
-        { doc: district, children: { persons: [], places: [] } },
+        { doc: district, children: [] },
+        true,
+        actionBarArgs => {
+          assert.equal(actionBarArgs.canDelete, true);
+        }
+      );
+    });
+
+    it('enables deleting for nodes with no children', () => {
+      return testRightActionBar(
+        { doc: district, children: [ { contacts: [] } ] },
+        true,
         actionBarArgs => {
           assert.equal(actionBarArgs.canDelete, true);
         }
@@ -419,12 +395,15 @@ describe('Contacts controller', () => {
     describe('translates form titles', () => {
       const testTranslation = (form, expectedTitle) => {
         xmlForms.callsArgWith(2, null, [form]);
+        const selected = {
+          type: { id: 'childType' },
+          doc: district,
+          reportLoader: Promise.resolve()
+        };
         const ctrl = createController();
         return ctrl
           .getSetupPromiseForTesting()
-          .then(() => {
-            return scope.setSelected({ doc: district, reportLoader: Promise.resolve() });
-          })
+          .then(() => scope.setSelected(selected))
           .then(() => {
             assert(
               ctrl.setRightActionBar.called,
@@ -475,12 +454,16 @@ describe('Contacts controller', () => {
           }
         });
 
+        const selected = {
+          type: { id: 'childType' },
+          doc: { _id: 'my-contact', muted: false },
+          reportLoader: Promise.resolve()
+        };
+
         const ctrl = createController();
         return ctrl
           .getSetupPromiseForTesting()
-          .then(() => {
-            return scope.setSelected({ doc: { _id: 'my-contact', muted: false }, reportLoader: Promise.resolve() });
-          })
+          .then(() => scope.setSelected(selected))
           .then(() => {
             assert(
               ctrl.setRightActionBar.called,
@@ -506,13 +489,16 @@ describe('Contacts controller', () => {
             unmute_forms: ['unmute']
           }
         });
+        const selected = {
+          type: { id: 'childType' },
+          doc: { _id: 'my-contact', muted: true },
+          reportLoader: Promise.resolve()
+        };
 
         const ctrl = createController();
         return ctrl
           .getSetupPromiseForTesting()
-          .then(() => {
-            return scope.setSelected({ doc: { _id: 'my-contact', muted: true }, reportLoader: Promise.resolve() });
-          })
+          .then(() => scope.setSelected(selected))
           .then(() => {
             assert(
               ctrl.setRightActionBar.called,
@@ -536,12 +522,7 @@ describe('Contacts controller', () => {
         .then(() => {
           assert(ctrl.setLeftActionBar.called, 'left actionBar should be set');
           const actionBarArgs = ctrl.setLeftActionBar.getCall(0).args[0];
-          assert.deepEqual(actionBarArgs.userChildPlace, {
-            type: childType,
-            icon: icon,
-          });
           assert.equal(actionBarArgs.userFacilityId, district._id);
-          assert.equal(actionBarArgs.addPlaceLabel, buttonLabel);
         });
     });
 
@@ -626,8 +607,9 @@ describe('Contacts controller', () => {
         .getSetupPromiseForTesting()
         .then(() => {
           assert.deepEqual(searchService.args[0][1], {
-            types: { selected: ['district_hospital'] },
+            types: { selected: ['childType'] },
           });
+          assert.equal(contactTypes.getChildren.args[0].length, 0);
           const lhs = contactsLiveList.getList();
           assert.equal(
             lhs.length,
@@ -685,16 +667,16 @@ describe('Contacts controller', () => {
         facility_id: undefined,
       });
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(10).fill(searchResult);
+      searchResults = Array(60).fill(searchResult);
 
       return createController()
         .getSetupPromiseForTesting({ scrollLoaderStub })
         .then(() => {
           const lhs = contactsLiveList.getList();
           changesCallback({});
-          assert.equal(lhs.length, 10);
+          assert.equal(lhs.length, 60);
           assert.deepInclude(searchService.args[1][2], {
-            limit: 10,
+            limit: 60,
             silent: true,
             withIds: false,
           });
@@ -703,15 +685,15 @@ describe('Contacts controller', () => {
 
     it('when refreshing list as non-admin, does modify limit #4085', () => {
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(10).fill(searchResult);
+      searchResults = Array(60).fill(searchResult);
 
       return createController()
         .getSetupPromiseForTesting({ scrollLoaderStub })
         .then(() => {
           const lhs = contactsLiveList.getList();
-          assert.equal(lhs.length, 11);
+          assert.equal(lhs.length, 61);
           changesCallback({});
-          assert.equal(searchService.args[1][2].limit, 10);
+          assert.equal(searchService.args[1][2].limit, 60);
           assert.equal(searchService.args[1][2].skip, undefined);
         });
     });
@@ -821,6 +803,7 @@ describe('Contacts controller', () => {
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
+          contactTypes.includes.returns(true);
           assert.equal(changesFilter({ doc: { type: 'person' } }), true);
           assert.equal(changesFilter({ doc: { type: 'clinic' } }), true);
           assert.equal(changesFilter({ doc: { type: 'health_center' } }), true);
@@ -856,13 +839,13 @@ describe('Contacts controller', () => {
         .then(() => {
           changesCallback({ doc: { _id: '123' } });
           assert.equal(searchService.callCount, 2);
-          assert.equal(searchService.args[1][2].limit, 2);
+          assert.equal(searchService.args[1][2].limit, 50); // 50 is the minimum size just in case it's a new contact at the end of the list
         });
     });
 
     it('when handling deletes, does not shorten the LiveList #4080', () => {
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(30).fill(searchResult);
+      searchResults = Array(60).fill(searchResult);
 
       isAdmin = true;
       userSettings = KarmaUtils.promiseService(null, {
@@ -874,7 +857,7 @@ describe('Contacts controller', () => {
         .then(() => {
           deadListFind.returns(true);
           changesCallback({ deleted: true, doc: {} });
-          assert.equal(searchService.args[1][2].limit, 30);
+          assert.equal(searchService.args[1][2].limit, 60);
         });
     });
 
@@ -1230,7 +1213,7 @@ describe('Contacts controller', () => {
             return createController()
               .getSetupPromiseForTesting()
               .then(() => {
-                Array.apply(null, Array(5)).forEach((k, i) =>
+                Array.apply(null, Array(60)).forEach((k, i) =>
                   contactsLiveList.insert({ _id: i })
                 );
                 assert.equal(searchService.callCount, 1);
@@ -1247,7 +1230,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 60, withIds: false, silent: true, reuseExistingDom: true },
                       { displayLastVisitedDate: true, visitCountSettings: {} },
                       undefined,
                     ]);
@@ -1278,7 +1261,7 @@ describe('Contacts controller', () => {
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 5, withIds: true, silent: true, reuseExistingDom: true },
+                    { limit: 49, withIds: true, silent: true, reuseExistingDom: true },
                     {
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
@@ -1291,7 +1274,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {
                         displayLastVisitedDate: true,
                         visitCountSettings: {},
@@ -1335,7 +1318,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       { displayLastVisitedDate: true, visitCountSettings: {} },
                       undefined,
                     ]);
@@ -1364,7 +1347,7 @@ describe('Contacts controller', () => {
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 5, withIds: true, silent: true, reuseExistingDom: true },
+                    { limit: 49, withIds: true, silent: true, reuseExistingDom: true },
                     {
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
@@ -1377,7 +1360,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {
                         displayLastVisitedDate: true,
                         visitCountSettings: {},
@@ -1420,7 +1403,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {},
                       undefined,
                     ]);
@@ -1459,7 +1442,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[2], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
+                      { limit: 49, withIds: false, silent: true, reuseExistingDom: true },
                       {},
                       undefined,
                     ]);

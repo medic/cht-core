@@ -7,6 +7,7 @@ describe('Login tests : ', () => {
     wrongPassword = 'fakepass';
 
   it('should have a title', () => {
+    commonElements.goToLoginPage();
     expect(browser.getTitle()).toEqual('Medic Mobile');
   });
 

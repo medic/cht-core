@@ -88,16 +88,19 @@ const loadTranslations = () => {
   const options = { key: ['translations', true], include_docs: true };
   return db.medic
     .query('medic-client/doc_by_type', options)
+    .catch(err => {
+      logger.error('Error loading translations - starting up anyway: %o', err);
+    })
     .then(result => {
+      if (!result) {
+        return;
+      }
       result.rows.forEach(row => {
         // If the field generic does not exist then we assume that the translation document
         // has not been converted to the new format so we will use the field values
         const values = row.doc.generic ? Object.assign(row.doc.generic, row.doc.custom || {}) : row.doc.values;
         translationCache[row.doc.code] = translationUtils.loadTranslations(values);
       });
-    })
-    .catch(err => {
-      logger.error('Error loading translations - starting up anyway: %o', err);
     });
 };
 
