@@ -26,7 +26,11 @@ describe('infodoc', () => {
   describe('retrieving infodocs', () => {
     it('provides a single doc get interface', () => {
       const change = {
-        id: 'test'
+        id: 'test',
+        doc: {
+          _id: 'test',
+          _rev: '1-abc'
+        }
       };
       const infodoc = {
         _id: 'test-info',
@@ -67,8 +71,12 @@ describe('infodoc', () => {
     });
 
     it('should return infodocs when all are found in sentinel db', () => {
-      const changes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
-            infoDocs = [{ _id: 'a-info', transitions: {} }, { _id: 'b-info', transitions: {} }, { _id: 'c-info', transitions: {} }];
+      const changes = [
+        { id: 'a', doc: {_id: 'a', _rev: '1-abc'}},
+        { id: 'b', doc: {_id: 'b', _rev: '1-abc'}},
+        { id: 'c', doc: {_id: 'c', _rev: '1-abc'}}
+      ];
+      const infoDocs = [{ _id: 'a-info', transitions: {} }, { _id: 'b-info', transitions: {} }, { _id: 'c-info', transitions: {} }];
 
       sinon.stub(db.sentinel, 'allDocs')
         .resolves({ rows: infoDocs.map(doc => ({ key: doc._id, doc }))});
@@ -88,8 +96,16 @@ describe('infodoc', () => {
     });
 
     it('should return infodocs when all are found in medic db', () => {
-      const changes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
-            infoDocs = [{ _id: 'a-info', _rev: 'a-r' }, { _id: 'b-info', _rev: 'b-r' }, { _id: 'c-info', _rev: 'c-r' }];
+      const changes = [
+        { id: 'a', doc: { _id: 'a', _rev: '1-abc', transitions: { some: 'a data' }}},
+        { id: 'b', doc: { _id: 'b', _rev: '1-abc', transitions: { some: 'b data' }}},
+        { id: 'c', doc: { _id: 'c', _rev: '1-abc', transitions: { some: 'c data' }}}
+      ];
+      const infoDocs = [
+        { _id: 'a-info', _rev: 'a-r', type: 'info', doc_id: 'a' },
+        { _id: 'b-info', _rev: 'b-r', type: 'info', doc_id: 'b' },
+        { _id: 'c-info', _rev: 'c-r', type: 'info', doc_id: 'c' }
+      ];
 
       sinon.stub(db.sentinel, 'allDocs')
         .resolves({ rows: infoDocs.map(doc => ({ key: doc._id, error: 'not_found' }))});
@@ -101,9 +117,9 @@ describe('infodoc', () => {
 
       return lib.bulkGet(changes).then(result => {
         assert.deepEqual(result, [
-          { _id: 'a-info', transitions: {} },
-          { _id: 'b-info', transitions: {} },
-          { _id: 'c-info', transitions: {} }
+          { _id: 'a-info', type: 'info', doc_id: 'a', transitions: {some: 'a data'} },
+          { _id: 'b-info', type: 'info', doc_id: 'b', transitions: {some: 'b data'} },
+          { _id: 'c-info', type: 'info', doc_id: 'c', transitions: {some: 'c data'} }
         ]);
 
         assert.equal(db.sentinel.allDocs.callCount, 1);
@@ -114,7 +130,11 @@ describe('infodoc', () => {
     });
 
     it('should generate infodocs with unknown dates for existing documents, if they do not already exist', () => {
-      const changes = [{ id: 'a', doc: {_id: 'a', _rev: '1-abc' }}, { id: 'b', doc: {_id: 'b', _rev: '1-abc' }}, { id: 'c', doc: {_id: 'c', _rev: '1-abc' }}];
+      const changes = [
+        { id: 'a', doc: {_id: 'a', _rev: '1-abc' }},
+        { id: 'b', doc: {_id: 'b', _rev: '1-abc' }},
+        { id: 'c', doc: {_id: 'c', _rev: '1-abc' }}
+      ];
 
       sinon.stub(db.sentinel, 'allDocs')
         .resolves({ rows: changes.map(doc => ({ key: `${doc.id}-info`, error: 'not_found' }))});
@@ -139,7 +159,11 @@ describe('infodoc', () => {
       // This case arises in bulk SMS transition updating: the transitions (and thus getting the
       // infodocs) occurs before the document has been saved to the DB. So we can reasonably
       // accurately set the date here
-      const changes = [{ id: 'a', doc: {_id: 'a'}}, { id: 'b', doc: {_id: 'b'}}, { id: 'c', doc: {_id: 'c'}}];
+      const changes = [
+        { id: 'a', doc: {_id: 'a'}},
+        { id: 'b', doc: {_id: 'b'}},
+        { id: 'c', doc: {_id: 'c'}}
+      ];
 
       sinon.stub(db.sentinel, 'allDocs')
         .resolves({ rows: changes.map(doc => ({ key: `${doc.id}-info`, error: 'not_found' }))});
@@ -159,11 +183,6 @@ describe('infodoc', () => {
         assert.deepInclude(result[2], { _id: 'c-info', type: 'info', doc_id: 'c', transitions: {} });
         assert(result[2].initial_replication_date >= now);
         assert(result[2].latest_replication_date >= now);
-
-        assert.equal(db.sentinel.allDocs.callCount, 1);
-        assert.deepEqual(db.sentinel.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
-        assert.equal(db.medic.allDocs.callCount, 1);
-        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
       });
     });
 

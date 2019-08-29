@@ -27,6 +27,22 @@ const findInfoDocs = (database, ids) => {
 //                      changes were passed in
 //
 const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
+  if (!changes || !changes.length) {
+    return Promise.resolve();
+  }
+
+  // Short circuit: if none of the docs have ever been written to they can't have infodocs. This
+  // will happen when documents come from SMS and are being pre-processed before write.
+  if (!changes.find(c => c.doc && c.doc._rev)) {
+    const infoDocs = changes.map(c => blankInfoDoc(c.id, Date.now()));
+    infoDocs.forEach(i => i.transitions = {});
+    if (writeDirtyInfoDocs) {
+      return bulkUpdate(infoDocs);
+    } else {
+      return Promise.resolve(infoDocs);
+    }
+  }
+
   const splitInfoDocRows = results => {
     return results.reduce((acc, row) => {
       if (!row.doc) {
@@ -44,14 +60,9 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
     }, {valid: [], missing: [], missingTransitions: []});
   };
 
-  if (!changes || !changes.length) {
-    return Promise.resolve();
-  }
-
   const infoDocIds = changes.map(change => getInfoDocId(change.id));
 
   // First attempt, directly from sentinel where they should live
-  // @4.0 remove all of this and replace it with just a simple get (+ a migration to resolve legacy issues)
   return findInfoDocs(db.sentinel, infoDocIds)
     .then(results => {
       const { valid, missing, missingTransitions: missingTransitionsSentinel } = splitInfoDocRows(results);
@@ -62,32 +73,46 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
         return valid;
       }
 
-      // the infodocs missing transitions are still valid. We distinguish between them so we can
-      // check for medic-db infodocs and if they exist transfer the transition data over
+      // the infodocs missing transitions are still valid, we just need to look for their transitions!
       const infoDocs = valid.concat(missingTransitionsSentinel);
 
-      // Second attempt, look for old infodocs in the Medic DB.
+      // Missing infodocs or missing transitions may be either
       return findInfoDocs(db.medic, lookForInMedic)
         .then(results => {
           const migratedInfoDocs = [];
           const { valid, missing, missingTransitions: missingTransitionsMedic } = splitInfoDocRows(results);
 
-          // There is no interesting reason for a legacy medic infodoc to not have transitions, it's valid enough!
+          // Back when infodocs were in the medic db, transitions were still stored against the
+          // actual document. We'll deal with this below
           valid.push(...missingTransitionsMedic);
 
           // Convert valid MedicDB infodocs into Sentinel ones
           valid.forEach(medicInfoDoc => {
             const sentinelInfoDoc = missingTransitionsSentinel.find(d => d._id === medicInfoDoc._id);
-            const doc = changes.find(change => change.doc && change.doc._id === medicInfoDoc._id) || {};
+
+            const change = changes.find(change => change.id === medicInfoDoc.doc_id);
 
             if (sentinelInfoDoc) {
-              // Augment the sentinel info doc with the existing transition information
-              sentinelInfoDoc.transitions = medicInfoDoc.transitions || doc.transitions;
+              // Merge information from the medic infodoc into sentinel's
+              Object.keys(medicInfoDoc).forEach(k => {
+                if (sentinelInfoDoc[k] === undefined) {
+                  sentinelInfoDoc[k] = medicInfoDoc[k];
+                }
+              });
+
+              // Explicitly take the older (and so more correct) initial_replication_date. These would
+              // be different if a new write occurred on an old infodoc-unmigrated document, as api
+              // creates a new sentinel infodoc with an initial and latest replication date
+              sentinelInfoDoc.initial_replication_date = medicInfoDoc.initial_replication_date;
+
+              // Source transitions from the document if they don't exist
+              sentinelInfoDoc.transitions = sentinelInfoDoc.transitions || (change.doc && change.doc.transitions) || {};
+
               migratedInfoDocs.push(sentinelInfoDoc);
             } else {
               const infoDoc = Object.assign({}, medicInfoDoc);
               delete infoDoc._rev;
-              infoDoc.transitions = doc.transitions;
+              infoDoc.transitions = change.doc.transitions;
               infoDocs.push(infoDoc);
               migratedInfoDocs.push(infoDoc);
             }

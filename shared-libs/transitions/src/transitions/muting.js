@@ -49,7 +49,6 @@ const isRelevantReport = (doc, info = {}) =>
 //
 const isRelevantContact = (doc, infoDoc = {}) =>
   Boolean(doc &&
-          ['person', 'clinic', 'health_center', 'district_hospital'].includes(doc.type) &&
           isContact(doc) &&
           !doc.muted &&
           // If initial_replication_date is 'unknown' .getTime() will return NaN, which is an

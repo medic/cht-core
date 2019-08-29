@@ -214,7 +214,7 @@ describe('muting', () => {
       });
   });
 
-  it('should mute and unmute a person', () => {
+  fit('should mute and unmute a person', () => {
     const settings = {
       transitions: { muting: true },
       muting: {
@@ -300,13 +300,16 @@ describe('muting', () => {
     let muteTime,
         unmuteTime;
 
+    console.log('AAAAAAAAAA');
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(extraContacts))
-      .then(() => utils.saveDoc(mute1))
-      .then(() => sentinelUtils.waitForSentinel(mute1._id))
-      .then(() => sentinelUtils.getInfoDocs([mute1._id, 'person', 'person2', 'clinic']))
+      .then(() => console.log('0001') || utils.saveDocs(extraContacts))
+      .then(() => console.log('0002') || utils.saveDoc(mute1))
+      .then(() => console.log('0003') || sentinelUtils.waitForSentinel(mute1._id))
+      .then(() => console.log('0004') || sentinelUtils.getInfoDocs([mute1._id, 'person', 'person2', 'clinic']))
       .then(infos => {
+        console.log('STAGE');
+        console.log(JSON.stringify(infos, null, 2));
         expect(infos[0].transitions).toBeDefined();
         expect(infos[0].transitions.muting).toBeDefined();
         expect(infos[0].transitions.muting.ok).toBe(true);
@@ -691,10 +694,7 @@ describe('muting', () => {
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
-      .then(() => {
-        person.reported_date = Date.now();
-        return utils.saveDoc(person);
-      })
+      .then(() => utils.saveDoc(person))
       .then(() => sentinelUtils.waitForSentinel(person._id))
       .then(() => sentinelUtils.getInfoDoc(person._id))
       .then((info) => {
