@@ -300,16 +300,13 @@ describe('muting', () => {
     let muteTime,
         unmuteTime;
 
-    console.log('AAAAAAAAAA');
     return utils
       .updateSettings(settings, true)
-      .then(() => console.log('0001') || utils.saveDocs(extraContacts))
-      .then(() => console.log('0002') || utils.saveDoc(mute1))
-      .then(() => console.log('0003') || sentinelUtils.waitForSentinel(mute1._id))
-      .then(() => console.log('0004') || sentinelUtils.getInfoDocs([mute1._id, 'person', 'person2', 'clinic']))
+      .then(() => utils.saveDocs(extraContacts))
+      .then(() => utils.saveDoc(mute1))
+      .then(() => sentinelUtils.waitForSentinel(mute1._id))
+      .then(() => sentinelUtils.getInfoDocs([mute1._id, 'person', 'person2', 'clinic']))
       .then(infos => {
-        console.log('STAGE');
-        console.log(JSON.stringify(infos, null, 2));
         expect(infos[0].transitions).toBeDefined();
         expect(infos[0].transitions.muting).toBeDefined();
         expect(infos[0].transitions.muting.ok).toBe(true);

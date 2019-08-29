@@ -22,25 +22,13 @@ const findInfoDocs = (database, ids) => {
 // Given a set of changes, find all the infoDocs or create them as necessary. Also takes care of
 // migrating legacy infodocs from the medic db, and legacy transition information from records.
 //
-// @param      {Array}  changes  an array of PouchDB changes objects
+// @param      {Array}  changes  an array of PouchDB changes objects, each containing at least {id, doc}
 // @return     {Array}  array of infodocs. NB: will not necessarily be in the same order as the
 //                      changes were passed in
 //
 const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
   if (!changes || !changes.length) {
     return Promise.resolve();
-  }
-
-  // Short circuit: if none of the docs have ever been written to they can't have infodocs. This
-  // will happen when documents come from SMS and are being pre-processed before write.
-  if (!changes.find(c => c.doc && c.doc._rev)) {
-    const infoDocs = changes.map(c => blankInfoDoc(c.id, Date.now()));
-    infoDocs.forEach(i => i.transitions = {});
-    if (writeDirtyInfoDocs) {
-      return bulkUpdate(infoDocs);
-    } else {
-      return Promise.resolve(infoDocs);
-    }
   }
 
   const splitInfoDocRows = results => {
@@ -152,7 +140,7 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
 
           // Store any infoDocs that have been migrated.
           if (writeDirtyInfoDocs && migratedInfoDocs.length) {
-            return bulkUpdate(migratedInfoDocs).then(() => infoDocs);
+            return bulkUpdate(migratedInfoDocs);
           } else {
             return infoDocs;
           }
@@ -228,6 +216,7 @@ const bulkUpdate = infoDocs => {
       return findInfoDocs(db.sentinel, conflictingInfoDocs.map(d => d._id))
         .then(freshInfoDocs => {
           freshInfoDocs.forEach(({doc: freshInfoDoc}, idx) => {
+            conflictingInfoDocs[idx]._rev = freshInfoDoc._rev; // TODO: unit test this
             conflictingInfoDocs[idx].initial_replication_date = freshInfoDoc.initial_replication_date;
             conflictingInfoDocs[idx].latest_replication_date = freshInfoDoc.latest_replication_date;
           });

@@ -106,7 +106,7 @@ const updateMutingHistories = (contacts, muted, reportId) => {
   }
 
   return infodoc
-    .bulkGet(contacts.map(contact => ({ id: contact._id })))
+    .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact})))
     .then(infoDocs => infoDocs.map(info => addMutingHistory(info, muted, reportId)))
     .then(infoDocs => infodoc.bulkUpdate(infoDocs));
 };
