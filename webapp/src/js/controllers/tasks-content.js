@@ -90,7 +90,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
             return Enketo.render('#task-report', formDoc, action.content, markFormEdited)
               .then(function(formInstance) {
                 $scope.form = formInstance;
-                $scope.loadingForm = false;
+                ctrl.loadingForm = false;
                 if (formDoc.translation_key) {
                   $scope.setTitle($translate.instant(formDoc.translation_key));
                 } else {
