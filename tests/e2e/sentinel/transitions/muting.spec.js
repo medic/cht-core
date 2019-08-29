@@ -214,7 +214,7 @@ describe('muting', () => {
       });
   });
 
-  fit('should mute and unmute a person', () => {
+  it('should mute and unmute a person', () => {
     const settings = {
       transitions: { muting: true },
       muting: {
