@@ -73,8 +73,6 @@ module.exports = function(state, action) {
       return Object.assign({}, state, { forms: action.payload.forms });
     case actionTypes.SET_IS_ADMIN:
       return Object.assign({}, state, { isAdmin: action.payload.isAdmin });
-    case actionTypes.SET_LAST_CHANGED_DOC:
-      return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
     case actionTypes.SET_LOADING_CONTENT:
       return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
     case actionTypes.SET_LOADING_SUB_ACTION_BAR:

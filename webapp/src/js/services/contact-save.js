@@ -9,7 +9,7 @@ angular.module('inboxServices').service('ContactSave',
     DB,
     EnketoTranslation,
     ExtractLineage,
-    GlobalActions
+    ServicesActions
   ) {
 
     'use strict';
@@ -19,9 +19,9 @@ angular.module('inboxServices').service('ContactSave',
 
     const self = this;
     const mapDispatchToTarget = (dispatch) => {
-      const globalActions = GlobalActions(dispatch);
+      const servicesActions = ServicesActions(dispatch);
       return {
-        setLastChangedDoc: globalActions.setLastChangedDoc
+        setLastChangedDoc: servicesActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);

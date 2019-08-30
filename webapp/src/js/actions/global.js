@@ -94,10 +94,6 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
 
-      function setLastChangedDoc(value) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
-      }
-
       function setLoadingContent(loading) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_CONTENT, 'loadingContent', loading));
       }
@@ -209,7 +205,6 @@ angular.module('inboxServices').factory('GlobalActions',
         setForms,
         setIsAdmin,
         setLeftActionBar,
-        setLastChangedDoc,
         setLoadingContent,
         setLoadingShowContent,
         setLoadingSubActionBar,

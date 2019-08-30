@@ -66,7 +66,7 @@ describe('Enketo service', () => {
     </model>`;
 
   let service,
-      GlobalActions;
+      ServicesActions;
   const enketoInit = sinon.stub(),
       transform = sinon.stub(),
       dbGetAttachment = sinon.stub(),
@@ -100,7 +100,7 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
 
-    GlobalActions = { setLastChangedDoc: sinon.stub() };
+    ServicesActions = { setLastChangedDoc: sinon.stub() };
 
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -132,7 +132,7 @@ describe('Enketo service', () => {
       });
       $provide.value('ZScore', () => Promise.resolve(sinon.stub()));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('GlobalActions', () => GlobalActions);
+      $provide.value('ServicesActions', () => ServicesActions);
     });
     inject(function(_Enketo_) {
       service = _Enketo_;
@@ -537,8 +537,8 @@ describe('Enketo service', () => {
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
         expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -579,8 +579,8 @@ describe('Enketo service', () => {
         expect(AddAttachment.args[0][1]).to.equal('content');
         expect(AddAttachment.args[0][2]).to.equal(content);
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
-        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -652,8 +652,8 @@ describe('Enketo service', () => {
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
 
-        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
+        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
       });
     });
 

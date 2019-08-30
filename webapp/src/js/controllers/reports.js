@@ -29,6 +29,7 @@ angular
     Search,
     SearchFilters,
     Selectors,
+    ServicesActions,
     Tour
   ) {
     'use strict';
@@ -49,7 +50,8 @@ angular
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const reportsActions = ReportsActions(dispatch);
-      return Object.assign({}, globalActions, reportsActions);
+      const servicesActions = ServicesActions(dispatch);
+      return Object.assign({}, globalActions, servicesActions, reportsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
@@ -166,7 +168,7 @@ angular
         ctrl.clearSelected();
         return;
       }
-      $scope.setLoadingContent(report);
+      ctrl.setLoadingShowContent(report);
       fetchFormattedReport(report)
         .then(function(model) {
           if (model) {

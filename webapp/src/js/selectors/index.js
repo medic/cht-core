@@ -14,7 +14,6 @@ const getFacilities = state => getGlobalState(state).facilities;
 const getFilters = state => getGlobalState(state).filters;
 const getForms = state => getGlobalState(state).forms;
 const getIsAdmin = state => getGlobalState(state).isAdmin;
-const getLastChangedDoc = state => getGlobalState(state).lastChangedDoc;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 const getReplicationStatus = state => getGlobalState(state).replicationStatus;
@@ -62,6 +61,10 @@ const getSelectedReportsDocs = reselect.createSelector(
 );
 const getVerifyingReport = state => getReportsState(state).verifyingReport;
 
+// Services
+const getServicesState = state => state.services;
+const getLastChangedDoc = state => getServicesState(state).lastChangedDoc;
+
 // Tasks
 const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
@@ -80,7 +83,6 @@ angular.module('inboxServices').constant('Selectors', {
   getFilters,
   getForms,
   getIsAdmin,
-  getLastChangedDoc,
   getLoadingContent,
   getLoadingSubActionBar,
   getReplicationStatus,
@@ -111,6 +113,8 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedReportsValidChecks,
   getSelectedReportsDocs,
   getVerifyingReport,
+
+  getLastChangedDoc,
 
   getTasksState,
   getSelectedTask

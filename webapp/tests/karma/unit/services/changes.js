@@ -59,9 +59,9 @@ describe('Changes service', function() {
       });
       $provide.value('$log', log);
     });
-    inject(function(_Changes_, $ngRedux, GlobalActions, Selectors) {
+    inject(function(_Changes_, $ngRedux, ServicesActions, Selectors) {
       service = _Changes_;
-      dispatch = GlobalActions($ngRedux.dispatch);
+      dispatch = ServicesActions($ngRedux.dispatch);
       getLastChangedDoc = () => Selectors.getLastChangedDoc($ngRedux.getState());
       service().then(done);
     });
