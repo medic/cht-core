@@ -2,10 +2,10 @@ describe('TasksContentCtrl', () => {
   const { expect } = chai;
 
   let $scope,
+      subscribe,
       tasksActions,
       getEnketoEditedStatus,
       task,
-      watchCallback,
       ctrl,
       createController,
       render,
@@ -22,16 +22,15 @@ describe('TasksContentCtrl', () => {
     XmlForms = { get: sinon.stub() };
     $scope = {
       $on: () => {},
-      $watch: (prop, cb) => {
-        watchCallback = cb;
-      },
       setSelected: () => tasksActions.setSelectedTask(task)
     };
+    subscribe = sinon.stub($ngRedux, 'subscribe');
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
     render.resolves();
     createController = () => {
       ctrl = $controller('TasksContentCtrl', {
         $scope: $scope,
+        $ngRedux: $ngRedux,
         $q: Q,
         Enketo: { render: render },
         DB: sinon.stub(),
@@ -42,7 +41,7 @@ describe('TasksContentCtrl', () => {
   }));
 
   afterEach(() => {
-    KarmaUtils.restore(render, XmlForms);
+    KarmaUtils.restore(render, XmlForms, subscribe);
   });
 
   it('loads form when task has one action and no fields', done => {
@@ -56,7 +55,7 @@ describe('TasksContentCtrl', () => {
     const form = { _id: 'myform', title: 'My Form' };
     XmlForms.get.resolves(form);
     createController();
-    watchCallback();
+    subscribe.args[0][0](); // invoke the subscribe callback
     expect($scope.formId).to.equal('A');
     setTimeout(() => {
       expect(render.callCount).to.equal(1);
@@ -115,7 +114,7 @@ describe('TasksContentCtrl', () => {
     };
     XmlForms.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
     createController();
-    watchCallback();
+    subscribe.args[0][0](); // invoke the subscribe callback
     setTimeout(() => {
       expect(ctrl.loadingForm).to.equal(false);
       expect($scope.contentError).to.equal(true);
