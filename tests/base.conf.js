@@ -46,6 +46,7 @@ class BaseConfig {
       afterLaunch: function(exitCode) {
         return new Promise(function(resolve) {
           return request.post('http://localhost:31337/die')
+            .catch(() => {}) // On travis this doesn't currently work: https://github.com/medic/medic/issues/5915
             .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
         });
       },

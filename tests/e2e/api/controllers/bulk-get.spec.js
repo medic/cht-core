@@ -277,7 +277,7 @@ describe('bulk-docs handler', () => {
         expect(result.results[0].docs[0].ok._revisions).toBeTruthy();
         expect(result.results[0].docs[0].ok._revisions.ids.length).toEqual(5);
 
-        expect(result.results[1].id).toEqual('a2');
+        expect(result.results[1].id).toEqual('a2 INTENTIONALLY FAIL THIS TEST');
         expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions).toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions.ids.length).toEqual(4);
