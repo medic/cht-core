@@ -129,6 +129,39 @@ describe('infodoc', () => {
       });
     });
 
+    it('should try to fill transition information from the medic doc if sentinel infodocs exist with no transition information', () => {
+      const changes = [
+        { id: 'a', doc: { _id: 'a', _rev: '1-abc', transitions: { some: 'a data' }}},
+        { id: 'b', doc: { _id: 'b', _rev: '1-abc', transitions: { some: 'b data' }}},
+        { id: 'c', doc: { _id: 'c', _rev: '1-abc', transitions: { some: 'c data' }}}
+      ];
+      const infoDocs = [
+        { _id: 'a-info', _rev: 'a-r', type: 'info', doc_id: 'a' },
+        { _id: 'b-info', _rev: 'b-r', type: 'info', doc_id: 'b' },
+        { _id: 'c-info', _rev: 'c-r', type: 'info', doc_id: 'c' }
+      ];
+
+      sinon.stub(db.sentinel, 'allDocs')
+        .resolves({ rows: infoDocs.map(doc => ({ key: doc._id, doc }))});
+      sinon.stub(db.medic, 'allDocs')
+        .resolves({ rows: infoDocs.map(doc => ({ key: doc._id, error: 'not_found' }))});
+      sinon.stub(db.medic, 'bulkDocs')
+        .resolves();
+
+      return lib.bulkGet(changes).then(result => {
+        assert.deepEqual(result, [
+          { _id: 'a-info', _rev: 'a-r', type: 'info', doc_id: 'a', transitions: {some: 'a data'} },
+          { _id: 'b-info', _rev: 'b-r', type: 'info', doc_id: 'b', transitions: {some: 'b data'} },
+          { _id: 'c-info', _rev: 'c-r', type: 'info', doc_id: 'c', transitions: {some: 'c data'} }
+        ]);
+
+        assert.equal(db.sentinel.allDocs.callCount, 1);
+        assert.deepEqual(db.sentinel.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
+        assert.equal(db.medic.allDocs.callCount, 1);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
+      });
+    });
+
     it('should generate infodocs with unknown dates for existing documents, if they do not already exist', () => {
       const changes = [
         { id: 'a', doc: {_id: 'a', _rev: '1-abc' }},
@@ -305,10 +338,12 @@ describe('infodoc', () => {
       const initialInfoDocs = [
         {
           _id: 'test-info',
+          _rev: '1-abc',
           this: 'one will not conflict'
         },
         {
           _id: 'test2-info',
+          _rev: '1-abc',
           this: 'one will',
           initial_replication_date: 'unknown',
           latest_replication_date: 'unknown',
@@ -324,7 +359,7 @@ describe('infodoc', () => {
         {
           ok: true,
           id: 'test-info',
-          rev: '1-abc'
+          rev: '2-abc'
         },
         {
           id: 'test2-info',
@@ -334,6 +369,7 @@ describe('infodoc', () => {
       ]);
       sentinelAllDocs.resolves({ rows: [{ doc: {
         _id: 'test2-info',
+        _rev: '1-bca',
         extra: 'data',
         initial_replication_date: new Date(),
         latest_replication_date: new Date(),
@@ -341,23 +377,32 @@ describe('infodoc', () => {
           'old': 'transition data'
         }
       }}]});
-      sentinelBulkDocs.onSecondCall().resolves([
-        {
+      let secondWrite;
+      sentinelBulkDocs.onSecondCall().callsFake(args => {
+        secondWrite = Object.assign({}, args[0]);
+        return Promise.resolve([{
           ok: true,
           id: 'test2-info',
-          rev: '2-abc'
-        },
-      ]);
+          rev: '2-bca'
+        }]);
+      });
 
       return lib.bulkUpdate(initialInfoDocs)
         .then(() => {
           assert.equal(sentinelBulkDocs.callCount, 2);
           assert.equal(sentinelAllDocs.callCount, 1);
-          assert.equal(sentinelAllDocs.args[0][0].keys[0], 'test2-info');
-          const conflictWrite = sentinelBulkDocs.args[1][0][0];
-          assert.isOk(conflictWrite.initial_replication_date instanceof Date);
-          assert.isOk(conflictWrite.latest_replication_date instanceof Date);
-          assert.deepEqual(conflictWrite.transitions, {'new': 'transition data'});
+          assert.deepEqual(sentinelAllDocs.args[0][0].keys, ['test2-info']);
+          assert.isOk(secondWrite.initial_replication_date instanceof Date);
+          assert.isOk(secondWrite.latest_replication_date instanceof Date);
+          assert.deepInclude(secondWrite, {
+            _id: 'test2-info',
+            _rev: '1-bca',
+            this: 'one will',
+            transitions: {
+              new: 'transition data'
+            }
+          });
+          assert.deepEqual(secondWrite.transitions, {'new': 'transition data'});
         });
     });
   });

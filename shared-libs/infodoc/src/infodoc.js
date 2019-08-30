@@ -216,7 +216,7 @@ const bulkUpdate = infoDocs => {
       return findInfoDocs(db.sentinel, conflictingInfoDocs.map(d => d._id))
         .then(freshInfoDocs => {
           freshInfoDocs.forEach(({doc: freshInfoDoc}, idx) => {
-            conflictingInfoDocs[idx]._rev = freshInfoDoc._rev; // TODO: unit test this
+            conflictingInfoDocs[idx]._rev = freshInfoDoc._rev;
             conflictingInfoDocs[idx].initial_replication_date = freshInfoDoc.initial_replication_date;
             conflictingInfoDocs[idx].latest_replication_date = freshInfoDoc.latest_replication_date;
           });
