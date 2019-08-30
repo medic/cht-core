@@ -162,7 +162,7 @@ describe('reminders', () => {
         assert.equal(reminders.__get__('matchReminder').callCount, 1);
         assert.deepEqual(reminders.__get__('matchReminder').args[0], [reminder]);
         assert.equal(reminders.__get__('sendReminders').callCount, 1);
-        assert.deepEqual(reminders.__get__('sendReminders').args[0], [{ reminder, date }]);
+        assert.deepEqual(reminders.__get__('sendReminders').args[0], [reminder, date]);
       });
     });
 
@@ -280,6 +280,243 @@ describe('reminders', () => {
         assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(oneDay / 2).toDate()]);
       });
     });
+
+    it('matches reminder with moment if in last hour', () => {
+      clock.tick(oneDay);
+      const ts = moment().startOf('hour');
+      reminders.__set__('getReminderWindow', sinon.stub().resolves(moment().subtract(1, 'hour')));
+
+      return matchReminder({ cron: moment().format('0 HH * * *')})
+        // will generate cron job matching the current hour
+        .then(matches => {
+          assert(matches);
+          assert.equal(matches.valueOf(), ts.valueOf());
+        });
+    });
+
+    it('does not match reminder if in next minute', () => {
+      clock.tick(oneDay);
+      const past = moment().subtract(1, 'hour');
+      const now = moment();
+      reminders.__set__('getReminderWindow', sinon.stub().resolves(past));
+      return matchReminder({  cron: now.clone().add(1, 'minute').format('m HH * * *') })
+        // generate cron job 1 minute into future
+        .then(matches => {
+          assert.equal(matches, false);
+        });
+    });
+
+    it('does not match if previous to reminder', () => {
+      clock.tick(oneDay);
+      const now = moment().subtract(2, 'hours');
+      reminders.__set__('getReminderWindow', sinon.stub().resolves( moment().subtract(1, 'hour')));
+
+      return matchReminder({ cron: now.format('59 HH * * *')}).then(matches => {
+        // will generate cron job matching the previous hour
+        assert.equal(matches, false);
+      });
+    });
+
+    it('getReminderWindow returns a day ago when no results from db', () => {
+      const time = moment().startOf('hour').subtract(1, 'day');
+      db.medic.allDocs.resolves({ rows: [] });
+
+      return reminders.__get__('getReminderWindow')({}).then(start => {
+        assert(start);
+        assert.equal(start.valueOf(), time.valueOf());
+      });
+    });
+
+    it('getReminderWindow calls view looking for old events and returns date found', () => {
+      const now = moment();
+      db.medic.allDocs.resolves({ rows: [{
+        id: `reminder:XXX:${now.clone().subtract(1, 'hour').valueOf()}`
+        }] });
+
+      return reminders.__get__('getReminderWindow')({ form: 'XXX'}).then(start => {
+        assert.equal(db.medic.allDocs.callCount, 1);
+        assert.deepEqual(db.medic.allDocs.args[0][0], {
+          descending: true,
+          limit: 1,
+          startkey: `reminder:XXX:${Math.floor(moment().valueOf() / 1000)}:\ufff0`,
+          endkey: `reminder:XXX:${now.clone().startOf('hour').subtract(1, 'day').valueOf()}:`
+        });
+        assert.equal(start.toISOString(), now.clone().subtract(1, 'hour').toISOString());
+      });
+    });
+  });
+
+  describe('sendReminders', () => {
+    it('should call getLeafPlaces', () => {
+      reminders.__set__('getLeafPlaces', sinon.stub().resolves([]));
+
+      return reminders.__get__('sendReminders')().then(() => {
+        assert(reminders.__get__('getLeafPlaces').called);
+      });
+    });
+
+    describe('getLeafPlaces', () => {
+      it('it calls db view and hydrates docs', () => {
+        sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'xxx' }] });
+        sinon.stub(db.medic, 'allDocs')
+          .withArgs({ keys: ['reminder:frm:5000:xxx'] }).resolves({ rows: [{ key: 'reminder:frm:5000:xxx', error: 'not_found' }] })
+          .withArgs({ keys: ['xxx'], include_docs: true }).resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
+
+        sinon.stub(config, 'get').returns([
+          { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
+          { id: 'clinic', parents: [ 'health_center' ] },            // queried
+          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
+          { id: 'district_hospital' }
+        ]);
+        reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
+
+        return reminders
+          .__get__('getLeafPlaces')({ form: 'frm' }, moment(5000))
+          .then(places => {
+            assert(Array.isArray(places));
+            assert.equal(places.length, 1);
+            assert.deepEqual(places, [{ _id: 'xxx', contact: 'maria' }]);
+            assert.equal(db.medic.query.callCount, 1);
+            assert.equal(db.medic.query.args[0][0], 'medic-client/contacts_by_type');
+            assert.deepEqual(db.medic.query.args[0][1].keys, [[ 'clinic' ]]);
+            assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
+            assert.deepEqual(reminders.__get__('lineage').hydrateDocs.args[0], [[{ _id: 'xxx', contact: { _id: 'maria' } }]]);
+          });
+      });
+
+      it('it ignores places with matching reminders', () => {
+        const now = moment(1234);
+        sinon.stub(db.medic, 'query').resolves({ rows: [
+            { id: 'xxx' },
+            { id: 'yyx' },
+            { id: 'yyy' },
+            { id: 'yyz' }
+          ] });
+        sinon.stub(db.medic, 'allDocs');
+        db.medic.allDocs
+          .withArgs({ keys: ['reminder:frm:1234:xxx', 'reminder:frm:1234:yyx', 'reminder:frm:1234:yyy', 'reminder:frm:1234:yyz'] })
+          .resolves({ rows: [
+              { key: 'reminder:frm:1234:xxx', error: 'not_found' },
+              { key: 'reminder:frm:1234:yyx', id: 'reminder:frm:1234:yyx', value: { rev: '1-something'} },
+              { key: 'reminder:frm:1234:yyy', error: 'not_found' },
+              { key: 'reminder:frm:1234:yyz', error: 'not_found' },
+            ] });
+        db.medic.allDocs
+          .withArgs({ keys: ['xxx', 'yyy', 'yyz'], include_docs: true })
+          .resolves({ rows: [
+              { doc: { _id: 'xxx', contact: 'one' } },
+              { doc: { _id: 'yyy', contact: 'two' } },
+              { doc: { _id: 'yyz', contact: 'three' } }
+          ]});
+        reminders.__set__('lineage', { hydrateDocs: sinon.stub().callsFake(d => d) });
+
+        return reminders
+          .__get__('getLeafPlaces')({ form: 'frm' }, now)
+          .then(places => {
+            assert.deepEqual(places.map(place => place._id), ['xxx', 'yyy', 'yyz']);
+          });
+      });
+    });
+
+    describe('canSend', () => {
+      it('should return true if no sent forms', () => {
+        const now = moment();
+        const canSend = reminders.__get__('canSend')({ form: 'XXX' }, now, { _id: 'doc', contact: 'aaa' });
+        assert.equal(canSend, true);
+      });
+
+      it('should return false if a sent_forms within lockout period of reminder', () => {
+        const now = moment();
+        const reminder = {
+          form: 'XXX',
+          mute_after_form_for: '3 days'
+        };
+        const place = {
+          contact: {},
+          sent_forms: {
+            XXX: now.clone().subtract(2, 'days').toISOString()
+          }
+        };
+        const canSend = reminders.__get__('canSend')(reminder, now, place);
+        assert.equal(canSend, false);
+      });
+
+      it('should return true if a sent_forms outside of lockout period of reminder', () => {
+        const now = moment();
+        const reminder = {
+          form: 'XXX',
+          mute_after_form_for: '3 days'
+        };
+        const place = {
+          contact: {},
+          sent_forms: {
+            XXX: now.clone().subtract(3, 'days').subtract(1, 'minute').toISOString()
+          }
+        };
+        const canSend = reminders.__get__('canSend')(reminder, now, place);
+        assert.equal(canSend, true);
+      });
+    });
+
+    it('should do nothing if no places found', () => {
+      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(db.medic, 'query').resolves({ rows: [] });
+      const lineage = { hydrateDocs: sinon.stub() };
+      const messages = { addMessage: sinon.stub() };
+      sinon.stub(db.medic, 'allDocs');
+      sinon.stub(db.medic, 'bulkDocs');
+      reminders.__set__('lineage', lineage);
+      reminders.__set__('messages', messages);
+      return reminders
+        .__get__('sendReminders')({ form: 'frm' }, moment(1000))
+        .then(() => {
+          assert.equal(db.medic.bulkDocs.callCount, 0);
+          assert.equal(lineage.hydrateDocs.callCount, 0);
+          assert.equal(db.medic.allDocs.callCount, 0);
+          assert.equal(messages.addMessage.callCount, 0);
+          assert.equal(db.medic.query.callCount, 1);
+          assert.deepEqual(db.medic.query.args[0], [
+            'medic-client/contacts_by_type',
+            { keys: [['tier2']] }
+          ]);
+        });
+    });
+
+    it('should ignore places that already have a reminder', () => {
+      const now = moment(1000);
+      const reminder = { form: 'rform' };
+      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] });
+      const lineage = { hydrateDocs: sinon.stub() };
+      const messages = { addMessage: sinon.stub() };
+      reminders.__set__('lineage', lineage);
+      reminders.__set__('messages', messages);
+      sinon.stub(db.medic, 'allDocs')
+        .withArgs({ keys: ['reminder:rform:1000:doc1', 'reminder:rform:1000:doc2'] })
+        .resolves({ rows: [
+            { id: 'reminder:rform:1000:doc1', error: true },
+            { id: 'reminder:rform:1000:doc2', value: { rev: '2-something', deleted: true } }
+            ]});
+      return reminders.__get__('sendReminders')(reminder, now).then(() => {
+        assert.equal(db.medic.bulkDocs.callCount, 0);
+        assert.equal(lineage.hydrateDocs.callCount, 0);
+        assert.equal(db.medic.allDocs.callCount, 1);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['reminder:rform:1000:doc1', 'reminder:rform:1000:doc2'] }]);
+        assert.equal(messages.addMessage.callCount, 0);
+      });
+    });
+
+    it('should exclude places that have no contact', () => {
+
+    });
+
+    it('should exclude places that are muted', () => {
+
+    });
+
+    it('should exclude places that have a reminder in mute interval ', () => {
+
+    });
   });
 });
 
@@ -294,176 +531,6 @@ describe('reminders', () => {
 
 
 
-
-
-
-  it('matches reminder with moment if in last hour', done => {
-    var ts = moment().startOf('hour');
-    sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour'));
-
-    reminders.matchReminder({
-      reminder: {
-        cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
-      }
-    }, function(err, matches) {
-      assert.equal(err, null);
-      assert(matches);
-      assert.equal(matches.valueOf(), ts.valueOf());
-      done();
-    });
-  });
-
-  it('runReminder decorates options with moment if found', done => {
-    const now = moment();
-    sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, now);
-    const sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
-    reminders.runReminder({}, function() {
-      var moment = sendReminders.getCall(0).args[0].moment;
-      assert(moment);
-      assert.equal(moment.valueOf(), now.valueOf());
-      done();
-    });
-  });
-
-  it('does not match reminder if in next minute', done => {
-    const past = moment().subtract(1, 'hour');
-    const now = moment();
-    sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, past);
-    reminders.matchReminder({
-      reminder: {
-        // generate cron job 1 minute into future
-        cron: now.clone().add(1, 'minute').format('m HH * * *')
-      }
-    }, function(err, matches) {
-      assert.equal(err, null);
-      assert.equal(matches, false);
-      done();
-    });
-  });
-
-  it('does not match if previous to reminder', () => {
-    var now = moment().subtract(2, 'hours');
-    sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour'));
-
-    reminders.matchReminder({
-      reminder: {
-        cron: now.format('59 HH * * *') // will generate cron job matching the previous hour
-      }
-    }, function(err, matches) {
-      assert.equal(err, null);
-      assert.equal(matches, false);
-    });
-  });
-
-  it('sendReminders calls getLeafPlaces', done => {
-    const getLeafPlaces = sinon.stub(reminders, 'getLeafPlaces').callsArgWith(1, null, []);
-
-    reminders.sendReminders({}, function(err) {
-      assert(getLeafPlaces.called);
-      assert.equal(err, null);
-      done();
-    });
-  });
-
-  it('getLeafPlaces calls db view and hydrates docs', done => {
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-      rows: [ { doc: { id: 'xxx' } } ]
-    });
-    sinon.stub(config, 'get').returns([
-      { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
-      { id: 'clinic', parents: [ 'health_center' ] },            // queried
-      { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
-      { id: 'district_hospital' }
-    ]);
-    sinon.stub(reminders._lineage, 'hydrateDocs').resolves([{ id: 'xxx', contact: 'maria' }]);
-
-    reminders.getLeafPlaces({ reminder: {} }, function(err, clinics) {
-      assert(_.isArray(clinics));
-      assert.equal(clinics.length, 1);
-      assert.deepEqual(clinics, [{ id: 'xxx', contact: 'maria' }]);
-      assert.equal(db.medic.query.callCount, 1);
-      assert.equal(db.medic.query.args[0][0], 'medic-client/contacts_by_type');
-      assert.deepEqual(db.medic.query.args[0][1].keys, [[ 'clinic' ]]);
-      assert.equal(reminders._lineage.hydrateDocs.callCount, 1);
-      assert.deepEqual(reminders._lineage.hydrateDocs.args[0], [[{ id: 'xxx' }]]);
-      done();
-    });
-  });
-
-  it('getLeafPlaces ignores clinics with matching sent_reminders', done => {
-    const now = moment().startOf('hour');
-
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-      rows: [
-        {
-          doc: {
-            id: 'xxx'
-          }
-        },
-        {
-          doc: {
-            id: 'yyx',
-            tasks: [
-              {
-                form: 'XXX',
-                timestamp: now.toISOString()
-              }
-            ]
-          }
-        },
-        {
-          doc: {
-            id: 'yyy',
-            tasks: [
-              {
-                form: 'YYY',
-                timestamp: now.toISOString()
-              }
-            ]
-          }
-        },
-        {
-          doc: {
-            id: 'yyz',
-            tasks: [
-              {
-                form: 'XXX',
-                timestamp: now.clone().add(1, 'hour').toISOString()
-              }
-            ]
-          }
-        }
-      ]
-    });
-
-    reminders.getLeafPlaces({
-      reminder:{
-        moment: now,
-        form: 'XXX'
-      }
-    }, function(err, clinics) {
-      var ids = _.pluck(clinics, 'id');
-      assert.deepEqual(['xxx', 'yyy', 'yyz'], ids);
-      done();
-    });
-  });
-
-  it('sendReminders calls sendReminder for each clinic', done => {
-    const clinics = [
-      {
-        id: 'xxx'
-      },
-      {
-        id: 'yyy'
-      }
-    ];
-    sinon.stub(reminders, 'getLeafPlaces').callsArgWith(1, null, clinics);
-    const sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
-    reminders.sendReminders({}, function() {
-      assert.equal(sendReminder.callCount, 2);
-      done();
-    });
-  });
 
   it('sendReminder saves doc with added task to clinic, minifies doc first', done => {
     const now = moment();
@@ -499,136 +566,6 @@ describe('reminders', () => {
       assert.equal(task.timestamp, now.toISOString());
       assert.deepEqual(clinic.contact, { _id: 'contact'});
       assert.equal(reminders._lineage.minify.callCount, 1);
-      done();
-    });
-  });
-
-  it('canSend returns true if no tasks matching reminder', () => {
-    const now = moment();
-    const canSend = reminders.canSend({
-      reminder: {
-        form: 'XXX'
-      },
-      moment: now
-    }, {
-      tasks: [
-        {
-          form: 'XXX',
-          timestamp: now.clone().add(1, 'minute').toISOString()
-        },
-        {
-          form: 'XXY',
-          timestamp: now.toISOString()
-        }
-      ]
-    });
-
-    assert.equal(canSend, true);
-  });
-
-  it('canSend returns false if a task matches reminder', () => {
-    const now = moment();
-    const canSend = reminders.canSend({
-      reminder: {
-        form: 'XXX'
-      },
-      moment: now
-    }, {
-      tasks: [
-        {
-          form: 'XXX',
-          timestamp: now.toISOString()
-        },
-        {
-          form: 'XXY',
-          timestamp: now.toISOString()
-        }
-      ]
-    });
-
-    assert.equal(canSend, false);
-  });
-
-  it('canSend returns false if a sent_forms within lockout period of reminder', () => {
-    const now = moment();
-    const canSend = reminders.canSend({
-      reminder: {
-        form: 'XXX',
-        mute_after_form_for: '3 days'
-      },
-      moment: now
-    }, {
-      sent_forms: {
-        XXX: now.clone().subtract(2, 'days').toISOString()
-      },
-      tasks: []
-    });
-
-    assert.equal(canSend, false);
-  });
-
-  it('canSend returns true if a sent_forms outside of lockout period of reminder', () => {
-    const now = moment();
-    const canSend = reminders.canSend({
-      reminder: {
-        form: 'XXX',
-        mute_after_form_for: '3 days'
-      },
-      moment: now
-    }, {
-      sent_forms: {
-        XXX: now.clone().subtract(3, 'days').subtract(1, 'minute').toISOString()
-      },
-      tasks: []
-    });
-
-    assert.equal(canSend, true);
-  });
-
-  it('getReminderWindow returns a day ago when no results from db', done => {
-    const time = moment().startOf('hour').subtract(1, 'day');
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {rows: []});
-
-    reminders.getReminderWindow({}, function(err, start) {
-      assert.equal(err, null);
-      assert(start);
-      assert.equal(start.valueOf(), time.valueOf());
-      done();
-    });
-  });
-
-  it('getReminderWindow calls view looking for old events and returns date found', done => {
-    const now = moment();
-
-    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-      rows: [
-        {
-          key: [ 'XXX', now.clone().subtract(1, 'hour').toISOString() ]
-        }
-      ]
-    });
-
-    reminders.getReminderWindow({
-      reminder: {
-        form: 'XXX'
-      }
-    }, function(err, start) {
-      const call = view.getCall(0);
-      const viewOpts = call.args[1];
-
-      assert.equal(view.callCount, 1);
-      assert.equal(call.args[0], 'medic-sms/sent_reminders');
-
-      assert.equal(viewOpts.limit, 1);
-      assert(viewOpts.startkey);
-      assert.equal(viewOpts.startkey[0], 'XXX');
-
-      // time within 1000ms
-      assert.deepEqual(Math.floor(moment(viewOpts.startkey[1]).valueOf() / 1000), Math.floor(moment().valueOf() / 1000));
-
-      assert.deepEqual(viewOpts.endkey, ['XXX', now.clone().startOf('hour').subtract(1, 'day').toISOString()]);
-      assert.equal(viewOpts.descending, true);
-      assert.equal(start.toISOString(), now.clone().subtract(1, 'hour').toISOString());
       done();
     });
   });

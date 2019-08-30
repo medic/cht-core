@@ -8,30 +8,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 // set later to use local time
 later.date.localTime();
 
-const getReminderId = ({ reminder, date, placeId }) => `reminder:${reminder.form}:${date.valueOf()}:${placeId}`;
-
-const getLeafPlaceIds = () => {
-  const types = config.get('contact_types') || [];
-  const placeTypes = types.filter(type => !type.person);
-  const leafPlaceTypes = placeTypes.filter(type => {
-    return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
-  });
-  const keys = leafPlaceTypes.map(type => [ type.id ]);
-  return db.medic
-    .query('medic-client/contacts_by_type', { keys: keys })
-    .then(result => result.rows.map(row => row.id));
-};
-
-const filterReminderPlaces = ({ reminder, date }, placeIds) => {
-  const ids = placeIds.map(id => getReminderId({ reminder, date, id }));
-  return db.medic.allDocs({ keys: ids }).then(result => {
-    if (!result.rows) {
-      return placeIds;
-    }
-    const exists = (row) => row.id && row.value && !row.value.deleted;
-    return placeIds.filter((id, idx) => !exists(result.rows[idx]));
-  });
-};
+const getReminderId = (reminder, date, placeId) => `reminder:${reminder.form}:${date.valueOf()}:${placeId}`;
 
 const isConfigValid = (config) => {
   return Boolean(
@@ -95,9 +72,13 @@ const matchReminder = (reminder) => {
     });
 };
 
-const canSend = ({ reminder, date }, place) => {
+const canSend = (reminder, date, place) => {
   if (!place.contact) {
     // nobody to send to
+    return false;
+  }
+
+  if (place.muted) {
     return false;
   }
 
@@ -127,21 +108,52 @@ const parseDuration = (format) => {
   return moment.duration(Number(tokens[0]), tokens[1]);
 };
 
-const getLeafPlaces = (options) => {
-  return getLeafPlaceIds()
-  // filter places that do not have this reminder
-    .then(placeIds => filterReminderPlaces(options, placeIds))
-    .then(placeIds => db.medic.allDocs({ keys: placeIds, include_docs: true }))
-    .then(response => {
-      // filter them by the canSend function (not on cooldown from having received a form)
-      const leafPlaces = response.rows
+const getLeafPlaceIds = () => {
+  const types = config.get('contact_types') || [];
+  const placeTypes = types.filter(type => !type.person);
+  const leafPlaceTypes = placeTypes.filter(type => {
+    return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
+  });
+  const keys = leafPlaceTypes.map(type => [ type.id ]);
+  return db.medic
+    .query('medic-client/contacts_by_type', { keys: keys })
+    .then(result => result.rows.map(row => row.id));
+};
+
+// filter places that do not have this reminder
+const filterPlaceIdsWithoutReminder = (reminder, date, placeIds) => {
+  if (!placeIds.length) {
+    return [];
+  }
+  const reminderIds = placeIds.map(id => getReminderId(reminder, date, id));
+  return db.medic.allDocs({ keys: reminderIds }).then(result => {
+    const exists = (row) => row.id && !row.error && row.value && !row.value.deleted;
+    return placeIds.filter((id, idx) => !exists(result.rows[idx]));
+  });
+};
+
+const filterValidPlaces = (reminder, date, placeIds) => {
+  if (!placeIds.length) {
+    return [];
+  }
+  return db.medic
+    .allDocs({ keys: placeIds, include_docs: true })
+    .then(result => {
+      const places = result.rows
         .map(row => row.doc)
-        .filter(doc => canSend(options, doc));
-      return lineage.hydrateDocs(leafPlaces);
+        .filter(place => canSend(reminder, date, place));
+
+      return lineage.hydrateDocs(places);
     });
 };
 
-const createReminder = ({ reminder, date, place }) => {
+const getLeafPlaces = (reminder, date) => {
+  return getLeafPlaceIds()
+    .then(placeIds => filterPlaceIdsWithoutReminder(reminder, date, placeIds))
+    .then(placeIds => filterValidPlaces(reminder, date, placeIds));
+};
+
+const createReminder = (reminder, date, place) => {
   const context = {
     templateContext: {
       week: date.format('w'),
@@ -150,32 +162,36 @@ const createReminder = ({ reminder, date, place }) => {
     patient: place
   };
 
-  const doc = {
-    _id: getReminderId({ reminder, date, placeId: place._id }),
+  const reminderDoc = {
+    _id: getReminderId(reminder, date, place._id ),
     type: 'reminder',
     contact: lineage.minifyLineage(place.contact),
     place: { _id: place._id, parent: lineage.minifyLineage(place.parent) },
     form: reminder.form,
     reported_date: new Date().getTime(),
+    tasks: []
   };
-  const task = messages.addMessage(doc, reminder, 'reporting_unit', context);
-  if (!task || task.messages[0].to === 'reporting_unit') {
-    return;
+  const task = messages.addMessage(reminderDoc, reminder, 'reporting_unit', context);
+  if (task) {
+    task.form = reminder.form;
+    task.timestamp = date.toISOString();
+    task.type = 'reminder';
   }
-  task.form = reminder.form;
-  task.timestamp = date.toISOString();
-  task.type = 'reminder';
 
-  return doc;
+  return reminderDoc;
 };
 
-const sendReminders = ({ reminder, date }) => {
-  return getLeafPlaces({ reminder, date }).then(places => {
-    const docs = places
-      .map(place => createReminder({ reminder, date, place }))
+const sendReminders = (reminder, date) => {
+  return getLeafPlaces(reminder, date).then(places => {
+    const reminderDocs = places
+      .map(place => createReminder(reminder, date, place))
       .filter(doc => doc);
 
-    return db.medic.bulkDocs(docs);
+    if (!reminderDocs.length) {
+      return;
+    }
+
+    return db.medic.bulkDocs(reminderDocs);
   });
 };
 
@@ -185,7 +201,7 @@ const runReminder = (reminder = {}) => {
     if (!date) {
       return;
     }
-    return sendReminders({ reminder, date });
+    return sendReminders(reminder, date);
   });
 };
 
