@@ -44,16 +44,31 @@ window.KarmaUtils = {
       };
     };
   },
-  setupMockStore: function(initialState) {
+  setupMockStore: function(initialState, mocks = {}) {
     angular.module('inboxApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
       $ngReduxProvider.createStoreWith(RootReducer, [ReduxThunk.default], [], initialState); // eslint-disable-line no-undef
     });
-    // If actual DB is run it causes a full page refresh which causes karma to error
+
+    const DB = () => ({
+      get: () => Promise.resolve(),
+      post: () => Promise.resolve()
+    });
+    const mockDB = mocks.DB || DB;
+    const liveListStub = { clearSelected: () => {} };
+    const mockLiveList = _.merge({
+      contacts: liveListStub,
+      'contact-search': liveListStub,
+      reports: liveListStub,
+      'report-search': liveListStub
+    }, mocks.LiveList);
+
     module(function ($provide) {
       'ngInject';
-      $provide.value('DB', function() {});
+      // If actual DB is run it causes a full page refresh which causes karma to error
+      $provide.value('DB', mockDB);
       $provide.value('ContactViewModelGenerator', function() {});
+      $provide.value('LiveList', mockLiveList);
       $provide.value('Session', {
         userCtx: () => { return {}; }
       });

@@ -650,7 +650,7 @@ describe('Enketo service', () => {
         expect(actualThing2.reported_date).to.be.within(startTime, endTime);
         expect(actualThing2.some_property_2).to.equal('some_value_2');
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
 
         expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
         expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
@@ -727,7 +727,7 @@ describe('Enketo service', () => {
 
         expect(actualThing2.geolocation).to.equal(true);
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
       });
     });
 
@@ -807,7 +807,7 @@ describe('Enketo service', () => {
         expect(actualThing2.my_parent_2).to.equal(reportId);
         expect(actualThing2.my_sibling_2).to.equal(doc1_id);
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
       });
     });
 
@@ -871,7 +871,7 @@ describe('Enketo service', () => {
           expect(repeatDocN.some_property).to.equal('some_value_'+i);
         }
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(4);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
       });
     });
 
