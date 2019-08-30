@@ -223,6 +223,8 @@ const bulkUpdate = infoDocs => {
 
           return bulkUpdate(conflictingInfoDocs);
         });
+    } else {
+      return infoDocs;
     }
   });
 };
