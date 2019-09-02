@@ -260,7 +260,7 @@ describe('infodocs', () => {
           assert.isOk(infodoc.initial_replication_date, 'expected an initial_replication_date');
           assert.isOk(infodoc.latest_replication_date, 'expected a latest_replication_date');
           assert.deepEqual(infodoc.transitions, {
-            some: 'transition info'
+            some: 'transition info that I have intentionally failed mwahahahs'
           });
         });
     });
