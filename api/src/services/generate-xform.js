@@ -12,9 +12,8 @@ const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="h
 const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
 
-const getStylesheetPath = filename => path.join(__dirname, '../../node_modules/enketo-xslt/xsl', filename);
-const FORM_STYLESHEET = getStylesheetPath('openrosa2html5form.xsl');
-const MODEL_STYLESHEET = getStylesheetPath('openrosa2xmlmodel.xsl');
+const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
+const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
 
 const transform = (formXml, stylesheet) => {
   // TODO test if xsltproc exists on startup and return useful error
