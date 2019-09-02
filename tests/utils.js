@@ -205,20 +205,37 @@ const deleteAll = (except = []) => {
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       if (e2eDebug) {
-        console.log(`Deleting docs: ${ids}`);
+        console.log(`Deleting docs and infodocs: ${ids}`);
       }
-      return module.exports
-        .request({
+      const infoIds = ids.map(id => `${id}-info`);
+      return Promise.all([
+        module.exports.request({
           path: path.join('/', constants.DB_NAME, '_bulk_docs'),
           method: 'POST',
           body: JSON.stringify({ docs: toDelete }),
           headers: { 'content-type': 'application/json' },
-        })
-        .then(response => {
+        }).then(response => {
           if (e2eDebug) {
             console.log(`Deleted docs: ${JSON.stringify(response)}`);
           }
-        });
+        }),
+        sentinel.allDocs({keys: infoIds})
+          .then(results => {
+            const deletes = results.rows
+            .filter(row => row.value) // Not already deleted
+            .map(({id, value}) => ({
+              _id: id,
+              _rev: value.rev,
+              _deleted: true
+            }));
+
+            return sentinel.bulkDocs(deletes);
+          }).then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+            }
+          })
+      ]);
     });
 };
 
