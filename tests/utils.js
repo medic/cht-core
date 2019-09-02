@@ -1,6 +1,7 @@
 const _ = require('underscore'),
   auth = require('./auth')(),
   constants = require('./constants'),
+  {spawn} = require('child_process'),
   http = require('http'),
   path = require('path'),
   rpn = require('request-promise-native'),
@@ -609,8 +610,28 @@ module.exports = {
 
   setDebug: debug => e2eDebug = debug,
 
-  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
-  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
+  stopSentinel: () => {
+    if (process.env.TRAVIS) {
+      return new Promise(res => {
+        const pid = spawn('horti-svc-stop', ['medic-sentinel']);
+
+        pid.on('exit', res);
+      });
+    } else {
+      return rpn.post('http://localhost:31337/sentinel/stop');
+    }
+  },
+  startSentinel: () => {
+    if (process.env.TRAVIS) {
+      return new Promise(res => {
+        const pid = spawn('horti-svc-start', [`${require('os').homedir()}/.horticulturalist/deployments`, 'medic-sentinel']);
+
+        pid.on('exit', res);
+      });
+    } else {
+      return rpn.post('http://localhost:31337/sentinel/start');
+    }
+  },
   setProcessedSeqToNow: () => {
     return Promise.all([
       sentinel.get('_local/sentinel-meta-data'),

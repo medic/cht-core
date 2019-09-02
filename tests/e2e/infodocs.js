@@ -226,9 +226,7 @@ describe('infodocs', () => {
     });
   });
 
-  // DISABLED until we have a way of stopping and starting sentinel on travis
-  // See: https://github.com/medic/medic/issues/5915
-  xdescribe('legacy data support', () => {
+  describe('legacy data support', () => {
     it('finds and migrates data from the medic doc', () => {
       const testDoc = {
         _id: 'yuiop',
