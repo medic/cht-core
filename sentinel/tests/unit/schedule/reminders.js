@@ -254,7 +254,7 @@ describe('reminders', () => {
         assert.deepEqual(reminders.__get__('getSchedule').args[0], [reminder]);
         assert.equal(db.sentinel.allDocs.callCount, 1);
         assert.equal(schedule.prev.callCount, 1);
-        assert.deepEqual(schedule.prev.args[0], [1, moment(oneDay).toDate(), moment(lastSchedule).toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(oneDay).toDate(), moment(lastSchedule).add(1, 'minute').toDate()]);
       });
     });
 
@@ -270,7 +270,7 @@ describe('reminders', () => {
 
       return matchReminder(reminder).then(result => {
         assert.deepEqual(result, moment(prevSchedule));
-        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(lastReminder).toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(lastReminder).add(1, 'minute').toDate()]);
       });
     });
 
@@ -337,8 +337,10 @@ describe('reminders', () => {
 
     it('getReminderWindow calls view looking for old events and returns date found', () => {
       const now = moment();
+      const anHourAgo = moment().subtract(1, 'hour');
+
       db.sentinel.allDocs.resolves({ rows: [{
-        id: `reminderlog:XXX:${now.clone().subtract(1, 'hour').valueOf()}`
+        id: `reminderlog:XXX:${anHourAgo.valueOf()}`
         }] });
 
       return reminders.__get__('getReminderWindow')({ form: 'XXX'}).then(start => {
@@ -346,10 +348,10 @@ describe('reminders', () => {
         assert.deepEqual(db.sentinel.allDocs.args[0][0], {
           descending: true,
           limit: 1,
-          startkey: `reminderlog:XXX:${Math.floor(moment().valueOf() / 1000)}`,
+          startkey: `reminderlog:XXX:${Math.floor(now.valueOf() / 1000)}`,
           endkey: `reminderlog:XXX:${now.clone().startOf('hour').subtract(1, 'day').valueOf()}`
         });
-        assert.equal(start.toISOString(), now.clone().subtract(1, 'hour').toISOString());
+        assert.equal(start.toISOString(), anHourAgo.add(1, 'minute').toISOString());
       });
     });
   });
@@ -653,7 +655,155 @@ describe('reminders', () => {
     });
 
     it('should call messages with correct params', () => {
+      const now = moment(oneDay);
+      const reminder = { form: 'form', message: 'Hello, darkness, my old friend' };
 
+      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(db.medic, 'query').resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] });
+      const lineage = {
+        hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)),
+        minifyLineage: sinon.stub().callsFake(d => d),
+      };
+      const messages = { addMessage: sinon.stub() };
+      reminders.__set__('lineage', lineage);
+      reminders.__set__('messages', messages);
+      sinon.stub(db.medic, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'allDocs');
+
+      db.medic.allDocs.onCall(0).resolves({ rows: [
+          { key: `reminder:form:${oneDay}:doc1`, error: 'not_found' },
+          { key: `reminder:form:${oneDay}:doc2`, error: 'not_found' },
+        ]});
+      db.medic.allDocs.onCall(1).resolves({ rows: [
+          { doc: { _id: 'doc1', contact: 'contact1' } },
+          { doc: { _id: 'doc2', contact: 'contact2' } }
+        ]});
+
+      clock.tick(oneDay + oneHour);
+
+      return reminders.__get__('sendReminders')(reminder, now).then(() => {
+        assert.equal(db.medic.allDocs.callCount, 2);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [
+            `reminder:form:${oneDay}:doc1`,
+            `reminder:form:${oneDay}:doc2`
+          ] }]);
+        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2'], include_docs: true }]);
+        assert.deepEqual(lineage.hydrateDocs.args[0], [[
+          { _id: 'doc1', contact: 'contact1' },
+          { _id: 'doc2', contact: 'contact2' },
+        ]]);
+        assert.equal(messages.addMessage.callCount, 2);
+        assert.deepEqual(messages.addMessage.args[0], [
+          {
+            _id: `reminder:form:${oneDay}:doc1`,
+            contact: 'contact1',
+            form: 'form',
+            place: { _id: 'doc1', parent: undefined },
+            reported_date: oneDay + oneHour,
+            tasks: [],
+            type: 'reminder'
+          },
+          reminder,
+          'reporting_unit',
+          {
+            patient: { _id: 'doc1', contact: 'contact1' },
+            templateContext: {
+              week: `${now.week()}`,
+              year: `${now.year()}`
+            }
+          }
+        ]);
+        assert.deepEqual(messages.addMessage.args[1], [
+          {
+            _id: `reminder:form:${oneDay}:doc2`,
+            contact: 'contact2',
+            form: 'form',
+            place: { _id: 'doc2', parent: undefined },
+            reported_date: oneDay + oneHour,
+            tasks: [],
+            type: 'reminder'
+          },
+          reminder,
+          'reporting_unit',
+          {
+            patient: { _id: 'doc2', contact: 'contact2' },
+            templateContext: {
+              week: `${now.week()}`,
+              year: `${now.year()}`
+            }
+          }
+        ]);
+      });
+    });
+
+    it('should generate correct message and minify before save', () => {
+      const now = moment(oneDay);
+      const reminder = { form: 'form', message: 'Please send {{form}} for {{name}} {{type}} {{week}}-{{year}}' };
+
+      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(db.medic, 'query').resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] });
+      sinon.stub(db.medic, 'allDocs');
+      db.medic.allDocs.onCall(0).resolves({ rows: [
+          { key: `reminder:form:${oneDay}:doc1`, error: 'not_found' },
+          { key: `reminder:form:${oneDay}:doc2`, error: 'not_found' },
+        ]});
+      db.medic.allDocs.onCall(1).resolves({ rows: [
+          { doc: { _id: 'doc1', contact: { _id: 'contact1' }, parent: { _id: 'parent1' }, type: 'tier2', name: 'doc 1' } },
+          { doc: { _id: 'doc2', contact: { _id: 'contact2' }, parent: { _id: 'parent1' }, type: 'tier2', name: 'doc 2' } },
+        ]});
+
+      const hydrateDocs = sinon.stub().resolves([
+        { _id: 'doc1', contact: { _id: 'contact1', name: 'c1', phone: '1234' }, parent: { _id: 'parent1', name: 'p1' }, type: 'tier2', name: 'doc 1' },
+        { _id: 'doc2', contact: { _id: 'contact2', name: 'c2', phone: '4567' }, parent: { _id: 'parent1', name: 'p1' }, type: 'tier2', name: 'doc 2' },
+      ]);
+      reminders.__set__('lineage', {
+        hydrateDocs: hydrateDocs,
+        minifyLineage: reminders.__get__('lineage').minifyLineage,
+      });
+      sinon.stub(db.medic, 'bulkDocs').resolves();
+      clock.tick(oneDay + oneHour);
+      const addMessage = sinon.spy(reminders.__get__('messages'), 'addMessage');
+
+      return reminders.__get__('sendReminders')(reminder, now).then(() => {
+        assert.equal(hydrateDocs.callCount, 1);
+        assert.deepEqual(hydrateDocs.args[0], [[
+          { _id: 'doc1', contact: { _id: 'contact1' }, parent: { _id: 'parent1' }, type: 'tier2', name: 'doc 1' },
+          { _id: 'doc2', contact: { _id: 'contact2' }, parent: { _id: 'parent1' }, type: 'tier2', name: 'doc 2' },
+        ]]);
+        assert.equal(addMessage.callCount, 2);
+        assert.equal(db.medic.bulkDocs.callCount, 1);
+        const bulkDocsArgs = db.medic.bulkDocs.args[0][0];
+        assert.equal(bulkDocsArgs.length, 2);
+        assert.equal(bulkDocsArgs[0]._id, `reminder:form:${now.valueOf()}:doc1`);
+        assert.equal(bulkDocsArgs[0].tasks.length, 1);
+        assert.deepInclude(bulkDocsArgs[0].tasks[0], {
+          form: 'form',
+          type: 'reminder',
+          state: 'pending'
+        });
+        assert.equal(bulkDocsArgs[0].tasks[0].messages.length, 1);
+        assert.deepInclude(bulkDocsArgs[0].tasks[0].messages[0], {
+          message: 'Please send form for doc 1 tier2 1-1970',
+          to: '1234'
+        });
+        assert.deepEqual(bulkDocsArgs[0].contact, { _id: 'contact1' });
+        assert.deepEqual(bulkDocsArgs[0].place, { _id: 'doc1', parent: { _id: 'parent1' } });
+
+        assert.equal(bulkDocsArgs[1]._id, `reminder:form:${now.valueOf()}:doc2`);
+        assert.equal(bulkDocsArgs[1].tasks.length, 1);
+        assert.deepInclude(bulkDocsArgs[1].tasks[0], {
+          form: 'form',
+          type: 'reminder',
+          state: 'pending'
+        });
+        assert.equal(bulkDocsArgs[1].tasks[0].messages.length, 1);
+        assert.deepInclude(bulkDocsArgs[1].tasks[0].messages[0], {
+          message: 'Please send form for doc 2 tier2 1-1970',
+          to: '4567'
+        });
+        assert.deepEqual(bulkDocsArgs[1].contact, { _id: 'contact2' });
+        assert.deepEqual(bulkDocsArgs[1].place, { _id: 'doc2', parent: { _id: 'parent1' } });
+      });
     });
   });
 });

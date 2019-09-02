@@ -53,7 +53,8 @@ const getReminderWindow = (reminder) => {
     if (!result.rows || !result.rows.length) {
       return since;
     }
-    return moment(parseInt(result.rows[0].id.split(':')[2]));
+    const reminderLogTimestamp = result.rows[0].id.split(':')[2];
+    return moment(parseInt(reminderLogTimestamp)).add(1, 'minute');
   });
 };
 
