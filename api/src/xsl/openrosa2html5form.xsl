@@ -1,7 +1,7 @@
+<?xml version="1.0"?>
 <!--
 This stylesheet extends the default one to allow for additional input types.
 -->
-<?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  
   <xsl:import href="../../node_modules/enketo-xslt/xsl/openrosa2html5form.xsl"/>
