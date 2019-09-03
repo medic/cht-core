@@ -75,5 +75,9 @@ module.exports = {
       });
     });
   },
-  asynchronousOnly: true
+  asynchronousOnly: true,
+
+  init: () => {
+    logger.warn('"update_sent_forms" transition is deprecated and will be removed in next major version. Consider updating your configuration to disable it.');
+  }
 };
