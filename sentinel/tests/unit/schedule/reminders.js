@@ -10,9 +10,7 @@ const later = require('later');
 let reminders;
 let clock;
 
-const oneMinute = 60 * 1000;
-const oneHour = 60 * oneMinute;
-const oneDay = 24 * oneHour;
+const oneDay = 24 * 60 * 60 * 1000;
 
 describe('reminders', () => {
   afterEach(() => {
@@ -195,11 +193,12 @@ describe('reminders', () => {
       sinon.stub(db.sentinel, 'allDocs');
     });
     it('should return false if no schedule', () => {
+      const tick = oneDay;
       const schedule = { prev: sinon.stub()};
       const reminder = { text_expression: 'none', form: 'formA' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
       db.sentinel.allDocs.resolves({ rows: [] });
-      clock.tick(oneDay);
+      clock.tick(tick);
 
       return matchReminder(reminder).then(result => {
         assert.equal(result, false);
@@ -209,7 +208,7 @@ describe('reminders', () => {
         assert.deepEqual(db.sentinel.allDocs.args[0], [{
           descending: true,
           limit: 1,
-          startkey: `reminderlog:formA:${oneDay}`,
+          startkey: `reminderlog:formA:${tick}`,
           endkey: `reminderlog:formA:0`
         }]);
       });
@@ -220,8 +219,7 @@ describe('reminders', () => {
       const reminder = { text_expression: 'none', form: 'formB' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
       db.sentinel.allDocs.resolves({ rows: [] });
-      const now =  oneDay + oneHour + oneHour / 2;
-      const since = now - oneHour/2 - oneDay;
+      const now = oneDay;
       clock.tick(now);
 
       return matchReminder(reminder).then(result => {
@@ -233,19 +231,20 @@ describe('reminders', () => {
           descending: true,
           limit: 1,
           startkey: `reminderlog:formB:${now}`,
-          endkey: `reminderlog:formB:${since}`
+          endkey: `reminderlog:formB:${now - oneDay}`
         }]);
         assert.equal(schedule.prev.callCount, 1);
-        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(since).toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(0).toDate()]);
       });
     });
 
     it('should return false if no schedule in time interval', () => {
+      const now = 5000;
+      const lastSchedule = 2500;
       const schedule = { prev: sinon.stub().returns(0) };
       const reminder = { text_expression: 'none', form: 'formB' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
-      clock.tick(oneDay);
-      const lastSchedule = oneDay / 2;
+      clock.tick(now);
       db.sentinel.allDocs.resolves({ rows: [{ id: `reminderlog:formB:${lastSchedule}` }] });
 
       return matchReminder(reminder).then(result => {
@@ -254,38 +253,38 @@ describe('reminders', () => {
         assert.deepEqual(reminders.__get__('getSchedule').args[0], [reminder]);
         assert.equal(db.sentinel.allDocs.callCount, 1);
         assert.equal(schedule.prev.callCount, 1);
-        assert.deepEqual(schedule.prev.args[0], [1, moment(oneDay).toDate(), moment(lastSchedule).add(1, 'minute').toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(lastSchedule).toDate()]);
       });
     });
 
     it('should return correct prev schedule', () => {
-      const prevSchedule = new Date(oneDay + oneHour);
+      const prevSchedule = new Date(4000);
       const schedule = { prev: sinon.stub().returns(prevSchedule) };
       const reminder = { text_expression: 'none', form: 'formB' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
-      const now = oneDay + oneDay / 2;
-      const lastReminder = oneDay + 2 * oneHour;
+      const now = 5000;
+      const lastReminder = 3500;
       clock.tick(now);
       db.sentinel.allDocs.resolves({ rows: [{ id: `reminderlog:formB:${lastReminder}` }]});
 
       return matchReminder(reminder).then(result => {
         assert.deepEqual(result, moment(prevSchedule));
-        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(lastReminder).add(1, 'minute').toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(lastReminder).toDate()]);
       });
     });
 
     it('should return correct prev schedule when no results', () => {
-      const prevSchedule = new Date(oneDay/3);
+      const prevSchedule = new Date(4000);
       const schedule = { prev: sinon.stub().returns(prevSchedule) };
       const reminder = { text_expression: 'none', form: 'formB' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
-      const now = oneDay + oneDay / 2;
+      const now = oneDay;
       clock.tick(now);
       db.sentinel.allDocs.resolves({ rows: [] });
 
       return matchReminder(reminder).then(result => {
         assert.deepEqual(result, moment(prevSchedule));
-        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(oneDay / 2).toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(now-oneDay).toDate()]);
       });
     });
 
@@ -351,7 +350,7 @@ describe('reminders', () => {
           startkey: `reminderlog:XXX:${Math.floor(now.valueOf() / 1000)}`,
           endkey: `reminderlog:XXX:${now.clone().startOf('hour').subtract(1, 'day').valueOf()}`
         });
-        assert.equal(start.toISOString(), anHourAgo.add(1, 'minute').toISOString());
+        assert.equal(start.toISOString(), anHourAgo.toISOString());
       });
     });
   });
@@ -425,46 +424,6 @@ describe('reminders', () => {
           .then(places => {
             assert.deepEqual(places.map(place => place._id), ['xxx', 'yyy', 'yyz']);
           });
-      });
-    });
-
-    describe('canSend', () => {
-      it('should return true if no sent forms', () => {
-        const now = moment();
-        const canSend = reminders.__get__('canSend')({ form: 'XXX' }, now, { _id: 'doc', contact: 'aaa' });
-        assert.equal(canSend, true);
-      });
-
-      it('should return false if a sent_forms within lockout period of reminder', () => {
-        const now = moment();
-        const reminder = {
-          form: 'XXX',
-          mute_after_form_for: '3 days'
-        };
-        const place = {
-          contact: {},
-          sent_forms: {
-            XXX: now.clone().subtract(2, 'days').toISOString()
-          }
-        };
-        const canSend = reminders.__get__('canSend')(reminder, now, place);
-        assert.equal(canSend, false);
-      });
-
-      it('should return true if a sent_forms outside of lockout period of reminder', () => {
-        const now = moment();
-        const reminder = {
-          form: 'XXX',
-          mute_after_form_for: '3 days'
-        };
-        const place = {
-          contact: {},
-          sent_forms: {
-            XXX: now.clone().subtract(3, 'days').subtract(1, 'minute').toISOString()
-          }
-        };
-        const canSend = reminders.__get__('canSend')(reminder, now, place);
-        assert.equal(canSend, true);
       });
     });
 
@@ -553,47 +512,83 @@ describe('reminders', () => {
     });
 
     it('should exclude places that have a form sent in mute interval ', () => {
-      const now = moment(oneHour);
-      const reminder = { form: 'vform', mute_after_form_for: '10 minute' };
+      const now = 60 * 60 * 1000; // one hour
+      clock.tick(now);
+      const reminderDate = 30 * 60 * 1000; // 30 minutes
+      const reminder = { form: 'vform', mute_after_form_for: '10 minute' }; // 10 * 60 * 1000
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] });
-      const lineage = { hydrateDocs: sinon.stub() };
+      sinon.stub(db.medic, 'query');
+
+      db.medic.query
+        .withArgs('medic-client/contacts_by_type')
+        .resolves({ rows: [
+            { id: 'doc1' }, // has new form
+            { id: 'doc2' }, // has old form
+            { id: 'doc3' } // has no form
+          ]});
+      db.medic.query
+        .withArgs('medic/reports_by_form_and_parent')
+        .resolves({ rows: [
+            { key: ['vform', 'doc1'], value: { sum: 100, min: 10, max: 25 * 60 * 1000 } }, // 25 + 10 minutes > 30 minutes
+            { key: ['vform', 'doc2'], value: { sum: 100, min: 10, max: 1000 } }, // 1 sec + 10 minutes < 30 minutes
+          ]});
+      const lineage = { hydrateDocs: sinon.stub().callsFake(d => d), minifyLineage: sinon.stub() };
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
       reminders.__set__('messages', messages);
-      sinon.stub(db.medic, 'bulkDocs');
+      sinon.stub(db.medic, 'bulkDocs').resolves();
       sinon.stub(db.medic, 'allDocs');
       db.medic.allDocs
-        .withArgs({ keys: [`reminder:vform:${oneHour}:doc1`, `reminder:vform:${oneHour}:doc2`] })
+        .withArgs({ keys: [`reminder:vform:${reminderDate}:doc1`, `reminder:vform:${reminderDate}:doc2`, `reminder:vform:${reminderDate}:doc3`] })
         .resolves({ rows: [
-            { id: `reminder:vform:${oneHour}:doc1`, error: 'not_found' },
+            { id: `reminder:vform:${reminderDate}:doc1`, error: 'not_found' },
             // deleted reminder counts as no reminder
-            { id: `reminder:vform:${oneHour}:doc2`, value: { rev: '2-something', deleted: true } }
+            { id: `reminder:vform:${reminderDate}:doc2`, value: { rev: '2-something', deleted: true } },
+            { id: `reminder:vform:${reminderDate}:doc3`, error: 'not_found' },
           ]});
       db.medic.allDocs
-        .withArgs({ keys: ['doc1', 'doc2'], include_docs: true })
+        .withArgs({ keys: ['doc2', 'doc3'], include_docs: true })
         .resolves({ rows: [
-            { doc: { _id: 'doc1', type: 'tier2', sent_forms: { vform: oneHour - oneMinute }, contact: { _id: 'c' } } },
-            { doc: { _id: 'doc1', type: 'tier2', contact: { _id: 'c' }, sent_forms: { vform: oneHour - 5 * oneMinute, other: 123 } } },
+            { doc: { _id: 'doc2', type: 'tier2', contact: { _id: 'c' } } },
+            { doc: { _id: 'doc3', type: 'tier2', contact: { _id: 'c' } } },
           ]});
 
-      return reminders.__get__('sendReminders')(reminder, now).then(() => {
-        assert.equal(db.medic.bulkDocs.callCount, 0);
-        assert.equal(lineage.hydrateDocs.callCount, 0);
+      return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
+        assert.equal(db.medic.bulkDocs.callCount, 1);
+        assert.equal(lineage.hydrateDocs.callCount, 1);
         assert.equal(db.medic.allDocs.callCount, 2);
-        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [`reminder:vform:${oneHour}:doc1`, `reminder:vform:${oneHour}:doc2`] }]);
-        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2'], include_docs: true }]);
-        assert.equal(messages.addMessage.callCount, 0);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [`reminder:vform:${reminderDate}:doc1`, `reminder:vform:${reminderDate}:doc2`, `reminder:vform:${reminderDate}:doc3`] }]);
+        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc2', 'doc3'], include_docs: true }]);
+        assert.equal(db.medic.query.callCount, 2);
+        assert.deepEqual(db.medic.query.args[0], ['medic-client/contacts_by_type', { keys: [['tier2']] }]);
+        assert.deepEqual(db.medic.query.args[1], [
+          'medic/reports_by_form_and_parent',
+          {
+            keys: [['vform','doc1'],['vform','doc2'],['vform','doc3']],
+            group: true
+          }
+        ]);
+        assert.equal(messages.addMessage.callCount, 2);
       });
     });
 
     it('should create reminder docs for valid places', () => {
-      const now = moment(oneDay);
+      const reminderDate = 30 * 60 * 1000;
       const reminder = { form: 'frm', mute_after_form_for: '10 minute', message: 'I shot the sheriff' };
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [
+      sinon.stub(db.medic, 'query');
+      db.medic.query
+        .withArgs('medic-client/contacts_by_type')
+        .resolves({ rows: [
           { id: 'doc1' }, { id: 'doc2' }, { id: 'doc3' }, { id: 'doc4' }, { id: 'doc5' }, { id: 'doc6' }, { id: 'doc7' }, { id: 'doc8' }
         ] });
+      db.medic.query
+        .withArgs('medic/reports_by_form_and_parent')
+        .resolves({ rows: [
+            { key: ['frm', 'doc6'], value: {} }, // this is very broken
+            { key: ['frm', 'doc7'], value: { max: 1000 } }, // old form
+            { key: ['frm', 'doc8'], value: { max: 25 * 60 * 1000 } }, // new form
+          ] });
       const lineage = {
         hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)),
         minifyLineage: sinon.stub(),
@@ -605,57 +600,57 @@ describe('reminders', () => {
       sinon.stub(db.medic, 'allDocs');
 
       db.medic.allDocs.onCall(0).resolves({ rows: [
-          { key: `reminder:frm:${oneDay}:doc1`, error: 'not_found' },
-          { id: `reminder:frm:${oneDay}:doc2`, value: { rev: '2-something', deleted: true } },
-          { id: `reminder:frm:${oneDay}:doc3`, value: { rev: '1-something' } },
-          { key: `reminder:frm:${oneDay}:doc4`, error: 'not_found' },
-          { key: `reminder:frm:${oneDay}:doc5`, error: 'not_found' },
-          { key: `reminder:frm:${oneDay}:doc6`, error: 'not_found' },
-          { key: `reminder:frm:${oneDay}:doc7`, error: 'not_found' },
-          { key: `reminder:frm:${oneDay}:doc8`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc1`, error: 'not_found' },
+          { id: `reminder:frm:${reminderDate}:doc2`, value: { rev: '2-something', deleted: true } },
+          { id: `reminder:frm:${reminderDate}:doc3`, value: { rev: '1-something' } },
+          { key: `reminder:frm:${reminderDate}:doc4`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc5`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc6`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc7`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc8`, error: 'not_found' },
         ]});
       db.medic.allDocs.onCall(1).resolves({ rows: [
           { doc: { _id: 'doc1', contact: 'contact1' }}, // no reminder
           { doc: { _id: 'doc2', contact: 'contact2' }}, // deleted reminder,
           { doc: { _id: 'doc4' }}, // no contact,
           { doc: { _id: 'doc5', contact: 'contact5', muted: true }}, // muted
-          { doc: { _id: 'doc6', contact: 'contact6', sent_forms: { other: oneDay - 3 * oneMinute } }}, // other sent forms
-          { doc: { _id: 'doc7', contact: 'contact7', sent_forms: { other: 100, frm: oneDay - 20 * oneMinute } }}, // old sent form
-          { doc: { _id: 'doc8', contact: 'contact8', sent_forms: { rnd: oneDay, frm: oneDay - 4 * oneMinute } }}, // has sent form
+          { doc: { _id: 'doc6', contact: 'contact6' } },
+          { doc: { _id: 'doc7', contact: 'contact7' }}, // old sent form
         ] });
 
-      return reminders.__get__('sendReminders')(reminder, now).then(() => {
+      return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
         assert.equal(db.medic.allDocs.callCount, 2);
         assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [
-          `reminder:frm:${oneDay}:doc1`,
-          `reminder:frm:${oneDay}:doc2`,
-          `reminder:frm:${oneDay}:doc3`,
-          `reminder:frm:${oneDay}:doc4`,
-          `reminder:frm:${oneDay}:doc5`,
-          `reminder:frm:${oneDay}:doc6`,
-          `reminder:frm:${oneDay}:doc7`,
-          `reminder:frm:${oneDay}:doc8`,
+          `reminder:frm:${reminderDate}:doc1`,
+          `reminder:frm:${reminderDate}:doc2`,
+          `reminder:frm:${reminderDate}:doc3`,
+          `reminder:frm:${reminderDate}:doc4`,
+          `reminder:frm:${reminderDate}:doc5`,
+          `reminder:frm:${reminderDate}:doc6`,
+          `reminder:frm:${reminderDate}:doc7`,
+          `reminder:frm:${reminderDate}:doc8`,
           ] }]);
-        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2', 'doc4', 'doc5', 'doc6', 'doc7', 'doc8'], include_docs: true }]);
+        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2', 'doc4', 'doc5', 'doc6', 'doc7'], include_docs: true }]);
         assert.equal(lineage.hydrateDocs.callCount, 1);
         assert.deepEqual(lineage.hydrateDocs.args[0], [[
           { _id: 'doc1', contact: 'contact1' }, // no reminder
           { _id: 'doc2', contact: 'contact2' }, // deleted reminder,
-          { _id: 'doc6', contact: 'contact6', sent_forms: { other: oneDay - 3 * oneMinute } }, // other sent forms
-          { _id: 'doc7', contact: 'contact7', sent_forms: { other: 100, frm: oneDay - 20 * oneMinute } }, // old sent form
+          { _id: 'doc6', contact: 'contact6' },
+          { _id: 'doc7', contact: 'contact7' }, // old sent form
         ]]);
 
         assert.equal(messages.addMessage.callCount, 4);
         assert.equal(db.medic.bulkDocs.callCount, 1);
         assert.deepEqual(db.medic.bulkDocs.args[0][0].map(doc => doc._id), [
-          `reminder:frm:${oneDay}:doc1`, `reminder:frm:${oneDay}:doc2`, `reminder:frm:${oneDay}:doc6`,
-          `reminder:frm:${oneDay}:doc7`,
+          `reminder:frm:${reminderDate}:doc1`, `reminder:frm:${reminderDate}:doc2`, `reminder:frm:${reminderDate}:doc6`,
+          `reminder:frm:${reminderDate}:doc7`,
         ]);
       });
     });
 
     it('should call messages with correct params', () => {
-      const now = moment(oneDay);
+      const reminderDate = 5000;
+      const date = moment(reminderDate);
       const reminder = { form: 'form', message: 'Hello, darkness, my old friend' };
 
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
@@ -679,13 +674,13 @@ describe('reminders', () => {
           { doc: { _id: 'doc2', contact: 'contact2' } }
         ]});
 
-      clock.tick(oneDay + oneHour);
+      clock.tick(oneDay);
 
-      return reminders.__get__('sendReminders')(reminder, now).then(() => {
+      return reminders.__get__('sendReminders')(reminder, date).then(() => {
         assert.equal(db.medic.allDocs.callCount, 2);
         assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [
-            `reminder:form:${oneDay}:doc1`,
-            `reminder:form:${oneDay}:doc2`
+            `reminder:form:${reminderDate}:doc1`,
+            `reminder:form:${reminderDate}:doc2`
           ] }]);
         assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2'], include_docs: true }]);
         assert.deepEqual(lineage.hydrateDocs.args[0], [[
@@ -695,11 +690,11 @@ describe('reminders', () => {
         assert.equal(messages.addMessage.callCount, 2);
         assert.deepEqual(messages.addMessage.args[0], [
           {
-            _id: `reminder:form:${oneDay}:doc1`,
+            _id: `reminder:form:${reminderDate}:doc1`,
             contact: 'contact1',
             form: 'form',
             place: { _id: 'doc1', parent: undefined },
-            reported_date: oneDay + oneHour,
+            reported_date: oneDay,
             tasks: [],
             type: 'reminder'
           },
@@ -708,18 +703,18 @@ describe('reminders', () => {
           {
             patient: { _id: 'doc1', contact: 'contact1' },
             templateContext: {
-              week: `${now.week()}`,
-              year: `${now.year()}`
+              week: `${date.week()}`,
+              year: `${date.year()}`
             }
           }
         ]);
         assert.deepEqual(messages.addMessage.args[1], [
           {
-            _id: `reminder:form:${oneDay}:doc2`,
+            _id: `reminder:form:${reminderDate}:doc2`,
             contact: 'contact2',
             form: 'form',
             place: { _id: 'doc2', parent: undefined },
-            reported_date: oneDay + oneHour,
+            reported_date: oneDay,
             tasks: [],
             type: 'reminder'
           },
@@ -728,8 +723,8 @@ describe('reminders', () => {
           {
             patient: { _id: 'doc2', contact: 'contact2' },
             templateContext: {
-              week: `${now.week()}`,
-              year: `${now.year()}`
+              week: `${date.week()}`,
+              year: `${date.year()}`
             }
           }
         ]);
@@ -737,15 +732,21 @@ describe('reminders', () => {
     });
 
     it('should generate correct message and minify before save', () => {
-      const now = moment(oneDay);
+      const reminderDate = 5000;
+      const date = moment(reminderDate);
       const reminder = { form: 'form', message: 'Please send {{form}} for {{name}} {{type}} {{week}}-{{year}}' };
 
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] });
+      sinon.stub(db.medic, 'query');
+      db.medic.query
+        .withArgs('medic-client/contacts_by_type')
+        .resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] });
+      db.medic.query
+        .withArgs('medic/reports_by_form_and_parent').resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
       db.medic.allDocs.onCall(0).resolves({ rows: [
-          { key: `reminder:form:${oneDay}:doc1`, error: 'not_found' },
-          { key: `reminder:form:${oneDay}:doc2`, error: 'not_found' },
+          { key: `reminder:form:${reminderDate}:doc1`, error: 'not_found' },
+          { key: `reminder:form:${reminderDate}:doc2`, error: 'not_found' },
         ]});
       db.medic.allDocs.onCall(1).resolves({ rows: [
           { doc: { _id: 'doc1', contact: { _id: 'contact1' }, parent: { _id: 'parent1' }, type: 'tier2', name: 'doc 1' } },
@@ -761,10 +762,10 @@ describe('reminders', () => {
         minifyLineage: reminders.__get__('lineage').minifyLineage,
       });
       sinon.stub(db.medic, 'bulkDocs').resolves();
-      clock.tick(oneDay + oneHour);
+      clock.tick(oneDay);
       const addMessage = sinon.spy(reminders.__get__('messages'), 'addMessage');
 
-      return reminders.__get__('sendReminders')(reminder, now).then(() => {
+      return reminders.__get__('sendReminders')(reminder, date).then(() => {
         assert.equal(hydrateDocs.callCount, 1);
         assert.deepEqual(hydrateDocs.args[0], [[
           { _id: 'doc1', contact: { _id: 'contact1' }, parent: { _id: 'parent1' }, type: 'tier2', name: 'doc 1' },
@@ -774,7 +775,7 @@ describe('reminders', () => {
         assert.equal(db.medic.bulkDocs.callCount, 1);
         const bulkDocsArgs = db.medic.bulkDocs.args[0][0];
         assert.equal(bulkDocsArgs.length, 2);
-        assert.equal(bulkDocsArgs[0]._id, `reminder:form:${now.valueOf()}:doc1`);
+        assert.equal(bulkDocsArgs[0]._id, `reminder:form:${reminderDate}:doc1`);
         assert.equal(bulkDocsArgs[0].tasks.length, 1);
         assert.deepInclude(bulkDocsArgs[0].tasks[0], {
           form: 'form',
@@ -789,7 +790,7 @@ describe('reminders', () => {
         assert.deepEqual(bulkDocsArgs[0].contact, { _id: 'contact1' });
         assert.deepEqual(bulkDocsArgs[0].place, { _id: 'doc1', parent: { _id: 'parent1' } });
 
-        assert.equal(bulkDocsArgs[1]._id, `reminder:form:${now.valueOf()}:doc2`);
+        assert.equal(bulkDocsArgs[1]._id, `reminder:form:${reminderDate}:doc2`);
         assert.equal(bulkDocsArgs[1].tasks.length, 1);
         assert.deepInclude(bulkDocsArgs[1].tasks[0], {
           form: 'form',

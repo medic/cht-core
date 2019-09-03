@@ -5,6 +5,7 @@ const moment = require('moment');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('../lib/logger');
+const _ = require('underscore');
 
 // set later to use local time
 later.date.localTime();
@@ -54,7 +55,7 @@ const getReminderWindow = (reminder) => {
       return since;
     }
     const reminderLogTimestamp = result.rows[0].id.split(':')[2];
-    return moment(parseInt(reminderLogTimestamp)).add(1, 'minute');
+    return moment(parseInt(reminderLogTimestamp));
   });
 };
 
@@ -70,33 +71,8 @@ const matchReminder = (reminder) => {
       // or null if it should not have run in that window.
       const start = moment();
       const previous = schedule.prev(1, start.toDate(), end.toDate());
-      return (previous instanceof Date) ? moment(previous) : false;
+      return (previous instanceof Date && end.isBefore(previous)) ? moment(previous) : false;
     });
-};
-
-const canSend = (reminder, date, place) => {
-  if (!place.contact) {
-    // nobody to send to
-    return false;
-  }
-
-  if (place.muted) {
-    return false;
-  }
-
-  // if send, check for mute on reminder, and place has sent_forms for the reminder
-  // sent_forms is maintained by the update_sent_forms transition
-  if (reminder.mute_after_form_for && place.sent_forms && place.sent_forms[reminder.form]) {
-    const lastReceived = moment(place.sent_forms[reminder.form]);
-    const muteDuration = parseDuration(reminder.mute_after_form_for);
-
-    if (lastReceived && muteDuration) {
-      // if it should mute due to being in the mute duration
-      return date.isAfter(lastReceived.add(muteDuration));
-    }
-  }
-
-  return true;
 };
 
 // returns strings like "1 day" as a moment.duration
@@ -134,6 +110,54 @@ const filterPlaceIdsWithoutReminder = (reminder, date, placeIds) => {
   });
 };
 
+const filterPlacesWithoutSentForms = (reminder, date, placeIds) => {
+  if (!placeIds.length) {
+    return [];
+  }
+
+  if (!reminder.mute_after_form_for) {
+    return placeIds;
+  }
+  const muteDuration = parseDuration(reminder.mute_after_form_for);
+  if (!muteDuration) {
+    return placeIds;
+  }
+
+  const keys = placeIds.map(id => [reminder.form, id]);
+  return db.medic
+    .query('medic/reports_by_form_and_parent', { keys, group: true })
+    .then(results => {
+      const invalidPlaceIds = [];
+      results.rows.forEach(row => {
+
+        if (!row.value || !row.value.max) {
+          return;
+        }
+        const lastReceived = moment(row.value.max);
+        // if it should mute due to being in the mute duration
+        if (date.isSameOrBefore(lastReceived.add(muteDuration))) {
+          const placeId = row.key[1];
+          invalidPlaceIds.push(placeId);
+        }
+      });
+
+      return _.difference(placeIds, invalidPlaceIds);
+    });
+};
+
+const canSend = (place) => {
+  if (!place.contact) {
+    // nobody to send to
+    return false;
+  }
+
+  if (place.muted) {
+    return false;
+  }
+
+  return true;
+};
+
 const filterValidPlaces = (reminder, date, placeIds) => {
   if (!placeIds.length) {
     return [];
@@ -143,7 +167,7 @@ const filterValidPlaces = (reminder, date, placeIds) => {
     .then(result => {
       const places = result.rows
         .map(row => row.doc)
-        .filter(place => canSend(reminder, date, place));
+        .filter(place => canSend(place));
 
       if (!places.length) {
         return [];
@@ -156,6 +180,7 @@ const filterValidPlaces = (reminder, date, placeIds) => {
 const getLeafPlaces = (reminder, date) => {
   return getLeafPlaceIds()
     .then(placeIds => filterPlaceIdsWithoutReminder(reminder, date, placeIds))
+    .then(placeIds => filterPlacesWithoutSentForms(reminder, date, placeIds))
     .then(placeIds => filterValidPlaces(reminder, date, placeIds));
 };
 

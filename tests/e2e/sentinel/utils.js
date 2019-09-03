@@ -12,13 +12,16 @@ const waitForSentinel = docIds => {
     .then(metaData => metaData.processed_seq)
     .then(seq => {
       const opts = {
-        path: '/_changes?' + querystring.stringify({ since: seq, filter: '_doc_ids' }),
-        body: { doc_ids: Array.isArray(docIds) ? docIds : [docIds] },
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        path: '/_changes',
+        headers: { 'Content-Type': 'application/json' },
       };
+      if (docIds) {
+        opts.path = `${opts.path}?${querystring.stringify({ since: seq, filter: '_doc_ids' })}`;
+        opts.method = 'POST';
+        opts.body = { doc_ids: Array.isArray(docIds) ? docIds : [ docIds ] };
+      } else {
+        opts.path = `${opts.path}?${querystring.stringify({ since: seq })}`;
+      }
       return utils.requestOnTestDb(opts);
     })
     .then(response => {

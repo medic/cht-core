@@ -21,7 +21,8 @@ describe('utils', () => {
       .withArgs('medic/reports_by_form_and_parent', {
         startkey: [formName, clinicId],
         endkey: [formName, clinicId],
-        include_docs: true
+        include_docs: true,
+        reduce: false,
       })
       .resolves({ rows: result });
 

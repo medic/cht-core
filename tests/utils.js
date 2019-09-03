@@ -3,6 +3,8 @@ const _ = require('underscore'),
   constants = require('./constants'),
   http = require('http'),
   path = require('path'),
+  {spawn} = require('child_process'),
+  rpn = require('request-promise-native'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 
@@ -13,6 +15,12 @@ const db = new PouchDB(
   `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
     constants.COUCH_PORT
   }/${constants.DB_NAME}`
+);
+
+const sentinel = new PouchDB(
+  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
+    constants.COUCH_PORT
+  }/${constants.DB_NAME}-sentinel`
 );
 
 let originalSettings;
@@ -320,6 +328,7 @@ const deleteUsers = usernames => {
 
 module.exports = {
   db: db,
+  sentinelDb: sentinel,
 
   request: request,
 
@@ -583,5 +592,28 @@ module.exports = {
   // @return {Promise}
   deleteUsers: deleteUsers,
 
-  setDebug: debug => e2eDebug = debug
+  setDebug: debug => e2eDebug = debug,
+
+  stopSentinel: () => {
+    if (process.env.TRAVIS) {
+      return new Promise(res => {
+        const pid = spawn('horti-svc-stop', ['medic-sentinel']);
+
+        pid.on('exit', res);
+      });
+    } else {
+      return rpn.post('http://localhost:31337/sentinel/stop');
+    }
+  },
+  startSentinel: () => {
+    if (process.env.TRAVIS) {
+      return new Promise(res => {
+        const pid = spawn('horti-svc-start', [`${require('os').homedir()}/.horticulturalist/deployments`, 'medic-sentinel']);
+
+        pid.on('exit', res);
+      });
+    } else {
+      return rpn.post('http://localhost:31337/sentinel/start');
+    }
+  },
 };
