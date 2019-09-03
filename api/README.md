@@ -45,6 +45,7 @@ Node server to support the medic app.
   - [POST /api/v1/users](#post-apiv1users)
   - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
+  - [GET /api/v1/users-info](#get-apiv1users-info)
 - [Bulk Operations](#bulk-operations)
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
 - [Upgrades](#upgrades)
@@ -968,6 +969,71 @@ DELETE /api/v1/users/mary
 
 ```
 HTTP/1.1 200 OK
+```
+
+## GET /api/v1/users-info
+
+Returns the number of documents an offline user would replicate, along with a `warn` flag if this number exceeds the recommended limit (now set at 10 000).
+
+When the authenticated requester has an offline role, it returns the requester doc count.
+##### Example
+```
+GET /api/v1/users-info -H 'Cookie: AuthSession=OFFLINE_USER_SESSION;'
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "total_docs": 5678,
+  "warn": false,
+  "limit: 10000
+}
+```
+
+When the requester has an online role, the following query parameters are accepted:
+
+#### Query Parameters
+
+| Variable | Description                                | Required | 
+| -------- | ------------------------------------------ | -------- |
+| facility_id | String identifier representing the uuid of the user's facility  | true |
+| role | String identifier representing the user role - must be configured as an offline role | true |
+| contact_id | String identifier representing the uuid of the user's associated contact | false | 
+ 
+##### Example
+
+```
+GET /api/v1/users-info?facility_id={{facility_uuid}}&role={{role}}&contact_id={{contact_uuid}} -H 'Cookie: AuthSession=OFFLINE_USER_SESSION;'
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "total_docs": 10265,
+  "warn": true,
+  "limit: 10000
+}
+```
+
+In case any of the required query parameters are omitted or the requested role is not configured as an offline role, the request will result in an error:
+
+
+```
+GET /api/v1/users-info?role={{online_role}} -H 'Cookie: AuthSession=OFFLINE_USER_SESSION;'
+```
+
+```
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+  "code": 400,
+  "error": "Missing required query params: role and/or facility_id"
+}
 ```
 
 # Bulk Operations

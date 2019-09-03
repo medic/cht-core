@@ -241,4 +241,43 @@ describe('Authorization middleware', () => {
       next.callCount.should.equal(1);
     });
   });
+
+  describe('GetUserSettings', () => {
+    it('blocks unauthenticated requests', () => {
+      middleware.getUserSettings(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.notLoggedIn.callCount.should.equal(1);
+    });
+
+    it('it nexts request for online users', () => {
+      testReq.userCtx = { name: 'user' };
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
+
+      return middleware
+        .getUserSettings(testReq, testRes, next)
+        .then(() => {
+          serverUtils.notLoggedIn.callCount.should.equal(0);
+          next.callCount.should.equal(1);
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
+        });
+    });
+
+    it('hydrates offline user_settings doc, saves it in `req` and forwards to next middleware', () => {
+      testReq.userCtx = { name: 'user' };
+      auth.getUserCtx.resolves({ name: 'user' });
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
+      auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
+
+      return middleware
+        .getUserSettings(testReq, testRes, next)
+        .then(() => {
+          serverUtils.notLoggedIn.callCount.should.equal(0);
+          next.callCount.should.equal(1);
+          next.args[0].should.deep.equal([undefined]);
+          testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
+          auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+        });
+    });
+  });
 });
