@@ -17,7 +17,6 @@ const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
 
 const transform = (formXml, stylesheet) => {
-  // TODO test if xsltproc exists on startup and return useful error
   return new Promise((resolve, reject) => {
     const xsltproc = childProcess.spawn('xsltproc', [ stylesheet, '-' ]);
     let stdout = '';

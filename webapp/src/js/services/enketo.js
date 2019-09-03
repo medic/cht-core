@@ -92,7 +92,6 @@ angular.module('inboxServices').service('Enketo',
       .then(function(results) {
         const $html = $(results[0]);
         const model = results[1];
-        // TODO work out where this is used??
         $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
