@@ -3,7 +3,7 @@ describe('Enketo service', () => {
 
   'use strict';
 
-  /** @return a mock form ready for putting in #dbContent */
+  // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
       _id: `form:${formInternalId}`,
@@ -162,7 +162,6 @@ describe('Enketo service', () => {
 
     it('return error when form initialisation fails', done => {
       UserContact.resolves({ contact_id: '123' });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -183,14 +182,13 @@ describe('Enketo service', () => {
 
     it('return form when everything works', () => {
       UserContact.resolves({ contact_id: '123' });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<xml></xml>');
-      return service.render($('<div></div>'), 'ok').then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform')).then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
         expect(FileReader.utf8.callCount).to.equal(2);
@@ -207,7 +205,6 @@ describe('Enketo service', () => {
 
     it('replaces img src with obj urls', () => {
       UserContact.resolves({ contact_id: '123' });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
         .onSecondCall().resolves(VISIT_MODEL)
@@ -218,7 +215,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
-      return service.render(wrapper, 'ok').then(() => {
+      return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
         // need to wait for async get attachment to complete
         const img = wrapper.find('img').first();
         expect(img.css('visibility')).to.satisfy(val => {
@@ -233,7 +230,6 @@ describe('Enketo service', () => {
 
     it('leaves img wrapped if failed to load', () => {
       UserContact.resolves({ contact_id: '123' });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
         .onSecondCall().resolves(VISIT_MODEL)
@@ -243,7 +239,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
-      return service.render(wrapper, 'ok').then(() => {
+      return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
         const img = wrapper.find('img').first();
         expect(img.attr('src')).to.equal(undefined);
         expect(img.attr('data-media-src')).to.equal('myimg');
@@ -257,7 +253,6 @@ describe('Enketo service', () => {
     it('passes xml instance data through to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
@@ -266,7 +261,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       EnketoPrepopulationData.resolves(data);
-      return service.render($('<div></div>'), 'ok', data).then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
@@ -280,7 +275,6 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -295,7 +289,7 @@ describe('Enketo service', () => {
           name: 'sharon'
         }
       };
-      return service.render($('<div></div>'), 'ok', instanceData).then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
@@ -309,7 +303,6 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
@@ -331,7 +324,7 @@ describe('Enketo service', () => {
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([ { _id: 'somereport' }]);
       LineageModelGenerator.contact.resolves({ lineage: [ { _id: 'someparent' } ] });
-      return service.render($('<div></div>'), 'ok', instanceData).then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
@@ -358,7 +351,6 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
@@ -384,7 +376,7 @@ describe('Enketo service', () => {
         }
       });
       LineageModelGenerator.contact.resolves({ lineage: [] });
-      return service.render($('<div></div>'), 'ok', instanceData).then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
@@ -402,7 +394,6 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
-      dbGet.resolves(mockEnketoDoc('myform'));
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -418,7 +409,7 @@ describe('Enketo service', () => {
           name: 'sharon'
         }
       };
-      return service.render($('<div></div>'), 'ok', instanceData).then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external).to.equal(undefined);
         expect(ContactSummary.callCount).to.equal(0);
@@ -434,7 +425,6 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
-      dbGet.resolves(mockEnketoDoc('myform'));
       enketoInit.returns([]);
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
@@ -451,7 +441,7 @@ describe('Enketo service', () => {
       };
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([ { _id: 'somereport' }]);
-      return service.render($('<div></div>'), 'ok', instanceData).then(() => {
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(ContactSummary.callCount).to.equal(1);

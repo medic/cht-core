@@ -445,7 +445,6 @@ var _ = require('underscore'),
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }
-            Enketo.clearXmlCache();
             $scope.nonContactForms = xForms.map(function(xForm) {
               return {
                 code: xForm.internalId,

@@ -63,8 +63,8 @@ angular.module('inboxServices').service('Enketo',
     };
     var inited = init();
 
-    var replaceJavarosaMediaWithLoaders = function(id, form) {
-      form.find('[data-media-src]').each(function() {
+    var replaceJavarosaMediaWithLoaders = function(formDoc, formHtml) {
+      formHtml.find('[data-media-src]').each(function() {
         var elem = $(this);
         var src = elem.attr('data-media-src');
         elem.css('visibility', 'hidden');
@@ -109,6 +109,10 @@ angular.module('inboxServices').service('Enketo',
 
     var getAttachment = function(id, name) {
       return DB().getAttachment(id, name).then(FileReader.utf8);
+    };
+
+    var getFormAttachment = function(doc) {
+      return getAttachment(doc._id, XmlForms.findXFormAttachmentName(doc));
     };
 
     var handleKeypressOnInputField = function(e) {
@@ -325,12 +329,11 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderForm = function(selector, id, instanceData, editedListener, valuechangeListener) {
+    var renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
-        return DB().get(id)
-          .then(form => transformXml(form))
+        return transformXml(form)
           .then(doc => {
-            replaceJavarosaMediaWithLoaders(id, doc.html);
+            replaceJavarosaMediaWithLoaders(form, doc.html);
             return renderFromXmls(doc, selector, instanceData, language);
           })
           .then(function(form) {
@@ -437,7 +440,7 @@ angular.module('inboxServices').service('Enketo',
       docsToStore.unshift(doc);
 
       return XmlForms.get(doc.form)
-        .then(form => getAttachment(form.id, 'xml')) // TODO not necessarily called 'xml'
+        .then(getFormAttachment)
         .then(function(form) {
           doc.fields = EnketoTranslation.reportRecordToJs(record, form);
           return docsToStore;
