@@ -6,6 +6,7 @@ const childProcess = require('child_process');
 const path = require('path');
 const logger = require('../logger');
 const db = require('../db');
+const formsService = require('./forms');
 
 const FORM_ROOT_OPEN = '<root xmlns:xf="http://www.w3.org/2002/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:enk="http://enketo.org/xforms" xmlns:kb="http://kobotoolbox.org/xforms" xmlns:esri="http://esri.com/xforms" xmlns:oc="http://openclinica.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">';
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
@@ -54,27 +55,7 @@ const generateModel = formXml => {
 
 const getEnketoForm = doc => {
   const collect = doc.context && doc.context.collect;
-  return !collect && getXFormAttachment(doc);
-};
-
-// TODO pull out parts of forms controller as forms service and reuse here
-//    once this is merged: https://github.com/medic/medic/pull/5656
-const getForms = () => {
-  const options = {
-    key: ['form'],
-    include_docs: true,
-    attachments: true,
-    binary: true,
-  };
-  return db.medic.query('medic-client/doc_by_type', options)
-    .then(response => response.rows.map(row => row.doc));
-};
-
-const getXFormAttachment = doc => {
-  const attachments = (doc && doc._attachments) || {};
-  const name = Object.keys(attachments)
-    .find(name => name === 'xml' || name.endsWith('.xml'));
-  return attachments[name];
+  return !collect && formsService.getXFormAttachment(doc);
 };
 
 const generate = formXml => {
@@ -120,7 +101,6 @@ const updateAttachments = (accumulator, doc) => {
 
 // Returns array of docs that need saving.
 const updateAllAttachments = docs => {
-  // TODO use async.series once this is merged: https://github.com/medic/medic/pull/5751
   // spawn the child processes in series so we don't smash the server
   return docs.reduce(updateAttachments, Promise.resolve([])).then(results => {
     return docs.filter((doc, i) => {
@@ -153,8 +133,11 @@ module.exports = {
       });
   },
 
+  /**
+   * Updates the model and form attachments for all forms if necessary.
+   */
   updateAll: () => {
-    return getForms()
+    return formsService.getFormDocs()
       .then(docs => {
         if (!docs.length) {
           return [];
