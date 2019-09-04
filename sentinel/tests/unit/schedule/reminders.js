@@ -7,6 +7,7 @@ const assert = require('chai').assert;
 const rewire = require('rewire');
 const db = require('../../../src/db');
 const later = require('later');
+const request = require('request-promise-native');
 let reminders;
 let clock;
 
@@ -16,6 +17,7 @@ describe('reminders', () => {
   afterEach(() => {
     sinon.restore();
     clock.restore();
+    db.couchUrl = 'someURL';
   });
   beforeEach(() => {
     process.env.TEST_ENV = true;
@@ -170,7 +172,7 @@ describe('reminders', () => {
         assert.equal(reminders.__get__('sendReminders').callCount, 1);
         assert.deepEqual(reminders.__get__('sendReminders').args[0], [reminder, date]);
         assert.equal(db.sentinel.put.callCount, 1);
-        assert.deepEqual(db.sentinel.put.args[0], [{ _id: 'reminderlog:formA:1230', reminder, reported_date: 1260 }]);
+        assert.deepEqual(db.sentinel.put.args[0], [{ _id: 'reminderlog:formA:1230', reminder, reported_date: 1260, duration: 0 }]);
       });
     });
 
@@ -182,6 +184,18 @@ describe('reminders', () => {
       return runReminder(reminder).then(() => {
         assert.equal(reminders.__get__('matchReminder').callCount, 1);
         assert.equal(reminders.__get__('sendReminders').callCount, 0);
+      });
+    });
+
+    it('should throw sendReminder errors', () => {
+      const reminder = { form: 'a' };
+      reminders.__set__('matchReminder', sinon.stub().resolves('aa'));
+      reminders.__set__('sendReminders', sinon.stub().rejects({ some: 'error' }));
+
+      return runReminder(reminder).catch(err => {
+        assert.equal(reminders.__get__('matchReminder').callCount, 1);
+        assert.equal(reminders.__get__('sendReminders').callCount, 1);
+        assert.deepEqual(err, { some: 'error' });
       });
     });
   });
@@ -366,7 +380,7 @@ describe('reminders', () => {
 
     describe('getLeafPlaces', () => {
       it('it calls db view and hydrates docs', () => {
-        sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'xxx' }] });
+        sinon.stub(request, 'get').resolves({ rows: [{ id: 'xxx' }] });
         sinon.stub(db.medic, 'allDocs')
           .withArgs({ keys: ['reminder:frm:5000:xxx'] }).resolves({ rows: [{ key: 'reminder:frm:5000:xxx', error: 'not_found' }] })
           .withArgs({ keys: ['xxx'], include_docs: true }).resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
@@ -381,13 +395,16 @@ describe('reminders', () => {
 
         return reminders
           .__get__('getLeafPlaces')({ form: 'frm' }, moment(5000))
-          .then(places => {
+          .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
+            assert.equal(nextDocId, 'xxx');
             assert.equal(places.length, 1);
             assert.deepEqual(places, [{ _id: 'xxx', contact: 'maria' }]);
-            assert.equal(db.medic.query.callCount, 1);
-            assert.equal(db.medic.query.args[0][0], 'medic-client/contacts_by_type');
-            assert.deepEqual(db.medic.query.args[0][1].keys, [[ 'clinic' ]]);
+            assert.equal(request.get.callCount, 1);
+            assert.deepEqual(request.get.args[0], [
+              'someURL/_design/medic-client/_view/contacts_by_type',
+              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]), start_key_doc_id: undefined }, json: true },
+            ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(reminders.__get__('lineage').hydrateDocs.args[0], [[{ _id: 'xxx', contact: { _id: 'maria' } }]]);
           });
@@ -395,12 +412,13 @@ describe('reminders', () => {
 
       it('it ignores places with matching reminders', () => {
         const now = moment(1234);
-        sinon.stub(db.medic, 'query').resolves({ rows: [
+        sinon.stub(request, 'get').resolves({ rows: [
             { id: 'xxx' },
             { id: 'yyx' },
             { id: 'yyy' },
             { id: 'yyz' }
           ] });
+
         sinon.stub(db.medic, 'allDocs');
         db.medic.allDocs
           .withArgs({ keys: ['reminder:frm:1234:xxx', 'reminder:frm:1234:yyx', 'reminder:frm:1234:yyy', 'reminder:frm:1234:yyz'] })
@@ -421,15 +439,47 @@ describe('reminders', () => {
 
         return reminders
           .__get__('getLeafPlaces')({ form: 'frm' }, now)
-          .then(places => {
+          .then(({places, nextDocId}) => {
             assert.deepEqual(places.map(place => place._id), ['xxx', 'yyy', 'yyz']);
+            assert.equal(nextDocId, 'yyz');
+          });
+      });
+
+      it('should use provided startDocId and skips the doc with provided startDocId in processing', () => {
+        sinon.stub(request, 'get').resolves({ rows: [ { id: 'somedocid' }, { id: 'xxx' }] });
+        sinon.stub(db.medic, 'allDocs')
+          .withArgs({ keys: ['reminder:frm:5000:xxx'] }).resolves({ rows: [{ key: 'reminder:frm:5000:xxx', error: 'not_found' }] })
+          .withArgs({ keys: ['xxx'], include_docs: true }).resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
+
+        sinon.stub(config, 'get').returns([
+          { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
+          { id: 'clinic', parents: [ 'health_center' ] },            // queried
+          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
+          { id: 'district_hospital' }
+        ]);
+        reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
+
+        return reminders
+          .__get__('getLeafPlaces')({ form: 'frm' }, moment(5000), 'somedocid')
+          .then(({places, nextDocId}) => {
+            assert(Array.isArray(places));
+            assert.equal(nextDocId, 'xxx');
+            assert.equal(places.length, 1);
+            assert.deepEqual(places, [{ _id: 'xxx', contact: 'maria' }]);
+            assert.equal(request.get.callCount, 1);
+            assert.deepEqual(request.get.args[0], [
+              'someURL/_design/medic-client/_view/contacts_by_type',
+              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]), start_key_doc_id: 'somedocid' }, json: true },
+            ]);
+            assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
+            assert.deepEqual(reminders.__get__('lineage').hydrateDocs.args[0], [[{ _id: 'xxx', contact: { _id: 'maria' } }]]);
           });
       });
     });
 
     it('should do nothing if no places found', () => {
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [] });
+      sinon.stub(request, 'get').resolves({ rows: [] });
       const lineage = { hydrateDocs: sinon.stub() };
       const messages = { addMessage: sinon.stub() };
       sinon.stub(db.medic, 'allDocs');
@@ -443,10 +493,10 @@ describe('reminders', () => {
           assert.equal(lineage.hydrateDocs.callCount, 0);
           assert.equal(db.medic.allDocs.callCount, 0);
           assert.equal(messages.addMessage.callCount, 0);
-          assert.equal(db.medic.query.callCount, 1);
-          assert.deepEqual(db.medic.query.args[0], [
-            'medic-client/contacts_by_type',
-            { keys: [['tier2']] }
+          assert.equal(request.get.callCount, 1);
+          assert.deepEqual(request.get.args[0], [
+            'someURL/_design/medic-client/_view/contacts_by_type',
+            { qs: { limit: 1000, keys: JSON.stringify([['tier2']]), start_key_doc_id: undefined }, json: true },
           ]);
         });
     });
@@ -455,7 +505,10 @@ describe('reminders', () => {
       const now = moment(1000);
       const reminder = { form: 'rform' };
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] });
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] })
+        .onCall(1).resolves({ rows: [{ id: 'doc2' }] });
+
       const lineage = { hydrateDocs: sinon.stub() };
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
@@ -476,67 +529,76 @@ describe('reminders', () => {
       });
     });
 
-    it('should exclude places that have no contact or are muted', () => {
+    it('should exclude places that have no contact, are muted or have a legacy matching reminder', () => {
       const now = moment(123);
       const reminder = { form: 'vform' };
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] });
-      const lineage = { hydrateDocs: sinon.stub() };
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }, { id: 'doc3' }, { id: 'doc4' }, { id: 'doc5' }] })
+        .onCall(1).resolves({ rows: [{ id: 'doc5' }] });
+      const lineage = { hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)), minifyLineage: sinon.stub() };
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
       reminders.__set__('messages', messages);
-      sinon.stub(db.medic, 'bulkDocs');
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
       sinon.stub(db.medic, 'allDocs');
       db.medic.allDocs
-        .withArgs({ keys: ['reminder:vform:123:doc1', 'reminder:vform:123:doc2'] })
+        .withArgs({ keys: ['reminder:vform:123:doc1', 'reminder:vform:123:doc2', 'reminder:vform:123:doc3', 'reminder:vform:123:doc4', 'reminder:vform:123:doc5'] })
         .resolves({ rows: [
             { id: 'reminder:vform:123:doc1', error: 'not_found' },
             // deleted reminder counts as no reminder
-            { id: 'reminder:vform:123:doc2', value: { rev: '2-something', deleted: true } }
+            { id: 'reminder:vform:123:doc2', value: { rev: '2-something', deleted: true } },
+            { id: 'reminder:vform:123:doc3', error: 'not_found' },
+            { id: 'reminder:vform:123:doc4', error: 'not_found' },
+            { id: 'reminder:vform:123:doc5', error: 'not_found' },
           ]});
       db.medic.allDocs
-        .withArgs({ keys: ['doc1', 'doc2'], include_docs: true })
+        .withArgs({ keys: ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'], include_docs: true })
         .resolves({ rows: [
             { doc: { _id: 'doc1', type: 'tier2' } },
-            { doc: { _id: 'doc1', type: 'tier2', contact: { _id: 'c' }, muted: 1234 } },
+            { doc: { _id: 'doc2', type: 'tier2', contact: { _id: 'c' }, muted: 1234 } },
+            // has a matching legacy reminder
+            { doc: { _id: 'doc3', type: 'tier2', contact: { _id: 'c' }, tasks: [{ form: 'vform', timestamp: now.toISOString() }] } },
+            // not matching legacy reminder
+            { doc: { _id: 'doc4', type: 'tier2', contact: { _id: 'c' }, tasks: [{ form: 'otherform', timestamp: now.toISOString() }] } },
+            // not matching legacy reminder
+            { doc: { _id: 'doc5', type: 'tier2', contact: { _id: 'c' }, tasks: [{ form: 'vform', timestamp: 'random' }] } },
           ]});
 
       return reminders.__get__('sendReminders')(reminder, now).then(() => {
-        assert.equal(db.medic.bulkDocs.callCount, 0);
-        assert.equal(lineage.hydrateDocs.callCount, 0);
+        assert.equal(db.medic.bulkDocs.callCount, 1);
+        assert.equal(lineage.hydrateDocs.callCount, 1);
         assert.equal(db.medic.allDocs.callCount, 2);
-        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['reminder:vform:123:doc1', 'reminder:vform:123:doc2'] }]);
-        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2'], include_docs: true }]);
-        assert.equal(messages.addMessage.callCount, 0);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['reminder:vform:123:doc1', 'reminder:vform:123:doc2', 'reminder:vform:123:doc3', 'reminder:vform:123:doc4', 'reminder:vform:123:doc5'] }]);
+        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'], include_docs: true }]);
+        assert.equal(messages.addMessage.callCount, 2);
+        assert.sameMembers(db.medic.bulkDocs.args[0][0].map(r => r._id), ['reminder:vform:123:doc4', 'reminder:vform:123:doc5']);
       });
     });
 
-    it('should exclude places that have a form sent in mute interval ', () => {
+    it('should exclude places that have a form sent in mute interval', () => {
       const now = 60 * 60 * 1000; // one hour
       clock.tick(now);
       const reminderDate = 30 * 60 * 1000; // 30 minutes
       const reminder = { form: 'vform', mute_after_form_for: '10 minute' }; // 10 * 60 * 1000
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query');
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [
+          { id: 'doc1' }, // has new form
+          { id: 'doc2' }, // has old form
+          { id: 'doc3' } // has no form
+        ]})
+        .onCall(1).resolves({ rows: [{ id: 'doc3' }] });
 
-      db.medic.query
-        .withArgs('medic-client/contacts_by_type')
-        .resolves({ rows: [
-            { id: 'doc1' }, // has new form
-            { id: 'doc2' }, // has old form
-            { id: 'doc3' } // has no form
-          ]});
-      db.medic.query
-        .withArgs('medic/reports_by_form_and_parent')
-        .resolves({ rows: [
-            { key: ['vform', 'doc1'], value: { sum: 100, min: 10, max: 25 * 60 * 1000 } }, // 25 + 10 minutes > 30 minutes
-            { key: ['vform', 'doc2'], value: { sum: 100, min: 10, max: 1000 } }, // 1 sec + 10 minutes < 30 minutes
-          ]});
+      sinon.stub(db.medic, 'query').resolves({ rows: [
+          { key: ['vform', 'doc1'], value: { sum: 100, min: 10, max: 25 * 60 * 1000 } }, // 25 + 10 minutes > 30 minutes
+          { key: ['vform', 'doc2'], value: { sum: 100, min: 10, max: 1000 } }, // 1 sec + 10 minutes < 30 minutes
+        ]});
       const lineage = { hydrateDocs: sinon.stub().callsFake(d => d), minifyLineage: sinon.stub() };
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
       reminders.__set__('messages', messages);
-      sinon.stub(db.medic, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
       sinon.stub(db.medic, 'allDocs');
       db.medic.allDocs
         .withArgs({ keys: [`reminder:vform:${reminderDate}:doc1`, `reminder:vform:${reminderDate}:doc2`, `reminder:vform:${reminderDate}:doc3`] })
@@ -559,9 +621,18 @@ describe('reminders', () => {
         assert.equal(db.medic.allDocs.callCount, 2);
         assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [`reminder:vform:${reminderDate}:doc1`, `reminder:vform:${reminderDate}:doc2`, `reminder:vform:${reminderDate}:doc3`] }]);
         assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc2', 'doc3'], include_docs: true }]);
-        assert.equal(db.medic.query.callCount, 2);
-        assert.deepEqual(db.medic.query.args[0], ['medic-client/contacts_by_type', { keys: [['tier2']] }]);
-        assert.deepEqual(db.medic.query.args[1], [
+        assert.equal(request.get.callCount, 2);
+        assert.deepEqual(request.get.args[0], [
+          'someURL/_design/medic-client/_view/contacts_by_type',
+          { qs: { limit: 1000, keys: JSON.stringify([['tier2']]), start_key_doc_id: undefined }, json: true },
+        ]);
+        assert.deepEqual(request.get.args[1], [
+          'someURL/_design/medic-client/_view/contacts_by_type',
+          { qs: { limit: 1000, keys: JSON.stringify([['tier2']]), start_key_doc_id: 'doc3' }, json: true },
+        ]);
+
+        assert.equal(db.medic.query.callCount, 1);
+        assert.deepEqual(db.medic.query.args[0], [
           'medic/reports_by_form_and_parent',
           {
             keys: [['vform','doc1'],['vform','doc2'],['vform','doc3']],
@@ -576,19 +647,33 @@ describe('reminders', () => {
       const reminderDate = 30 * 60 * 1000;
       const reminder = { form: 'frm', mute_after_form_for: '10 minute', message: 'I shot the sheriff' };
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query');
-      db.medic.query
-        .withArgs('medic-client/contacts_by_type')
-        .resolves({ rows: [
-          { id: 'doc1' }, { id: 'doc2' }, { id: 'doc3' }, { id: 'doc4' }, { id: 'doc5' }, { id: 'doc6' }, { id: 'doc7' }, { id: 'doc8' }
-        ] });
-      db.medic.query
-        .withArgs('medic/reports_by_form_and_parent')
-        .resolves({ rows: [
-            { key: ['frm', 'doc6'], value: {} }, // this is very broken
-            { key: ['frm', 'doc7'], value: { max: 1000 } }, // old form
-            { key: ['frm', 'doc8'], value: { max: 25 * 60 * 1000 } }, // new form
-          ] });
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [
+          { id: 'doc1' },
+          { id: 'doc2' },
+          { id: 'doc3' },
+          { id: 'doc4' },
+          { id: 'doc5' },
+          { id: 'doc6' },
+          { id: 'doc7' },
+          { id: 'doc8' },
+        ]})
+        .onCall(1).resolves({ rows: [
+          { id: 'doc8' }, // not processed the second time
+          { id: 'doc9' }, // has matching legacy reminder
+          { id: 'doc10' }, // has not matching legacy reminders
+          { id: 'doc11' }, // has other legacy reminders
+          ] })
+        .onCall(2).resolves({ rows: [{ id: 'doc11' }] });
+
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: [
+          { key: ['frm', 'doc6'], value: {} }, // this is very broken
+          { key: ['frm', 'doc7'], value: { max: 1000 } }, // old form
+          { key: ['frm', 'doc8'], value: { max: 25 * 60 * 1000 } }, // new form
+        ] })
+        .onCall(1).resolves({ rows: [] }); // 2nd batch has no reminder forms sent
+
       const lineage = {
         hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)),
         minifyLineage: sinon.stub(),
@@ -596,7 +681,7 @@ describe('reminders', () => {
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
       reminders.__set__('messages', messages);
-      sinon.stub(db.medic, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
       sinon.stub(db.medic, 'allDocs');
 
       db.medic.allDocs.onCall(0).resolves({ rows: [
@@ -617,9 +702,22 @@ describe('reminders', () => {
           { doc: { _id: 'doc6', contact: 'contact6' } },
           { doc: { _id: 'doc7', contact: 'contact7' }}, // old sent form
         ] });
+      db.medic.allDocs.onCall(2).resolves({ rows: [
+          { key: `reminder:frm:${reminderDate}:doc9`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc10`, error: 'not_found' },
+          { key: `reminder:frm:${reminderDate}:doc11`, error: 'not_found' },
+        ] });
+      db.medic.allDocs.onCall(3).resolves({ rows: [
+          // matching legacy reminder
+          { doc: { _id: 'doc9', contact: 'contact9', tasks: [{ form: 'frm', timestamp: moment(reminderDate).toISOString() }] }},
+          // not matching legacy reminder
+          { doc: { _id: 'doc10', contact: 'contact10', tasks: [{ form: 'frm', timestamp: 'august 2016' }] } },
+          // not matching legacy reminder
+          { doc: { _id: 'doc11', contact: 'contact11', tasks: [{ form: 'frm', timestamp: 'a' }, { form: 'f', timestamp: moment(reminderDate).toISOString() }] }},
+        ] });
 
       return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
-        assert.equal(db.medic.allDocs.callCount, 2);
+        assert.equal(db.medic.allDocs.callCount, 4);
         assert.deepEqual(db.medic.allDocs.args[0], [{ keys: [
           `reminder:frm:${reminderDate}:doc1`,
           `reminder:frm:${reminderDate}:doc2`,
@@ -631,7 +729,14 @@ describe('reminders', () => {
           `reminder:frm:${reminderDate}:doc8`,
           ] }]);
         assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2', 'doc4', 'doc5', 'doc6', 'doc7'], include_docs: true }]);
-        assert.equal(lineage.hydrateDocs.callCount, 1);
+        assert.deepEqual(db.medic.allDocs.args[2], [{ keys: [
+            `reminder:frm:${reminderDate}:doc9`,
+            `reminder:frm:${reminderDate}:doc10`,
+            `reminder:frm:${reminderDate}:doc11`,
+          ] }]);
+        assert.deepEqual(db.medic.allDocs.args[3], [{ keys: ['doc9', 'doc10', 'doc11'], include_docs: true }]);
+
+        assert.equal(lineage.hydrateDocs.callCount, 2);
         assert.deepEqual(lineage.hydrateDocs.args[0], [[
           { _id: 'doc1', contact: 'contact1' }, // no reminder
           { _id: 'doc2', contact: 'contact2' }, // deleted reminder,
@@ -639,11 +744,22 @@ describe('reminders', () => {
           { _id: 'doc7', contact: 'contact7' }, // old sent form
         ]]);
 
-        assert.equal(messages.addMessage.callCount, 4);
-        assert.equal(db.medic.bulkDocs.callCount, 1);
+        assert.deepEqual(lineage.hydrateDocs.args[1], [[
+          { _id: 'doc10', contact: 'contact10', tasks: [{ form: 'frm', timestamp: 'august 2016' }] },
+          { _id: 'doc11', contact: 'contact11', tasks: [{ form: 'frm', timestamp: 'a' }, { form: 'f', timestamp: moment(reminderDate).toISOString() }] }
+        ]]);
+
+        assert.equal(messages.addMessage.callCount, 6);
+        assert.equal(db.medic.bulkDocs.callCount, 2);
         assert.deepEqual(db.medic.bulkDocs.args[0][0].map(doc => doc._id), [
-          `reminder:frm:${reminderDate}:doc1`, `reminder:frm:${reminderDate}:doc2`, `reminder:frm:${reminderDate}:doc6`,
+          `reminder:frm:${reminderDate}:doc1`,
+          `reminder:frm:${reminderDate}:doc2`,
+          `reminder:frm:${reminderDate}:doc6`,
           `reminder:frm:${reminderDate}:doc7`,
+        ]);
+        assert.deepEqual(db.medic.bulkDocs.args[1][0].map(doc => doc._id), [
+          `reminder:frm:${reminderDate}:doc10`,
+          `reminder:frm:${reminderDate}:doc11`,
         ]);
       });
     });
@@ -654,7 +770,10 @@ describe('reminders', () => {
       const reminder = { form: 'form', message: 'Hello, darkness, my old friend' };
 
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query').resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] });
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }]})
+        .onCall(1).resolves({ rows: [{ id: 'doc2' }] });
+      sinon.stub(db.medic, 'query').resolves({ rows: [] });
       const lineage = {
         hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)),
         minifyLineage: sinon.stub().callsFake(d => d),
@@ -662,7 +781,7 @@ describe('reminders', () => {
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
       reminders.__set__('messages', messages);
-      sinon.stub(db.medic, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
       sinon.stub(db.medic, 'allDocs');
 
       db.medic.allDocs.onCall(0).resolves({ rows: [
@@ -737,12 +856,10 @@ describe('reminders', () => {
       const reminder = { form: 'form', message: 'Please send {{form}} for {{name}} {{type}} {{week}}-{{year}}' };
 
       sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
-      sinon.stub(db.medic, 'query');
-      db.medic.query
-        .withArgs('medic-client/contacts_by_type')
-        .resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] });
-      db.medic.query
-        .withArgs('medic/reports_by_form_and_parent').resolves({ rows: [] });
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] })
+        .onCall(1).resolves({ rows: [ { id: 'doc2' }] });
+      sinon.stub(db.medic, 'query').resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
       db.medic.allDocs.onCall(0).resolves({ rows: [
           { key: `reminder:form:${reminderDate}:doc1`, error: 'not_found' },
@@ -761,7 +878,7 @@ describe('reminders', () => {
         hydrateDocs: hydrateDocs,
         minifyLineage: reminders.__get__('lineage').minifyLineage,
       });
-      sinon.stub(db.medic, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
       clock.tick(oneDay);
       const addMessage = sinon.spy(reminders.__get__('messages'), 'addMessage');
 
@@ -804,6 +921,121 @@ describe('reminders', () => {
         });
         assert.deepEqual(bulkDocsArgs[1].contact, { _id: 'contact2' });
         assert.deepEqual(bulkDocsArgs[1].place, { _id: 'doc2', parent: { _id: 'parent1' } });
+      });
+    });
+
+    it('should process contacts in batches, calling itself after each batch and skipping already processed contacts', () => {
+      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      const batches = [
+        ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'],
+        ['doc5', 'doc6', 'doc7', 'doc8', 'doc9'],
+        ['doc9', 'doc10', 'doc11', 'doc12', 'doc13'],
+        ['doc13', 'doc14', 'doc15', 'doc16', 'doc17'],
+        ['doc17']
+      ];
+      sinon.stub(request, 'get');
+      batches.forEach((batch, idx) => request.get.onCall(idx).resolves({ rows: batch.map(id => ({ id })) }));
+      sinon.stub(db.medic, 'allDocs')
+        // getting reminders requests
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map(id => ({ key: id, error: 'not_found' })) }))
+        // add exception for doc requests
+        .withArgs(sinon.match({ include_docs: true }))
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map(id => ({ doc: { _id: id, contact: 'contact' }})) }));
+      const lineage = { hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)), minifyLineage: sinon.stub() };
+      const messages = { addMessage: sinon.stub() };
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      reminders.__set__('lineage', lineage);
+      reminders.__set__('messages', messages);
+
+      const reminderDate = 5000;
+
+      return reminders.__get__('sendReminders')({ form: 'form' }, moment(reminderDate)).then(() => {
+        assert.equal(request.get.callCount, 5);
+        assert.deepEqual(request.get.args[0][1].qs, { start_key_doc_id: undefined, limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[1][1].qs, { start_key_doc_id: 'doc5', limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[2][1].qs, { start_key_doc_id: 'doc9', limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[3][1].qs, { start_key_doc_id: 'doc13', limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[4][1].qs, { start_key_doc_id: 'doc17', limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.equal(db.medic.bulkDocs.callCount, 4);
+        assert.deepEqual(db.medic.bulkDocs.args[0][0].map(doc => doc._id), [
+          'reminder:form:5000:doc1', 'reminder:form:5000:doc2', 'reminder:form:5000:doc3', 'reminder:form:5000:doc4', 'reminder:form:5000:doc5'
+        ]);
+        assert.deepEqual(db.medic.bulkDocs.args[1][0].map(doc => doc._id), [
+          'reminder:form:5000:doc6', 'reminder:form:5000:doc7', 'reminder:form:5000:doc8', 'reminder:form:5000:doc9'
+        ]);
+        assert.deepEqual(db.medic.bulkDocs.args[2][0].map(doc => doc._id), [
+          'reminder:form:5000:doc10', 'reminder:form:5000:doc11', 'reminder:form:5000:doc12', 'reminder:form:5000:doc13'
+        ]);
+        assert.deepEqual(db.medic.bulkDocs.args[3][0].map(doc => doc._id), [
+          'reminder:form:5000:doc14', 'reminder:form:5000:doc15', 'reminder:form:5000:doc16', 'reminder:form:5000:doc17'
+        ]);
+        assert.equal(messages.addMessage.callCount, 17);
+
+        assert.equal(db.medic.allDocs.callCount, 8);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['reminder:form:5000:doc1', 'reminder:form:5000:doc2', 'reminder:form:5000:doc3', 'reminder:form:5000:doc4', 'reminder:form:5000:doc5']}]);
+        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'], include_docs: true }]);
+        assert.deepEqual(db.medic.allDocs.args[2], [{ keys: ['reminder:form:5000:doc6', 'reminder:form:5000:doc7', 'reminder:form:5000:doc8', 'reminder:form:5000:doc9']}]);
+        assert.deepEqual(db.medic.allDocs.args[3], [{ keys: ['doc6', 'doc7', 'doc8', 'doc9'], include_docs: true }]);
+        assert.deepEqual(db.medic.allDocs.args[4], [{ keys: ['reminder:form:5000:doc10', 'reminder:form:5000:doc11', 'reminder:form:5000:doc12', 'reminder:form:5000:doc13']}]);
+        assert.deepEqual(db.medic.allDocs.args[5], [{ keys: ['doc10', 'doc11', 'doc12', 'doc13'], include_docs: true }]);
+        assert.deepEqual(db.medic.allDocs.args[6], [{ keys: ['reminder:form:5000:doc14', 'reminder:form:5000:doc15', 'reminder:form:5000:doc16', 'reminder:form:5000:doc17']}]);
+        assert.deepEqual(db.medic.allDocs.args[7], [{ keys: ['doc14', 'doc15', 'doc16', 'doc17'], include_docs: true }]);
+        assert.equal(lineage.hydrateDocs.callCount, 4);
+      });
+    });
+
+    it('should throw bulk save errors and stop execution', () => {
+      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      const batches = [
+        ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'],
+        ['doc5', 'doc6', 'doc7', 'doc8', 'doc9'],
+        ['doc9', 'doc10', 'doc11', 'doc12', 'doc13']
+      ];
+      sinon.stub(request, 'get');
+      batches.forEach((batch, idx) => request.get.onCall(idx).resolves({ rows: batch.map(id => ({ id })) }));
+      sinon.stub(db.medic, 'allDocs')
+      // getting reminders requests
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map(id => ({ key: id, error: 'not_found' })) }))
+        // add exception for doc requests
+        .withArgs(sinon.match({ include_docs: true }))
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map(id => ({ doc: { _id: id, contact: 'contact' }})) }));
+      const lineage = { hydrateDocs: sinon.stub().callsFake(d => Promise.resolve(d)), minifyLineage: sinon.stub() };
+      const messages = { addMessage: sinon.stub() };
+      sinon.stub(db.medic, 'bulkDocs')
+        .resolves([{ ok: true }, { ok: true }, { ok: true }, { ok: true }, { ok: true }])
+        .onCall(2).resolves([{ ok: true }, { error: 'boom :(' }, { ok: true }, { ok: true }]);
+      reminders.__set__('lineage', lineage);
+      reminders.__set__('messages', messages);
+
+      const reminderDate = 5000;
+
+      return reminders.__get__('sendReminders')({ form: 'form' }, moment(reminderDate)).catch(err => {
+        assert.deepEqual(err.message, 'Errors saving reminders');
+        assert.equal(request.get.callCount, 3);
+        assert.deepEqual(request.get.args[0][1].qs, { start_key_doc_id: undefined, limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[1][1].qs, { start_key_doc_id: 'doc5', limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[2][1].qs, { start_key_doc_id: 'doc9', limit: 1000, keys: JSON.stringify([['tier2']]) });
+
+        assert.equal(db.medic.bulkDocs.callCount, 3);
+        assert.deepEqual(db.medic.bulkDocs.args[0][0].map(doc => doc._id), [
+          'reminder:form:5000:doc1', 'reminder:form:5000:doc2', 'reminder:form:5000:doc3', 'reminder:form:5000:doc4', 'reminder:form:5000:doc5'
+        ]);
+        assert.deepEqual(db.medic.bulkDocs.args[1][0].map(doc => doc._id), [
+          'reminder:form:5000:doc6', 'reminder:form:5000:doc7', 'reminder:form:5000:doc8', 'reminder:form:5000:doc9'
+        ]);
+        assert.deepEqual(db.medic.bulkDocs.args[2][0].map(doc => doc._id), [
+          'reminder:form:5000:doc10', 'reminder:form:5000:doc11', 'reminder:form:5000:doc12', 'reminder:form:5000:doc13'
+        ]);
+        assert.equal(messages.addMessage.callCount, 13);
+
+        assert.equal(db.medic.allDocs.callCount, 6);
+        assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['reminder:form:5000:doc1', 'reminder:form:5000:doc2', 'reminder:form:5000:doc3', 'reminder:form:5000:doc4', 'reminder:form:5000:doc5']}]);
+        assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'], include_docs: true }]);
+        assert.deepEqual(db.medic.allDocs.args[2], [{ keys: ['reminder:form:5000:doc6', 'reminder:form:5000:doc7', 'reminder:form:5000:doc8', 'reminder:form:5000:doc9']}]);
+        assert.deepEqual(db.medic.allDocs.args[3], [{ keys: ['doc6', 'doc7', 'doc8', 'doc9'], include_docs: true }]);
+        assert.deepEqual(db.medic.allDocs.args[4], [{ keys: ['reminder:form:5000:doc10', 'reminder:form:5000:doc11', 'reminder:form:5000:doc12', 'reminder:form:5000:doc13']}]);
+        assert.deepEqual(db.medic.allDocs.args[5], [{ keys: ['doc10', 'doc11', 'doc12', 'doc13'], include_docs: true }]);
+        assert.equal(lineage.hydrateDocs.callCount, 3);
       });
     });
   });

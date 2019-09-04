@@ -6,6 +6,10 @@ const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('../lib/logger');
 const _ = require('underscore');
+const request = require('request-promise-native');
+const { performance } = require('perf_hooks');
+
+const BATCH_SIZE = 1000;
 
 // set later to use local time
 later.date.localTime();
@@ -86,15 +90,23 @@ const parseDuration = (format) => {
   return moment.duration(Number(tokens[0]), tokens[1]);
 };
 
-const getLeafPlaceIds = () => {
+const getLeafPlaceIds = (startDocId) => {
   const types = config.get('contact_types') || [];
   const placeTypes = types.filter(type => !type.person);
   const leafPlaceTypes = placeTypes.filter(type => {
     return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
   });
   const keys = leafPlaceTypes.map(type => [ type.id ]);
-  return db.medic
-    .query('medic-client/contacts_by_type', { keys: keys })
+
+  const query = {
+    limit: BATCH_SIZE,
+    keys: JSON.stringify(keys),
+    start_key_doc_id: startDocId
+  };
+
+  logger.debug('requesting leaf places for keys %o starting with %o', keys, startDocId);
+  return request
+    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true })
     .then(result => result.rows.map(row => row.id));
 };
 
@@ -145,13 +157,18 @@ const filterPlacesWithoutSentForms = (reminder, date, placeIds) => {
     });
 };
 
-const canSend = (place) => {
+const canSend = (reminder, date, place) => {
   if (!place.contact) {
     // nobody to send to
     return false;
   }
 
   if (place.muted) {
+    return false;
+  }
+
+  // backwards compatibility: check for reminders created pre-update
+  if (place.tasks && place.tasks.find(task => task.form === reminder.form && task.timestamp === date.toISOString())) {
     return false;
   }
 
@@ -165,9 +182,10 @@ const filterValidPlaces = (reminder, date, placeIds) => {
   return db.medic
     .allDocs({ keys: placeIds, include_docs: true })
     .then(result => {
+      logger.warn('%o', result);
       const places = result.rows
         .map(row => row.doc)
-        .filter(place => canSend(place));
+        .filter(place => canSend(reminder, date, place));
 
       if (!places.length) {
         return [];
@@ -177,11 +195,19 @@ const filterValidPlaces = (reminder, date, placeIds) => {
     });
 };
 
-const getLeafPlaces = (reminder, date) => {
-  return getLeafPlaceIds()
-    .then(placeIds => filterPlaceIdsWithoutReminder(reminder, date, placeIds))
-    .then(placeIds => filterPlacesWithoutSentForms(reminder, date, placeIds))
-    .then(placeIds => filterValidPlaces(reminder, date, placeIds));
+const getLeafPlaces = (reminder, date, startDocId) => {
+  return getLeafPlaceIds(startDocId).then(placeIds => {
+    // don't process the same doc twice!
+    placeIds = placeIds.filter(id => id !== startDocId);
+    if (!placeIds.length) {
+      return { places: [] };
+    }
+    const nextDocId = placeIds[placeIds.length - 1];
+    return filterPlaceIdsWithoutReminder(reminder, date, placeIds)
+      .then(placeIds => filterPlacesWithoutSentForms(reminder, date, placeIds))
+      .then(placeIds => filterValidPlaces(reminder, date, placeIds))
+      .then(places => ({ places, nextDocId }));
+  });
 };
 
 const createReminder = (reminder, date, place) => {
@@ -212,38 +238,37 @@ const createReminder = (reminder, date, place) => {
   return reminderDoc;
 };
 
-const sendReminders = (reminder, date) => {
-  return getLeafPlaces(reminder, date)
-    .then(places => {
-      const reminderDocs = places
-        .map(place => createReminder(reminder, date, place))
-        .filter(doc => doc);
-
-      if (!reminderDocs.length) {
-        return;
+const sendReminders = (reminder, date, startDocId) => {
+  return getLeafPlaces(reminder, date, startDocId)
+    .then(({ places, nextDocId }) => {
+      if (!places || !places.length) {
+        return nextDocId;
       }
 
-      return db.medic.bulkDocs(reminderDocs);
+      const reminderDocs = places.map(place => createReminder(reminder, date, place));
+      return db.medic
+        .bulkDocs(reminderDocs)
+        .then(results => {
+          const errors = results.filter(result => result.error);
+          if (errors.length) {
+            logger.error('Errors saving reminders', errors);
+            throw new Error('Errors saving reminders');
+          }
+        })
+        .then(() => nextDocId);
     })
-    .then(results => {
-      if (!results) {
-        return;
-      }
-      const errors = results.filter(result => result.error);
-      if (errors.length) {
-        logger.error('Errors saving reminders', errors);
-        throw new Error('Errors saving reminders');
-      }
-    });
+    .then(nextDocId => nextDocId && sendReminders(reminder, date, nextDocId));
 };
 
-const createReminderLog = (reminder, date) => {
+const createReminderLog = (reminder, date, start) => {
+  const duration = performance.now() - start;
   const reminderLog = {
     _id: `reminderlog:${reminder.form}:${date.valueOf()}`,
     reminder: reminder,
+    duration: duration,
     reported_date: moment().valueOf()
   };
-
+  logger.debug('Reminder %o succesfully completed in %d', reminder, duration);
   return db.sentinel.put(reminderLog);
 };
 
@@ -253,7 +278,9 @@ const runReminder = (reminder = {}) => {
     if (!date) {
       return;
     }
-    return sendReminders(reminder, date).then(() => createReminderLog(reminder, date));
+    logger.debug('Running reminder %o', reminder);
+    const start = performance.now();
+    return sendReminders(reminder, date).then(() => createReminderLog(reminder, date, start));
   });
 };
 

@@ -67,6 +67,7 @@ if (UNIT_TEST_ENV) {
     });
   });
   module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.couchUrl = couchUrl;
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

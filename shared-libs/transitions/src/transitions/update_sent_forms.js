@@ -10,6 +10,7 @@ var _ = require('underscore'),
  * Update sent_forms property on facilities so we can setup reminders for
  * specific forms.
  */
+// to be removed this in 4.0, this is rendered useless by the updates to reminders.
 module.exports = {
   filter: function(doc, info = {}) {
     var self = module.exports;
