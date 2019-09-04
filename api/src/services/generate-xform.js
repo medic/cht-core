@@ -12,6 +12,7 @@ const FORM_ROOT_OPEN = '<root xmlns:xf="http://www.w3.org/2002/xforms" xmlns:orx
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
+const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
@@ -26,7 +27,7 @@ const transform = (formXml, stylesheet) => {
     xsltproc.stdin.setEncoding('utf-8');
     xsltproc.stdin.write(formXml);
     xsltproc.stdin.end();
-    xsltproc.on('close', code => {
+    xsltproc.on('exit', code => {
       if (code !== 0 || stderr.length) {
         logger.error('xsltproc stderr output: ');
         logger.error(stderr);
@@ -34,21 +35,32 @@ const transform = (formXml, stylesheet) => {
       }
       resolve(stdout);
     });
+    xsltproc.on('error', err => {
+      logger.error(err);
+      return reject(new Error('Child process errored attempting to transform xml'));
+    });
   });
 };
 
 const generateForm = formXml => {
   return transform(formXml, FORM_STYLESHEET).then(form => {
-    return form.replace(FORM_ROOT_OPEN, '')
-               .replace(ROOT_CLOSE, '')
-               .replace(JAVAROSA_SRC, ' data-media-src="');
+    return form
+      // remove the root node leaving just the HTML to be rendered
+      .replace(FORM_ROOT_OPEN, '')
+      .replace(ROOT_CLOSE, '')
+      // rename the media src attributes so the browser doesn't try and
+      // request them, instead leaving it to custom code in the Enketo
+      // service to load them asynchronously
+      .replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
   });
 };
 
 const generateModel = formXml => {
   return transform(formXml, MODEL_STYLESHEET).then(model => {
-    return model.replace(MODEL_ROOT_OPEN, '')
-                .replace(ROOT_CLOSE, '');
+    return model
+      // remove the root node leaving just the HTML to be rendered
+      .replace(MODEL_ROOT_OPEN, '')
+      .replace(ROOT_CLOSE, '');
   });
 };
 
@@ -103,11 +115,7 @@ const updateAllAttachments = docs => {
   // spawn the child processes in series so we don't smash the server
   return docs.reduce(updateAttachments, Promise.resolve([])).then(results => {
     return docs.filter((doc, i) => {
-      const result = results[i];
-      if (!result) {
-        return false;
-      }
-      return updateAttachmentsIfRequired(doc, result);
+      return results[i] && updateAttachmentsIfRequired(doc, results[i]);
     });
   });
 };
@@ -124,10 +132,10 @@ module.exports = {
       .then(docs => {
         const doc = docs.length && docs[0];
         if (doc) {
-          logger.info(`Updating form with ID ${docId}`);
+          logger.info(`Updating form with ID "${docId}"`);
           return db.medic.put(doc);
         } else {
-          logger.info(`Form with ID ${docId} does not need to be updated.`);
+          logger.info(`Form with ID "${docId}" does not need to be updated.`);
         }
       });
   },
@@ -149,7 +157,9 @@ module.exports = {
           return;
         }
         return db.medic.bulkDocs(toSave).then(results => {
-          if (results.some(result => !result.ok)) {
+          const failures = results.filter(result => !result.ok);
+          if (failures.length) {
+            logger.error('Bulk save failed with: %o', failures);
             throw new Error('Failed to save updated xforms to the database');
           }
         });

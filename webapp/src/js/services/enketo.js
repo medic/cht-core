@@ -252,7 +252,8 @@ angular.module('inboxServices').service('Enketo',
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
         }
-        // TODO remove this when enketo-core is updated to respect options.language
+        // TODO remove this when our enketo-core dependency is updated as the latest
+        //      version uses the language passed to the constructor
         currentForm.langs.setAll(options.language);
         // manually translate the title as enketo-core doesn't have any way to do this
         // https://github.com/enketo/enketo-core/issues/405

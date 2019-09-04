@@ -64,7 +64,7 @@ describe('generate-xform service', () => {
           spawned.stdout.on.args[0][1](given.form);
           spawned.on.args[0][1](0);
           spawned.stdout.on.args[1][1](given.model);
-          spawned.on.args[1][1](0);
+          spawned.on.args[2][1](0);
         }
         return generate.then(actual => {
           expect(actual.form).to.equal(given.form);
@@ -245,7 +245,7 @@ describe('generate-xform service', () => {
         }
       ] });
       sinon.stub(service, '_generate').resolves({ form: newForm, model: newModel });
-      sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: false } ]);
+      sinon.stub(db.medic, 'bulkDocs').resolves([ { error: 'some error' } ]);
       service.updateAll()
         .then(() => done(new Error('expected error to be thrown')))
         .catch(err => {
