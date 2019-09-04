@@ -304,7 +304,8 @@ angular
           if (resp.data.warn) {
             return $q.reject({
               key: 'configuration.user.replication.limit.exceeded',
-              params: { total_docs: resp.data.total_docs, limit: resp.data.limit }
+              params: { total_docs: resp.data.total_docs, limit: resp.data.limit },
+              severity: 'warning'
             });
           }
 
@@ -398,7 +399,7 @@ angular
           })
           .catch(function(err) {
             if (err.key) {
-              $translate(err.key, err.params).then(value => $scope.setError(err, value));
+              $translate(err.key, err.params).then(value => $scope.setError(err, value, err.severity));
             } else {
               $scope.setError(err, 'Error validating user');
             }
