@@ -4,15 +4,19 @@ describe('LineageModelGenerator service', () => {
 
   let service,
       dbQuery,
+      dbGet,
       dbAllDocs;
-
+      
   beforeEach(() => {
     module('inboxApp');
     module($provide => {
       dbQuery = sinon.stub();
       dbAllDocs = sinon.stub();
+      dbGet = sinon.stub();
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery, allDocs: dbAllDocs }));
+      $provide.factory('DB', KarmaUtils.mockDB({
+        get: dbGet,
+        query: dbQuery, allDocs: dbAllDocs }));
     });
     inject(_LineageModelGenerator_ => service = _LineageModelGenerator_);
   });
@@ -162,13 +166,12 @@ describe('LineageModelGenerator service', () => {
 
     it('handles not found', done => {
       dbQuery.returns(Promise.resolve({ rows: [] }));
+
+      const defaultDoc = { _id: 'a' };
+      dbGet.resolves(defaultDoc);
       service.report('a')
-        .then(() => {
-          done(new Error('expected error to be thrown'));
-        })
-        .catch(err => {
-          chai.expect(err.message).to.equal('Document not found: a');
-          chai.expect(err.code).to.equal(404);
+        .then(result => {
+          chai.expect(result.doc).to.deep.eq(defaultDoc);
           done();
         });
     });
@@ -185,7 +188,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage and contact', () => {
-      const report = { _id: 'a', _rev: '1' };
+      const report = { _id: 'a', _rev: '1', type: 'data_record', form: 'a', contact: { _id: 'b' } };
       const contact = { _id: 'b', _rev: '1' };
       const parent = { _id: 'c', _rev: '1' };
       const grandparent = { _id: 'd', _rev: '1' };
@@ -199,7 +202,6 @@ describe('LineageModelGenerator service', () => {
         chai.expect(model._id).to.equal('a');
         chai.expect(model.doc).to.deep.equal(report);
         chai.expect(model.contact).to.deep.equal(contact);
-        chai.expect(model.lineage).to.deep.equal([ parent, grandparent ]);
       });
     });
 
@@ -226,8 +228,9 @@ describe('LineageModelGenerator service', () => {
           keys: [ 'x', 'y', 'e', 'f' ],
           include_docs: true
         });
-        chai.expect(model.lineage[0].contact).to.deep.equal(parentContact);
-        chai.expect(model.lineage[1].contact).to.deep.equal(grandparentContact);
+
+        chai.expect(model.doc.parent.parent.contact).to.deep.equal(parentContact);
+        chai.expect(model.doc.parent.parent.parent.contact).to.deep.equal(grandparentContact);
       });
     });
 

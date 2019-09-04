@@ -618,7 +618,22 @@ describe('Lineage', function() {
               }
             },
             parent: undefined,
-            patient: { _id: report_patient._id }
+            patient: {
+              _id: report_patient._id,
+              name: report_patient.name,
+              parent: {
+                _id: report_contact._id,
+                name: report_contact.name,
+                parent: {
+                  _id: report_parent._id,
+                  name: report_parent.name,
+                  contact: {
+                    _id: report_parentContact._id,
+                    name: report_parentContact.name,
+                  }
+                }
+              }
+            }
           });
           chai.assert.checkDeepProperties(hydratedPlace, {
             contact: { name: place_contact.name },

@@ -1,5 +1,3 @@
-const RECURSION_LIMIT = 50;
-
 const _ = require('underscore');
 
 module.exports = function(Promise, DB) {
@@ -39,13 +37,13 @@ module.exports = function(Promise, DB) {
     if (!contacts || !contacts.length) {
       return;
     }
-    contacts.forEach(function(contactDoc) {
-      docs.forEach(function(doc) {
-        const id = doc && doc.contact && doc.contact._id;
-        if (id === contactDoc._id) {
-          doc.contact = contactDoc;
-        }
-      });
+    
+    docs.forEach(function(doc) {
+      const id = doc && doc.contact && doc.contact._id;
+      const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
+      if (contactDoc) {
+        doc.contact = contactDoc;
+      }
     });
   };
 
@@ -107,13 +105,22 @@ module.exports = function(Promise, DB) {
     );
   };
 
-  const fetchPatientLineage = function(record) {
+  const fetchPatientUuid = function(record) {
     const patientId = findPatientId(record);
     if (!patientId) {
-      return Promise.resolve([]);
+      return Promise.resolve();
     }
-    return contactUuidByPatientId(patientId)
+
+    return contactUuidByPatientId(patientId);
+  };
+
+  const fetchPatientLineage = function(record) {
+    return fetchPatientUuid(record)
       .then(function(uuid) {
+        if (!uuid) {
+          return [];
+        }
+
         return fetchLineageById(uuid);
       });
   };
@@ -258,7 +265,12 @@ module.exports = function(Promise, DB) {
     if (!ids || !ids.length) {
       return Promise.resolve([]);
     }
-    return DB.allDocs({ keys: ids, include_docs: true })
+    const keys = _.uniq(ids.filter(id => id));
+    if (keys.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return DB.allDocs({ keys, include_docs: true })
       .then(function(results) {
         return results.rows
           .map(function(row) {
@@ -270,109 +282,80 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const hydrateParents = function(docs, parents) {
-    if (!parents || !parents.length) {
-      return docs;
-    }
-
-    const findById = function(id, docs) {
-      if (id) {
-        return docs.find(function(doc) {
-          return doc._id === id;
-        });
-      }
-    };
-
-    docs.forEach(function(doc) {
-      let current = doc;
-      if (doc.type === 'data_record') {
-        const contactDoc = findById(current.contact && current.contact._id, parents);
-        if (contactDoc) {
-          doc.contact = contactDoc;
-        }
-        current = doc.contact;
-      }
-
-      let guard = RECURSION_LIMIT;
-      while (current) {
-        if (--guard === 0) {
-          throw Error(`Could not hydrate/minify ${doc._id}, possible parent recursion.`);
-        }
-
-        if (current.parent && current.parent._id) {
-          const parentDoc = findById(current.parent._id, parents);
-          if (parentDoc) {
-            current.parent = parentDoc;
-          }
-        }
-        current = current.parent;
-      }
-    });
-    return docs;
-  };
-
-  const hydrateLeafContacts = function(docs, contacts) {
-    const subDocsToHydrate = [];
-    docs.forEach(function(doc) {
-      let current = doc;
-      if (doc.type === 'data_record') {
-        current = doc.contact;
-      }
-      while (current) {
-        subDocsToHydrate.push(current);
-        current = current.parent;
-      }
-    });
-    fillContactsInDocs(subDocsToHydrate, contacts);
-    return docs;
-  };
-
-  const hydratePatient = function(doc) {
-    return fetchPatientLineage(doc).then(function(patientLineage) {
-      if (patientLineage.length) {
-        var patientDoc = patientLineage.shift();
-        fillParentsInDocs(patientDoc, patientLineage);
-        doc.patient = patientDoc;
-      }
-      return doc;
-    });
-  };
-
-  const hydratePatients = function(docs) {
-    return Promise.all(docs.map(hydratePatient)).then(function() {
-      return docs;
-    });
-  };
-
   const hydrateDocs = function(docs) {
     if (!docs.length) {
       return Promise.resolve([]);
     }
+    
+    const fetchPatientUuids = docs => Promise.all(docs.map(doc => fetchPatientUuid(doc)));
+    
+    const hydratedDocs = JSON.parse(JSON.stringify(docs)); // a copy of the original docs which we will incrementally hydrate and return
+    const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
-    const parentIds = collectParentIds(docs);
-    const hydratedDocs = JSON.parse(JSON.stringify(docs));
-    return fetchDocs(parentIds)
-      .then(function(parents) {
-        hydrateParents(hydratedDocs, parents);
-        return fetchDocs(collectLeafContactIds(hydratedDocs));
+    let patientUuids, patientDocs;
+    return fetchPatientUuids(hydratedDocs)
+      .then(function(uuids) {
+        patientUuids = uuids;
+        return fetchDocs(patientUuids);
       })
-      .then(function(contacts) {
-        hydrateLeafContacts(hydratedDocs, contacts);
-        return hydratePatients(hydratedDocs);
+      .then(function(patients) {
+        patientDocs = patients;
+        knownDocs.push(...patients);
+        
+        const firstRoundIdsToFetch = _.uniq([
+          ...collectParentIds(hydratedDocs),
+          ...collectLeafContactIds(hydratedDocs),
+          
+          ...collectParentIds(patientDocs),
+          ...collectLeafContactIds(patientDocs),
+        ]);
+
+        return fetchDocs(firstRoundIdsToFetch);
+      })
+      .then(function(firstRoundFetched) {
+        knownDocs.push(...firstRoundFetched);
+        const secondRoundIdsToFetch = collectLeafContactIds(firstRoundFetched).filter(id => !knownDocs.some(doc => doc._id === id));
+        return fetchDocs(secondRoundIdsToFetch);
+      })
+      .then(function(secondRoundFetched) {
+        knownDocs.push(...secondRoundFetched);
+        
+        hydratedDocs.forEach((doc, i) => {
+          const reconstructLineage = (ids, docs) => {
+            return ids.map(id => {
+              // how can we use hashmaps?
+              return docs.find(doc => doc._id === id);
+            });
+          };
+
+          const isReport = doc.type === 'data_record' && !!doc.form;
+          const findParentsFor = isReport ? doc.contact : doc;
+          const lineage = reconstructLineage(extractParentIds(findParentsFor), knownDocs);
+
+          if (isReport) {
+            lineage.unshift(doc);
+          }
+
+          const patientDoc = patientUuids[i] && patientDocs.find(known => known._id === patientUuids[i]);
+          const patientLineage = reconstructLineage(extractParentIds(patientDoc), knownDocs);
+
+          mergeLineagesIntoDoc(lineage, knownDocs, patientLineage);
+        });
+
+        return hydratedDocs;
       });
   };
 
   return {
     /**
-     * Given a doc id get a doc and all parents, contact (and parents) and
-     * patient (and parents)
+     * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
      * @param {String} id The id of the doc
      * @returns {Promise} A promise to return the hydrated doc.
      */
     fetchHydratedDoc: (id, callback) => fetchHydratedDoc(id, callback),
 
     /**
-     * Given an array of minified docs bind the parents and contacts
+     * Given an array of docs bind the parents, contact (and parents) and patient (and parents)
      * @param {Object[]} docs The array of docs to hydrate
      * @returns {Promise}
      */
