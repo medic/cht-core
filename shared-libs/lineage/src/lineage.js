@@ -183,7 +183,7 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDoc = function(id, options, callback) {
+  const fetchHydratedDoc = function(id, options = {}, callback) {
     let lineage;
     let patientLineage;
     if (typeof options === 'function') {
@@ -364,9 +364,9 @@ module.exports = function(Promise, DB) {
   return {
     /**
      * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
-     * @param {String} id The id of the doc
-     * @param {Object} options Options for the behavior of the hydration
-     * @param {Boolean} options.throwWhenMissingLineage When true, throw if the doc has nothing to hydrate. When false, does a best effort to return the object regardless of content.
+     * @param {String} id The id of the doc to fetch and hydrate
+     * @param {Object} [options] Options for the behavior of the hydration
+     * @param {Boolean} [options.throwWhenMissingLineage=false] When true, throw if the doc has nothing to hydrate. When false, does a best effort to return the document regardless of content.
      * @returns {Promise} A promise to return the hydrated doc.
      */
     fetchHydratedDoc: (id, options, callback) => fetchHydratedDoc(id, options, callback),
