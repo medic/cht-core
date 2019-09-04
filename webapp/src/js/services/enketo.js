@@ -525,13 +525,14 @@ angular.module('inboxServices').service('Enketo',
     };
 
     this.save = function(formInternalId, form, geolocation, docId) {
-      form.view.$.trigger('beforesave');
-
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
             throw new Error('Form is invalid');
           }
+
+          $('form.or').trigger('beforesave');
+
           if (docId) {
             return update(docId);
           }
