@@ -206,7 +206,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const report = { _id: 'a', _rev: '1', contact: { _id: 'x' } };
+      const report = { _id: 'a', _rev: '1', type: 'data_record', form: 'a', contact: { _id: 'x' } };
       const contact = { _id: 'b', _rev: '1', contact: { _id: 'y' } };
       const parent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const grandparent = { _id: 'd', _rev: '1', contact: { _id: 'f' } };
@@ -228,9 +228,8 @@ describe('LineageModelGenerator service', () => {
           keys: [ 'x', 'y', 'e', 'f' ],
           include_docs: true
         });
-
-        chai.expect(model.doc.parent.parent.contact).to.deep.equal(parentContact);
-        chai.expect(model.doc.parent.parent.parent.contact).to.deep.equal(grandparentContact);
+        chai.expect(model.doc.contact.parent.contact).to.deep.equal(parentContact);
+        chai.expect(model.doc.contact.parent.parent.contact).to.deep.equal(grandparentContact);
       });
     });
 
