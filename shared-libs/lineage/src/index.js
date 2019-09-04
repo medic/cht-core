@@ -4,7 +4,7 @@
 module.exports = function(Promise, DB) {
   return Object.assign(
     {},
-    require('./lineage')(Promise, DB),
+    require('./hydration')(Promise, DB),
     require('./minify')
   );
 };

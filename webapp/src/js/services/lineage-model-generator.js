@@ -1,4 +1,4 @@
-var lineageFactory = require('@medic/lineage');
+const lineageFactory = require('@medic/lineage');
 
 /**
  * Hydrates the given doc by uuid and creates a model which holds
@@ -13,19 +13,17 @@ var lineageFactory = require('@medic/lineage');
 angular.module('inboxServices').factory('LineageModelGenerator',
   function(
     $q,
-    $window,
     DB
   ) {
     'ngInject';
     'use strict';
-    var lineage = lineageFactory($q,DB());
-    $window.lineage = lineage;
+    const lineage = lineageFactory($q, DB());
 
-    var get = function(id) {
+    const get = function(id) {
       return lineage.fetchLineageById(id)
         .then(function(docs) {
           if (!docs.length) {
-            var err = new Error(`Document not found: ${id}`);
+            const err = new Error(`Document not found: ${id}`);
             err.code = 404;
             throw err;
           }
@@ -33,7 +31,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
         });
     };
 
-    var hydrate = function(docs) {
+    const hydrate = function(docs) {
       return lineage.fetchContacts(docs)
         .then(function(contacts) {
           lineage.fillContactsInDocs(docs, contacts);
@@ -55,9 +53,9 @@ angular.module('inboxServices').factory('LineageModelGenerator',
           })
           .then(function(docs) {
             // the first row is the contact
-            var doc = docs.shift();
+            const doc = docs.shift();
             // everything else is the lineage
-            var result = {
+            const result = {
               _id: id,
               lineage: docs
             };
@@ -88,7 +86,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
       reportSubjects: function(ids) {
         return lineage.fetchLineageByIds(ids)
           .then(function(docsList) {
-            return docsList.map(function(docs){
+            return docsList.map(function(docs) {
               return {
                 _id: docs[0]._id,
                 doc: docs.shift(),
