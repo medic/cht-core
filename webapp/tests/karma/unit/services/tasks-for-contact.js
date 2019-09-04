@@ -150,7 +150,7 @@ describe('TasksForContact service', function() {
 
     const model = {
       doc: { _id: docId },
-      children: [ { type: PERSON_TYPE, contacts: [{ _id: 'child1' }, { _id: 'child2' }] } ],
+      children: [ { type: PERSON_TYPE, contacts: [{ id: 'child1' }, { id: 'child2' }] } ],
       type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
@@ -181,7 +181,7 @@ describe('TasksForContact service', function() {
     ];
     const model = {
       doc: { _id: docId },
-      children: [{ type: PERSON_TYPE, contacts: [{ _id: childPersonId }] }],
+      children: [{ type: PERSON_TYPE, contacts: [{ id: childPersonId }] }],
       type: PERSON_TYPE
     };
     stubRulesEngine(null, tasks);
@@ -202,7 +202,7 @@ describe('TasksForContact service', function() {
     ];
     const model = {
       doc: { _id: docId },
-      children: [{ type: PERSON_TYPE, contacts: [{ _id: childPersonId }] }],
+      children: [{ type: PERSON_TYPE, contacts: [{ id: childPersonId }] }],
       type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
@@ -344,7 +344,7 @@ describe('TasksForContact service', function() {
 
     const model = {
       doc: { _id: docId },
-      children: [{ type: PERSON_TYPE, contacts: [{ _id: childPersonId }] }],
+      children: [{ type: PERSON_TYPE, contacts: [{ id: childPersonId }] }],
       type: CLINIC_TYPE
     };
     stubRulesEngine(null, tasks);
