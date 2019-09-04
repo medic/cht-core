@@ -1,0 +1,23 @@
+[
+  {
+    "id": "d7302e6b-ba71-4463-85e4-add3eaae69ce",
+    "name": "Test Health Facility",
+    "skip": false,
+    "users": {
+      "jjordan": {
+        "name": "Jack Jordan",
+        "skip": false,
+        "password": "Medic123",
+        "phone": "+15175551011",
+        "email": ""
+      },
+      "mpeter": {
+        "name": "Mike Peter",
+        "skip": false,
+        "password": "Medic123",
+        "phone": "+15175551012",
+        "email": ""
+      }
+    }
+  }
+]
