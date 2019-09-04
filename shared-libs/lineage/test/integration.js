@@ -1,5 +1,5 @@
 const chai = require('chai');
-const lineageFactory = require('../src/lineage');
+const lineageFactory = require('../src');
 const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
 

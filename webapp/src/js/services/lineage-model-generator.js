@@ -13,11 +13,13 @@ var lineageFactory = require('@medic/lineage');
 angular.module('inboxServices').factory('LineageModelGenerator',
   function(
     $q,
+    $window,
     DB
   ) {
     'ngInject';
     'use strict';
     var lineage = lineageFactory($q,DB());
+    $window.lineage = lineage;
 
     var get = function(id) {
       return lineage.fetchLineageById(id)
@@ -72,29 +74,17 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        * Fetch a contact and its lineage by the given uuid. Returns a
        * report model.
        */
-      report: function(id, options) {
-        options = options || {};
-        return get(id)
-          .then(function(docs) {
-            return hydrate(docs);
-          })
-          .then(function(docs) {
-            // the first row is the report
-            var doc = docs.shift();
-            // the second row is the report's contact
-            var contact = docs.shift();
-            // everything else is the lineage
-            if (options.merge) {
-              lineage.fillParentsInDocs(doc.contact, docs);
-            }
+      report: function(id) {
+        return lineage.fetchHydratedDoc(id)
+          .then(function(hydrated) {
             return {
               _id: id,
-              doc: doc,
-              contact: contact,
-              lineage: docs
+              doc: hydrated,
+              contact: hydrated.contact,
             };
           });
       },
+
       reportSubjects: function(ids) {
         return lineage.fetchLineageByIds(ids)
           .then(function(docsList) {
