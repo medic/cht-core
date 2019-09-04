@@ -82,12 +82,7 @@ describe('Enketo service', () => {
       TranslateFrom = sinon.stub(),
       form = {
         validate: sinon.stub(),
-        getDataStr: sinon.stub(),
-        view: {
-          '$': {
-            trigger: sinon.stub()
-          }
-        }
+        getDataStr: sinon.stub()
       },
       AddAttachment = sinon.stub(),
       EnketoForm = sinon.stub(),
