@@ -79,7 +79,7 @@ describe('Changes controller', () => {
     sinon.stub(config, 'get').returns(defaultSettings);
     sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
 
-    sinon.stub(purgedDocs, 'getPurgedIds').resolves([]);
+    sinon.stub(purgedDocs, 'getUnPurgedIds').callsFake((roles, ids) => Promise.resolve(ids));
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -328,7 +328,7 @@ describe('Changes controller', () => {
       authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
       testReq.query = { initial_replication: true };
-      purgedDocs.getPurgedIds.resolves(purgedIds);
+      purgedDocs.getUnPurgedIds.resolves(_.difference(allowedDocIds, purgedIds));
 
       controller.request(testReq, testRes);
       return nextTick().then(() => {
@@ -339,8 +339,8 @@ describe('Changes controller', () => {
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
-        purgedDocs.getPurgedIds.callCount.should.equal(1);
-        purgedDocs.getPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
+        purgedDocs.getUnPurgedIds.callCount.should.equal(1);
+        purgedDocs.getUnPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
       });
     });
@@ -354,7 +354,7 @@ describe('Changes controller', () => {
 
       authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
-      purgedDocs.getPurgedIds.resolves(purgedIds);
+      purgedDocs.getUnPurgedIds.resolves(_.difference(allowedDocIds, purgedIds));
 
       controller.request(testReq, testRes);
       return nextTick().then(() => {
@@ -365,8 +365,8 @@ describe('Changes controller', () => {
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
-        purgedDocs.getPurgedIds.callCount.should.equal(1);
-        purgedDocs.getPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
+        purgedDocs.getUnPurgedIds.callCount.should.equal(1);
+        purgedDocs.getUnPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
       });
     });

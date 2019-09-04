@@ -6,6 +6,7 @@ const db = require('../../../src/db');
 const environment = require('../../../src/environment');
 const cacheService = require('../../../src/services/cache');
 const purgingUtils = require('@medic/purging-utils');
+const _ = require('underscore');
 
 let service;
 let recursiveOn;
@@ -260,6 +261,20 @@ describe('Purged Docs service', () => {
           batch_size: ids.length + 1,
           seq_interval: ids.length
         }]);
+      });
+    });
+  });
+
+  describe('getUnPurgedIds', () => {
+    it('should call getPurgedIds with correct params and return difference', () => {
+      const ids = ['a', 'b', 'c', 'd', 'e', 'f'];
+      const purgedIds = ['f', 'a', 'd'];
+      service.__set__('getPurgedIds', sinon.stub().resolves(purgedIds));
+      //sinon.stub(service, 'getPurgedIds').resolves(purgedIds);
+      return service.getUnPurgedIds(['a', 'b'], ids).then(result => {
+        chai.expect(result).to.deep.equal(_.difference(ids, purgedIds));
+        chai.expect(service.__get__('getPurgedIds').callCount).to.equal(1);
+        chai.expect(service.__get__('getPurgedIds').args[0]).to.deep.equal([['a', 'b'], ids]);
       });
     });
   });

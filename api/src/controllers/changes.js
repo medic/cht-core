@@ -12,7 +12,6 @@ const environment = require('../environment');
 const semver = require('semver');
 const usersService = require('../services/users');
 const purgedDocs = require('../services/purged-docs');
-const utils = require('./utils');
 
 let inited = false;
 let continuousFeed = false;
@@ -299,12 +298,11 @@ const initFeed = (req, res) => {
     });
 };
 
-
 const filterPurgedIds = feed => {
   return purgedDocs
-    .getPurgedIds(feed.userCtx.roles, feed.allowedDocIds)
-    .then(purgedIds => {
-      feed.allowedDocIds = utils.difference(feed.allowedDocIds, purgedIds);
+    .getUnPurgedIds(feed.userCtx.roles, feed.allowedDocIds)
+    .then(unPurgedIds => {
+      feed.allowedDocIds = unPurgedIds;
     });
 };
 

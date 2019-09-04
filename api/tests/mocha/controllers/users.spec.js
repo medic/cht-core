@@ -4,6 +4,7 @@ const controller = require('../../../src/controllers/users');
 const auth = require('../../../src/auth');
 const authorization = require('../../../src/services/authorization');
 const serverUtils = require('../../../src/server-utils');
+const purgedDocs = require('../../../src/services/purged-docs');
 
 let req;
 let userCtx;
@@ -107,6 +108,7 @@ describe('Users Controller', () => {
         const docIds = ['some_facility_id', 'a', 'b', 'c', '1', '2', '3'];
         authorization.getAuthorizationContext.resolves(authContext);
         authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -118,6 +120,8 @@ describe('Users Controller', () => {
           }]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
           chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
+          chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
+          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['some_role'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
         });
@@ -139,6 +143,7 @@ describe('Users Controller', () => {
         const docIds = ['some_facility_id', 'a', 'b', 'c', '1', '2', '3'];
         authorization.getAuthorizationContext.resolves(authContext);
         authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -170,10 +175,35 @@ describe('Users Controller', () => {
         const docIds = Array.from(Array(10500), (x, idx) => idx + 1);
         authorization.getAuthorizationContext.resolves(authContext);
         authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
+        });
+      });
+
+      it('should only count unpurged docs', () => {
+        req.query = {
+          role: 'some_role',
+          facility_id: 'some_facility_id'
+        };
+        auth.isOffline.returns(true);
+        auth.hasAllPermissions.returns(true);
+        const authContext = {
+          userCtx: { roles: [req.query.role], facility_id: req.query.facility_id },
+          contactsByDepthKeys: [['some_facility_id']],
+          subjectIds: ['some_facility_id', 'a', 'b', 'c']
+        };
+        const docIds = Array.from(Array(10500), (x, idx) => idx + 1);
+        const unpurgedIds = docIds.slice(0, 8000);
+        authorization.getAuthorizationContext.resolves(authContext);
+        authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+
+        return controller.info(req, res).then(() => {
+          chai.expect(res.json.callCount).to.equal(1);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: unpurgedIds.length, warn: false,limit: 10000 }]);
         });
       });
 
@@ -267,6 +297,7 @@ describe('Users Controller', () => {
 
         authorization.getAuthorizationContext.resolves(authContext);
         authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -277,10 +308,12 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([userCtx]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
           chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false } ]);
+          chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
+          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['offline'], docIds]);
         });
       });
 
-      it('should return correct warn value when under 10000 docs', () => {
+      it('should return correct warn value when over 10000 docs', () => {
         const authContext = {
           userCtx,
           contactsByDepthKeys: [['some_facility_id']],
@@ -290,11 +323,32 @@ describe('Users Controller', () => {
 
         authorization.getAuthorizationContext.resolves(authContext);
         authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
+        });
+      });
+
+      it('should only count unpurged docs', () => {
+        const authContext = {
+          userCtx,
+          contactsByDepthKeys: [['some_facility_id']],
+          subjectIds: ['some_facility_id', 'a', 'b', 'c']
+        };
+        const docIds = Array.from(Array(10500), (x, idx) => idx + 1);
+        const unpurgedIds = docIds.slice(0, 9500);
+
+        authorization.getAuthorizationContext.resolves(authContext);
+        authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+
+        return controller.info(req, res).then(() => {
+          chai.expect(serverUtils.error.callCount).to.equal(0);
+          chai.expect(res.json.callCount).to.equal(1);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: unpurgedIds.length, warn: false, limit: 10000 }]);
         });
       });
     });

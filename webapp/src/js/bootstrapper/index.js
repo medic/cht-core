@@ -104,11 +104,11 @@
             query_params: { initial_replication: true }
           });
 
-    replicator
-      .on('change', function(info) {
-        console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
-      });
+        replicator
+          .on('change', function(info) {
+            console.log('initialReplication()', 'change', info);
+            setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
+          });
 
         return replicator.then(() => purger.checkpoint(info));
       })

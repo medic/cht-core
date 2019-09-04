@@ -4,6 +4,7 @@ const purgingUtils = require('@medic/purging-utils');
 const cacheService = require('./cache');
 const crypto = require('crypto');
 const logger = require('../logger');
+const utils = require('../controllers/utils');
 
 const CACHE_NAME = 'purged-docs';
 const DB_NOT_FOUND_ERROR = new Error('not_found');
@@ -78,6 +79,10 @@ const getPurgedIds = (roles, docIds) => {
     })
     .catch(catchDbNotFoundError)
     .then(() => purgeIds);
+};
+
+const getUnPurgedIds = (roles, docIds) => {
+  return getPurgedIds(roles, docIds).then(purgedIds => utils.difference(docIds, purgedIds));
 };
 
 const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {
@@ -160,6 +165,7 @@ if (!process.env.UNIT_TEST_ENV) {
 
 module.exports = {
   getPurgedIds,
+  getUnPurgedIds,
   getPurgedIdsSince,
   writeCheckPointer,
   info,
