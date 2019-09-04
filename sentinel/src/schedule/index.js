@@ -35,11 +35,9 @@ exports.sendable = function(config, now) {
   return now >= after && now <= until;
 };
 
-let timeout;
 
 exports.checkSchedule = function() {
   const now = moment(date.getDate());
-  clearTimeout(timeout);
 
   async.series(
     [
@@ -77,5 +75,5 @@ function _reschedule() {
     duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
   logger.info(`checking schedule again in ${moment.duration(duration).humanize()}`);
-  timeout = setTimeout(exports.checkSchedule, duration.asMilliseconds());
+  setTimeout(exports.checkSchedule, duration.asMilliseconds());
 }

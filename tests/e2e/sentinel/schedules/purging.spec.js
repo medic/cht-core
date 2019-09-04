@@ -219,6 +219,7 @@ const requestPurgeInfo = username => {
 };
 
 const getChangeIds = changes => changes.map(change => change.id);
+const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
 describe('server side purge', () => {
   beforeAll(done => {
@@ -248,8 +249,9 @@ describe('server side purge', () => {
     return sentinelUtils.getCurrentSeq()
       .then(result => {
         seq = result;
-        return utils.updateSettings({ purge: purgeSettings, reschedule: true });
+        return utils.updateSettings({ purge: purgeSettings });
       })
+      .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => Promise.all([
         requestChanges('user1'),
@@ -309,8 +311,9 @@ describe('server side purge', () => {
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => {
         seq = result;
-        return utils.updateSettings({ purge: purgeSettings, reschedule: true });
+        return utils.updateSettings({ purge: purgeSettings });
       })
+      .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => Promise.all([
         requestChanges('user1', { initial_replication: true }),
@@ -352,8 +355,9 @@ describe('server side purge', () => {
       .then(result => {
         seq = result;
         purgeSettings.fn = reversePurgeFn.toString();
-        return utils.updateSettings({ purge: purgeSettings, reschedule: true });
+        return utils.updateSettings({ purge: purgeSettings });
       })
+      .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => Promise.all([requestPurges('user1'), requestPurges('user2')]))
       .then(([purgedDocsUser1, purgedDocsUser2]) => {

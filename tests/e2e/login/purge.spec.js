@@ -208,7 +208,8 @@ describe('Purging on login', () => {
       }))
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => seq = result)
-      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' }, reschedule: true }))
+      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }))
+      .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => done()).catch(done.fail);
   });
@@ -238,6 +239,8 @@ describe('Purging on login', () => {
       db.get('_local/purgelog').then(doc => callback(doc), err => callback(err));
     }));
   };
+
+  const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
   it('Logging in as a restricted user with configured purge rules should not download purged docs', () => {
     utils.resetBrowser();
@@ -293,7 +296,8 @@ describe('Purging on login', () => {
       return sentinelUtils
         .getCurrentSeq()
         .then(result => seq = result)
-        .then(() => utils.updateSettings({ purge: purgeSettings, reschedule: true }, true))
+        .then(() => utils.updateSettings({ purge: purgeSettings}, true))
+        .then(() => restartSentinel())
         .then(() => sentinelUtils.waitForPurgeCompletion(seq))
         .then(() => true);
     });

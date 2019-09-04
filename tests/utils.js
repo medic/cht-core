@@ -51,6 +51,7 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
     console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
+  // TODO: replace with request-promise-native
   const req = http.request(options, res => {
     res.setEncoding('utf8');
     let body = '';
@@ -207,20 +208,37 @@ const deleteAll = (except = []) => {
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       if (e2eDebug) {
-        console.log(`Deleting docs: ${ids}`);
+        console.log(`Deleting docs and infodocs: ${ids}`);
       }
-      return module.exports
-        .request({
+      const infoIds = ids.map(id => `${id}-info`);
+      return Promise.all([
+        module.exports.request({
           path: path.join('/', constants.DB_NAME, '_bulk_docs'),
           method: 'POST',
           body: JSON.stringify({ docs: toDelete }),
           headers: { 'content-type': 'application/json' },
-        })
-        .then(response => {
+        }).then(response => {
           if (e2eDebug) {
             console.log(`Deleted docs: ${JSON.stringify(response)}`);
           }
-        });
+        }),
+        sentinel.allDocs({keys: infoIds})
+          .then(results => {
+            const deletes = results.rows
+              .filter(row => row.value) // Not already deleted
+              .map(({id, value}) => ({
+                _id: id,
+                _rev: value.rev,
+                _deleted: true
+              }));
+
+            return sentinel.bulkDocs(deletes);
+          }).then(response => {
+          if (e2eDebug) {
+            console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+          }
+        })
+      ]);
     });
 };
 
@@ -253,10 +271,10 @@ const refreshToGetNewSettings = () => {
 
 const setUserContactDoc = () => {
   const {
-    DB_NAME: dbName,
-    USER_CONTACT_ID: docId,
-    DEFAULT_USER_CONTACT_DOC: defaultDoc
-  } = constants;
+          DB_NAME: dbName,
+          USER_CONTACT_ID: docId,
+          DEFAULT_USER_CONTACT_DOC: defaultDoc
+        } = constants;
 
   return module.exports.getDoc(docId)
     .catch(() => ({}))
@@ -286,10 +304,10 @@ const revertDb = (except, ignoreRefresh) => {
 
 const deleteUsers = usernames => {
   const userIds = JSON.stringify(
-      usernames.map(user => `org.couchdb.user:${user}`)
-    ),
-    method = 'POST',
-    headers = { 'Content-Type': 'application/json' };
+    usernames.map(user => `org.couchdb.user:${user}`)
+        ),
+        method = 'POST',
+        headers = { 'Content-Type': 'application/json' };
 
   return Promise.all([
     request(
@@ -469,8 +487,8 @@ module.exports = {
   deleteAllDocs: deleteAll,
 
   /*
-  * Sets the document referenced by the user's org.couchdb.user document to a default value
-  */
+   * Sets the document referenced by the user's org.couchdb.user document to a default value
+   */
   setUserContactDoc,
 
   /**
@@ -615,6 +633,15 @@ module.exports = {
     } else {
       return rpn.post('http://localhost:31337/sentinel/start');
     }
+  },
+  setProcessedSeqToNow: () => {
+    return Promise.all([
+      sentinel.get('_local/sentinel-meta-data'),
+      db.info()
+    ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
+      sentinelMetadata.processed_seq = updateSeq;
+      return sentinel.put(sentinelMetadata);
+    });
   },
 
   refreshToGetNewSettings: refreshToGetNewSettings,
