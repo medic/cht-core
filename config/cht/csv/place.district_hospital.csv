@@ -1,0 +1,2 @@
+reference_id:excluded,is_name_generated,name,contact:person WHERE reference_id=COL_VAL,reported_date:timestamp
+hf_1,false,Test Health Facility,person_1,1544031155715

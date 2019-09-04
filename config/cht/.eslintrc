@@ -1,0 +1,27 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-undef": "off",
+    "no-unused-vars": "off",
+	"no-console": "off",
+	"no-debugger": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.json"
+      ],
+      "plugins": [
+        "json"
+      ]
+    }
+  ]
+}
