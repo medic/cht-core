@@ -104,7 +104,6 @@ const getLeafPlaceIds = (startDocId) => {
     start_key_doc_id: startDocId
   };
 
-  logger.debug('requesting leaf places for keys %o starting with %o', keys, startDocId);
   return request
     .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true })
     .then(result => result.rows.map(row => row.id));
@@ -182,7 +181,6 @@ const filterValidPlaces = (reminder, date, placeIds) => {
   return db.medic
     .allDocs({ keys: placeIds, include_docs: true })
     .then(result => {
-      logger.warn('%o', result);
       const places = result.rows
         .map(row => row.doc)
         .filter(place => canSend(reminder, date, place));
@@ -268,7 +266,7 @@ const createReminderLog = (reminder, date, start) => {
     duration: duration,
     reported_date: moment().valueOf()
   };
-  logger.debug('Reminder %o succesfully completed in %d', reminder, duration);
+  logger.debug('Reminder %o succesfully completed in %d seconds', reminder, duration / 1000);
   return db.sentinel.put(reminderLog);
 };
 
