@@ -183,16 +183,31 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDoc = function(id, callback) {
+  const fetchHydratedDoc = function(id, options, callback) {
     let lineage;
     let patientLineage;
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+
+    _.defaults(options, {
+      throwWhenMissingLineage: false,
+    });
+
     return fetchLineageById(id)
       .then(function(result) {
         lineage = result;
 
         if (lineage.length === 0) {
-          // Not a doc that has lineage, just do a normal fetch.
-          return fetchDoc(id);
+          if (options.throwWhenMissingLineage) {
+            const err = new Error(`Document not found: ${id}`);
+            err.code = 404;
+            throw err;
+          } else {
+            // Not a doc that has lineage, just do a normal fetch.
+            return fetchDoc(id);
+          }
         }
 
         return fetchPatientLineage(lineage[0])
@@ -350,9 +365,11 @@ module.exports = function(Promise, DB) {
     /**
      * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
      * @param {String} id The id of the doc
+     * @param {Object} options Options for the behavior of the hydration
+     * @param {Boolean} options.throwWhenMissingLineage When true, throw if the doc has nothing to hydrate. When false, does a best effort to return the object regardless of content.
      * @returns {Promise} A promise to return the hydrated doc.
      */
-    fetchHydratedDoc: (id, callback) => fetchHydratedDoc(id, callback),
+    fetchHydratedDoc: (id, options, callback) => fetchHydratedDoc(id, options, callback),
 
     /**
      * Given an array of docs bind the parents, contact (and parents) and patient (and parents)

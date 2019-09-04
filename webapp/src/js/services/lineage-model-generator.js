@@ -75,7 +75,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        * report model.
        */
       report: function(id) {
-        return lineage.fetchHydratedDoc(id)
+        return lineage.fetchHydratedDoc(id, { throwWhenMissingLineage: true })
           .then(function(hydrated) {
             return {
               _id: id,

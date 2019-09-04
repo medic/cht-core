@@ -4,7 +4,6 @@ describe('LineageModelGenerator service', () => {
 
   let service,
       dbQuery,
-      dbGet,
       dbAllDocs;
       
   beforeEach(() => {
@@ -12,11 +11,8 @@ describe('LineageModelGenerator service', () => {
     module($provide => {
       dbQuery = sinon.stub();
       dbAllDocs = sinon.stub();
-      dbGet = sinon.stub();
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({
-        get: dbGet,
-        query: dbQuery, allDocs: dbAllDocs }));
+      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery, allDocs: dbAllDocs }));
     });
     inject(_LineageModelGenerator_ => service = _LineageModelGenerator_);
   });
@@ -166,12 +162,13 @@ describe('LineageModelGenerator service', () => {
 
     it('handles not found', done => {
       dbQuery.returns(Promise.resolve({ rows: [] }));
-
-      const defaultDoc = { _id: 'a' };
-      dbGet.resolves(defaultDoc);
       service.report('a')
-        .then(result => {
-          chai.expect(result.doc).to.deep.eq(defaultDoc);
+        .then(() => {
+          done(new Error('expected error to be thrown'));
+        })	
+        .catch(err => {	
+          chai.expect(err.message).to.equal('Document not found: a');	
+          chai.expect(err.code).to.equal(404);	
           done();
         });
     });
