@@ -59,7 +59,7 @@ describe('Purger', () => {
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
           'http://localhost:5988/purging',
-          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
+          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' }, credentials: 'same-origin' }
         ]);
       });
     });
@@ -93,7 +93,7 @@ describe('Purger', () => {
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
           'http://localhost:5988/purging/checkpoint?seq=my-seq',
-          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
+          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' }, credentials: 'same-origin' }
         ]);
       });
     });
@@ -111,7 +111,7 @@ describe('Purger', () => {
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
           'http://localhost:5988/purging',
-          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
+          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' }, credentials: 'same-origin' }
         ]);
       });
     });
@@ -151,7 +151,7 @@ describe('Purger', () => {
         chai.expect(fetch.callCount).to.equal(1);
         chai.expect(fetch.args[0]).to.deep.equal([
           'http://localhost:5988/purging',
-          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' } }
+          { headers: { 'Accept': 'application/json', 'medic-replication-id': 'some-uuid' }, credentials: 'same-origin' }
         ]);
       });
     });
@@ -274,8 +274,8 @@ describe('Purger', () => {
 
       return purger.purge(localDb, userCtx).then(() => {
         chai.expect(purgeChanges.callCount).to.equal(2);
-        chai.expect(purgeChanges.args[0][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers });
-        chai.expect(purgeChanges.args[1][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers });
+        chai.expect(purgeChanges.args[0][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers, credentials: 'same-origin' });
+        chai.expect(purgeChanges.args[1][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers, credentials: 'same-origin' });
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3'] }]);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
@@ -287,7 +287,7 @@ describe('Purger', () => {
         chai.expect(purgeCheckpoint.callCount).to.equal(1);
         chai.expect(purgeCheckpoint.args[0]).to.deep.equal([
           'http://localhost:5988/purging/checkpoint?seq=111-222',
-          { headers: pouchDbOptions.remote_headers },
+          { headers: pouchDbOptions.remote_headers, credentials: 'same-origin' },
         ]);
         chai.expect(localDb.get.callCount).to.equal(1);
         chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);

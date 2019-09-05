@@ -5,7 +5,7 @@ const MAX_HISTORY_LENGTH = 10;
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 const purgeFetch = (url) => {
-  return fetch(url, { headers: opts.remote_headers }).then(res => res.json());
+  return fetch(url, { headers: opts.remote_headers, credentials: 'same-origin' }).then(res => res.json());
 };
 
 const getPurgeLog = (localDb) => {
