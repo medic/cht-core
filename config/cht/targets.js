@@ -23,11 +23,9 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (c) {
-      //console.log('a', c.contact.name, c.contact.date_of_birth, addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS).getTime(), today, addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > today);
       return c && c.contact.date_of_birth && addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > today;
     },
     passesIf: function (c) {
-      //console.log('p', c.contact.name, c.contact.date_of_death, addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > new Date(c.contact.date_of_death));
       return c.contact.date_of_death && addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > new Date(c.contact.date_of_death);
     },
     date: 'now',
@@ -79,7 +77,6 @@ module.exports = [
     appliesToType: ['person'],
     appliesIf: function (c) {
       if (c === null) return false;
-      //console.log('c', c.contact.name, c.contact.date_of_birth, today, isOnSameMonth(c.contact.date_of_birth, today) );
       return isOnSameMonth(c.contact.date_of_birth, today);
     },
     date: 'now'
@@ -174,8 +171,6 @@ module.exports = [
       if (!isActivePregnancy(c, r)) return false;
       const visitCount = getSubsequentPregnancyFollowUps(c, r).length || 0;
       const facilityVisitCount = countANCFacilityVisits(c, r) || 0;
-      //console.log('pregnancy visits', visitCount);
-      //console.log('health facility visits', facilityVisitCount);
 
       //pregnancy registration form + pregnancy home visit forms + number of previous hf anc visits 
       return 1 + visitCount + facilityVisitCount > 7;

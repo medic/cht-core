@@ -42,10 +42,6 @@ describe('pregnancy registration and scheduled visit', () => {
       await harness.flush(day);
       if (facilityReminderTaskDays.includes(day)) {
         const taskForFollowUpReminder = await harness.getTasks();
-        //if (taskForHomeVisit.length > 1) {
-        //  console.log(day, taskForHomeVisit);
-        //}
-        //expect(taskForHomeVisit.length).to.be.greaterThan(0);
         expect(taskForFollowUpReminder).to.be.an('array').that.contains.something.like({ title: 'task.anc.facility_reminder.title' });
       }
 

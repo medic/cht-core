@@ -145,7 +145,7 @@ describe('tests for active pregnancy condition card', () => {
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 
-    harness.flush(3 * 7);//After 2 weeks
+    await harness.flush(3 * 7);//After 2 weeks
     clock = sinon.useFakeTimers(moment('2000-01-01').add(3, 'weeks').toDate());
 
     await harness.loadForm('pregnancy_home_visit');
@@ -213,7 +213,7 @@ describe('tests for active pregnancy condition card', () => {
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 
-    harness.flush(3 * 7);//After 3 weeks
+    await harness.flush(3 * 7);//After 3 weeks
     clock = sinon.useFakeTimers(moment('2000-01-01').add(3, 'weeks').toDate());
     const homeVisitResult = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.clearAll);
     expect(homeVisitResult.errors).to.be.empty;

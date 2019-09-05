@@ -8,11 +8,11 @@
   "scripts": {
     "eslint": "eslint *.json test/**/*.js",
     "test": "npm run eslint && npm run test-unit",
-    "test-forms": "npm run eslint && mocha --reporter progress test/forms/*.spec.js --timeout 10000",
+    "test-forms": "npm run eslint && mocha --reporter spec test/forms/*.spec.js --timeout 10000",
     "test-tasks": "npm run eslint && mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
     "test-targets": "npm run eslint && mocha --reporter progress test/targets/*.spec.js --timeout 10000",
     "test-contact-summary": "npm run eslint && mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
-    "test-unit": "mocha --reporter progress test/**/*.spec.js --timeout 20000",
+    "test-unit": "mocha --reporter spec test/**/*.spec.js --timeout 20000",
     "travis": "npm install && ./test/check-app-settings-is-committed && npm test"
   },
   "devDependencies": {
