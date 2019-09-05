@@ -58,7 +58,7 @@
     return Promise
       .all([
         localDb.allDocs({ limit: 1 }),
-        window.PouchDB.fetch(`${getBaseUrl()}/api/v1/users-info`).then(res => res.json())
+        fetch(`${getBaseUrl()}/api/v1/users-info`, { credentials: 'same-origin' }).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
         localDocCount = local.total_rows;
