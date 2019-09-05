@@ -148,7 +148,7 @@ const cards = [
         }
       });
       ctx.lmp_date_8601 = lmpDate;
-      //console.log('Is Active Pregnancy');
+      ctx.lmp_method_approx = lmpMethodApprox;
       ctx.is_active_pregnancy = true;
       ctx.deworming_med_received = dewormingMedicationReceived;
       ctx.hiv_tested_past = hivTested;
@@ -321,7 +321,7 @@ const cards = [
         fields.push(
           { label: 'contact.profile.anc_visit', value: ancFacilityVisits, width: 3 }
         );
-        riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(relevantPregnancy));
+        const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(relevantPregnancy));
         const riskFactorCustom = getRiskFactorExtra(relevantPregnancy);
         if (riskFactorCustom) riskFactors.push(riskFactorCustom);
         const highRisk = isHighRiskPregnancy(relevantPregnancy)

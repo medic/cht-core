@@ -4,7 +4,7 @@ const path = require('path');
 const moment = require('moment');
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
-const { MAX_DAYS_IN_PREGNANCY, range, getRangeForTask, getTaskTestDays } = require('../test-helpers');
+const { MAX_DAYS_IN_PREGNANCY, getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
@@ -86,7 +86,7 @@ describe('pregnancy home visit tests', () => {
     expect(pregnancy.errors).to.be.empty;
 
     clock = sinon.useFakeTimers(moment('1999-10-17').toDate());
-    taskForHomeVisit = await harness.getTasks({ now: '1999-10-17', title: 'task.anc.pregnancy_home_visit.title' });
+    let taskForHomeVisit = await harness.getTasks({ now: '1999-10-17', title: 'task.anc.pregnancy_home_visit.title' });
     //expect(taskForHomeVisit.length).to.be.greaterThan(0);
     expect(taskForHomeVisit.length).to.be.above(0);
 

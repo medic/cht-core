@@ -3,8 +3,6 @@ const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 const path = require('path');
-const moment = require('moment');
-const sinon = require('sinon');
 
 //const { Forms } = require('../../nools-extras');
 const TestRunner = require('medic-conf-test-harness');
@@ -14,7 +12,6 @@ const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
 
-let clock;
 const now = '2000-04-30';
 
 describe('PNC danger sign follow up for mother tests', () => {
@@ -62,7 +59,7 @@ describe('PNC danger sign follow up for mother tests', () => {
     // Complete the task and confirm the task disappears 
 
     await harness.loadAction(tasksAfterDangerSignFollowUp[0].actions[0]);
-    followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.mother.danger);
+    let followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.mother.danger);
     const tasksAfterDangerSignFollowUp2 = await harness.getTasks();
 
     expect(tasksAfterDangerSignFollowUp2).to.have.property('length', 1);
