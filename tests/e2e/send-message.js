@@ -415,9 +415,14 @@ describe('Send message', () => {
 
       helper.waitForAngularComplete();
 
-      helper.waitElementToBeVisible(element(by.css('#message-header .name')));
+      browser.wait(() => {
+        const el = element(by.css('#message-header .name'));
+        helper.waitElementToBeVisible(el);
+        return helper.getTextFromElement(el).then(text => {
+          return text === 'Unknown sender';
+        });
+      }, 12000);
 
-      expect(getElementText('#message-header .name')).toBe('Unknown sender');
       expect(getElementText('#message-header .phone')).toBe(ALICE.phone);
     });
   });
