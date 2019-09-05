@@ -126,7 +126,6 @@ function getDateISOLocal(s) {
   const b = s.split(/\D/);
   const d = new Date(b[0], b[1] - 1, b[2]);
   if (isValidDate(d)) return d;
-  //console.log("Invalid Date");
   return new Date();
 }
 
@@ -255,14 +254,8 @@ function isPregnancyTerminatedByMiscarriage(c, r) {
 }
 
 function isActivePregnancy(c, r) {
-  //console.log('check active pregnancy');
   if (!isPregnancyForm(r)) return false;
   const lmpDate = getMostRecentLMPDateForPregnancy(c, r);
-  //console.log('c1', lmpDate > today - 294 * MS_IN_DAY, lmpDate, today);
-  //console.log('c2', !getSubsequentDeliveries(c, r, 6 * 7).length);
-  //console.log('c3', !getSubsequentPregnancies(c, r).length);
-  //console.log('c4', !isPregnancyTerminatedByAbortion(c, r));
-  //console.log('c5', isPregnancyTerminatedByMiscarriage(c, r));
   return lmpDate > today - 294 * MS_IN_DAY && //Pregnancy registration in the past 9 months
     !getSubsequentDeliveries(c, r, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
     !getSubsequentPregnancies(c, r).length &&//pregnancy not terminated by another pregnancy report
@@ -293,7 +286,6 @@ function countANCFacilityVisits(contact, pregnancy) {
       }
     }
   });
-  //console.log('count', ancHFVisits);
   return ancHFVisits;
 }
 
@@ -309,7 +301,6 @@ function getRecentANCVisitWithEvent(c, r, event) { //miscarriage, abortion, refu
 
 function isPregnancyTaskMuted(contact) {
   const latestVisit = getNewestReport(contact.reports, allANCForms);
-  //console.log('lv', latestVisit.form);
   return latestVisit && isPregnancyFollowUpForm(latestVisit) && latestVisit.fields &&
     latestVisit.fields.pregnancy_ended && latestVisit.fields.pregnancy_ended.clear_option === 'clear_all';
 }

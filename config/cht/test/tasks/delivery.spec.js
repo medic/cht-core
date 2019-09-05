@@ -65,7 +65,6 @@ describe('delivery tasks', () => {
       }
 
       else {
-        //console.log('no', day);
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
     }

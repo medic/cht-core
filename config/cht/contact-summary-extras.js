@@ -1,10 +1,8 @@
 const moment = require('moment');
-/*eslint no-unused-vars: "error"*/
 const today = moment().startOf('day');
-//console.log('today', today.format());
 
-const isReportValid = function (r) {
-  if (r.form && r.fields && r.reported_date) return true;
+const isReportValid = function (report) {
+  if (report.form && report.fields && report.reported_date) return true;
   return false;
 };
 //
@@ -86,48 +84,45 @@ function getLMPDateFromPregnancy(r) {
   return null;
 }
 
-function getLMPDateFromPregnancyFollowUp(r) {
-  if (isPregnancyFollowUpForm(r)) {
-    if (r.fields && r.fields.lmp_date_8601) {
-      return moment(r.fields.lmp_date_8601);
+function getLMPDateFromPregnancyFollowUp(report) {
+  if (isPregnancyFollowUpForm(report)) {
+    if (report.fields && report.fields.lmp_date_8601) {
+      return moment(report.fields.lmp_date_8601);
     }
   }
   return null;
 }
 
-function getMostRecentLMPDateForPregnancy(r) {
-  let mostRecentLMP = getLMPDateFromPregnancy(r);
-  //console.log('lmp1', mostRecentLMP);
-  let mostRecentReportDate = r.reported_date;
-  getSubsequentPregnancyFollowUps(r).forEach(function (v) {
-    const lmpFromPregnancyFollowUp = getLMPDateFromPregnancyFollowUp(v);
-    if (v.reported_date > mostRecentReportDate && v.fields.lmp_updated === "yes") {
-      mostRecentReportDate = v.reported_date;
+function getMostRecentLMPDateForPregnancy(reports, pregnancyReport) {
+  let mostRecentLMP = getLMPDateFromPregnancy(pregnancyReport);
+  let mostRecentReportDate = pregnancyReport.reported_date;
+  getSubsequentPregnancyFollowUps(reports, pregnancyReport).forEach(function (visit) {
+    const lmpFromPregnancyFollowUp = getLMPDateFromPregnancyFollowUp(visit);
+    if (visit.reported_date > mostRecentReportDate && visit.fields.lmp_updated === "yes") {
+      mostRecentReportDate = visit.reported_date;
       mostRecentLMP = lmpFromPregnancyFollowUp;
     }
   })
-  //console.log('lmp2', mostRecentLMP);
   return mostRecentLMP;
 }
 
-function getMostRecentEDDForPregnancy(r) {
-  const lmpDate = getMostRecentLMPDateForPregnancy(r);
-  //console.log('lmp', lmpDate);
+function getMostRecentEDDForPregnancy(reports, report) {
+  const lmpDate = getMostRecentLMPDateForPregnancy(reports, report);
   if (lmpDate) {
     return lmpDate.clone().add(AVG_DAYS_IN_PREGNANCY, 'days');
   }
   return null;
 }
 
-function getDeliveryDate(r) {
-  if (isDeliveryForm(r) && r.fields && r.fields.delivery_outcome)
-    return moment(r.fields.delivery_outcome.delivery_date);
+function getDeliveryDate(report) {
+  if (isDeliveryForm(report) && report.fields && report.fields.delivery_outcome)
+    return moment(report.fields.delivery_outcome.delivery_date);
 }
 
-function getNextANCVisitDate(r) {
+function getNextANCVisitDate(reports, r) {
   let nextVisit = r.fields.t_pregnancy_follow_up_date;
   let eddReportDate = r.reported_date;
-  const followUps = getSubsequentPregnancyFollowUps(r);
+  const followUps = getSubsequentPregnancyFollowUps(reports, r);
   followUps.forEach(function (fr) {
     if (fr.reported_date > eddReportDate && fr.fields.t_pregnancy_follow_up_date && fr.fields.t_pregnancy_follow_up_date !== "") {
       eddReportDate = fr.reported_date;
@@ -145,7 +140,6 @@ function getDangerSigns(report, ANCorPNC) {
     const dangerSignsObj = report.fields.danger_signs;
     dangerSignsList.forEach(function (ds) {
       if (dangerSignsObj[ds[0]] === "yes") {
-        //console.log(ds);
         dangerSigns.push(ds[1]);
       }
     });
@@ -153,9 +147,9 @@ function getDangerSigns(report, ANCorPNC) {
   return dangerSigns;
 }
 
-function getLatestDangerSignsForPregnancy(pregnancy) {
+function getLatestDangerSignsForPregnancy(reports, pregnancy) {
   if (!pregnancy) return [];
-  let lmpDate = getMostRecentLMPDateForPregnancy(pregnancy);
+  let lmpDate = getMostRecentLMPDateForPregnancy(reports, pregnancy);
   if (!lmpDate) lmpDate = moment(pregnancy.reported_date); //If unknown, take preganacy.reported_date
   const allReports = getFormArraySubmittedInWindow(reports, pregnancDangerSignForms, lmpDate.toDate(), lmpDate.clone().add(MAX_DAYS_IN_PREGNANCY, 'days').toDate());
   const allRelevantReports = [];
@@ -199,7 +193,6 @@ function getRiskFactorCodesFromPregnancy(r) {
       }
     }
   }
-  //console.log('rf1', riskFactors);
   return riskFactors;
 }
 
@@ -215,9 +208,9 @@ function getNewRiskFactorCodesFromFollowUps(r) {
   return riskFactors;
 }
 
-function getAllRiskFactorCodes(pregnancy) {
+function getAllRiskFactorCodes(reports, pregnancy) {
   let riskFactorCodes = getRiskFactorCodesFromPregnancy(pregnancy);
-  const pregnancyFollowUps = getSubsequentPregnancyFollowUps(pregnancy);
+  const pregnancyFollowUps = getSubsequentPregnancyFollowUps(reports, pregnancy);
   pregnancyFollowUps.forEach(function (v) {
     riskFactorCodes = riskFactorCodes.concat(getNewRiskFactorCodesFromFollowUps(v));
   });
@@ -247,8 +240,8 @@ function getRiskFactorExtra(report) {
 }
 
 
-const isHighRiskPregnancy = function (pregnancy) {
-  const h = getAllRiskFactorCodes(pregnancy).length > 0 || getDangerSigns(pregnancy).length > 0;
+const isHighRiskPregnancy = function (reports, pregnancy) {
+  const h = getAllRiskFactorCodes(reports, pregnancy).length > 0 || getDangerSigns(pregnancy).length > 0;
   return h;
 };
 
@@ -269,44 +262,34 @@ function isDeliveryForm(r) {
 }
 
 function getSubsequentPregnancies(reports, report) {
-  //console.log(reports);
   return reports.filter(function (r) {
     return isPregnancyForm(r) && r.reported_date > report.reported_date;
   });
 }
 
 
-function isActivePregnancy(r) {
-  //console.log('check active pregnancy');
+function isActivePregnancy(contact, reports, r) {
   if (contact.type !== 'person' || !isAlive(contact) || !isPregnancyForm(r)) return false;
-  //console.log('c1');
-  let lmpDate = getMostRecentLMPDateForPregnancy(r);
+  let lmpDate = getMostRecentLMPDateForPregnancy(reports, r);
   if (lmpDate === null) { //LMP Date is not available, use reported date
     lmpDate = r.reported_date;
   }
-  //console.log('c2', lmpDate > today.clone().subtract(294, 'day'));
-  //console.log('c3', !getSubsequentDeliveries(r, 6 * 7).length);
-  //console.log('c4', !getSubsequentPregnancies(reports, r).length);
-  //console.log('c5', !getRecentANCVisitWithEvent(r, 'abortion'), !getRecentANCVisitWithEvent(r, 'miscarriage'));
   return lmpDate > today.clone().subtract(294, 'day') && //Pregnancy registration in the past 9 months
-    !getSubsequentDeliveries(r, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
+    !getSubsequentDeliveries(reports, r, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
     !getSubsequentPregnancies(reports, r).length &&//pregnancy not terminated by another pregnancy report
-    getRecentANCVisitWithEvent(r, 'abortion') === null &&//pregnancy not terminated by miscarriage or abortion
-    getRecentANCVisitWithEvent(r, 'miscarriage') === null;
+    getRecentANCVisitWithEvent(reports, r, 'abortion') === null &&//pregnancy not terminated by miscarriage or abortion
+    getRecentANCVisitWithEvent(reports, r, 'miscarriage') === null;
 }
 
-function isPregnant() {
-  const x = reports.some(r => isActivePregnancy(r)); //has a pregnancy report submitted which is still active
-  //console.log('isPregnant', x);
-  return x;
+function isPregnant(reports) {
+  return reports.some(r => isActivePregnancy(r)); //has a pregnancy report submitted which is still active
 }
 
-function isReadyForNewPregnancy() {
+function isReadyForNewPregnancy(contact, reports) {
   if (contact.type !== 'person') return false;
   const mostRecentPregnancyReport = getNewestReport(reports, pregnancyForms);
   const mostRecentDeliveryReport = getNewestReport(reports, deliveryForms);
   if (mostRecentPregnancyReport === null && mostRecentDeliveryReport === null) {
-    //console.log('true, no previous pregnancy');
     return true; //No previous pregnancy or delivery recorded, fresh profile
   }
 
@@ -315,7 +298,6 @@ function isReadyForNewPregnancy() {
     //Decide on the basis of Delivery report
 
     if (mostRecentDeliveryReport && getDeliveryDate(mostRecentDeliveryReport) < today.clone().subtract(6 * 7, 'day')) {
-      //console.log('true, delivered more than 6 weeks ago');
       return true; //Delivery date on most recentlty submitted delivery form is more than 6 weeks ago
     }
   }
@@ -324,18 +306,16 @@ function isReadyForNewPregnancy() {
     //Pregnancy report without delivery report, or Pregnancy report newer than Delivery report
     //Decide on the basis of Pregnancy report
 
-    let mostRecentlySubmittedLMPDate = getMostRecentLMPDateForPregnancy(mostRecentPregnancyReport);
+    let mostRecentlySubmittedLMPDate = getMostRecentLMPDateForPregnancy(reports, mostRecentPregnancyReport);
     if (mostRecentlySubmittedLMPDate === null) {
       mostRecentlySubmittedLMPDate = moment(mostRecentPregnancyReport.reported_date);
     }
     if (mostRecentlySubmittedLMPDate < today.clone().subtract(294, 'day')) {
-      //console.log('true, LMP more than 294 days ago');
       return true;
       //Most recently submitted LMP is more than 294 days ago
     }
-    if (getRecentANCVisitWithEvent(mostRecentPregnancyReport, 'abortion') ||
-      getRecentANCVisitWithEvent(mostRecentPregnancyReport, 'miscarriage')) {
-      //console.log('true, miscarriage/abortion');
+    if (getRecentANCVisitWithEvent(reports, mostRecentPregnancyReport, 'abortion') ||
+      getRecentANCVisitWithEvent(reports, mostRecentPregnancyReport, 'miscarriage')) {
       return true;
       //Miscarriage/abortion was reported on latest pregnancy
     }
@@ -344,17 +324,15 @@ function isReadyForNewPregnancy() {
   else {
     //Both pregnancy and delivery report, Delivery report is newer than pregnancy report
     //Decide on the basis of Delivery report
-    if (mostRecentPregnancyReport && getRecentANCVisitWithEvent(mostRecentPregnancyReport, 'abortion') ||
-      getRecentANCVisitWithEvent(mostRecentPregnancyReport, 'miscarriage')) { //Miscarriage/abortion was reported on latest pregnancy
-      //console.log('true, miscarriage/abortion');
+    if (mostRecentPregnancyReport && getRecentANCVisitWithEvent(reports, mostRecentPregnancyReport, 'abortion') ||
+      getRecentANCVisitWithEvent(reports, mostRecentPregnancyReport, 'miscarriage')) { //Miscarriage/abortion was reported on latest pregnancy
       return true;
     }
   }
-  //console.log('false, none');
   return false;
 }
 
-function isReadyForDelivery() {
+function isReadyForDelivery(contact, reports) {
   //If pregnancy registration, date of LMP should be at least 6 months ago and no more than EDD + 6 weeks. 
   //If pregnancy registration and no LMP, make it available at registration and until 280 days + 6 weeks from the date of registration. 
   //If no pregnancy registration, previous delivery date should be at least 7 months ago.
@@ -362,37 +340,32 @@ function isReadyForDelivery() {
   const latestPregnancy = getNewestReport(reports, pregnancyForms);
   const latestDelivery = getNewestReport(reports, deliveryForms);
   if (!latestPregnancy && !latestDelivery) {
-    //console.log('d1', true);
     return true;//no pregnancy, no previous delivery
   }
   else if (latestDelivery && (!latestPregnancy || latestDelivery.reported_date > latestPregnancy.reported_date)) {
     //no pregnancy registration, previous delivery date should be at least 7 months ago.
-    //console.log('d2', getDeliveryDate(latestDelivery) < addMonths(now, -7));
     return getDeliveryDate(latestDelivery) < today.clone().subtract(7, 'months');
   }
 
   else if (latestPregnancy) {//pregnancy registration
     if (isPregnancyForm(latestPregnancy)) {
-      const lmpDate = getMostRecentLMPDateForPregnancy(latestPregnancy);
+      const lmpDate = getMostRecentLMPDateForPregnancy(reports, latestPregnancy);
       if (lmpDate === null) {//no LMP, show until 280 days + 6 weeks from the date of registration
-        //console.log('d3', now <= addDays(latestPregnancy.reported_date, 280 + 6 * 7));
         return moment(latestPregnancy.reported_date).clone().startOf('day').add(280 + 6 * 7, 'days').isSameOrBefore(today);
         //return today <= addDays(latestPregnancy.reported_date, 280 + 6 * 7);
       }
       else {//Pregnancy registration with LMP
-        const edd = getMostRecentEDDForPregnancy(latestPregnancy);
-        //console.log('d4', addMonths(lmpDate, 6) < now && now < addDays(edd, 6 * 7));
+        const edd = getMostRecentEDDForPregnancy(reports, latestPregnancy);
         return today.isBetween(lmpDate.clone().add(6, 'months'), edd.clone().add(6, 'weeks'));
         //return addMonths(lmpDate, 6) < today && today < addDays(edd, 6 * 7); //at least 6 months ago, no more than EDD + 6 weeks
       }
     }
   }
-  //console.log('d5', false);
   return false;
 }
 
-function getRecentANCVisitWithEvent(r, event) { //miscarriage, abortion, refused, migrated
-  const followUps = getSubsequentPregnancyFollowUps(r);
+function getRecentANCVisitWithEvent(reports, pregnancyReport, event) { //miscarriage, abortion, refused, migrated
+  const followUps = getSubsequentPregnancyFollowUps(reports, pregnancyReport);
   const latestFollowup = getNewestReport(followUps, antenatalForms);
   if (latestFollowup && latestFollowup.fields.pregnancy_summary &&
     latestFollowup.fields.pregnancy_summary.visit_option === event) {
@@ -401,7 +374,7 @@ function getRecentANCVisitWithEvent(r, event) { //miscarriage, abortion, refused
   return null;
 }
 
-function getSubsequentDeliveries(pregnancyReport, withinLastXDays) {
+function getSubsequentDeliveries(reports, pregnancyReport, withinLastXDays) {
   return reports.filter(function (r) {
     return (isDeliveryForm(r)) &&
       r.reported_date > pregnancyReport.reported_date &&
@@ -409,21 +382,20 @@ function getSubsequentDeliveries(pregnancyReport, withinLastXDays) {
   });
 }
 
-function getSubsequentPregnancyFollowUps(r) {
-  let lmpDate = getLMPDateFromPregnancy(r);
+function getSubsequentPregnancyFollowUps(reports, pregnancyReport) {
+  let lmpDate = getLMPDateFromPregnancy(pregnancyReport);
   if (lmpDate === null) { //LMP Date is not available, use reported date
-    lmpDate = moment(r.reported_date);
+    lmpDate = moment(pregnancyReport.reported_date);
   }
-  const subsequentVisits = reports.filter(function (v) {
-    return isPregnancyFollowUpForm(v) &&
-      v.reported_date > r.reported_date &&
-      moment(v.reported_date) < lmpDate.clone().add(MAX_DAYS_IN_PREGNANCY, 'days');
+  const subsequentVisits = reports.filter(function (visitReport) {
+    return isPregnancyFollowUpForm(visitReport) &&
+    visitReport.reported_date > pregnancyReport.reported_date &&
+      moment(visitReport.reported_date) < lmpDate.clone().add(MAX_DAYS_IN_PREGNANCY, 'days');
   });
   return subsequentVisits;
 }
 
-
-function countANCFacilityVisits(pregnancy) {
+function countANCFacilityVisits(reports, pregnancy) {
   //from pregnancy report: How many times has ${patient_short_name} been to the health facility for ANC? [anc_visits_hf/anc_visits_hf_past/visited_hf_count]
   //from pregnancy visit report:
   //Did the woman complete the health facility ANC visit scheduled for ${pregnancy_follow_up_date_recent}? [anc_visits_hf/anc_visits_hf_past/last_visit_attended]
@@ -431,7 +403,7 @@ function countANCFacilityVisits(pregnancy) {
 
   //How many? [anc_visits_hf/anc_visits_hf_past/visited_hf_count]
   let ancHFVisits = 0;
-  const pregnancyFollowUps = getSubsequentPregnancyFollowUps(pregnancy);
+  const pregnancyFollowUps = getSubsequentPregnancyFollowUps(reports, pregnancy);
   if (pregnancy.fields && pregnancy.fields.anc_visits_hf && pregnancy.fields.anc_visits_hf.anc_visits_hf_past) {
     ancHFVisits += parseInt(pregnancy.fields.anc_visits_hf.anc_visits_hf_past.visited_hf_count);
   }
@@ -446,11 +418,10 @@ function countANCFacilityVisits(pregnancy) {
       }
     }
   });
-  //console.log('count', ancHFVisits);
   return ancHFVisits;
 }
 
-function knowsHIVStatusInPast3Months() {
+function knowsHIVStatusInPast3Months(reports) {
   let knows = false;
   const pregnancyFormsIn3Months = getFormArraySubmittedInWindow(reports, pregnancyForms, today.clone().subtract(3, 'months'), today);
   pregnancyFormsIn3Months.forEach(function (r) {
