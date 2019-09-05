@@ -170,7 +170,7 @@ describe('bootstrapper', () => {
       assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
 
       assert.equal(fetch.callCount, 1);
-      assert.deepEqual(fetch.args[0], ['http://localhost:5988/api/v1/users-info', { credentials: 'same-origin' }]);
+      assert.deepEqual(fetch.args[0], ['http://localhost:5988/api/v1/users-info', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } }]);
       done();
     });
   });
@@ -212,7 +212,7 @@ describe('bootstrapper', () => {
       assert.equal(localAllDocs.callCount, 1);
       assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
       assert.equal(fetch.callCount, 1);
-      assert.deepEqual(fetch.args[0], ['http://localhost:5988/api/v1/users-info', { credentials: 'same-origin' }]);
+      assert.deepEqual(fetch.args[0], ['http://localhost:5988/api/v1/users-info', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } }]);
       done();
     });
   });
