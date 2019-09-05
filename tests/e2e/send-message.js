@@ -413,15 +413,11 @@ describe('Send message', () => {
         return utils.deleteDocs(CONTACTS.map(contact => contact._id));
       });
 
-      browser.wait(() => {
-        const el = element(by.css('#message-header .name'));
-        if (helper.waitUntilReady(el)) {
-          return helper.getTextFromElement(el).then(text => {
-            return text === 'Unknown sender';
-          });
-        }
-      }, 12000);
+      helper.waitForAngularComplete();
 
+      helper.waitElementToBeVisible(element(by.css('#message-header .name')));
+
+      expect(getElementText('#message-header .name')).toBe('Unknown sender');
       expect(getElementText('#message-header .phone')).toBe(ALICE.phone);
     });
   });
