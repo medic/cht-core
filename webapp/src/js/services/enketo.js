@@ -530,6 +530,9 @@ angular.module('inboxServices').service('Enketo',
           if (!valid) {
             throw new Error('Form is invalid');
           }
+
+          $('form.or').trigger('beforesave');
+
           if (docId) {
             return update(docId);
           }
