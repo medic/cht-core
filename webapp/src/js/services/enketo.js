@@ -69,7 +69,7 @@ angular.module('inboxServices').service('Enketo',
         elem.css('visibility', 'hidden');
         elem.wrap('<div class="loader">');
         DB()
-          .getAttachment(formDoc._id, src.substring(5))
+          .getAttachment(formDoc._id, src)
           .then(function(blob) {
             var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
