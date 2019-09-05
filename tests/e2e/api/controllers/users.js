@@ -370,5 +370,19 @@ describe('Users API', () => {
           expect(err.statusCode).toEqual(400);
         });
     });
+
+    it('should throw error for array roles of online user', () => {
+      const params = {
+        role: JSON.stringify(['random', 'national_admin', 'random']),
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => expect(resp).toEqual('should have thrown'))
+        .catch(err => {
+          expect(err.statusCode).toEqual(400);
+        });
+    });
   });
 }) ;
