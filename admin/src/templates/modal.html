@@ -5,7 +5,7 @@
   </div>
   <div class="modal-body" ng-transclude></div>
   <div class="modal-footer">
-    <p class="alert" ng-class="status.severity === 'warning' ? 'alert-warning' : 'alert-danger'" ng-if="status.error" translate>{{status.error}}</p>
+    <p class="alert text-left" ng-class="status.severity === 'warning' ? 'alert-warning' : 'alert-danger'" ng-if="status.error" translate>{{status.error}}</p>
     <a class="btn cancel" ng-class="{ 'disabled': status.processing }" ng-click="onCancel()" translate>{{cancelKey || 'Cancel'}}</a>
     <a class="btn btn-danger pull-left" ng-show="showDelete" ng-click="onDelete()"><i class="fa fa-trash-o"></i>&nbsp;<span translate>{{deleteKey || 'Delete'}}</span></a>
     <a class="btn submit" ng-class="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" mm-enter="onSubmit()" ng-click="onSubmit()" ng-show="!status.processing" translate>{{submitKey}}</a>

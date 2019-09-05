@@ -72,7 +72,7 @@
 
             $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
             $('.bootstrap-layer .error').show();
-            $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
+            $('.bootstrap-layer .error').html('<div><p class="alert alert-warning">' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
             $('#btn-continue').click(() => resolve());
             $('#btn-abort').click(() => {
               document.cookie = 'login=force;path=/';
@@ -155,7 +155,7 @@
   const setUiError = err => {
     const errorMessage = translator.translate(err && err.key || 'ERROR_MESSAGE');
     const tryAgain = translator.translate('TRY_AGAIN');
-    $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
+    $('.bootstrap-layer .error').html('<div><p">' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
     $('#btn-reload').click(() => window.location.reload(false));
     $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
     $('.bootstrap-layer .error').show();
