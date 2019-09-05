@@ -5,7 +5,7 @@ chai.use(require('chai-things'));
 const path = require('path');
 const TestRunner = require('medic-conf-test-harness');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
-const { range, getRangeForTask, getTaskTestDays } = require('../test-helpers');
+const { getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });

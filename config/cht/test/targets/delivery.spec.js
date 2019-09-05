@@ -1,16 +1,11 @@
 const chai = require('chai');
 const expect = chai.expect;
 const path = require('path');
-const moment = require('moment')
-const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
-const { MAX_DAYS_IN_PREGNANCY, range } = require('../test-helpers');
 const { deliveryReportScenarios } = require('../form-inputs');
-const { newbornBaby } = require('../contacts');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
-let clock;
 
 describe('Delivery in facility target tests', () => {
   before(async () => {
