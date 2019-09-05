@@ -999,7 +999,7 @@ When the requester has an online role, the following query parameters are accept
 | Variable | Description                                | Required | 
 | -------- | ------------------------------------------ | -------- |
 | facility_id | String identifier representing the uuid of the user's facility  | true |
-| role | String identifier representing the user role - must be configured as an offline role | true |
+| role | String identifier representing the user role - must be configured as an offline role. Accepts valid UTF8 JSON array for multiple of roles. | true |
 | contact_id | String identifier representing the uuid of the user's associated contact | false | 
  
 ##### Example

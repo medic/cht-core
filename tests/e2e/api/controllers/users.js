@@ -254,7 +254,7 @@ describe('Users API', () => {
           _id: 'fixture:user:offline',
           name: 'OfflineUser'
         },
-        roles: ['district_admin']
+        roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline']
       },
       {
         username: 'online',
@@ -334,6 +334,17 @@ describe('Users API', () => {
       });
     });
 
+    it('should return correct number of allowed docs when requested by online user for an array of roles', () => {
+      const params = {
+        role: JSON.stringify(['random', 'district_admin', 'random']),
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils.request(onlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      });
+    });
+
     it('should ignore parameters for requests from offline users', () => {
       const params = {
         role: 'district_admin',
@@ -350,7 +361,7 @@ describe('Users API', () => {
         role: 'national_admin',
         facility_id: 'fixture:offline'
       };
-      offlineRequestOptions.path += '?' + querystring.stringify(params);
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)

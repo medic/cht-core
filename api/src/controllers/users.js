@@ -56,12 +56,17 @@ const getInfoUserCtx = req => {
     throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
   }
 
-  if (!auth.isOffline([ params.role ])) {
+  try {
+    params.role = JSON.parse(params.role);
+  } catch (err) { /* eslint-disable-line */ };
+  params.role = Array.isArray(params.role) ? params.role : [params.role];
+
+  if (!auth.isOffline(params.role)) {
     throw { code: 400, reason: 'Provided role is not offline' };
   }
 
   return {
-    roles: [ params.role ],
+    roles: params.role,
     facility_id: params.facility_id,
     contact_id: params.contact_id
   };
