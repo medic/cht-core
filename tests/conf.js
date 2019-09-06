@@ -52,11 +52,7 @@ const baseConfig = {
 
     // wait for startup to complete
     browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
-    browser.driver.sleep(10000).then(() => {
-      if (browser.params.pathToConfig){
-        browser.driver.wait(applyConfig(browser.params.pathToConfig), 135 * 1000, 'failed applying config');
-      }
-    });
+
 
     afterEach(() => {
       browser
