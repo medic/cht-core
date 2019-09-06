@@ -13,6 +13,7 @@ const {
   addDays,
   getRecentANCVisitWithEvent,
   isPregnancyTaskMuted,
+  getField
 } = extras;
 
 module.exports = [
@@ -196,7 +197,7 @@ module.exports = [
     appliesToType: ['pregnancy', 'pregnancy_home_visit'],
     appliesIf: function (contact, report) {
       //next pregnancy visit date is entered
-      return report.fields && report.fields.t_pregnancy_follow_up_date;
+      return getField(report, 't_pregnancy_follow_up_date');
     },
 
     resolvedIf: function (contact, report, event, dueDate) {
@@ -225,7 +226,7 @@ module.exports = [
       end: 7,
       dueDate: function (event, contact, report) {
         //next visit date
-        return getDateISOLocal(report.fields.t_pregnancy_follow_up_date);
+        return getDateISOLocal(getField(report, 't_pregnancy_follow_up_date'));
       }
     }
     ]
@@ -236,8 +237,7 @@ module.exports = [
     appliesTo: "reports",
     appliesToType: ["pregnancy", "pregnancy_home_visit", "pregnancy_danger_sign", "pregnancy_danger_sign_follow_up"],
     appliesIf: function (contact, report) {
-      return report && report.fields &&
-        report.fields.t_danger_signs_referral_follow_up === 'yes' && isAlive(contact);
+      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
@@ -266,7 +266,7 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact, report) {
-          return getDateISOLocal(report.fields.t_danger_signs_referral_follow_up_date);
+          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
         }
       }
     ]
@@ -322,8 +322,7 @@ module.exports = [
     appliesTo: "reports",
     appliesToType: ["delivery", "pnc_danger_sign_follow_up_mother"],
     appliesIf: function (contact, report) {
-      return report && report.fields &&
-        report.fields.t_danger_signs_referral_follow_up === 'yes' && isAlive(contact);
+      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
@@ -352,7 +351,7 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact, report) {
-          return getDateISOLocal(report.fields.t_danger_signs_referral_follow_up_date);
+          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
         }
       }
     ]
@@ -401,8 +400,7 @@ module.exports = [
     appliesTo: "reports",
     appliesToType: ["pnc_danger_sign_follow_up_baby"],
     appliesIf: function (contact, report) {
-      return report && report.fields &&
-        report.fields.t_danger_signs_referral_follow_up === 'yes' && isAlive(contact);
+      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
@@ -431,7 +429,7 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact, report) {
-          return getDateISOLocal(report.fields.t_danger_signs_referral_follow_up_date);
+          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
         }
       }
     ]
