@@ -14,7 +14,7 @@ function minifyLineage(parent) {
   let minified = result;
   for (let guard = RECURSION_LIMIT; parent.parent && parent.parent._id; --guard) {
     if (guard === 0) {
-      throw Error('Could not hydrate/minify ' + docId + ', possible parent recursion.');
+      throw Error(`Could not minify ${docId}, possible parent recursion.`);
     }
 
     minified.parent = { _id: parent.parent._id };

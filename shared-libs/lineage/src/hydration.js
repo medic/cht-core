@@ -336,23 +336,24 @@ module.exports = function(Promise, DB) {
         knownDocs.push(...secondRoundFetched);
         
         hydratedDocs.forEach((doc, i) => {
-          const reconstructLineage = (ids, docs) => {
-            return ids.map(id => {
+          const reconstructLineage = (docWithLineage, parents) => {
+            const parentIds = extractParentIds(docWithLineage);
+            return parentIds.map(id => {
               // how can we use hashmaps?
-              return docs.find(doc => doc._id === id);
+              return parents.find(doc => doc._id === id);
             });
           };
 
-          const isReport = doc.type === 'data_record' && !!doc.form;
+          const isReport = doc.type === 'data_record';
           const findParentsFor = isReport ? doc.contact : doc;
-          const lineage = reconstructLineage(extractParentIds(findParentsFor), knownDocs);
+          const lineage = reconstructLineage(findParentsFor, knownDocs);
 
           if (isReport) {
             lineage.unshift(doc);
           }
 
           const patientDoc = patientUuids[i] && patientDocs.find(known => known._id === patientUuids[i]);
-          const patientLineage = reconstructLineage(extractParentIds(patientDoc), knownDocs);
+          const patientLineage = reconstructLineage(patientDoc, knownDocs);
 
           mergeLineagesIntoDoc(lineage, knownDocs, patientLineage);
         });
