@@ -739,17 +739,6 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'release-e2e-tests':{
-        options: {
-          args: {
-            params: {
-              pathToConfig: `${__dirname}/config/standard`
-            },
-            suite: 'release'
-          },
-          configFile: 'tests/conf.js'
-        }
-      },
       'e2e-tests': {
         options: {
           args: {
@@ -1017,11 +1006,6 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-tests',
-  ]);
-
-  grunt.registerTask('release-e2e', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:release-e2e-tests',
   ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [

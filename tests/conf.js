@@ -14,7 +14,6 @@ const baseConfig = {
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    release: 'e2e/release/**/*.js',
     e2e:'e2e/**/*.js',
     performance: 'performance/**/*.js'
   },
@@ -48,7 +47,6 @@ const baseConfig = {
     });
   },
   onPrepare: () => {
-    console.log(browser.params);
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
