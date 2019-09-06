@@ -22,11 +22,11 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: function (c) {
-      return c && c.contact.date_of_birth && addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > today;
+    appliesIf: function (contact) {
+      return contact && contact.contact.date_of_birth && addDays(contact.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > today;
     },
-    passesIf: function (c) {
-      return c.contact.date_of_death && addDays(c.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > new Date(c.contact.date_of_death);
+    passesIf: function (contact) {
+      return contact.contact.date_of_death && addDays(contact.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > new Date(contact.contact.date_of_death);
     },
     date: 'now',
     idType: 'contact'
@@ -41,8 +41,8 @@ module.exports = [
     subtitle_translation_key: 'targets.this_month.subtitle',
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: function (c) {
-      return !isAlive(c) && isOnSameMonth(today, c.contact.date_of_death);
+    appliesIf: function (contact) {
+      return !isAlive(contact) && isOnSameMonth(today, contact.contact.date_of_death);
     },
     date: 'now'//'reported' does not work with contact here, because contact.reported_date can be older
   },
@@ -57,9 +57,9 @@ module.exports = [
     subtitle_translation_key: 'targets.this_month.subtitle',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (c, r) {
-      if (r === null) return false;
-      if (getMostRecentLMPDateForPregnancy(c, r) === null) return false;
+    appliesIf: function (contact, report) {
+      if (report === null) return false;
+      if (getMostRecentLMPDateForPregnancy(contact, report) === null) return false;
       return true;
     },
     date: 'reported',
@@ -75,9 +75,9 @@ module.exports = [
     subtitle_translation_key: 'targets.this_month.subtitle',
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: function (c) {
-      if (c === null) return false;
-      return isOnSameMonth(c.contact.date_of_birth, today);
+    appliesIf: function (contact) {
+      if (contact === null) return false;
+      return isOnSameMonth(contact.contact.date_of_birth, today);
     },
     date: 'now'
   },
@@ -93,8 +93,8 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (c, r) {
-      return isActivePregnancy(c, r);
+    appliesIf: function (contact, report) {
+      return isActivePregnancy(contact, report);
     },
     date: 'now',
     idType: 'contact'
@@ -110,10 +110,10 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (c, r) {
-      if (!isActivePregnancy(c, r)) return false;
+    appliesIf: function (contact, report) {
+      if (!isActivePregnancy(contact, report)) return false;
       //count and check visits
-      const visitCount = countANCFacilityVisits(c, r);
+      const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 0;
     },
     date: 'now',
@@ -129,11 +129,11 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'reports',
     appliesToType: ['delivery'],
-    appliesIf: function (c, r) {
-      return r.fields && r.fields.delivery_outcome && r.fields.delivery_outcome.delivery_place;
+    appliesIf: function (contact, report) {
+      return report.fields && report.fields.delivery_outcome && report.fields.delivery_outcome.delivery_place;
     },
-    passesIf: function (c, r) {
-      return r.fields && r.fields.delivery_outcome && r.fields.delivery_outcome.delivery_place === "health_facility"
+    passesIf: function (contact, report) {
+      return report.fields && report.fields.delivery_outcome && report.fields.delivery_outcome.delivery_place === "health_facility"
     },
     date: 'now',
     idType: 'contact'
@@ -148,10 +148,10 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (c, r) {
-      if (!isActivePregnancy(c, r)) return false;
+    appliesIf: function (contact, report) {
+      if (!isActivePregnancy(contact, report)) return false;
       //count and check visits
-      const visitCount = countANCFacilityVisits(c, r);
+      const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 3;
     },
     date: 'now',
@@ -166,11 +166,11 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (c, r) {
+    appliesIf: function (contact, report) {
       //count and check visits
-      if (!isActivePregnancy(c, r)) return false;
-      const visitCount = getSubsequentPregnancyFollowUps(c, r).length || 0;
-      const facilityVisitCount = countANCFacilityVisits(c, r) || 0;
+      if (!isActivePregnancy(contact, report)) return false;
+      const visitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
+      const facilityVisitCount = countANCFacilityVisits(contact, report) || 0;
 
       //pregnancy registration form + pregnancy home visit forms + number of previous hf anc visits 
       return 1 + visitCount + facilityVisitCount > 7;
