@@ -6,7 +6,6 @@ const contactForms = require('./contact-forms.json');
 const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
-const applyConfig = require('./apply-config');
 
 const baseConfig = {
   params:{
