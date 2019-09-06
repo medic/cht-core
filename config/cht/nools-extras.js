@@ -17,7 +17,7 @@ function isFormArraySubmittedInWindow(reports, formArray, start, end, count) {
   let found = false;
   let reportCount = 0;
   reports.forEach(function (report) {
-    if (formArray.indexOf(report.form) >= 0) {
+    if (formArray.includes(report.form)) {
       if (report.reported_date >= start && report.reported_date <= end) {
         found = true;
         if (count) {
@@ -36,7 +36,7 @@ function isFormArraySubmittedInWindowExcludingThisReport(reports, formArray, sta
   let found = false;
   let reportCount = 0;
   reports.forEach(function (report) {
-    if (formArray.indexOf(report.form) >= 0) {
+    if (formArray.includes(report.form)) {
       if (report.reported_date >= start && report.reported_date <= end && report._id !== exReport._id) {
         found = true;
         if (count) {
