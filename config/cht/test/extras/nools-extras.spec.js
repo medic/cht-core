@@ -52,3 +52,19 @@ describe('Date related tests', () => {
         expect(extras.getMostRecentReport(reports, "b")._id).to.equal("r2");
     });
 });
+
+describe('getField', () => {
+    const { getField } = extras;
+
+    const nestedValue = { fields: { a: { b: 'value' } } };
+    it('get undefined field', () => expect(getField(nestedValue, undefined)).to.eq(undefined));
+    it('get empty field', () => expect(getField(nestedValue, '')).to.eq(undefined));
+    it('get nested', () => expect(getField(nestedValue, 'a.b')).to.eq('value'));
+    it('leaf undefined', () => expect(getField(nestedValue, 'a.c')).to.be.undefined);
+    it('root undefined', () => expect(getField(nestedValue, 'x')).to.be.undefined);
+    it('empty string input', () => expect(getField(nestedValue, '')).to.be.undefined);
+    it('get node', () => expect(getField(nestedValue, 'a')).to.deep.eq({ b: 'value' }));
+    it('undefined input', () => expect(getField(undefined, 'a')).to.be.undefined);    
+    it('leaf + 1 level undefined', () => expect(getField(nestedValue, 'a.b.c')).to.be.undefined);   
+    it('leaf + 2 levels undefined', () => expect(getField(nestedValue, 'a.b.c.d')).to.be.undefined);
+  });
