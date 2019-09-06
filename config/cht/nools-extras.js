@@ -13,6 +13,12 @@ function isAlive(contact) {
   return contact && contact.contact && !contact.contact.date_of_death;
 }
 
+const getField = (report, fieldPath) => ['fields', ...(fieldPath || '').split('.')]
+  .reduce((prev, fieldName) => {
+    if (prev === undefined) return report;
+    return prev[fieldName];
+  }, report);
+
 function isFormArraySubmittedInWindow(reports, formArray, start, end, count) {
   let found = false;
   let reportCount = 0;
@@ -87,9 +93,7 @@ function isFacilityDelivery(contact, report) {
     return false;
   }
   if (arguments.length === 1) report = contact;
-  return report && report.fields &&
-    report.fields.facility_delivery &&
-    report.fields.facility_delivery === 'yes';
+  return getField(report, 'facility_delivery') === 'yes';
 }
 
 function countReportsSubmittedInWindow(reports, form, start, end, condition) {
@@ -129,13 +133,6 @@ function getDateISOLocal(s) {
   return new Date();
 }
 
-function getDateMS(d) {
-  if (typeof d === "string") {
-    d = getDateISOLocal(d);
-  }
-  return getTimeForMidnight(d).getTime();
-}
-
 function getTimeForMidnight(d) {
   const date = new Date(d);
   date.setHours(0);
@@ -143,6 +140,14 @@ function getTimeForMidnight(d) {
   date.setSeconds(0);
   date.setMilliseconds(0);
   return date;
+}
+
+function getDateMS(d) {
+  if (typeof d === "string") {
+    if(d === "") return null;
+    d = getDateISOLocal(d);
+  }
+  return getTimeForMidnight(d).getTime();
 }
 
 function isValidDate(d) {
@@ -176,21 +181,13 @@ const getNewestReport = function (reports, forms) {
 };
 
 const getLMPDateFromPregnancy = function (report) {
-  if (isPregnancyForm(report)) {
-    if (report.fields && report.fields.lmp_date_8601) {
-      return getDateMS(report.fields.lmp_date_8601);
-    }
-  }
-  return null;
+  return isPregnancyForm(report) &&
+   getDateMS(getField(report, 'lmp_date_8601'));
 };
 
 const getLMPDateFromPregnancyFollowUp = function (report) {
-  if (isPregnancyFollowUpForm(report)) {
-    if (report.fields && report.fields.lmp_date_8601) {
-      return getDateMS(report.fields.lmp_date_8601);
-    }
-  }
-  return null;
+  return isPregnancyFollowUpForm(report) &&
+   getDateMS(getField(report, 'lmp_date_8601'));
 };
 
 
@@ -240,17 +237,13 @@ function getMostRecentLMPDateForPregnancy(contact, report) {
 function isPregnancyTerminatedByAbortion(contact, report) {
   const followUps = getSubsequentPregnancyFollowUps(contact, report);
   const latestFollowup = getNewestReport(followUps, antenatalForms);
-  return latestFollowup &&
-    latestFollowup.fields.pregnancy_summary &&
-    latestFollowup.fields.pregnancy_summary.visit_option === 'abortion';
+  return latestFollowup && getField(latestFollowup, 'pregnancy_summary.visit_option') === 'abortion';
 }
 
 function isPregnancyTerminatedByMiscarriage(contact, report) {
   const followUps = getSubsequentPregnancyFollowUps(contact, report);
   const latestFollowup = getNewestReport(followUps, antenatalForms);
-  return latestFollowup &&
-    latestFollowup.fields.pregnancy_summary &&
-    latestFollowup.fields.pregnancy_summary.visit_option === 'miscarriage';
+  return latestFollowup && getField(latestFollowup, 'pregnancy_summary.visit_option') === 'miscarriage';
 }
 
 function isActivePregnancy(contact, report) {
@@ -272,28 +265,25 @@ function countANCFacilityVisits(contact, pregnancyReport) {
   //How many? [anc_visits_hf/anc_visits_hf_past/visited_hf_count]
   let ancHFVisits = 0;
   const pregnancyFollowUps = getSubsequentPregnancyFollowUps(contact, pregnancyReport);
-  if (pregnancyReport.fields && pregnancyReport.fields.anc_visits_hf && pregnancyReport.fields.anc_visits_hf.anc_visits_hf_past) {
-    ancHFVisits += parseInt(pregnancyReport.fields.anc_visits_hf.anc_visits_hf_past.visited_hf_count);
+  if (getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past')) {
+    ancHFVisits += parseInt(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
   }
   pregnancyFollowUps.forEach(function (report) {
-    if (report.fields && report.fields.anc_visits_hf && report.fields.anc_visits_hf.anc_visits_hf_past) {
-      const pastANCHFVisits = report.fields.anc_visits_hf.anc_visits_hf_past;
-      if (pastANCHFVisits.last_visit_attended === 'yes') {
-        ancHFVisits += 1;
-      }
-      if (pastANCHFVisits.report_other_visits === 'yes') {
-        ancHFVisits += parseInt(pastANCHFVisits.visited_hf_count);
-      }
+    const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
+    if (pastANCHFVisits && pastANCHFVisits.last_visit_attended === 'yes') {
+      ancHFVisits += 1;
+    }
+    if (pastANCHFVisits && pastANCHFVisits.report_other_visits === 'yes') {
+      ancHFVisits += parseInt(pastANCHFVisits.visited_hf_count);
     }
   });
-  return ancHFVisits;
+  return isNaN(ancHFVisits) ? 0 : ancHFVisits;
 }
 
 function getRecentANCVisitWithEvent(contact, report, event) { //miscarriage, abortion, refused, migrated
   const followUps = getSubsequentPregnancyFollowUps(contact, report);
   const latestFollowup = getNewestReport(followUps, antenatalForms);
-  if (latestFollowup && latestFollowup.fields.pregnancy_summary &&
-    latestFollowup.fields.pregnancy_summary.visit_option === event) {
+  if (latestFollowup && getField(latestFollowup, 'pregnancy_summary.visit_option') === event) {
     return latestFollowup;
   }
   return null;
@@ -301,8 +291,8 @@ function getRecentANCVisitWithEvent(contact, report, event) { //miscarriage, abo
 
 function isPregnancyTaskMuted(contact) {
   const latestVisit = getNewestReport(contact.reports, allANCForms);
-  return latestVisit && isPregnancyFollowUpForm(latestVisit) && latestVisit.fields &&
-    latestVisit.fields.pregnancy_ended && latestVisit.fields.pregnancy_ended.clear_option === 'clear_all';
+  return latestVisit && isPregnancyFollowUpForm(latestVisit) &&
+    getField(latestVisit, 'pregnancy_ended.clear_option') === 'clear_all';
 }
 
 module.exports = {
@@ -329,5 +319,6 @@ module.exports = {
   getSubsequentPregnancyFollowUps,
   isActivePregnancy,
   getRecentANCVisitWithEvent,
-  isPregnancyTaskMuted
+  isPregnancyTaskMuted,
+  getField
 };

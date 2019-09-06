@@ -113,13 +113,13 @@ function getDeliveryDate(report) {
 }
 
 function getNextANCVisitDate(allReports, report) {
-  let nextVisit = report.fields.t_pregnancy_follow_up_date;
+  let nextVisit = getField(report, 't_pregnancy_follow_up_date');
   let eddReportDate = report.reported_date;
   const followUps = getSubsequentPregnancyFollowUps(allReports, report);
   followUps.forEach(function (followUpReport) {
     if (followUpReport.reported_date > eddReportDate && !!getField(followUpReport, 't_pregnancy_follow_up_date')) {
       eddReportDate = followUpReport.reported_date;
-      nextVisit = followUpReport.fields.t_pregnancy_follow_up_date;
+      nextVisit = getField(followUpReport,'t_pregnancy_follow_up_date');
     }
   });
   return moment(nextVisit);

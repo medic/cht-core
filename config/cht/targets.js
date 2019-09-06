@@ -8,7 +8,8 @@ const {
   isOnSameMonth,
   getMostRecentLMPDateForPregnancy,
   isActivePregnancy,
-  countANCFacilityVisits
+  countANCFacilityVisits,
+  getField
 } = extras;
 
 module.exports = [
@@ -130,10 +131,10 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['delivery'],
     appliesIf: function (contact, report) {
-      return report.fields && report.fields.delivery_outcome && report.fields.delivery_outcome.delivery_place;
+      return getField(report, 'delivery_outcome.delivery_place');
     },
     passesIf: function (contact, report) {
-      return report.fields && report.fields.delivery_outcome && report.fields.delivery_outcome.delivery_place === "health_facility"
+      return getField(report, 'delivery_outcome.delivery_place') === "health_facility";
     },
     date: 'now',
     idType: 'contact'
