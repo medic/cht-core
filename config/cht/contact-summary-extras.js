@@ -53,11 +53,15 @@ const pncDangerSigns = [
   ['vaginal_discharge', 'Fould smelling vaginal discharge']
 ];
 
-
+const getField = (report, fieldPath) => ['fields', ...(fieldPath || '').split('.')]
+  .reduce((prev, fieldName) => {
+    if (prev === undefined) return report;
+    return prev[fieldName];
+  }, report);
 
 function getFormArraySubmittedInWindow(allReports, formArray, start, end) {
   return allReports.filter(function (report) {
-    return formArray.indexOf(report.form) >= 0 &&
+    return formArray.includes(report.form) &&
       report.reported_date >= start && report.reported_date <= end;
   });
 }
@@ -76,21 +80,11 @@ function getNewestReport(allReports, forms) {
 
 
 function getLMPDateFromPregnancy(report) {
-  if (isPregnancyForm(report)) {
-    if (report.fields && report.fields.lmp_date_8601) {
-      return moment(report.fields.lmp_date_8601);
-    }
-  }
-  return null;
+  return isPregnancyForm(report) && getField(report, 'lmp_date_8601') && moment(getField(report, 'lmp_date_8601')) || null;
 }
 
 function getLMPDateFromPregnancyFollowUp(report) {
-  if (isPregnancyFollowUpForm(report)) {
-    if (report.fields && report.fields.lmp_date_8601) {
-      return moment(report.fields.lmp_date_8601);
-    }
-  }
-  return null;
+  return isPregnancyFollowUpForm(report) && getField(report, 'lmp_date_8601') && moment(getField(report, 'lmp_date_8601')) || null;
 }
 
 function getMostRecentLMPDateForPregnancy(allReports, pregnancyReport) {
@@ -98,7 +92,7 @@ function getMostRecentLMPDateForPregnancy(allReports, pregnancyReport) {
   let mostRecentReportDate = pregnancyReport.reported_date;
   getSubsequentPregnancyFollowUps(allReports, pregnancyReport).forEach(function (visit) {
     const lmpFromPregnancyFollowUp = getLMPDateFromPregnancyFollowUp(visit);
-    if (visit.reported_date > mostRecentReportDate && visit.fields.lmp_updated === "yes") {
+    if (visit.reported_date > mostRecentReportDate && getField(visit, 'lmp_updated') === "yes") {
       mostRecentReportDate = visit.reported_date;
       mostRecentLMP = lmpFromPregnancyFollowUp;
     }
@@ -115,18 +109,17 @@ function getMostRecentEDDForPregnancy(allReports, report) {
 }
 
 function getDeliveryDate(report) {
-  if (isDeliveryForm(report) && report.fields && report.fields.delivery_outcome)
-    return moment(report.fields.delivery_outcome.delivery_date);
+  return isDeliveryForm(report) && getField(report, 'delivery_outcome.delivery_date') && moment(getField(report, 'delivery_outcome.delivery_date'));
 }
 
 function getNextANCVisitDate(allReports, report) {
   let nextVisit = report.fields.t_pregnancy_follow_up_date;
   let eddReportDate = report.reported_date;
   const followUps = getSubsequentPregnancyFollowUps(allReports, report);
-  followUps.forEach(function (fr) {
-    if (fr.reported_date > eddReportDate && fr.fields.t_pregnancy_follow_up_date && fr.fields.t_pregnancy_follow_up_date !== "") {
-      eddReportDate = fr.reported_date;
-      nextVisit = fr.fields.t_pregnancy_follow_up_date;
+  followUps.forEach(function (followUpReport) {
+    if (followUpReport.reported_date > eddReportDate && !!getField(followUpReport, 't_pregnancy_follow_up_date')) {
+      eddReportDate = followUpReport.reported_date;
+      nextVisit = followUpReport.fields.t_pregnancy_follow_up_date;
     }
   });
   return moment(nextVisit);
@@ -136,8 +129,8 @@ function getNextANCVisitDate(allReports, report) {
 function getDangerSigns(report, ANCorPNC) {
   const dangerSigns = [];
   const dangerSignsList = ANCorPNC === 'ANC' ? ancDangerSigns : pncDangerSigns;
-  if (report.fields && report.fields.danger_signs && report.fields.t_danger_signs_referral_follow_up === 'yes') {
-    const dangerSignsObj = report.fields.danger_signs;
+  if (getField(report, 't_danger_signs_referral_follow_up') === 'yes') {
+    const dangerSignsObj = getField(report, 'danger_signs');
     dangerSignsList.forEach(function (ds) {
       if (dangerSignsObj[ds[0]] === "yes") {
         dangerSigns.push(ds[1]);
@@ -155,11 +148,13 @@ function getLatestDangerSignsForPregnancy(allReports, pregnancy) {
   const allRelevantReports = [];
   allReportsWithDangerSigns.forEach((report) => {
     if (isPregnancyFollowUpForm(report)) {
-      //Only push pregnancy home visit allReports that have actually been visited
-      if (report.fields && report.fields.pregnancy_summary && report.fields.pregnancy_summary.visit_option === 'yes') {
+      //only push pregnancy home visit allReports that have actually been visited
+      if (getField(report, 'pregnancy_summary.visit_option') === 'yes') {
         allRelevantReports.push(report);
       }
+      //else do nothing
     }
+    //for other forms, push
     else {
       allRelevantReports.push(report);
     }
@@ -173,24 +168,20 @@ function getLatestDangerSignsForPregnancy(allReports, pregnancy) {
 function getRiskFactorCodesFromPregnancy(report) {
   let riskFactors = [];
   if (!isPregnancyForm(report)) return [];
-  if (report.fields) {
-    if (report.fields.risk_factors && report.fields.risk_factors.r_risk_factor_present === 'yes') {
-      if (report.fields.risk_factors.risk_factors_history && report.fields.risk_factors.risk_factors_history.first_pregnancy === 'yes') {
-        riskFactors.push('first_pregnancy');
-      }
-      if (report.fields.risk_factors.risk_factors_history && report.fields.risk_factors.risk_factors_history.previous_miscarriage === 'yes') {
-        riskFactors.push('previous_miscarriage');
-      }
-      if (report.fields.risk_factors.risk_factors_present) {
-        const riskFactorsPrimary = report.fields.risk_factors.risk_factors_present.primary_condition;
-        const riskFactorsSecondary = report.fields.risk_factors.risk_factors_present.secondary_condition;
-        if (typeof (riskFactorsPrimary) !== 'undefined') {
-          riskFactors = riskFactors.concat(riskFactorsPrimary.split(' '));
-        }
-        else if (typeof (riskFactorsSecondary) !== 'undefined') {
-          riskFactors = riskFactors.concat(riskFactorsSecondary.split(' '));
-        }
-      }
+  if (getField(report, 'risk_factors.r_risk_factor_present') === 'yes') {
+    if (getField(report, 'risk_factors.risk_factors_history.first_pregnancy') === 'yes') {
+      riskFactors.push('first_pregnancy');
+    }
+    if (getField(report, 'risk_factors.risk_factors_history.previous_miscarriage') === 'yes') {
+      riskFactors.push('previous_miscarriage');
+    }
+    const riskFactorsPrimary = getField(report, 'risk_factors.risk_factors_present.primary_condition');
+    const riskFactorsSecondary = getField(report, 'risk_factors.risk_factors_present.secondary_condition');
+    if (typeof (riskFactorsPrimary) !== 'undefined') {
+      riskFactors = riskFactors.concat(riskFactorsPrimary.split(' '));
+    }
+    else if (typeof (riskFactorsSecondary) !== 'undefined') {
+      riskFactors = riskFactors.concat(riskFactorsSecondary.split(' '));
     }
   }
   return riskFactors;
@@ -199,8 +190,8 @@ function getRiskFactorCodesFromPregnancy(report) {
 function getNewRiskFactorCodesFromFollowUps(report) {
   let riskFactors = [];
   if (!isPregnancyFollowUpForm(report)) return [];
-  if (report.fields && report.fields.anc_visits_hf && report.fields.anc_visits_hf.risk_factors && report.fields.anc_visits_hf.risk_factors.r_risk_factor_present === 'yes') {
-    const newRiskFactors = report.fields.anc_visits_hf.risk_factors.new_risks;
+  if (getField(report, 'anc_visits_hf.risk_factors.r_risk_factor_present') === 'yes') {
+    const newRiskFactors = getField(report, 'anc_visits_hf.risk_factors.new_risks');
     if (typeof (newRiskFactors) !== 'undefined') {
       riskFactors = riskFactors.concat(newRiskFactors.split(' '));
     }
@@ -229,12 +220,10 @@ function getRiskFactorTextFromCodes(riskFactorCodes) {
 
 function getRiskFactorExtra(report) {
   if (report && isPregnancyForm(report)) {
-    return report.fields && report.fields.risk_factors && report.fields.risk_factors.risk_factors_present &&
-      report.fields.risk_factors.risk_factors_present.additional_risk;
+    return getField(report, 'risk_factors.risk_factors_present.additional_risk') || null;
   }
   else if (report && isPregnancyFollowUpForm(report)) {
-    return report.fields && report.fields.anc_visits_hf && report.fields.anc_visits_hf.risk_factors &&
-      report.fields.anc_visits_hf.risk_factors.additional_risk;
+    return getField(report, 'anc_visits_hf.risk_factors.additional_risk') || null;
   }
   return null;
 }
@@ -261,9 +250,9 @@ function isDeliveryForm(report) {
   return report && deliveryForms.indexOf(report.form) > -1;
 }
 
-function getSubsequentPregnancies(allReports, report) {
+function getSubsequentPregnancies(allReports, refReport) {
   return allReports.filter(function (report) {
-    return isPregnancyForm(report) && report.reported_date > report.reported_date;
+    return isPregnancyForm(report) && report.reported_date > refReport.reported_date;
   });
 }
 
@@ -367,8 +356,7 @@ function isReadyForDelivery(thisContact, allReports) {
 function getRecentANCVisitWithEvent(allReports, pregnancyReport, event) { //miscarriage, abortion, refused, migrated
   const followUps = getSubsequentPregnancyFollowUps(allReports, pregnancyReport);
   const latestFollowup = getNewestReport(followUps, antenatalForms);
-  if (latestFollowup && latestFollowup.fields.pregnancy_summary &&
-    latestFollowup.fields.pregnancy_summary.visit_option === event) {
+  if (latestFollowup && getField(latestFollowup, 'pregnancy_summary.visit_option') === event) {
     return latestFollowup;
   }
   return null;
@@ -404,12 +392,12 @@ function countANCFacilityVisits(allReports, pregnancy) {
   //How many? [anc_visits_hf/anc_visits_hf_past/visited_hf_count]
   let ancHFVisits = 0;
   const pregnancyFollowUps = getSubsequentPregnancyFollowUps(allReports, pregnancy);
-  if (pregnancy.fields && pregnancy.fields.anc_visits_hf && pregnancy.fields.anc_visits_hf.anc_visits_hf_past) {
-    ancHFVisits += parseInt(pregnancy.fields.anc_visits_hf.anc_visits_hf_past.visited_hf_count);
+  if (getField(pregnancy, 'anc_visits_hf.anc_visits_hf_past')) {
+    ancHFVisits += parseInt(getField(pregnancy, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
   }
   pregnancyFollowUps.forEach(function (report) {
-    if (report.fields && report.fields.anc_visits_hf && report.fields.anc_visits_hf.anc_visits_hf_past) {
-      const pastANCHFVisits = report.fields.anc_visits_hf.anc_visits_hf_past;
+    if (getField(report, 'anc_visits_hf.anc_visits_hf_past')) {
+      const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
       if (pastANCHFVisits.last_visit_attended === 'yes') {
         ancHFVisits += 1;
       }
@@ -418,16 +406,16 @@ function countANCFacilityVisits(allReports, pregnancy) {
       }
     }
   });
-  return ancHFVisits;
+  return isNaN(ancHFVisits) ? 0 : ancHFVisits;
 }
 
 function knowsHIVStatusInPast3Months(allReports) {
   let knows = false;
   const pregnancyFormsIn3Months = getFormArraySubmittedInWindow(allReports, pregnancyForms, today.clone().subtract(3, 'months'), today);
   pregnancyFormsIn3Months.forEach(function (report) {
-    if (report.fields && report.fields.pregnancy_new_or_current && report.fields.pregnancy_new_or_current.hiv_status && report.fields.pregnancy_new_or_current.hiv_status.hiv_status_know === 'yes')
+    if (getField(report, 'pregnancy_new_or_current.hiv_status.hiv_status_know') === 'yes') {
       knows = true;
-    return;
+    }
   });
   return knows;
 }
@@ -456,5 +444,6 @@ module.exports = {
   getMostRecentEDDForPregnancy,
   getDeliveryDate,
   getFormArraySubmittedInWindow,
-  getRecentANCVisitWithEvent
+  getRecentANCVisitWithEvent,
+  getField
 };
