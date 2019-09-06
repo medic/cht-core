@@ -45,6 +45,13 @@ describe('ServerSidePurge', () => {
       chai.expect(config.get.args[0][0]).to.equal('purge');
     });
 
+    it('should return undefined when purge fn is not a function', () => {
+      config.get.returns({ fn: '"whatever"' });
+      chai.expect(service.__get__('getPurgeFn')()).to.equal(undefined);
+      chai.expect(config.get.callCount).to.equal(1);
+      chai.expect(config.get.args[0][0]).to.equal('purge');
+    });
+
     it('should return eval-ed when purge fn is correct', () => {
       const purgeFn = function(n) { return n * n; };
       config.get.returns({ fn: purgeFn.toString() });

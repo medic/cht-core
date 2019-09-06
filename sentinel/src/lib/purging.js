@@ -114,11 +114,20 @@ const getPurgeFn = () => {
     return;
   }
 
+  let purgeFn;
   try {
-    return eval(`(${purgeConfig.fn})`);
+    purgeFn = eval(`(${purgeConfig.fn})`);
   } catch (err) {
     logger.error('Failed to parse purge function: %o', err);
+    return;
   }
+
+  if (typeof purgeFn !== 'function') {
+    logger.error('Configured purge function is not a function');
+    return;
+  }
+
+  return purgeFn;
 };
 
 const updatePurgedDocs = (rolesHashes, ids, alreadyPurged, toPurge) => {
