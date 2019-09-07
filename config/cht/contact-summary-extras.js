@@ -70,7 +70,7 @@ function getFormArraySubmittedInWindow(allReports, formArray, start, end) {
 function getNewestReport(allReports, forms) {
   let result = null;
   allReports.forEach(function (report) {
-    if (!isReportValid(report) || forms.indexOf(report.form) < 0) { return null; }
+    if (!isReportValid(report) || !forms.includes(report.form)) { return null; }
     if (!result || report.reported_date > result.reported_date) {
       result = report;
     }
@@ -211,7 +211,7 @@ function getAllRiskFactorCodes(allReports, pregnancy) {
 function getRiskFactorTextFromCodes(riskFactorCodes) {
   const riskFactorsText = [];
   ancRiskFactors.forEach(function (arf) {
-    if (riskFactorCodes.indexOf(arf[0]) > -1) {
+    if (riskFactorCodes.includes(arf[0])) {
       riskFactorsText.push(arf[1]);
     }
   });
@@ -239,15 +239,15 @@ function isAlive(thisContact) {
 }
 
 function isPregnancyForm(report) {
-  return report && pregnancyForms.indexOf(report.form) > -1;
+  return report && pregnancyForms.includes(report.form);
 }
 
 function isPregnancyFollowUpForm(report) {
-  return report && antenatalForms.indexOf(report.form) > -1;
+  return report && antenatalForms.includes(report.form);
 }
 
 function isDeliveryForm(report) {
-  return report && deliveryForms.indexOf(report.form) > -1;
+  return report && deliveryForms.includes(report.form);
 }
 
 function getSubsequentPregnancies(allReports, refReport) {
