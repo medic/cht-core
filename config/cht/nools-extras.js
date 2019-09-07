@@ -59,7 +59,7 @@ function isFormArraySubmittedInWindowExcludingThisReport(reports, formArray, sta
 function getMostRecentReport(reports, form) {
   let result = null;
   reports.forEach(function (report) {
-    if (form.indexOf(report.form) >= 0 &&
+    if (form.includes(report.form) &&
       !report.deleted &&
       (!result || report.reported_date > result.reported_date)) {
       result = report;
@@ -99,7 +99,7 @@ function isFacilityDelivery(contact, report) {
 function countReportsSubmittedInWindow(reports, form, start, end, condition) {
   let reportsFound = 0;
   reports.forEach(function (report) {
-    if (form.indexOf(report.form) >= 0) {
+    if (form.includes(report.form)) {
       if (report.reported_date >= start && report.reported_date <= end) {
         if (!condition || condition(report)) {
           reportsFound++;
@@ -113,7 +113,7 @@ function countReportsSubmittedInWindow(reports, form, start, end, condition) {
 function getReportsSubmittedInWindow(reports, form, start, end, condition) {
   const reportsFound = [];
   reports.forEach(function (report) {
-    if (form.indexOf(report.form) >= 0) {
+    if (form.includes(report.form)) {
       if (report.reported_date >= start && report.reported_date <= end) {
         if (!condition || condition(report)) {
           reportsFound.push(report);
@@ -161,18 +161,18 @@ function addDays(date, days) {
 }
 
 function isPregnancyForm(report) {
-  return pregnancyForms.indexOf(report.form) > -1;
+  return pregnancyForms.includes(report.form);
 }
 
 function isPregnancyFollowUpForm(report) {
-  return antenatalForms.indexOf(report.form) > -1;
+  return antenatalForms.includes(report.form);
 }
 
 
 const getNewestReport = function (reports, forms) {
   let result = null;
   reports.forEach(function (report) {
-    if (forms.indexOf(report.form) < 0) { return; }
+    if (!forms.includes(report.form)) { return; }
     if (!result || report.reported_date > result.reported_date) {
       result = report;
     }
