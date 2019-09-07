@@ -3,9 +3,16 @@ const expect = chai.expect;
 const moment = require('moment');
 const sinon = require('sinon');
 const extras = require('../../nools-extras');
-
+let clock = sinon.useFakeTimers(new Date());
 describe('Date related tests', () => {
-    before(() => { sinon.restore(); });
+    //before(() => { sinon.restore(); });
+    beforeEach(() => {
+        clock = sinon.useFakeTimers(new Date());
+    });
+    afterEach(() => {
+        clock.restore();
+    });
+
     it("tests that today is correct", () => {
         expect(moment().startOf('day').valueOf()).to.equal(extras.today);
     });
@@ -53,7 +60,7 @@ describe('Date related tests', () => {
     });
 });
 
-describe('getField', () => {
+describe('Test method getField', () => {
     const { getField } = extras;
 
     const nestedValue = { fields: { a: { b: 'value' } } };
@@ -64,7 +71,7 @@ describe('getField', () => {
     it('root undefined', () => expect(getField(nestedValue, 'x')).to.be.undefined);
     it('empty string input', () => expect(getField(nestedValue, '')).to.be.undefined);
     it('get node', () => expect(getField(nestedValue, 'a')).to.deep.eq({ b: 'value' }));
-    it('undefined input', () => expect(getField(undefined, 'a')).to.be.undefined);    
-    it('leaf + 1 level undefined', () => expect(getField(nestedValue, 'a.b.c')).to.be.undefined);   
+    it('undefined input', () => expect(getField(undefined, 'a')).to.be.undefined);
+    it('leaf + 1 level undefined', () => expect(getField(nestedValue, 'a.b.c')).to.be.undefined);
     it('leaf + 2 levels undefined', () => expect(getField(nestedValue, 'a.b.c.d')).to.be.undefined);
-  });
+});

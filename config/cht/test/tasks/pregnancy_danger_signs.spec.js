@@ -14,9 +14,9 @@ const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
 
-const now = '2000-01-01 05:45';
+const now = '2000-01-01';
 
-describe('pregnancy danger sign tests', () => {
+describe('Pregnancy danger sign tests', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
   beforeEach(async () => {

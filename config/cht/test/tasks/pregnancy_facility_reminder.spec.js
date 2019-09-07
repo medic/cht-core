@@ -19,7 +19,7 @@ const facilityReminderTask = {
 };
 
 const facilityReminderTaskDays = getRangeForTask(facilityReminderTask);
-describe('pregnancy registration and scheduled visit', () => {
+describe('Pregnancy registration and scheduled visit', () => {
   before(async () => {
     return await harness.start();
   });

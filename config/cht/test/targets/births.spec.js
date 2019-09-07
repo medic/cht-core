@@ -26,7 +26,7 @@ describe('Births this month target tests', () => {
     if (clock) clock.restore();
   });
 
-  it('Birth this month should be counted', async () => {
+  it('birth this month should be counted', async () => {
     //await harness.setNow('2000-04-30');//DOB: 2000-04-24
     clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
     let birthsThisMonth = await harness.getTargets({ type: 'births-this-month' });
@@ -34,7 +34,7 @@ describe('Births this month target tests', () => {
     expect(birthsThisMonth[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
   });
 
-  it('Birth last month should not be counted', async () => {
+  it('birth last month should not be counted', async () => {
     //await harness.setNow('2000-04-30');//DOB: 2000-04-24
     clock = sinon.useFakeTimers(moment('2000-05-01').toDate());
     let birthsThisMonth = await harness.getTargets({ type: 'births-this-month' });

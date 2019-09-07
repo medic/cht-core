@@ -10,7 +10,7 @@ const harness = new TestRunner({
 
 let clock;
 
-describe('tests for past pregnancy condition card', () => {
+describe('Tests for past pregnancy condition card', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
   beforeEach(async () => { return await harness.clear(); });
@@ -43,7 +43,7 @@ describe('tests for past pregnancy condition card', () => {
     expect(fields).to.have.property('length', 5);
     expect(fields[0]).to.deep.equal({
       "label": "contact.profile.delivery_date",
-      "value": 956340900000,
+      "value": moment('2000-04-22').valueOf(),
       "filter": "simpleDate",
       "width": 6
     });
@@ -95,7 +95,7 @@ describe('tests for past pregnancy condition card', () => {
     expect(fields).to.have.property('length', 5);
     expect(fields[0]).to.deep.equal({
       "label": "contact.profile.delivery_date",
-      "value": 956340900000,
+      "value": moment('2000-04-22').valueOf(),
       "filter": "simpleDate",
       "width": 6
     });
@@ -149,7 +149,7 @@ describe('tests for past pregnancy condition card', () => {
     expect(fields).to.have.property('length', 14);
     expect(fields[0]).to.deep.equal({
       "label": "contact.profile.delivery_date",
-      "value": 956340900000,
+      "value": moment('2000-04-22').valueOf(),
       "filter": "simpleDate",
       "width": 6
     });
@@ -254,7 +254,7 @@ describe('tests for past pregnancy condition card', () => {
     });
     expect(fields[1]).to.deep.equal({
       "label": "contact.profile.pregnancy.end_date",
-      "value": 946750500000,
+      "value": moment('2000-01-02').valueOf(),
       "filter": "simpleDate",
       "width": 6
     });
@@ -307,7 +307,7 @@ describe('tests for past pregnancy condition card', () => {
     });
     expect(fields[1]).to.deep.equal({
       "label": "contact.profile.pregnancy.end_date",
-      "value": 946750500000,
+      "value": moment('2000-01-02').valueOf(),
       "filter": "simpleDate",
       "width": 6
     });
