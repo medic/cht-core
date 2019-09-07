@@ -123,7 +123,7 @@ describe('Tests for past pregnancy condition card', () => {
     });
   });
 
-  it('delivery with 2 children, 1 alive and healthy, 1 stillbirth', async () => {
+  it('delivery with 3 children: 1 alive and healthy, 1 deceased, 1 stillbirth', async () => {
     await harness.setNow('2000-01-01');
 
     clock = sinon.useFakeTimers(moment('2000-01-01').toDate());

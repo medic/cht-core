@@ -26,7 +26,7 @@ module.exports = [
     appliesTo: "reports",
     appliesToType: ["pregnancy"],
     appliesIf: function (contact, report) {// If LMP date is known
-      return getMostRecentLMPDateForPregnancy(contact, report) != null;
+      return !!getMostRecentLMPDateForPregnancy(contact, report);
     },
 
     resolvedIf: function (contact, report, event, dueDate) {
@@ -137,7 +137,7 @@ module.exports = [
     appliesIf: function (contact, report) {// If LMP date is unknown
       const recentLMP = getMostRecentLMPDateForPregnancy(contact, report);
       //We only want to show until 42 weeks + 7 days
-      return recentLMP === null && addDays(report.reported_date, 42 * 7 + 7) >= today;
+      return !recentLMP && addDays(report.reported_date, 42 * 7 + 7) >= today;
     },
 
     resolvedIf: function (contact, report, event, dueDate) {

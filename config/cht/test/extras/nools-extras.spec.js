@@ -27,22 +27,6 @@ describe('Date related tests', () => {
         expect(moment().startOf('day').valueOf()).to.equal(extras.getTimeForMidnight(Date.now()).getTime());
     });
 
-    it("tests that method isOnSameMonth works correctly", () => {
-        for (let i = 1; i < 33; i++) {
-            const date1 = (new Date(2000, 0, i)).getTime();
-            for (let j = 1; j < 33; j++) {
-                const date2 = (new Date(2000, 0, j)).getTime();
-                if (moment(date1).isSame(date2, 'month')) {
-                    expect(extras.isOnSameMonth(date1, date2), date1 + " - " + date2).to.be.true;
-                }
-                else {
-                    expect(extras.isOnSameMonth(date1, date2), date1 + " - " + date2).to.be.false;
-                }
-
-            }
-        }
-    });
-
     it("tests that method getDateMS works correctly", () => {
         expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS("2000-01-01"));//String format      
         expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS(new Date("2000-01-01")));//Date format
