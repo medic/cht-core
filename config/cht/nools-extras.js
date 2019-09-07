@@ -57,7 +57,7 @@ function isFormArraySubmittedInWindowExcludingThisReport(reports, formArray, sta
 
 
 function getMostRecentReport(reports, form) {
-  let result = null;
+  let result;
   reports.forEach(function (report) {
     if (form.includes(report.form) &&
       !report.deleted &&
@@ -66,14 +66,6 @@ function getMostRecentReport(reports, form) {
     }
   });
   return result;
-}
-
-function isOnSameMonth(date1, date2) {
-  const firstDate = new Date(date1);
-  const secondDate = new Date(date2);
-  return date1 && date2 &&
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth();
 }
 
 function getNewestPregnancyTimestamp(contact) {
@@ -170,7 +162,7 @@ function isPregnancyFollowUpForm(report) {
 
 
 const getNewestReport = function (reports, forms) {
-  let result = null;
+  let result;
   reports.forEach(function (report) {
     if (!forms.includes(report.form)) { return; }
     if (!result || report.reported_date > result.reported_date) {
@@ -201,7 +193,7 @@ function getSubsequentPregnancies(contact, refReport) {
 function getSubsequentPregnancyFollowUps(contact, report) {
   const subsequentVisits = contact.reports.filter(function (visit) {
     let lmpDate = getLMPDateFromPregnancy(report);
-    if (lmpDate === null) { //LMP Date is not available use reported date
+    if (!lmpDate) { //LMP Date is not available use reported date
       lmpDate = report.reported_date;
     }
 
@@ -286,7 +278,6 @@ function getRecentANCVisitWithEvent(contact, report, event) { //miscarriage, abo
   if (latestFollowup && getField(latestFollowup, 'pregnancy_summary.visit_option') === event) {
     return latestFollowup;
   }
-  return null;
 }
 
 function isPregnancyTaskMuted(contact) {
@@ -304,7 +295,6 @@ module.exports = {
   getTimeForMidnight,
   isFormArraySubmittedInWindow,
   isFormArraySubmittedInWindowExcludingThisReport,
-  isOnSameMonth,
   getDateMS,
   getDateISOLocal,
   getMostRecentReport,

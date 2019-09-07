@@ -109,7 +109,7 @@ describe('Delivery tasks tests', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks();
       if (deliveryTaskDays.includes(day) && resolved === false) {
-        expect(taskForDelivery.length, day).to.be.above(0);
+        expect(taskForDelivery.length, day).to.be.above(1);//there is also a home-visit task
         expect(taskForDelivery).to.be.an('array').that.contains.something.like({ title: 'task.anc.delivery.title' });
         await harness.loadAction(taskForDelivery[1].actions[0]);
         const deliveryFormResult = await harness.fillForm(...deliveryReportScenarios.oneChildHealthyFacility);

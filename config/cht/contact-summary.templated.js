@@ -85,7 +85,7 @@ const cards = [
         );
       }
       fields.push(
-        { label: 'Weeks Pregnant', value: weeksPregnant === null ? 'contact.profile.value.unknown' : { number: weeksPregnant, approximate: lmp_approx === 'yes' }, translate: weeksPregnant === null, filter: weeksPregnant === null ? '' : 'weeksPregnant', width: 6 },
+        { label: 'Weeks Pregnant', value: weeksPregnant || weeksPregnant === 0 ? { number: weeksPregnant, approximate: lmp_approx === 'yes' } : 'contact.profile.value.unknown', translate: !weeksPregnant && weeksPregnant !== 0, filter: weeksPregnant || weeksPregnant === 0 ? 'weeksPregnant' : '', width: 6 },
         { label: 'contact.profile.edd', value: edd_ms ? edd_ms.valueOf() : 'contact.profile.value.unknown', translate: !edd_ms, filter: edd_ms ? 'simpleDate' : '', width: 6 }
         //Next ANC clinic visit (Date)
       );
@@ -104,7 +104,7 @@ const cards = [
         { label: 'contact.profile.last_visited', value: weeksSinceLastANC + (weeksSinceLastANC === 1 ? ' week ago' : ' weeks ago'), width: 6 }
       );
 
-      if (nextAncVisitDate !== null && nextAncVisitDate.isSameOrAfter(today)) {
+      if (nextAncVisitDate && nextAncVisitDate.isSameOrAfter(today)) {
         fields.push(
           { label: 'contact.profile.anc.next', value: nextAncVisitDate.valueOf(), filter: 'simpleDate', width: 6 }
         );
@@ -168,8 +168,8 @@ const cards = [
     },
     fields: function () {
       const fields = [];
-      let dateOfDeath = null;
-      let placeOfDeath = null;
+      let dateOfDeath;
+      let placeOfDeath;
       const deathReport = getNewestReport(allReports, ['death_report']);
       if (deathReport) {
         const deathDetails = getField(deathReport, 'death_details');
@@ -208,8 +208,8 @@ const cards = [
     },
     fields: function (report) {
       const fields = [];
-      let relevantPregnancy = null;
-      let dateOfDelivery = null;
+      let relevantPregnancy;
+      let dateOfDelivery;
       let placeOfDelivery = '';
       let babiesDelivered = 0;
       let babiesDeceased = 0;
@@ -257,7 +257,6 @@ const cards = [
           }
 
           weeksPregnantAtEnd = endDate.diff(lmpDate, 'weeks');
-          //weeksPregnantAtEnd = lmpDate ? Math.floor((getDateMS(endDate) - lmpDate) / (7 * MS_IN_DAY)) : null;
           fields.push(
             { label: 'contact.profile.pregnancy.end_early', value: endReason, translate: true, width: 6 },
             { label: 'contact.profile.pregnancy.end_date', value: endDate.valueOf(), filter: 'simpleDate', width: 6 },

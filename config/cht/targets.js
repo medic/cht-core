@@ -5,7 +5,6 @@ const {
   addDays,
   isAlive,
   getSubsequentPregnancyFollowUps,
-  isOnSameMonth,
   getMostRecentLMPDateForPregnancy,
   isActivePregnancy,
   countANCFacilityVisits,
@@ -43,9 +42,9 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
-      return !isAlive(contact) && isOnSameMonth(today, contact.contact.date_of_death);
+      return !isAlive(contact);
     },
-    date: 'now'//'reported' does not work with contact here, because contact.reported_date can be older
+    date: (contact) => contact.contact.date_of_death
   },
 
   // ANC: New Pregnancies as a count - this month with LMP, with a goal of 20
@@ -59,8 +58,8 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (report === null) return false;
-      if (getMostRecentLMPDateForPregnancy(contact, report) === null) return false;
+      if (!report) return false;
+      if (!getMostRecentLMPDateForPregnancy(contact, report)) return false;
       return true;
     },
     date: 'reported',
@@ -77,10 +76,9 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
-      if (contact === null) return false;
-      return isOnSameMonth(contact.contact.date_of_birth, today);
+      return !!contact;
     },
-    date: 'now'
+    date: (contact) => contact.contact.date_of_birth
   },
 
 
