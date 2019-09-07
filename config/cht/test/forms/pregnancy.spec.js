@@ -1,25 +1,32 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
 const path = require('path');
+const { pregnancyRegistrationScenarios } = require('../form-inputs');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
-
-describe('Getting started tests', () => {
+let clock;
+describe('Pregnancy form tests', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
-  beforeEach(async () => { return await harness.clear(); });
-  afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
+  beforeEach(
+    async () => {
+      await harness.clear();
+      await harness.setNow(new Date('2000-01-01'));//UTC 00:00
+      return harness.loadForm('pregnancy');
+    });
+  afterEach(() => {
+    expect(harness.consoleErrors).to.be.empty;
+    if (clock) clock.restore();
+  });
 
   it('pregnancy form can be loaded', async () => {
-    await harness.loadForm('pregnancy');
     expect(harness.state.pageContent).to.include('id="pregnancy"');
   });
 
-   it('unit test confirming pregnancy with pregnancy followup date', async () => {
-    await harness.setNow('2000-01-01 05:45');
+  it('pregnancy with pregnancy and danger signs followup dates', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_lmp'], ['1999-08-01'], [], ['0'], ['yes', '2000-01-15'], ['no', 'no'], ['none', 'no'], ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.danger);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -30,17 +37,17 @@ describe('Getting started tests', () => {
       t_danger_signs_referral_follow_up: 'yes',
       t_danger_signs_referral_follow_up_date: '2000-01-04',
       t_pregnancy_follow_up: 'yes',
-      t_pregnancy_follow_up_date: '2000-01-15',
-      edd_8601: '2000-05-07',
-      days_since_lmp: '153',
-      weeks_since_lmp_rounded: '21',
+      t_pregnancy_follow_up_date: '2000-01-20',
+      edd_8601: '2000-08-07',
+      days_since_lmp: '61',
+      weeks_since_lmp_rounded: '8',
       lmp_method_approx: 'no'
     });
   });
-  it('unit test confirming pregnancy with no pregnancy follow up date', async () => {
-    await harness.setNow('2000-01-01');
+
+  it('pregnancy with no pregnancy follow up date', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_lmp'], ['1999-08-01'], [], ['0'], ['no'], [], ['no', 'no'], ['none', 'no'], ['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.safeNoFollowUp);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -48,14 +55,13 @@ describe('Getting started tests', () => {
     // Verify some attributes on the resulting report
     expect(result.report.fields).to.deep.include({
       patient_name: 'Patient Name',
-      t_danger_signs_referral_follow_up: 'no'
+      t_danger_signs_referral_follow_up: 'no',
+      t_pregnancy_follow_up: 'no',
     });
   });
-
-  it('unit test confirming pregnancy with current weeks pregnant', async () => {
-    await harness.setNow('2000-01-01 05:45');
+  it('pregnancy with current weeks pregnant', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_approx'], ['approx_weeks', '12'], [], ['0'], ['no'], [], ['no', 'no'], ['none', 'no'], ['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.safe12WeeksApprox);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -71,11 +77,9 @@ describe('Getting started tests', () => {
     });
   });
 
-  
-  it('unit test confirming pregnancy with current months pregnant', async () => {
-    await harness.setNow('2000-01-01 05:45');
+  it('pregnancy with current months pregnant', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_approx'], ['approx_months', '3'], [], ['0'], ['no'], [], ['no', 'no'], ['none', 'no'], ['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.safe3MonthsApprox);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -91,10 +95,9 @@ describe('Getting started tests', () => {
     });
   });
 
-  it('unit test confirming pregnancy with edd', async () => {
-    await harness.setNow('2000-01-01 05:45');
+  it('pregnancy with edd', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_edd'], ['2000-05-07'], [], ['0'], ['no'], [], ['no', 'no'], ['none', 'no'], ['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.safeWithEddMethod);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -110,10 +113,9 @@ describe('Getting started tests', () => {
     });
   });
 
-   it('unit test confirming pregnancy form shows deworming question if pregnancy is more than 12 weeks', async () => {
-    await harness.setNow('2000-01-01');
+  it('pregnancy form shows deworming question if pregnancy is more than 12 weeks', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_lmp'], ['1999-10-07'], [], ['0'], ['no'], [], ['no', 'no'], ['none', 'no'], ['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.safe12Weeks1Day);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -122,10 +124,9 @@ describe('Getting started tests', () => {
     expect(result.report.fields.safe_pregnancy_practices).to.have.property('deworming');
   });
 
-  it('unit test confirming pregnancy form does not show deworming question if pregnancy is not more than 12 weeks', async () => {
-    await harness.setNow('2000-01-01');
+  it('pregnancy form does not show deworming question if pregnancy is not more than 12 weeks', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ['method_lmp'], ['1999-10-08'], [], ['0'], ['no'], [], ['no', 'no'], ['none', 'no'], ['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'], ['no'], ['no'], [], ['no'], []);
+    const result = await harness.fillForm(...pregnancyRegistrationScenarios.safe12Weeks);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;

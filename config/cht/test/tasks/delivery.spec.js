@@ -14,7 +14,7 @@ const harness = new TestRunner({
 
 const MAX_DAYS_FOR_DELIVERY = 337;
 let clock;
-describe('delivery tasks', () => {
+describe('Delivery tasks tests', () => {
   before(async () => {
     return await harness.start();
   });

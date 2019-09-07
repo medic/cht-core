@@ -1,28 +1,27 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
+const path = require('path');
 const moment = require('moment');
 const sinon = require('sinon');
-const path = require('path');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
-
-let clock;
-
-describe('tests for active pregnancy condition card', () => {
+let clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
+describe('Tests for active pregnancy condition card', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
-  beforeEach(async () => { return await harness.clear(); });
+  beforeEach(async () => {
+    await harness.clear();
+    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
+    return await harness.setNow('2000-01-01');
+  });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
     if (clock) clock.restore();
   });
 
   it('pregnancy registration with risk factors, danger signs, past and future visits', async () => {
-    await harness.setNow('2000-01-01');
-
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
 
@@ -49,7 +48,7 @@ describe('tests for active pregnancy condition card', () => {
       });
     expect(fields[1]).to.deep.equal({
       "label": "contact.profile.edd",
-      "value": 957636900000,//2000-05-07 (LMP date + 280 days)
+      "value": moment('2000-05-07').valueOf(),//LMP date + 280 days
       "translate": false,
       "filter": "simpleDate",
       "width": 6
@@ -82,16 +81,13 @@ describe('tests for active pregnancy condition card', () => {
     });
     expect(fields[6]).to.deep.equal({
       "label": "contact.profile.anc.next",
-      "value": 947873700000,//2000-01-15
+      "value": moment('2000-01-15').valueOf(),
       "filter": "simpleDate",
       "width": 6
     });
   });
 
   it('pregnancy registration with no known LMP, no risk factors, no danger signs, no past and future viits', async () => {
-    await harness.setNow('2000-01-01');
-
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.lmpUnknown);
 
@@ -137,9 +133,6 @@ describe('tests for active pregnancy condition card', () => {
   });
 
   it('pregnancy registration updated by pregnancy home visit', async () => {
-    await harness.setNow('2000-01-01');
-
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     // Verify that the form successfully got submitted
@@ -171,7 +164,7 @@ describe('tests for active pregnancy condition card', () => {
     });
     expect(fields[1]).to.deep.equal({
       "label": "contact.profile.edd",
-      "value": 957896100000,//2000-05-10 (updated EDD)
+      "value": moment('2000-05-10').valueOf(),//(updated EDD)
       "translate": false,
       "filter": "simpleDate",
       "width": 6
@@ -205,9 +198,6 @@ describe('tests for active pregnancy condition card', () => {
   });
 
   it('pregnancy registration cleared by pregnancy home visit', async () => {
-    await harness.setNow('2000-01-01');
-
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     // Verify that the form successfully got submitted
@@ -251,7 +241,7 @@ describe('tests for active pregnancy condition card', () => {
     });
     expect(fields[3]).to.deep.equal({
       "label": "contact.profile.edd",
-      "value": 957636900000,//2000-05-07 (LMP date + 280 days)
+      "value": moment('2000-05-07').valueOf(),//LMP date + 280 days
       "translate": false,
       "filter": "simpleDate",
       "width": 6

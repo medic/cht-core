@@ -29,7 +29,7 @@ describe('Pregnancy related targets test', () => {
     if (clock) clock.restore();
   });
 
-  it('Active pregnancy target should show through pregnancy period', async () => {
+  it('active pregnancy target should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
@@ -49,7 +49,7 @@ describe('Pregnancy related targets test', () => {
     }
   });
 
-  it('Pregnancies this month target should show only the same month as pregnancy registered', async () => {
+  it('pregnancies this month target should show only the same month as pregnancy registered', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
@@ -68,7 +68,7 @@ describe('Pregnancy related targets test', () => {
       }
     }
   });
-  it('Active pregnancy with 1+ facility visits target should show through pregnancy period', async () => {
+  it('active pregnancy with 1+ facility visits target should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     clock = sinon.useFakeTimers(moment('1999-10-10').toDate());
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
@@ -101,7 +101,7 @@ describe('Pregnancy related targets test', () => {
     }
   });
 
-  it('Active pregnancy with 4+ facility visits target should show through pregnancy period', async () => {
+  it('active pregnancy with 4+ facility visits target should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     clock = sinon.useFakeTimers(moment('1999-10-10').toDate());
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
@@ -132,7 +132,7 @@ describe('Pregnancy related targets test', () => {
       }
     }
   });
-  it('Active pregnancy with 1+ facility visits target if reported during pregnancy registration should show through pregnancy period', async () => {
+  it('active pregnancy with 1+ facility visits target if reported during pregnancy registration should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     clock = sinon.useFakeTimers(moment('1999-10-10').toDate());
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10WeeksWith1FacilityVisit);
@@ -154,7 +154,7 @@ describe('Pregnancy related targets test', () => {
     }
   });
 
-  it('Active pregnancy with 4+ facility visits target if reported during pregnancy registration should show through pregnancy period', async () => {
+  it('active pregnancy with 4+ facility visits target if reported during pregnancy registration should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     clock = sinon.useFakeTimers(moment('1999-10-10').toDate());
     let activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
@@ -180,7 +180,7 @@ describe('Pregnancy related targets test', () => {
     }
   });
 
-  it('Active pregnancy with 4+ facility visits target, when filled from each pregnancy home visit should show through pregnancy period', async () => {
+  it('active pregnancy with 4+ facility visits target, when filled from each pregnancy home visit should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     clock = sinon.useFakeTimers(moment('1999-10-10').toDate());
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
@@ -226,7 +226,7 @@ describe('Pregnancy related targets test', () => {
     }
   });
 
-  it('Active pregnancy with 8+ contacts target, when filled from each pregnancy home visit should show through pregnancy period', async () => {
+  it('active pregnancy with 8+ contacts target, when filled from each pregnancy home visit should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     clock = sinon.useFakeTimers(moment('1999-10-10').toDate());
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
