@@ -339,12 +339,11 @@ function isReadyForDelivery(thisContact, allReports) {
       const lmpDate = getMostRecentLMPDateForPregnancy(allReports, latestPregnancy);
       if (!lmpDate) {//no LMP, show until 280 days + 6 weeks from the date of registration
         return moment(latestPregnancy.reported_date).clone().startOf('day').add(280 + 6 * 7, 'days').isSameOrBefore(today);
-        //return today <= addDays(latestPregnancy.reported_date, 280 + 6 * 7);
       }
       else {//Pregnancy registration with LMP
         const edd = getMostRecentEDDForPregnancy(allReports, latestPregnancy);
+        //at least 6 months ago, no more than EDD + 6 weeks
         return today.isBetween(lmpDate.clone().add(6, 'months'), edd.clone().add(6, 'weeks'));
-        //return addMonths(lmpDate, 6) < today && today < addDays(edd, 6 * 7); //at least 6 months ago, no more than EDD + 6 weeks
       }
     }
   }
