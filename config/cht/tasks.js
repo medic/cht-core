@@ -41,10 +41,9 @@ module.exports = [
 
       //clear tasks
       if (isPregnancyTaskMuted(contact)) return true;
-
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
-        addDays(dueDate, event.end + 1).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
     },
 
     actions: [
@@ -149,10 +148,9 @@ module.exports = [
 
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
-        addDays(dueDate, event.end + 1).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
     },
 
     actions: [
@@ -203,10 +201,10 @@ module.exports = [
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
 
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
-        addDays(dueDate, event.end + 1).getTime());
     },
     actions: [{
       type: "report",
@@ -242,10 +240,9 @@ module.exports = [
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself
-        addDays(dueDate, event.end + 1).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
     },
     actions: [
       {
@@ -287,9 +284,9 @@ module.exports = [
 
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-      return isFormArraySubmittedInWindow(contact.reports, ['delivery'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
-        addDays(dueDate, event.end + 1).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime()
+      return isFormArraySubmittedInWindow(contact.reports, ['delivery'], startTime.endTime);
     },
     actions: [
       {
@@ -327,10 +324,9 @@ module.exports = [
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself
-        addDays(dueDate, event.end + 1).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself;
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
     },
     actions: [
       {
@@ -368,9 +364,9 @@ module.exports = [
         isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'],
-        Math.max(addDays(dueDate, -event.start).getTime(), contact.contact.reported_date),
-        addDays(dueDate, event.end).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), contact.contact.reported_date);
+      const endTime = addDays(dueDate, event.end).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
     actions: [
       {
@@ -405,10 +401,9 @@ module.exports = [
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'],
-        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself
-        addDays(dueDate, event.end + 1).getTime());
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
     actions: [
       {
