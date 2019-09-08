@@ -167,10 +167,16 @@ Follow the steps below to use an Android device with a development build of your
 
 #### serveo
 
+Proxying via serveo is generally more successful than ngrok so it is our preferred route. Sometimes it will be blocked by Chrome safe browsing however in which case you can try ngrok.
+
 * To connect to an API running via `grunt` or `horti`, execute `ssh -R 80:localhost:5988 serveo.net`
 * To connect to an API running via `Docker`, execute `ssh -R 80:localhost:443 serveo.net`
 
+This will echo a URL which you can connect to.
+
 #### ngrok
+
+ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail. It's included here as an alternative in case serveo doesn't work for some reason.
 
 1. Create a ngrok account at https://ngrok.com/
 2. Follow instructions on downloading and linking your computer to your ngrok account.
