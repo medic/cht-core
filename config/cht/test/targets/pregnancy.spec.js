@@ -36,7 +36,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(70, MAX_DAYS_IN_PREGNANCY, 7)) {//check every 7 days
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
-      let clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
+      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies' });
       expect(activePregnancies).to.have.property('length', 1);
       if (day < 294) {

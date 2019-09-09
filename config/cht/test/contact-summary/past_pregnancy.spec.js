@@ -35,7 +35,7 @@ describe('Tests for past pregnancy condition card', () => {
 
 
     // Verify condition card
-    const contactSummary = Object.assign({}, harness.content, harness.getContactSummary());
+    const contactSummary =  harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
@@ -87,7 +87,7 @@ describe('Tests for past pregnancy condition card', () => {
 
 
     // Verify condition card
-    const contactSummary = Object.assign({}, harness.content, harness.getContactSummary());
+    const contactSummary = harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
@@ -139,7 +139,7 @@ describe('Tests for past pregnancy condition card', () => {
 
 
     // Verify condition card
-    const contactSummary = Object.assign({}, harness.content, harness.getContactSummary());
+    const contactSummary = harness.getContactSummary();
     //fails with error: TypeError: babyDeaths.forEach is not a function
     //because the repeat group is expected to be an array
     expect(contactSummary.cards).to.have.property('length', 1);
@@ -240,7 +240,7 @@ describe('Tests for past pregnancy condition card', () => {
 
 
     // Verify condition card
-    const contactSummary = Object.assign({}, harness.content, harness.getContactSummary());
+    const contactSummary = harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
@@ -293,7 +293,7 @@ describe('Tests for past pregnancy condition card', () => {
 
 
     // Verify condition card
-    const contactSummary = Object.assign({}, harness.content, harness.getContactSummary());
+    const contactSummary = harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
