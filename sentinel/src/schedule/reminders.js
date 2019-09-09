@@ -1,13 +1,14 @@
+const { performance } = require('perf_hooks');
 const _ = require('underscore');
+const moment = require('moment');
+const request = require('request-promise-native');
+
 const config = require('../config');
 const db = require('../db');
 const later = require('later');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('../lib/logger');
 const messages = config.getTransitionsLib().messages;
-const moment = require('moment');
-const { performance } = require('perf_hooks');
-const request = require('request-promise-native');
 
 const BATCH_SIZE = 1000;
 
@@ -89,14 +90,17 @@ const parseDuration = (format) => {
   return moment.duration(Number(tokens[0]), tokens[1]);
 };
 
-const getLeafPlaceIds = (startDocId) => {
+// A leaf place type is a contact type that does not have any child place types, but can have child person types
+const getLeafPlaceTypes = () => {
   const types = config.get('contact_types') || [];
   const placeTypes = types.filter(type => !type.person);
-  const leafPlaceTypes = placeTypes.filter(type => {
+  return placeTypes.filter(type => {
     return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
   });
-  const keys = leafPlaceTypes.map(type => [ type.id ]);
+};
 
+const getLeafPlaceIds = (startDocId) => {
+  const keys = getLeafPlaceTypes().map(type => [ type.id ]);
   const query = {
     limit: BATCH_SIZE,
     keys: JSON.stringify(keys),

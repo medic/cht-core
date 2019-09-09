@@ -11,6 +11,7 @@ var _ = require('underscore'),
  * specific forms.
  */
 // to be removed this in 4.0, this is rendered useless by the updates to reminders.
+// https://github.com/medic/medic/issues/5939
 module.exports = {
   filter: function(doc, info = {}) {
     var self = module.exports;
