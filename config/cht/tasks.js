@@ -109,11 +109,16 @@ module.exports = [
         start: 6,
         end: 7,
         dueDate: function (event, contact, report) { //every two weeks since registration
+          //Start showing from 2 weeks after registration date
           let upcomingDate = addDays(getDateMS(report.reported_date), 14);
           let countLoops = 0;
-          while ((upcomingDate < addDays(report.reported_date, 14) || upcomingDate < addDays(today, -7))) {
+          //until the upcomingDate gets inside the visible window (i.e. later than 7 days ago)
+          while (upcomingDate < addDays(today, -7)) {
+            //add 2 weeks to the due date 
             upcomingDate = addDays(upcomingDate, 14);
             countLoops++;
+            //In some cases, such as when reported date is much later than today, the loop may run forever
+            //adding this check to avoid forever looping
             if (countLoops > 25) {//14*25 = 350 days
               console.error("Loop ran for 25 times, stopped", upcomingDate, addDays(report.reported_date, 13), addDays(today, -4), today);
               break;
