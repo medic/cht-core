@@ -43,6 +43,31 @@ const basicAuthValid = (credentials, username) => {
 
 const isChangingPassword = req => Object.keys(req.body).includes('password');
 
+const getRoles = req => {
+  const params = req.query;
+  let roles;
+  try {
+    roles = JSON.parse(params.role);
+  } catch (err) {
+    // if json.parse fails, consider we just got one string role as param
+    return [params.role];
+  }
+
+  if (typeof roles === 'string') {
+    roles = [roles];
+  }
+
+  if (!Array.isArray(roles)) {
+    throw { code: 400, reason: 'Role parameter must be either a string or a JSON encoded array' };
+  }
+
+  if (roles.some(role => typeof role !== 'string')) {
+    throw { code: 400, reason: 'All roles should be strings' };
+  }
+
+  return roles;
+};
+
 const getInfoUserCtx = req => {
   if (!auth.isOnlineOnly(req.userCtx)) {
     return req.userCtx;
@@ -56,17 +81,13 @@ const getInfoUserCtx = req => {
     throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
   }
 
-  try {
-    params.role = JSON.parse(params.role);
-  } catch (err) { /* eslint-disable-line */ };
-  params.role = Array.isArray(params.role) ? params.role : [params.role];
-
-  if (!auth.isOffline(params.role)) {
+  const roles = getRoles(req);
+  if (!auth.isOffline(roles)) {
     throw { code: 400, reason: 'Provided role is not offline' };
   }
 
   return {
-    roles: params.role,
+    roles: roles,
     facility_id: params.facility_id,
     contact_id: params.contact_id
   };
