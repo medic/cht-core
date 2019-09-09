@@ -1,10 +1,11 @@
-const bootstrapper = require('../../../src/js/bootstrapper'),
-      sinon = require('sinon'),
+const sinon = require('sinon'),
       { expect, assert } = require('chai'),
       pouchDbOptions = {
         local: { auto_compaction: true },
         remote: { skip_setup: true }
       };
+const rewire = require('rewire');
+const bootstrapper = rewire('../../../src/js/bootstrapper');
 
 let originalDocument;
 let originalWindow;
@@ -15,7 +16,6 @@ let localClose;
 let registered;
 let remoteClose;
 let localAllDocs;
-let originalFetch;
 
 describe('bootstrapper', () => {
 
@@ -71,12 +71,7 @@ describe('bootstrapper', () => {
       hide: sinon.stub(),
       show: sinon.stub()
     });
-
-    if (typeof fetch !== 'undefined') {
-      originalFetch = fetch;
-    }
-    fetch = sinon.stub();
-
+    bootstrapper.__set__('fetch', sinon.stub());
     done();
   });
 
@@ -90,11 +85,6 @@ describe('bootstrapper', () => {
       window = undefined;
     } else {
       window = originalWindow;
-    }
-    if (typeof originalFetch === 'undefined') {
-      fetch = undefined;
-    } else {
-      fetch = originalFetch;
     }
     done();
   });
