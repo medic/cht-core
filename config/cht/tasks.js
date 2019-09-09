@@ -16,6 +16,32 @@ const {
   getField
 } = extras;
 
+const generateEventForHomeVisit = (week, start, end) => ({
+  id: "pregnancy-home-visit",
+  start,
+  end,
+  dueDate: function (event, contact, report) {
+    return addDays(getMostRecentLMPDateForPregnancy(contact, report), week * 7);
+  }
+});
+
+function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
+  if (report.reported_date < getNewestDeliveryTimestamp(contact)) return true;//delivery form submitted
+  if (report.reported_date < getNewestPregnancyTimestamp(contact)) return true;//old pregnancy report
+
+  //miscarriage or abortion
+  if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) return true;
+
+  //Due date older than reported day
+  if (dueDate <= getTimeForMidnight(report.reported_date)) return true;
+
+  //clear tasks
+  if (isPregnancyTaskMuted(contact)) return true;
+  const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+  const endTime = addDays(dueDate, event.end + 1).getTime();
+  return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
+}
+
 module.exports = [
 
   //ANC
@@ -29,22 +55,7 @@ module.exports = [
       return !!getMostRecentLMPDateForPregnancy(contact, report);
     },
 
-    resolvedIf: function (contact, report, event, dueDate) {
-      if (report.reported_date < getNewestDeliveryTimestamp(contact)) return true;//delivery form submitted
-      if (report.reported_date < getNewestPregnancyTimestamp(contact)) return true;//old pregnancy report
-
-      //miscarriage or abortion
-      if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) return true;
-
-      //Due date older than reported day
-      if (dueDate <= getTimeForMidnight(report.reported_date)) return true;
-
-      //clear tasks
-      if (isPregnancyTaskMuted(contact)) return true;
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
-      const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
-    },
+    resolvedIf: checkTaskResolvedForHomeVisit,
 
     actions: [
       {
@@ -52,78 +63,19 @@ module.exports = [
         form: "pregnancy_home_visit",
         label: "Pregnancy home visit",
         modifyContent: function (content, contact, report) {
-          content.source = 'task';
-          content.source_id = report._id;
-          content.contact = contact.contact;
           content.pregnancy_uuid = report._id;
         }
       }
     ],
     events: [
-      {
-        id: "pregnancy-home-visit",
-        start: 7, //shows 1 day later - if using new Date()
-        end: 14,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 12 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 7,
-        end: 14,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 20 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 7,
-        end: 14,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 26 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 7,
-        end: 14,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 30 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 6,
-        end: 7,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 34 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 6,
-        end: 7,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 36 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 6,
-        end: 7,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 38 * 7);
-        }
-      },
-      {
-        id: "pregnancy-home-visit",
-        start: 6,
-        end: 7,
-        dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 40 * 7);
-        }
-      }
+      generateEventForHomeVisit(12, 7, 14),
+      generateEventForHomeVisit(20, 7, 14),
+      generateEventForHomeVisit(26, 7, 14),
+      generateEventForHomeVisit(30, 7, 14),
+      generateEventForHomeVisit(34, 6, 7),
+      generateEventForHomeVisit(36, 6, 7),
+      generateEventForHomeVisit(38, 6, 7),
+      generateEventForHomeVisit(40, 6, 7)
     ]
   },
 
@@ -139,19 +91,7 @@ module.exports = [
       return !recentLMP && addDays(report.reported_date, 42 * 7 + 7) >= today;
     },
 
-    resolvedIf: function (contact, report, event, dueDate) {
-      if (report.reported_date < getNewestDeliveryTimestamp(contact)) return true;//delivery form submitted
-      if (report.reported_date < getNewestPregnancyTimestamp(contact)) return true;//old pregnancy report
-
-      //miscarriage or abortion
-      if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) return true;
-
-      //(refused or migrated) and clear tasks 
-      if (isPregnancyTaskMuted(contact)) return true;
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
-      const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
-    },
+    resolvedIf: checkTaskResolvedForHomeVisit,
 
     actions: [
       {
@@ -159,9 +99,6 @@ module.exports = [
         form: "pregnancy_home_visit",
         label: "Pregnancy home visit",
         modifyContent: function (content, contact, report) {
-          content.source = 'task';
-          content.source_id = report._id;
-          content.contact = contact.contact;
           content.pregnancy_uuid = report._id;
         }
       }
@@ -211,9 +148,6 @@ module.exports = [
       form: "pregnancy_facility_visit_reminder",
       label: "Pregnancy facility visit reminder",
       modifyContent: function (content, contact, report) {
-        content.source = 'task';
-        content.source_id = report._id;
-        content.contact = contact.contact;
         content.pregnancy_uuid = report._id;
       }
     }
@@ -240,7 +174,7 @@ module.exports = [
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
     },
@@ -250,9 +184,6 @@ module.exports = [
         form: "pregnancy_danger_sign_follow_up",
         //label: "Pregnancy follow up",
         modifyContent: function (content, contact, report) {
-          content.source = 'task';
-          content.source_id = report._id;
-          content.contact = contact.contact;
           content.pregnancy_uuid = report._id;
         }
       }
@@ -285,8 +216,8 @@ module.exports = [
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
-      const endTime = addDays(dueDate, event.end + 1).getTime()
-      return isFormArraySubmittedInWindow(contact.reports, ['delivery'], startTime.endTime);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['delivery'], startTime, endTime);
     },
     actions: [
       {
@@ -294,9 +225,6 @@ module.exports = [
         form: "delivery",
         //label: "Delivery",
         modifyContent: function (content, contact, report) {
-          content.source = 'task';
-          content.source_id = report._id;
-          content.contact = contact.contact;
           content.pregnancy_uuid = report._id;
         }
       }
@@ -324,7 +252,7 @@ module.exports = [
     resolvedIf: function (contact, report, event, dueDate) {
       //(refused or migrated) and clear tasks 
       if (isPregnancyTaskMuted(contact)) return true;
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1),//+1 so that source ds_follow_up does not resolve itself;
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
     },
@@ -334,9 +262,6 @@ module.exports = [
         form: "pnc_danger_sign_follow_up_mother",
         //label: "Pregnancy follow up",
         modifyContent: function (content, contact, report) {
-          content.source = 'task';
-          content.source_id = report._id;
-          content.contact = contact.contact;
           content.pregnancy_uuid = report._id;
         }
       }
@@ -371,12 +296,7 @@ module.exports = [
     actions: [
       {
         type: "report",
-        form: "pnc_danger_sign_follow_up_baby",
-        modifyContent: function (content, contact) {
-          content.source = 'task';
-          content.source_id = contact._id;
-          content.contact = contact.contact;
-        }
+        form: "pnc_danger_sign_follow_up_baby"
       }
     ],
     events: [
@@ -411,9 +331,6 @@ module.exports = [
         form: "pnc_danger_sign_follow_up_baby",
         //label: "Pregnancy follow up",
         modifyContent: function (content, contact, report) {
-          content.source = 'task';
-          content.source_id = report._id;
-          content.contact = contact.contact;
           content.pregnancy_uuid = report._id;
         }
       }
@@ -430,3 +347,4 @@ module.exports = [
     ]
   }
 ];
+
