@@ -1,4 +1,3 @@
-/* eslint-disable */
 const inquirer = require('inquirer'),
       PouchDB = require('pouchdb-core'),
       fs = require('fs'),
@@ -37,60 +36,29 @@ const couchUrl = argv['_'][0] || 'http://admin:pass@localhost:5984/medic-users-m
 
 const db = PouchDB(couchUrl);
 
-const nextOptions = { 
-  include_docs: true,
-  limit : 100,
-  startkey: `${type}-`,
-  endkey: `${type}-\ufff0`,
-};
-
-const prevOptions = { 
-  include_docs: true,
-  limit : 100,
-  startkey: `${type}-`,
-  endkey: `${type}-\ufff0`,
-};
-
-let prevStartKeys = [];
-
-const fetchNextDocs = async () => {
-  const response = await db.allDocs(nextOptions);
+const fetchNextDocs = async (startkey) => {
+  const options = {
+    include_docs: true,
+    limit : 100,
+    endkey: `${type}-\ufff0`,
+  };
+  if (startkey) {
+    options.startkey = startkey;
+    options.skip = 1;
+  } else {
+    options.startkey = `${type}-`;
+  }
+  const response = await db.allDocs(options);
   if (response && response.rows.length > 0) {
-    prevStartKeys.push(nextOptions.startkey);
-    nextOptions.startkey = response.rows[response.rows.length - 1].id;
-    nextOptions.skip = 1;
-
-    return response.rows.map(row => row.doc);
+    const nextStartKey = response.rows[response.rows.length - 1].id;
+    const docs = response.rows.map(row => row.doc);
+    return { docs, nextStartKey };
   }
-  return [];
+  return { docs: [] };
 };
-
-const fetchPrevDocs = async () => {
-  if (prevStartKeys.length === 0) {
-    return [];
-  }
-  const startkey = prevStartKeys.pop();
-  if (prevOptions.startkey === startkey) {
-    return [];
-  }
-  prevOptions.startkey = startkey;
-  const response = await db.allDocs(prevOptions);
-  if (response && response.rows.length > 0) {
-    prevOptions.startkey = response.rows[response.rows.length - 1].id;
-    nextOptions.skip = 1;
-
-    return response.rows.map(row => row.doc);
-  }
-  return [];
-};
-
-
-let docIndex = 0;
-let docs;
 
 const actionChoices = [
   { name: 'Display next', value: 'next' }, 
-  { name: 'Display previous', value: 'previous' }, 
   { name: 'Save current in working directory', value: 'save_current' }, 
   { name: 'Save all in working directory', value: 'save_all' },
   { name: 'Quit', value: 'quit' }
@@ -107,8 +75,11 @@ const actionQuestions = [{
 
   try {
     if (mode === 'batch') {
+      let startkey;
       for (let i = 0;; i++) {
-        docs = await fetchNextDocs();
+        const result = await fetchNextDocs(startkey);
+        startkey = result.nextStartKey;
+        const docs = result.docs;
         if (docs.length > 0) {
           if (i === 0) {
             console.log('[');
@@ -123,7 +94,11 @@ const actionQuestions = [{
         }
       }
     } else if (mode === 'interactive') {
-      docs = await fetchNextDocs();
+      let result = await fetchNextDocs();
+      let startkey = result.nextStartKey;
+      let docs = result.docs;
+      let docIndex = 0;
+
       if (docs.length === 0) {
         console.log('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
       } else {
@@ -136,7 +111,9 @@ const actionQuestions = [{
           let printMessage = false;
           if (response.action === 'next') {
             if (++docIndex > docs.length - 1) {
-              const nextDocs = await fetchNextDocs();
+              const result = await fetchNextDocs(startkey);
+              startkey = result.nextStartKey;
+              const nextDocs = result.docs;
               if (nextDocs.length === 0) {
                 printMessage = true;
                 docIndex = docs.length - 1;
@@ -150,33 +127,17 @@ const actionQuestions = [{
             if (printMessage) {
               console.log('\x1b[31m%s\x1b[0m', `No next document. This is the last one.`);
             }
-          } else if (response.action === 'previous') {
-            if (--docIndex < 0) {
-              const prevDocs = await fetchPrevDocs();
-              if (prevDocs.length === 0) {
-                printMessage = true;
-                docIndex = 0;
-              } else {
-                docs = prevDocs;
-                docIndex = docs.length - 1;
-              }
-            }
-
-            console.log(JSON.stringify(docs[docIndex], null, 2));
-            if (printMessage) {
-              console.log('\x1b[31m%s\x1b[0m', `No previous document. This is the first one`);
-            }
           } else if (response.action === 'save_current') {
             const filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
             fs.writeFileSync(filePath, JSON.stringify(docs[docIndex], null, 2));
             console.log('\x1b[31m%s\x1b[0m', `Current document saved to ${filePath}`);
           } else if (response.action === 'save_all') {
             const filePath = path.join(path.resolve(__dirname), `${type}.json`);
-
-            nextOptions.startkey = `${type}-`;
-            nextOptions.skip = 0;
+            let startkey;
             for (let i = 0;; i++) {
-              docs = await fetchNextDocs();
+              const result = await fetchNextDocs(startkey);
+              startkey = result.nextStartKey;
+              docs = result.docs;
               if (docs.length > 0) {
                 if (i === 0) {
                   fs.writeFileSync(filePath, '[');
@@ -196,4 +157,3 @@ const actionQuestions = [{
     console.log(err);
   }
 })();
-/* eslint-enable */
