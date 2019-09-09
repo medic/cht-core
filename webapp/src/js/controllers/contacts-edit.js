@@ -25,7 +25,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
-        loadingContent: Selectors.getLoadingContent(state)
+        loadingContent: Selectors.getLoadingContent(state),
+        enketoError: Selectors.getEnketoError(state)
       };
     };
     var mapDispatchToTarget = function(dispatch) {
@@ -118,7 +119,9 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
     
     var resetFormError = function() {
+      if (ctrl.enketoError) {
         ctrl.setEnketoError(null);
+      }
     };
                                               
     var renderForm = function(formId) {
