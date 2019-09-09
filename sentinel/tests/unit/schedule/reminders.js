@@ -112,12 +112,6 @@ describe('reminders', () => {
       sinon.stub(later.parse, 'cron');
       getSchedule = reminders.__get__('getSchedule');
     });
-    it('should do nothing for empty config', () => {
-      assert.equal(getSchedule(), undefined);
-      assert.equal(later.schedule.callCount, 0);
-      assert.equal(later.parse.text.callCount, 0);
-      assert.equal(later.parse.cron.callCount, 0);
-    });
 
     it('should return schedule for cron', () => {
       later.parse.cron.returns('parsed cron');
@@ -172,7 +166,7 @@ describe('reminders', () => {
         assert.equal(reminders.__get__('sendReminders').callCount, 1);
         assert.deepEqual(reminders.__get__('sendReminders').args[0], [reminder, date]);
         assert.equal(db.sentinel.put.callCount, 1);
-        assert.deepEqual(db.sentinel.put.args[0], [{ _id: 'reminderlog:formA:1230', reminder, reported_date: 1260, duration: 0 }]);
+        assert.deepEqual(db.sentinel.put.args[0], [{ _id: 'reminderlog:formA:1230', reminder, reported_date: 1260, duration: 0, type: 'reminderlog' }]);
       });
     });
 
@@ -305,7 +299,7 @@ describe('reminders', () => {
     it('matches reminder with moment if in last hour', () => {
       clock.tick(oneDay);
       const ts = moment().startOf('hour');
-      reminders.__set__('getReminderWindow', sinon.stub().resolves(moment().subtract(1, 'hour')));
+      reminders.__set__('getReminderWindowStart', sinon.stub().resolves(moment().subtract(1, 'hour')));
 
       return matchReminder({ cron: moment().format('0 HH * * *')})
         // will generate cron job matching the current hour
@@ -319,7 +313,7 @@ describe('reminders', () => {
       clock.tick(oneDay);
       const past = moment().subtract(1, 'hour');
       const now = moment();
-      reminders.__set__('getReminderWindow', sinon.stub().resolves(past));
+      reminders.__set__('getReminderWindowStart', sinon.stub().resolves(past));
       return matchReminder({  cron: now.clone().add(1, 'minute').format('m HH * * *') })
         // generate cron job 1 minute into future
         .then(matches => {
@@ -330,7 +324,7 @@ describe('reminders', () => {
     it('does not match if previous to reminder', () => {
       clock.tick(oneDay);
       const now = moment().subtract(2, 'hours');
-      reminders.__set__('getReminderWindow', sinon.stub().resolves( moment().subtract(1, 'hour')));
+      reminders.__set__('getReminderWindowStart', sinon.stub().resolves( moment().subtract(1, 'hour')));
 
       return matchReminder({ cron: now.format('59 HH * * *')}).then(matches => {
         // will generate cron job matching the previous hour
@@ -342,7 +336,7 @@ describe('reminders', () => {
       const time = moment().startOf('hour').subtract(1, 'day');
       db.sentinel.allDocs.resolves({ rows: [] });
 
-      return reminders.__get__('getReminderWindow')({}).then(start => {
+      return reminders.__get__('getReminderWindowStart')({}).then(start => {
         assert(start);
         assert.equal(start.valueOf(), time.valueOf());
       });
@@ -356,7 +350,7 @@ describe('reminders', () => {
         id: `reminderlog:XXX:${anHourAgo.valueOf()}`
         }] });
 
-      return reminders.__get__('getReminderWindow')({ form: 'XXX'}).then(start => {
+      return reminders.__get__('getReminderWindowStart')({ form: 'XXX'}).then(start => {
         assert.equal(db.sentinel.allDocs.callCount, 1);
         assert.deepEqual(db.sentinel.allDocs.args[0][0], {
           descending: true,
@@ -371,14 +365,14 @@ describe('reminders', () => {
 
   describe('sendReminders', () => {
     it('should call getLeafPlaces', () => {
-      reminders.__set__('getLeafPlaces', sinon.stub().resolves([]));
+      reminders.__set__('getValidLeafPlacesBatch', sinon.stub().resolves([]));
 
       return reminders.__get__('sendReminders')().then(() => {
-        assert(reminders.__get__('getLeafPlaces').called);
+        assert(reminders.__get__('getValidLeafPlacesBatch').called);
       });
     });
 
-    describe('getLeafPlaces', () => {
+    describe('getValidLeafPlacesBatch', () => {
       it('it calls db view and hydrates docs', () => {
         sinon.stub(request, 'get').resolves({ rows: [{ id: 'xxx' }] });
         sinon.stub(db.medic, 'allDocs')
@@ -394,7 +388,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
-          .__get__('getLeafPlaces')({ form: 'frm' }, moment(5000))
+          .__get__('getValidLeafPlacesBatch')({ form: 'frm' }, moment(5000))
           .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
             assert.equal(nextDocId, 'xxx');
@@ -403,7 +397,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
               'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]), start_key_doc_id: undefined }, json: true },
+              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]) }, json: true },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(reminders.__get__('lineage').hydrateDocs.args[0], [[{ _id: 'xxx', contact: { _id: 'maria' } }]]);
@@ -438,7 +432,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().callsFake(d => d) });
 
         return reminders
-          .__get__('getLeafPlaces')({ form: 'frm' }, now)
+          .__get__('getValidLeafPlacesBatch')({ form: 'frm' }, now)
           .then(({places, nextDocId}) => {
             assert.deepEqual(places.map(place => place._id), ['xxx', 'yyy', 'yyz']);
             assert.equal(nextDocId, 'yyz');
@@ -460,7 +454,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
-          .__get__('getLeafPlaces')({ form: 'frm' }, moment(5000), 'somedocid')
+          .__get__('getValidLeafPlacesBatch')({ form: 'frm' }, moment(5000), 'somedocid')
           .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
             assert.equal(nextDocId, 'xxx');
@@ -496,7 +490,7 @@ describe('reminders', () => {
           assert.equal(request.get.callCount, 1);
           assert.deepEqual(request.get.args[0], [
             'someURL/_design/medic-client/_view/contacts_by_type',
-            { qs: { limit: 1000, keys: JSON.stringify([['tier2']]), start_key_doc_id: undefined }, json: true },
+            { qs: { limit: 1000, keys: JSON.stringify([['tier2']]) }, json: true },
           ]);
         });
     });
@@ -509,7 +503,7 @@ describe('reminders', () => {
         .onCall(0).resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] })
         .onCall(1).resolves({ rows: [{ id: 'doc2' }] });
 
-      const lineage = { hydrateDocs: sinon.stub() };
+      const lineage = { hydrateDocs: sinon.stub().resolves([]) };
       const messages = { addMessage: sinon.stub() };
       reminders.__set__('lineage', lineage);
       reminders.__set__('messages', messages);
@@ -522,7 +516,8 @@ describe('reminders', () => {
             ]});
       return reminders.__get__('sendReminders')(reminder, now).then(() => {
         assert.equal(db.medic.bulkDocs.callCount, 0);
-        assert.equal(lineage.hydrateDocs.callCount, 0);
+        assert.equal(lineage.hydrateDocs.callCount, 1);
+        assert.deepEqual(lineage.hydrateDocs.args[0], [[]]);
         assert.equal(db.medic.allDocs.callCount, 1);
         assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['reminder:rform:1000:doc1', 'reminder:rform:1000:doc2'] }]);
         assert.equal(messages.addMessage.callCount, 0);
@@ -624,7 +619,7 @@ describe('reminders', () => {
         assert.equal(request.get.callCount, 2);
         assert.deepEqual(request.get.args[0], [
           'someURL/_design/medic-client/_view/contacts_by_type',
-          { qs: { limit: 1000, keys: JSON.stringify([['tier2']]), start_key_doc_id: undefined }, json: true },
+          { qs: { limit: 1000, keys: JSON.stringify([['tier2']]) }, json: true },
         ]);
         assert.deepEqual(request.get.args[1], [
           'someURL/_design/medic-client/_view/contacts_by_type',
@@ -951,7 +946,7 @@ describe('reminders', () => {
 
       return reminders.__get__('sendReminders')({ form: 'form' }, moment(reminderDate)).then(() => {
         assert.equal(request.get.callCount, 5);
-        assert.deepEqual(request.get.args[0][1].qs, { start_key_doc_id: undefined, limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[0][1].qs, { limit: 1000, keys: JSON.stringify([['tier2']]) });
         assert.deepEqual(request.get.args[1][1].qs, { start_key_doc_id: 'doc5', limit: 1000, keys: JSON.stringify([['tier2']]) });
         assert.deepEqual(request.get.args[2][1].qs, { start_key_doc_id: 'doc9', limit: 1000, keys: JSON.stringify([['tier2']]) });
         assert.deepEqual(request.get.args[3][1].qs, { start_key_doc_id: 'doc13', limit: 1000, keys: JSON.stringify([['tier2']]) });
@@ -1012,7 +1007,7 @@ describe('reminders', () => {
       return reminders.__get__('sendReminders')({ form: 'form' }, moment(reminderDate)).catch(err => {
         assert.deepEqual(err.message, 'Errors saving reminders');
         assert.equal(request.get.callCount, 3);
-        assert.deepEqual(request.get.args[0][1].qs, { start_key_doc_id: undefined, limit: 1000, keys: JSON.stringify([['tier2']]) });
+        assert.deepEqual(request.get.args[0][1].qs, { limit: 1000, keys: JSON.stringify([['tier2']]) });
         assert.deepEqual(request.get.args[1][1].qs, { start_key_doc_id: 'doc5', limit: 1000, keys: JSON.stringify([['tier2']]) });
         assert.deepEqual(request.get.args[2][1].qs, { start_key_doc_id: 'doc9', limit: 1000, keys: JSON.stringify([['tier2']]) });
 

@@ -1,20 +1,20 @@
+const _ = require('underscore');
 const config = require('../config');
-const messages = config.getTransitionsLib().messages;
-const later = require('later');
-const moment = require('moment');
 const db = require('../db');
+const later = require('later');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('../lib/logger');
-const _ = require('underscore');
-const request = require('request-promise-native');
+const messages = config.getTransitionsLib().messages;
+const moment = require('moment');
 const { performance } = require('perf_hooks');
+const request = require('request-promise-native');
 
 const BATCH_SIZE = 1000;
 
 // set later to use local time
 later.date.localTime();
 
-const getReminderId = (reminder, date, placeId) => `reminder:${reminder.form}:${date.valueOf()}:${placeId}`;
+const getReminderId = (reminder, scheduledDate, placeId) => `reminder:${reminder.form}:${scheduledDate.valueOf()}:${placeId}`;
 
 const isConfigValid = (config) => {
   return Boolean(
@@ -29,9 +29,6 @@ const getSchedule = (config) => {
   // fetch a schedule based on the configuration, parsing it as a "cron"
   // or "text" statement see:
   // http://bunkat.github.io/later/parsers.html
-  if (!config) {
-    return;
-  }
   if (config.text_expression) {
     // text expression takes precedence over cron
     return later.schedule(later.parse.text(config.text_expression));
@@ -41,7 +38,7 @@ const getSchedule = (config) => {
   }
 };
 
-const getReminderWindow = (reminder) => {
+const getReminderWindowStart = (reminder) => {
   const now = moment();
   // at the most, look a day back
   const since = now.clone().startOf('hour').subtract(1, 'day');
@@ -64,18 +61,20 @@ const getReminderWindow = (reminder) => {
 };
 
 // matches from "now" to the start of the last hour
-// later reverses time ranges fro later#prev searches
 const matchReminder = (reminder) => {
   const schedule = getSchedule(reminder);
   // this will return a moment sometime between the start of the hour and 24 hours ago
   // this is purely for efficiency so we're not always examining a 24 hour stretch
-  return getReminderWindow(reminder)
-    .then(end => {
+  return getReminderWindowStart(reminder)
+    .then(start => {
       // this will return either the previous time the schedule should have run
       // or null if it should not have run in that window.
-      const start = moment();
-      const previous = schedule.prev(1, start.toDate(), end.toDate());
-      return (previous instanceof Date && end.isBefore(previous)) ? moment(previous) : false;
+      const end = moment();
+      const previous = schedule.prev(1, end.toDate(), start.toDate());
+      // schedule.prev doesn't have a setting to be inclusive or exclusive to the given time frame limits
+      // if `getPreviousReminderDate` returns the moment when the reminder ran last, we check that `previous` is after
+      // this moment, so we don't run the same reminder twice
+      return (previous instanceof Date && start.isBefore(previous)) ? moment(previous) : false;
     });
 };
 
@@ -101,27 +100,32 @@ const getLeafPlaceIds = (startDocId) => {
   const query = {
     limit: BATCH_SIZE,
     keys: JSON.stringify(keys),
-    start_key_doc_id: startDocId
   };
 
+  if (startDocId) {
+    query.start_key_doc_id = startDocId;
+  }
+
+  // using `request` library because PouchDB doesn't support `start_key_doc_id` in view queries
+  // using `start_key_doc_id` because using `skip` is *very* slow
   return request
     .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true })
     .then(result => result.rows.map(row => row.id));
 };
 
 // filter places that do not have this reminder
-const filterPlaceIdsWithoutReminder = (reminder, date, placeIds) => {
+const getPlaceIdsWithoutReminder = (reminder, scheduledDate, placeIds) => {
   if (!placeIds.length) {
     return [];
   }
-  const reminderIds = placeIds.map(id => getReminderId(reminder, date, id));
+  const reminderIds = placeIds.map(id => getReminderId(reminder, scheduledDate, id));
   return db.medic.allDocs({ keys: reminderIds }).then(result => {
     const exists = (row) => row.id && !row.error && row.value && !row.value.deleted;
     return placeIds.filter((id, idx) => !exists(result.rows[idx]));
   });
 };
 
-const filterPlacesWithoutSentForms = (reminder, date, placeIds) => {
+const getPlacesWithoutSentForms = (reminder, scheduledDate, placeIds) => {
   if (!placeIds.length) {
     return [];
   }
@@ -146,7 +150,7 @@ const filterPlacesWithoutSentForms = (reminder, date, placeIds) => {
         }
         const lastReceived = moment(row.value.max);
         // if it should mute due to being in the mute duration
-        if (date.isSameOrBefore(lastReceived.add(muteDuration))) {
+        if (scheduledDate.isSameOrBefore(lastReceived.add(muteDuration))) {
           const placeId = row.key[1];
           invalidPlaceIds.push(placeId);
         }
@@ -156,7 +160,7 @@ const filterPlacesWithoutSentForms = (reminder, date, placeIds) => {
     });
 };
 
-const canSend = (reminder, date, place) => {
+const canSend = (reminder, scheduledDate, place) => {
   if (!place.contact) {
     // nobody to send to
     return false;
@@ -167,14 +171,15 @@ const canSend = (reminder, date, place) => {
   }
 
   // backwards compatibility: check for reminders created pre-update
-  if (place.tasks && place.tasks.find(task => task.form === reminder.form && task.timestamp === date.toISOString())) {
+  if (place.tasks &&
+      place.tasks.some(task => task.form === reminder.form && task.timestamp === scheduledDate.toISOString())) {
     return false;
   }
 
   return true;
 };
 
-const filterValidPlaces = (reminder, date, placeIds) => {
+const getValidPlaces = (reminder, scheduledDate, placeIds) => {
   if (!placeIds.length) {
     return [];
   }
@@ -183,42 +188,40 @@ const filterValidPlaces = (reminder, date, placeIds) => {
     .then(result => {
       const places = result.rows
         .map(row => row.doc)
-        .filter(place => canSend(reminder, date, place));
+        .filter(place => canSend(reminder, scheduledDate, place));
 
-      if (!places.length) {
-        return [];
-      }
-
-      return lineage.hydrateDocs(places);
+      return places;
     });
 };
 
-const getLeafPlaces = (reminder, date, startDocId) => {
+const getValidLeafPlacesBatch = (reminder, scheduledDate, startDocId) => {
   return getLeafPlaceIds(startDocId).then(placeIds => {
-    // don't process the same doc twice!
-    placeIds = placeIds.filter(id => id !== startDocId);
+    if (startDocId) {
+      placeIds.shift();
+    }
     if (!placeIds.length) {
       return { places: [] };
     }
     const nextDocId = placeIds[placeIds.length - 1];
-    return filterPlaceIdsWithoutReminder(reminder, date, placeIds)
-      .then(placeIds => filterPlacesWithoutSentForms(reminder, date, placeIds))
-      .then(placeIds => filterValidPlaces(reminder, date, placeIds))
+    return getPlaceIdsWithoutReminder(reminder, scheduledDate, placeIds)
+      .then(placeIds => getPlacesWithoutSentForms(reminder, scheduledDate, placeIds))
+      .then(placeIds => getValidPlaces(reminder, scheduledDate, placeIds))
+      .then(places => lineage.hydrateDocs(places))
       .then(places => ({ places, nextDocId }));
   });
 };
 
-const createReminder = (reminder, date, place) => {
+const createReminder = (reminder, scheduledDate, place) => {
   const context = {
     templateContext: {
-      week: date.format('w'),
-      year: date.format('YYYY')
+      week: scheduledDate.format('w'),
+      year: scheduledDate.format('YYYY')
     },
     patient: place
   };
 
   const reminderDoc = {
-    _id: getReminderId(reminder, date, place._id ),
+    _id: getReminderId(reminder, scheduledDate, place._id ),
     type: 'reminder',
     contact: lineage.minifyLineage(place.contact),
     place: { _id: place._id, parent: lineage.minifyLineage(place.parent) },
@@ -229,21 +232,21 @@ const createReminder = (reminder, date, place) => {
   const task = messages.addMessage(reminderDoc, reminder, 'reporting_unit', context);
   if (task) {
     task.form = reminder.form;
-    task.timestamp = date.toISOString();
+    task.timestamp = scheduledDate.toISOString();
     task.type = 'reminder';
   }
 
   return reminderDoc;
 };
 
-const sendReminders = (reminder, date, startDocId) => {
-  return getLeafPlaces(reminder, date, startDocId)
+const sendReminders = (reminder, scheduledDate, startDocId) => {
+  return getValidLeafPlacesBatch(reminder, scheduledDate, startDocId)
     .then(({ places, nextDocId }) => {
       if (!places || !places.length) {
         return nextDocId;
       }
 
-      const reminderDocs = places.map(place => createReminder(reminder, date, place));
+      const reminderDocs = places.map(place => createReminder(reminder, scheduledDate, place));
       return db.medic
         .bulkDocs(reminderDocs)
         .then(results => {
@@ -255,16 +258,17 @@ const sendReminders = (reminder, date, startDocId) => {
         })
         .then(() => nextDocId);
     })
-    .then(nextDocId => nextDocId && sendReminders(reminder, date, nextDocId));
+    .then(nextDocId => nextDocId && sendReminders(reminder, scheduledDate, nextDocId));
 };
 
-const createReminderLog = (reminder, date, start) => {
+const createReminderLog = (reminder, scheduledDate, start) => {
   const duration = performance.now() - start;
   const reminderLog = {
-    _id: `reminderlog:${reminder.form}:${date.valueOf()}`,
-    reminder: reminder,
+    _id: `reminderlog:${reminder.form}:${scheduledDate.valueOf()}`,
     duration: duration,
-    reported_date: moment().valueOf()
+    reminder: reminder,
+    reported_date: moment().valueOf(),
+    type: 'reminderlog',
   };
   logger.debug('Reminder %o succesfully completed in %d seconds', reminder, duration / 1000);
   return db.sentinel.put(reminderLog);
@@ -272,13 +276,13 @@ const createReminderLog = (reminder, date, start) => {
 
 const runReminder = (reminder = {}) => {
   // see if the reminder should run in the given window
-  return matchReminder(reminder).then(date => {
-    if (!date) {
+  return matchReminder(reminder).then(scheduledDate => {
+    if (!scheduledDate) {
       return;
     }
     logger.debug('Running reminder %o', reminder);
     const start = performance.now();
-    return sendReminders(reminder, date).then(() => createReminderLog(reminder, date, start));
+    return sendReminders(reminder, scheduledDate).then(() => createReminderLog(reminder, scheduledDate, start));
   });
 };
 
@@ -287,7 +291,12 @@ module.exports = {
   execute: callback => {
     const reminders = config.get('reminders') || [];
     return reminders
-      .filter(reminder => isConfigValid(reminder))
+      .filter(reminder => {
+        if (isConfigValid(reminder)) {
+          return true;
+        }
+        logger.warn('Reminder configuration invalid: %o', reminder);
+      })
       .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve())
       .then(() => callback())
       .catch(callback);
