@@ -56,70 +56,6 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
-    // Set this first so if there are any bugs in configuration we
-    // want to ensure dbsync still happens so they can be fixed
-    // automatically.
-    // Delay it by 10 seconds so it doesn't slow down initial load.
-    $timeout(() => DBSync.sync(), 10000);
-
-    const dbFetch = $window.PouchDB.fetch;
-    $window.PouchDB.fetch = function() {
-      return dbFetch.apply(this, arguments)
-        .then(function(response) {
-          if (response.status === 401) {
-            Session.navigateToLogin();
-          }
-          return response;
-        });
-    };
-
-    $window.startupTimes.angularBootstrapped = performance.now();
-    Telemetry.record(
-      'boot_time:1:to_first_code_execution',
-      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
-    );
-    Telemetry.record(
-      'boot_time:2:to_bootstrap',
-      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
-    );
-    Telemetry.record(
-      'boot_time:3:to_angular_bootstrap',
-      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
-    );
-
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
-      return {
-        cancelCallback: Selectors.getCancelCallback(state),
-        enketoEdited: Selectors.getEnketoEditedStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state),
-        version: Selectors.getVersion(state)
-      };
-    };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
-      return {
-        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setIsAdmin: globalActions.setIsAdmin,
-        setLoadingContent: globalActions.setLoadingContent,
-        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setSelectMode: globalActions.setSelectMode,
-        setShowActionBar: globalActions.setShowActionBar,
-        setShowContent: globalActions.setShowContent,
-        setVersion: globalActions.setVersion
-      };
-    };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-    if ($window.location.href.indexOf('localhost') !== -1) {
-      Debug.set(Debug.get()); // Initialize with cookie
-    } else {
-      // Disable debug for everything but localhost
-      Debug.set(false);
-    }
-
     const SYNC_STATUS = {
       inProgress: {
         icon: 'fa-refresh',
@@ -181,6 +117,75 @@ var _ = require('underscore'),
         $scope.replicationStatus.current = SYNC_STATUS.required;
       }
     });
+
+    // Set this first because if there are any bugs in configuration
+    // we want to ensure dbsync still happens so they can be fixed
+    // automatically.
+    if (DBSync.isEnabled()) {
+      // Delay it by 10 seconds so it doesn't slow down initial load.
+      $timeout(() => DBSync.sync(), 10000);
+    } else {
+      $log.debug('You have administrative privileges; not replicating');
+      $scope.replicationStatus.disabled = true;
+    }
+
+    const dbFetch = $window.PouchDB.fetch;
+    $window.PouchDB.fetch = function() {
+      return dbFetch.apply(this, arguments)
+        .then(function(response) {
+          if (response.status === 401) {
+            Session.navigateToLogin();
+          }
+          return response;
+        });
+    };
+
+    $window.startupTimes.angularBootstrapped = performance.now();
+    Telemetry.record(
+      'boot_time:1:to_first_code_execution',
+      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
+    );
+    Telemetry.record(
+      'boot_time:2:to_bootstrap',
+      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
+    );
+    Telemetry.record(
+      'boot_time:3:to_angular_bootstrap',
+      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
+    );
+
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        cancelCallback: Selectors.getCancelCallback(state),
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selectMode: Selectors.getSelectMode(state),
+        showContent: Selectors.getShowContent(state),
+        version: Selectors.getVersion(state)
+      };
+    };
+    var mapDispatchToTarget = function(dispatch) {
+      var globalActions = GlobalActions(dispatch);
+      return {
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setIsAdmin: globalActions.setIsAdmin,
+        setLoadingContent: globalActions.setLoadingContent,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectMode: globalActions.setSelectMode,
+        setShowActionBar: globalActions.setShowActionBar,
+        setShowContent: globalActions.setShowContent,
+        setVersion: globalActions.setVersion
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+    if ($window.location.href.indexOf('localhost') !== -1) {
+      Debug.set(Debug.get()); // Initialize with cookie
+    } else {
+      // Disable debug for everything but localhost
+      Debug.set(false);
+    }
 
     const setAppTitle = () => {
       ResourceIcons.getAppTitle().then(title => {

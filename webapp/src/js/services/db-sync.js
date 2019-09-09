@@ -157,6 +157,9 @@ angular
       }, SYNC_INTERVAL);
     };
 
+    // online users have potentially too much data so bypass local pouch
+    const isEnabled = () => !Session.isOnlineOnly();
+
     return {
       /**
        * Adds a listener function to be notified of replication state changes.
@@ -189,14 +192,17 @@ angular
       },
 
       /**
+       * @returns {boolean} Whether or not syncing is available for this user.
+       */
+      isEnabled: isEnabled,
+
+      /**
        * Synchronize the local database with the remote database.
        *
        * @returns Promise which resolves when both directions of the replication complete.
        */
       sync: force => {
-        if (Session.isOnlineOnly()) {
-          // online users have potentially too much data so bypass local pouch
-          $log.debug('You have administrative privileges; not replicating');
+        if (!isEnabled()) {
           sendUpdate({ state: 'disabled' });
           return $q.resolve();
         }
