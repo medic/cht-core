@@ -59,6 +59,7 @@
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "0.0.32",
     "loose-envify": "^1.4.0",
+    "medic-conf": "^3.0.4",
     "mocha": "^6.1.4",
     "moment": "^2.24.0",
     "node-sass": "^4.12.0",
