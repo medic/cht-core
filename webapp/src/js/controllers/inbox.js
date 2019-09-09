@@ -56,6 +56,32 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
+    var ctrl = this;
+    var mapStateToTarget = function(state) {
+      return {
+        cancelCallback: Selectors.getCancelCallback(state),
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        selectMode: Selectors.getSelectMode(state),
+        showContent: Selectors.getShowContent(state),
+        version: Selectors.getVersion(state)
+      };
+    };
+    var mapDispatchToTarget = function(dispatch) {
+      var globalActions = GlobalActions(dispatch);
+      return {
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setIsAdmin: globalActions.setIsAdmin,
+        setLoadingContent: globalActions.setLoadingContent,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectMode: globalActions.setSelectMode,
+        setShowActionBar: globalActions.setShowActionBar,
+        setShowContent: globalActions.setShowContent,
+        setVersion: globalActions.setVersion
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
     const SYNC_STATUS = {
       inProgress: {
         icon: 'fa-refresh',
@@ -153,32 +179,6 @@ var _ = require('underscore'),
       'boot_time:3:to_angular_bootstrap',
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
-
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
-      return {
-        cancelCallback: Selectors.getCancelCallback(state),
-        enketoEdited: Selectors.getEnketoEditedStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state),
-        version: Selectors.getVersion(state)
-      };
-    };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
-      return {
-        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setIsAdmin: globalActions.setIsAdmin,
-        setLoadingContent: globalActions.setLoadingContent,
-        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setSelectMode: globalActions.setSelectMode,
-        setShowActionBar: globalActions.setShowActionBar,
-        setShowContent: globalActions.setShowContent,
-        setVersion: globalActions.setVersion
-      };
-    };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
