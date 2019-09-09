@@ -55,10 +55,14 @@
 
   const docCountPoll = (localDb) => {
     setUiStatus('POLL_REPLICATION');
+    const fetchOpts = {
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    };
     return Promise
       .all([
         localDb.allDocs({ limit: 1 }),
-        window.PouchDB.fetch(`${getBaseUrl()}/api/v1/users-info`).then(res => res.json())
+        fetch(`${getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
         localDocCount = local.total_rows;
