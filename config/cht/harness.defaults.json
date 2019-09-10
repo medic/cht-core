@@ -27,7 +27,7 @@
         "_rev": "2-a"
       },
       "type": "health_center",
-      "reported_date": 1550559625153,      
+      "reported_date": 1550559625153,
       "_rev": "1-a"
     }
   },
@@ -50,6 +50,7 @@
       "sex": "female",
       "reported_date": 928195200000,
       "_id": "patient_id",
+      "patient_id": "patient_id",
       "_rev": "1-b"
     }
   }

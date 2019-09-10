@@ -311,6 +311,9 @@
           <text id="/pregnancy/inputs/contact/name:label">
             <value>Name</value>
           </text>
+          <text id="/pregnancy/inputs/contact/parent/_id:label">
+            <value>Parent ID</value>
+          </text>
           <text id="/pregnancy/inputs/contact/parent/parent/contact/chw_name:label">
             <value>CHW name</value>
           </text>
@@ -898,18 +901,6 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_errors:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_form:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_lattitude:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_longitude:label">
-            <value>-</value>
-          </text>
           <text id="/pregnancy/data/m_person_patient_id:label">
             <value>-</value>
           </text>
@@ -919,19 +910,16 @@
           <text id="/pregnancy/data/m_place_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_reported:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_reported_by:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_reported_by_parent:label">
-            <value>-</value>
-          </text>
           <text id="/pregnancy/data/m_source:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/m_source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_additional_high_risk_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_additional_high_risk_condition_to_report:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_asthma:label">
@@ -998,6 +986,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_next_anc_hf_visit_date_known:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_no_lmp_why_register:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_num_previous_anc_hf_visits:label">
@@ -1196,6 +1187,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/inputs/contact/parent/_id:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/inputs/contact/parent/parent/contact/chw_name:label">
@@ -1893,18 +1887,6 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_errors:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_form:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_lattitude:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_longitude:label">
-            <value>-</value>
-          </text>
           <text id="/pregnancy/data/m_person_patient_id:label">
             <value>-</value>
           </text>
@@ -1914,19 +1896,16 @@
           <text id="/pregnancy/data/m_place_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_reported:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_reported_by:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_reported_by_parent:label">
-            <value>-</value>
-          </text>
           <text id="/pregnancy/data/m_source:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/m_source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_additional_high_risk_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_additional_high_risk_condition_to_report:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_asthma:label">
@@ -1993,6 +1972,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_next_anc_hf_visit_date_known:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_no_lmp_why_register:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_num_previous_anc_hf_visits:label">
@@ -2191,6 +2173,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/inputs/contact/parent/_id:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/inputs/contact/parent/parent/contact/chw_name:label">
@@ -2888,18 +2873,6 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_errors:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_form:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_lattitude:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_longitude:label">
-            <value>-</value>
-          </text>
           <text id="/pregnancy/data/m_person_patient_id:label">
             <value>-</value>
           </text>
@@ -2909,19 +2882,16 @@
           <text id="/pregnancy/data/m_place_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_reported:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_reported_by:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_reported_by_parent:label">
-            <value>-</value>
-          </text>
           <text id="/pregnancy/data/m_source:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/m_source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_additional_high_risk_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_additional_high_risk_condition_to_report:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_asthma:label">
@@ -2988,6 +2958,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_next_anc_hf_visit_date_known:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/data/o_no_lmp_why_register:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_num_previous_anc_hf_visits:label">
@@ -3186,6 +3159,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy/inputs/contact/parent/_id:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/inputs/contact/parent/parent/contact/chw_name:label">
@@ -3668,7 +3644,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-09-04 06:59:34">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-09-10 00:35:23">
           <inputs>
             <meta>
               <location>
@@ -3694,6 +3670,7 @@
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
+                <_id/>
                 <parent>
                   <contact>
                     <chw_name/>
@@ -3911,6 +3888,7 @@
           </summary>
           <data tag="hidden">
             <o_lmp_method/>
+            <o_no_lmp_why_register/>
             <o_lmp_date/>
             <o_lmp_approx_weeks/>
             <o_lmp_approx_months/>
@@ -3929,6 +3907,8 @@
             <o_asthma/>
             <o_high_blood_pressure/>
             <o_diabetes/>
+            <o_additional_high_risk_condition_to_report/>
+            <o_additional_high_risk_condition/>
             <o_has_danger_signs/>
             <o_vaginal_bleeding/>
             <o_fits/>
@@ -3946,16 +3926,9 @@
             <o_received_deworming_meds/>
             <o_tested_for_hiv_in_past_3_months/>
             <o_received_tetanus_toxoid_this_pregnancy/>
-            <m_reported_by/>
-            <m_reported_by_parent/>
             <m_person_uuid/>
             <m_person_patient_id/>
             <m_place_uuid/>
-            <m_reported/>
-            <m_form/>
-            <m_errors/>
-            <m_lattitude/>
-            <m_longitude/>
             <m_source/>
             <m_source_id/>
           </data>
@@ -3976,6 +3949,7 @@
       <bind nodeset="/pregnancy/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/sex" type="string"/>
+      <bind nodeset="/pregnancy/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/parent/parent/contact/chw_name" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy/patient_age_in_years" type="string"/>
@@ -4192,24 +4166,27 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
       <bind calculate="&quot;woman-start&quot;" nodeset="/pregnancy/summary/custom_translations/custom_woman_start_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /pregnancy/summary/custom_translations/custom_woman_start_label_translator ,' /pregnancy/summary/custom_translations/custom_woman_start_label_translator ')" nodeset="/pregnancy/summary/custom_translations/custom_woman_start_label" type="string"/>
       <bind calculate=" /pregnancy/gestational_age/register_method/lmp_method " nodeset="/pregnancy/data/o_lmp_method" type="string"/>
-      <bind calculate="coalesce( /pregnancy/lmp_date_8601 , 'NULL')" nodeset="/pregnancy/data/o_lmp_date" type="string"/>
-      <bind calculate="coalesce( /pregnancy/gestational_age/method_approx/lmp_approx_weeks , 'NULL')" nodeset="/pregnancy/data/o_lmp_approx_weeks" type="string"/>
-      <bind calculate="coalesce( /pregnancy/gestational_age/method_approx/lmp_approx_months , 'NULL')" nodeset="/pregnancy/data/o_lmp_approx_months" type="string"/>
-      <bind calculate="coalesce( /pregnancy/edd_8601 , 'NULL')" nodeset="/pregnancy/data/o_edd" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/method_none/no_info_pregnancy_reason " nodeset="/pregnancy/data/o_no_lmp_why_register" type="string"/>
+      <bind calculate=" /pregnancy/lmp_date_8601 " nodeset="/pregnancy/data/o_lmp_date" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/method_approx/lmp_approx_weeks " nodeset="/pregnancy/data/o_lmp_approx_weeks" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/method_approx/lmp_approx_months " nodeset="/pregnancy/data/o_lmp_approx_months" type="string"/>
+      <bind calculate=" /pregnancy/edd_8601 " nodeset="/pregnancy/data/o_edd" type="string"/>
       <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy/data/o_num_previous_anc_hf_visits" type="string"/>
-      <bind calculate="coalesce( /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single , join(',',  /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date ), NULL)" nodeset="/pregnancy/data/o_previous_anc_hf_visit_dates" type="string"/>
+      <bind calculate="coalesce( /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single , join(',',  /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date ))" nodeset="/pregnancy/data/o_previous_anc_hf_visit_dates" type="string"/>
       <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known " nodeset="/pregnancy/data/o_next_anc_hf_visit_date_known" type="string"/>
-      <bind calculate="coalesce( /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , 'NULL')" nodeset="/pregnancy/data/o_next_anc_hf_visit_date" type="string"/>
-      <bind calculate="if( /pregnancy/risk_factors/r_risk_factor_present  = 'yes', 'true', 'false')" nodeset="/pregnancy/data/o_has_risk_factors" type="string"/>
+      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date " nodeset="/pregnancy/data/o_next_anc_hf_visit_date" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/r_risk_factor_present " nodeset="/pregnancy/data/o_has_risk_factors" type="string"/>
       <bind calculate=" /pregnancy/risk_factors/risk_factors_history/first_pregnancy " nodeset="/pregnancy/data/o_first_pregnancy" type="string"/>
       <bind calculate=" /pregnancy/risk_factors/risk_factors_history/previous_miscarriage " nodeset="/pregnancy/data/o_previous_miscarriage" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'previous_difficulties')" nodeset="/pregnancy/data/o_previous_difficulties" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'more_than_4_children')" nodeset="/pregnancy/data/o_more_than_4_children" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'last_baby_born_less_than_1_year_ago')" nodeset="/pregnancy/data/o_last_baby_born_less_than_1_year_ago" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'heart_condition')" nodeset="/pregnancy/data/o_heart_condition" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'asthma')" nodeset="/pregnancy/data/o_asthma" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'high_blood_pressure')" nodeset="/pregnancy/data/o_high_blood_pressure" type="string"/>
-      <bind calculate="selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'diabetes')" nodeset="/pregnancy/data/o_diabetes" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'previous_difficulties'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/o_previous_difficulties" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'more_than_4_children'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/o_more_than_4_children" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'last_baby_born_less_than_1_year_ago'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/o_last_baby_born_less_than_1_year_ago" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'heart_condition'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'heart_condition'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_heart_condition" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'asthma'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'asthma'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_asthma" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'high_blood_pressure'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'high_blood_pressure'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_high_blood_pressure" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'diabetes'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'diabetes'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_diabetes" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk_check " nodeset="/pregnancy/data/o_additional_high_risk_condition_to_report" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk " nodeset="/pregnancy/data/o_additional_high_risk_condition" type="string"/>
       <bind calculate=" /pregnancy/danger_signs/r_danger_sign_present " nodeset="/pregnancy/data/o_has_danger_signs" type="string"/>
       <bind calculate=" /pregnancy/danger_signs/vaginal_bleeding " nodeset="/pregnancy/data/o_vaginal_bleeding" type="string"/>
       <bind calculate=" /pregnancy/danger_signs/fits " nodeset="/pregnancy/data/o_fits" type="string"/>
@@ -4227,16 +4204,9 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
       <bind calculate=" /pregnancy/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy/data/o_received_deworming_meds" type="string"/>
       <bind calculate=" /pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy/data/o_tested_for_hiv_in_past_3_months" type="string"/>
       <bind calculate=" /pregnancy/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy/data/o_received_tetanus_toxoid_this_pregnancy" type="string"/>
-      <bind calculate="../../inputs/user/contact_id" nodeset="/pregnancy/data/m_reported_by" type="string"/>
-      <bind calculate="../../inputs/user/parent/_id" nodeset="/pregnancy/data/m_reported_by_parent" type="string"/>
       <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy/data/m_person_uuid" type="string"/>
       <bind calculate="../../patient_id" nodeset="/pregnancy/data/m_person_patient_id" type="string"/>
       <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy/data/m_place_uuid" type="string"/>
-      <bind calculate="&quot;NULL&quot;" nodeset="/pregnancy/data/m_reported" type="string"/>
-      <bind calculate="&quot;pregnancy&quot;" nodeset="/pregnancy/data/m_form" type="string"/>
-      <bind calculate="&quot;NULL&quot;" nodeset="/pregnancy/data/m_errors" type="string"/>
-      <bind calculate="../../inputs/meta/location/lat" nodeset="/pregnancy/data/m_lattitude" type="string"/>
-      <bind calculate="../../inputs/meta/location/long" nodeset="/pregnancy/data/m_longitude" type="string"/>
       <bind calculate="../../inputs/source" nodeset="/pregnancy/data/m_source" type="string"/>
       <bind calculate="../../inputs/source_id" nodeset="/pregnancy/data/m_source_id" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy/meta/instanceID" readonly="true()" type="string"/>
