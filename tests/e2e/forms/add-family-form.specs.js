@@ -44,7 +44,8 @@ describe('Family form', () => {
     familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
     genericForm.editForm();
     familyForm.fillPrimaryCaregiver('modified');
-    genericForm.nextPage(8);
+    browser.actions().sendKeys(protractor.Key.TAB).perform();
+    genericForm.nextPage(7);
     familyForm.finalSurvey(1, 1, 1, 1);
     genericForm.submit();
     familyForm.reportCheck(
