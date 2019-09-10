@@ -6,7 +6,6 @@ const {
   getNewestDeliveryTimestamp,
   isAlive,
   isFormArraySubmittedInWindow,
-  getDateMS,
   getDateISOLocal,
   getTimeForMidnight,
   getMostRecentLMPDateForPregnancy,
@@ -21,7 +20,9 @@ const generateEventForHomeVisit = (week, start, end) => ({
   start,
   end,
   dueDate: function (event, contact, report) {
-    return addDays(getMostRecentLMPDateForPregnancy(contact, report), week * 7);
+    const recentLMPDate = getMostRecentLMPDateForPregnancy(contact, report);
+    if (recentLMPDate) return addDays(recentLMPDate, week * 7);
+    return addDays(report.reported_date, week * 7);
   }
 });
 
@@ -103,31 +104,8 @@ module.exports = [
         }
       }
     ],
-    events: [
-      {
-        id: "pregnancy-home-visit",
-        start: 6,
-        end: 7,
-        dueDate: function (event, contact, report) { //every two weeks since registration
-          //Start showing from 2 weeks after registration date
-          let upcomingDate = addDays(getDateMS(report.reported_date), 14);
-          let countLoops = 0;
-          //until the upcomingDate gets inside the visible window (i.e. later than 7 days ago)
-          while (upcomingDate < addDays(today, -7)) {
-            //add 2 weeks to the due date 
-            upcomingDate = addDays(upcomingDate, 14);
-            countLoops++;
-            //In some cases, such as when reported date is much later than today, the loop may run forever
-            //adding this check to avoid forever looping
-            if (countLoops > 25) {//14*25 = 350 days
-              console.error("Loop ran for 25 times, stopped", upcomingDate, addDays(report.reported_date, 13), addDays(today, -4), today);
-              break;
-            }
-          }
-          return getDateMS(upcomingDate);
-        }
-      }
-    ]
+    //every two weeks from reported date until 42nd week, show before due date: 6 days, show after due date: 7 days
+    events: [...Array(21).keys()].map(i => generateEventForHomeVisit((i + 1) * 2, 6, 7))
   },
   //ANC - Health Facility Visit Reminder
   {
