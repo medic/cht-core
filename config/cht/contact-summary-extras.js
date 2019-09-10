@@ -16,7 +16,7 @@ const deliveryForms = ['delivery'];
 const pregnancDangerSignForms = ['pregnancy', 'pregnancy_home_visit', 'pregnancy_danger_sign', 'pregannacy_danger_sign_follow_up'];
 
 
-const MAX_DAYS_IN_PREGNANCY = 44 * 7;  // 44 weeks
+const MAX_DAYS_IN_PREGNANCY = 42 * 7;  // 42 weeks
 const AVG_DAYS_IN_PREGNANCY = 280;
 
 
@@ -261,7 +261,7 @@ function isActivePregnancy(thisContact, allReports, report) {
   if (!lmpDate) { //LMP Date is not available, use reported date
     lmpDate = report.reported_date;
   }
-  return lmpDate > today.clone().subtract(294, 'day') && //Pregnancy registration in the past 9 months
+  return lmpDate > today.clone().subtract(MAX_DAYS_IN_PREGNANCY, 'day') && //Pregnancy registration in the past 9 months
     !getSubsequentDeliveries(allReports, report, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
     !getSubsequentPregnancies(allReports, report).length &&//pregnancy not terminated by another pregnancy report
     !getRecentANCVisitWithEvent(allReports, report, 'abortion') &&//pregnancy not terminated by miscarriage or abortion
@@ -297,9 +297,9 @@ function isReadyForNewPregnancy(thisContact, allReports) {
     if (!mostRecentlySubmittedLMPDate) {
       mostRecentlySubmittedLMPDate = moment(mostRecentPregnancyReport.reported_date);
     }
-    if (mostRecentlySubmittedLMPDate < today.clone().subtract(294, 'day')) {
+    if (mostRecentlySubmittedLMPDate < today.clone().subtract(MAX_DAYS_IN_PREGNANCY, 'day')) {
       return true;
-      //Most recently submitted LMP is more than 294 days ago
+      //Most recently submitted LMP is more than 294 days (42 weeks) ago
     }
     if (getRecentANCVisitWithEvent(allReports, mostRecentPregnancyReport, 'abortion') ||
       getRecentANCVisitWithEvent(allReports, mostRecentPregnancyReport, 'miscarriage')) {

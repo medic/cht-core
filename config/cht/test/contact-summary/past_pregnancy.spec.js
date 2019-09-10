@@ -19,7 +19,7 @@ describe('Tests for past pregnancy condition card', () => {
     if (clock) clock.restore();
   });
 
-  it('pregnancy registration with risk factors, danger signs, past and future visits', async () => {
+  it('pregnancy registration with risk factors, one child healthy delivery', async () => {
     await harness.setNow('2000-01-01');
 
     clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
