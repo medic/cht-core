@@ -87,7 +87,7 @@ describe('Tests for active pregnancy condition card', () => {
     });
   });
 
-  it('pregnancy registration with no known LMP, no risk factors, no danger signs, no past and future viits', async () => {
+  it('pregnancy registration with no known LMP, no risk factors, no danger signs, no past and future visits', async () => {
     // Load the pregnancy form and fill in
     const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.lmpUnknown);
 

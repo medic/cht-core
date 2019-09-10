@@ -1,7 +1,7 @@
 //const moment = require('moment');
 const today = getDateMS(Date.now());
 const MS_IN_DAY = 24 * 60 * 60 * 1000;  // 1 day in ms
-const MAX_DAYS_IN_PREGNANCY = 44 * 7;  // 44 weeks
+const MAX_DAYS_IN_PREGNANCY = 42 * 7;  // 42 weeks = 294 days
 const pregnancyForms = ['pregnancy'];
 
 const antenatalForms = ['pregnancy_home_visit'];
@@ -241,7 +241,7 @@ function isPregnancyTerminatedByMiscarriage(contact, report) {
 function isActivePregnancy(contact, report) {
   if (!isPregnancyForm(report)) return false;
   const lmpDate = getMostRecentLMPDateForPregnancy(contact, report);
-  return lmpDate > today - 294 * MS_IN_DAY && //Pregnancy registration in the past 9 months
+  return lmpDate > today - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY && //Pregnancy registration in the past 9 months
     !getSubsequentDeliveries(contact, report, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
     !getSubsequentPregnancies(contact, report).length &&//pregnancy not terminated by another pregnancy report
     !isPregnancyTerminatedByAbortion(contact, report) &&//pregnancy not terminated by miscarriage or abortion

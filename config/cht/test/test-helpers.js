@@ -1,5 +1,5 @@
 
-const MAX_DAYS_IN_PREGNANCY = 44 * 7;  // 44 weeks
+const MAX_DAYS_IN_PREGNANCY = 42 * 7;  // 42 weeks
 
 function getRangeForTask(task) {
     const a = task.triggers.map(t => {

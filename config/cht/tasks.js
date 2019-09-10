@@ -1,6 +1,7 @@
 const extras = require('./nools-extras');
 
 const {
+  MAX_DAYS_IN_PREGNANCY,
   today,
   getNewestPregnancyTimestamp,
   getNewestDeliveryTimestamp,
@@ -218,7 +219,7 @@ module.exports = [
         start: 28, //due - 4 weeks 
         end: 42, //due + 6 weeks
         dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), 294); //LMP + 42 weeks
+          return addDays(getMostRecentLMPDateForPregnancy(contact, report), MAX_DAYS_IN_PREGNANCY); //LMP + 42 weeks
         }
       }
     ]

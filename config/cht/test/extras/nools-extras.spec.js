@@ -13,27 +13,27 @@ describe('Date related tests', () => {
         clock.restore();
     });
 
-    it("tests that today is correct", () => {
+    it("today is correct", () => {
         expect(moment().startOf('day').valueOf()).to.equal(extras.today);
     });
 
-    it("tests that method addDays works correctly", () => {
+    it("method addDays", () => {
         for (let i = 1; i < 100; i++) {
             expect(moment().startOf('day').add(i, 'days').valueOf()).to.equal(extras.addDays(extras.today, i).getTime());
         }
     });
 
-    it("tests that method getTimeForMidnight works correctly", () => {
+    it("method getTimeForMidnight", () => {
         expect(moment().startOf('day').valueOf()).to.equal(extras.getTimeForMidnight(Date.now()).getTime());
     });
 
-    it("tests that method getDateMS works correctly", () => {
+    it("method getDateMS", () => {
         expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS("2000-01-01"));//String format      
         expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS(new Date("2000-01-01")));//Date format
         expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS((new Date("2000-01-01").getTime())));//MS since epoch    
     });
 
-    it("tests that method getMostRecentReport works correctly", () => {
+    it("method getMostRecentReport", () => {
         const reports = [
             { _id: "r1", reported_date: 2, form: "a" },
             { _id: "r2", reported_date: 3, form: "b" },
