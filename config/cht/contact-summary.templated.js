@@ -151,7 +151,8 @@ const cards = [
       ctx.risk_factor_codes = riskFactorCodes.join(' ');
       ctx.risk_factor_extra = riskFactorsCustom.join('; ');
       ctx.pregnancy_follow_up_date_recent = pregnancyFollowupDateRecent;
-    },
+      ctx.pregnancy_uuid = report._id;
+    }
   },
 
   {

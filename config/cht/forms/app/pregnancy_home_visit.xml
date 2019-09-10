@@ -284,6 +284,9 @@
           <text id="/pregnancy_home_visit/inputs/contact/name:label">
             <value>Name</value>
           </text>
+          <text id="/pregnancy_home_visit/inputs/contact/parent/_id:label">
+            <value>Parent ID</value>
+          </text>
           <text id="/pregnancy_home_visit/inputs/contact/parent/parent/contact/chw_name:label">
             <value>CHW name</value>
           </text>
@@ -958,6 +961,9 @@
           <text id="/pregnancy_home_visit/context_vars/pregnancy_follow_up_date_recent_ctx:label">
             <value>-</value>
           </text>
+          <text id="/pregnancy_home_visit/context_vars/pregnancy_uuid:label">
+            <value>-</value>
+          </text>
           <text id="/pregnancy_home_visit/context_vars/risk_factor_extra_ctx:label">
             <value>-</value>
           </text>
@@ -1093,6 +1099,147 @@
           <text id="/pregnancy_home_visit/danger_signs:label">
             <value>-</value>
           </text>
+          <text id="/pregnancy_home_visit/data/m_person_patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/m_person_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/m_place_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/m_pregnancy_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/m_source:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/m_source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_abortion_date:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_activity_to_report:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_additional_anc_hf_visit_dates:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_additional_high_risk_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_additional_high_risk_condition_to_report:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_asthma:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_breaking_water:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_breathlessness:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_diabetes:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_easily_tired:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_edd_new:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_face_hand_swelling:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_fits:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_gestational_age_correct:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_gestational_age_update_edd:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_gestational_age_update_method:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_gestational_age_update_weeks:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_has_risk_factors_not_previously_reported:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_heart_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_high_blood_pressure:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_last_visit_attended:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_lmp_date_new:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_lmp_updated:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_miscarriage_date:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_next_anc_hf_visit_date:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_next_anc_hf_visit_date_known:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_num_additional_anc_hf_visits:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_received_deworming_meds:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_received_tetanus_toxoid_this_pregnancy:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_reduced_or_no_foetal_movements:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_report_additional_anc_hf_visits:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_severe_abdominal_pain:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_severe_headache:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_takes_iron_folate_daily:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_tested_for_hiv_in_past_3_months:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_uses_llin:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_vaginal_bleeding:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_very_pale:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_visit_task_clear_option:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data:label">
+            <value>-</value>
+          </text>
           <text id="/pregnancy_home_visit/days_since_lmp:label">
             <value>-</value>
           </text>
@@ -1112,6 +1259,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy_home_visit/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/inputs/contact/parent/_id:label">
             <value>-</value>
           </text>
           <text id="/pregnancy_home_visit/inputs/contact/parent/parent/contact/chw_name:label">
@@ -1714,7 +1864,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-04 07:00:03">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-10 01:26:23">
           <inputs>
             <meta>
               <location>
@@ -1734,6 +1884,7 @@
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
+                <_id/>
                 <parent>
                   <contact>
                     <chw_name/>
@@ -1774,6 +1925,7 @@
             <deworming_med_received_ctx/>
             <edd_ctx/>
             <weeks_since_lmp_rounded_ctx/>
+            <pregnancy_uuid/>
           </context_vars>
           <pregnancy_summary>
             <current_weeks_pregnant/>
@@ -1969,6 +2121,54 @@
               <custom_woman_start_label/>
             </custom_translations>
           </summary>
+          <data>
+            <o_activity_to_report/>
+            <o_gestational_age_correct/>
+            <o_miscarriage_date/>
+            <o_abortion_date/>
+            <o_visit_task_clear_option/>
+            <o_gestational_age_update_method/>
+            <o_gestational_age_update_weeks/>
+            <o_gestational_age_update_edd/>
+            <o_lmp_updated/>
+            <o_lmp_date_new/>
+            <o_edd_new/>
+            <o_last_visit_attended/>
+            <o_report_additional_anc_hf_visits/>
+            <o_num_additional_anc_hf_visits/>
+            <o_additional_anc_hf_visit_dates/>
+            <o_has_risk_factors_not_previously_reported/>
+            <o_heart_condition/>
+            <o_asthma/>
+            <o_high_blood_pressure/>
+            <o_diabetes/>
+            <o_additional_high_risk_condition_to_report/>
+            <o_additional_high_risk_condition/>
+            <o_next_anc_hf_visit_date_known/>
+            <o_next_anc_hf_visit_date/>
+            <o_vaginal_bleeding/>
+            <o_fits/>
+            <o_severe_abdominal_pain/>
+            <o_severe_headache/>
+            <o_very_pale/>
+            <o_fever/>
+            <o_reduced_or_no_foetal_movements/>
+            <o_breaking_water/>
+            <o_easily_tired/>
+            <o_face_hand_swelling/>
+            <o_breathlessness/>
+            <o_uses_llin/>
+            <o_takes_iron_folate_daily/>
+            <o_received_deworming_meds/>
+            <o_tested_for_hiv_in_past_3_months/>
+            <o_received_tetanus_toxoid_this_pregnancy/>
+            <m_person_uuid/>
+            <m_person_patient_id/>
+            <m_place_uuid/>
+            <m_source/>
+            <m_source_id/>
+            <m_pregnancy_uuid/>
+          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -2136,6 +2336,7 @@
       <bind nodeset="/pregnancy_home_visit/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/sex" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/parent/contact/chw_name" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_home_visit/patient_age_in_years" type="string"/>
@@ -2167,7 +2368,9 @@
       <bind calculate="if(instance('contact-summary')/context/tt_received_past != '', instance('contact-summary')/context/tt_received_past , .)" nodeset="/pregnancy_home_visit/context_vars/tt_received_ctx" type="string"/>
       <bind calculate="if(instance('contact-summary')/context/deworming_med_received_past != '', instance('contact-summary')/context/deworming_med_received_past , .)" nodeset="/pregnancy_home_visit/context_vars/deworming_med_received_ctx" type="string"/>
       <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown', format-date-time(date-time(decimal-date-time(../lmp_date_8601_ctx) + 280), &quot;%e %b, %Y&quot;))" nodeset="/pregnancy_home_visit/context_vars/edd_ctx" type="string"/>
-      <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown', floor((floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601_ctx)) div 7))" nodeset="/pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx" type="string"/>
+      <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown',
+floor((floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601_ctx)) div 7))" nodeset="/pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx" type="string"/>
+      <bind calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)" nodeset="/pregnancy_home_visit/context_vars/pregnancy_uuid" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant_unknown" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_edd" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  != 'unknown'" type="string"/>
@@ -2383,6 +2586,52 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
       <bind calculate="jr:choice-name( /pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator ,' /pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator ')" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_label" type="string"/>
       <bind calculate="&quot;woman-start&quot;" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator ,' /pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator ')" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_start_label" type="string"/>
+      <bind calculate="if ( /pregnancy_home_visit/pregnancy_summary/visit_option  = 'yes', 'home_visit',  /pregnancy_home_visit/pregnancy_summary/visit_option )" nodeset="/pregnancy_home_visit/data/o_activity_to_report" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/pregnancy_summary/g_age_correct " nodeset="/pregnancy_home_visit/data/o_gestational_age_correct" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/pregnancy_ended/miscarriage_date " nodeset="/pregnancy_home_visit/data/o_miscarriage_date" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/pregnancy_ended/abortion_date " nodeset="/pregnancy_home_visit/data/o_abortion_date" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/pregnancy_ended/clear_option " nodeset="/pregnancy_home_visit/data/o_visit_task_clear_option" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/g_age_update_method " nodeset="/pregnancy_home_visit/data/o_gestational_age_update_method" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new " nodeset="/pregnancy_home_visit/data/o_gestational_age_update_weeks" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/u_edd_new " nodeset="/pregnancy_home_visit/data/o_gestational_age_update_edd" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/lmp_updated " nodeset="/pregnancy_home_visit/data/o_lmp_updated" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/lmp_date_new " nodeset="/pregnancy_home_visit/data/o_lmp_date_new" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/edd_new " nodeset="/pregnancy_home_visit/data/o_edd_new" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/last_visit_attended " nodeset="/pregnancy_home_visit/data/o_last_visit_attended" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits " nodeset="/pregnancy_home_visit/data/o_report_additional_anc_hf_visits" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy_home_visit/data/o_num_additional_anc_hf_visits" type="string"/>
+      <bind calculate="coalesce( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single , join(',',  /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date ), NULL)" nodeset="/pregnancy_home_visit/data/o_additional_anc_hf_visit_dates" type="string"/>
+      <bind calculate="if (new_risks = '', 'no', 'yes')" nodeset="/pregnancy_home_visit/data/o_has_risk_factors_not_previously_reported" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'heart_condition'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_heart_condition" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'asthma'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_asthma" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'high_blood_pressure'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_high_blood_pressure" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'diabetes'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_diabetes" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk_check " nodeset="/pregnancy_home_visit/data/o_additional_high_risk_condition_to_report" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk " nodeset="/pregnancy_home_visit/data/o_additional_high_risk_condition" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known " nodeset="/pregnancy_home_visit/data/o_next_anc_hf_visit_date_known" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date " nodeset="/pregnancy_home_visit/data/o_next_anc_hf_visit_date" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/vaginal_bleeding " nodeset="/pregnancy_home_visit/data/o_vaginal_bleeding" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/fits " nodeset="/pregnancy_home_visit/data/o_fits" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/severe_abdominal_pain " nodeset="/pregnancy_home_visit/data/o_severe_abdominal_pain" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/severe_headache " nodeset="/pregnancy_home_visit/data/o_severe_headache" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/very_pale " nodeset="/pregnancy_home_visit/data/o_very_pale" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/fever " nodeset="/pregnancy_home_visit/data/o_fever" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/reduced_or_no_foetal_movements " nodeset="/pregnancy_home_visit/data/o_reduced_or_no_foetal_movements" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/breaking_water " nodeset="/pregnancy_home_visit/data/o_breaking_water" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/easily_tired " nodeset="/pregnancy_home_visit/data/o_easily_tired" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/face_hand_swelling " nodeset="/pregnancy_home_visit/data/o_face_hand_swelling" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/breathlessness " nodeset="/pregnancy_home_visit/data/o_breathlessness" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use " nodeset="/pregnancy_home_visit/data/o_uses_llin" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily " nodeset="/pregnancy_home_visit/data/o_takes_iron_folate_daily" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy_home_visit/data/o_received_deworming_meds" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy_home_visit/data/o_tested_for_hiv_in_past_3_months" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy_home_visit/data/o_received_tetanus_toxoid_this_pregnancy" type="string"/>
+      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy_home_visit/data/m_person_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/pregnancy_home_visit/data/m_person_patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy_home_visit/data/m_place_uuid" type="string"/>
+      <bind calculate="../../inputs/source" nodeset="/pregnancy_home_visit/data/m_source" type="string"/>
+      <bind calculate="../../inputs/source_id" nodeset="/pregnancy_home_visit/data/m_source_id" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/context_vars/pregnancy_uuid " nodeset="/pregnancy_home_visit/data/m_pregnancy_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy_home_visit/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -3099,5 +3348,6 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
         </select1>
       </group>
     </group>
+    <group ref="/pregnancy_home_visit/data"/>
   </h:body>
 </h:html>

@@ -66,7 +66,8 @@ describe('pregnancy home visit tests', () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
-    for (const day of getTaskTestDays(70, 32 * 7, pregnancyHomeVisitTaskFirst, TEST_INTERVAL_DAYS).concat(getTaskTestDays(32 * 7 + 1, MAX_DAYS_IN_PREGNANCY, pregnancyHomeVisitTaskSecond, TEST_INTERVAL_DAYS))) {
+    for (const day of getTaskTestDays(70, 32 * 7, pregnancyHomeVisitTaskFirst, TEST_INTERVAL_DAYS)
+      .concat(getTaskTestDays(32 * 7 + 1, MAX_DAYS_IN_PREGNANCY, pregnancyHomeVisitTaskSecond, TEST_INTERVAL_DAYS))) {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
       const taskForHomeVisit = await harness.getTasks({ title: 'task.anc.pregnancy_home_visit.title' });

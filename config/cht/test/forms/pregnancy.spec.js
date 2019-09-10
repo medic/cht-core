@@ -5,7 +5,6 @@ const { pregnancyRegistrationScenarios } = require('../form-inputs');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
-let clock;
 describe('Pregnancy form tests', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
@@ -17,7 +16,6 @@ describe('Pregnancy form tests', () => {
     });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) clock.restore();
   });
 
   it('pregnancy form can be loaded', async () => {
