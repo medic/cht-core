@@ -12,7 +12,7 @@ const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
 
-const MAX_DAYS_FOR_DELIVERY = 336;
+const MAX_DAYS_FOR_DELIVERY = 337;
 let clock;
 describe('Delivery tasks tests', () => {
   before(async () => {
@@ -29,7 +29,7 @@ describe('Delivery tasks tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
+    if (clock) clock.restore();
   });
 
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
@@ -57,14 +57,15 @@ describe('Delivery tasks tests', () => {
       await harness.setNow('1999-08-01');//LMP date
       await harness.flush(day);
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
-      const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
+      const taskForDelivery = await harness.getTasks();
 
       if (deliveryTaskDays.includes(day)) {
-        expect(taskForDelivery.length, day).to.equal(1);
+        expect(taskForDelivery.length, day).to.be.above(0);
+        expect(taskForDelivery).to.be.an('array').that.contains.something.like({ title: 'task.anc.delivery.title' });
       }
 
       else {
-        expect(taskForDelivery.length, day).to.equal(0);
+        expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
     }
   });

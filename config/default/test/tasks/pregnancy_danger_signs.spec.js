@@ -27,7 +27,7 @@ describe('Pregnancy danger sign tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
+    if (clock) clock.restore();
   });
 
   it('danger sign follow up from pregnancy registration', async () => {
@@ -56,7 +56,7 @@ describe('Pregnancy danger sign tests', () => {
     clock = sinon.useFakeTimers(moment('2000-01-23').toDate());
     let taskForHomeVisit = await harness.getTasks({ now: '2000-01-23', title: 'task.anc.pregnancy_home_visit.title' });
     //expect(taskForHomeVisit.length).to.be.greaterThan(0);
-    expect(taskForHomeVisit.length).to.be.equal(1);
+    expect(taskForHomeVisit.length).to.be.above(0);
 
     await harness.flush(1);
     await harness.loadForm(taskForHomeVisit[0].actions[0].form);

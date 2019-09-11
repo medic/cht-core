@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const path = require('path');
-const moment = require('moment');
+const moment = require('moment')
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
 const { MAX_DAYS_IN_PREGNANCY, range } = require('../test-helpers');
@@ -26,7 +26,7 @@ describe('Pregnancy related targets test', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
+    if (clock) clock.restore();
   });
 
   it('active pregnancy target should show through pregnancy period', async () => {
@@ -54,7 +54,7 @@ describe('Pregnancy related targets test', () => {
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
     for (const day of range(70, MAX_DAYS_IN_PREGNANCY, 7)) {
-      await harness.setNow('1999-08-01');
+      await harness.setNow('1999-08-01')
       await harness.flush(day);
       //let clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const pregnanciesThisMonth = await harness.getTargets({ type: 'pregnancy-registrations-this-month' });

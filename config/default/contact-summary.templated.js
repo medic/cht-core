@@ -2,17 +2,16 @@ const moment = require('moment');
 const extras = require('./contact-summary-extras');
 const { today, MAX_DAYS_IN_PREGNANCY, isHighRiskPregnancy, getNewestReport, getSubsequentPregnancyFollowUps,
   getSubsequentDeliveries, isAlive, isReadyForNewPregnancy, isReadyForDelivery, isActivePregnancy, countANCFacilityVisits,
-  getAllRiskFactors, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
+  getAllRiskFactorCodes, getRiskFactorTextFromCodes, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
   getMostRecentLMPDateForPregnancy, getMostRecentEDDForPregnancy, getDeliveryDate, getFormArraySubmittedInWindow,
-  getRecentANCVisitWithEvent, getAllRiskFactorExtra, getField } = extras;
+  getRecentANCVisitWithEvent, getRiskFactorExtra, getField } = extras;
 
-//contact, reports, lineage are globally available for contact-summary
+
 const thisContact = contact;
-const thisLineage = lineage;
 const allReports = reports;
 const context = {
   alive: isAlive(thisContact),
-  muted: false,
+  muted: false,//TODO: how it is muted?,
   show_pregnancy_form: isReadyForNewPregnancy(thisContact, allReports),
   show_delivery_form: isReadyForDelivery(thisContact, allReports),
 };
@@ -21,14 +20,14 @@ const fields = [
   { appliesToType: 'person', label: 'patient_id', value: thisContact.patient_id, width: 4 },
   { appliesToType: 'person', label: 'contact.age', value: thisContact.date_of_birth, width: 4, filter: 'age' },
   { appliesToType: 'person', label: 'contact.sex', value: 'contact.sex.' + thisContact.sex, translate: true, width: 4 },
-  { appliesToType: 'person', label: 'person.field.phone', value: thisContact.phone, width: 4 },
+  { appliesToType: 'person', label: 'contact.phone', value: thisContact.phone, width: 4 },
   { appliesToType: 'person', label: 'person.field.alternate_phone', value: thisContact.phone_alternate, width: 4 },
   { appliesToType: 'person', label: 'External ID', value: thisContact.external_id, width: 4 },
-  { appliesToType: 'person', label: 'contact.parent', value: thisLineage, filter: 'lineage' },
+  { appliesToType: 'person', label: 'contact.parent', value: lineage, filter: 'lineage' },
   { appliesToType: '!person', label: 'contact', value: thisContact.contact && thisContact.contact.name, width: 4 },
   { appliesToType: '!person', label: 'contact.phone', value: thisContact.contact && thisContact.contact.phone, width: 4 },
   { appliesToType: '!person', label: 'External ID', value: thisContact.external_id, width: 4 },
-  { appliesToType: '!person', appliesIf: function () { return thisContact.parent && thisLineage[0]; }, label: 'contact.parent', value: thisLineage, filter: 'lineage' },
+  { appliesToType: '!person', appliesIf: function () { return thisContact.parent && lineage[0]; }, label: 'contact.parent', value: lineage, filter: 'lineage' },
   { appliesToType: 'person', label: 'contact.notes', value: thisContact.notes, width: 12 },
   { appliesToType: '!person', label: 'contact.notes', value: thisContact.notes, width: 12 }
 ];
@@ -41,34 +40,40 @@ const cards = [
   {
     label: 'contact.profile.pregnancy.active',
     appliesToType: 'report',
-    appliesIf: function (report) { return isActivePregnancy(thisContact, allReports, report); },
+    appliesIf: function (report) { return isActivePregnancy(thisContact, allReports, report) },
     fields: function (report) {
       const fields = [];
-      const riskFactors = getAllRiskFactors(allReports, report);
-      const riskFactorsCustom = getAllRiskFactorExtra(allReports, report);
-      //if (riskFactorCustom) { riskFactors.push(riskFactorCustom); }
+      const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(allReports, report));
+      const riskFactorCustom = getRiskFactorExtra(report);
+      if (riskFactorCustom) riskFactors.push(riskFactorCustom);
       const dangerSigns = getLatestDangerSignsForPregnancy(allReports, report);
 
       const highRisk = isHighRiskPregnancy(allReports, report);
 
       const mostRecentANC = getNewestReport(allReports, ['pregnancy', 'pregnancy_home_visit']);
       const mostRecentANCDate = moment(mostRecentANC.reported_date);
+      const weeksSinceLastANC = today.diff(mostRecentANCDate, 'weeks');
       const lmp_date = getMostRecentLMPDateForPregnancy(allReports, report);
       const edd_ms = getMostRecentEDDForPregnancy(allReports, report);
       const nextAncVisitDate = getNextANCVisitDate(allReports, report);
-      const weeksPregnant = lmp_date ? today.diff(lmp_date, 'weeks') : null;
+      const weeksPregnant = lmp_date ? today.diff(lmp_date, "weeks") : null;
       let lmp_approx = getField(report, 'lmp_approx');
       let reportDate = report.reported_date;
       getSubsequentPregnancyFollowUps(allReports, report).forEach(function (followUpReport) {
-        //check if LMP was updated
+        //check if LMP updated
         if (followUpReport.reported_date > reportDate && getField(followUpReport, 'lmp_updated') === 'yes') {
           reportDate = followUpReport.reported_date;
           if (getField(followUpReport, 'lmp_method_approx')) {
             lmp_approx = getField(followUpReport, 'lmp_method_approx');
           }
         }
+        const riskFactorCustomNew = getRiskFactorExtra(followUpReport);
+        if (riskFactorCustomNew) riskFactors.push(riskFactorCustomNew);
       });
-
+      //These two would only show up if the CHW answered, "no, refusing care" or "no, migrated out of area" to the question "do you want to start this pregnancy visit?" it would continue to be shown as an active pregnancy until the max EDD.
+      //If a woman returns to care and the CHW submits another pregnancy visit form, these fields would go away the pregnancy would revert to normal, active status.
+      //Change in care: Migraed out of area / refusing care
+      //Tasks: On/Off
       const migratedReport = getRecentANCVisitWithEvent(allReports, report, 'migrated');
       const refusedReport = getRecentANCVisitWithEvent(allReports, report, 'refused');
       const stopReport = migratedReport || refusedReport;
@@ -82,31 +87,21 @@ const cards = [
       fields.push(
         { label: 'Weeks Pregnant', value: weeksPregnant || weeksPregnant === 0 ? { number: weeksPregnant, approximate: lmp_approx === 'yes' } : 'contact.profile.value.unknown', translate: !weeksPregnant && weeksPregnant !== 0, filter: weeksPregnant || weeksPregnant === 0 ? 'weeksPregnant' : '', width: 6 },
         { label: 'contact.profile.edd', value: edd_ms ? edd_ms.valueOf() : 'contact.profile.value.unknown', translate: !edd_ms, filter: edd_ms ? 'simpleDate' : '', width: 6 }
+        //Next ANC clinic visit (Date)
       );
 
-      if (highRisk) {
-        let riskValue = '';
-        if (!riskFactors && riskFactorsCustom) {
-          riskValue = riskFactorsCustom.join(', ');
-        }
-        else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
-          riskValue = 'contact.profile.risk.multiple';
-        }
-        else {
-          riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
-        }
+      if (highRisk)
         fields.push(
-          { label: 'contact.profile.risk.high', value: riskValue, translate: true, icon: 'icon-risk', width: 6 }
+          { label: 'contact.profile.risk.high', value: riskFactors.join('; '), icon: 'icon-risk', width: 6 }
         );
-      }
 
       if (dangerSigns.length > 0) {
-        fields.push({ label: 'contact.profile.danger_signs.current', value: dangerSigns.length > 1 ? 'contact.profile.danger_sign.multiple' : 'contact.profile.danger_sign.' + dangerSigns[0], translate: true, width: 6 });
+        fields.push({ label: 'contact.profile.danger_signs.current', value: dangerSigns.join(', '), width: 6 });
       }
 
       fields.push(
         { label: 'contact.profile.visit', value: 'contact.profile.visits.of', context: { count: countANCFacilityVisits(allReports, report), total: 8 }, translate: true, width: 6 },
-        { label: 'contact.profile.last_visited', value: mostRecentANCDate.valueOf(), filter: 'relativeDay', width: 6 }
+        { label: 'contact.profile.last_visited', value: weeksSinceLastANC + (weeksSinceLastANC === 1 ? ' week ago' : ' weeks ago'), width: 6 }
       );
 
       if (nextAncVisitDate && nextAncVisitDate.isSameOrAfter(today)) {
@@ -123,21 +118,29 @@ const cards = [
       let hivTested = getField(report, 'hiv_status_known');
       let dewormingMedicationReceived = getField(report, 'deworming_med_received');
       let ttReceived = getField(report, 'tt_received');
-      const riskFactorCodes = getAllRiskFactors(allReports, report);
-      const riskFactorsCustom = getAllRiskFactorExtra(allReports, report);
+      const riskFactorCodes = getAllRiskFactorCodes(allReports, report);
+      const riskFactorsCustom = getRiskFactorExtra(report) ? [getRiskFactorExtra(report)] : [];
       let pregnancyFollowupDateRecent = getField(report, 't_pregnancy_follow_up_date');
 
+      let reportDate = report.reported_date;
       const followUps = getSubsequentPregnancyFollowUps(allReports, report);
       followUps.forEach(function (followUpReport) {
-        if (getField(followUpReport, 'lmp_updated') === 'yes') {
-          lmpDate = getField(followUpReport, 'lmp_date_8601');
-          lmpMethodApprox = getField(followUpReport, 'lmp_method_approx');
+        if (followUpReport.reported_date > reportDate) {
+          reportDate = followUpReport.reported_date;
+          if (getField(followUpReport, 'lmp_updated') === 'yes') {
+            lmpDate = getField(followUpReport, 'lmp_date_8601');
+            lmpMethodApprox = getField(followUpReport, 'lmp_method_approx');
+          }
+          hivTested = getField(followUpReport, 'hiv_status_known');
+          dewormingMedicationReceived = getField(followUpReport, 'deworming_med_received');
+          ttReceived = getField(followUpReport, 'tt_received');
+          if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes')
+            pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date');
         }
-        hivTested = getField(followUpReport, 'hiv_status_known');
-        dewormingMedicationReceived = getField(followUpReport, 'deworming_med_received');
-        ttReceived = getField(followUpReport, 'tt_received');
-        if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes') { pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date'); }
-
+        const riskFactorCustomNew = getRiskFactorExtra(followUpReport);
+        if (riskFactorCustomNew) {
+          riskFactorsCustom.push(riskFactorCustomNew);
+        }
       });
       ctx.lmp_date_8601 = lmpDate;
       ctx.lmp_method_approx = lmpMethodApprox;
@@ -153,6 +156,12 @@ const cards = [
   },
 
   {
+    //death: Always show as first condition card
+    //Date of death:
+    //< date reported on delivery form > (may be different than delivery date, if deceased after delivery)
+
+    //Place of death:
+    //< home/facility/other> (may be different than delivery place, if deceased after delivery)
     label: 'contact.profile.death.title',
     appliesToType: 'person',
     appliesIf: function () {
@@ -184,8 +193,8 @@ const cards = [
     label: 'contact.profile.pregnancy.past',
     appliesToType: 'report',
     appliesIf: function (report) {
-      if (thisContact.type !== 'person') { return false; }
-      if (report.form === 'delivery') { return true; }
+      if (thisContact.type !== 'person') return false;
+      if (report.form === 'delivery') return true;
       if (report.form === 'pregnancy') {
         //check if early end to pregnancy (miscarriage/abortion)
         if (getRecentANCVisitWithEvent(allReports, report, 'abortion') || getRecentANCVisitWithEvent(allReports, report, 'miscarriage')) {
@@ -193,7 +202,7 @@ const cards = [
         }
         //check if 42 weeks past pregnancy and no delivery form submitted
         const lmpDate = getMostRecentLMPDateForPregnancy(allReports, report);
-        return lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, 'weeks')) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0;
+        return lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, "weeks")) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0;
 
       }
       return false;
@@ -207,15 +216,18 @@ const cards = [
       let babiesDeceased = 0;
       let ancFacilityVisits = 0;
 
-      //if there was either a delivery, an early end to pregnancy or 42 weeks have passed
+      //if there was a delivery, early end to pregnancy or 42 weeks have passed
+      //Date of delivery (dd-mm-yyyy)
       if (report.form === 'delivery') {
         const deliveryReportDate = moment(report.reported_date);
         relevantPregnancy = getFormArraySubmittedInWindow(allReports, ['pregnancy'], deliveryReportDate.clone().subtract(MAX_DAYS_IN_PREGNANCY, 'days').toDate(), deliveryReportDate.toDate())[0];
 
-        //If there was a delivery
-        if (getField(report, 'delivery_outcome')) {
+        if (getField(report, 'delivery_outcome'))//If there was a delivery
+        {
           dateOfDelivery = getDeliveryDate(report);
+          //Place of delivery (home/facility/other)
           placeOfDelivery = getField(report, 'delivery_outcome.delivery_place');
+          //Number of babies delivered
           babiesDelivered = getField(report, 'delivery_outcome.babies_delivered_num');
           babiesDeceased = getField(report, 'delivery_outcome.babies_deceased_num');
           fields.push(
@@ -225,8 +237,8 @@ const cards = [
           );
         }
       }
-      //if early end to pregnancy
       else if (report.form === 'pregnancy') {
+        //if early end to pregnancy
         relevantPregnancy = report;
         const lmpDate = getMostRecentLMPDateForPregnancy(allReports, relevantPregnancy);
         const abortionReport = getRecentANCVisitWithEvent(allReports, relevantPregnancy, 'abortion');
@@ -253,7 +265,7 @@ const cards = [
           );
         }
         //if no delivery form and past 42 weeks, display EDD as delivery date
-        else if (lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, 'weeks')) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0) {
+        else if (lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, "weeks")) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0) {
           dateOfDelivery = getMostRecentEDDForPregnancy(allReports, report);
           fields.push({ label: 'contact.profile.delivery_date', value: dateOfDelivery ? dateOfDelivery.valueOf() : 'contact.profile.value.unknown', filter: 'simpleDate', translate: dateOfDelivery ? false : true, width: 6 });
         }
@@ -261,12 +273,18 @@ const cards = [
       }
 
       if (babiesDeceased > 0) {
+        //only show if babies deceased > 0
+        //Number of babies deceased
         if (getField(report, 'baby_death')) {
           fields.push({ label: 'contact.profile.deceased_babies', value: babiesDeceased, width: 6 });
           let babyDeaths = getField(report, 'baby_death.baby_death_repeat');
           if (!babyDeaths) { babyDeaths = []; }
           let count = 0;
           babyDeaths.forEach(function (babyDeath) {
+            //repeat:
+            //Date of newborn death (dd-mm-yyyy)
+            //Place of newborn death (Home/Health facility/Other)
+            //Stillbirth? (Yes/No)
             if (count > 0) {
               fields.push({ label: '', value: '', width: 6 });
             }
@@ -276,6 +294,7 @@ const cards = [
               { label: 'contact.profile.delivery.stillbirthQ', value: babyDeath.stillbirth, translate: true, width: 6 }
             );
             count++;
+            //Add a space at the end
             if (count === babyDeaths.length) {
               fields.push({ label: '', value: '', width: 6 });
             }
@@ -285,36 +304,36 @@ const cards = [
         }
       }
 
-      if (relevantPregnancy) {
+      if (relevantPregnancy) { //sometimes, there is no pregnancy report
+
+        //always show:
+        //ANC facility visits: number of clinic visits reported in pregnancy visit forms (do not include danger sign visits)
+        //High Risk (list conditions separated by ;, alert)
+
         ancFacilityVisits = countANCFacilityVisits(allReports, relevantPregnancy);
         fields.push(
           { label: 'contact.profile.anc_visit', value: ancFacilityVisits, width: 3 }
         );
-
-        const highRisk = isHighRiskPregnancy(allReports, relevantPregnancy);
-        if (highRisk) {
-          let riskValue = '';
-          const riskFactors = getAllRiskFactors(allReports, relevantPregnancy);
-          const riskFactorsCustom = getAllRiskFactorExtra(allReports, relevantPregnancy);
-          if (!riskFactors && riskFactorsCustom) {
-            riskValue = riskFactorsCustom.join(', ');
-          }
-          else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
-            riskValue = 'contact.profile.risk.multiple';
-          }
-          else {
-            riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
-          }
+        const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(allReports, relevantPregnancy));
+        const riskFactorCustom = getRiskFactorExtra(relevantPregnancy);
+        if (riskFactorCustom) riskFactors.push(riskFactorCustom);
+        const highRisk = isHighRiskPregnancy(allReports, relevantPregnancy)
+        if (highRisk)
           fields.push(
-            { label: 'contact.profile.risk.high', value: riskValue, translate: true, icon: 'icon-risk', width: 6 }
+            { label: 'contact.profile.risk.high', value: riskFactors.join('; '), icon: 'icon-risk', width: 6 }
           );
-        }
       }
 
       return fields;
     }
   }
 ];
+
+// Added to ensure CHW info is pulled into forms accessed via tasks
+if (lineage[0] && lineage[0].contact) {
+  context.chw_name = lineage[0].contact.name;
+  context.chw_phone = lineage[0].contact.phone;
+}
 
 module.exports = {
   context: context,

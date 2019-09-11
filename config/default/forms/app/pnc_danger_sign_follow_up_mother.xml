@@ -87,7 +87,7 @@
             <value>Did <output value=" /pnc_danger_sign_follow_up_mother/patient_short_name "/> visit the health facility as recommended?</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_mother/danger_signs:label">
-            <value>Danger Sign Follow-up - Mother</value>
+            <value>Danger Sign Follow Up</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_mother/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
@@ -97,9 +97,6 @@
           </text>
           <text id="/pnc_danger_sign_follow_up_mother/inputs/contact/name:label">
             <value>Name</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/inputs/contact/parent/_id:label">
-            <value>Parent ID</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_mother/inputs/contact/parent/parent/contact/chw_name:label">
             <value>CHW name</value>
@@ -128,9 +125,6 @@
           <text id="/pnc_danger_sign_follow_up_mother/inputs/contact:label">
             <value>Contact</value>
           </text>
-          <text id="/pnc_danger_sign_follow_up_mother/inputs/delivery_uuid:label">
-            <value>Delivery Report ID</value>
-          </text>
           <text id="/pnc_danger_sign_follow_up_mother/inputs/source:label">
             <value>Source</value>
           </text>
@@ -143,7 +137,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-09-25 10:51:59">
+        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-08-13 03:45:44">
           <inputs>
             <meta>
               <location>
@@ -155,7 +149,6 @@
             </meta>
             <source>user</source>
             <source_id/>
-            <delivery_uuid/>
             <contact>
               <_id/>
               <name/>
@@ -164,7 +157,6 @@
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
-                <_id/>
                 <parent>
                   <contact>
                     <chw_name/>
@@ -202,22 +194,6 @@
               <custom_woman_start_label/>
             </custom_translations>
           </danger_signs>
-          <data>
-            <o_visited_hf/>
-            <o_still_experiencing_danger_sign/>
-            <o_fever/>
-            <o_severe_headache/>
-            <o_vaginal_bleeding/>
-            <o_vaginal_discharge/>
-            <o_convulsions/>
-            <o_has_danger_sign/>
-            <m_patient_uuid/>
-            <m_patient_id/>
-            <m_household_uuid/>
-            <m_source/>
-            <m_source_id/>
-            <m_delivery_uuid/>
-          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -227,14 +203,12 @@
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/source" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/source_id" type="string"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/delivery_uuid" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/sex" type="string"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/parent/parent/contact/chw_name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pnc_danger_sign_follow_up_mother/patient_age_in_years" type="string"/>
@@ -269,20 +243,6 @@ selected(../convulsion, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_m
       <bind calculate="jr:choice-name( /pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_label_translator ,' /pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_label_translator ')" nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_label" type="string"/>
       <bind calculate="&quot;woman-start&quot;" nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_start_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_start_label_translator ,' /pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_start_label_translator ')" nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/custom_translations/custom_woman_start_label" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/visit_confirm " nodeset="/pnc_danger_sign_follow_up_mother/data/o_visited_hf" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/danger_sign_present " nodeset="/pnc_danger_sign_follow_up_mother/data/o_still_experiencing_danger_sign" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/fever " nodeset="/pnc_danger_sign_follow_up_mother/data/o_fever" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/severe_headache " nodeset="/pnc_danger_sign_follow_up_mother/data/o_severe_headache" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/vaginal_bleeding " nodeset="/pnc_danger_sign_follow_up_mother/data/o_vaginal_bleeding" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/vaginal_discharge " nodeset="/pnc_danger_sign_follow_up_mother/data/o_vaginal_discharge" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/convulsion " nodeset="/pnc_danger_sign_follow_up_mother/data/o_convulsions" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/r_danger_sign_present " nodeset="/pnc_danger_sign_follow_up_mother/data/o_has_danger_sign" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_mother/data/m_patient_uuid" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_mother/data/m_patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pnc_danger_sign_follow_up_mother/data/m_household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/pnc_danger_sign_follow_up_mother/data/m_source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/pnc_danger_sign_follow_up_mother/data/m_source_id" type="string"/>
-      <bind calculate="../../inputs/delivery_uuid" nodeset="/pnc_danger_sign_follow_up_mother/data/m_delivery_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pnc_danger_sign_follow_up_mother/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -411,6 +371,5 @@ selected(../convulsion, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_m
         </select1>
       </group>
     </group>
-    <group ref="/pnc_danger_sign_follow_up_mother/data"/>
   </h:body>
 </h:html>

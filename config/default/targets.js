@@ -58,8 +58,9 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!report) {return false;}
-      return getMostRecentLMPDateForPregnancy(contact, report);
+      if (!report) return false;
+      if (!getMostRecentLMPDateForPregnancy(contact, report)) return false;
+      return true;
     },
     date: 'reported',
     idType: 'contact'
@@ -109,7 +110,8 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) {return false;}
+      if (!isActivePregnancy(contact, report)) return false;
+      //count and check visits
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 0;
     },
@@ -130,7 +132,7 @@ module.exports = [
       return getField(report, 'delivery_outcome.delivery_place');
     },
     passesIf: function (contact, report) {
-      return getField(report, 'delivery_outcome.delivery_place') === 'health_facility';
+      return getField(report, 'delivery_outcome.delivery_place') === "health_facility";
     },
     date: 'now',
     idType: 'contact'
@@ -146,7 +148,8 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) {return false;}
+      if (!isActivePregnancy(contact, report)) return false;
+      //count and check visits
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 3;
     },
@@ -163,11 +166,13 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) {return false;}
-      const pregnancyRegistrationCount = 1;
-      const pregnancyHomeVisitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
+      //count and check visits
+      if (!isActivePregnancy(contact, report)) return false;
+      const visitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
       const facilityVisitCount = countANCFacilityVisits(contact, report) || 0;
-      return pregnancyRegistrationCount + pregnancyHomeVisitCount + facilityVisitCount > 7;
+
+      //pregnancy registration form + pregnancy home visit forms + number of previous hf anc visits 
+      return 1 + visitCount + facilityVisitCount > 7;
     },
     date: 'now',
     idType: 'contact'

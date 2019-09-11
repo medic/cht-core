@@ -117,7 +117,7 @@
             <value>Yellow skin color</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/danger_signs:label">
-            <value>Danger Sign Follow-up - Baby</value>
+            <value>Danger Sign Follow Up</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
@@ -127,9 +127,6 @@
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/name:label">
             <value>Name</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/_id:label">
-            <value>Parent ID</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact/chw_name:label">
             <value>CHW name</value>
@@ -158,9 +155,6 @@
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact:label">
             <value>Contact</value>
           </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/delivery_uuid:label">
-            <value>Delivery Report ID</value>
-          </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/source:label">
             <value>Source</value>
           </text>
@@ -173,7 +167,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-09-25 10:47:08">
+        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-08-13 03:37:01">
           <inputs>
             <meta>
               <location>
@@ -185,7 +179,6 @@
             </meta>
             <source>user</source>
             <source_id/>
-            <delivery_uuid/>
             <contact>
               <_id/>
               <name/>
@@ -194,7 +187,6 @@
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
-                <_id/>
                 <parent>
                   <contact>
                     <chw_name/>
@@ -213,7 +205,7 @@
           <danger_signs>
             <visit_confirm/>
             <danger_sign_present/>
-            <danger_signs_question_note tag="hidden"/>
+            <danger_signs_question_note/>
             <infected_umbilical_cord/>
             <convulsion/>
             <difficulty_feeding/>
@@ -228,26 +220,6 @@
             <refer_patient_note_1 tag="hidden"/>
             <refer_patient_note_2 tag="hidden"/>
           </danger_signs>
-          <data>
-            <o_visited_hf/>
-            <o_still_experiencing_danger_sign/>
-            <o_infected_umbilical_cord/>
-            <o_convulsions/>
-            <o_difficulty_feeding_or_drinking/>
-            <o_vomits_everything/>
-            <o_drowsy_or_unconscious/>
-            <o_body_stiffness/>
-            <o_yellow_skin_color/>
-            <o_fever/>
-            <o_blue_skin_color/>
-            <o_has_danger_sign/>
-            <m_patient_uuid/>
-            <m_patient_id/>
-            <m_household_uuid/>
-            <m_source/>
-            <m_source_id/>
-            <m_delivery_uuid/>
-          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -257,14 +229,12 @@
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/source" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/source_id" type="string"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/delivery_uuid" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/sex" type="string"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact/chw_name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pnc_danger_sign_follow_up_baby/patient_age_in_years" type="string"/>
@@ -306,24 +276,6 @@ selected(../blue_skin, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_ba
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/congratulate_no_ds_note" readonly="true()" relevant="../danger_sign_present = 'no' and ../r_danger_sign_present = 'no'" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/refer_patient_note_1" readonly="true()" relevant="../danger_sign_present = 'yes' or ../r_danger_sign_present = 'yes'" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/refer_patient_note_2" readonly="true()" relevant="../danger_sign_present = 'yes' or ../r_danger_sign_present = 'yes'" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/visit_confirm " nodeset="/pnc_danger_sign_follow_up_baby/data/o_visited_hf" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/danger_sign_present " nodeset="/pnc_danger_sign_follow_up_baby/data/o_still_experiencing_danger_sign" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/infected_umbilical_cord " nodeset="/pnc_danger_sign_follow_up_baby/data/o_infected_umbilical_cord" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/convulsion " nodeset="/pnc_danger_sign_follow_up_baby/data/o_convulsions" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/difficulty_feeding " nodeset="/pnc_danger_sign_follow_up_baby/data/o_difficulty_feeding_or_drinking" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/vomit " nodeset="/pnc_danger_sign_follow_up_baby/data/o_vomits_everything" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/drowsy " nodeset="/pnc_danger_sign_follow_up_baby/data/o_drowsy_or_unconscious" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/stiff " nodeset="/pnc_danger_sign_follow_up_baby/data/o_body_stiffness" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/yellow_skin " nodeset="/pnc_danger_sign_follow_up_baby/data/o_yellow_skin_color" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/fever " nodeset="/pnc_danger_sign_follow_up_baby/data/o_fever" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/blue_skin " nodeset="/pnc_danger_sign_follow_up_baby/data/o_blue_skin_color" type="string"/>
-      <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/r_danger_sign_present " nodeset="/pnc_danger_sign_follow_up_baby/data/o_has_danger_sign" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_baby/data/m_patient_uuid" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_baby/data/m_patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pnc_danger_sign_follow_up_baby/data/m_household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/pnc_danger_sign_follow_up_baby/data/m_source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/pnc_danger_sign_follow_up_baby/data/m_source_id" type="string"/>
-      <bind calculate="../../inputs/delivery_uuid" nodeset="/pnc_danger_sign_follow_up_baby/data/m_delivery_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pnc_danger_sign_follow_up_baby/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -482,6 +434,5 @@ selected(../blue_skin, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_ba
         <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/danger_signs/refer_patient_note_2:label')"/>
       </input>
     </group>
-    <group ref="/pnc_danger_sign_follow_up_baby/data"/>
   </h:body>
 </h:html>
