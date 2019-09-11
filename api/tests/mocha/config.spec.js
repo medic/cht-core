@@ -58,7 +58,7 @@ describe('Config', () => {
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai
           .expect(settingsService.update.args[0][0])
-          .to.deep.equal(_.extend({ foo: 'bar' }, defaults));
+          .to.deep.equal(_.extend({ foo: 'bar' }, { permissions: defaults.permissions }));
 
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
