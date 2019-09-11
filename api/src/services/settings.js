@@ -1,4 +1,6 @@
-const db = require('../db');
+const _ = require('underscore'),
+      defaults = require('../config.default.json'),
+      db = require('../db');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -55,6 +57,9 @@ module.exports = {
         if (!doc.settings) {
           doc.settings = {};
         }
+
+        _.defaults(body.permissions, defaults.permissions);
+        
         if (replace) {
           doReplace(doc.settings, body);
         } else {

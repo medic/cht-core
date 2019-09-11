@@ -65,7 +65,6 @@ const loadSettings = function() {
   return settingsService.get().then(newSettings => {
     settings = newSettings || {};
     const original = JSON.stringify(settings);
-    _.defaults(settings, defaultConfig);
     // add any missing permissions
     if (settings.permissions) {
       _.defaults(settings.permissions, defaultConfig.permissions);
