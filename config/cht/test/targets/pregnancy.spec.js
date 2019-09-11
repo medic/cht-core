@@ -39,7 +39,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
@@ -91,7 +91,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
@@ -123,7 +123,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
@@ -144,7 +144,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
@@ -170,7 +170,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
@@ -216,7 +216,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
@@ -264,7 +264,7 @@ describe('Pregnancy related targets test', () => {
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-8+-contacts' });
       expect(activePregnancies).to.have.property('length', 1);
-      if (day < 294) {
+      if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
       }
       else {
