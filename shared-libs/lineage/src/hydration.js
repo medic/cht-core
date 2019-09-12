@@ -1,15 +1,26 @@
 const _ = require('underscore');
 
-module.exports = function(Promise, DB) {
-  const extractParentIds = function(currentParent) {
-    const ids = [];
-    while (currentParent) {
-      ids.push(currentParent._id);
-      currentParent = currentParent.parent;
-    }
-    return ids;
-  };
+const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
+const selfAndParents = function(self) {
+  const parents = [];
+  let current = self;
+  while (current) {
+    if (parents.includes(current)) {
+      return parents;
+    }
+
+    parents.push(current);
+    current = current.parent;
+  }
+  return parents;
+};
+
+const extractParentIds = current => selfAndParents(current)
+  .map(parent => parent._id)
+  .filter(id => id);
+
+module.exports = function(Promise, DB) {
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
       return doc;
@@ -26,7 +37,7 @@ module.exports = function(Promise, DB) {
 
     const parentIds = extractParentIds(currentParent.parent);
     lineage.forEach(function(l, i) {
-      currentParent.parent = l || { _id: parentIds[i] };
+      currentParent.parent = l ? deepCopy(l) : { _id: parentIds[i] };
       currentParent = currentParent.parent;
     });
 
@@ -42,7 +53,7 @@ module.exports = function(Promise, DB) {
       const id = doc && doc.contact && doc.contact._id;
       const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
       if (contactDoc) {
-        doc.contact = contactDoc;
+        doc.contact = deepCopy(contactDoc);
       }
     });
   };
@@ -66,7 +77,7 @@ module.exports = function(Promise, DB) {
         return doc && doc._id === id;
       });
       if (contact) {
-        lineageContacts.push(JSON.parse(JSON.stringify(contact)));
+        lineageContacts.push(deepCopy(contact));
       } else {
         contactsToFetch.push(id);
       }
@@ -160,12 +171,7 @@ module.exports = function(Promise, DB) {
         // Returning a list of docs just like fetchLineageById
         const docsList = [];
         hydratedDocs.forEach(function(hdoc) {
-          const docLineage = [];
-          let parent = hdoc;
-          while(parent) {
-            docLineage.push(parent);
-            parent = parent.parent;
-          }
+          const docLineage = selfAndParents(hdoc);
           docsList.push(docLineage);
         });
         return docsList;
@@ -247,12 +253,8 @@ module.exports = function(Promise, DB) {
         ids.push(contactId);
         parent = doc.contact;
       }
-      while (parent) {
-        if (parent._id) {
-          ids.push(parent._id);
-        }
-        parent = parent.parent;
-      }
+
+      ids.push(...extractParentIds(parent));
     });
     return _.uniq(ids);
   };
@@ -261,18 +263,14 @@ module.exports = function(Promise, DB) {
   const collectLeafContactIds = function(partiallyHydratedDocs) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
-      let current = doc;
-      if (current.type === 'data_record') {
-        current = current.contact;
-      }
-      while (current) {
-        const contactId = current.contact && current.contact._id;
-        if (contactId) {
-          ids.push(contactId);
-        }
-        current = current.parent;
-      }
+      const startLineageFrom = doc.type === 'data_record' ? doc.contact : doc;
+      const contactIds = selfAndParents(startLineageFrom)
+        .map(parent => parent.contact && parent.contact._id)
+        .filter(id => id);
+
+      ids.push(...contactIds);
     });
+
     return _.uniq(ids);
   };
 
@@ -304,7 +302,7 @@ module.exports = function(Promise, DB) {
     
     const fetchPatientUuids = docs => Promise.all(docs.map(doc => fetchPatientUuid(doc)));
     
-    const hydratedDocs = JSON.parse(JSON.stringify(docs)); // a copy of the original docs which we will incrementally hydrate and return
+    const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
     let patientUuids, patientDocs;

@@ -113,7 +113,8 @@ describe('Lineage', function() {
       lineage.fillParentsInDocs(doc, fakeLineage);
 
       // then
-      chai.expect(doc.parent).to.deep.equal(fakeLineage[0]);
+      chai.expect(doc.parent._id).to.deep.equal(fakeLineage[0]._id);
+      chai.expect(doc.parent.type).to.deep.equal(fakeLineage[0].type);
       chai.expect(doc.parent.parent._id).to.equal('c');
       chai.expect(doc.parent.parent.parent).to.deep.equal(fakeLineage[2]);
     });
