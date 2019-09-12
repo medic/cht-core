@@ -1040,10 +1040,14 @@ module.exports = function(grunt) {
     'exec:apply-test-patches',
   ]);
 
-  // Test tasks
-  grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
+  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
     'patch-webdriver',
     'exec:start-webdriver',
+  ]);
+
+  // Test tasks
+  grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
+    'start-webdriver',
     'exec:reset-test-databases',
     'couch-push:test',
     'exec:e2e-servers',
@@ -1111,14 +1115,12 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'patch-webdriver',
-    'exec:start-webdriver',
+    'start-webdriver',
     'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'patch-webdriver',
-    'exec:start-webdriver',
+    'start-webdriver',
     'protractor:performance-tests-and-services',
   ]);
 
