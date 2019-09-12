@@ -1,6 +1,6 @@
 const db = require('../db'),
       auth = require('../auth'),
-      _ = require('underscore'),
+      _ = require('lodash'),
       config = require('../config'),
       viewMapUtils = require('@medic/view-map-utils'),
       tombstoneUtils = require('@medic/tombstone-utils');
@@ -23,7 +23,7 @@ const getDepth = (userCtx) => {
   let depth = -1;
   userCtx.roles.forEach(function(role) {
     // find the role with the deepest depth
-    const setting = _.findWhere(settings, { role: role });
+    const setting = settings.find(setting => setting.role === role);
     const settingDepth = setting && parseInt(setting.depth, 10);
     if (!isNaN(settingDepth) && settingDepth > depth) {
       depth = settingDepth;
