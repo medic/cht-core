@@ -135,7 +135,11 @@ describe('LineageModelGenerator service', () => {
         lineage: [
           {
             _id: 'b',
-            name: '2'
+            name: '2',
+            parent: {
+              _id: 'c',
+              name: '3'
+            }
           },
           {
             _id: 'c',
