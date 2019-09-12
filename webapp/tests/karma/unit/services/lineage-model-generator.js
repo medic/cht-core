@@ -156,6 +156,43 @@ describe('LineageModelGenerator service', () => {
         chai.expect(actual).to.deep.equal(expected);
       });
     });
+
+    it('does not merge lineage without merge', () => {
+      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const parent = { _id: 'b', name: '2' };
+      const grandparent = { _id: 'c', name: '3' };
+      const expected = {
+        _id: 'a',
+        doc: {
+          _id: 'a',
+          name: '1',
+          parent: {
+            _id: 'b',
+            parent: {
+              _id: 'c',
+            },
+          }
+        },
+        lineage: [
+          {
+            _id: 'b',
+            name: '2'
+          },
+          {
+            _id: 'c',
+            name: '3'
+          }
+        ]
+      };
+      dbQuery.returns(Promise.resolve({ rows: [
+        { doc: contact },
+        { doc: parent },
+        { doc: grandparent }
+      ] }));
+      return service.contact('a').then(actual => {
+        chai.expect(actual).to.deep.equal(expected);
+      });
+    });
   });
 
   describe('report', () => {

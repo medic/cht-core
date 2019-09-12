@@ -17,10 +17,10 @@ angular.module('inboxServices').factory('LineageModelGenerator',
   ) {
     'ngInject';
     'use strict';
-    const lineage = lineageFactory($q, DB());
+    const lineageLib = lineageFactory($q, DB());
 
     const get = function(id) {
-      return lineage.fetchLineageById(id)
+      return lineageLib.fetchLineageById(id)
         .then(function(docs) {
           if (!docs.length) {
             const err = new Error(`Document not found: ${id}`);
@@ -31,11 +31,11 @@ angular.module('inboxServices').factory('LineageModelGenerator',
         });
     };
 
-    const hydrate = function(docs) {
-      return lineage.fetchContacts(docs)
+    const hydrate = function(lineageArray) {
+      return lineageLib.fetchContacts(lineageArray)
         .then(function(contacts) {
-          lineage.fillContactsInDocs(docs, contacts);
-          return docs;
+          lineageLib.fillContactsInDocs(lineageArray, contacts);
+          return lineageArray;
         });
     };
 
@@ -60,7 +60,13 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               lineage: docs
             };
             if (options.merge) {
-              result.doc = lineage.fillParentsInDocs(doc, docs);
+              result.doc = lineageLib.fillParentsInDocs(doc, docs);
+
+              // The lineage should also be hydrated when merge is true
+              const deepCopy = obj => JSON.parse(JSON.stringify(obj));
+              for (let i = result.lineage.length - 2; i >= 0; i--) {
+                result.lineage[i].parent = deepCopy(result.lineage[i+1]);
+              }
             } else {
               result.doc = doc;
             }
@@ -73,7 +79,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        * report model.
        */
       report: function(id) {
-        return lineage.fetchHydratedDoc(id, { throwWhenMissingLineage: true })
+        return lineageLib.fetchHydratedDoc(id, { throwWhenMissingLineage: true })
           .then(function(hydrated) {
             return {
               _id: id,
@@ -84,7 +90,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
       },
 
       reportSubjects: function(ids) {
-        return lineage.fetchLineageByIds(ids)
+        return lineageLib.fetchLineageByIds(ids)
           .then(function(docsList) {
             return docsList.map(function(docs) {
               return {
