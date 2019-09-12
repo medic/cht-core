@@ -3,6 +3,7 @@
 language: java
 sudo: true
 jdk: oraclejdk8
+dist: xenial
 
 addons:
   chrome: 'stable'
