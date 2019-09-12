@@ -58,14 +58,25 @@ module.exports = {
           doc.settings = {};
         }
 
-        _.defaults(body.permissions, defaults.permissions);
-        
+        const original = JSON.stringify(doc.settings);
+
         if (replace) {
           doReplace(doc.settings, body);
         } else {
           doExtend(doc.settings, body);
         }
-        return db.medic.put(doc);
+
+        if (doc.settings.permissions) {
+          _.defaults(doc.settings.permissions, defaults.permissions);
+        } else {
+          doc.settings.permissions = defaults.permissions;
+        }
+
+        if (JSON.stringify(doc.settings) !== original) {
+          return db.medic.put(doc);
+        } 
+        
+        return Promise.resolve();
       });
   }
 };
