@@ -6,6 +6,7 @@ const contactForms = require('./contact-forms.json');
 const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
+const request = require('request-promise-native');
 
 const baseConfig = {
   params:{
@@ -42,7 +43,9 @@ const baseConfig = {
   },
   afterLaunch: function(exitCode) {
     return new Promise(function(resolve) {
-      utils.reporter.afterLaunch(resolve.bind(this, exitCode));
+      return request.post('http://localhost:31337/die')
+        .catch(() => {}) // On travis this doesn't currently work: https://github.com/medic/medic/issues/5915
+        .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
   },
   onPrepare: () => {

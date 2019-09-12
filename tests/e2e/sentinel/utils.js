@@ -7,18 +7,24 @@ const utils = require('../../utils'),
 // filtering by the provided ids and using Sentinel's processed_seq as a since param - simulating what Sentinel's
 // queue would be like. If we receive no results, we are finished. If we receive results, we try again in 100ms.
 // We use the timeout because local docs don't appear on the changes feed, otherwise we could `longpoll` it instead.
+// If no docIds are provided, we will query the main db's changes feed with the `since` param equal to sentinel's
+// `processed_seq`. When we don't receive any changes, it means Sentinel has caught up. This is useful when testing
+// api SMS endpoints that generated docs with ids we do not know.
 const waitForSentinel = docIds => {
   return requestOnSentinelTestDb('/_local/sentinel-meta-data')
     .then(metaData => metaData.processed_seq)
     .then(seq => {
       const opts = {
-        path: '/_changes?' + querystring.stringify({ since: seq, filter: '_doc_ids' }),
-        body: { doc_ids: Array.isArray(docIds) ? docIds : [docIds] },
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        path: '/_changes',
+        headers: { 'Content-Type': 'application/json' },
       };
+      if (docIds) {
+        opts.path = `${opts.path}?${querystring.stringify({ since: seq, filter: '_doc_ids' })}`;
+        opts.method = 'POST';
+        opts.body = { doc_ids: Array.isArray(docIds) ? docIds : [ docIds ] };
+      } else {
+        opts.path = `${opts.path}?${querystring.stringify({ since: seq })}`;
+      }
       return utils.requestOnTestDb(opts);
     })
     .then(response => {
