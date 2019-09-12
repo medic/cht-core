@@ -116,18 +116,17 @@ module.exports = function(Promise, DB) {
     );
   };
 
-  const fetchPatientUuid = function(record) {
-    const patientId = findPatientId(record);
-    if (!patientId) {
-      return Promise.resolve();
+  const fetchPatientUuids = function(records) {
+    const patientIds = records.map(record => findPatientId(record));
+    if (!patientIds.some(patientId => patientId)) {
+      return Promise.resolve([]);
     }
-
-    return contactUuidByPatientId(patientId);
+    return contactUuidByPatientIds(patientIds);
   };
 
   const fetchPatientLineage = function(record) {
-    return fetchPatientUuid(record)
-      .then(function(uuid) {
+    return fetchPatientUuids([record])
+      .then(function([uuid]) {
         if (!uuid) {
           return [];
         }
@@ -136,19 +135,18 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const contactUuidByPatientId = function(patientId) {
-    return DB.query('medic-client/contacts_by_reference', {
-      key: [ 'shortcode', patientId ]
-    }).then(function(results) {
-      if (!results.rows.length) {
-        return patientId;
-      }
-      if (results.rows.length > 1) {
-        console.warn('More than one patient person document for shortcode ' + patientId);
-      }
-
-      return results.rows[0] && results.rows[0].id;
-    });
+  const contactUuidByPatientIds = function(patientIds) {
+    const keys = patientIds
+      .filter(patientId => patientId)
+      .map(patientId => [ 'shortcode', patientId ]);
+    return DB.query('medic-client/contacts_by_reference', { keys })
+      .then(function(results) {
+        const findIdWithKey = key => {
+          const matchingRow = results.rows.find(row => row.key[1] === key);
+          return matchingRow && matchingRow.id;
+        };
+        return patientIds.map(patientId => findIdWithKey(patientId) || patientId);
+      });
   };
 
   const fetchLineageById = function(id) {
@@ -299,8 +297,6 @@ module.exports = function(Promise, DB) {
     if (!docs.length) {
       return Promise.resolve([]);
     }
-    
-    const fetchPatientUuids = docs => Promise.all(docs.map(doc => fetchPatientUuid(doc)));
     
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
