@@ -1,225 +1,308 @@
-const _ = require('underscore'),
-      async = require('async'),
-      config = require('../config'),
-      messages = config.getTransitionsLib().messages,
-      later = require('later'),
-      moment = require('moment'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic);
+const { performance } = require('perf_hooks');
+const _ = require('underscore');
+const moment = require('moment');
+const request = require('request-promise-native');
+
+const config = require('../config');
+const db = require('../db');
+const later = require('later');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const logger = require('../lib/logger');
+const messages = config.getTransitionsLib().messages;
+
+const BATCH_SIZE = 1000;
 
 // set later to use local time
 later.date.localTime();
 
-const getLeafPlaceDocs = callback => {
-    const types = config.get('contact_types') || [];
-    const placeTypes = types.filter(type => !type.person);
-    const leafPlaceTypes = placeTypes.filter(type => {
-        return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
-    });
-    const keys = leafPlaceTypes.map(type => [ type.id ]);
-    db.medic.query('medic-client/contacts_by_type', {
-        keys: keys,
-        include_docs: true
-    }, callback);
+const getReminderId = (reminder, scheduledDate, placeId) => `reminder:${reminder.form}:${scheduledDate.valueOf()}:${placeId}`;
+
+const isConfigValid = (config) => {
+  return Boolean(
+    config &&
+    (config.form && typeof config.form === 'string') &&
+    (config.message || config.translation_key) &&
+    (config.text_expression || config.cron)
+  );
 };
 
-function isConfigValid(config) {
-    return Boolean(
-        config.form &&
-        (config.message || config.translation_key) &&
-        (config.text_expression || config.cron)
-    );
-}
+const getSchedule = (config) => {
+  // fetch a schedule based on the configuration, parsing it as a "cron"
+  // or "text" statement see:
+  // http://bunkat.github.io/later/parsers.html
+  if (config.text_expression) {
+    // text expression takes precedence over cron
+    return later.schedule(later.parse.text(config.text_expression));
+  }
+  if (config.cron) {
+    return later.schedule(later.parse.cron(config.cron));
+  }
+};
 
-function getSchedule(config) {
-    // fetch a schedule based on the configuration, parsing it as a "cron"
-    // or "text" statement see:
-    // http://bunkat.github.io/later/parsers.html
-    if (!config) {
-        return;
+const getReminderWindowStart = (reminder) => {
+  const now = moment();
+  // at the most, look a day back
+  const since = now.clone().startOf('hour').subtract(1, 'day');
+  const form = reminder && reminder.form;
+
+  const options = {
+    descending: true,
+    limit: 1,
+    startkey: `reminderlog:${form}:${now.valueOf()}`,
+    endkey: `reminderlog:${form}:${since.valueOf()}`
+  };
+
+  return db.sentinel.allDocs(options).then(result => {
+    if (!result.rows || !result.rows.length) {
+      return since;
     }
-    if (config.text_expression) {
-        // text expression takes precedence over cron
-        return later.schedule(later.parse.text(config.text_expression));
+    const reminderLogTimestamp = result.rows[0].id.split(':')[2];
+    return moment(parseInt(reminderLogTimestamp));
+  });
+};
+
+// matches from "now" to the start of the last hour
+const matchReminder = (reminder) => {
+  const schedule = getSchedule(reminder);
+  // this will return a moment sometime between the start of the hour and 24 hours ago
+  // this is purely for efficiency so we're not always examining a 24 hour stretch
+  return getReminderWindowStart(reminder)
+    .then(start => {
+      // this will return either the previous time the schedule should have run
+      // or null if it should not have run in that window.
+      const end = moment();
+      const previous = schedule.prev(1, end.toDate(), start.toDate());
+      // schedule.prev doesn't have a setting to be inclusive or exclusive to the given time frame limits
+      // if `getReminderWindowStart` returns the moment when the reminder ran last, we check that `previous` is after
+      // this moment, so we don't run the same reminder twice
+      return (previous instanceof Date && start.isBefore(previous)) ? moment(previous) : false;
+    });
+};
+
+// returns strings like "1 day" as a moment.duration
+const durationRegex = /^\d+ (minute|day|hour|week)s?$/;
+const parseDuration = (format) => {
+  if (!durationRegex.test(format)) {
+    return;
+  }
+
+  const tokens = format.split(' ');
+  return moment.duration(Number(tokens[0]), tokens[1]);
+};
+
+// A leaf place type is a contact type that does not have any child place types, but can have child person types
+const getLeafPlaceTypes = () => {
+  const types = config.get('contact_types') || [];
+  const placeTypes = types.filter(type => !type.person);
+  return placeTypes.filter(type => {
+    return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
+  });
+};
+
+const getLeafPlaceIds = (startDocId) => {
+  const keys = getLeafPlaceTypes().map(type => [ type.id ]);
+  const query = {
+    limit: BATCH_SIZE,
+    keys: JSON.stringify(keys),
+  };
+
+  if (startDocId) {
+    query.start_key_doc_id = startDocId;
+  }
+
+  // using `request` library because PouchDB doesn't support `start_key_doc_id` in view queries
+  // using `start_key_doc_id` because using `skip` is *very* slow
+  return request
+    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true })
+    .then(result => result.rows.map(row => row.id));
+};
+
+// filter places that do not have this reminder
+const getPlaceIdsWithoutReminder = (reminder, scheduledDate, placeIds) => {
+  if (!placeIds.length) {
+    return [];
+  }
+  const reminderIds = placeIds.map(id => getReminderId(reminder, scheduledDate, id));
+  return db.medic.allDocs({ keys: reminderIds }).then(result => {
+    const exists = (row) => row.id && !row.error && row.value && !row.value.deleted;
+    return placeIds.filter((id, idx) => !exists(result.rows[idx]));
+  });
+};
+
+const getPlacesWithoutSentForms = (reminder, scheduledDate, placeIds) => {
+  if (!placeIds.length) {
+    return [];
+  }
+
+  if (!reminder.mute_after_form_for) {
+    return placeIds;
+  }
+  const muteDuration = parseDuration(reminder.mute_after_form_for);
+  if (!muteDuration) {
+    return placeIds;
+  }
+
+  const keys = placeIds.map(id => [reminder.form, id]);
+  return db.medic
+    .query('medic/reports_by_form_and_parent', { keys, group: true })
+    .then(results => {
+      const invalidPlaceIds = [];
+      results.rows.forEach(row => {
+
+        if (!row.value || !row.value.max) {
+          return;
+        }
+        const lastReceived = moment(row.value.max);
+        // if it should mute due to being in the mute duration
+        if (scheduledDate.isSameOrBefore(lastReceived.add(muteDuration))) {
+          const placeId = row.key[1];
+          invalidPlaceIds.push(placeId);
+        }
+      });
+
+      return _.difference(placeIds, invalidPlaceIds);
+    });
+};
+
+const canSend = (reminder, scheduledDate, place) => {
+  if (!place.contact) {
+    // nobody to send to
+    return false;
+  }
+
+  if (place.muted) {
+    return false;
+  }
+
+  // backwards compatibility: check for reminders created pre-update
+  if (place.tasks &&
+      place.tasks.some(task => task.form === reminder.form && task.timestamp === scheduledDate.toISOString())) {
+    return false;
+  }
+
+  return true;
+};
+
+const getValidPlaces = (reminder, scheduledDate, placeIds) => {
+  if (!placeIds.length) {
+    return [];
+  }
+  return db.medic
+    .allDocs({ keys: placeIds, include_docs: true })
+    .then(result => {
+      const places = result.rows
+        .map(row => row.doc)
+        .filter(place => canSend(reminder, scheduledDate, place));
+
+      return places;
+    });
+};
+
+const getValidLeafPlacesBatch = (reminder, scheduledDate, startDocId) => {
+  return getLeafPlaceIds(startDocId).then(placeIds => {
+    if (startDocId) {
+      placeIds.shift();
     }
-    if (config.cron) {
-        return later.schedule(later.parse.cron(config.cron));
+    if (!placeIds.length) {
+      return { places: [] };
     }
-}
+    const nextDocId = placeIds[placeIds.length - 1];
+    return getPlaceIdsWithoutReminder(reminder, scheduledDate, placeIds)
+      .then(placeIds => getPlacesWithoutSentForms(reminder, scheduledDate, placeIds))
+      .then(placeIds => getValidPlaces(reminder, scheduledDate, placeIds))
+      .then(places => lineage.hydrateDocs(places))
+      .then(places => ({ places, nextDocId }));
+  });
+};
+
+const createReminder = (reminder, scheduledDate, place) => {
+  const context = {
+    templateContext: {
+      week: scheduledDate.format('w'),
+      year: scheduledDate.format('YYYY')
+    },
+    patient: place
+  };
+
+  const reminderDoc = {
+    _id: getReminderId(reminder, scheduledDate, place._id ),
+    type: 'reminder',
+    contact: lineage.minifyLineage(place.contact),
+    place: { _id: place._id, parent: lineage.minifyLineage(place.parent) },
+    form: reminder.form,
+    reported_date: new Date().getTime(),
+    tasks: []
+  };
+  const task = messages.addMessage(reminderDoc, reminder, 'reporting_unit', context);
+  if (task) {
+    task.form = reminder.form;
+    task.timestamp = scheduledDate.toISOString();
+    task.type = 'reminder';
+  }
+
+  return reminderDoc;
+};
+
+const sendReminders = (reminder, scheduledDate, startDocId) => {
+  return getValidLeafPlacesBatch(reminder, scheduledDate, startDocId)
+    .then(({ places, nextDocId }) => {
+      if (!places || !places.length) {
+        return nextDocId;
+      }
+
+      const reminderDocs = places.map(place => createReminder(reminder, scheduledDate, place));
+      return db.medic
+        .bulkDocs(reminderDocs)
+        .then(results => {
+          const errors = results.filter(result => result.error);
+          if (errors.length) {
+            logger.error('Errors saving reminders', errors);
+            throw new Error('Errors saving reminders');
+          }
+        })
+        .then(() => nextDocId);
+    })
+    .then(nextDocId => nextDocId && sendReminders(reminder, scheduledDate, nextDocId));
+};
+
+const createReminderLog = (reminder, scheduledDate, start) => {
+  const duration = performance.now() - start;
+  const reminderLog = {
+    _id: `reminderlog:${reminder.form}:${scheduledDate.valueOf()}`,
+    duration: duration,
+    reminder: reminder,
+    reported_date: moment().valueOf(),
+    type: 'reminderlog',
+  };
+  logger.debug('Reminder %o succesfully completed in %d seconds', reminder, duration / 1000);
+  return db.sentinel.put(reminderLog);
+};
+
+const runReminder = (reminder = {}) => {
+  // see if the reminder should run in the given window
+  return matchReminder(reminder).then(scheduledDate => {
+    if (!scheduledDate) {
+      return;
+    }
+    logger.debug('Running reminder %o', reminder);
+    const start = performance.now();
+    return sendReminders(reminder, scheduledDate).then(() => createReminderLog(reminder, scheduledDate, start));
+  });
+};
 
 module.exports = {
-    isConfigValid: isConfigValid,
-    getSchedule: getSchedule,
-    // called from schedule/index.js on the hour, for now
-    execute: callback => {
-        var reminders = config.get('reminders') || [];
-
-        async.eachSeries(reminders, function(reminder, callback) {
-            if (!isConfigValid(reminder)) {
-                return callback();
-            }
-            module.exports.runReminder({
-                reminder: reminder
-            }, callback);
-        }, callback);
-    },
-    // matches from "now" to the start of the last hour
-    // later reverses time ranges fro later#prev searches
-    matchReminder: function(options, callback) {
-        var start = moment(),
-            reminder = options.reminder,
-            sched = getSchedule(reminder);
-
-        // this will return a moment sometime between the start of the hour and 24 hours ago
-        // this is purely for efficiency so we're not always examining a 24 hour stretch
-        module.exports.getReminderWindow(options, function(err, end) {
-            // this will return either the previous time the schedule schould have run
-            // or null if it should not have run in that window.
-            var previous = sched.prev(1, start.toDate(), end.toDate());
-
-            if (_.isDate(previous)) {
-                callback(null, moment(previous));
-            } else {
-                callback(null, false);
-            }
-        });
-    },
-    canSend: function(options, clinic) {
-        var send,
-            ts = options.moment || moment().startOf('hour'),
-            reminder = options.reminder,
-            lastReceived,
-            muteDuration;
-
-        // if it's already been sent, it will have a matching task with the right form/ts
-        send = !_.findWhere(clinic.tasks, {
-            form: reminder.form,
-            timestamp: ts.toISOString()
-        });
-
-        // if send, check for mute on reminder, and clinic has sent_forms for the reminder
-        // sent_forms is maintained by the update_sent_forms transition
-        if (send && reminder.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[reminder.form]) {
-            lastReceived = moment(clinic.sent_forms[reminder.form]);
-            muteDuration = module.exports.parseDuration(reminder.mute_after_form_for);
-
-            if (lastReceived && muteDuration) {
-                // if it should mute due to being in the mute duration
-                send = ts.isAfter(lastReceived.add(muteDuration));
-            }
+  // called from schedule/index.js every 5 minutes, for now
+  execute: callback => {
+    const reminders = config.get('reminders') || [];
+    return reminders
+      .filter(reminder => {
+        if (isConfigValid(reminder)) {
+          return true;
         }
-
-        return send;
-    },
-    // returns strings like "1 day" as a moment.duration
-    parseDuration: function(format) {
-        var tokens;
-
-        if (/^\d+ (minute|day|hour|week)s?$/.test(format)) {
-            tokens = format.split(' ');
-
-            return moment.duration(Number(tokens[0]), tokens[1]);
-        } else {
-            return null;
-        }
-    },
-    getLeafPlaces: (options, callback) => {
-        getLeafPlaceDocs((err, response) => {
-            if (err) {
-                return callback(err);
-            }
-            // filter them by the canSend function (i.e. not already sent, not
-            // on cooldown from having received a form)
-            const leafPlaces = response.rows
-                .map(row => row.doc)
-                .filter(doc => module.exports.canSend(options, doc));
-
-            lineage
-              .hydrateDocs(leafPlaces)
-              .then(leafPlaces => callback(null, leafPlaces))
-              .catch(callback);
-        });
-    },
-    sendReminder: function(options, callback) {
-        var clinic = options.clinic,
-            moment = options.moment,
-            reminder = options.reminder,
-            context = {
-                templateContext: {
-                    week: moment.format('w'),
-                    year: moment.format('YYYY')
-                }
-            };
-
-        // add a message to the tasks property with the form/ts markers
-        const task = messages.addMessage(clinic, reminder, 'reporting_unit', context);
-        if (task) {
-            task.form = reminder.form;
-            task.timestamp = moment.toISOString();
-            task.type = 'reminder';
-        }
-        lineage.minify(clinic);
-        db.medic.put(clinic, callback);
-    },
-    sendReminders: function(options, callback) {
-        module.exports.getLeafPlaces(options, function(err, clinics) {
-            if (err) {
-                callback(err);
-            } else {
-                async.eachSeries(clinics, function(clinic, callback) {
-                    var opts = _.extend({}, options, {
-                        clinic: clinic
-                    });
-
-                    // send to the specific clinic
-                    module.exports.sendReminder(opts, callback);
-                }, callback);
-            }
-        });
-    },
-    runReminder: function(options, callback) {
-        _.defaults(options, {
-            reminder: {}
-        });
-
-        // see if the reminder should run in the given window
-        module.exports.matchReminder(options, function(err, moment) {
-            if (err) {
-                callback(err);
-            } else if (moment) {
-                // if it has a timestamp it should have run at, try and send it
-                options.moment = moment.clone();
-                module.exports.sendReminders(options, callback);
-            } else {
-                callback();
-            }
-        });
-    },
-    getReminderWindow: function(options, callback) {
-        var now = moment(),
-            // at the most, look a day back
-            floor = now.clone().startOf('hour').subtract(1, 'day'),
-            form = options.reminder && options.reminder.form;
-
-        db.medic.query('medic-sms/sent_reminders', {
-            descending: true,
-            limit: 1,
-            startkey: [form, now.toISOString()],
-            endkey: [form, floor.toISOString()]
-        }, function(err, result) {
-            var row;
-
-            if (!err) {
-                row = _.first(result.rows);
-
-                if (row) {
-                    // if there's a result, return that as the floor
-                    callback(null, moment(row.key[1]));
-                } else {
-                    callback(null, floor);
-                }
-            }
-        });
-    },
-    _lineage: lineage
+        logger.warn('Reminder configuration invalid: %o', reminder);
+      })
+      .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve())
+      .then(() => callback())
+      .catch(callback);
+  },
 };

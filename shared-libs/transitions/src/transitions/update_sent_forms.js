@@ -10,6 +10,8 @@ var _ = require('underscore'),
  * Update sent_forms property on facilities so we can setup reminders for
  * specific forms.
  */
+// to be removed this in 4.0, this is rendered useless by the updates to reminders.
+// https://github.com/medic/medic/issues/5939
 module.exports = {
   filter: function(doc, info = {}) {
     var self = module.exports;
@@ -75,5 +77,9 @@ module.exports = {
       });
     });
   },
-  asynchronousOnly: true
+  asynchronousOnly: true,
+
+  init: () => {
+    logger.warn('"update_sent_forms" transition is deprecated and will be removed in next major version. Consider updating your configuration to disable it.');
+  }
 };
