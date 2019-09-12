@@ -2,7 +2,7 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk: oraclejdk8
+jdk: oraclejdk9
 dist: xenial
 
 addons:
@@ -10,7 +10,7 @@ addons:
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
-  - docker
+  - docker-xenial
 
 env:
   matrix:
