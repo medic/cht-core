@@ -366,6 +366,14 @@ module.exports = function(grunt) {
         ],
         dest: 'webapp/node_modules_backup',
       },
+      'test-libraries-to-patch': {
+        expand: true,
+        cwd: 'node_modules',
+        src: [
+          'protractor/node_modules/webdriver-manager/**'
+        ],
+        dest: 'node_modules_backup',
+      },
       'enketo-xslt': {
         expand: true,
         flatten: true,
@@ -554,6 +562,25 @@ module.exports = function(grunt) {
           }).join(' && ');
         },
       },
+      'undo-test-patches': {
+        cmd: () => {
+          const modulesToPatch = [
+            'protractor/node_modules/webdriver-manager'
+          ];
+
+          return modulesToPatch.map(module => {
+            const backupPath = 'node_modules_backup/' + module;
+            const modulePath = 'node_modules/' + module;
+            return `
+              [ -d ${backupPath} ] &&
+              rm -rf ${modulePath} &&
+              mv ${backupPath} ${modulePath} &&
+              echo "Module restored: ${module}" ||
+              echo "No restore required for: ${module}"
+            `;
+          }).join(' && ');
+        },
+      },
       'test-standard': {
         cmd: [
           'cd config/standard',
@@ -598,6 +625,14 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
+          ];
+          return patches.join(' && ');
+        },
+      },
+      'apply-test-patches': {
+        cmd: () => {
+          const patches = [
+            'patch node_modules/protractor/node_modules/webdriver-manager/built/config.json < tests/patches/webdriver-manager-config.patch',
           ];
           return patches.join(' && ');
         },
@@ -999,8 +1034,15 @@ module.exports = function(grunt) {
     'exec:pack-node-modules',
   ]);
 
+  grunt.registerTask('patch-webdriver', 'Patches webdriver to support latest Chrome', [
+    'exec:undo-test-patches',
+    'copy:test-libraries-to-patch',
+    'exec:apply-test-patches',
+  ]);
+
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
+    'patch-webdriver',
     'exec:start-webdriver',
     'exec:reset-test-databases',
     'couch-push:test',
