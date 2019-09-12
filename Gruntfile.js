@@ -1111,11 +1111,13 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
+    'patch-webdriver',
     'exec:start-webdriver',
     'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
+    'patch-webdriver',
     'exec:start-webdriver',
     'protractor:performance-tests-and-services',
   ]);
