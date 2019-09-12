@@ -2,7 +2,8 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk: oraclejdk8
+jdk: oraclejdk9
+dist: xenial
 
 addons:
   chrome: 'stable'
