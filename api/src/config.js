@@ -1,9 +1,7 @@
 const _ = require('underscore');
-const path = require('path');
 
 const db = require('./db');
 const ddocExtraction = require('./ddoc-extraction');
-const environment = require('./environment');
 const generateXform = require('./services/generate-xform');
 const logger = require('./logger');
 const resourceExtraction = require('./resource-extraction');
