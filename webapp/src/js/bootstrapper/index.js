@@ -76,7 +76,7 @@
 
             $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
             $('.bootstrap-layer .error').show();
-            $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
+            $('.bootstrap-layer .error').html('<div><p class="alert alert-warning">' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
             $('#btn-continue').click(() => resolve());
             $('#btn-abort').click(() => {
               document.cookie = 'login=force;path=/';
