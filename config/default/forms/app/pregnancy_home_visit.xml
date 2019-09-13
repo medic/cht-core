@@ -1864,7 +1864,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-10 01:26:23">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-13 01:47:18">
           <inputs>
             <meta>
               <location>
@@ -2601,11 +2601,11 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits " nodeset="/pregnancy_home_visit/data/o_report_additional_anc_hf_visits" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy_home_visit/data/o_num_additional_anc_hf_visits" type="string"/>
       <bind calculate="coalesce( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single , join(',',  /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date ), NULL)" nodeset="/pregnancy_home_visit/data/o_additional_anc_hf_visit_dates" type="string"/>
-      <bind calculate="if (new_risks = '', 'no', 'yes')" nodeset="/pregnancy_home_visit/data/o_has_risk_factors_not_previously_reported" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'heart_condition'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_heart_condition" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'asthma'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_asthma" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'high_blood_pressure'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_high_blood_pressure" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'diabetes'),'yes','no')" nodeset="/pregnancy_home_visit/data/o_diabetes" type="string"/>
+      <bind calculate="if (selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'none'), 'no', if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '', 'yes'))" nodeset="/pregnancy_home_visit/data/o_has_risk_factors_not_previously_reported" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'heart_condition'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/o_heart_condition" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'asthma'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/o_asthma" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'high_blood_pressure'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/o_high_blood_pressure" type="string"/>
+      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'diabetes'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/o_diabetes" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk_check " nodeset="/pregnancy_home_visit/data/o_additional_high_risk_condition_to_report" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk " nodeset="/pregnancy_home_visit/data/o_additional_high_risk_condition" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known " nodeset="/pregnancy_home_visit/data/o_next_anc_hf_visit_date_known" type="string"/>
