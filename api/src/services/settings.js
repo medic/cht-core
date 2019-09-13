@@ -1,6 +1,7 @@
 const _ = require('underscore'),
       defaults = require('../config.default.json'),
-      db = require('../db');
+      db = require('../db'),
+      logger = require('../logger');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -73,6 +74,7 @@ module.exports = {
         }
 
         if (JSON.stringify(doc.settings) !== original) {
+          logger.info('Updating settings with new defaults');
           return db.medic.put(doc);
         } 
         

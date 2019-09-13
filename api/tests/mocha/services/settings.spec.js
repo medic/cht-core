@@ -52,6 +52,7 @@ describe('settings service', () => {
         .update(newSettings, replace)
         .then(() => {
           update.callCount.should.equal(1);
+          update.args[0][0].settings.should.deep.equal(newSettings);
         });
     });
 
@@ -65,6 +66,7 @@ describe('settings service', () => {
         .update(newSettings, replace)
         .then(() => {
           update.callCount.should.equal(1);
+          update.args[0][0].settings.should.deep.equal(newSettings);
         });
     });
 
@@ -75,7 +77,10 @@ describe('settings service', () => {
       return service
         .update(settings, replace)
         .then(() => {
+          settings.permissions.c = 'd';
+
           update.callCount.should.equal(1);
+          update.args[0][0].settings.should.deep.equal(settings);
         });
     });
 
@@ -86,7 +91,10 @@ describe('settings service', () => {
       return service
         .update(settings, replace)
         .then(() => {
+          settings.permissions.c = 'd';
+          
           update.callCount.should.equal(1);
+          update.args[0][0].settings.should.deep.equal(settings);
         });
     });
   });
