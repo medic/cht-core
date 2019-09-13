@@ -25,10 +25,13 @@ describe('Users Controller', () => {
       userCtx = { name: 'user', roles: ['admin'] };
       req = { query: {}, userCtx };
       res = { json: sinon.stub() };
-      auth.isOnlineOnly.returns(true);
     });
 
     describe('online users', () => {
+      beforeEach(() => {
+        auth.isOnlineOnly.returns(true);
+      });
+
       it('should respond with error when user does not have required permissions', () => {
         serverUtils.error.resolves();
         auth.hasAllPermissions.returns(false);
@@ -97,7 +100,7 @@ describe('Users Controller', () => {
         auth.isOffline.returns(true);
         auth.hasAllPermissions.returns(true);
         const authContext = {
-          userCtx: { roles: [req.query.role], facility_id: req.query.facility_id },
+          userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
@@ -109,7 +112,7 @@ describe('Users Controller', () => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
-            roles: [req.query.role],
+            roles: ['some_role'],
             facility_id: req.query.facility_id,
             contact_id: undefined
           }]);
@@ -129,7 +132,7 @@ describe('Users Controller', () => {
         auth.isOffline.returns(true);
         auth.hasAllPermissions.returns(true);
         const authContext = {
-          userCtx: { roles: [req.query.role], facility_id: req.query.facility_id, contact_id: 'some_contact_id' },
+          userCtx: { roles: ['some_role'], facility_id: req.query.facility_id, contact_id: 'some_contact_id' },
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
@@ -141,7 +144,7 @@ describe('Users Controller', () => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
-            roles: [req.query.role],
+            roles: ['some_role'],
             facility_id: req.query.facility_id,
             contact_id: req.query.contact_id
           }]);
@@ -160,7 +163,7 @@ describe('Users Controller', () => {
         auth.isOffline.returns(true);
         auth.hasAllPermissions.returns(true);
         const authContext = {
-          userCtx: { roles: [req.query.role], facility_id: req.query.facility_id },
+          userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
@@ -171,6 +174,77 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
+        });
+      });
+
+      it('should parse role json and use all provided roles', () => {
+        req.query = {
+          role: JSON.stringify(['role1', 'role2']),
+          facility_id: 'some_facility_id'
+        };
+        auth.isOffline.returns(true);
+        auth.hasAllPermissions.returns(true);
+        const authContext = {
+          userCtx: { roles: ['role1', 'role2'], facility_id: req.query.facility_id },
+          contactsByDepthKeys: [['some_facility_id']],
+          subjectIds: ['some_facility_id', 'a', 'b', 'c']
+        };
+        const docIds = Array.from(Array(1000), (x, idx) => idx + 1);
+        authorization.getAuthorizationContext.resolves(authContext);
+        authorization.getAllowedDocIds.resolves(docIds);
+
+        return controller.info(req, res).then(() => {
+          chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
+            roles: ['role1', 'role2'],
+            facility_id: 'some_facility_id',
+            contact_id: undefined,
+          }]);
+          chai.expect(res.json.callCount).to.equal(1);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 1000, warn: false, limit: 10000 }]);
+        });
+      });
+
+      describe('roles scenarios', () => {
+        const expected = { total_docs: 3, warn: false, limit: 10000 };
+        const scenarios = [
+          { role: 'aaaa', name: 'string single role' },
+          { role: JSON.stringify('aaaa'), name: 'json single role' },
+          { role: JSON.stringify(['1', '2', '3']), name: 'array of string roles works'},
+          { role: JSON.stringify(['1', '2']).slice(0, -2), name:  'malformed json = param treated as string'},
+          { role: JSON.stringify({ not: 'an array' }), fail: true, name: 'JSON object' },
+          { role: JSON.stringify(['1', { not: 'a string' }]), fail: true, name: 'JSON array with objects' },
+          { role: JSON.stringify(['1', 32, '2']), fail: true, name: 'JSON array with numbers' },
+          { role: JSON.stringify(['1', undefined, '2']), fail: true, name: 'JSON array with undefined' },
+          { role: JSON.stringify(['1', null, '2']), fail: true, name: 'JSON array with undefined' },
+          { role: JSON.stringify(['1', true, '2']), fail: true, name: 'JSON array with boolean' },
+        ];
+
+        beforeEach(() => {
+          authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx }));
+          authorization.getAllowedDocIds.resolves(['1', '2', '3']);
+          auth.isOffline.returns(true);
+          auth.hasAllPermissions.returns(true);
+          serverUtils.error.resolves();
+        });
+
+        scenarios.map(scenario => {
+          it(scenario.name, () => {
+            req.query = {
+              role: scenario.role,
+              facility_id: 'some_facility_id'
+            };
+            return controller.info(req, res).then(() => {
+              if (scenario.fail) {
+                chai.expect(serverUtils.error.callCount).to.equal(1);
+                chai.expect(serverUtils.error.args[0][0].code).to.deep.equal(400);
+                chai.expect(res.json.callCount).to.equal(0);
+              } else {
+                chai.expect(serverUtils.error.callCount).to.equal(0);
+                chai.expect(res.json.callCount).to.equal(1);
+                chai.expect(res.json.args[0]).to.deep.equal([expected]);
+              }
+            });
+          });
         });
       });
     });

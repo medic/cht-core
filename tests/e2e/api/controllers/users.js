@@ -254,7 +254,7 @@ describe('Users API', () => {
           _id: 'fixture:user:offline',
           name: 'OfflineUser'
         },
-        roles: ['district_admin']
+        roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline']
       },
       {
         username: 'online',
@@ -277,6 +277,7 @@ describe('Users API', () => {
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
     let expectedNbrDocs = nbrOfflineDocs + 4; // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let docsForAll;
 
     beforeAll(done => {
       utils
@@ -296,7 +297,10 @@ describe('Users API', () => {
           return utils.saveDocs(docs);
         })
         .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
-        .then(resp => expectedNbrDocs += resp.rows.length)
+        .then(resp => {
+          docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
+          expectedNbrDocs += resp.rows.length;
+        })
         .then(done);
     });
 
@@ -334,6 +338,17 @@ describe('Users API', () => {
       });
     });
 
+    it('should return correct number of allowed docs when requested by online user for an array of roles', () => {
+      const params = {
+        role: JSON.stringify(['random', 'district_admin', 'random']),
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils.request(onlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      });
+    });
+
     it('should ignore parameters for requests from offline users', () => {
       const params = {
         role: 'district_admin',
@@ -350,13 +365,41 @@ describe('Users API', () => {
         role: 'national_admin',
         facility_id: 'fixture:offline'
       };
-      offlineRequestOptions.path += '?' + querystring.stringify(params);
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)
         .then(resp => expect(resp).toEqual('should have thrown'))
         .catch(err => {
           expect(err.statusCode).toEqual(400);
+        });
+    });
+
+    it('should throw error for array roles of online user', () => {
+      const params = {
+        role: JSON.stringify(['random', 'national_admin', 'random']),
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => expect(resp).toEqual('should have thrown'))
+        .catch(err => {
+          expect(err.statusCode).toEqual(400);
+        });
+    });
+
+    it('should return correct response for non-existent facility', () => {
+      const params = {
+        role: JSON.stringify(['district_admin']),
+        facility_id: 'IdonTExist'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => {
+          expect(resp).toEqual({ total_docs: docsForAll, warn: false, limit: 10000 });
         });
     });
   });
