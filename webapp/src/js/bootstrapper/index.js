@@ -56,7 +56,7 @@
     return Promise
       .all([
         localDb.allDocs({ limit: 1 }),
-        fetch(`${getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
+        fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
         localDocCount = local.total_rows;

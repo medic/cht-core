@@ -431,7 +431,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
     localId.resolves('some random string');
 
     bootstrapper(pouchDbOptions, err => {
@@ -465,7 +465,7 @@ describe('bootstrapper', () => {
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
-    pouchDb.fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
     localId.resolves('some random string');
 
     bootstrapper(pouchDbOptions, err => {

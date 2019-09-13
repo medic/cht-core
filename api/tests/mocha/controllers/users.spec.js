@@ -222,6 +222,7 @@ describe('Users Controller', () => {
         const docIds = Array.from(Array(1000), (x, idx) => idx + 1);
         authorization.getAuthorizationContext.resolves(authContext);
         authorization.getAllowedDocIds.resolves(docIds);
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
@@ -229,6 +230,8 @@ describe('Users Controller', () => {
             facility_id: 'some_facility_id',
             contact_id: undefined,
           }]);
+          chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
+          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['role1', 'role2'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 1000, warn: false, limit: 10000 }]);
         });
@@ -252,6 +255,7 @@ describe('Users Controller', () => {
         beforeEach(() => {
           authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx }));
           authorization.getAllowedDocIds.resolves(['1', '2', '3']);
+          sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(['1', '2', '3']);
           auth.isOffline.returns(true);
           auth.hasAllPermissions.returns(true);
           serverUtils.error.resolves();
