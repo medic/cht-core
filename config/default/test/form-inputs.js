@@ -215,7 +215,8 @@ module.exports = {
       ['no'],
       ['no'],
       []
-    ]
+    ],
+
   },
 
   pregnancyHomeVisitScenarios: {
@@ -327,6 +328,19 @@ module.exports = {
     clearAll: [
       ['migrated'],
       ['clear_all']
+    ],
+    riskDangerMultipleVisits: [
+      ['yes', 'yes'],
+      ['yes', '2', 'yes', '1999-10-02', 'yes', '1999-10-05'],
+      ['asthma,diabetes', 'yes', 'underweight'],
+      ['yes', '1999-11-01'],
+      ['no', 'yes', 'no', 'no', 'no', 'yes', 'no', 'no', 'no', 'no', 'no'],
+      ['yes'],
+      ['yes'],
+      [],
+      ['yes'],
+      ['yes'],
+      []
     ]
   },
   pregnancyDangerSignScenarios: {
