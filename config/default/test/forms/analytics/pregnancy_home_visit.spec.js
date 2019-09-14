@@ -7,6 +7,8 @@ const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require(
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../../forms/app'),
 });
+
+let clock;
 describe('Pregnancy home visit form analytic field tests', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
@@ -18,6 +20,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
     });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
+    if(clock) clock.restore();
   });
 
   it('pregnancy home visit, risks', async () => {
@@ -28,7 +31,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
 
     clock = sinon.useFakeTimers(moment('1999-10-17').toDate());
     let taskForHomeVisit = await harness.getTasks({ now: '1999-10-17', title: 'task.anc.pregnancy_home_visit.title' });
-    expect(taskForHomeVisit.length).to.be.above(0);
+    expect(taskForHomeVisit.length).to.equal(1);
 
     await harness.loadForm(taskForHomeVisit[0].actions[0].form);
     const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.riskDangerMultipleVisits);

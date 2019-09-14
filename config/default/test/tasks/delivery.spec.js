@@ -57,15 +57,14 @@ describe('Delivery tasks tests', () => {
       await harness.setNow('1999-08-01');//LMP date
       await harness.flush(day);
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
-      const taskForDelivery = await harness.getTasks();
+      const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day)) {
-        expect(taskForDelivery.length, day).to.be.above(0);
-        expect(taskForDelivery).to.be.an('array').that.contains.something.like({ title: 'task.anc.delivery.title' });
+        expect(taskForDelivery.length, day).to.equal(1);
       }
 
       else {
-        expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
+        expect(taskForDelivery.length, day).to.equal(0);
       }
     }
   });

@@ -72,7 +72,7 @@ const cards = [
       });
       //These two would only show up if the CHW answered, "no, refusing care" or "no, migrated out of area" to the question "do you want to start this pregnancy visit?" it would continue to be shown as an active pregnancy until the max EDD.
       //If a woman returns to care and the CHW submits another pregnancy visit form, these fields would go away the pregnancy would revert to normal, active status.
-      //Change in care: Migraed out of area / refusing care
+      //Change in care: Migrated out of area / refusing care
       //Tasks: On/Off
       const migratedReport = getRecentANCVisitWithEvent(allReports, report, 'migrated');
       const refusedReport = getRecentANCVisitWithEvent(allReports, report, 'refused');

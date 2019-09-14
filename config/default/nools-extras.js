@@ -136,7 +136,7 @@ function getTimeForMidnight(d) {
 
 function getDateMS(d) {
   if (typeof d === "string") {
-    if(d === "") return null;
+    if (d === "") return null;
     d = getDateISOLocal(d);
   }
   return getTimeForMidnight(d).getTime();
@@ -174,12 +174,12 @@ const getNewestReport = function (reports, forms) {
 
 const getLMPDateFromPregnancy = function (report) {
   return isPregnancyForm(report) &&
-   getDateMS(getField(report, 'lmp_date_8601'));
+    getDateMS(getField(report, 'lmp_date_8601'));
 };
 
 const getLMPDateFromPregnancyFollowUp = function (report) {
   return isPregnancyFollowUpForm(report) &&
-   getDateMS(getField(report, 'lmp_date_8601'));
+    getDateMS(getField(report, 'lmp_date_8601'));
 };
 
 
@@ -260,15 +260,14 @@ function countANCFacilityVisits(contact, pregnancyReport) {
   if (getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past')) {
     ancHFVisits += parseInt(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
   }
-  pregnancyFollowUps.forEach(function (report) {
+  ancHFVisits += pregnancyFollowUps.reduce(function (sum, report) {
     const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
-    if (pastANCHFVisits && pastANCHFVisits.last_visit_attended === 'yes') {
-      ancHFVisits += 1;
-    }
-    if (pastANCHFVisits && pastANCHFVisits.report_other_visits === 'yes') {
-      ancHFVisits += parseInt(pastANCHFVisits.visited_hf_count);
-    }
-  });
+    if (!pastANCHFVisits) return 0;
+    return sum +
+      (pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count)) +
+      (pastANCHFVisits.last_visit_attended === 'yes' && 1);
+  },
+    0);
   return isNaN(ancHFVisits) ? 0 : ancHFVisits;
 }
 

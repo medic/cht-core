@@ -5,7 +5,6 @@ const isReportValid = function (report) {
   if (report.form && report.fields && report.reported_date) return true;
   return false;
 };
-//
 
 const pregnancyForms = ['pregnancy'];
 
@@ -130,9 +129,9 @@ function getDangerSigns(report, ANCorPNC) {
   const dangerSignsList = ANCorPNC === 'ANC' ? ancDangerSigns : pncDangerSigns;
   if (getField(report, 't_danger_signs_referral_follow_up') === 'yes') {
     const dangerSignsObj = getField(report, 'danger_signs');
-    dangerSignsList.forEach(function (ds) {
-      if (dangerSignsObj[ds[0]] === "yes") {
-        dangerSigns.push(ds[1]);
+    dangerSignsList.forEach(function (sign) {
+      if (dangerSignsObj[sign[0]] === "yes") {
+        dangerSigns.push(sign[1]);
       }
     });
   }
@@ -177,10 +176,10 @@ function getRiskFactorCodesFromPregnancy(report) {
     const riskFactorsPrimary = getField(report, 'risk_factors.risk_factors_present.primary_condition');
     const riskFactorsSecondary = getField(report, 'risk_factors.risk_factors_present.secondary_condition');
     if (typeof (riskFactorsPrimary) !== 'undefined') {
-      riskFactors = riskFactors.concat(riskFactorsPrimary.split(' '));
+      riskFactors.push(...riskFactorsPrimary.split(' '));
     }
     else if (typeof (riskFactorsSecondary) !== 'undefined') {
-      riskFactors = riskFactors.concat(riskFactorsSecondary.split(' '));
+      riskFactors.push(...riskFactorsSecondary.split(' '));
     }
   }
   return riskFactors;
@@ -192,7 +191,7 @@ function getNewRiskFactorCodesFromFollowUps(report) {
   if (getField(report, 'anc_visits_hf.risk_factors.r_risk_factor_present') === 'yes') {
     const newRiskFactors = getField(report, 'anc_visits_hf.risk_factors.new_risks');
     if (typeof (newRiskFactors) !== 'undefined') {
-      riskFactors = riskFactors.concat(newRiskFactors.split(' '));
+      riskFactors.push(...newRiskFactors.split(' '));
     }
   }
   return riskFactors;
@@ -201,8 +200,8 @@ function getNewRiskFactorCodesFromFollowUps(report) {
 function getAllRiskFactorCodes(allReports, pregnancy) {
   let riskFactorCodes = getRiskFactorCodesFromPregnancy(pregnancy);
   const pregnancyFollowUps = getSubsequentPregnancyFollowUps(allReports, pregnancy);
-  pregnancyFollowUps.forEach(function (v) {
-    riskFactorCodes = riskFactorCodes.concat(getNewRiskFactorCodesFromFollowUps(v));
+  pregnancyFollowUps.forEach(function (visit) {
+    riskFactorCodes.push(...getNewRiskFactorCodesFromFollowUps(visit));
   });
   return riskFactorCodes;
 }
@@ -280,7 +279,7 @@ function isReadyForNewPregnancy(thisContact, allReports) {
     return true; //No previous pregnancy or delivery recorded, fresh profile
   }
 
-  else if (!mostRecentPregnancyReport) {//mostRecentDeliveryReport is not falsy
+  else if (!mostRecentPregnancyReport) {
     //Delivery report without pregnancy report
     //Decide on the basis of Delivery report
 
@@ -390,18 +389,15 @@ function countANCFacilityVisits(allReports, pregnancy) {
   const pregnancyFollowUps = getSubsequentPregnancyFollowUps(allReports, pregnancy);
   if (getField(pregnancy, 'anc_visits_hf.anc_visits_hf_past')) {
     ancHFVisits += parseInt(getField(pregnancy, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
-  }
-  pregnancyFollowUps.forEach(function (report) {
-    if (getField(report, 'anc_visits_hf.anc_visits_hf_past')) {
-      const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
-      if (pastANCHFVisits.last_visit_attended === 'yes') {
-        ancHFVisits += 1;
-      }
-      if (pastANCHFVisits.report_other_visits === 'yes') {
-        ancHFVisits += parseInt(pastANCHFVisits.visited_hf_count);
-      }
-    }
-  });
+  }  
+  ancHFVisits += pregnancyFollowUps.reduce(function (sum, report) {
+    const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
+    if (!pastANCHFVisits) return 0;
+    return sum +
+      (pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count)) +
+      (pastANCHFVisits.last_visit_attended === 'yes' && 1);
+  },
+    0);
   return isNaN(ancHFVisits) ? 0 : ancHFVisits;
 }
 

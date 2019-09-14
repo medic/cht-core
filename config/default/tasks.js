@@ -216,8 +216,8 @@ module.exports = [
     events: [
       {
         id: "delivery-reminder",
-        start: 28, //due - 4 weeks 
-        end: 42, //due + 6 weeks
+        start: 4 * 7, 
+        end: 6 * 7,
         dueDate: function (event, contact, report) {
           return addDays(getMostRecentLMPDateForPregnancy(contact, report), MAX_DAYS_IN_PREGNANCY); //LMP + 42 weeks
         }
