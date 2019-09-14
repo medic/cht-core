@@ -28,13 +28,12 @@ describe('Pregnancy registration and scheduled visit', () => {
   });
   beforeEach(async () => {
     await harness.clear();
-    //await harness.flush(1);
+    await harness.setNow(now);
     return await harness.loadForm('pregnancy');
   });
   afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
 
   it('pregnancy registration and scheduled visit', async () => {
-    await harness.setNow(now);
     const actionFormResult = await harness.fillForm(...pregnancyRegistrationScenarios.safe);
     expect(actionFormResult.errors).to.be.empty;
     for (const day of getTaskTestDays(0, 30, facilityReminderTask, 3)) {
@@ -54,7 +53,6 @@ describe('Pregnancy registration and scheduled visit', () => {
   });
 
   it('facility reminder task is resolved', async () => {
-    await harness.setNow(now);
     const actionFormResult = await harness.fillForm(...pregnancyRegistrationScenarios.safe);
     expect(actionFormResult.errors).to.be.empty;
     let resolved = false;
@@ -83,7 +81,6 @@ describe('Pregnancy registration and scheduled visit', () => {
   });
 
   it('facility reminder task is cleared', async () => {
-    await harness.setNow(now);
     const actionFormResult = await harness.fillForm(...pregnancyRegistrationScenarios.safe);
     expect(actionFormResult.errors).to.be.empty;
     let cleared = false;

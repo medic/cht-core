@@ -59,3 +59,70 @@ describe('Test method getField', () => {
     it('leaf + 1 level undefined', () => expect(getField(nestedValue, 'a.b.c')).to.be.undefined);
     it('leaf + 2 levels undefined', () => expect(getField(nestedValue, 'a.b.c.d')).to.be.undefined);
 });
+
+describe('Test method countANCFacilityVisits', () => {
+    const { countANCFacilityVisits } = extras;
+    it('Count ANC facility visits', () => {
+        let contact = {
+            reports: [
+                {
+                    form: 'pregnancy',
+                    reported_date: 0,
+                    fields: {}
+                }
+            ]
+        };
+        expect(countANCFacilityVisits(contact, contact.reports[0])).to.eq(0);
+        contact.reports[0].fields.anc_visits_hf = { anc_visits_hf_past: { visited_hf_count: 1 } };
+        expect(countANCFacilityVisits(contact, contact.reports[0])).to.eq(1);
+        contact.reports.push({
+            form: 'pregnancy_home_visit',
+            reported_date: 1,
+            fields: {
+                anc_visits_hf: {}
+            }
+        });
+        expect(countANCFacilityVisits(contact, contact.reports[0])).to.eq(1);
+        contact.reports.push({
+            form: 'pregnancy_home_visit',
+            reported_date: 2,
+            fields: {
+                anc_visits_hf: {
+                    anc_visits_hf_past: {
+                        last_visit_attended: 'yes'
+                    }
+                }
+            }
+        });
+        expect(countANCFacilityVisits(contact, contact.reports[0])).to.eq(2);
+
+        contact.reports.push({
+            form: 'pregnancy_home_visit',
+            reported_date: 3,
+            fields: {
+                anc_visits_hf: {
+                    anc_visits_hf_past: {
+                        report_other_visits: 'yes',
+                        visited_hf_count: "3"
+                    }
+                }
+            }
+        });
+        expect(countANCFacilityVisits(contact, contact.reports[0])).to.eq(5);
+
+        contact.reports.push({
+            form: 'pregnancy_home_visit',
+            reported_date: 4,
+            fields: {
+                anc_visits_hf: {
+                    anc_visits_hf_past: {
+                        last_visit_attended: 'yes',
+                        report_other_visits: 'yes',
+                        visited_hf_count: "2"
+                    }
+                }
+            }
+        });
+        expect(countANCFacilityVisits(contact, contact.reports[0])).to.eq(8);
+    });
+});
