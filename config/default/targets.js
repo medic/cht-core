@@ -59,8 +59,7 @@ module.exports = [
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
       if (!report) {return false;}
-      if (!getMostRecentLMPDateForPregnancy(contact, report)) {return false;}
-      return true;
+      return getMostRecentLMPDateForPregnancy(contact, report);
     },
     date: 'reported',
     idType: 'contact'

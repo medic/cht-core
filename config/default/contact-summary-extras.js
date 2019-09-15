@@ -253,17 +253,16 @@ function getSubsequentPregnancies(allReports, refReport) {
   });
 }
 
-
 function isActivePregnancy(thisContact, allReports, report) {
   if (thisContact.type !== 'person' || !isAlive(thisContact) || !isPregnancyForm(report)) {return false;}
-  let lmpDate = getMostRecentLMPDateForPregnancy(allReports, report);
-  if (!lmpDate) { //LMP Date is not available, use reported date
-    lmpDate = report.reported_date;
-  }
-  return lmpDate > today.clone().subtract(MAX_DAYS_IN_PREGNANCY, 'day') && //Pregnancy registration in the past 9 months
-    !getSubsequentDeliveries(allReports, report, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
-    !getSubsequentPregnancies(allReports, report).length &&//pregnancy not terminated by another pregnancy report
-    !getRecentANCVisitWithEvent(allReports, report, 'abortion') &&//pregnancy not terminated by miscarriage or abortion
+  const lmpDate = getMostRecentLMPDateForPregnancy(allReports, report) || report.reported_date;
+  const isPregnancyRegisteredWithin9Months = lmpDate > today.clone().subtract(MAX_DAYS_IN_PREGNANCY, 'day');
+  const isPregnancyTerminatedByDeliveryInLast6Weeks = getSubsequentDeliveries(allReports, report, 6 * 7).length > 0;
+  const isPregnancyTerminatedByAnotherPregnancyReport = getSubsequentPregnancies(allReports, report).length > 0;
+  return isPregnancyRegisteredWithin9Months &&
+    !isPregnancyTerminatedByDeliveryInLast6Weeks &&
+    !isPregnancyTerminatedByAnotherPregnancyReport &&
+    !getRecentANCVisitWithEvent(allReports, report, 'abortion') &&
     !getRecentANCVisitWithEvent(allReports, report, 'miscarriage');
 }
 
@@ -378,27 +377,21 @@ function getSubsequentPregnancyFollowUps(allReports, pregnancyReport) {
   return subsequentVisits;
 }
 
-function countANCFacilityVisits(allReports, pregnancy) {
-  //from pregnancy report: How many times has ${patient_short_name} been to the health facility for ANC? [anc_visits_hf/anc_visits_hf_past/visited_hf_count]
-  //from pregnancy visit report:
-  //Did the woman complete the health facility ANC visit scheduled for ${pregnancy_follow_up_date_recent}? [anc_visits_hf/anc_visits_hf_past/last_visit_attended]
-  //Would you like to report any additional unreported health facility ANC visits? [anc_visits_hf/anc_visits_hf_past/report_other_visits]
-
-  //How many? [anc_visits_hf/anc_visits_hf_past/visited_hf_count]
+function countANCFacilityVisits(allReports, pregnancyReport) {
   let ancHFVisits = 0;
-  const pregnancyFollowUps = getSubsequentPregnancyFollowUps(allReports, pregnancy);
-  if (getField(pregnancy, 'anc_visits_hf.anc_visits_hf_past')) {
-    ancHFVisits += parseInt(getField(pregnancy, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
-  }  
+  const pregnancyFollowUps = getSubsequentPregnancyFollowUps(allReports, pregnancyReport);
+  if (getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past') && !isNaN(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'))) {
+    ancHFVisits += parseInt(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
+  }
   ancHFVisits += pregnancyFollowUps.reduce(function (sum, report) {
     const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
-    if (!pastANCHFVisits) {return 0;}
-    return sum +
-      (pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count)) +
-      (pastANCHFVisits.last_visit_attended === 'yes' && 1);
+    if (!pastANCHFVisits) { return 0; }
+    sum += pastANCHFVisits.last_visit_attended === 'yes' && 1;
+    if (isNaN(pastANCHFVisits.visited_hf_count)) { return sum; }
+    return sum += pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count);
   },
     0);
-  return isNaN(ancHFVisits) ? 0 : ancHFVisits;
+  return ancHFVisits;
 }
 
 function knowsHIVStatusInPast3Months(allReports) {
