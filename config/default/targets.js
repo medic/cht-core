@@ -58,8 +58,8 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!report) return false;
-      if (!getMostRecentLMPDateForPregnancy(contact, report)) return false;
+      if (!report) {return false;}
+      if (!getMostRecentLMPDateForPregnancy(contact, report)) {return false;}
       return true;
     },
     date: 'reported',
@@ -110,7 +110,7 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) return false;
+      if (!isActivePregnancy(contact, report)) {return false;}
       //count and check visits
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 0;
@@ -132,7 +132,7 @@ module.exports = [
       return getField(report, 'delivery_outcome.delivery_place');
     },
     passesIf: function (contact, report) {
-      return getField(report, 'delivery_outcome.delivery_place') === "health_facility";
+      return getField(report, 'delivery_outcome.delivery_place') === 'health_facility';
     },
     date: 'now',
     idType: 'contact'
@@ -148,7 +148,7 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) return false;
+      if (!isActivePregnancy(contact, report)) {return false;}
       //count and check visits
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 3;
@@ -167,7 +167,7 @@ module.exports = [
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
       //count and check visits
-      if (!isActivePregnancy(contact, report)) return false;
+      if (!isActivePregnancy(contact, report)) {return false;}
       const visitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
       const facilityVisitCount = countANCFacilityVisits(contact, report) || 0;
 

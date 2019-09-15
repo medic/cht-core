@@ -27,7 +27,7 @@ describe('Pregnancy danger sign tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) clock.restore();
+    if (clock) {clock.restore();}
   });
 
   it('danger sign follow up from pregnancy registration', async () => {

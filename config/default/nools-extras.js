@@ -15,7 +15,7 @@ function isAlive(contact) {
 
 const getField = (report, fieldPath) => ['fields', ...(fieldPath || '').split('.')]
   .reduce((prev, fieldName) => {
-    if (prev === undefined) return undefined;
+    if (prev === undefined) {return undefined;}
     return prev[fieldName];
   }, report);
 
@@ -69,13 +69,13 @@ function getMostRecentReport(reports, form) {
 }
 
 function getNewestPregnancyTimestamp(contact) {
-  if (!contact.contact) return;
+  if (!contact.contact) {return;}
   const newestPregnancy = getMostRecentReport(contact.reports, 'pregnancy');
   return newestPregnancy ? newestPregnancy.reported_date : 0;
 }
 
 function getNewestDeliveryTimestamp(contact) {
-  if (!contact.contact) return;
+  if (!contact.contact) {return;}
   const newestDelivery = getMostRecentReport(contact.reports, 'delivery');
   return newestDelivery ? newestDelivery.reported_date : 0;
 }
@@ -84,7 +84,7 @@ function isFacilityDelivery(contact, report) {
   if (!contact) {
     return false;
   }
-  if (arguments.length === 1) report = contact;
+  if (arguments.length === 1) {report = contact;}
   return getField(report, 'facility_delivery') === 'yes';
 }
 
@@ -118,10 +118,10 @@ function getReportsSubmittedInWindow(reports, form, start, end, condition) {
 
 
 function getDateISOLocal(s) {
-  if (!s) return new Date();
+  if (!s) {return new Date();}
   const b = s.split(/\D/);
   const d = new Date(b[0], b[1] - 1, b[2]);
-  if (isValidDate(d)) return d;
+  if (isValidDate(d)) {return d;}
   return new Date();
 }
 
@@ -135,8 +135,8 @@ function getTimeForMidnight(d) {
 }
 
 function getDateMS(d) {
-  if (typeof d === "string") {
-    if (d === "") return null;
+  if (typeof d === 'string') {
+    if (d === '') {return null;}
     d = getDateISOLocal(d);
   }
   return getTimeForMidnight(d).getTime();
@@ -239,7 +239,7 @@ function isPregnancyTerminatedByMiscarriage(contact, report) {
 }
 
 function isActivePregnancy(contact, report) {
-  if (!isPregnancyForm(report)) return false;
+  if (!isPregnancyForm(report)) {return false;}
   const lmpDate = getMostRecentLMPDateForPregnancy(contact, report);
   return lmpDate > today - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY && //Pregnancy registration in the past 9 months
     !getSubsequentDeliveries(contact, report, 6 * 7).length && //pregnancy not terminated by delivery in last 6 weeks
@@ -262,7 +262,7 @@ function countANCFacilityVisits(contact, pregnancyReport) {
   }
   ancHFVisits += pregnancyFollowUps.reduce(function (sum, report) {
     const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
-    if (!pastANCHFVisits) return 0;
+    if (!pastANCHFVisits) {return 0;}
     return sum +
       (pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count)) +
       (pastANCHFVisits.last_visit_attended === 'yes' && 1);

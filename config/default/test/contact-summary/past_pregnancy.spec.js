@@ -16,7 +16,7 @@ describe('Tests for past pregnancy condition card', () => {
   beforeEach(async () => { return await harness.clear(); });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) clock.restore();
+    if (clock) {clock.restore();}
   });
 
   it('pregnancy registration with risk factors, one child healthy delivery', async () => {
@@ -42,32 +42,32 @@ describe('Tests for past pregnancy condition card', () => {
     const fields = pastPregnancyCard.fields;
     expect(fields).to.have.property('length', 5);
     expect(fields[0]).to.deep.equal({
-      "label": "contact.profile.delivery_date",
-      "value": moment('2000-04-22').valueOf(),
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.delivery_date',
+      'value': moment('2000-04-22').valueOf(),
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[1]).to.deep.equal({
-      "label": "contact.profile.delivery_place",
-      "value": "health_facility",
-      "translate": true,
-      "width": 6
+      'label': 'contact.profile.delivery_place',
+      'value': 'health_facility',
+      'translate': true,
+      'width': 6
     });
     expect(fields[2]).to.deep.equal({
-      "label": "contact.profile.delivered_babies",
-      "value": "1",
-      "width": 6
+      'label': 'contact.profile.delivered_babies',
+      'value': '1',
+      'width': 6
     });
     expect(fields[3]).to.deep.equal({
-      "label": "contact.profile.anc_visit",
-      "value": 1,
-      "width": 3
+      'label': 'contact.profile.anc_visit',
+      'value': 1,
+      'width': 3
     });
     expect(fields[4]).to.deep.equal({
-      "icon": "icon-risk",
-      "label": "contact.profile.risk.high",
-      "value": "Asthma; underweight",
-      "width": 6
+      'icon': 'icon-risk',
+      'label': 'contact.profile.risk.high',
+      'value': 'Asthma; underweight',
+      'width': 6
     });
   });
 
@@ -94,32 +94,32 @@ describe('Tests for past pregnancy condition card', () => {
     const fields = pastPregnancyCard.fields;
     expect(fields).to.have.property('length', 5);
     expect(fields[0]).to.deep.equal({
-      "label": "contact.profile.delivery_date",
-      "value": moment('2000-04-22').valueOf(),
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.delivery_date',
+      'value': moment('2000-04-22').valueOf(),
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[1]).to.deep.equal({
-      "label": "contact.profile.delivery_place",
-      "value": "health_facility",
-      "translate": true,
-      "width": 6
+      'label': 'contact.profile.delivery_place',
+      'value': 'health_facility',
+      'translate': true,
+      'width': 6
     });
     expect(fields[2]).to.deep.equal({
-      "label": "contact.profile.delivered_babies",
-      "value": "2",
-      "width": 6
+      'label': 'contact.profile.delivered_babies',
+      'value': '2',
+      'width': 6
     });
     expect(fields[3]).to.deep.equal({
-      "label": "contact.profile.anc_visit",
-      "value": 1,
-      "width": 3
+      'label': 'contact.profile.anc_visit',
+      'value': 1,
+      'width': 3
     });
     expect(fields[4]).to.deep.equal({
-      "icon": "icon-risk",
-      "label": "contact.profile.risk.high",
-      "value": "Asthma; underweight",
-      "width": 6
+      'icon': 'icon-risk',
+      'label': 'contact.profile.risk.high',
+      'value': 'Asthma; underweight',
+      'width': 6
     });
   });
 
@@ -148,79 +148,79 @@ describe('Tests for past pregnancy condition card', () => {
     const fields = pastPregnancyCard.fields;
     expect(fields).to.have.property('length', 14);
     expect(fields[0]).to.deep.equal({
-      "label": "contact.profile.delivery_date",
-      "value": moment('2000-04-22').valueOf(),
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.delivery_date',
+      'value': moment('2000-04-22').valueOf(),
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[1]).to.deep.equal({
-      "label": "contact.profile.delivery_place",
-      "value": "health_facility",
-      "translate": true,
-      "width": 6
+      'label': 'contact.profile.delivery_place',
+      'value': 'health_facility',
+      'translate': true,
+      'width': 6
     });
     expect(fields[2]).to.deep.equal({
-      "label": "contact.profile.delivered_babies",
-      "value": "3",
-      "width": 6
+      'label': 'contact.profile.delivered_babies',
+      'value': '3',
+      'width': 6
     });
     expect(fields[3]).to.deep.equal({
-      "label": "contact.profile.newborn.death_date",
-      "value": "2000-04-22",
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.newborn.death_date',
+      'value': '2000-04-22',
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[4]).to.deep.equal({
-      "label": "contact.profile.newborn.death_place",
-      "value": "health_facility",
-      "width": 6
+      'label': 'contact.profile.newborn.death_place',
+      'value': 'health_facility',
+      'width': 6
     });
     expect(fields[5]).to.deep.equal({
-      "label": "contact.profile.delivery.stillbirthQ",
-      "value": "yes",
-      "width": 6
+      'label': 'contact.profile.delivery.stillbirthQ',
+      'value': 'yes',
+      'width': 6
     });
     expect(fields[6]).to.deep.equal({
-      "label": "",
-      "value": "",
-      "width": 6
+      'label': '',
+      'value': '',
+      'width': 6
     });
     expect(fields[7]).to.deep.equal({
-      "label": "contact.profile.newborn.death_date",
-      "value": "2000-04-23",
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.newborn.death_date',
+      'value': '2000-04-23',
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[8]).to.deep.equal({
-      "label": "contact.profile.newborn.death_place",
-      "value": "home",
-      "width": 6
+      'label': 'contact.profile.newborn.death_place',
+      'value': 'home',
+      'width': 6
     });
     expect(fields[9]).to.deep.equal({
-      "label": "contact.profile.delivery.stillbirthQ",
-      "value": "no",
-      "width": 6
+      'label': 'contact.profile.delivery.stillbirthQ',
+      'value': 'no',
+      'width': 6
     });
     expect(fields[10]).to.deep.equal({
-      "label": "",
-      "value": "",
-      "width": 6
+      'label': '',
+      'value': '',
+      'width': 6
     });
     expect(fields[11]).to.deep.equal({
-      "label": "contact.profile.deceased_babies",
-      "value": "1",
-      "width": 6
+      'label': 'contact.profile.deceased_babies',
+      'value': '1',
+      'width': 6
     });
     expect(fields[12]).to.deep.equal({
-      "label": "contact.profile.anc_visit",
-      "value": 1,
-      "width": 3
+      'label': 'contact.profile.anc_visit',
+      'value': 1,
+      'width': 3
     });
     expect(fields[13]).to.deep.equal({
-      "icon": "icon-risk",
-      "label": "contact.profile.risk.high",
-      "value": "Asthma; underweight",
-      "width": 6
+      'icon': 'icon-risk',
+      'label': 'contact.profile.risk.high',
+      'value': 'Asthma; underweight',
+      'width': 6
     });
   });
 
@@ -247,33 +247,33 @@ describe('Tests for past pregnancy condition card', () => {
     const fields = pastPregnancyCard.fields;
     expect(fields).to.have.property('length', 5);
     expect(fields[0]).to.deep.equal({
-      "label": "contact.profile.pregnancy.end_early",
-      "value": "miscarriage",
-      "translate": true,
-      "width": 6
+      'label': 'contact.profile.pregnancy.end_early',
+      'value': 'miscarriage',
+      'translate': true,
+      'width': 6
     });
     expect(fields[1]).to.deep.equal({
-      "label": "contact.profile.pregnancy.end_date",
-      "value": moment('2000-01-02').valueOf(),
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.pregnancy.end_date',
+      'value': moment('2000-01-02').valueOf(),
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[2]).to.deep.equal({
-      "label": "contact.profile.pregnancy.end_weeks",
-      "value": 22,
-      "translate": false,
-      "width": 6
+      'label': 'contact.profile.pregnancy.end_weeks',
+      'value': 22,
+      'translate': false,
+      'width': 6
     });
     expect(fields[3]).to.deep.equal({
-      "label": "contact.profile.anc_visit",
-      "value": 1,
-      "width": 3
+      'label': 'contact.profile.anc_visit',
+      'value': 1,
+      'width': 3
     });
     expect(fields[4]).to.deep.equal({
-      "label": "contact.profile.risk.high",
-      "value": "Asthma; underweight",
-      "icon": "icon-risk",
-      "width": 6
+      'label': 'contact.profile.risk.high',
+      'value': 'Asthma; underweight',
+      'icon': 'icon-risk',
+      'width': 6
     });
   });
 
@@ -300,33 +300,33 @@ describe('Tests for past pregnancy condition card', () => {
     const fields = pastPregnancyCard.fields;
     expect(fields).to.have.property('length', 5);
     expect(fields[0]).to.deep.equal({
-      "label": "contact.profile.pregnancy.end_early",
-      "value": "abortion",
-      "translate": true,
-      "width": 6
+      'label': 'contact.profile.pregnancy.end_early',
+      'value': 'abortion',
+      'translate': true,
+      'width': 6
     });
     expect(fields[1]).to.deep.equal({
-      "label": "contact.profile.pregnancy.end_date",
-      "value": moment('2000-01-02').valueOf(),
-      "filter": "simpleDate",
-      "width": 6
+      'label': 'contact.profile.pregnancy.end_date',
+      'value': moment('2000-01-02').valueOf(),
+      'filter': 'simpleDate',
+      'width': 6
     });
     expect(fields[2]).to.deep.equal({
-      "label": "contact.profile.pregnancy.end_weeks",
-      "value": 22,
-      "translate": false,
-      "width": 6
+      'label': 'contact.profile.pregnancy.end_weeks',
+      'value': 22,
+      'translate': false,
+      'width': 6
     });
     expect(fields[3]).to.deep.equal({
-      "label": "contact.profile.anc_visit",
-      "value": 1,
-      "width": 3
+      'label': 'contact.profile.anc_visit',
+      'value': 1,
+      'width': 3
     });
     expect(fields[4]).to.deep.equal({
-      "label": "contact.profile.risk.high",
-      "value": "Asthma; underweight",
-      "icon": "icon-risk",
-      "width": 6
+      'label': 'contact.profile.risk.high',
+      'value': 'Asthma; underweight',
+      'icon': 'icon-risk',
+      'width': 6
     });
   });
 

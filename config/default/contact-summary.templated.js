@@ -40,12 +40,12 @@ const cards = [
   {
     label: 'contact.profile.pregnancy.active',
     appliesToType: 'report',
-    appliesIf: function (report) { return isActivePregnancy(thisContact, allReports, report) },
+    appliesIf: function (report) { return isActivePregnancy(thisContact, allReports, report); },
     fields: function (report) {
       const fields = [];
       const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(allReports, report));
       const riskFactorCustom = getRiskFactorExtra(report);
-      if (riskFactorCustom) riskFactors.push(riskFactorCustom);
+      if (riskFactorCustom) {riskFactors.push(riskFactorCustom);}
       const dangerSigns = getLatestDangerSignsForPregnancy(allReports, report);
 
       const highRisk = isHighRiskPregnancy(allReports, report);
@@ -56,7 +56,7 @@ const cards = [
       const lmp_date = getMostRecentLMPDateForPregnancy(allReports, report);
       const edd_ms = getMostRecentEDDForPregnancy(allReports, report);
       const nextAncVisitDate = getNextANCVisitDate(allReports, report);
-      const weeksPregnant = lmp_date ? today.diff(lmp_date, "weeks") : null;
+      const weeksPregnant = lmp_date ? today.diff(lmp_date, 'weeks') : null;
       let lmp_approx = getField(report, 'lmp_approx');
       let reportDate = report.reported_date;
       getSubsequentPregnancyFollowUps(allReports, report).forEach(function (followUpReport) {
@@ -68,7 +68,7 @@ const cards = [
           }
         }
         const riskFactorCustomNew = getRiskFactorExtra(followUpReport);
-        if (riskFactorCustomNew) riskFactors.push(riskFactorCustomNew);
+        if (riskFactorCustomNew) {riskFactors.push(riskFactorCustomNew);}
       });
       //These two would only show up if the CHW answered, "no, refusing care" or "no, migrated out of area" to the question "do you want to start this pregnancy visit?" it would continue to be shown as an active pregnancy until the max EDD.
       //If a woman returns to care and the CHW submits another pregnancy visit form, these fields would go away the pregnancy would revert to normal, active status.
@@ -91,9 +91,9 @@ const cards = [
       );
 
       if (highRisk)
-        fields.push(
+        {fields.push(
           { label: 'contact.profile.risk.high', value: riskFactors.join('; '), icon: 'icon-risk', width: 6 }
-        );
+        );}
 
       if (dangerSigns.length > 0) {
         fields.push({ label: 'contact.profile.danger_signs.current', value: dangerSigns.join(', '), width: 6 });
@@ -135,7 +135,7 @@ const cards = [
           dewormingMedicationReceived = getField(followUpReport, 'deworming_med_received');
           ttReceived = getField(followUpReport, 'tt_received');
           if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes')
-            pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date');
+            {pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date');}
         }
         const riskFactorCustomNew = getRiskFactorExtra(followUpReport);
         if (riskFactorCustomNew) {
@@ -193,8 +193,8 @@ const cards = [
     label: 'contact.profile.pregnancy.past',
     appliesToType: 'report',
     appliesIf: function (report) {
-      if (thisContact.type !== 'person') return false;
-      if (report.form === 'delivery') return true;
+      if (thisContact.type !== 'person') {return false;}
+      if (report.form === 'delivery') {return true;}
       if (report.form === 'pregnancy') {
         //check if early end to pregnancy (miscarriage/abortion)
         if (getRecentANCVisitWithEvent(allReports, report, 'abortion') || getRecentANCVisitWithEvent(allReports, report, 'miscarriage')) {
@@ -202,7 +202,7 @@ const cards = [
         }
         //check if 42 weeks past pregnancy and no delivery form submitted
         const lmpDate = getMostRecentLMPDateForPregnancy(allReports, report);
-        return lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, "weeks")) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0;
+        return lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, 'weeks')) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0;
 
       }
       return false;
@@ -265,7 +265,7 @@ const cards = [
           );
         }
         //if no delivery form and past 42 weeks, display EDD as delivery date
-        else if (lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, "weeks")) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0) {
+        else if (lmpDate && today.isSameOrAfter(lmpDate.clone().add(42, 'weeks')) && getSubsequentDeliveries(allReports, report, MAX_DAYS_IN_PREGNANCY).length === 0) {
           dateOfDelivery = getMostRecentEDDForPregnancy(allReports, report);
           fields.push({ label: 'contact.profile.delivery_date', value: dateOfDelivery ? dateOfDelivery.valueOf() : 'contact.profile.value.unknown', filter: 'simpleDate', translate: dateOfDelivery ? false : true, width: 6 });
         }
@@ -316,12 +316,12 @@ const cards = [
         );
         const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(allReports, relevantPregnancy));
         const riskFactorCustom = getRiskFactorExtra(relevantPregnancy);
-        if (riskFactorCustom) riskFactors.push(riskFactorCustom);
-        const highRisk = isHighRiskPregnancy(allReports, relevantPregnancy)
+        if (riskFactorCustom) {riskFactors.push(riskFactorCustom);}
+        const highRisk = isHighRiskPregnancy(allReports, relevantPregnancy);
         if (highRisk)
-          fields.push(
+          {fields.push(
             { label: 'contact.profile.risk.high', value: riskFactors.join('; '), icon: 'icon-risk', width: 6 }
-          );
+          );}
       }
 
       return fields;
