@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const path = require('path');
-const moment = require('moment')
+const moment = require('moment');
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
 const { babyDeceasedAtAge1Day, babyDeceasedAtAgeJustUnder5Years, babyDeceasedAtAge5Years } = require('../contacts');
@@ -23,7 +23,7 @@ describe('Death related targets tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) clock.restore();
+    if (clock) {clock.restore();}
   });
 
   it('death this month target test this month', async () => {

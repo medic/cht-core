@@ -13,34 +13,34 @@ describe('Date related tests', () => {
         clock.restore();
     });
 
-    it("today is correct", () => {
+    it('today is correct', () => {
         expect(moment().startOf('day').valueOf()).to.equal(extras.today);
     });
 
-    it("method addDays", () => {
+    it('method addDays', () => {
         for (let i = 1; i < 100; i++) {
             expect(moment().startOf('day').add(i, 'days').valueOf()).to.equal(extras.addDays(extras.today, i).getTime());
         }
     });
 
-    it("method getTimeForMidnight", () => {
+    it('method getTimeForMidnight', () => {
         expect(moment().startOf('day').valueOf()).to.equal(extras.getTimeForMidnight(Date.now()).getTime());
     });
 
-    it("method getDateMS", () => {
-        expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS("2000-01-01"));//String format      
-        expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS(new Date("2000-01-01")));//Date format
-        expect(moment("2000-01-01").valueOf()).to.equal(extras.getDateMS((new Date("2000-01-01").getTime())));//MS since epoch    
+    it('method getDateMS', () => {
+        expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS('2000-01-01'));//String format      
+        expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS(new Date('2000-01-01')));//Date format
+        expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS((new Date('2000-01-01').getTime())));//MS since epoch    
     });
 
-    it("method getMostRecentReport", () => {
+    it('method getMostRecentReport', () => {
         const reports = [
-            { _id: "r1", reported_date: 2, form: "a" },
-            { _id: "r2", reported_date: 3, form: "b" },
-            { _id: "r3", reported_date: 1, form: "a" },
-            { _id: "r4", reported_date: 2, form: "b" }];
-        expect(extras.getMostRecentReport(reports, "a")._id).to.equal("r1");
-        expect(extras.getMostRecentReport(reports, "b")._id).to.equal("r2");
+            { _id: 'r1', reported_date: 2, form: 'a' },
+            { _id: 'r2', reported_date: 3, form: 'b' },
+            { _id: 'r3', reported_date: 1, form: 'a' },
+            { _id: 'r4', reported_date: 2, form: 'b' }];
+        expect(extras.getMostRecentReport(reports, 'a')._id).to.equal('r1');
+        expect(extras.getMostRecentReport(reports, 'b')._id).to.equal('r2');
     });
 });
 
@@ -103,7 +103,7 @@ describe('Test method countANCFacilityVisits', () => {
                 anc_visits_hf: {
                     anc_visits_hf_past: {
                         report_other_visits: 'yes',
-                        visited_hf_count: "3"
+                        visited_hf_count: '3'
                     }
                 }
             }
@@ -118,7 +118,7 @@ describe('Test method countANCFacilityVisits', () => {
                     anc_visits_hf_past: {
                         last_visit_attended: 'yes',
                         report_other_visits: 'yes',
-                        visited_hf_count: "2"
+                        visited_hf_count: '2'
                     }
                 }
             }

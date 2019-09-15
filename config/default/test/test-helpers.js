@@ -3,7 +3,7 @@ const MAX_DAYS_IN_PREGNANCY = 42 * 7;  // 42 weeks
 
 function getRangeForTask(task) {
     const a = task.triggers.map(t => {
-        t = task.triggerUnit === "weeks" ? t * 7 : t;
+        t = task.triggerUnit === 'weeks' ? t * 7 : t;
         const start = t - task.pre;
         const end = t + task.post;
         return range(start, end);
@@ -16,7 +16,7 @@ function getRangeForTask(task) {
 //1 day before start, start day, end day, 1 day after end day 
 function getTaskWindowEdges(task) {
     const a = task.triggers.map(t => {
-        t = task.triggerUnit === "weeks" ? t * 7 : t;
+        t = task.triggerUnit === 'weeks' ? t * 7 : t;
         const start = t - task.pre;
         const end = t + task.post;
         return [start - 1, start, end, end + 1];
@@ -32,7 +32,7 @@ function range(a, b, d = 1) {
 
 //combine range from start to end separated by d days, task window edges, get unique and sort
 function getTaskTestDays(start, end, task, interval = 1) {
-    return [...new Set(range(start, end, interval).concat(getTaskWindowEdges(task)))].sort(function(a, b) {return a - b});
+    return [...new Set(range(start, end, interval).concat(getTaskWindowEdges(task)))].sort(function(a, b) {return a - b;});
 }
 
 module.exports = {
@@ -40,4 +40,4 @@ module.exports = {
     range,
     getRangeForTask,
     getTaskTestDays
-}
+};

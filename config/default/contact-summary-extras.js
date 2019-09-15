@@ -2,7 +2,7 @@ const moment = require('moment');
 const today = moment().startOf('day');
 
 const isReportValid = function (report) {
-  if (report.form && report.fields && report.reported_date) return true;
+  if (report.form && report.fields && report.reported_date) {return true;}
   return false;
 };
 
@@ -54,7 +54,7 @@ const pncDangerSigns = [
 
 const getField = (report, fieldPath) => ['fields', ...(fieldPath || '').split('.')]
   .reduce((prev, fieldName) => {
-    if (prev === undefined) return undefined;
+    if (prev === undefined) {return undefined;}
     return prev[fieldName];
   }, report);
 
@@ -69,7 +69,7 @@ function getFormArraySubmittedInWindow(allReports, formArray, start, end) {
 function getNewestReport(allReports, forms) {
   let result;
   allReports.forEach(function (report) {
-    if (!isReportValid(report) || !forms.includes(report.form)) { return }
+    if (!isReportValid(report) || !forms.includes(report.form)) { return; }
     if (!result || report.reported_date > result.reported_date) {
       result = report;
     }
@@ -91,11 +91,11 @@ function getMostRecentLMPDateForPregnancy(allReports, pregnancyReport) {
   let mostRecentReportDate = pregnancyReport.reported_date;
   getSubsequentPregnancyFollowUps(allReports, pregnancyReport).forEach(function (visit) {
     const lmpFromPregnancyFollowUp = getLMPDateFromPregnancyFollowUp(visit);
-    if (visit.reported_date > mostRecentReportDate && getField(visit, 'lmp_updated') === "yes") {
+    if (visit.reported_date > mostRecentReportDate && getField(visit, 'lmp_updated') === 'yes') {
       mostRecentReportDate = visit.reported_date;
       mostRecentLMP = lmpFromPregnancyFollowUp;
     }
-  })
+  });
   return mostRecentLMP;
 }
 
@@ -130,7 +130,7 @@ function getDangerSigns(report, ANCorPNC) {
   if (getField(report, 't_danger_signs_referral_follow_up') === 'yes') {
     const dangerSignsObj = getField(report, 'danger_signs');
     dangerSignsList.forEach(function (sign) {
-      if (dangerSignsObj[sign[0]] === "yes") {
+      if (dangerSignsObj[sign[0]] === 'yes') {
         dangerSigns.push(sign[1]);
       }
     });
@@ -139,9 +139,9 @@ function getDangerSigns(report, ANCorPNC) {
 }
 
 function getLatestDangerSignsForPregnancy(allReports, pregnancy) {
-  if (!pregnancy) return [];
+  if (!pregnancy) {return [];}
   let lmpDate = getMostRecentLMPDateForPregnancy(allReports, pregnancy);
-  if (!lmpDate) lmpDate = moment(pregnancy.reported_date); //If unknown, take preganacy.reported_date
+  if (!lmpDate) {lmpDate = moment(pregnancy.reported_date);} //If unknown, take preganacy.reported_date
   const allReportsWithDangerSigns = getFormArraySubmittedInWindow(allReports, pregnancDangerSignForms, lmpDate.toDate(), lmpDate.clone().add(MAX_DAYS_IN_PREGNANCY, 'days').toDate());
   const allRelevantReports = [];
   allReportsWithDangerSigns.forEach((report) => {
@@ -156,16 +156,16 @@ function getLatestDangerSignsForPregnancy(allReports, pregnancy) {
     else {
       allRelevantReports.push(report);
     }
-  })
+  });
   const recentReport = getNewestReport(allRelevantReports, pregnancDangerSignForms);
-  if (!recentReport) return [];
+  if (!recentReport) {return [];}
   return getDangerSigns(recentReport, 'ANC');
 }
 
 
 function getRiskFactorCodesFromPregnancy(report) {
   let riskFactors = [];
-  if (!isPregnancyForm(report)) return [];
+  if (!isPregnancyForm(report)) {return [];}
   if (getField(report, 'risk_factors.r_risk_factor_present') === 'yes') {
     if (getField(report, 'risk_factors.risk_factors_history.first_pregnancy') === 'yes') {
       riskFactors.push('first_pregnancy');
@@ -187,7 +187,7 @@ function getRiskFactorCodesFromPregnancy(report) {
 
 function getNewRiskFactorCodesFromFollowUps(report) {
   let riskFactors = [];
-  if (!isPregnancyFollowUpForm(report)) return [];
+  if (!isPregnancyFollowUpForm(report)) {return [];}
   if (getField(report, 'anc_visits_hf.risk_factors.r_risk_factor_present') === 'yes') {
     const newRiskFactors = getField(report, 'anc_visits_hf.risk_factors.new_risks');
     if (typeof (newRiskFactors) !== 'undefined') {
@@ -255,7 +255,7 @@ function getSubsequentPregnancies(allReports, refReport) {
 
 
 function isActivePregnancy(thisContact, allReports, report) {
-  if (thisContact.type !== 'person' || !isAlive(thisContact) || !isPregnancyForm(report)) return false;
+  if (thisContact.type !== 'person' || !isAlive(thisContact) || !isPregnancyForm(report)) {return false;}
   let lmpDate = getMostRecentLMPDateForPregnancy(allReports, report);
   if (!lmpDate) { //LMP Date is not available, use reported date
     lmpDate = report.reported_date;
@@ -272,7 +272,7 @@ function isPregnant(allReports) {
 }
 
 function isReadyForNewPregnancy(thisContact, allReports) {
-  if (thisContact.type !== 'person') return false;
+  if (thisContact.type !== 'person') {return false;}
   const mostRecentPregnancyReport = getNewestReport(allReports, pregnancyForms);
   const mostRecentDeliveryReport = getNewestReport(allReports, deliveryForms);
   if (!mostRecentPregnancyReport && !mostRecentDeliveryReport) {
@@ -322,7 +322,7 @@ function isReadyForDelivery(thisContact, allReports) {
   //If pregnancy registration, date of LMP should be at least 6 months ago and no more than EDD + 6 weeks. 
   //If pregnancy registration and no LMP, make it available at registration and until 280 days + 6 weeks from the date of registration. 
   //If no pregnancy registration, previous delivery date should be at least 7 months ago.
-  if (thisContact.type !== 'person') return false;
+  if (thisContact.type !== 'person') {return false;}
   const latestPregnancy = getNewestReport(allReports, pregnancyForms);
   const latestDelivery = getNewestReport(allReports, deliveryForms);
   if (!latestPregnancy && !latestDelivery) {
@@ -392,7 +392,7 @@ function countANCFacilityVisits(allReports, pregnancy) {
   }  
   ancHFVisits += pregnancyFollowUps.reduce(function (sum, report) {
     const pastANCHFVisits = getField(report, 'anc_visits_hf.anc_visits_hf_past');
-    if (!pastANCHFVisits) return 0;
+    if (!pastANCHFVisits) {return 0;}
     return sum +
       (pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count)) +
       (pastANCHFVisits.last_visit_attended === 'yes' && 1);

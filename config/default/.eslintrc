@@ -12,7 +12,8 @@
     "no-undef": 1,
     "no-unused-vars": 1,
     "no-console": "off",
-    "no-debugger": "off"
+    "no-debugger": "off",
+    "quotes": ["error", "single", { "avoidEscape": true }]
   },
   "overrides": [
     {
