@@ -8,6 +8,9 @@
 
   const ONLINE_ROLE = 'mm-online';
 
+  let remoteDocCount;
+  let localDocCount;
+
   var getUserCtx = function() {
     var userCtx, locale;
     document.cookie.split(';').forEach(function(c) {
@@ -31,20 +34,57 @@
     }
   };
 
-  const getDbInfo = function() {
+  const getBaseUrl = () => {
     // parse the URL to determine the remote and local database names
     const location = window.location;
-    const dbName = 'medic';
     const port = location.port ? ':' + location.port : '';
-    const remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
+    return `${location.protocol}//${location.hostname}${port}`;
+  };
+
+  const getDbInfo = function() {
+    const dbName = 'medic';
     return {
       name: dbName,
-      remote: remoteDB
+      remote: `${getBaseUrl()}/${dbName}`
     };
   };
 
   var getLocalDbName = function(dbInfo, username) {
     return dbInfo.name + '-user-' + username;
+  };
+
+  const docCountPoll = (localDb) => {
+    setUiStatus('POLL_REPLICATION');
+    const fetchOpts = {
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    };
+    return Promise
+      .all([
+        localDb.allDocs({ limit: 1 }),
+        fetch(`${getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
+      ])
+      .then(([ local, remote ]) => {
+        localDocCount = local.total_rows;
+        remoteDocCount = remote.total_docs;
+
+        if (remote.warn) {
+          return new Promise(resolve => {
+            const errorMessage = translator.translate('TOO_MANY_DOCS', { count: remoteDocCount, limit: remote.limit });
+            const continueBtn = translator.translate('CONTINUE');
+            const abort = translator.translate('ABORT');
+
+            $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
+            $('.bootstrap-layer .error').show();
+            $('.bootstrap-layer .error').html('<div><p class="alert alert-warning">' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
+            $('#btn-continue').click(() => resolve());
+            $('#btn-abort').click(() => {
+              document.cookie = 'login=force;path=/';
+              window.location.reload(false);
+            });
+          });
+        }
+      });
   };
 
   var initialReplication = function(localDb, remoteDb) {
@@ -56,13 +96,14 @@
         live: false,
         retry: false,
         heartbeat: 10000,
-        timeout: 1000 * 60 * 10, // try for ten minutes then give up
+        timeout: 1000 * 60 * 10, // try for ten minutes then give up,
+        query_params: { initial_replication: true }
       });
 
     replicator
       .on('change', function(info) {
         console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', { count: info.docs_read || '?' });
+        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
       });
 
     return replicator
@@ -108,16 +149,20 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
-  var setUiStatus = function(translationKey, args) {
-    var translated = translator.translate(translationKey, args);
+  const setUiStatus = (translationKey, args)  => {
+    const translated = translator.translate(translationKey, args);
+    $('.bootstrap-layer .status, .bootstrap-layer .loader').show();
+    $('.bootstrap-layer .error').hide();
     $('.bootstrap-layer .status').text(translated);
   };
 
-  var setUiError = function() {
-    var errorMessage = translator.translate('ERROR_MESSAGE');
-    var tryAgain = translator.translate('TRY_AGAIN');
-    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
+  const setUiError = err => {
+    const errorMessage = translator.translate(err && err.key || 'ERROR_MESSAGE');
+    const tryAgain = translator.translate('TRY_AGAIN');
+    $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
     $('#btn-reload').click(() => window.location.reload(false));
+    $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
+    $('.bootstrap-layer .error').show();
   };
 
   var getDdoc = function(localDb) {
@@ -155,7 +200,8 @@
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
-          return initialReplication(localDb, remoteDb)
+          return docCountPoll(localDb)
+            .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
             .then(isReplicationStillNeeded => {
               if (isReplicationStillNeeded) {
@@ -185,7 +231,7 @@
             return redirectToLogin(dbInfo, err, callback);
           }
 
-          setUiError();
+          setUiError(err);
         }
 
         callback(err);

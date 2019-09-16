@@ -69,7 +69,7 @@ angular.module('inboxServices').service('Enketo',
         elem.css('visibility', 'hidden');
         elem.wrap('<div class="loader">');
         DB()
-          .getAttachment(formDoc._id, src.substring(5))
+          .getAttachment(formDoc._id, src)
           .then(function(blob) {
             var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
@@ -344,7 +344,13 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderForm = function(selector, form, instanceData, editedListener) {
+    var registerValuechangeListener = function(selector, listener) {
+      if (listener) {
+        $(selector).on('valuechange.enketo', listener);
+      }
+    };
+                        
+    var renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
       return Language()
         .then(language => withForm(form, language))
         .then(function(doc) {
@@ -353,13 +359,14 @@ angular.module('inboxServices').service('Enketo',
         })
         .then(function(form) {
           registerEditedListener(selector, editedListener);
+          registerValuechangeListener(selector, valuechangeListener);
           return form;
         });
     };
 
-    this.render = function(selector, form, instanceData, editedListener) {
+    this.render = function(selector, form, instanceData, editedListener, valuechangeListener) {
       return $q.all([inited, getUserContact()]).then(function() {
-        return renderForm(selector, form, instanceData, editedListener);
+        return renderForm(selector, form, instanceData, editedListener, valuechangeListener);
       });
     };
 
@@ -530,6 +537,9 @@ angular.module('inboxServices').service('Enketo',
           if (!valid) {
             throw new Error('Form is invalid');
           }
+
+          $('form.or').trigger('beforesave');
+
           if (docId) {
             return update(docId);
           }

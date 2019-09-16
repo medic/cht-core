@@ -92,10 +92,10 @@ module.exports = {
     helper.waitUntilReady(element(by.id('message-list')));
   },
 
-  goToPeople: () => {
-    browser.get(utils.getBaseUrl() + 'contacts/');
-    helper.waitUntilReady(medicLogo);
-    helper.waitUntilReady(element(by.id('contacts-list')));
+  goToPeople: async () => {
+    await browser.get(utils.getBaseUrl() + 'contacts/');
+    await helper.waitUntilReady(medicLogo);
+    await helper.waitUntilReady(element(by.id('contacts-list')));
   },
 
   goToReports: refresh => {

@@ -92,7 +92,14 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     // See $stateParams.id note at top of file
     var getContactable = function(id, type) {
       if (type === 'contact') {
-        return LineageModelGenerator.contact(id);
+        return LineageModelGenerator.contact(id)
+                                    .catch(err => {
+                                      if (err.code === 404) {
+                                        return Promise.resolve();
+                                      }
+
+                                      throw err;
+                                    });
       } else if (type === 'phone') {
         return {name: id};
       } else {
@@ -118,8 +125,27 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         MessageContacts.conversation(id)
       ])
         .then(function(results) {
-          var contactModel = results[0];
-          var conversation = results[1];
+          let contactModel = results[0];
+          const conversation = results[1];
+          if (!contactModel) {
+            const firstTaskWithContact = conversation[0].doc.tasks.find( 
+              function(task) {
+                const message = task.messages && task.messages[0];
+                return message && message.contact && message.contact._id === id;
+              }
+            );
+            const firstMessageWithContact = firstTaskWithContact.messages.find( 
+              function(message) {
+                return message.contact._id === id;
+              }
+            );
+            contactModel = {
+              doc: {
+                name: '',
+                phone: firstMessageWithContact.to
+              }
+            };
+          }
           if (ctrl.selectedMessage && ctrl.selectedMessage.id !== id) {
             // ignore response for previous request
             return;
@@ -255,7 +281,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     });
 
     $('.tooltip').remove();
-
 
     // See $stateParams.id note at top of file
     selectContact($stateParams.id, $stateParams.type);

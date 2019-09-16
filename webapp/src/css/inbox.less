@@ -920,6 +920,8 @@ a.fa:hover {
       border-radius: 0;
       border: none;
       display: flex;
+      max-width: none;
+      overflow-y: hidden;
       box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
 
       .mm-icon-caption {
@@ -927,7 +929,7 @@ a.fa:hover {
         line-height: 1;
         color: @label-color;
         max-width: none;
-        margin: 6px 0 0;
+        padding: 6px 0 0;
         .verify-icon {
           display: block;
           margin: 0 auto 3px auto;
@@ -979,9 +981,10 @@ a.fa:hover {
 
 .reporting,
 .about,
-.configuration {
+.configuration,
+.theme {
   background-color: #ffffff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid @separator-color;
   border-width: 0 1px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1189,7 +1192,8 @@ a.fa:hover {
 }
 
 .about,
-.analytics {
+.analytics,
+.theme {
   .content {
     .inner {
       /* allow the scrollable content to grow to full width */

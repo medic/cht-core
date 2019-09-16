@@ -1,8 +1,9 @@
-const _ = require('underscore'),
-  auth = require('../auth'),
-  logger = require('../logger'),
-  serverUtils = require('../server-utils'),
-  usersService = require('../services/users');
+const _ = require('underscore');
+const auth = require('../auth');
+const logger = require('../logger');
+const serverUtils = require('../server-utils');
+const usersService = require('../services/users');
+const authorization = require('../services/authorization');
 
 const hasFullPermission = req => {
   return auth
@@ -41,6 +42,62 @@ const basicAuthValid = (credentials, username) => {
 };
 
 const isChangingPassword = req => Object.keys(req.body).includes('password');
+
+const getRoles = req => {
+  const params = req.query;
+  let roles;
+  try {
+    roles = JSON.parse(params.role);
+  } catch (err) {
+    // if json.parse fails, consider we just got one string role as param
+    return [params.role];
+  }
+
+  if (typeof roles === 'string') {
+    roles = [roles];
+  }
+
+  if (!Array.isArray(roles)) {
+    throw { code: 400, reason: 'Role parameter must be either a string or a JSON encoded array' };
+  }
+
+  if (roles.some(role => typeof role !== 'string')) {
+    throw { code: 400, reason: 'All roles should be strings' };
+  }
+
+  return roles;
+};
+
+const getInfoUserCtx = req => {
+  if (!auth.isOnlineOnly(req.userCtx)) {
+    return req.userCtx;
+  }
+
+  if (!auth.hasAllPermissions(req.userCtx, 'can_update_users')) {
+    throw { code: 403, reason: 'Insufficient privileges' };
+  }
+  const params = req.query;
+  if (!params.role || !params.facility_id) {
+    throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
+  }
+
+  const roles = getRoles(req);
+  if (!auth.isOffline(roles)) {
+    throw { code: 400, reason: 'Provided role is not offline' };
+  }
+
+  return {
+    roles: roles,
+    facility_id: params.facility_id,
+    contact_id: params.contact_id
+  };
+};
+
+const getAllowedDocIds = userCtx => {
+  return authorization
+    .getAuthorizationContext(userCtx)
+    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false }));
+};
 
 module.exports = {
   get: (req, res) => {
@@ -134,4 +191,18 @@ module.exports = {
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  info: (req, res) => {
+    let userCtx;
+    try {
+      userCtx = getInfoUserCtx(req);
+    } catch (err) {
+      return serverUtils.error(err, req, res);
+    }
+    return getAllowedDocIds(userCtx).then(docIds => res.json({
+      total_docs: docIds.length,
+      warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT,
+      limit: usersService.DOC_IDS_WARN_LIMIT
+    }));
+  }
 };
