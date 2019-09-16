@@ -110,7 +110,6 @@ module.exports = [
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
       if (!isActivePregnancy(contact, report)) {return false;}
-      //count and check visits
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 0;
     },
@@ -148,7 +147,6 @@ module.exports = [
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
       if (!isActivePregnancy(contact, report)) {return false;}
-      //count and check visits
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 3;
     },
@@ -165,13 +163,11 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      //count and check visits
       if (!isActivePregnancy(contact, report)) {return false;}
-      const visitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
+      const pregnancyRegistrationCount = 1;
+      const pregnancyHomeVisitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
       const facilityVisitCount = countANCFacilityVisits(contact, report) || 0;
-
-      //pregnancy registration form + pregnancy home visit forms + number of previous hf anc visits 
-      return 1 + visitCount + facilityVisitCount > 7;
+      return pregnancyRegistrationCount + pregnancyHomeVisitCount + facilityVisitCount > 7;
     },
     date: 'now',
     idType: 'contact'
