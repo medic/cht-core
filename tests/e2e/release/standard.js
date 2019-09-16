@@ -7,7 +7,6 @@ const districtId = uuid.v4();
 
 describe('Creating contacts with standard config', function() {
   beforeAll(done => {
-    console.log('------------------before all------------');
     return Promise.all([
       utils.saveDocs(expectedDocs)
     ])
