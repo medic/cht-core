@@ -73,6 +73,12 @@ module.exports = {
           doc.settings.permissions = defaults.permissions;
         }
 
+        if (doc.settings.contact_types) {
+          _.defaults(doc.settings.contact_types, defaults.contact_types);
+        } else {
+          doc.settings.contact_types = defaults.contact_types;
+        }
+        
         if (JSON.stringify(doc.settings) !== original) {
           logger.info('Updating settings with new defaults');
           return db.medic.put(doc);
