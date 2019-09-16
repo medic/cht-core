@@ -140,7 +140,7 @@ const createReduxLoggerConfig = Selectors => ({
     $urlRouterProvider.when('/messages/{uuid:[^:]*}', '/messages/contact:{uuid}');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
-    $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
+    $translateProvider.addInterpolation('TranslationMessageFormatInterpolation');
     $translateProvider.addInterpolation('TranslationNullInterpolation');
     $translateProvider.useMissingTranslationHandlerLog();
     $compileProvider.aHrefSanitizationWhitelist(

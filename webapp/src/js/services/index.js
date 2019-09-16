@@ -85,6 +85,7 @@
   require('./translate');
   require('./translate-from');
   require('./translation-loader');
+  require('./translation-message-format-interpolation');
   require('./translation-null-interpolation');
   require('./uhc-settings');
   require('./unread-records');
