@@ -159,7 +159,7 @@ var _ = require('underscore'),
       $timeout(() => DBSync.sync(), 10000);
     } else {
       $log.debug('You have administrative privileges; not replicating');
-      $scope.replicationStatus.disabled = true;
+      ctrl.replicationStatus.disabled = true;
     }
 
     const dbFetch = $window.PouchDB.fetch;
