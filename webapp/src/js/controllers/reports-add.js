@@ -187,7 +187,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           ctrl.setEnketoSavingStatus(false);
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-          ctrl.setEnketoError(msg);
+            ctrl.setEnketoError(msg);
           });
         });
     };

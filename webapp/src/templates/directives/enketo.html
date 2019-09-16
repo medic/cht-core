@@ -3,9 +3,9 @@
   <div class="form-footer">
     <button ng-click="onCancel()" class="btn btn-link cancel" ng-disabled="status.saving" translate>Cancel</button>
     <div class="loader inline small" ng-show="status.saving"></div>
-    <span class="error" ng-show="status.error">{{status.error}}</span>
+    <span class="error" ng-show="status.error && status.error !== true">{{status.error}}</span>
     <button class="btn btn-default previous-page" ng-disabled="status.saving" translate>Previous</button>
     <button class="btn btn-primary next-page" ng-disabled="status.saving" translate>Next</button>
-    <a ng-click="onSubmit()" class="btn submit btn-primary" ng-disabled="status.saving" translate>Submit</a>
+    <button ng-click="onSubmit()" class="btn submit btn-primary" ng-disabled="status.saving || status.error" translate>Submit</button>
   </div>
 </div>

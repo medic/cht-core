@@ -347,6 +347,13 @@ angular.module('inboxServices').service('Enketo',
 
       if (listener) {
         $(selector).on('valuechange.enketo', listener);
+        $(selector).on('input', function() {
+          // We want both re-enable both Next and Submit buttons
+          //
+          // Setting Submit to disabled in the first place is done outside of enketo through the
+          // enketoError state in the save functions of the various controllers
+          $(selector).find('.next-page, .submit').removeAttr('disabled');
+        });
       }
     };
 

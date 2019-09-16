@@ -204,6 +204,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
           ctrl.setEnketoSavingStatus(false);
+          ctrl.setEnketoError(true);
           $scope.$apply();
         });
     };

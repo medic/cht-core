@@ -15,7 +15,8 @@ const medicLogo = element(by.className('logo-full')),
     by.css('#select2-default-country-code-setup-container')
   ),
   skipSetup = element(by.css('.modal-footer>a:first-of-type')),
-  finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)')),
+  // finishBtn = element(by.css('.modal-footer>a:nth-of-type(2), .submit')),
+  finishBtn = element(by.css('.submit')),
   // Tour
   tourBtns = element.all(by.css('.btn.tour-option')),
   // About
