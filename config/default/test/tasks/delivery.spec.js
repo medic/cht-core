@@ -12,7 +12,7 @@ const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
 
-const MAX_DAYS_FOR_DELIVERY = 337;
+const MAX_DAYS_FOR_DELIVERY = 336;
 let clock;
 describe('Delivery tasks tests', () => {
   before(async () => {

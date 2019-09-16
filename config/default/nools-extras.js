@@ -1,6 +1,6 @@
 //const moment = require('moment');
 const today = getDateMS(Date.now());
-const MS_IN_DAY = 24 * 60 * 60 * 1000;  // 1 day in ms
+const MS_IN_DAY = 24 * 60 * 60 * 1000;
 const MAX_DAYS_IN_PREGNANCY = 42 * 7;  // 42 weeks = 294 days
 const pregnancyForms = ['pregnancy'];
 
@@ -8,7 +8,6 @@ const antenatalForms = ['pregnancy_home_visit'];
 const allANCForms = ['pregnancy', 'pregnancy_home_visit', 'pregnancy_facility_visit_reminder',
   'pregnancy_danger_sign', 'pregnancy_danger_sign_follow_up', 'delivery'];
 
-//const deliveryForms = ['delivery'];
 function isAlive(contact) {
   return contact && contact.contact && !contact.contact.date_of_death;
 }
@@ -193,7 +192,7 @@ function getSubsequentPregnancies(contact, refReport) {
 function getSubsequentPregnancyFollowUps(contact, report) {
   const subsequentVisits = contact.reports.filter(function (visit) {
     let lmpDate = getLMPDateFromPregnancy(report);
-    if (!lmpDate) { //LMP Date is not available use reported date
+    if (!lmpDate) { //LMP Date is not available, use reported date
       lmpDate = report.reported_date;
     }
 
@@ -268,7 +267,8 @@ function countANCFacilityVisits(contact, pregnancyReport) {
   return ancHFVisits;
 }
 
-function getRecentANCVisitWithEvent(contact, report, event) { //miscarriage, abortion, refused, migrated
+function getRecentANCVisitWithEvent(contact, report, event) {
+  //event should be one among miscarriage, abortion, refused, migrated
   const followUps = getSubsequentPregnancyFollowUps(contact, report);
   const latestFollowup = getNewestReport(followUps, antenatalForms);
   if (latestFollowup && getField(latestFollowup, 'pregnancy_summary.visit_option') === event) {

@@ -22,23 +22,26 @@ const generateEventForHomeVisit = (week, start, end) => ({
   end,
   dueDate: function (event, contact, report) {
     const recentLMPDate = getMostRecentLMPDateForPregnancy(contact, report);
-    if (recentLMPDate) {return addDays(recentLMPDate, week * 7);}
+    if (recentLMPDate) { return addDays(recentLMPDate, week * 7); }
     return addDays(report.reported_date, week * 7);
   }
 });
 
 function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
-  if (report.reported_date < getNewestDeliveryTimestamp(contact)) {return true;}//delivery form submitted
-  if (report.reported_date < getNewestPregnancyTimestamp(contact)) {return true;}//old pregnancy report
+  //delivery form submitted
+  if (report.reported_date < getNewestDeliveryTimestamp(contact)) { return true; }
+
+  //old pregnancy report
+  if (report.reported_date < getNewestPregnancyTimestamp(contact)) { return true; }
 
   //miscarriage or abortion
-  if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) {return true;}
+  if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) { return true; }
 
   //Due date older than reported day
-  if (dueDate <= getTimeForMidnight(report.reported_date)) {return true;}
+  if (dueDate <= getTimeForMidnight(report.reported_date)) { return true; }
 
-  //clear tasks
-  if (isPregnancyTaskMuted(contact)) {return true;}
+  //Tasks cleared
+  if (isPregnancyTaskMuted(contact)) { return true; }
   const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
   const endTime = addDays(dueDate, event.end + 1).getTime();
   return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
@@ -46,14 +49,14 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
 
 module.exports = [
 
-  //ANC
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
   {
     icon: 'icon-pregnancy',
     title: 'task.anc.pregnancy_home_visit.title',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (contact, report) {// If LMP date is known
+    appliesIf: function (contact, report) {
+      // If LMP date is known
       return !!getMostRecentLMPDateForPregnancy(contact, report);
     },
 
@@ -90,7 +93,7 @@ module.exports = [
     appliesIf: function (contact, report) {// If LMP date is unknown
       const recentLMP = getMostRecentLMPDateForPregnancy(contact, report);
       //We only want to show until 42 weeks + 7 days
-      return !recentLMP && addDays(report.reported_date, 42 * 7 + 7) >= today;
+      return !recentLMP && addDays(report.reported_date, MAX_DAYS_IN_PREGNANCY + 7) >= today;
     },
 
     resolvedIf: checkTaskResolvedForHomeVisit,
@@ -120,8 +123,8 @@ module.exports = [
     },
 
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and clear tasks 
-      if (isPregnancyTaskMuted(contact)) {return true;}
+      //(refused or migrated) and cleared tasks 
+      if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
@@ -156,9 +159,9 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and clear tasks 
-      if (isPregnancyTaskMuted(contact)) {return true;}
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself
+      //(refused or migrated) and cleared tasks 
+      if (isPregnancyTaskMuted(contact)) { return true; }
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
     },
@@ -166,7 +169,6 @@ module.exports = [
       {
         type: 'report',
         form: 'pregnancy_danger_sign_follow_up',
-        //label: "Pregnancy follow up",
         modifyContent: function (content, contact, report) {
           content.pregnancy_uuid = report._id;
         }
@@ -190,15 +192,16 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      const lmpDate = getMostRecentLMPDateForPregnancy(contact, report); //only for known LMP
-      return lmpDate && addDays(lmpDate, 337) >= today && isAlive(contact);
+      const lmpDate = getMostRecentLMPDateForPregnancy(contact, report);
+      //only for known LMP, show for maximum of 42 + 6 weeks
+      return lmpDate && addDays(lmpDate, 336) >= today && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
       //miscarriage or abortion
-      if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) {return true;}
+      if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) { return true; }
 
-      //(refused or migrated) and clear tasks 
-      if (isPregnancyTaskMuted(contact)) {return true;}
+      //(refused or migrated) and cleared tasks 
+      if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['delivery'], startTime, endTime);
@@ -207,7 +210,6 @@ module.exports = [
       {
         type: 'report',
         form: 'delivery',
-        //label: "Delivery",
         modifyContent: function (content, contact, report) {
           content.pregnancy_uuid = report._id;
         }
@@ -216,7 +218,7 @@ module.exports = [
     events: [
       {
         id: 'delivery-reminder',
-        start: 4 * 7, 
+        start: 4 * 7,
         end: 6 * 7,
         dueDate: function (event, contact, report) {
           return addDays(getMostRecentLMPDateForPregnancy(contact, report), MAX_DAYS_IN_PREGNANCY); //LMP + 42 weeks
@@ -234,8 +236,8 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and clear tasks 
-      if (isPregnancyTaskMuted(contact)) {return true;}
+      //(refused or migrated) and cleared tasks 
+      if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
@@ -244,7 +246,6 @@ module.exports = [
       {
         type: 'report',
         form: 'pnc_danger_sign_follow_up_mother',
-        //label: "Pregnancy follow up",
         modifyContent: function (content, contact, report) {
           content.pregnancy_uuid = report._id;
         }
@@ -303,9 +304,10 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and clear tasks 
-      if (isPregnancyTaskMuted(contact)) {return true;}
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself
+      //(refused or migrated) and cleared tasks 
+      if (isPregnancyTaskMuted(contact)) { return true; }
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
+      //reported_date + 1 so that source ds_follow_up does not resolve itself
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
@@ -313,7 +315,6 @@ module.exports = [
       {
         type: 'report',
         form: 'pnc_danger_sign_follow_up_baby',
-        //label: "Pregnancy follow up",
         modifyContent: function (content, contact, report) {
           content.pregnancy_uuid = report._id;
         }
