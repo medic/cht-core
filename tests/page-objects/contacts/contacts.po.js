@@ -14,8 +14,6 @@ const writeName = element(by.css('[name="/data/district_hospital/is_name_generat
 const contactName = element(by.css('.heading-content'));
 const rows = element.all(by.className('content-row'));
 
-
-
 module.exports = {
   rows,
   contactName,
