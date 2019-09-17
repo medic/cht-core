@@ -50,7 +50,6 @@
     "grunt-protractor-runner": "^5.0.0",
     "grunt-sass": "^3.0.2",
     "grunt-text-replace": "^0.4.0",
-    "grunt-xmlmin": "^0.1.8",
     "jasmine-spec-reporter": "^4.2.1",
     "jit-grunt": "^0.10.0",
     "karma": "^4.1.0",
