@@ -53,7 +53,9 @@ You will need to install the following:
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
-- [CouchDB](https://couchdb.apache.org) v2.x
+- [CouchDB](https://couchdb.apache.org) 2.x
+- python 2.7
+- Java JDK (for running end-to-end tests only)
 
 ### Setup CouchDB on a single node
 
