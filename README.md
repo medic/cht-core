@@ -54,6 +54,7 @@ You will need to install the following:
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) 2.x
+- xsltproc
 - python 2.7
 - Java JDK (for running end-to-end tests only)
 
