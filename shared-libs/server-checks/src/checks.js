@@ -28,6 +28,8 @@ const envVarsCheck = () => {
   envValueAndExample.forEach(([envconst, example]) => {
     if (!process.env[envconst]) {
       failures.push(`${envconst} must be set. For example: ${envconst}=${example}`);
+    } else {
+      console.log(envconst, process.env[envconst]);
     }
   });
 
