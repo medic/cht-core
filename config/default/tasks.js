@@ -66,10 +66,7 @@ module.exports = [
       {
         type: 'report',
         form: 'pregnancy_home_visit',
-        label: 'Pregnancy home visit',
-        modifyContent: function (content, contact, report) {
-          content.pregnancy_uuid = report._id;
-        }
+        label: 'Pregnancy home visit'
       }
     ],
     events: [
@@ -102,10 +99,7 @@ module.exports = [
       {
         type: 'report',
         form: 'pregnancy_home_visit',
-        label: 'Pregnancy home visit',
-        modifyContent: function (content, contact, report) {
-          content.pregnancy_uuid = report._id;
-        }
+        label: 'Pregnancy home visit'
       }
     ],
     //every two weeks from reported date until 42nd week, show before due date: 6 days, show after due date: 7 days
@@ -133,10 +127,7 @@ module.exports = [
     actions: [{
       type: 'report',
       form: 'pregnancy_facility_visit_reminder',
-      label: 'Pregnancy facility visit reminder',
-      modifyContent: function (content, contact, report) {
-        content.pregnancy_uuid = report._id;
-      }
+      label: 'Pregnancy facility visit reminder'
     }
     ],
     events: [{
@@ -168,10 +159,7 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'pregnancy_danger_sign_follow_up',
-        modifyContent: function (content, contact, report) {
-          content.pregnancy_uuid = report._id;
-        }
+        form: 'pregnancy_danger_sign_follow_up'
       }
     ],
     events: [
@@ -209,10 +197,7 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'delivery',
-        modifyContent: function (content, contact, report) {
-          content.pregnancy_uuid = report._id;
-        }
+        form: 'delivery'
       }
     ],
     events: [
@@ -245,10 +230,7 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'pnc_danger_sign_follow_up_mother',
-        modifyContent: function (content, contact, report) {
-          content.pregnancy_uuid = report._id;
-        }
+        form: 'pnc_danger_sign_follow_up_mother'
       }
     ],
     events: [
@@ -314,10 +296,7 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'pnc_danger_sign_follow_up_baby',
-        modifyContent: function (content, contact, report) {
-          content.pregnancy_uuid = report._id;
-        }
+        form: 'pnc_danger_sign_follow_up_baby'
       }
     ],
     events: [
