@@ -961,7 +961,7 @@
           <text id="/pregnancy_home_visit/context_vars/pregnancy_follow_up_date_recent_ctx:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy_home_visit/context_vars/pregnancy_uuid:label">
+          <text id="/pregnancy_home_visit/context_vars/pregnancy_uuid_ctx:label">
             <value>-</value>
           </text>
           <text id="/pregnancy_home_visit/context_vars/risk_factor_extra_ctx:label">
@@ -1864,7 +1864,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-13 01:47:18">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-17 03:04:24">
           <inputs>
             <meta>
               <location>
@@ -1925,7 +1925,7 @@
             <deworming_med_received_ctx/>
             <edd_ctx/>
             <weeks_since_lmp_rounded_ctx/>
-            <pregnancy_uuid/>
+            <pregnancy_uuid_ctx/>
           </context_vars>
           <pregnancy_summary>
             <current_weeks_pregnant/>
@@ -2370,7 +2370,7 @@
       <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown', format-date-time(date-time(decimal-date-time(../lmp_date_8601_ctx) + 280), &quot;%e %b, %Y&quot;))" nodeset="/pregnancy_home_visit/context_vars/edd_ctx" type="string"/>
       <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown',
 floor((floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601_ctx)) div 7))" nodeset="/pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)" nodeset="/pregnancy_home_visit/context_vars/pregnancy_uuid" type="string"/>
+      <bind calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)" nodeset="/pregnancy_home_visit/context_vars/pregnancy_uuid_ctx" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant_unknown" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_edd" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  != 'unknown'" type="string"/>
@@ -2412,7 +2412,7 @@ selected(../pregnancy_summary/g_age_correct, 'no')"/>
 if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(floor(decimal-date-time(today())) - (../update_method/lmp_weeks_new * 7)), 
 if(selected(../update_method/g_age_update_method, 'method_edd'), date-time(decimal-date-time(../update_method/u_edd_new) - 280), 0)
 ), &quot;%Y-%m-%d&quot;)" nodeset="/pregnancy_home_visit/update_g_age/lmp_date_8601_new" type="string"/>
-      <bind calculate="format-date-time(../lmp_date_8601_new, &quot;%d %m, %Y&quot;)" nodeset="/pregnancy_home_visit/update_g_age/lmp_date_new" type="string"/>
+      <bind calculate="format-date-time(../lmp_date_8601_new, &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/update_g_age/lmp_date_new" type="string"/>
       <bind calculate="format-date-time(date-time(decimal-date-time(../lmp_date_8601_new)+280),&quot;%Y-%m-%d&quot;)" nodeset="/pregnancy_home_visit/update_g_age/edd_8601_new" type="string"/>
       <bind calculate="format-date-time(../edd_8601_new, &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/update_g_age/edd_new" type="string"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf" relevant="selected(../pregnancy_summary/visit_option, 'yes') and
@@ -2595,8 +2595,8 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
       <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new " nodeset="/pregnancy_home_visit/data/o_gestational_age_update_weeks" type="string"/>
       <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/u_edd_new " nodeset="/pregnancy_home_visit/data/o_gestational_age_update_edd" type="string"/>
       <bind calculate=" /pregnancy_home_visit/lmp_updated " nodeset="/pregnancy_home_visit/data/o_lmp_updated" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/lmp_date_new " nodeset="/pregnancy_home_visit/data/o_lmp_date_new" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/edd_new " nodeset="/pregnancy_home_visit/data/o_edd_new" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/lmp_date_8601_new " nodeset="/pregnancy_home_visit/data/o_lmp_date_new" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/update_g_age/edd_8601_new " nodeset="/pregnancy_home_visit/data/o_edd_new" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/last_visit_attended " nodeset="/pregnancy_home_visit/data/o_last_visit_attended" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits " nodeset="/pregnancy_home_visit/data/o_report_additional_anc_hf_visits" type="string"/>
       <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy_home_visit/data/o_num_additional_anc_hf_visits" type="string"/>
@@ -2631,7 +2631,7 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
       <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy_home_visit/data/m_place_uuid" type="string"/>
       <bind calculate="../../inputs/source" nodeset="/pregnancy_home_visit/data/m_source" type="string"/>
       <bind calculate="../../inputs/source_id" nodeset="/pregnancy_home_visit/data/m_source_id" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/context_vars/pregnancy_uuid " nodeset="/pregnancy_home_visit/data/m_pregnancy_uuid" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/context_vars/pregnancy_uuid_ctx " nodeset="/pregnancy_home_visit/data/m_pregnancy_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy_home_visit/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
