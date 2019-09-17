@@ -37,6 +37,7 @@ before_install:
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
   - ./scripts/travis/couch-start
+  - sudo apt-get install xsltproc
 
 install: nvm install $NODE_VERSION
 

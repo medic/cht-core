@@ -1,0 +1,11 @@
+
+  <model>
+    <instance>
+        <media xmlns:jr="http://openrosa.org/javarosa" id="multimedia">
+          <meta>
+            <instanceID/>
+          </meta>
+        </media>
+      </instance>
+  </model>
+

@@ -1,3 +1,8 @@
+/**
+ * @ngdoc service
+ * @name XmlForms
+ * @memberof inboxServices
+ */
 angular.module('inboxServices').factory('XmlForms',
   function(
     $log,
@@ -189,9 +194,10 @@ angular.module('inboxServices').factory('XmlForms',
     return {
 
       /**
-       * Returns a doc containing an xform with the given internal identifier if the user is allowed to see it.
-       *
-       * @param The value of the desired doc's internalId field.
+       * @memberof XmlForms
+       * @param {String} internalId The value of the desired doc's internalId field.
+       * @returns {Promise} Resolves a doc containing an xform with the given
+       *    internal identifier if the user is allowed to see it.
        */
       get: internalId => {
         return getById(internalId)
@@ -211,17 +217,17 @@ angular.module('inboxServices').factory('XmlForms',
       },
 
       /**
-       * Returns the name of the xform attachment.
-       *
-       * @param The document find the xform attachment for
+       * @memberof XmlForms
+       * @param {Object} doc The document find the xform attachment for
+       * @returns {String} The name of the xform attachment.
        */
-      findXFormAttachmentName: findXFormAttachmentName,
+      findXFormAttachmentName: doc => findXFormAttachmentName(doc),
 
       /**
-       * Returns a Promise which resolves an array of docs which contain an
-       * xform the user is allow to complete.
-       *
-       * @params options Described in the "listen" function below.
+       * @memberof XmlForms
+       * @param {Object} [options={}] Described in the "listen" function below.
+       * @returns {Promise} Resolves an array of docs which contain an
+       *   xform the user is allow to complete.
        */
       list: function(options) {
         return init.then(forms => filterAll(forms, options || {}));
@@ -232,9 +238,11 @@ angular.module('inboxServices').factory('XmlForms',
        * which the user is allowed to complete. Listens for changes and invokes
        * the callback again when needed.
        *
-       * @param name String to uniquely identify the callback to stop duplicate registration
+       * @memberof XmlForms
        *
-       * @param options (optional) Object for filtering. Possible values:
+       * @param {String} name Uniquely identify the callback to stop duplicate registration
+       *
+       * @param {Object} [options={}] Object for filtering. Possible values:
        *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
        *     Undefined will ignore this filter.
        *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
@@ -247,7 +255,7 @@ angular.module('inboxServices').factory('XmlForms',
        * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
        * See tests for more examples.
        *
-       * @param callback Invoked when complete and again when results have changed.
+       * @param {Function} callback Invoked when complete and again when results have changed.
        */
       listen: function(name, options, callback) {
         if (!callback) {
