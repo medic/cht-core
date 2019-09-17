@@ -9,6 +9,7 @@ const {
   isFormArraySubmittedInWindow,
   getDateISOLocal,
   getTimeForMidnight,
+  isDeliveryForm,
   getMostRecentLMPDateForPregnancy,
   addDays,
   getRecentANCVisitWithEvent,
@@ -230,7 +231,15 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'pnc_danger_sign_follow_up_mother'
+        form: 'pnc_danger_sign_follow_up_mother',
+        modifyContent: function (content, contact, report) {
+          if (isDeliveryForm(report)) {
+            content.delivery_uuid = report._id;
+          }
+          else {
+            content.delivery_uuid = getField(report, 'inputs.delivery_uuid');
+          }
+        }
       }
     ],
     events: [
@@ -263,7 +272,10 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'pnc_danger_sign_follow_up_baby'
+        form: 'pnc_danger_sign_follow_up_baby',
+        modifyContent: function (content, contact) {
+          content.delivery_uuid = contact.contact.created_by_doc;
+        }
       }
     ],
     events: [
@@ -296,7 +308,10 @@ module.exports = [
     actions: [
       {
         type: 'report',
-        form: 'pnc_danger_sign_follow_up_baby'
+        form: 'pnc_danger_sign_follow_up_baby',
+        modifyContent: function (content, contact, report) {
+          content.delivery_uuid = getField(report, 'inputs.delivery_uuid');
+        }
       }
     ],
     events: [

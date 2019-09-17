@@ -3,7 +3,7 @@ const today = getDateMS(Date.now());
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 const MAX_DAYS_IN_PREGNANCY = 42 * 7;  // 42 weeks = 294 days
 const pregnancyForms = ['pregnancy'];
-
+const deliveryForms = ['delivery'];
 const antenatalForms = ['pregnancy_home_visit'];
 const allANCForms = ['pregnancy', 'pregnancy_home_visit', 'pregnancy_facility_visit_reminder',
   'pregnancy_danger_sign', 'pregnancy_danger_sign_follow_up', 'delivery'];
@@ -159,6 +159,9 @@ function isPregnancyFollowUpForm(report) {
   return antenatalForms.includes(report.form);
 }
 
+function isDeliveryForm(report) {
+  return deliveryForms.includes(report.form);
+}
 
 const getNewestReport = function (reports, forms) {
   let result;
@@ -293,6 +296,7 @@ module.exports = {
   isFormArraySubmittedInWindowExcludingThisReport,
   getDateMS,
   getDateISOLocal,
+  isDeliveryForm,
   getMostRecentReport,
   getNewestPregnancyTimestamp,
   getNewestDeliveryTimestamp,
