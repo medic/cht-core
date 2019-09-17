@@ -1,4 +1,9 @@
 function(doc) {
+  var tombstone = false;
+  if (doc.type === 'tombstone' && doc.tombstone) {
+    tombstone = true;
+    doc = doc.tombstone;
+  }
   var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
   var idx;
   var type;
@@ -11,6 +16,9 @@ function(doc) {
   } else {
     type = doc.type;
     idx = types.indexOf(type);
+  }
+  if (tombstone) {
+    type = 'tombstone-' + type;
   }
   if (idx !== -1) {
     var dead = !!doc.date_of_death;

@@ -28,6 +28,7 @@ function (doc) {
       }
       return (doc.patient_id || (doc.fields && doc.fields.patient_id)) ||
              (doc.place_id || (doc.fields && doc.fields.place_id)) ||
+             (doc.fields && doc.fields.patient_uuid) ||
              (doc.contact && doc.contact._id);
     }
     if (doc.sms_message) {

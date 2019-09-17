@@ -2,10 +2,12 @@ const sinon = require('sinon'),
       { expect, assert } = require('chai'),
       pouchDbOptions = {
         local: { auto_compaction: true },
-        remote: { skip_setup: true }
+        remote: { skip_setup: true },
+        remote_headers: { 'Accept': 'application/json' }
       };
 const rewire = require('rewire');
 const bootstrapper = rewire('../../../src/js/bootstrapper');
+const purger = require('../../../src/js/bootstrapper/purger');
 
 let originalDocument;
 let originalWindow;
@@ -16,11 +18,11 @@ let localClose;
 let registered;
 let remoteClose;
 let localAllDocs;
+let localId;
+let purgeOn;
 
 describe('bootstrapper', () => {
 
-// ignore "Read Only" jshint error for overwriting `document` and `window`
-// jshint -W020
   beforeEach(done => {
     pouchDb = sinon.stub();
     localGet = sinon.stub();
@@ -28,16 +30,18 @@ describe('bootstrapper', () => {
     localClose = sinon.stub();
     remoteClose = sinon.stub();
     localAllDocs = sinon.stub();
+    localId = sinon.stub().resolves();
 
     pouchDb.onCall(0).returns({
       get: localGet,
       replicate: { from: localReplicate },
       close: localClose,
-      allDocs: localAllDocs
+      allDocs: localAllDocs,
+      id: localId
     });
     pouchDb.onCall(1).returns({
       remote: true,
-      close: remoteClose
+      close: remoteClose,
     });
     registered = {};
 
@@ -64,6 +68,13 @@ describe('bootstrapper', () => {
       PouchDB: pouchDb
     };
 
+    purgeOn = sinon.stub();
+    purgeOn.callsFake(() => {
+      const promise = Promise.resolve();
+      promise.on = purgeOn;
+      return promise;
+    });
+
     $ = sinon.stub().returns({
       text: sinon.stub(),
       click: sinon.stub(),
@@ -86,9 +97,9 @@ describe('bootstrapper', () => {
     } else {
       window = originalWindow;
     }
+    sinon.restore();
     done();
   });
-// jshint +W020
 
   const setUserCtxCookie = userCtx => {
     document.cookie = `userCtx=${JSON.stringify(userCtx)};something=true`;
@@ -103,10 +114,55 @@ describe('bootstrapper', () => {
     });
   });
 
+  it('should initialize replication header with local db id', done => {
+    setUserCtxCookie({ name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(localId.callCount, 1);
+      assert.deepEqual(pouchDbOptions, {
+        local: { auto_compaction: true },
+        remote: { skip_setup: true },
+        remote_headers: {
+          'Accept': 'application/json',
+          'medic-replication-id': 'some-randomn-uuid'
+        }
+      });
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      done();
+    });
+  });
+
+  it('should initialize purger with correct options', done => {
+    setUserCtxCookie({ name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      done();
+    });
+  });
+
   it('returns if local db already has client ddoc', done => {
     setUserCtxCookie({ name: 'jim' });
-    localGet.withArgs('_design/medic-client').returns(Promise.resolve({_id: '_design/medic-client'}));
-    localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -125,11 +181,17 @@ describe('bootstrapper', () => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
-    localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
+
+    localId.resolves('some random string');
 
     localAllDocs.resolves({ total_rows: 0 });
 
@@ -142,9 +204,11 @@ describe('bootstrapper', () => {
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
-      assert.equal(localGet.callCount, 3);
+      assert.equal(localGet.callCount, 4);
       assert.equal(localGet.args[0][0], '_design/medic-client');
-      assert.equal(localGet.args[1][0], '_design/medic-client');
+      assert.equal(localGet.args[1][0], 'settings');
+      assert.equal(localGet.args[2][0], '_design/medic-client');
+      assert.equal(localGet.args[3][0], 'settings');
       assert.equal(localReplicate.callCount, 1);
       assert.equal(localReplicate.args[0][0].remote, true);
       assert.deepEqual(localReplicate.args[0][1], {
@@ -152,8 +216,13 @@ describe('bootstrapper', () => {
         retry: false,
         heartbeat: 10000,
         timeout: 600000,
-        query_params: { initial_replication: true }
+        query_params: { initial_replication: true },
       });
+
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
+
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
       assert.equal(localAllDocs.callCount, 1);
@@ -177,6 +246,11 @@ describe('bootstrapper', () => {
 
     localAllDocs.resolves({ total_rows: 0 });
     fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+    localId.resolves('some random string');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -185,9 +259,11 @@ describe('bootstrapper', () => {
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
-      assert.equal(localGet.callCount, 3);
+      assert.equal(localGet.callCount, 4);
       assert.equal(localGet.args[0][0], '_design/medic-client');
-      assert.equal(localGet.args[1][0], '_design/medic-client');
+      assert.equal(localGet.args[1][0], 'settings');
+      assert.equal(localGet.args[2][0], '_design/medic-client');
+      assert.equal(localGet.args[3][0], 'settings');
       assert.equal(localReplicate.callCount, 1);
       assert.equal(localReplicate.args[0][0].remote, true);
       assert.deepEqual(localReplicate.args[0][1], {
@@ -209,6 +285,7 @@ describe('bootstrapper', () => {
 
   it('returns redirect to login error when no userCtx cookie found', done => {
     localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
 
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
@@ -228,6 +305,9 @@ describe('bootstrapper', () => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
 
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
@@ -246,6 +326,9 @@ describe('bootstrapper', () => {
   it('returns other errors in initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
 
     const localReplicateResult = Promise.reject({ status: 404 });
     localReplicateResult.on = () => {};
@@ -263,8 +346,13 @@ describe('bootstrapper', () => {
 
   it('returns error if ddoc is not found after successful initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
 
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
+    localGet.withArgs('settings').rejects();
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = sinon.stub();
@@ -277,7 +365,8 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.message, 'Initial replication failed');
-      assert.equal(localGet.callCount, 2);
+      assert.equal(localGet.callCount, 4);
+      assert.equal(purger.setOptions.callCount, 1);
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
       done();
@@ -289,7 +378,8 @@ describe('bootstrapper', () => {
     pouchDb.onCall(0).returns({
       get: sinon.stub().resolves(),
       replicate: { from: sinon.stub() },
-      close: sinon.stub()
+      close: sinon.stub(),
+      id: sinon.stub().resolves('aaa')
     });
 
     const failingRegister = sinon.stub().rejects('error');
@@ -297,6 +387,157 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       expect(failingRegister.callCount).to.eq(1);
       expect(err).to.include({ name: 'error' });
+      done();
+    });
+  });
+
+  it('should not run purge after skipping initial replication and not needed', done => {
+    setUserCtxCookie({ name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+    let purgeOn;
+    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 0);
+      done();
+    });
+  });
+
+  it('should not run purge after initial replication and not needed', done => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').resolves();
+    localGet.withArgs('settings').onCall(0).rejects();
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+    let purgeOn;
+    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
+
+    const localReplicateResult = Promise.resolve();
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
+
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+    localId.resolves('some random string');
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(localReplicate.callCount, 1);
+      assert.equal(localReplicate.args[0][0].remote, true);
+
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 0);
+
+      assert.equal(localClose.callCount, 1);
+      assert.equal(remoteClose.callCount, 1);
+      done();
+    });
+  });
+
+  it('should run purge after initial replication when needed', done => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').resolves();
+    localGet.withArgs('settings').onCall(0).rejects();
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
+
+    const localReplicateResult = Promise.resolve();
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
+
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+    localId.resolves('some random string');
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(pouchDb.callCount, 2);
+      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
+      assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
+      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
+      assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
+      assert.equal(localGet.callCount, 4);
+      assert.equal(localGet.args[0][0], '_design/medic-client');
+      assert.equal(localGet.args[1][0], 'settings');
+      assert.equal(localGet.args[2][0], '_design/medic-client');
+      assert.equal(localGet.args[3][0], 'settings');
+      assert.equal(localReplicate.callCount, 1);
+      assert.equal(localReplicate.args[0][0].remote, true);
+      assert.deepEqual(localReplicate.args[0][1], {
+        live: false,
+        retry: false,
+        heartbeat: 10000,
+        timeout: 600000,
+        query_params: { initial_replication: true },
+      });
+
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
+      assert.equal(purger.purge.callCount, 1);
+
+      assert.equal(localClose.callCount, 1);
+      assert.equal(remoteClose.callCount, 1);
+      done();
+    });
+  });
+
+  it('should run purge after skipping initial replication when needed', done => {
+    setUserCtxCookie({ name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 1);
+      done();
+    });
+  });
+
+  it('should catch purge errors', done => {
+    setUserCtxCookie( { name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(purger, 'purge').returns({ on: purgeOn });
+    purgeOn.onCall(1).rejects({ some: 'err' });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(purger.setOptions.callCount, 1);
+      assert.deepEqual(purger.setOptions.args[0], [pouchDbOptions]);
+      assert.equal(purger.shouldPurge.callCount, 1);
+      assert.equal(purger.purge.callCount, 1);
       done();
     });
   });

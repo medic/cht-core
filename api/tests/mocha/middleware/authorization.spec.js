@@ -4,10 +4,10 @@ const middleware = require('../../../src/middleware/authorization');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
-let proxy,
-    next,
-    testReq,
-    testRes;
+let proxy;
+let next;
+let testReq;
+let testRes;
 
 describe('Authorization middleware', () => {
   beforeEach(() => {
@@ -17,7 +17,9 @@ describe('Authorization middleware', () => {
     sinon.stub(serverUtils, 'notLoggedIn');
     proxy = { web: sinon.stub().resolves() };
     next = sinon.stub().resolves();
-    testReq = {};
+    testReq = {
+      headers: {}
+    };
     testRes = {
       status: sinon.stub(),
       json: sinon.stub()
@@ -49,6 +51,21 @@ describe('Authorization middleware', () => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
           testReq.userCtx.should.deep.equal({ name: 'user' });
+          (!!testReq.authErr).should.equal(false);
+          (!!testReq.replicationId).should.equal(false);
+        });
+    });
+
+    it('should save medic-replication-id header in the `req` object', () => {
+      auth.getUserCtx.resolves({ name: 'user' });
+      testReq.headers['medic-replication-id'] = 'some random uuid';
+      return middleware
+        .getUserCtx(testReq, testRes, next)
+        .then(() => {
+          serverUtils.notLoggedIn.callCount.should.equal(0);
+          next.callCount.should.equal(1);
+          testReq.userCtx.should.deep.equal({ name: 'user' });
+          testReq.replicationId.should.equal('some random uuid');
           (!!testReq.authErr).should.equal(false);
         });
     });

@@ -33,6 +33,7 @@ const _ = require('underscore'),
   africasTalking = require('./controllers/africas-talking'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
+  purgedDocsController = require('./controllers/purged-docs'),
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -103,6 +104,7 @@ app.use((req, res, next) => {
 });
 
 morgan.token('id', req => req.id);
+
 app.use(
   morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
     immediate: true,
@@ -397,6 +399,10 @@ app.get('/api/v1/settings', settings.get);
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
+
+app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
+app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
+app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

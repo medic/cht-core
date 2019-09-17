@@ -11,6 +11,7 @@ const serverChecks = require('@medic/server-checks');
 const environment = require('../environment');
 const semver = require('semver');
 const usersService = require('../services/users');
+const purgedDocs = require('../services/purged-docs');
 
 let inited = false;
 let continuousFeed = false;
@@ -175,8 +176,11 @@ const restartNormalFeed = feed => {
     .getAllowedDocIds(feed)
     .then(allowedDocIds => {
       feed.allowedDocIds = allowedDocIds;
+      return filterPurgedIds(feed);
+    })
+    .then(() => {
       getChanges(feed);
-  });
+    });
 };
 
 const getChanges = feed => {
@@ -284,11 +288,21 @@ const initFeed = (req, res) => {
     })
     .then(allowedDocIds => {
       feed.allowedDocIds = allowedDocIds;
-
+      return filterPurgedIds(feed);
+    })
+    .then(() => {
       if (feed.allowedDocIds.length > usersService.DOC_IDS_WARN_LIMIT) {
         docCountUserWarnings[feed.req.userCtx.name] = feed.allowedDocIds.length;
       }
       return feed;
+    });
+};
+
+const filterPurgedIds = feed => {
+  return purgedDocs
+    .getUnPurgedIds(feed.userCtx.roles, feed.allowedDocIds)
+    .then(unPurgedIds => {
+      feed.allowedDocIds = unPurgedIds;
     });
 };
 
