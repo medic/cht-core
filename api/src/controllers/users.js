@@ -4,6 +4,7 @@ const logger = require('../logger');
 const serverUtils = require('../server-utils');
 const usersService = require('../services/users');
 const authorization = require('../services/authorization');
+const purgedDocs = require('../services/purged-docs');
 
 const hasFullPermission = req => {
   return auth
@@ -96,7 +97,8 @@ const getInfoUserCtx = req => {
 const getAllowedDocIds = userCtx => {
   return authorization
     .getAuthorizationContext(userCtx)
-    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false }));
+    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false }))
+    .then(allowedDocIds => purgedDocs.getUnPurgedIds(userCtx.roles, allowedDocIds));
 };
 
 module.exports = {
@@ -204,5 +206,5 @@ module.exports = {
       warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT,
       limit: usersService.DOC_IDS_WARN_LIMIT
     }));
-  }
+  },
 };

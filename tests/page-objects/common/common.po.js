@@ -60,6 +60,12 @@ module.exports = {
     genericCancelBtn.click();
   },
 
+  sync: () => {
+    module.exports.openMenu();
+    openSubmenu('sync now');
+    helper.waitForAngularComplete();
+  },
+
   checkUserSettings: () => {
     openSubmenu('user settings');
     const optionNames = helper.getTextFromElements(settings);

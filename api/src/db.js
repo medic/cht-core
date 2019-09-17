@@ -11,7 +11,8 @@ if (UNIT_TEST_ENV) {
   const DBS_TO_STUB = [
     'medic',
     'users',
-    'medicUsersMeta'
+    'medicUsersMeta',
+    'sentinel'
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',

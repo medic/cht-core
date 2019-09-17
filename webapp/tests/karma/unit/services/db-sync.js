@@ -7,7 +7,6 @@ describe('DBSync service', () => {
   let service;
   let to;
   let from;
-  let query;
   let allDocs;
   let info;
   let isOnlineOnly;
@@ -32,7 +31,6 @@ describe('DBSync service', () => {
     to.returns({ on: recursiveOn });
     from = sinon.stub();
     from.returns({ on: recursiveOn });
-    query = sinon.stub();
     allDocs = sinon.stub();
     info = sinon.stub();
     info.returns(Q.resolve({ update_seq: 99 }));
@@ -65,9 +63,7 @@ describe('DBSync service', () => {
     });
   });
 
-  afterEach(() => {
-    KarmaUtils.restore(to, from, query, allDocs, info, isOnlineOnly, userCtx, sync, Auth);
-  });
+  afterEach(() => sinon.restore());
 
   describe('sync', () => {
     it('does nothing for admins', () => {
@@ -225,7 +221,6 @@ describe('DBSync service', () => {
     it('does not sync to remote if user lacks "can_edit" permission', () => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.reject('unauthorized'));
-
       const onUpdate = sinon.stub();
       service.addUpdateListener(onUpdate);
 
@@ -306,5 +301,4 @@ describe('DBSync service', () => {
       expect(actual).to.equal(false);
     });
   });
-
 });

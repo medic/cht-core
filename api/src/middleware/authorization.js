@@ -23,6 +23,7 @@ module.exports = {
       .getUserCtx(req)
       .then(userCtx => {
         req.userCtx = userCtx;
+        req.replicationId = req.headers['medic-replication-id'];
       })
       .catch(err => {
         req.authErr = err;
