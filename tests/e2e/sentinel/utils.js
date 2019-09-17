@@ -2,6 +2,8 @@ const utils = require('../../utils'),
       querystring = require('querystring'),
       constants = require('../../constants');
 
+const SKIPPED_BY_SENTINEL = RegExp(/^_design\/|(-info|____tombstone)$/);
+
 // This function resolves after Sentinel has processed required all docs (matched by provided docIds).
 // We achieve this by getting the last seq that sentinel has processed, querying the main db's changes feed,
 // filtering by the provided ids and using Sentinel's processed_seq as a since param - simulating what Sentinel's
@@ -28,15 +30,27 @@ const waitForSentinel = docIds => {
       return utils.requestOnTestDb(opts);
     })
     .then(response => {
-      if (response.results && !response.results.length) {
+      if (!response.results) {
+        // something went wrong
+        return true;
+      }
+
+      // sentinel doesn't bump the `processed_seq` in it's metadata doc when a change it ignores comes in
+      // so we ignore those too
+      if (!response.results.length || response.results.every(change => SKIPPED_BY_SENTINEL.test(change.id))) {
         // sentinel has caught up and processed our doc
         return;
       }
 
-      return new Promise(resolve => {
-        setTimeout(() => waitForSentinel(docIds).then(resolve), 100);
-      });
-    });
+      return true;
+    })
+    .catch(err => {
+      if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
+        return true;
+      }
+      throw err;
+    })
+    .then(retry => retry && utils.delayPromise(() => waitForSentinel(docIds), 100));
 };
 
 const requestOnSentinelTestDb = (options) => {

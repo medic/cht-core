@@ -76,12 +76,7 @@ describe('all_docs handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() => Promise.all(users.map(user => utils.request({
-        path: '/api/v1/users',
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: user
-      }))))
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
@@ -96,13 +91,13 @@ describe('all_docs handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_all_docs',
-      auth: `offline:${password}`,
+      auth: { username: 'offline', password },
       method: 'GET'
     };
 
     onlineRequestOptions = {
       path: '/_all_docs',
-      auth: `online:${password}`,
+      auth: { username: 'online', password },
       method: 'GET'
     };
   });
@@ -176,7 +171,7 @@ describe('all_docs handler', () => {
 
     const request = {
       method: 'POST',
-      body: JSON.stringify({ keys }),
+      body: { keys },
       headers: { 'Content-Type': 'application/json' }
     };
 
@@ -186,7 +181,7 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs', qs: { keys } }, offlineRequestOptions))
       ]))
       .then(results => {
         results.forEach(result => {
@@ -247,8 +242,8 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions))
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs', qs: { keys, include_docs: true } }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs',  qs: { keys, include_docs: false } }, offlineRequestOptions))
       ]))
       .then(results => {
         expect(results[0].rows.length).toEqual(5);
@@ -289,8 +284,8 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions))
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs', qs: { limit:2, skip: 2, include_docs: false } }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs', qs: { limit:1, skip: 4, include_docs: true } }, offlineRequestOptions))
       ]))
       .then(results => {
         expect(results[0].rows.length).toEqual(2);
@@ -336,7 +331,7 @@ describe('all_docs handler', () => {
         return utils.saveDocs(tombstones);
       })
       .then(() =>
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs', qs: { keys } }, offlineRequestOptions)))
       .then(result => {
         expect(result.rows).toEqual([
           { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev, deleted: true }},

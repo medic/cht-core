@@ -210,15 +210,10 @@ describe('registration transition', () => {
   };
 
   const submit = body => {
-    const content = JSON.stringify(body);
     return utils.request({
       method: 'POST',
       path: '/api/sms',
-      body: content,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': content.length
-      }
+      body: body
     });
   };
 

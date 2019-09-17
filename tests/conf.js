@@ -108,8 +108,8 @@ const getLoginUrl = () => {
 
 const login = browser => {
   browser.driver.get(getLoginUrl());
-  browser.driver.findElement(by.name('user')).sendKeys(auth.user);
-  browser.driver.findElement(by.name('password')).sendKeys(auth.pass);
+  browser.driver.findElement(by.name('user')).sendKeys(auth.username);
+  browser.driver.findElement(by.name('password')).sendKeys(auth.password);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () =>
@@ -129,13 +129,12 @@ const setupSettings = () => {
   return utils.request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
-    body: JSON.stringify(defaultAppSettings),
-    headers: { 'Content-Type': 'application/json' },
+    body: defaultAppSettings
   });
 };
 
 const setupUser = () => {
-  return utils.getDoc('org.couchdb.user:' + auth.user).then(doc => {
+  return utils.getDoc('org.couchdb.user:' + auth.username).then(doc => {
     doc.contact_id = constants.USER_CONTACT_ID;
     doc.known = true;
     doc.language = 'en';

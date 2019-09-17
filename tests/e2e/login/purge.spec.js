@@ -204,7 +204,7 @@ describe('Purging on login', () => {
       .then(() => utils.request({
         path: `/_users/org.couchdb.user:${restrictedUserName}`,
         method: 'PUT',
-        body: JSON.stringify(restrictedUser)
+        body: restrictedUser
       }))
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => seq = result)
@@ -216,7 +216,7 @@ describe('Purging on login', () => {
 
   afterAll(done => {
     commonElements.goToLoginPage();
-    loginPage.login(auth.user, auth.pass);
+    loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${restrictedUserName}`)
       .then(doc => utils.request({
