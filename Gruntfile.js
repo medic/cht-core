@@ -1,6 +1,7 @@
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const {
@@ -498,21 +499,19 @@ module.exports = function(grunt) {
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'setup-test-database': {
-        // TODO: normalise this into a Medic Dockerfile
         cmd: [
-          // 'docker run -d -p 4984:5984 -p 4986:5986 --name e2e-couchdb -v /home/scdf/dockers/e2e-couchdb/opt/couchdb/data:/opt/couchdb/data apache/couchdb:latest',
-          'docker run -d -p 4984:5984 -p 4986:5986 --name e2e-couchdb apache/couchdb:latest',
+          `docker run -d -p 4984:5984 -p 4986:5986 --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data apache/couchdb:latest`,
           'sleep 1',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic grunt secure-couchdb', // yo dawg, I heard you like grunt...
-          // Useful for debugging etc, as it allows you to use Fauxton
+          // Useful for debugging etc, as it allows you to use Fauxton easily
           `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"'`
         ].join('; ')
       },
       'clean-test-database': {
         cmd: [
           'docker stop e2e-couchdb',
-          'docker rm e2e-couchdb',
+          'docker rm -v e2e-couchdb',
         ].join('; '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
