@@ -1,7 +1,6 @@
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
 const {
