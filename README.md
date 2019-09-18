@@ -1,6 +1,6 @@
 # The Core Framework of the Community Health Toolkit (CHT)
 
-These instructions are designed to help you run or develop on the Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic Mobile. 
+These instructions are designed to help you run or develop on the Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic Mobile.
 
 Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
 
@@ -19,11 +19,11 @@ For the latest changes and release announcements see our [release notes](https:/
 
 ## Overview
 
-The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md). 
+The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
-The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.  
+The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.
 
-Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed and exported using a web application. These web applications are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container. 
+Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed and exported using a web application. These web applications are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container.
 
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
@@ -213,7 +213,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 ### End to End tests
 
-They live in [tests](tests). Run them with grunt: `grunt e2e`.
+They live in [tests](tests). Run them with grunt: `grunt e2e`. Docker is required (it should be available on the command line as `docker`).
 
 ### API integration tests
 
@@ -231,7 +231,7 @@ To build reference documentation into a local folder `jsdoc-docs`: `grunt build-
 
 This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further.
 
-This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard). 
+This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard).
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -248,9 +248,9 @@ Code is automatically published via [Travis CI](https://travis-ci.org/medic/medi
 
 ## Contributing
 
-The Core Framework of the [Community Health Toolkit](https://communityhealthtoolkit.org) is powered by people like you. We appreciate your contributions, and are dedicated to supporting the developers who improve our tools whenever possible. 
+The Core Framework of the [Community Health Toolkit](https://communityhealthtoolkit.org) is powered by people like you. We appreciate your contributions, and are dedicated to supporting the developers who improve our tools whenever possible.
 
-First time contributor? Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start. 
+First time contributor? Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start.
 
 Looking for other ways to help? You can also:
 * Improve documentation. Check out our style guide [here](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md)
@@ -258,7 +258,7 @@ Looking for other ways to help? You can also:
 * Try to reproduce issues and help with troubleshooting
 * Or share a new idea or question with us!
 
-The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). You can even [request access](mailto:info@communityhealthtoolkit.org) to our community forum. 
+The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). You can even [request access](mailto:info@communityhealthtoolkit.org) to our community forum.
 
 For more information check out our [contributor guidelines](CONTRIBUTING.md).
 
