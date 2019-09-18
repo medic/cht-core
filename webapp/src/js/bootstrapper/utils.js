@@ -13,8 +13,16 @@ const feedback = msg => {
   }
 };
 
+const getBaseUrl = () => {
+  // parse the URL to determine the remote and local database names
+  const location = window.location;
+  const port = location.port ? ':' + location.port : '';
+  return `${location.protocol}//${location.hostname}${port}`;
+};
+
 module.exports = {
   // Store a piece of feedback to be later sent as a feedback document when (if)
   // the application boots, via the Feedback service.
-  feedback: feedback
+  feedback: feedback,
+  getBaseUrl: getBaseUrl,
 };

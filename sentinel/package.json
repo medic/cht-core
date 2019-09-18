@@ -58,6 +58,7 @@
     "lineage",
     "message-utils",
     "phone-number",
+    "purging-utils",
     "registration-utils",
     "server-checks",
     "settings",

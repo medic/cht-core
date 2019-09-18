@@ -374,12 +374,6 @@ module.exports = function(grunt) {
         ],
         dest: 'node_modules_backup',
       },
-      'enketo-xslt': {
-        expand: true,
-        flatten: true,
-        src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
-        dest: 'build/ddocs/medic/_attachments/xslt/',
-      },
     },
     exec: {
       'clean-build-dir': {
@@ -879,16 +873,6 @@ module.exports = function(grunt) {
         extDot: 'last',
       },
     },
-    xmlmin: {
-      'enketo-xslt': {
-        files: {
-          'build/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl':
-            'build/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl',
-          'build/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl':
-            'build/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl',
-        },
-      },
-    },
     'optimize-js': {
       'build/ddocs/medic/_attachments/js/inbox.js':
         'build/ddocs/medic/_attachments/js/inbox.js',
@@ -969,11 +953,6 @@ module.exports = function(grunt) {
     'postcss',
   ]);
 
-  grunt.registerTask('enketo-xslt', 'Process enketo XSL stylesheets', [
-    'copy:enketo-xslt',
-    'xmlmin:enketo-xslt',
-  ]);
-
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
@@ -995,7 +974,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
     'build-js',
-    'enketo-xslt',
     'copy:webapp',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',

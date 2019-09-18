@@ -55,8 +55,8 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
 console.log(`To see service log files:
 
-	tail -f logs/api.e2e.log
-	tail -f logs/sentinel.e2e.log
+	tail -F logs/api.e2e.log
+	tail -F logs/sentinel.e2e.log
 
 Starting e2e test services…`);
 

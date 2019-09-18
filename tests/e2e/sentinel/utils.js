@@ -65,9 +65,45 @@ const getInfoDocs = (docIds = []) => {
   return requestOnSentinelTestDb(opts).then(response => response.rows.map(row => row.doc));
 };
 
+const deletePurgeDbs = () => {
+  return getPurgeDbs().then(dbs => {
+    return Promise.all(dbs.map(db => utils.request({ path: `/${db}`, method: 'DELETE' })));
+  });
+};
+
+const getPurgeDbs = () => {
+  const options = {
+    path: '/_all_dbs'
+  };
+  return utils.request(options).then(dbs => {
+    return dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
+  });
+};
+
+const waitForPurgeCompletion = seq => {
+  const params = {
+    since: seq,
+    feed: 'longpoll',
+  };
+  return requestOnSentinelTestDb('/_changes?' + querystring.stringify(params))
+    .then(result => {
+      if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
+        return;
+      }
+
+      return waitForPurgeCompletion(result.last_seq);
+    });
+};
+
+const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update_seq);
+
 module.exports = {
   waitForSentinel: waitForSentinel,
   requestOnSentinelTestDb: requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
-  getInfoDocs: getInfoDocs
+  getInfoDocs: getInfoDocs,
+  deletePurgeDbs: deletePurgeDbs,
+  waitForPurgeCompletion: waitForPurgeCompletion,
+  getCurrentSeq: getCurrentSeq,
+  getPurgeDbs: getPurgeDbs,
 };

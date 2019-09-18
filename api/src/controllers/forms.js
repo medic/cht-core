@@ -1,6 +1,6 @@
-const openrosaFormList = require('openrosa-formlist'),
-  serverUtils = require('../server-utils'),
-  db = require('../db');
+const openrosaFormList = require('openrosa-formlist');
+const serverUtils = require('../server-utils');
+const formsService = require('../services/forms');
 
 const XML_RESPONSE_HEADERS = {
   'Content-Type': 'text/xml; charset=utf-8',
@@ -9,11 +9,6 @@ const XML_RESPONSE_HEADERS = {
 
 const JSON_RESPONSE_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
-};
-
-const isXMLForm = doc => {
-  return Object.keys(doc && doc._attachments || {})
-         .some(name => name === 'xml' || name.endsWith('.xml'));
 };
 
 const isCollectForm = doc => doc && doc.context && doc.context.collect;
@@ -51,32 +46,9 @@ const listFormsJSON = forms => {
   return JSON.stringify(forms.map(form => form.internalId + '.xml'));
 };
 
-const getFormDocs = () => {
-  const options = {
-    key: ['form'],
-    include_docs: true,
-    attachments: true,
-    binary: true,
-  };
-  return db.medic.query('medic-client/doc_by_type', options)
-    .then(response => response.rows.filter(row => isXMLForm(row.doc)))
-    .then(rows => rows.map(row => row.doc));
-};
-
-const getFormAttachment = form => {
-  return getFormDocs()
-    .then(docs => docs.find(doc => doc.internalId === form))
-    .then(doc => {
-      const attachments = (doc && doc._attachments) || {};
-      const name = Object.keys(attachments)
-        .find(name => name === 'xml' || name.endsWith('.xml'));
-      return attachments[name];
-    });
-};
-
 module.exports = {
   list: (req, res) => {
-    return getFormDocs()
+    return formsService.getFormDocs()
       .then(forms => {
         if (req.headers['x-openrosa-version']) {
           return listFormsXML(forms, req).then(xml => {
@@ -108,7 +80,9 @@ module.exports = {
       };
       return serverUtils.error(error, req, res);
     }
-    return getFormAttachment(form)
+    return formsService.getFormDocs()
+      .then(docs => docs.find(doc => doc.internalId === form))
+      .then(doc => formsService.getXFormAttachment(doc))
       .then(attachment => {
         if (!attachment) {
           return Promise.reject({
