@@ -279,6 +279,14 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
+    var enableOrDisableNextButton = $selector => {
+      if ($selector.find('.invalid-required').length > 0) {
+        $selector.find('.next-page').attr('disabled','disabled');
+      } else {
+        $selector.find('.next-page').removeAttr('disabled');
+      }
+    };
+
     var overrideNavigationButtons = function(form, $wrapper) {
       $wrapper.find('.btn.next-page')
         .off('.pagemode')
@@ -286,11 +294,7 @@ angular.module('inboxServices').service('Enketo',
           form.pages.next()
             .then(function(newPageIndex) {
               if(!newPageIndex){
-                if ($wrapper.find('.invalid-required').length > 0) {
-                  $($wrapper).find('.next-page').attr('disabled','disabled');
-                } else {
-                  $($wrapper).find('.next-page').removeAttr('disabled');
-                }
+                enableOrDisableNextButton($wrapper);
               }
               if(typeof newPageIndex === 'number') {
                 $window.history.pushState({ enketo_page_number: newPageIndex }, '');
@@ -337,24 +341,16 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var registerValidationCompleteListener = function(selector) {
-      const listener = () => {
-        if ($('.invalid-required').length > 0) {
-          $(selector).find('.next-page').attr('disabled','disabled');
-        } else {
-          $(selector).find('.next-page').removeAttr('disabled');
-        }
-      };
+      const $selector = $(selector);
 
-      if (listener) {
-        $(selector).on('valuechange.enketo', listener);
-        $(selector).on('input', function() {
-          // We want both re-enable both Next and Submit buttons
-          //
-          // Setting Submit to disabled in the first place is done outside of enketo through the
-          // enketoError state in the save functions of the various controllers
-          $(selector).find('.next-page, .submit').removeAttr('disabled');
-        });
-      }
+      $selector.on('valuechange.enketo', () => enableOrDisableNextButton($selector));
+      $selector.on('input', () => {
+        // We want both re-enable both Next and Submit buttons
+        //
+        // Setting Submit to disabled in the first place is done outside of enketo through the
+        // enketoError state in the save functions of the various controllers
+        $selector.find('.next-page, .submit').removeAttr('disabled');
+      });
     };
 
     var renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
