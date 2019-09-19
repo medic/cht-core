@@ -279,23 +279,12 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var enableOrDisableNextButton = $selector => {
-      if ($selector.find('.invalid-required').length > 0) {
-        $selector.find('.next-page').attr('disabled','disabled');
-      } else {
-        $selector.find('.next-page').removeAttr('disabled');
-      }
-    };
-
     var overrideNavigationButtons = function(form, $wrapper) {
       $wrapper.find('.btn.next-page')
         .off('.pagemode')
         .on('click.pagemode', function() {
           form.pages.next()
             .then(function(newPageIndex) {
-              if(!newPageIndex){
-                enableOrDisableNextButton($wrapper);
-              }
               if(typeof newPageIndex === 'number') {
                 $window.history.pushState({ enketo_page_number: newPageIndex }, '');
               }
@@ -309,6 +298,7 @@ angular.module('inboxServices').service('Enketo',
         .on('click.pagemode', function() {
           $window.history.back();
           forceRecalculate(form);
+          $wrapper.find('.next-page').removeAttr('disabled');
           return false;
         });
     };
@@ -343,8 +333,19 @@ angular.module('inboxServices').service('Enketo',
     var registerValidationCompleteListener = function(selector) {
       const $selector = $(selector);
 
-      $selector.on('valuechange.enketo', () => enableOrDisableNextButton($selector));
-      $selector.on('input', () => {
+      $selector.on('invalidated.enketo', function() {
+        $selector.find('.next-page').attr('disabled','disabled');
+      });
+
+      $selector.on('valuechange.enketo', function(event, valid) {
+        if (valid) {
+          $selector.find('.next-page').removeAttr('disabled');
+        } else {
+          $selector.find('.next-page').attr('disabled','disabled');
+        }
+      });
+
+      $selector.on('input', function() {
         // We want both re-enable both Next and Submit buttons
         //
         // Setting Submit to disabled in the first place is done outside of enketo through the
@@ -364,9 +365,35 @@ angular.module('inboxServices').service('Enketo',
             registerEditedListener(selector, editedListener);
             registerValuechangeListener(selector, valuechangeListener);
             registerValidationCompleteListener(selector);
+            registerMadnessListener(selector);
             return form;
           });
         });
+    };
+
+    const registerMadnessListener = function(selector) {
+      $(selector).on([
+        'valuechange.enketo',
+        'edited.enketo',
+
+
+        'dataupdate.enketo',
+        'fakefocus.enketo',
+        'applyfocus.enketo',
+        'pageflip.enketo',
+        'removed.enketo',
+        'addrepeat.enketo',
+        'removerepeat.enketo',
+        'changelanguage.enketo',
+        'inputupdate.enketo',
+        'edited.enketo',
+        'validationcomplete.enketo',
+        'invalidated.enketo',
+        'progressupdate.enketo',
+        'gotohidden.enketo',
+      ].join(' '), function(event) {
+        $log.info(`Event ${event.type}`, arguments);
+      });
     };
 
     this.render = function(selector, form, instanceData, editedListener, valuechangeListener) {
