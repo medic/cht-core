@@ -38,7 +38,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
         TZ: 'UTC',
         API_PORT: constants.API_PORT,
         COUCH_URL: utils.getCouchUrl(),
-        COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
+        COUCH_NODE_NAME: constants.COUCH_NODE_NAME,
         PATH: process.env.PATH,
       },
     });
