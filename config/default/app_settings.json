@@ -76,33 +76,24 @@
       "gateway"
     ],
     "can_bulk_delete_reports": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_configure": [
-      "national_admin",
       "program_officer"
     ],
     "can_create_people": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_create_places": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_create_records": [
-      "national_admin",
-      "district_admin",
       "data_entry",
       "gateway",
       "program_officer",
@@ -110,86 +101,63 @@
       "chw"
     ],
     "can_create_users": [
-      "national_admin",
       "program_officer"
     ],
     "can_delete_contacts": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_delete_messages": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_delete_reports": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_delete_users": [
-      "national_admin",
       "program_officer"
     ],
     "can_edit": [
-      "national_admin",
-      "district_admin",
       "gateway",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_edit_profile": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_edit_verification": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_export_all": [
-      "national_admin",
       "program_officer"
     ],
     "can_export_audit": [
-      "national_admin",
       "program_officer"
     ],
     "can_export_contacts": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_export_feedback": [
-      "national_admin",
       "program_officer"
     ],
     "can_export_forms": [
-      "national_admin",
-      "district_admin",
       "analytics",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_export_messages": [
-      "national_admin",
-      "district_admin",
       "analytics",
       "program_officer",
       "chw_supervisor",
@@ -197,84 +165,61 @@
     ],
     "can_log_out_on_android": [],
     "can_update_messages": [
-      "national_admin",
-      "district_admin",
       "gateway",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_update_people": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_update_places": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_update_reports": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_update_users": [
-      "national_admin",
       "program_officer"
     ],
     "can_verify_reports": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_analytics": [
-      "national_admin",
-      "district_admin",
       "analytics",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_analytics_tab": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_call_action": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_contacts": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_contacts_tab": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_data_records": [
-      "national_admin",
-      "district_admin",
       "analytics",
       "gateway",
       "program_officer",
@@ -283,64 +228,48 @@
     ],
     "can_view_last_visited_date": [],
     "can_view_message_action": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_messages": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_messages_tab": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_outgoing_messages": [
-      "national_admin",
       "program_officer"
     ],
     "can_view_reports": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_reports_tab": [
-      "national_admin",
-      "district_admin",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_tasks": [
-      "district_admin",
       "chw_supervisor",
       "chw"
     ],
     "can_view_tasks_tab": [
-      "district_admin",
       "chw_supervisor",
       "chw"
     ],
     "can_view_unallocated_data_records": [
-      "national_admin",
-      "district_admin",
       "gateway",
       "program_officer",
       "chw_supervisor",
       "chw"
     ],
     "can_view_users": [
-      "national_admin",
       "program_officer"
     ],
     "can_write_wealth_quintiles": []
