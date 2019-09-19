@@ -222,7 +222,7 @@ const deleteAll = (except = []) => {
             console.log(`Deleted docs: ${JSON.stringify(response)}`);
           }
         }),
-        sentinel.allDocs({keys: infoIds})
+        module.exports.sentinelDb.allDocs({keys: infoIds})
           .then(results => {
             const deletes = results.rows
               .filter(row => row.value) // Not already deleted
@@ -232,7 +232,7 @@ const deleteAll = (except = []) => {
                 _deleted: true
               }));
 
-            return sentinel.bulkDocs(deletes);
+            return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
           if (e2eDebug) {
             console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);

@@ -139,7 +139,7 @@ module.exports = function(grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [couchConfig.withPathNoAuth('medic-test')]: 'build/ddocs/medic.json',
+          ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
       },
       staging: {
@@ -491,13 +491,22 @@ module.exports = function(grunt) {
           ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
-      'reset-test-databases': {
-        stderr: false,
-        cmd: ['medic-test', 'medic-test-audit', 'medic-test-user-admin-meta', 'medic-test-sentinel', 'medic-test-users-meta']
-          .map(
-            name => `curl -X DELETE ${couchConfig.withPath(name)}`
-          )
-          .join(' && '),
+      'setup-test-database': {
+        cmd: [
+          `docker run -d -p 4984:5984 -p 4986:5986 --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data apache/couchdb:latest`,
+          'sleep 1',
+          `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
+          'COUCH_URL=http://admin:pass@localhost:4984/medic grunt secure-couchdb', // yo dawg, I heard you like grunt...
+          // Useful for debugging etc, as it allows you to use Fauxton easily
+          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"'`
+        ].join('; ')
+      },
+      'clean-test-database': {
+        cmd: [
+          'docker stop e2e-couchdb',
+          'docker rm -v e2e-couchdb',
+        ].join('; '),
+        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
         cmd: 'node ./scripts/e2e-servers.js &'
@@ -1026,7 +1035,8 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
     'start-webdriver',
-    'exec:reset-test-databases',
+    'exec:clean-test-database',
+    'exec:setup-test-database',
     'couch-push:test',
     'exec:e2e-servers',
   ]);
@@ -1034,15 +1044,18 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-tests',
+    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
     'protractor:e2e-tests-debug',
+    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
-    'exec:reset-test-databases',
+    'exec:clean-test-database',
+    'exec:setup-test-database',
     'build-node-modules',
     'build-ddoc',
     'couch-compile:primary',
