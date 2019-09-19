@@ -1,9 +1,9 @@
 const _ = require('underscore'),
   auth = require('./auth')(),
   constants = require('./constants'),
+  { spawn } = require('child_process'),
   http = require('http'),
   path = require('path'),
-  {spawn} = require('child_process'),
   rpn = require('request-promise-native'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -16,7 +16,6 @@ const db = new PouchDB(
     constants.COUCH_PORT
   }/${constants.DB_NAME}`
 );
-
 const sentinel = new PouchDB(
   `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
     constants.COUCH_PORT
@@ -643,6 +642,5 @@ module.exports = {
       return sentinel.put(sentinelMetadata);
     });
   },
-
   refreshToGetNewSettings: refreshToGetNewSettings,
 };

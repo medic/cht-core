@@ -51,7 +51,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -87,7 +87,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -123,7 +123,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -237,7 +237,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc('person'))
       .then(person => {

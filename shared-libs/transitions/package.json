@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@medic/lineage": "file:../lineage",
+    "@medic/infodoc": "file:../infodoc",
     "@medic/message-utils": "file:../message-utils",
     "@medic/phone-number": "file:../phone-number",
     "@medic/registration-utils": "file:../registration-utils",

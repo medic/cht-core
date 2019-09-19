@@ -4,7 +4,7 @@ const mutingUtils = require('../../../src/lib/muting_utils'),
       db = require('../../../src/db'),
       utils = require('../../../src/lib/utils'),
       moment = require('moment'),
-      infodoc = require('../../../src/lib/infodoc');
+      infodoc = require('@medic/infodoc');
 
 let clock;
 
@@ -417,14 +417,15 @@ describe('mutingUtils', () => {
         }]);
 
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
-          { id: 'my-place' },
-          { id: 'my-place2' },
-          { id: 'my-place3' },
-          { id: 'contact1' },
-          { id: 'contact2' },
-          { id: 'contact3' }
-        ]]);
+        // Should attach the id and the doc
+        chai.expect(infodoc.bulkGet.args[0][0].map(({id, doc}) => ([id, doc._id]))).to.deep.equal([
+          ['my-place', 'my-place'],
+          ['my-place2', 'my-place2'],
+          ['my-place3', 'my-place3'],
+          ['contact1', 'contact1'],
+          ['contact2', 'contact2'],
+          ['contact3', 'contact3'],
+        ]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       });
     });
@@ -493,12 +494,14 @@ describe('mutingUtils', () => {
         }]);
 
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
-          { id: 'my-place' },
-          { id: 'my-place2' },
-          { id: 'my-place4' },
-          { id: 'contact4' }
-        ]]);
+
+        // Should attach the id and the doc
+        chai.expect(infodoc.bulkGet.args[0][0].map(({id, doc}) => ([id, doc._id]))).to.deep.equal([
+          ['my-place', 'my-place'],
+          ['my-place2', 'my-place2'],
+          ['my-place4', 'my-place4'],
+          ['contact4', 'contact4'],
+        ]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       });
     });
@@ -571,11 +574,11 @@ describe('mutingUtils', () => {
 
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
         chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
-          { id: 'p2' },
-          { id: 'p1' },
-          { id: 'my-place' },
-          { id: 'contact1' },
-          { id: 'contact2' }
+          { id: 'p2', doc: {_id: 'p2'} },
+          { id: 'p1', doc: {_id: 'p1'} },
+          { id: 'my-place', doc: {_id: 'my-place'} },
+          { id: 'contact1', doc: {_id: 'contact1', patient_id: 'patient1'} },
+          { id: 'contact2', doc: {_id: 'contact2', patient_id: 'patient2'} }
         ]]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       });
@@ -632,7 +635,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'contact' } ]]);
+        chai.expect(infodoc.bulkGet.args[0][0][0].id).to.deep.equal('contact');
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       });
     });
@@ -833,23 +836,24 @@ describe('mutingUtils', () => {
         ]);
 
         chai.expect(infodoc.bulkGet.callCount).to.equal(3);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
-          { id: 'a' },
-          { id: 'b' },
-          { id: 'c' }
-        ]]);
 
-        chai.expect(infodoc.bulkGet.args[1]).to.deep.equal([[
-          { id: 'd' },
-          { id: 'e' },
-          { id: 'f' }
-        ]]);
+        // Should attach the id and the doc
+        chai.expect(infodoc.bulkGet.args[0][0].map(({id, doc}) => ([id, doc._id]))).to.deep.equal([
+          ['a', 'a'],
+          ['b', 'b'],
+          ['c', 'c'],
+        ]);
+        chai.expect(infodoc.bulkGet.args[1][0].map(({id, doc}) => ([id, doc._id]))).to.deep.equal([
+          ['d', 'd'],
+          ['e', 'e'],
+          ['f', 'f'],
+        ]);
+        chai.expect(infodoc.bulkGet.args[2][0].map(({id, doc}) => ([id, doc._id]))).to.deep.equal([
+          ['g', 'g'],
+          ['h', 'h'],
+          ['i', 'i'],
+        ]);
 
-        chai.expect(infodoc.bulkGet.args[2]).to.deep.equal([[
-          { id: 'g' },
-          { id: 'h' },
-          { id: 'i' }
-        ]]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(3);
       });
     });
@@ -1304,8 +1308,9 @@ describe('mutingUtils', () => {
   describe('updateMutingHistory', () => {
     beforeEach(() => {
       clock = sinon.useFakeTimers();
-      sinon.stub(infodoc, 'bulkGet');
+      sinon.stub(infodoc, 'get');
       sinon.stub(infodoc, 'bulkUpdate');
+      sinon.stub(infodoc, 'bulkGet');
     });
     afterEach(() => clock.restore());
 
@@ -1332,20 +1337,20 @@ describe('mutingUtils', () => {
           _id: 'a',
           parent: {
             _id: 'parent',
-            muted: 'sometime this year'
+            muted: moment(1000)
           }
         }
       };
 
-      infodoc.bulkGet
-        .onCall(0).resolves([ parentInfo ])
-        .onCall(1).resolves([ info ]);
+      infodoc.get.resolves(parentInfo);
+      infodoc.bulkGet.resolves([ info ]);
       infodoc.bulkUpdate.resolves();
 
-      return mutingUtils.updateMutingHistory(contact, moment(1234)).then(() => {
-        chai.expect(infodoc.bulkGet.callCount).to.equal(2);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'parent' } ]]);
-        chai.expect(infodoc.bulkGet.args[1]).to.deep.equal([[ { id: 'contact' } ]]);
+      return mutingUtils.updateMutingHistory(contact, moment(1001), moment(1234)).then(() => {
+        chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+        chai.expect(infodoc.get.callCount).to.equal(1);
+        chai.expect(infodoc.get.args[0][0]).to.deep.equal({ id: 'parent' });
+        chai.expect(infodoc.bulkGet.args[0][0][0].id).to.equal('contact');
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[{
           _id: 'contact-info',
           doc_id: 'contact',
@@ -1399,15 +1404,14 @@ describe('mutingUtils', () => {
         }
       };
 
-      infodoc.bulkGet
-        .onCall(0).resolves([ parentInfo ])
-        .onCall(1).resolves([ info ]);
+      infodoc.get.resolves(parentInfo);
+      infodoc.bulkGet.resolves([ info ]);
       infodoc.bulkUpdate.resolves();
 
       return mutingUtils.updateMutingHistory(contact, false).then(() => {
-        chai.expect(infodoc.bulkGet.callCount).to.equal(2);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'parent' } ]]);
-        chai.expect(infodoc.bulkGet.args[1]).to.deep.equal([[ { id: 'contact' } ]]);
+        chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+        chai.expect(infodoc.get.args[0][0]).to.deep.equal({ id: 'parent' });
+        chai.expect(infodoc.bulkGet.args[0][0][0].id).to.equal('contact');
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[{
           _id: 'contact-info',
           doc_id: 'contact',
@@ -1434,17 +1438,19 @@ describe('mutingUtils', () => {
         _id: 'a',
         parent: {
           _id: 'b',
-          muted: 'aaa'
+          muted: moment(1000)
         }
       };
 
+      infodoc.get.resolves({});
       infodoc.bulkGet.resolves([{}]);
       infodoc.bulkUpdate.resolves();
 
-      return mutingUtils.updateMutingHistory(contact, 'something').then(() => {
-        chai.expect(infodoc.bulkGet.callCount).to.equal(2);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'b' } ]]);
-        chai.expect(infodoc.bulkGet.args[1]).to.deep.equal([[ { id: 'a' } ]]);
+      return mutingUtils.updateMutingHistory(contact, moment(1001), 'something').then(() => {
+        chai.expect(infodoc.get.callCount).to.equal(1);
+        chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+        chai.expect(infodoc.get.args[0][0]).to.deep.equal({ id: 'b' });
+        chai.expect(infodoc.bulkGet.args[0][0][0].id).to.equal('a');
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[{
           muting_history: [
@@ -1467,13 +1473,15 @@ describe('mutingUtils', () => {
         }
       };
 
+      infodoc.get.resolves({});
       infodoc.bulkGet.resolves([{}]);
       infodoc.bulkUpdate.resolves();
 
       return mutingUtils.updateMutingHistory(contact, undefined).then(() => {
-        chai.expect(infodoc.bulkGet.callCount).to.equal(2);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'b' } ]]);
-        chai.expect(infodoc.bulkGet.args[1]).to.deep.equal([[ { id: 'a' } ]]);
+        chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+        chai.expect(infodoc.get.callCount).to.equal(1);
+        chai.expect(infodoc.get.args[0][0]).to.deep.equal({ id: 'b' });
+        chai.expect(infodoc.bulkGet.args[0][0][0].id).to.equal('a');
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[{
           muting_history: [
@@ -1487,8 +1495,8 @@ describe('mutingUtils', () => {
       });
     });
 
-    it('should throw infodoc.bulkGet errors', () => {
-      infodoc.bulkGet.rejects({ some: 'error' });
+    it('should throw infodoc.get errors', () => {
+      infodoc.get.rejects({ some: 'error' });
       infodoc.bulkUpdate.resolves();
 
       return mutingUtils
@@ -1496,12 +1504,13 @@ describe('mutingUtils', () => {
         .then(() => chai.expect(false).to.equal('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+          chai.expect(infodoc.get.callCount).to.equal(1);
           chai.expect(infodoc.bulkUpdate.callCount).to.equal(0);
         });
     });
 
-    it('should throw infodoc.bulkGet errors', () => {
+    it('should throw infodoc.bulkUpdate errors', () => {
+      infodoc.get.resolves({});
       infodoc.bulkGet.resolves([{}]);
       infodoc.bulkUpdate.rejects({ some: 'error' });
 
@@ -1510,7 +1519,8 @@ describe('mutingUtils', () => {
         .then(() => chai.expect(false).to.equal('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(infodoc.bulkGet.callCount).to.equal(2);
+          chai.expect(infodoc.get.callCount).to.equal(1);
+          chai.expect(infodoc.bulkGet.callCount).to.equal(1);
           chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
         });
     });
@@ -1542,7 +1552,11 @@ describe('mutingUtils', () => {
 
       return mutingUtils._updateMuteHistories(contacts, moment(1234), 'reportId').then(() => {
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'a' }, { id: 'b' }, { id: 'c' } ]]);
+        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
+          { id: 'a', doc: {_id: 'a'} },
+          { id: 'b', doc: {_id: 'b'} },
+          { id: 'c', doc: {_id: 'c'} }
+        ]]);
 
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[
@@ -1594,7 +1608,11 @@ describe('mutingUtils', () => {
 
       return mutingUtils._updateMuteHistories(contacts, false, 'reportId').then(() => {
         chai.expect(infodoc.bulkGet.callCount).to.equal(1);
-        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[ { id: 'a' }, { id: 'b' }, { id: 'c' } ]]);
+        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
+          { id: 'a', doc: {_id: 'a'} },
+          { id: 'b', doc: {_id: 'b'} },
+          { id: 'c', doc: {_id: 'c'} }
+        ]]);
 
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[
