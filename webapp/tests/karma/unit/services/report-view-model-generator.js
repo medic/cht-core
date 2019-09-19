@@ -52,7 +52,7 @@ describe('ReportViewModelGenerator service', () => {
 
     return service(report._id).then(result => {
       chai.expect(lineageModelGenerator.report.callCount).to.equal(1);
-      chai.expect(lineageModelGenerator.report.args[0]).to.deep.equal([ 'my-report', { merge: true } ]);
+      chai.expect(lineageModelGenerator.report.args[0]).to.deep.equal([ 'my-report' ]);
 
       chai.expect(formatDataRecord.callCount).to.equal(1);
       chai.expect(formatDataRecord.args[0]).to.deep.equal([report]);

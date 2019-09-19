@@ -5,7 +5,7 @@ describe('LineageModelGenerator service', () => {
   let service,
       dbQuery,
       dbAllDocs;
-
+      
   beforeEach(() => {
     module('inboxApp');
     module($provide => {
@@ -156,6 +156,43 @@ describe('LineageModelGenerator service', () => {
         chai.expect(actual).to.deep.equal(expected);
       });
     });
+
+    it('does not merge lineage without merge', () => {
+      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const parent = { _id: 'b', name: '2' };
+      const grandparent = { _id: 'c', name: '3' };
+      const expected = {
+        _id: 'a',
+        doc: {
+          _id: 'a',
+          name: '1',
+          parent: {
+            _id: 'b',
+            parent: {
+              _id: 'c',
+            },
+          }
+        },
+        lineage: [
+          {
+            _id: 'b',
+            name: '2'
+          },
+          {
+            _id: 'c',
+            name: '3'
+          }
+        ]
+      };
+      dbQuery.returns(Promise.resolve({ rows: [
+        { doc: contact },
+        { doc: parent },
+        { doc: grandparent }
+      ] }));
+      return service.contact('a').then(actual => {
+        chai.expect(actual).to.deep.equal(expected);
+      });
+    });
   });
 
   describe('report', () => {
@@ -165,10 +202,10 @@ describe('LineageModelGenerator service', () => {
       service.report('a')
         .then(() => {
           done(new Error('expected error to be thrown'));
-        })
-        .catch(err => {
-          chai.expect(err.message).to.equal('Document not found: a');
-          chai.expect(err.code).to.equal(404);
+        })	
+        .catch(err => {	
+          chai.expect(err.message).to.equal('Document not found: a');	
+          chai.expect(err.code).to.equal(404);	
           done();
         });
     });
@@ -185,7 +222,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage and contact', () => {
-      const report = { _id: 'a', _rev: '1' };
+      const report = { _id: 'a', _rev: '1', type: 'data_record', form: 'a', contact: { _id: 'b' } };
       const contact = { _id: 'b', _rev: '1' };
       const parent = { _id: 'c', _rev: '1' };
       const grandparent = { _id: 'd', _rev: '1' };
@@ -199,12 +236,11 @@ describe('LineageModelGenerator service', () => {
         chai.expect(model._id).to.equal('a');
         chai.expect(model.doc).to.deep.equal(report);
         chai.expect(model.contact).to.deep.equal(contact);
-        chai.expect(model.lineage).to.deep.equal([ parent, grandparent ]);
       });
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const report = { _id: 'a', _rev: '1', contact: { _id: 'x' } };
+      const report = { _id: 'a', _rev: '1', type: 'data_record', form: 'a', contact: { _id: 'x' } };
       const contact = { _id: 'b', _rev: '1', contact: { _id: 'y' } };
       const parent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const grandparent = { _id: 'd', _rev: '1', contact: { _id: 'f' } };
@@ -226,8 +262,8 @@ describe('LineageModelGenerator service', () => {
           keys: [ 'x', 'y', 'e', 'f' ],
           include_docs: true
         });
-        chai.expect(model.lineage[0].contact).to.deep.equal(parentContact);
-        chai.expect(model.lineage[1].contact).to.deep.equal(grandparentContact);
+        chai.expect(model.doc.contact.parent.contact).to.deep.equal(parentContact);
+        chai.expect(model.doc.contact.parent.parent.contact).to.deep.equal(grandparentContact);
       });
     });
 
