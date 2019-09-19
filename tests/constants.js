@@ -12,6 +12,7 @@ module.exports = {
   // locally we spin up a different CouchDB for e2e tests
   COUCH_PORT: IS_TRAVIS ? 5984 : 4984,
   COUCH_HOST: 'localhost',
+  COUCH_NODE_NAME: IS_TRAVIS ? process.env.COUCH_NODE_NAME : 'nonode@nohost',
 
   // test database to avoid writing to the dev db
   // TODO: we don't need to do this anymore since it's in its own docker container
