@@ -284,7 +284,7 @@ describe('Users API', () => {
     afterAll(done =>
       utils
         .revertDb()
-        .then(() => utils.deleteUsers(users.map(user => user.username)))
+        .then(() => utils.deleteUsers(users))
         .then(done)
     );
 

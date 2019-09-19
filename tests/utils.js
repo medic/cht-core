@@ -242,44 +242,24 @@ const revertDb = (except, ignoreRefresh) => {
   });
 };
 
-const preDeleteUsers = async (users, meta) => {
-  for (let user of users) {
-    try {
-      await request({ path: `/api/v1/users/${user.username}`, method: 'DELETE' });
-    } catch (err) {
-      if (err.statusCode !== 404) { // nothing to delete? no issue with that!
-        throw err;
-      }
-    }
-  }
-
-  if (!meta) {
-    return;
-  }
-
-  for (let user of users) {
-    try {
-      await request({ path: `/medic-user-${user.username}-meta`,  method: 'DELETE' });
-    } catch (err) {
-      if (err.statusCode !== 404) { // nothing to delete? no issue with that!
-        throw err;
-      }
-    }
-  }
-};
-
 const deleteUsers = async (users) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
+  const medicDocs = await request({ path: '/medic/_all_docs', method: 'POST', body: { keys: usernames } });
   const toDelete = userDocs.rows
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
+  const toDeleteMedic = medicDocs.rows
+    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .filter(stub => stub);
 
-  return request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } });
+  return Promise.all([
+    request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
+    request({ path: '/medic/_bulk_docs', method: 'POST', body: { docs: toDeleteMedic } })
+  ]);
 };
 
 const createUsers = async (users, meta = false) => {
-  await preDeleteUsers(users);
   const createUserOpts = {
     path: '/api/v1/users',
     method: 'POST',
@@ -296,13 +276,7 @@ const createUsers = async (users, meta = false) => {
   }
 
   for (let user of users) {
-    try {
-      await request({ path: `/medic-user-${user.username}-meta`,  method: 'PUT' });
-    } catch (err) {
-      if (err.statusCode !== 412) { // don't throw an error if the database already exists!
-        throw err;
-      }
-    }
+    await request({ path: `/medic-user-${user.username}-meta`,  method: 'PUT' });
   }
 };
 

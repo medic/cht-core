@@ -258,7 +258,7 @@ describe('changes handler', () => {
     utils
       .revertDb()
       // And also revert users we created in before
-      .then(() => utils.deleteUsers(users.map(user => user.username), true))
+      .then(() => utils.deleteUsers(users, true))
       .then(done));
 
   beforeEach(done => getCurrentSeq().then(done));

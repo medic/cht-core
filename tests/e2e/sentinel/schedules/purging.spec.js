@@ -232,7 +232,7 @@ describe('server side purge', () => {
     utils
       .revertDb()
       .then(() => sentinelUtils.deletePurgeDbs())
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(() => done()));
 
   afterEach(done => utils.revertSettings().then(done));
