@@ -177,7 +177,8 @@ describe('Users API', () => {
           body: {
             password: 'swizzlesticks'
           },
-        }, { noAuth: true })
+          noAuth: true
+        })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');

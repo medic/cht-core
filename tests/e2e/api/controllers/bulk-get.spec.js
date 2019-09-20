@@ -53,7 +53,7 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
-describe('bulk-docs handler', () => {
+describe('bulk-get handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
@@ -202,8 +202,8 @@ describe('bulk-docs handler', () => {
             { id: 'd2', rev: revs.d2[1] } // allowed
           ]
         };
+        offlineRequestOptions.path = '/_bulk_get?latest=true';
 
-        offlineRequestOptions.qs = { latest: true };
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {
@@ -259,7 +259,7 @@ describe('bulk-docs handler', () => {
         expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions).not.toBeTruthy();
 
-        offlineRequestOptions.qs = { revs: true, attachments: true };
+        offlineRequestOptions.path = '/_bulk_get?revs=true&attachments=true';
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {
@@ -275,7 +275,7 @@ describe('bulk-docs handler', () => {
         expect(result.results[1].docs[0].ok._revisions).toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions.ids.length).toEqual(4);
 
-        offlineRequestOptions.qs = { revs: false };
+        offlineRequestOptions.path = '/_bulk_get?revs=false';
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {

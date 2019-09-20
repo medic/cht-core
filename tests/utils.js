@@ -17,11 +17,9 @@ let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug, noAuth } = {}) => {
-  if (typeof options === 'string') {
-    options = { path: options };
-  }
-  if (!noAuth && !options.noAuth) {
+const request = (options, { debug } = {}) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  if (!options.noAuth) {
     options.auth = options.auth || auth;
   }
   options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
@@ -40,6 +38,7 @@ const request = (options, { debug, noAuth } = {}) => {
     if (response.headers['content-type'].startsWith('application/json') && !options.json) {
       response.body = JSON.parse(response.body);
     }
+    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
@@ -242,7 +241,7 @@ const revertDb = (except, ignoreRefresh) => {
   });
 };
 
-const deleteUsers = async (users) => {
+const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({ path: '/medic/_all_docs', method: 'POST', body: { keys: usernames } });
@@ -253,10 +252,18 @@ const deleteUsers = async (users) => {
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
-  return Promise.all([
+  await Promise.all([
     request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
-    request({ path: '/medic/_bulk_docs', method: 'POST', body: { docs: toDeleteMedic } })
+    request({ path: '/medic/_bulk_docs', method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
+
+  if (!meta) {
+    return;
+  }
+
+  for (let user of users) {
+    await request({ path: `/medic-user-${user.username}-meta`,  method: 'DELETE' });
+  }
 };
 
 const createUsers = async (users, meta = false) => {
@@ -267,8 +274,7 @@ const createUsers = async (users, meta = false) => {
   };
 
   for (let user of users) {
-    createUserOpts.body = user;
-    await request(createUserOpts);
+    await request(Object.assign({ body: user }, createUserOpts));
   }
 
   if (!meta) {
