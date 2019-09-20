@@ -169,7 +169,6 @@ describe('db-doc handler', () => {
           return utils.getDoc('db_doc_delete');
         })
         .catch(err => {
-          console.log(err);
           expect(err.responseBody.error).toEqual('not_found');
         });
     });
