@@ -366,11 +366,9 @@ describe('db-doc handler', () => {
             _.flatten(
               results.map(result => {
                 const open_revs = result._revisions.ids.map((rev, key) => `${result._revisions.start - key}-${rev}`);
-                const qs = { rev: result._rev, open_revs };
-                const qsAll = { rev: result._rev, open_revs: 'all' };
                 return [
-                  utils.requestOnTestDb(_.defaults({ qs, path: `/${result._id}` }, offlineRequestOptions)),
-                  utils.requestOnTestDb(_.defaults({ qs: qsAll, path: `/${result._id}` }, offlineRequestOptions)),
+                  utils.requestOnTestDb(_.defaults({ path: `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}` }, offlineRequestOptions)),
+                  utils.requestOnTestDb(_.defaults({ path: `/${result._id}?rev=${result._rev}&open_revs=all` }, offlineRequestOptions)),
                 ];
               })
             )
