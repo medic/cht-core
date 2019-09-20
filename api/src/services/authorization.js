@@ -163,12 +163,16 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getAuthorizationContext = (userCtx) => {
+const getAuthorizationContext = (userCtx, skipSubjects = false) => {
   const authorizationCtx = {
     userCtx,
     contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
     subjectIds: []
   };
+
+  if (skipSubjects) {
+    return Promise.resolve(authorizationCtx);
+  }
 
   return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
@@ -268,5 +272,5 @@ module.exports = {
   filterAllowedDocs: filterAllowedDocs,
   isDeleteStub: tombstoneUtils._isDeleteStub,
   generateTombstoneId: tombstoneUtils.generateTombstoneId,
-  convertTombstoneId: convertTombstoneId
+  convertTombstoneId: convertTombstoneId,
 };
