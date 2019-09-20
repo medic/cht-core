@@ -4,6 +4,8 @@ const commonElements = require('../../page-objects/common/common.po.js');
 const contactPage = require('../../page-objects/contacts/contacts.po.js');
 const uuid = require('uuid');
 const districtId = uuid.v4();
+const districtName = uuid.v4();
+const healtchCenterName = uuid.v4();
 
 describe('Creating contacts with standard config', function() {
   beforeAll(done => {
@@ -16,7 +18,7 @@ describe('Creating contacts with standard config', function() {
   const expectedDocs = [
     {
       _id: districtId,
-      name: 'ADistrict',
+      name: districtName,
       type: 'district_hospital',
       reported_date: Date.now(),
     },
@@ -25,23 +27,23 @@ describe('Creating contacts with standard config', function() {
       parent: {
         _id: districtId
       },
-      name: 'AHealthCenter',
+      name: healtchCenterName,
       type: 'health_center',
       reported_date: Date.now(),
     }
   ];
   
   it('should create a new district hospital', async function() {
-    const districtName = 'Test District';
+    const expectDistrictName = 'Test District';
     await commonElements.goToPeople();
-    await contactPage.addNewDistrict(districtName);
+    await contactPage.addNewDistrict(expectDistrictName);
     helper.waitUntilReady(contactPage.contactName);
-    expect(contactPage.contactName.getText()).toBe(districtName);
+    expect(contactPage.contactName.getText()).toBe(expectDistrictName);
   });
 
   it('should create a new health center', async function(){
     await commonElements.goToPeople();
-    contactPage.selectLHSRowByText(expectedDocs[0].name);
+    contactPage.selectLHSRowByText(districtName);
     const hcName = 'Health Center 1';
     contactPage.addHealthCenter(hcName);
     helper.waitUntilReady(contactPage.contactName);
@@ -50,7 +52,7 @@ describe('Creating contacts with standard config', function() {
 
   it('should create a new clinic', async function(){
     await commonElements.goToPeople();
-    contactPage.selectLHSRowByText(expectedDocs[1].name);
+    contactPage.selectLHSRowByText(healtchCenterName);
     contactPage.addClinic();
     helper.waitUntilReady(contactPage.contactName);
     expect(contactPage.contactName.getText()).toBe('Clinic 1');

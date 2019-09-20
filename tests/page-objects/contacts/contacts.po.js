@@ -15,7 +15,6 @@ const contactName = element(by.css('.heading-content'));
 const rows = element.all(by.className('content-row'));
 
 module.exports = {
-  rows,
   contactName,
   getSubmitButton: () => submitButton,
   selectLHSRowByText: text => {
@@ -86,13 +85,7 @@ module.exports = {
   },
 
   clickRowByName: async name => {
-    await rows.filter(function(elem) {
-      return elem.getText().then(function(text) {
-        return text === name;
-      });
-    })
-      .first()
-      .click();
+    await rows.filter(elem => elem.getText().then(text => text === name)).first().click();
   }
 };
 
