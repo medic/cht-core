@@ -43,7 +43,7 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});;
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
           assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'me-info', _rev: '1-abc', _deleted: true}]);
         });
     });
