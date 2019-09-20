@@ -5,7 +5,7 @@ describe('LineageModelGenerator service', () => {
   let service,
       dbQuery,
       dbAllDocs;
-      
+
   beforeEach(() => {
     module('inboxApp');
     module($provide => {
@@ -157,6 +157,24 @@ describe('LineageModelGenerator service', () => {
       });
     });
 
+    it('should merge lineage with undefined members', () => {
+      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
+      const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
+      dbQuery.resolves({ rows: [{ doc: contact, key: ['a', 0] }, { doc: parent,  key: ['a', 1] }, { key: ['a', 2] }, { key: ['a', 3] }] });
+      const expected = {
+        _id: 'a',
+        doc: {
+          _id: 'a',
+          name: '1',
+          parent: { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }
+        },
+        lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, undefined]
+      };
+      return service.contact('a', { merge: true }).then(actual => {
+        chai.expect(actual).to.deep.equal(expected);
+      });
+    });
+
     it('does not merge lineage without merge', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', name: '2' };
@@ -202,10 +220,10 @@ describe('LineageModelGenerator service', () => {
       service.report('a')
         .then(() => {
           done(new Error('expected error to be thrown'));
-        })	
-        .catch(err => {	
-          chai.expect(err.message).to.equal('Document not found: a');	
-          chai.expect(err.code).to.equal(404);	
+        })
+        .catch(err => {
+          chai.expect(err.message).to.equal('Document not found: a');
+          chai.expect(err.code).to.equal(404);
           done();
         });
     });
