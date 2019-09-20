@@ -8,7 +8,8 @@ const service = require('../../../src/services/settings'),
       defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
 
 let settings,
-    replace;
+    replace,
+    overwrite;
 
 describe('settings service', () => {
   beforeEach(function() {
