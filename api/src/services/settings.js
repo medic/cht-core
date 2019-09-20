@@ -46,9 +46,14 @@ module.exports = {
       });
   },
   /**
-   * @param replace If true, recursively merges the properties.
+   * Process a request to either replace, overwrite or extend existing settings. 
+   * If both replace and overwite are set, then it is assumed that only replace 
+   * is set.
+   * @param replace If true, recursively merges the properties leaving existing 
+   *                properties not in the input document intact.
+   * @param overwrite If true, replace the settings document with input document.
    */
-  update: (body, replace) => {
+  update: (body, replace, overwrite) => {
     const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
@@ -68,6 +73,8 @@ module.exports = {
 
         if (replace) {
           doReplace(doc.settings, body);
+        } else if (overwrite) {
+          doc.settings = body;
         } else {
           doExtend(doc.settings, body);
         }
