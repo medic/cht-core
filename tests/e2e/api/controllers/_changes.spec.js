@@ -35,9 +35,11 @@ const assertChangeIds = function (changes) {
            !DEFAULT_EXPECTED.includes(change.id);
   });
   const expectedIds = Array.prototype.slice.call(arguments, 1);
-  const changeIds = _.uniq(changes.map(change => change.id));
+  const changeIds = _.uniq(getIds(changes));
   chai.expect(changeIds).to.have.members(expectedIds);
 };
+
+const getIds = docsOrChanges => docsOrChanges.map(elem => elem._id || elem.id);
 
 const requestChanges = (username, params = {}) => {
   const options = {
@@ -461,9 +463,8 @@ describe('changes handler', () => {
 
     it('should successfully fully replicate (with or without limit)', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
-      bobsIds.push(...allowedDocs.map(doc => doc._id));
-
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
+
       return Promise
         .all([
           utils.saveDocs(allowedDocs),
@@ -471,14 +472,14 @@ describe('changes handler', () => {
         ])
         .then(() => batchedChanges('bob', 4))
         .then(changes => {
-          assertChangeIds(changes, ...bobsIds);
+          assertChangeIds(changes, ...bobsIds, ...getIds(allowedDocs));
         });
     });
 
     it('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
-      bobsIds.push(...allowedDocs.map(doc => doc._id));
+      bobsIds.push(...getIds(allowedDocs));
 
       return Promise
         .all([
@@ -489,9 +490,7 @@ describe('changes handler', () => {
         .then(changes => {
           if (shouldBatchChangesRequests) {
             // requests should be limited
-            const receivedIds = changes.results
-              .map(change => change.id)
-              .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
+            const receivedIds = getIds(changes.results).filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
             chai.expect(bobsIds).to.include.members(receivedIds);
             // because we still process pending changes, it's not a given we will receive only 4 changes.
             chai.expect(bobsIds).to.not.have.members(receivedIds);
@@ -505,7 +504,6 @@ describe('changes handler', () => {
     it('filters allowed changes in longpolls', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
-      bobsIds.push(...allowedDocs.map(doc => doc._id));
 
       return Promise.all([
           consumeChanges('bob', [], currentSeq),
@@ -513,15 +511,13 @@ describe('changes handler', () => {
           utils.saveDocs(deniedDocs)
         ])
         .then(([changes]) => {
-          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          assertChangeIds(changes, ...getIds(allowedDocs));
         });
     });
 
     it('filters correctly for concurrent users on initial replication', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
-      bobsIds.push(...allowedBob.map(doc => doc._id));
-      stevesIds.push(...allowedSteve.map(doc => doc._id));
 
       return Promise
         .all([
@@ -533,8 +529,8 @@ describe('changes handler', () => {
           requestChanges('steve')
         ]))
         .then(([bobsChanges, stevesChanges]) => {
-          assertChangeIds(bobsChanges, ...bobsIds);
-          assertChangeIds(stevesChanges, ...stevesIds);
+          assertChangeIds(bobsChanges, ...bobsIds, ...getIds(allowedBob));
+          assertChangeIds(stevesChanges, ...stevesIds, ...getIds(allowedSteve));
         });
     });
 
@@ -549,8 +545,8 @@ describe('changes handler', () => {
           utils.saveDocs(allowedSteve),
         ])
         .then(([ bobsChanges, stevesChanges ]) => {
-          assertChangeIds(bobsChanges, ...allowedBob.map(doc => doc._id));
-          assertChangeIds(stevesChanges, ...allowedSteve.map(doc => doc._id));
+          assertChangeIds(bobsChanges, ...getIds(allowedBob));
+          assertChangeIds(stevesChanges, ...getIds(allowedSteve));
         });
     });
 
@@ -576,8 +572,6 @@ describe('changes handler', () => {
         }
       ];
       const newIds = ['new_allowed_contact', 'new_allowed_report'];
-      bobsIds.push(...newIds);
-      newIds.push(...DEFAULT_EXPECTED);
       return Promise
         .all([
           consumeChanges('bob', [], currentSeq),
@@ -590,8 +584,7 @@ describe('changes handler', () => {
           return consumeChanges('bob', [], currentSeq);
         })
         .then(changes => {
-          expect(changes.results.length).toBeGreaterThanOrEqual(2);
-          expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
+          chai.expect(_.uniq(getIds(changes.results))).to.have.members(newIds);
         });
     });
 
@@ -671,11 +664,11 @@ describe('changes handler', () => {
           ]);
         })
         .then(([ changes ]) => {
-          assertChangeIds(changes, 'org.couchdb.user:steve', ...allowedSteve.map(doc => doc._id));
+          assertChangeIds(changes, 'org.couchdb.user:steve', ...getIds(allowedSteve));
           return requestChanges('steve', { since: currentSeq });
         })
         .then(changes => {
-          assertChangeIds(changes, 'org.couchdb.user:steve', ...allowedSteve.map(doc => doc._id));
+          assertChangeIds(changes, 'org.couchdb.user:steve', ...getIds(allowedSteve));
         });
     });
 
@@ -711,9 +704,9 @@ describe('changes handler', () => {
           utils.delayPromise(() => updateSteve(user, medicUser), 1000),
         ]))
         .then(([ changes ]) => {
-          const bobvilleIds = allowedBob.map(doc => doc._id);
-          const stevevilleIds = allowedSteve.map(doc => doc._id);
-          const changeIds = changes.results.map(change => change.id);
+          const bobvilleIds = getIds(allowedBob);
+          const stevevilleIds = getIds(allowedSteve);
+          const changeIds = getIds(changes.results);
 
           // steve was moved to bobville, so we expect him to get `allowedSteveIds` + his own user
           chai.expect(changeIds).to.have.members(['org.couchdb.user:steve', ...bobvilleIds]);
@@ -749,9 +742,9 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
-          const changeIds = changes.results.map(change => change.id);
+          const changeIds = getIds(changes.results);
           // can't use assertChangeIds here because it ignores deletes, and all we get are deletes
-          chai.expect(_.uniq(changeIds)).to.have.members(allowedDocs.map(doc => doc._id));
+          chai.expect(_.uniq(changeIds)).to.have.members(getIds(allowedDocs));
           changes.results.forEach(change => chai.expect(change.deleted).to.equal(true));
         });
     });
@@ -759,7 +752,7 @@ describe('changes handler', () => {
     it('filters deletions (tombstones)', () => {
       const allowedDocs = createSomeContacts(5, 'fixture:steveville');
       const deniedDocs = createSomeContacts(5, 'irrelevant-place');
-      const allowedDocIds = allowedDocs.map(doc => doc._id);
+      const allowedDocIds = getIds(allowedDocs);
 
       return Promise
         .all([
@@ -784,15 +777,13 @@ describe('changes handler', () => {
         .then(() => sentinelUtils.waitForSentinel())
         .then(() => requestChanges('steve'))
         .then(changes => {
-          const changeIds = changes.results
-            .map(change => change.id)
-            .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
+          const changeIds = getIds(changes.results).filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
           // can't use assertChangeIds here because it ignores deletes
           chai.expect(_.uniq(changeIds)).to.have.members([...stevesIds, ...allowedDocIds]);
         })
         .then(() => consumeChanges('steve', [], currentSeq))
         .then(changes => {
-          const changeIds = changes.results.map(change => change.id);
+          const changeIds = getIds(changes.results);
           // can't use assertChangeIds here because it ignores deletes, and all we get are deletes
           chai.expect(_.uniq(changeIds)).to.have.members(allowedDocIds);
           changes.results.forEach(change => chai.expect(change.deleted).to.equal(true));
@@ -833,10 +824,8 @@ describe('changes handler', () => {
        ]))
        .then(([ bobsChanges, stevesChanges ]) => {
          // can't use assertChangeIds here because it ignores deletes, and all we get are deletes
-         const bobsChangeIds = bobsChanges.results.map(change => change.id);
-         chai.expect(_.uniq(bobsChangeIds)).to.have.members(allowedBob.map(doc => doc._id));
-         const stevesChangeIds = stevesChanges.results.map(change => change.id);
-         chai.expect(_.uniq(stevesChangeIds)).to.have.members(allowedSteve.map(doc => doc._id));
+         chai.expect(_.uniq(getIds(bobsChanges.results))).to.have.members(getIds(allowedBob));
+         chai.expect(_.uniq(getIds(stevesChanges.results))).to.have.members(getIds(allowedSteve));
        });
     });
 
@@ -958,7 +947,7 @@ describe('changes handler', () => {
     it('normal feeds should replicate correctly when new changes are pushed', () => {
       const allowedDocs = createSomeContacts(25, 'fixture:bobville');
       const allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
-      const ids = [...allowedDocs.map(doc => doc._id), ...allowedDocs2.map(doc => doc._id)];
+      const ids = [...getIds(allowedDocs), ...getIds(allowedDocs2)];
 
       // save docs in sequence
       const promiseChain = allowedDocs.reduce((promise, doc) => {
@@ -972,7 +961,7 @@ describe('changes handler', () => {
           promiseChain
         ]))
         .then(([ changes ]) => {
-          chai.expect(ids).to.have.members(_.uniq(changes.map(change => change.id)));
+          chai.expect(ids).to.have.members(_.uniq(getIds(changes)));
           chai.expect(changes.every(change => change.seq)).to.equal(true);
         });
     });
