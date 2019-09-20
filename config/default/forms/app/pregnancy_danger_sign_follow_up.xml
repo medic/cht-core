@@ -152,6 +152,9 @@
           <text id="/pregnancy_danger_sign_follow_up/inputs/contact/name:label">
             <value>Name</value>
           </text>
+          <text id="/pregnancy_danger_sign_follow_up/inputs/contact/parent/_id:label">
+            <value>Parent ID</value>
+          </text>
           <text id="/pregnancy_danger_sign_follow_up/inputs/contact/parent/parent/contact/chw_name:label">
             <value>CHW name</value>
           </text>
@@ -191,7 +194,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-08-09 04:27:39">
+        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-09-20 10:58:58">
           <inputs>
             <meta>
               <location>
@@ -211,6 +214,7 @@
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
+                <_id/>
                 <parent>
                   <contact>
                     <chw_name/>
@@ -228,6 +232,7 @@
           <patient_short_name_start tag="hidden"/>
           <t_danger_signs_referral_follow_up_date tag="hidden"/>
           <t_danger_signs_referral_follow_up tag="hidden"/>
+          <pregnancy_uuid_ctx/>
           <danger_signs>
             <visit_confirm/>
             <danger_sign_present/>
@@ -254,6 +259,28 @@
               <custom_woman_start_label/>
             </custom_translations>
           </danger_signs>
+          <data>
+            <o_visited_hf/>
+            <o_still_experiencing_danger_sign/>
+            <o_vaginal_bleeding/>
+            <o_fits/>
+            <o_severe_abdominal_pain/>
+            <o_severe_headache/>
+            <o_very_pale/>
+            <o_fever/>
+            <o_reduced_or_no_foetal_movements/>
+            <o_breaking_water/>
+            <o_easily_tired/>
+            <o_face_hand_swelling/>
+            <o_breathlessness/>
+            <o_has_danger_sign/>
+            <m_patient_uuid/>
+            <m_patient_id/>
+            <m_household_uuid/>
+            <m_source/>
+            <m_source_id/>
+            <m_pregnancy_uuid/>
+          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -269,6 +296,7 @@
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/sex" type="string"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/parent/parent/contact/chw_name" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_danger_sign_follow_up/patient_age_in_years" type="string"/>
@@ -279,6 +307,7 @@
       <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)" nodeset="/pregnancy_danger_sign_follow_up/patient_short_name_start" type="string"/>
       <bind calculate="date-time(floor(decimal-date-time(today())) + 3)" nodeset="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up_date" type="string"/>
       <bind calculate="../danger_signs/r_danger_sign_present" nodeset="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up" type="string"/>
+      <bind calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)" nodeset="/pregnancy_danger_sign_follow_up/pregnancy_uuid_ctx" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/visit_confirm" required="true()" type="select1"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/danger_sign_present" required="true()" type="select1"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/congratulate_no_ds_note" readonly="true()" relevant="../danger_sign_present = 'no'" type="string"/>
@@ -313,6 +342,26 @@ or selected(../other_danger_sign, 'yes')),
       <bind calculate="jr:choice-name( /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ,' /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ')" nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label" type="string"/>
       <bind calculate="&quot;woman-start&quot;" nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_start_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_start_label_translator ,' /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_start_label_translator ')" nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_start_label" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/visit_confirm " nodeset="/pregnancy_danger_sign_follow_up/data/o_visited_hf" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/danger_sign_present " nodeset="/pregnancy_danger_sign_follow_up/data/o_still_experiencing_danger_sign" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/vaginal_bleeding " nodeset="/pregnancy_danger_sign_follow_up/data/o_vaginal_bleeding" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/fits " nodeset="/pregnancy_danger_sign_follow_up/data/o_fits" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/severe_abdominal_pain " nodeset="/pregnancy_danger_sign_follow_up/data/o_severe_abdominal_pain" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/severe_headache " nodeset="/pregnancy_danger_sign_follow_up/data/o_severe_headache" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/very_pale " nodeset="/pregnancy_danger_sign_follow_up/data/o_very_pale" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/fever " nodeset="/pregnancy_danger_sign_follow_up/data/o_fever" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/reduced_or_no_foetal_movements " nodeset="/pregnancy_danger_sign_follow_up/data/o_reduced_or_no_foetal_movements" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/breaking_water " nodeset="/pregnancy_danger_sign_follow_up/data/o_breaking_water" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/easily_tired " nodeset="/pregnancy_danger_sign_follow_up/data/o_easily_tired" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/face_hand_swelling " nodeset="/pregnancy_danger_sign_follow_up/data/o_face_hand_swelling" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/breathlessness " nodeset="/pregnancy_danger_sign_follow_up/data/o_breathlessness" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/danger_signs/r_danger_sign_present " nodeset="/pregnancy_danger_sign_follow_up/data/o_has_danger_sign" type="string"/>
+      <bind calculate="../../patient_uuid" nodeset="/pregnancy_danger_sign_follow_up/data/m_patient_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/pregnancy_danger_sign_follow_up/data/m_patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy_danger_sign_follow_up/data/m_household_uuid" type="string"/>
+      <bind calculate="../../inputs/source" nodeset="/pregnancy_danger_sign_follow_up/data/m_source" type="string"/>
+      <bind calculate="../../inputs/source_id" nodeset="/pregnancy_danger_sign_follow_up/data/m_source_id" type="string"/>
+      <bind calculate=" /pregnancy_danger_sign_follow_up/pregnancy_uuid_ctx " nodeset="/pregnancy_danger_sign_follow_up/data/m_pregnancy_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy_danger_sign_follow_up/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -507,5 +556,6 @@ or selected(../other_danger_sign, 'yes')),
         </select1>
       </group>
     </group>
+    <group ref="/pregnancy_danger_sign_follow_up/data"/>
   </h:body>
 </h:html>

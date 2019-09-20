@@ -901,13 +901,13 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_person_patient_id:label">
+          <text id="/pregnancy/data/m_household_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_person_uuid:label">
+          <text id="/pregnancy/data/m_patient_id:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_place_uuid:label">
+          <text id="/pregnancy/data/m_patient_uuid:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/m_source:label">
@@ -952,7 +952,7 @@
           <text id="/pregnancy/data/o_fits:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/o_has_danger_signs:label">
+          <text id="/pregnancy/data/o_has_danger_sign:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_has_risk_factors:label">
@@ -1887,13 +1887,13 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_person_patient_id:label">
+          <text id="/pregnancy/data/m_household_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_person_uuid:label">
+          <text id="/pregnancy/data/m_patient_id:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_place_uuid:label">
+          <text id="/pregnancy/data/m_patient_uuid:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/m_source:label">
@@ -1938,7 +1938,7 @@
           <text id="/pregnancy/data/o_fits:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/o_has_danger_signs:label">
+          <text id="/pregnancy/data/o_has_danger_sign:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_has_risk_factors:label">
@@ -2873,13 +2873,13 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_person_patient_id:label">
+          <text id="/pregnancy/data/m_household_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_person_uuid:label">
+          <text id="/pregnancy/data/m_patient_id:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_place_uuid:label">
+          <text id="/pregnancy/data/m_patient_uuid:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/m_source:label">
@@ -2924,7 +2924,7 @@
           <text id="/pregnancy/data/o_fits:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/o_has_danger_signs:label">
+          <text id="/pregnancy/data/o_has_danger_sign:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data/o_has_risk_factors:label">
@@ -3644,7 +3644,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-09-17 01:08:22">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-09-20 11:15:16">
           <inputs>
             <meta>
               <location>
@@ -3909,7 +3909,7 @@
             <o_diabetes/>
             <o_additional_high_risk_condition_to_report/>
             <o_additional_high_risk_condition/>
-            <o_has_danger_signs/>
+            <o_has_danger_sign/>
             <o_vaginal_bleeding/>
             <o_fits/>
             <o_severe_abdominal_pain/>
@@ -3926,9 +3926,9 @@
             <o_received_deworming_meds/>
             <o_tested_for_hiv_in_past_3_months/>
             <o_received_tetanus_toxoid_this_pregnancy/>
-            <m_person_uuid/>
-            <m_person_patient_id/>
-            <m_place_uuid/>
+            <m_patient_uuid/>
+            <m_patient_id/>
+            <m_household_uuid/>
             <m_source/>
             <m_source_id/>
           </data>
@@ -4187,7 +4187,7 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
       <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'diabetes'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'diabetes'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_diabetes" type="string"/>
       <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk_check " nodeset="/pregnancy/data/o_additional_high_risk_condition_to_report" type="string"/>
       <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk " nodeset="/pregnancy/data/o_additional_high_risk_condition" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/r_danger_sign_present " nodeset="/pregnancy/data/o_has_danger_signs" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/r_danger_sign_present " nodeset="/pregnancy/data/o_has_danger_sign" type="string"/>
       <bind calculate=" /pregnancy/danger_signs/vaginal_bleeding " nodeset="/pregnancy/data/o_vaginal_bleeding" type="string"/>
       <bind calculate=" /pregnancy/danger_signs/fits " nodeset="/pregnancy/data/o_fits" type="string"/>
       <bind calculate=" /pregnancy/danger_signs/severe_abdominal_pain " nodeset="/pregnancy/data/o_severe_abdominal_pain" type="string"/>
@@ -4204,9 +4204,9 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
       <bind calculate=" /pregnancy/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy/data/o_received_deworming_meds" type="string"/>
       <bind calculate=" /pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy/data/o_tested_for_hiv_in_past_3_months" type="string"/>
       <bind calculate=" /pregnancy/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy/data/o_received_tetanus_toxoid_this_pregnancy" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy/data/m_person_uuid" type="string"/>
-      <bind calculate="../../patient_id" nodeset="/pregnancy/data/m_person_patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy/data/m_place_uuid" type="string"/>
+      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy/data/m_patient_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/pregnancy/data/m_patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy/data/m_household_uuid" type="string"/>
       <bind calculate="../../inputs/source" nodeset="/pregnancy/data/m_source" type="string"/>
       <bind calculate="../../inputs/source_id" nodeset="/pregnancy/data/m_source_id" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy/meta/instanceID" readonly="true()" type="string"/>
