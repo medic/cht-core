@@ -1099,13 +1099,13 @@
           <text id="/pregnancy_home_visit/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy_home_visit/data/m_person_patient_id:label">
+          <text id="/pregnancy_home_visit/data/m_household_uuid:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy_home_visit/data/m_person_uuid:label">
+          <text id="/pregnancy_home_visit/data/m_patient_id:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy_home_visit/data/m_place_uuid:label">
+          <text id="/pregnancy_home_visit/data/m_patient_uuid:label">
             <value>-</value>
           </text>
           <text id="/pregnancy_home_visit/data/m_pregnancy_uuid:label">
@@ -1169,6 +1169,9 @@
             <value>-</value>
           </text>
           <text id="/pregnancy_home_visit/data/o_gestational_age_update_weeks:label">
+            <value>-</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/o_has_danger_sign:label">
             <value>-</value>
           </text>
           <text id="/pregnancy_home_visit/data/o_has_risk_factors_not_previously_reported:label">
@@ -1864,7 +1867,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-17 03:04:24">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-09-20 11:17:21">
           <inputs>
             <meta>
               <location>
@@ -2157,14 +2160,15 @@
             <o_easily_tired/>
             <o_face_hand_swelling/>
             <o_breathlessness/>
+            <o_has_danger_sign/>
             <o_uses_llin/>
             <o_takes_iron_folate_daily/>
             <o_received_deworming_meds/>
             <o_tested_for_hiv_in_past_3_months/>
             <o_received_tetanus_toxoid_this_pregnancy/>
-            <m_person_uuid/>
-            <m_person_patient_id/>
-            <m_place_uuid/>
+            <m_patient_uuid/>
+            <m_patient_id/>
+            <m_household_uuid/>
             <m_source/>
             <m_source_id/>
             <m_pregnancy_uuid/>
@@ -2621,14 +2625,15 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
       <bind calculate=" /pregnancy_home_visit/danger_signs/easily_tired " nodeset="/pregnancy_home_visit/data/o_easily_tired" type="string"/>
       <bind calculate=" /pregnancy_home_visit/danger_signs/face_hand_swelling " nodeset="/pregnancy_home_visit/data/o_face_hand_swelling" type="string"/>
       <bind calculate=" /pregnancy_home_visit/danger_signs/breathlessness " nodeset="/pregnancy_home_visit/data/o_breathlessness" type="string"/>
+      <bind calculate=" /pregnancy_home_visit/danger_signs/r_danger_sign_present " nodeset="/pregnancy_home_visit/data/o_has_danger_sign" type="string"/>
       <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use " nodeset="/pregnancy_home_visit/data/o_uses_llin" type="string"/>
       <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily " nodeset="/pregnancy_home_visit/data/o_takes_iron_folate_daily" type="string"/>
       <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy_home_visit/data/o_received_deworming_meds" type="string"/>
       <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy_home_visit/data/o_tested_for_hiv_in_past_3_months" type="string"/>
       <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy_home_visit/data/o_received_tetanus_toxoid_this_pregnancy" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy_home_visit/data/m_person_uuid" type="string"/>
-      <bind calculate="../../patient_id" nodeset="/pregnancy_home_visit/data/m_person_patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy_home_visit/data/m_place_uuid" type="string"/>
+      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy_home_visit/data/m_patient_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/pregnancy_home_visit/data/m_patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy_home_visit/data/m_household_uuid" type="string"/>
       <bind calculate="../../inputs/source" nodeset="/pregnancy_home_visit/data/m_source" type="string"/>
       <bind calculate="../../inputs/source_id" nodeset="/pregnancy_home_visit/data/m_source_id" type="string"/>
       <bind calculate=" /pregnancy_home_visit/context_vars/pregnancy_uuid_ctx " nodeset="/pregnancy_home_visit/data/m_pregnancy_uuid" type="string"/>
