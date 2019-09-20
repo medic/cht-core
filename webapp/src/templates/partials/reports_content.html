@@ -19,9 +19,9 @@
 
     <div ng-repeat="selection in reportsContentCtrl.selectedReports track by selection._id" class="body report-body">
 
-      <div class="item-summary" ng-click="toggleExpand(selection)">
+      <div class="item-summary" ng-click="reportsContentCtrl.toggleExpand(selection)">
         <span class="icon" ng-bind-html="reportsContentCtrl.summaries[$index] | formIcon:forms"></span>
-        <a class="deselect" ng-show="reportsContentCtrl.selectMode" ng-click="deselect(reportsContentCtrl.summaries[$index], $event)">
+        <a class="deselect" ng-show="reportsContentCtrl.selectMode" ng-click="reportsContentCtrl.deselect(reportsContentCtrl.summaries[$index], $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
@@ -111,8 +111,8 @@
               <p>
                 <span ng-hide="group.loading">
                   <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
-                  <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>
-                  <a class="btn btn-link" ng-click="schedule(selection, group)" ng-show="canSchedule(group)" translate>Schedule</a>
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.mute(selection, group)" ng-show="reportsContentCtrl.canMute(group)" translate>Mute</a>
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.schedule(selection, group)" ng-show="reportsContentCtrl.canSchedule(group)" translate>Schedule</a>
                 </span>
                 <span class="inline loader" ng-show="group.loading"></span>
               </p>

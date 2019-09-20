@@ -11,7 +11,9 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     'use strict';
     'ngInject';
 
-    $scope.submit = function() {
+    const ctrl = this;
+
+    ctrl.submit = function() {
       var doc = $scope.model.doc;
 
       doc._deleted = true;
@@ -32,7 +34,7 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
         });
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 

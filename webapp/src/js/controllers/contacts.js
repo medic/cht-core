@@ -42,6 +42,7 @@ const PAGE_SIZE = 50;
     const mapStateToTarget = function(state) {
       return {
         enketoEdited: Selectors.getEnketoEditedStatus(state),
+        filters: Selectors.getFilters(state),
         selectedContact: Selectors.getSelectedContact(state)
       };
     };
@@ -50,11 +51,16 @@ const PAGE_SIZE = 50;
       const contactsActions = ContactsActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        clearFilters: globalActions.clearFilters,
+        clearRightActionBar: globalActions.clearRightActionBar,
         loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
         loadSelectedContactReports: contactsActions.loadSelectedContactReports,
-        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
         setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
+        setLeftActionBar: globalActions.setLeftActionBar,
+        setRightActionBar: globalActions.setRightActionBar,
+        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
         setSelectedContact: contactsActions.setSelectedContact,
+        setTitle: globalActions.setTitle,
         updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
@@ -68,20 +74,20 @@ const PAGE_SIZE = 50;
     ctrl.error = false;
     ctrl.loading = true;
     ctrl.setSelectedContact(null);
-    $scope.filters = {};
+    ctrl.clearFilters();
     var defaultTypeFilter = {};
     var usersHomePlace;
     var additionalListItem = false;
     let childPlaces = [];
 
-    $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
+    ctrl.sortDirection = ctrl.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
-      return $scope.sortDirection === 'last_visited_date';
+      return ctrl.sortDirection === 'last_visited_date';
     };
 
     var _initScroll = function() {
       scrollLoader.init(function() {
-        if (!ctrl.loading && $scope.moreItems) {
+        if (!ctrl.loading && ctrl.moreItems) {
           _query({
             paginating: true,
             reuseExistingDom: true,
@@ -118,14 +124,14 @@ const PAGE_SIZE = 50;
       }
 
       var actualFilter = defaultTypeFilter;
-      if ($scope.filters.search || $scope.filters.simprintsIdentities) {
-        actualFilter = $scope.filters;
+      if (ctrl.filters.search || ctrl.filters.simprintsIdentities) {
+        actualFilter = ctrl.filters;
       }
 
       var extensions = {};
-      if ($scope.lastVisitedDateExtras) {
+      if (ctrl.lastVisitedDateExtras) {
         extensions.displayLastVisitedDate = true;
-        extensions.visitCountSettings = $scope.visitCountSettings;
+        extensions.visitCountSettings = ctrl.visitCountSettings;
       }
       if (isSortedByLastVisited()) {
         extensions.sortByLastVisitedDate = true;
@@ -147,8 +153,8 @@ const PAGE_SIZE = 50;
             });
 
             additionalListItem =
-              !$scope.filters.search &&
-              !$scope.filters.simprintsIdentities &&
+              !ctrl.filters.search &&
+              !ctrl.filters.simprintsIdentities &&
               (additionalListItem || !ctrl.appending) &&
               homeIndex === -1;
 
@@ -158,14 +164,14 @@ const PAGE_SIZE = 50;
                 contacts.splice(homeIndex, 1);
                 contacts.unshift(usersHomePlace);
               } else if (
-                !$scope.filters.search &&
-                !$scope.filters.simprintsIdentities
+                !ctrl.filters.search &&
+                !ctrl.filters.simprintsIdentities
               ) {
                 contacts.unshift(usersHomePlace);
               }
-              if ($scope.filters.simprintsIdentities) {
+              if (ctrl.filters.simprintsIdentities) {
                 contacts.forEach(function(contact) {
-                  var identity = $scope.filters.simprintsIdentities.find(
+                  var identity = ctrl.filters.simprintsIdentities.find(
                     function(identity) {
                       return identity.id === contact.simprints_id;
                     }
@@ -179,7 +185,7 @@ const PAGE_SIZE = 50;
             }
           }
 
-          $scope.moreItems = liveList.moreItems =
+          ctrl.moreItems = liveList.moreItems =
             contacts.length >= options.limit;
 
           const mergedList = options.paginating ?
@@ -190,7 +196,7 @@ const PAGE_SIZE = 50;
           _initScroll();
           ctrl.loading = false;
           ctrl.appending = false;
-          $scope.hasContacts = liveList.count() > 0;
+          ctrl.hasContacts = liveList.count() > 0;
           setActionBarData();
         })
         .catch(function(err) {
@@ -296,11 +302,10 @@ const PAGE_SIZE = 50;
           getChildTypes(ctrl.selectedContact)
         ])
         .then(([ title, canEdit, childTypes ]) => {
-          $scope.setTitle(title);
+          ctrl.setTitle(title);
 
-          $scope.setRightActionBar({
+          ctrl.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            selected: [ctrl.selectedContact.doc],
             sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
@@ -335,8 +340,7 @@ const PAGE_SIZE = 50;
                       showUnmuteModal: showUnmuteModal(xForm.internalId)
                     };
                   });
-                  $scope.setRightActionBar({
-                    selected: [ctrl.selectedContact.doc],
+                  ctrl.setRightActionBar({
                     relevantForms: formSummaries,
                     sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
                     canEdit,
@@ -351,7 +355,7 @@ const PAGE_SIZE = 50;
           $log.error('Error setting selected contact');
           $log.error(e);
           ctrl.updateSelectedContact({ error: true });
-          $scope.setRightActionBar();
+          ctrl.clearRightActionBar();
         });
     };
 
@@ -365,43 +369,43 @@ const PAGE_SIZE = 50;
       LiveList['contact-search'].clearSelected();
     };
 
-    $scope.search = function() {
-      if($scope.filters.search && !ctrl.enketoEdited) {
+    ctrl.search = function() {
+      if(ctrl.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }
 
       ctrl.loading = true;
-      if ($scope.filters.search || $scope.filters.simprintsIdentities) {
-        $scope.filtered = true;
+      if (ctrl.filters.search || ctrl.filters.simprintsIdentities) {
+        ctrl.filtered = true;
         liveList = LiveList['contact-search'];
         liveList.set([]);
         return _query();
       } else {
-        $scope.filtered = false;
+        ctrl.filtered = false;
         return _query();
       }
     };
 
-    $scope.sort = function(sortDirection) {
-      $scope.sortDirection = sortDirection;
+    ctrl.sort = function(sortDirection) {
+      ctrl.sortDirection = sortDirection;
       liveList.set([]);
       _query();
     };
 
-    $scope.resetFilterModel = function() {
-      $scope.filters = {};
-      $scope.sortDirection = $scope.defaultSortDirection;
+    ctrl.resetFilterModel = function() {
+      ctrl.clearFilters();
+      ctrl.sortDirection = ctrl.defaultSortDirection;
       SearchFilters.reset();
-      $scope.search();
+      ctrl.search();
     };
 
-    $scope.simprintsEnabled = Simprints.enabled();
-    $scope.simprintsIdentify = function() {
+    ctrl.simprintsEnabled = Simprints.enabled();
+    ctrl.simprintsIdentify = function() {
       ctrl.loading = true;
       Simprints.identify().then(function(identities) {
-        $scope.filters.simprintsIdentities = identities;
-        $scope.search();
+        ctrl.filters.simprintsIdentities = identities;
+        ctrl.search();
       });
     };
 
@@ -420,12 +424,12 @@ const PAGE_SIZE = 50;
     };
 
     var setActionBarData = function() {
-      $scope.setLeftActionBar({
-        hasResults: $scope.hasContacts,
+      ctrl.setLeftActionBar({
+        hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         childPlaces: childPlaces,
         exportFn: function() {
-          Export('contacts', $scope.filters, { humanReadable: true });
+          Export('contacts', ctrl.filters, { humanReadable: true });
         },
       });
     };
@@ -467,10 +471,10 @@ const PAGE_SIZE = 50;
       ])
       .then(([ homePlaceSummary, viewLastVisitedDate, settings ]) => {
         usersHomePlace = homePlaceSummary;
-        $scope.lastVisitedDateExtras = viewLastVisitedDate;
-        $scope.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
-        if ($scope.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
-          $scope.sortDirection = $scope.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
+        ctrl.lastVisitedDateExtras = viewLastVisitedDate;
+        ctrl.visitCountSettings = UHCSettings.getVisitCountSettings(settings);
+        if (ctrl.lastVisitedDateExtras && UHCSettings.getContactsDefaultSort(settings)) {
+          ctrl.sortDirection = ctrl.defaultSortDirection = UHCSettings.getContactsDefaultSort(settings);
         }
         return getChildren();
       })
@@ -482,7 +486,7 @@ const PAGE_SIZE = 50;
           }
         };
         setActionBarData();
-        return $scope.search();
+        return ctrl.search();
       });
 
     this.getSetupPromiseForTesting = function(options) {
@@ -496,7 +500,7 @@ const PAGE_SIZE = 50;
       var isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
       return (
         doc &&
-        $scope.lastVisitedDateExtras &&
+        ctrl.lastVisitedDateExtras &&
         doc.type === 'data_record' &&
         doc.form &&
         doc.fields &&

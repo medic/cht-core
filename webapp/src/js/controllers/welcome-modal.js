@@ -1,13 +1,14 @@
 angular.module('inboxControllers').controller('WelcomeModalCtrl',
   function(
-    $scope,
     $uibModalInstance
   ) {
 
     'ngInject';
     'use strict';
 
-    $scope.start = function() {
+    const ctrl = this;
+
+    ctrl.start = function() {
       $uibModalInstance.dismiss();
     };
   }

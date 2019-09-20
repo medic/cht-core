@@ -58,4 +58,3 @@ module.exports = {
     seachButton.click();
   },
 };
-

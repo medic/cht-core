@@ -4,8 +4,8 @@
   title-key="'Easy Setup Wizard'"
   submit-key="'setup.start'"
   cancel-key="'setup.skip'"
-  on-cancel="cancel()"
-  on-submit="submit()"
+  on-cancel="guidedSetupModalCtrl.cancel()"
+  on-submit="guidedSetupModalCtrl.submit()"
 >
   <div class="guided-setup">
     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -80,14 +80,14 @@
 
             <span translate>setup.language.outgoing.subtitle</span>
             <p class="horizontal-options locale-outgoing">
-              <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
+              <a href="#" ng-repeat="language in guidedSetupModalCtrl.enabledLocales" ng-attr-data-value="{{language.code}}">
                 <span class="rectangle" ng-bind="language.name"></span>
               </a>
             </p>
 
             <span translate>setup.language.subtitle</span>
             <p class="horizontal-options locale">
-              <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
+              <a href="#" ng-repeat="language in guidedSetupModalCtrl.enabledLocales" ng-attr-data-value="{{language.code}}">
                 <span class="rectangle" ng-bind="language.name"></span>
               </a>
             </p>

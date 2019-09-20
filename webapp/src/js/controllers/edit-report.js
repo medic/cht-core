@@ -14,6 +14,8 @@ angular.module('inboxControllers').controller('EditReportCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+
     $uibModalInstance.rendered
       .then(() => ContactTypes.getPersonTypes())
       .then(types => {
@@ -27,11 +29,11 @@ angular.module('inboxControllers').controller('EditReportCtrl',
       })
       .catch(err => $log.error('Error initialising select2', err));
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
-    $scope.saveReport = function() {
+    ctrl.saveReport = function() {
       var docId = $scope.model.report._id;
       var facilityId = $('#edit-report [name=facility]').val();
       if (!docId) {

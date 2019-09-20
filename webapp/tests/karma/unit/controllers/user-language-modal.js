@@ -2,6 +2,7 @@ describe('UserLanguageModalCtrl controller', function() {
   'use strict';
 
   var createController,
+      ctrl,
       scope,
       stubSetLanguage,
       stubLanguage,
@@ -31,7 +32,7 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.returns(Promise.resolve());
 
     createController = function() {
-      return $controller('UserLanguageModalCtrl', {
+      ctrl = $controller('UserLanguageModalCtrl', {
         '$scope': scope,
         'Session': { userCtx: function() {
           return { name: 'banana' };
@@ -53,21 +54,21 @@ describe('UserLanguageModalCtrl controller', function() {
   it('changes language on user selection', function() {
     createController();
     var lang = 'aaaaaa';
-    scope.changeLanguage(lang);
+    ctrl.changeLanguage(lang);
     chai.assert(stubSetLanguage.called, 'Should set new language');
-    chai.expect(scope.selectedLanguage).to.equal(lang);
+    chai.expect(ctrl.selectedLanguage).to.equal(lang);
   });
 
   it('dismisses the modal on user cancel', function() {
     createController();
-    scope.cancel();
+    ctrl.cancel();
     chai.assert(spyUibModalInstance.dismiss.called, 'Should dismiss modal');
   });
 
   it('resets the language on user cancel', function(done) {
     createController();
     setTimeout(function() {
-      scope.cancel();
+      ctrl.cancel();
       chai.assert(stubSetLanguage.called, 'Should reset language');
       done();
     });
@@ -76,8 +77,8 @@ describe('UserLanguageModalCtrl controller', function() {
   it('triggers saving on user submit', function() {
     createController();
     var selectedLang = 'klingon';
-    scope.changeLanguage(selectedLang);
-    scope.submit();
+    ctrl.changeLanguage(selectedLang);
+    ctrl.submit();
     chai.assert(stubUpdateUser.called, 'Should call the processing function on user action');
     chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal(selectedLang);
   });
@@ -86,7 +87,7 @@ describe('UserLanguageModalCtrl controller', function() {
     createController();
 
     setTimeout(function() {
-      scope.submit().then(function() {
+      ctrl.submit().then(function() {
         chai.assert(scope.setProcessing.called);
         chai.assert(scope.setFinished.called);
         chai.assert(!scope.setError.called);
@@ -103,7 +104,7 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.returns(Promise.reject({err: 'oh noes language is all wrong'}));
 
     setTimeout(function() {
-      scope.submit().then(function() {
+      ctrl.submit().then(function() {
         chai.assert(!spyUibModalInstance.close.called, 'Should not close modal when processing error');
         chai.assert(!spyUibModalInstance.dismiss.called, 'Should not dismiss modal when processing error');
         chai.assert(!scope.setFinished.called);
@@ -118,10 +119,10 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.reset();
     stubUpdateUser.returns(Promise.reject({err: 'oh noes language is all wrong'}));
     setTimeout(function() {
-      var initialLang = scope.selectedLanguage;
-      scope.submit().then(function() {
+      var initialLang = ctrl.selectedLanguage;
+      ctrl.submit().then(function() {
         chai.assert(stubSetLanguage.called, 'Should reset saved language');
-        chai.expect(scope.selectedLanguage).to.equal(initialLang);
+        chai.expect(ctrl.selectedLanguage).to.equal(initialLang);
         done();
       });
     });
@@ -132,7 +133,7 @@ describe('UserLanguageModalCtrl controller', function() {
     stubLanguage.returns(Promise.resolve());
     createController();
     setTimeout(function() {
-      scope.submit()
+      ctrl.submit()
         .then(function() {
           done('submit should reject');
         })

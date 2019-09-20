@@ -240,6 +240,7 @@
       .state('userSettings', {
         url: '/user',
         controller: 'ConfigurationUserCtrl',
+        controllerAs: 'configurationUserCtrl',
         templateUrl: 'templates/partials/configuration_user.html'
       })
 

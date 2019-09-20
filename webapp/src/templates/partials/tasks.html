@@ -8,10 +8,10 @@
   <div class="inbox page">
     <mm-tasks-list
       error="tasksCtrl.error"
-      has-tasks="hasTasks"
+      has-tasks="tasksCtrl.hasTasks"
       loading="tasksCtrl.loading"
-      refresh-task-list="refreshTaskList"
-      tasks-disabled="tasksDisabled"
+      refresh-task-list="tasksCtrl.refreshTaskList"
+      tasks-disabled="tasksCtrl.tasksDisabled"
     ></mm-tasks-list>
     <ui-view name="content"/>
   </div>

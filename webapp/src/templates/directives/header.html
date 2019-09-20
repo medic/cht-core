@@ -61,7 +61,7 @@
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" ng-click="openTourSelect()" ng-show="tours.length">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="openTourSelect()" ng-show="headerCtrl.tours.length">
               <i class="fa fa-fw fa-graduation-cap"></i>
               <span translate>Guided Tour</span>
             </a>
@@ -84,24 +84,24 @@
               <span translate>Report Bug</span>
             </a>
           </li>
-          <li role="presentation" ng-show="canLogOut">
+          <li role="presentation" ng-show="headerCtrl.canLogOut">
             <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
               <i class="fa fa-fw fa-power-off"></i>
               <span translate>Log Out</span>
             </a>
           </li>
 
-          <li role="separator" class="divider" ng-if="!replicationStatus.disabled"></li>
-          <li role="presentation disabled" ng-if="!replicationStatus.disabled && !replicationStatus.current.disableSyncButton">
+          <li role="separator" class="divider" ng-if="!headerCtrl.replicationStatus.disabled"></li>
+          <li role="presentation disabled" ng-if="!headerCtrl.replicationStatus.disabled && !headerCtrl.replicationStatus.current.disableSyncButton">
             <a role="menuitem" tabindex="-1" ng-click="replicate()">
               <i class="fa fa-fw fa-refresh"></i>
               <span translate>sync.now</span>
             </a>
           </li>
-          <li role="presentation disabled" ng-if="!replicationStatus.disabled" class="sync-status">
-            <a class="no-click" ng-class="replicationStatus.current.className">
-              <i class="fa fa-fw" ng-class="replicationStatus.current.icon"></i>
-              <span translate>{{replicationStatus.current.key}}</span>
+          <li role="presentation disabled" ng-if="!headerCtrl.replicationStatus.disabled" class="sync-status">
+            <a class="no-click" ng-class="headerCtrl.replicationStatus.current.className">
+              <i class="fa fa-fw" ng-class="headerCtrl.replicationStatus.current.icon"></i>
+              <span translate>{{headerCtrl.replicationStatus.current.key}}</span>
             </a>
           </li>
         </ul>
@@ -110,36 +110,36 @@
 
     <div class="tabs small-font">
 
-      <a ui-sref="messages.detail" id="messages-tab" class="messages-tab" ng-class="{'selected': currentTab === 'messages'}" mm-auth="can_view_messages,can_view_messages_tab">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'messages'}">
+      <a ui-sref="messages.detail" id="messages-tab" class="messages-tab" ng-class="{'selected': headerCtrl.currentTab === 'messages'}" mm-auth="can_view_messages,can_view_messages_tab">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== 'messages'}">
           <span class="fa fa-envelope"></span>
-          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="unreadCount.message <= 0">
-            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="unreadCount.message < 100">{{unreadCount.message}}</span>
-            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="unreadCount.message >= 100">100+</span>
+          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="headerCtrl.unreadCount.message <= 0">
+            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount.message < 100">{{headerCtrl.unreadCount.message}}</span>
+            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount.message >= 100">100+</span>
           </span>
         </div>
         <div class="button-label" translate>Messages</div>
-      </a><a ui-sref="tasks.detail" id="tasks-tab" class="tasks-tab" ng-class="{'selected': currentTab === 'tasks'}" mm-auth="can_view_tasks,can_view_tasks_tab">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'tasks'}">
+      </a><a ui-sref="tasks.detail" id="tasks-tab" class="tasks-tab" ng-class="{'selected': headerCtrl.currentTab === 'tasks'}" mm-auth="can_view_tasks,can_view_tasks_tab">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== 'tasks'}">
           <span class="fa fa-flag"></span>
         </div>
         <div class="button-label" translate>Tasks</div>
-      </a><a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': currentTab === 'reports'}" mm-auth="can_view_reports,can_view_reports_tab">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'reports'}">
+      </a><a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': headerCtrl.currentTab === 'reports'}" mm-auth="can_view_reports,can_view_reports_tab">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== 'reports'}">
           <span class="fa fa-list-alt"></span>
-          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="unreadCount.report <= 0">
-            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="unreadCount.report < 100">{{unreadCount.report}}</span>
-            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="unreadCount.report >= 100">100+</span>
+          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="headerCtrl.unreadCount.report <= 0">
+            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount.report < 100">{{headerCtrl.unreadCount.report}}</span>
+            <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount.report >= 100">100+</span>
           </span>
         </div>
         <div class="button-label" translate>Reports</div>
-      </a><a ui-sref="contacts.detail" id="contacts-tab" class="contacts-tab" ng-class="{'selected': currentTab === 'contacts'}" mm-auth="can_view_contacts,can_view_contacts_tab">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'contacts'}">
+      </a><a ui-sref="contacts.detail" id="contacts-tab" class="contacts-tab" ng-class="{'selected': headerCtrl.currentTab === 'contacts'}" mm-auth="can_view_contacts,can_view_contacts_tab">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== 'contacts'}">
           <span class="fa fa-user"></span>
         </div>
         <div class="button-label" translate>Contacts</div>
-      </a><a ui-sref="analytics" ui-sref-opts="{reload: true}" id="analytics-tab" class="analytics-tab" ng-class="{'selected': currentTab === 'analytics'}" mm-auth="can_view_analytics,can_view_analytics_tab">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'analytics'}">
+      </a><a ui-sref="analytics" ui-sref-opts="{reload: true}" id="analytics-tab" class="analytics-tab" ng-class="{'selected': headerCtrl.currentTab === 'analytics'}" mm-auth="can_view_analytics,can_view_analytics_tab">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== 'analytics'}">
           <span class="fa fa-bar-chart-o"></span>
         </div>
         <div class="button-label" translate>Analytics</div>

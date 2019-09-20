@@ -1,6 +1,5 @@
 angular.module('inboxControllers').controller('TourSelectCtrl',
   function(
-    $scope,
     $uibModalInstance,
     Tour
   ) {
@@ -8,17 +7,19 @@ angular.module('inboxControllers').controller('TourSelectCtrl',
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+
     Tour.endCurrent();
     Tour.getTours().then(function(tours) {
-      $scope.tours = tours;
+      ctrl.tours = tours;
     });
 
-    $scope.start = function(name) {
+    ctrl.start = function(name) {
       Tour.start(name);
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.close();
     };
 

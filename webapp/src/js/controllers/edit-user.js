@@ -26,12 +26,12 @@ var passwordTester = require('simple-password-tester'),
 
       const ctrl = this;
 
-      $scope.cancel = function() {
+      ctrl.cancel = function() {
         $uibModalInstance.dismiss();
       };
 
       Languages().then(function(languages) {
-        $scope.enabledLocales = languages;
+        ctrl.enabledLocales = languages;
       });
 
       var determineEditUserModel = function() {
@@ -54,14 +54,14 @@ var passwordTester = require('simple-password-tester'),
 
       determineEditUserModel()
         .then(function(model) {
-          $scope.editUserModel = model;
+          ctrl.editUserModel = model;
         })
         .catch(function(err) {
           $log.error('Error determining user model', err);
         });
 
       var validateRequired = function(fieldName, fieldDisplayName) {
-        if (!$scope.editUserModel[fieldName]) {
+        if (!ctrl.editUserModel[fieldName]) {
           Translate.fieldIsRequired(fieldDisplayName)
             .then(function(value) {
               ctrl.errors[fieldName] = value;
@@ -72,7 +72,7 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validateConfirmPasswordMatches = function() {
-        if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+        if (ctrl.editUserModel.password !== ctrl.editUserModel.passwordConfirm) {
           $translate('Passwords must match').then(function(value) {
             ctrl.errors.password = value;
           });
@@ -82,7 +82,7 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validatePasswordStrength = function() {
-        var password = $scope.editUserModel.password || '';
+        var password = ctrl.editUserModel.password || '';
         if (password.length < PASSWORD_MINIMUM_LENGTH) {
           $translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
             ctrl.errors.password = value;
@@ -100,7 +100,7 @@ var passwordTester = require('simple-password-tester'),
 
       var validatePasswordFields = function() {
         return validateRequired('password', 'Password') &&
-          (!$scope.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
+          (!ctrl.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
           validatePasswordStrength() &&
           validateConfirmPasswordMatches();
       };
@@ -140,18 +140,18 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var computeFields = function() {
-        $scope.editUserModel.place = $('#edit-user-profile [name=facilitySelect]').val();
-        $scope.editUserModel.contact = $('#edit-user-profile [name=contactSelect]').val();
+        ctrl.editUserModel.place = $('#edit-user-profile [name=facilitySelect]').val();
+        ctrl.editUserModel.contact = $('#edit-user-profile [name=contactSelect]').val();
       };
 
       // Submit function if template is update_password.html
-      $scope.updatePassword = function() {
+      ctrl.updatePassword = function() {
         ctrl.errors = {};
         $scope.setProcessing();
         if (validatePasswordFields()) {
-          var updates = { password: $scope.editUserModel.password };
-          var username = $scope.editUserModel.username;
-          UpdateUser(username, updates, username, $scope.editUserModel.currentPassword)
+          var updates = { password: ctrl.editUserModel.password };
+          var username = ctrl.editUserModel.username;
+          UpdateUser(username, updates, username, ctrl.editUserModel.currentPassword)
             .then(function() {
               $scope.setFinished();
               $window.location.reload(true);
@@ -181,15 +181,15 @@ var passwordTester = require('simple-password-tester'),
       };
 
       // #edit-user-settings is the limited set of edits that any user can do to itself.
-      $scope.editUserSettings = function() {
+      ctrl.editUserSettings = function() {
         $scope.setProcessing();
         ctrl.errors = {};
         computeFields();
 
-        changedUpdates($scope.editUserModel).then(function(updates) {
+        changedUpdates(ctrl.editUserModel).then(function(updates) {
           $q.resolve().then(function() {
             if (haveUpdates(updates)) {
-              return UpdateUser($scope.editUserModel.username, updates);
+              return UpdateUser(ctrl.editUserModel.username, updates);
             }
           })
             .then(function() {

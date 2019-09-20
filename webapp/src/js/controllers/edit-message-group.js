@@ -11,6 +11,8 @@ angular
     'use strict';
     'ngInject';
 
+    const ctrl = this;
+
     var getNextHalfHour = function() {
       var time = moment()
         .second(0)
@@ -55,7 +57,7 @@ angular
       initDatePickers();
     });
 
-    $scope.addTask = function() {
+    ctrl.addTask = function() {
       $scope.model.group.rows.push({
         due: moment().toISOString(),
         added: true,
@@ -65,11 +67,11 @@ angular
       });
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
-    $scope.submit = function() {
+    ctrl.submit = function() {
       $scope.setProcessing();
       EditGroup($scope.model.report._id, $scope.model.group)
         .then(function() {

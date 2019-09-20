@@ -20,8 +20,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
@@ -29,23 +29,25 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         enketoError: Selectors.getEnketoError(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
         setLoadingContent: globalActions.setLoadingContent,
-        setShowContent: globalActions.setShowContent
+        setShowContent: globalActions.setShowContent,
+        setTitle: globalActions.setTitle,
+        settingSelected: globalActions.settingSelected
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     if (!$state.params.id) {
       // adding a new contact, deselect the old one
       $scope.clearSelected();
-      $scope.settingSelected();
+      ctrl.settingSelected();
     }
     ctrl.setLoadingContent(true);
     ctrl.setShowContent(true);
@@ -58,12 +60,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     });
 
     var getFormInstanceData = function() {
-      const type = $scope.contact && ($scope.contact.contact_type || $scope.contact.type);
+      const type = ctrl.contact && (ctrl.contact.contact_type || ctrl.contact.type);
       if (!type) {
         return null;
       }
       var result = {};
-      result[type] = $scope.contact;
+      result[type] = ctrl.contact;
       return result;
     };
 
@@ -79,8 +81,6 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var getForm = function(contact) {
-      $scope.primaryContact = {};
-      $scope.original = contact;
       let formId;
       let titleKey;
       const typeId = contact ? (contact.contact_type || contact.type) : $state.params.type;
@@ -91,24 +91,24 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         }
 
         if (contact) { // editing
-          $scope.contact = contact;
-          $scope.contactId = contact._id;
+          ctrl.contact = contact;
+          ctrl.contactId = contact._id;
           titleKey = type.edit_key;
           formId = type.edit_form || type.create_form;
         } else { // adding
-          $scope.contact = {
+          ctrl.contact = {
             type: 'contact',
             contact_type: $state.params.type,
             parent: $state.params.parent_id
           };
-          $scope.contactId = null;
+          ctrl.contactId = null;
           formId = type.create_form;
           titleKey = type.create_key;
         }
 
         $translate.onReady()
           .then(() => $translate(titleKey))
-          .then($scope.setTitle);
+          .then(ctrl.setTitle);
 
         return formId;
       });
@@ -143,10 +143,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var setEnketoContact = function(formInstance) {
-      $scope.enketoContact = {
-        type: $scope.contact.contact_type || $scope.contact.type,
+      ctrl.enketoContact = {
+        type: ctrl.contact.contact_type || ctrl.contact.type,
         formInstance: formInstance,
-        docId: $scope.contactId,
+        docId: ctrl.contactId,
       };
     };
                                               
@@ -162,18 +162,18 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       .catch(function(err) {
         ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
         ctrl.setLoadingContent(false);
-        $scope.contentError = true;
+        ctrl.contentError = true;
         $log.error('Error loading contact form.', err);
       });
 
-    $scope.save = function() {
+    ctrl.save = function() {
       if (ctrl.enketoSaving) {
         $log.debug('Attempted to call contacts-edit:$scope.save more than once');
         return;
       }
 
-      var form = $scope.enketoContact.formInstance;
-      var docId = $scope.enketoContact.docId;
+      var form = ctrl.enketoContact.formInstance;
+      var docId = ctrl.enketoContact.docId;
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
 
@@ -183,7 +183,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
             throw new Error('Validation failed.');
           }
 
-          var type = $scope.enketoContact.type;
+          var type = ctrl.enketoContact.type;
           return ContactSave(form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
@@ -211,9 +211,9 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $scope.$on('$destroy', function() {
       unsubscribe();
       if (!$state.includes('contacts.add')) {
-        $scope.setTitle();
-        if ($scope.enketoContact && $scope.enketoContact.formInstance) {
-          Enketo.unload($scope.enketoContact.formInstance);
+        ctrl.setTitle();
+        if (ctrl.enketoContact && ctrl.enketoContact.formInstance) {
+          Enketo.unload(ctrl.enketoContact.formInstance);
         }
       }
     });

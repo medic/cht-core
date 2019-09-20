@@ -56,7 +56,7 @@ describe('TasksContentCtrl', () => {
     XmlForms.get.resolves(form);
     createController();
     subscribe.args[0][0](); // invoke the subscribe callback
-    expect($scope.formId).to.equal('A');
+    expect(ctrl.formId).to.equal('A');
     setTimeout(() => {
       expect(render.callCount).to.equal(1);
       expect(render.getCall(0).args.length).to.equal(4);
@@ -73,7 +73,7 @@ describe('TasksContentCtrl', () => {
       actions: [{}, {}] // two forms
     };
     createController();
-    expect($scope.formId).to.equal(null);
+    expect(ctrl.formId).to.equal(null);
     expect(ctrl.loadingForm).to.equal(undefined);
     expect(render.callCount).to.equal(0);
     done();
@@ -97,7 +97,7 @@ describe('TasksContentCtrl', () => {
       }]
     };
     createController();
-    expect($scope.formId).to.equal(null);
+    expect(ctrl.formId).to.equal(null);
     expect(ctrl.loadingForm).to.equal(undefined);
     expect(render.callCount).to.equal(0);
     done();
@@ -117,7 +117,7 @@ describe('TasksContentCtrl', () => {
     subscribe.args[0][0](); // invoke the subscribe callback
     setTimeout(() => {
       expect(ctrl.loadingForm).to.equal(false);
-      expect($scope.contentError).to.equal(true);
+      expect(ctrl.contentError).to.equal(true);
       done();
     });
   });

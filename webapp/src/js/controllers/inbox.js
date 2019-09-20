@@ -55,20 +55,25 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
+        androidAppVersion: Selectors.getAndroidAppVersion(state),
         cancelCallback: Selectors.getCancelCallback(state),
+        currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state),
         version: Selectors.getVersion(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
+        setAndroidAppVersion: globalActions.setAndroidAppVersion,
+        setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
@@ -76,10 +81,13 @@ var _ = require('underscore'),
         setSelectMode: globalActions.setSelectMode,
         setShowActionBar: globalActions.setShowActionBar,
         setShowContent: globalActions.setShowContent,
-        setVersion: globalActions.setVersion
+        setTitle: globalActions.setTitle,
+        setUnreadCount: globalActions.setUnreadCount,
+        setVersion: globalActions.setVersion,
+        updateReplicationStatus: globalActions.updateReplicationStatus
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     const SYNC_STATUS = {
       inProgress: {
@@ -103,43 +111,42 @@ var _ = require('underscore'),
       }
     };
 
-    $scope.replicationStatus = {
+    ctrl.updateReplicationStatus({
       disabled: false,
-      lastSuccess: {},
       lastTrigger: undefined,
       current: SYNC_STATUS.unknown,
-    };
+    });
 
     DBSync.addUpdateListener(({ state, to, from }) => {
       if (state === 'disabled') {
-        $scope.replicationStatus.disabled = true;
+        ctrl.updateReplicationStatus({ disabled: true });
         return;
       }
       if (state === 'unknown') {
-        $scope.replicationStatus.current = SYNC_STATUS.unknown;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
       const now = Date.now();
-      const lastTrigger = $scope.replicationStatus.lastTrigger;
+      const lastTrigger = ctrl.replicationStatus.lastTrigger;
       const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
       if (state === 'inProgress') {
-        $scope.replicationStatus.current = SYNC_STATUS.inProgress;
-        $scope.replicationStatus.lastTrigger = now;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.inProgress });
+        ctrl.updateReplicationStatus({ lastTrigger: now });
         $log.info(`Replication started after ${delay} seconds since previous attempt`);
         return;
       }
       if (to === 'success') {
-        $scope.replicationStatus.lastSuccess.to = now;
+        ctrl.updateReplicationStatus({ lastSuccessTo: now });
       }
       if (from === 'success') {
-        $scope.replicationStatus.lastSuccess.from = now;
+        ctrl.updateReplicationStatus({ lastSuccessFrom: now });
       }
       if (to === 'success' && from === 'success') {
         $log.info(`Replication succeeded after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.success;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.success });
       } else {
         $log.info(`Replication failed after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.required;
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
       }
     });
 
@@ -151,7 +158,7 @@ var _ = require('underscore'),
       $timeout(() => DBSync.sync(), 10000);
     } else {
       $log.debug('You have administrative privileges; not replicating');
-      $scope.replicationStatus.disabled = true;
+      ctrl.replicationStatus.disabled = true;
     }
 
     const dbFetch = $window.PouchDB.fetch;
@@ -206,7 +213,7 @@ var _ = require('underscore'),
       key: 'sync-status',
       callback: function() {
         if (!DBSync.isSyncInProgress()) {
-          $scope.replicationStatus.current = SYNC_STATUS.required;
+          ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
         }
       },
     });
@@ -219,7 +226,7 @@ var _ = require('underscore'),
         $log.error('RuleEngine failed to Initialize', err);
       })
       .then(function() {
-        $scope.dbWarmedUp = true;
+        ctrl.dbWarmedUp = true;
 
         const dbWarmed = performance.now();
         Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
@@ -245,13 +252,7 @@ var _ = require('underscore'),
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
     ctrl.setVersion(APP_CONFIG.version);
-    $scope.error = false;
-    $scope.errorSyntax = false;
-    $scope.appending = false;
-    $scope.people = [];
-    $scope.filterQuery = { value: null };
-    $scope.actionBar = {};
-    $scope.tours = [];
+    ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
 
@@ -259,23 +260,24 @@ var _ = require('underscore'),
       $window.medicmobile_android &&
       typeof $window.medicmobile_android.getAppVersion === 'function'
     ) {
-      $scope.android_app_version = $window.medicmobile_android.getAppVersion();
+      ctrl.setAndroidAppVersion($window.medicmobile_android.getAppVersion());
     }
 
-    $scope.canLogOut = false;
-    if ($scope.android_app_version) {
+    ctrl.canLogOut = false;
+    if (ctrl.androidAppVersion) {
       Auth('can_log_out_on_android')
         .then(function() {
-          $scope.canLogOut = true;
+          ctrl.canLogOut = true;
         })
         .catch(function() {}); // not permitted to log out
     } else {
-      $scope.canLogOut = true;
+      ctrl.canLogOut = true;
     }
     $scope.logout = function() {
       Modal({
         templateUrl: 'templates/modals/logout_confirm.html',
         controller: 'LogoutConfirmCtrl',
+        controllerAs: 'logoutConfirmCtrl',
         singleton: true,
       });
     };
@@ -327,6 +329,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/navigation_confirm.html',
         controller: 'NavigationConfirmCtrl',
+        controllerAs: 'navigationConfirmCtrl',
         singleton: true,
       }).then(function() {
         ctrl.setEnketoEditedStatus(false);
@@ -346,7 +349,7 @@ var _ = require('underscore'),
       ctrl.setShowContent(false);
       ctrl.setLoadingContent(false);
       ctrl.setShowActionBar(false);
-      $scope.setTitle();
+      ctrl.setTitle();
       $scope.$broadcast('ClearSelected');
     };
 
@@ -363,42 +366,25 @@ var _ = require('underscore'),
       }
     };
 
-    $scope.settingSelected = function(refreshing) {
-      ctrl.setLoadingContent(false);
-      $timeout(function() {
-        ctrl.setShowContent(true);
-        ctrl.setShowActionBar(true);
-        if (!refreshing) {
-          $timeout(function() {
-            $('.item-body').scrollTop(0);
-          });
-        }
-      });
-    };
-
-    $scope.setTitle = function(title) {
-      $scope.title = title;
-    };
-
     $scope.setLoadingContent = function(id) {
       ctrl.setLoadingContent(id);
       ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {
-      $scope.currentTab = trans.to().name.split('.')[0];
+      ctrl.setCurrentTab(trans.to().name.split('.')[0]);
       if (!$state.includes('reports')) {
         ctrl.setSelectMode(false);
       }
     });
 
-    $scope.unreadCount = {};
+    ctrl.unreadCount = {};
     const initUnreadCount = () => {
       UnreadRecords(function(err, data) {
         if (err) {
           return $log.error('Error fetching read status', err);
         }
-        $scope.unreadCount = data;
+        ctrl.unreadCount = data;
       });
     };
 
@@ -445,7 +431,7 @@ var _ = require('underscore'),
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }
-            $scope.nonContactForms = xForms.map(function(xForm) {
+            ctrl.nonContactForms = xForms.map(function(xForm) {
               return {
                 code: xForm.internalId,
                 icon: xForm.icon,
@@ -462,7 +448,7 @@ var _ = require('underscore'),
 
     const initTours = () => {
       return Tour.getTours().then(function(tours) {
-        $scope.tours = tours;
+        ctrl.tours = tours;
       });
     };
 
@@ -470,6 +456,7 @@ var _ = require('underscore'),
       return Modal({
         templateUrl: 'templates/modals/tour_select.html',
         controller: 'TourSelectCtrl',
+        controllerAs: 'tourSelectCtrl',
         singleton: true,
       }).catch(function() {}); // modal dismissed is ok
     };
@@ -478,6 +465,7 @@ var _ = require('underscore'),
       return Modal({
         templateUrl: 'templates/modals/guided_setup.html',
         controller: 'GuidedSetupModalCtrl',
+        controllerAs: 'guidedSetupModalCtrl',
         size: 'lg',
       }).catch(function() {}); // modal dismissed is ok
     };
@@ -492,6 +480,7 @@ var _ = require('underscore'),
           return Modal({
             templateUrl: 'templates/modals/user_language.html',
             controller: 'UserLanguageModalCtrl',
+            controllerAs: 'userLanguageModalCtrl'
           }).catch(function() {});
         },
       },
@@ -504,6 +493,7 @@ var _ = require('underscore'),
           return Modal({
             templateUrl: 'templates/modals/welcome.html',
             controller: 'WelcomeModalCtrl',
+            controllerAs: 'welcomeModalCtrl',
             size: 'lg',
           }).catch(function() {});
         },
@@ -588,28 +578,6 @@ var _ = require('underscore'),
       });
     });
 
-    $scope.setSubActionBarStatus = function(verified) {
-      $scope.actionBar.right.verified = verified;
-    };
-
-    $scope.setRightActionBar = function(model) {
-      if (!$scope.actionBar) {
-        $scope.actionBar = {};
-      }
-      $scope.actionBar.right = model;
-    };
-
-    $scope.setLeftActionBar = function(model) {
-      if (!$scope.actionBar) {
-        $scope.actionBar = {};
-      }
-      $scope.actionBar.left = model;
-    };
-
-    $scope.setActionBar = function(model) {
-      $scope.actionBar = model;
-    };
-
     $scope.emit = function() {
       $rootScope.$broadcast.apply($rootScope, arguments);
     };
@@ -618,6 +586,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/delete_doc_confirm.html',
         controller: 'DeleteDocConfirm',
+        controllerAs: 'deleteDocConfirmCtrl',
         model: { doc: doc },
       }).then(function() {
         if (
@@ -641,6 +610,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/bulk_delete_confirm.html',
         controller: 'BulkDeleteConfirm',
+        controllerAs: 'bulkDeleteConfirmCtrl',
         model: { docs: docs },
       });
     };
@@ -714,6 +684,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
+        controllerAs: 'reloadingModalCtrl',
         singleton: true,
       });
       closeDropdowns();
@@ -724,6 +695,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/version_update.html',
         controller: 'ReloadingModalCtrl',
+        controllerAs: 'reloadingModalCtrl',
         singleton: true,
       }).catch(function() {
         $log.debug('Delaying update');

@@ -5,8 +5,8 @@
   angular.module('inboxDirectives', ['ngSanitize']);
 
   require('./actionbar');
+  require('./analytics-filters');
   require('./auth');
-  require('./contacts-filters');
   require('./contacts-list');
   require('./content-row');
   require('./date-filter');
@@ -20,11 +20,12 @@
   require('./modal');
   require('./navigation');
   require('./report-image');
-  require('./reports-filters');
   require('./reports-list');
   require('./reset-filter');
   require('./sender');
   require('./show-muted-modal');
+  require('./simprints-filter');
+  require('./sort-filter');
   require('./status-filter');
   require('./tasks-list');
 

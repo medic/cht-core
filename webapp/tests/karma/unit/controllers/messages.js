@@ -3,23 +3,21 @@ describe('MessagesCtrl controller', () => {
   'use strict';
 
   let createController,
-      actions,
       scope;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(() => {
+    module('inboxApp');
+    KarmaUtils.setupMockStore();
+  });
 
   beforeEach(inject(($rootScope, $controller) => {
     scope = $rootScope.$new();
     scope.filterModel = {};
     scope.permissions = { admin: true };
     scope.setMessages = () => {};
-    scope.setLoadingContent = () => {};
-    scope.setLeftActionBar = sinon.stub();
-    actions = { setSelected: sinon.stub() };
     createController = () => {
       return $controller('MessagesCtrl', {
         '$scope': scope,
-        'GlobalActions': () => actions,
         'Changes': () => {
           return { unsubscribe: () => {} };
         },

@@ -23,7 +23,8 @@ angular.module('inboxDirectives').directive('showMutedModal', function(
         if (scope.form.showUnmuteModal) {
           return Modal({
             templateUrl: 'templates/modals/contacts_muted_modal.html',
-            controller: 'ContactsMutedModalCtrl'
+            controller: 'ContactsMutedModalCtrl',
+            controllerAs: 'contactsMutedModalCtrl'
           }).then(function() {
             goToState();
           }).catch(function() {});

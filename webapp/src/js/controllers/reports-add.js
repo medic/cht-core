@@ -26,8 +26,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       preRender: Date.now()
     };
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
@@ -35,8 +35,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         selectedReports: Selectors.getSelectedReports(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
         setCancelCallback: globalActions.setCancelCallback,
@@ -46,7 +46,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         setLoadingContent: globalActions.setLoadingContent
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
     var geolocation;
 
     var getSelected = function() {
@@ -74,8 +74,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     };
 
     ctrl.setLoadingContent(true);
-    $scope.contentError = false;
-    $scope.saving = false;
+    ctrl.contentError = false;
     if ($state.params.reportId || $state.params.formId) {
       ctrl.setCancelCallback(function() {
         // Note : if no $state.params.reportId, goes to "No report selected".
@@ -101,7 +100,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           ctrl.setEnketoEditedStatus(false);
           Enketo.render('#report-form', results[1], results[0], markFormEdited)
             .then(function(form) {
-              $scope.form = form;
+              ctrl.form = form;
               ctrl.setLoadingContent(false);
             })
             .then(function() {
@@ -139,7 +138,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
             .catch(function(err) {
               ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
               ctrl.setLoadingContent(false);
-              $scope.contentError = true;
+              ctrl.contentError = true;
               $log.error('Error loading form.', err);
             });
         });
@@ -149,7 +148,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         $log.error('Error setting selected doc', err);
       });
 
-    $scope.save = function() {
+    ctrl.save = function() {
       if (ctrl.enketoSaving) {
         $log.debug('Attempted to call reports-add:$scope.save more than once');
         return;
@@ -167,7 +166,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       var reportId = model.doc && model.doc._id;
       var formInternalId = model.formInternalId;
 
-      Enketo.save(formInternalId, $scope.form, geolocation, reportId)
+      Enketo.save(formInternalId, ctrl.form, geolocation, reportId)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           ctrl.setEnketoSavingStatus(false);
@@ -195,7 +194,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $scope.$on('$destroy', function() {
       unsubscribe();
       if (!$state.includes('reports.add') && !$state.includes('reports.edit')) {
-        Enketo.unload($scope.form);
+        Enketo.unload(ctrl.form);
       }
     });
   }

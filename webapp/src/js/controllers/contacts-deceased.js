@@ -7,6 +7,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     $translate,
     Changes,
     ContactViewModelGenerator,
+    GlobalActions,
     Selectors,
     Snackbar
   ) {
@@ -14,26 +15,33 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     'use strict';
     'ngInject';
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         loadingContent: Selectors.getLoadingContent(state),
         selectedContact: Selectors.getSelectedContact(state)
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setTitle: globalActions.setTitle,
+        settingSelected: globalActions.settingSelected
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var selectContact = function(id, silent) {
       $scope.setLoadingContent(id);
       ContactViewModelGenerator.getContact(id)
         .then(function(model) {
           var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
-          $scope.settingSelected(refreshing);
+          ctrl.settingSelected(refreshing);
           return $scope.setSelected(model);
         })
         .then(function() {
           $translate('contact.deceased')
-            .then($scope.setTitle)
+            .then(ctrl.setTitle)
             .catch(function(err) {
               $log.error('Failed to translate title', err);
             });

@@ -23,25 +23,27 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       preRender: Date.now()
     };
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         selectedContact: Selectors.getSelectedContact(state)
       };
     };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
       return {
+        clearRightActionBar: globalActions.clearRightActionBar,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
-        setShowContent: globalActions.setShowContent
+        setShowContent: globalActions.setShowContent,
+        setTitle: globalActions.setTitle
       };
     };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var geolocation;
     Geolocation()
@@ -73,8 +75,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           return Enketo
             .render('#contact-report', form, instanceData, markFormEdited)
             .then(function(formInstance) {
-              $scope.setTitle(TranslateFrom(form.title));
-              $scope.form = formInstance;
+              ctrl.setTitle(TranslateFrom(form.title));
+              ctrl.form = formInstance;
               ctrl.loadingForm = false;
             })
             .then(() => {
@@ -88,7 +90,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         });
     };
 
-    $scope.save = function() {
+    ctrl.save = function() {
       if (ctrl.enketoSaving) {
         $log.debug('Attempted to call contacts-report:$scope.save more than once');
         return;
@@ -101,7 +103,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
-      Enketo.save($state.params.formId, $scope.form, geolocation)
+      Enketo.save($state.params.formId, ctrl.form, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           ctrl.setEnketoSavingStatus(false);
@@ -125,9 +127,9 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         });
     };
 
-    $scope.form = null;
+    ctrl.form = null;
     ctrl.loadingForm = true;
-    $scope.setRightActionBar();
+    ctrl.clearRightActionBar();
     ctrl.setShowContent(true);
     setCancelCallback();
     var options = { merge: true };
@@ -138,15 +140,15 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       .catch(function(err) {
         $log.error('Error loading form', err);
         ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
-        $scope.contentError = true;
+        ctrl.contentError = true;
         ctrl.loadingForm = false;
       });
 
     $scope.$on('$destroy', function() {
       unsubscribe();
       if (!$state.includes('contacts.report')) {
-        $scope.setTitle();
-        Enketo.unload($scope.form);
+        ctrl.setTitle();
+        Enketo.unload(ctrl.form);
       }
     });
   }
