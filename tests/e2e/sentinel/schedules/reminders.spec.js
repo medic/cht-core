@@ -126,7 +126,7 @@ const start = moment().utc();
 // at 3:30 on Monday
 // because the later.schedule results are dependent on when the test runs, we can't use "every x seconds" expressions
 // and expect the same results
-const momentToTextExpression = date => `at ${date.format('hh:mm')} on ${date.format('ddd')}`;
+const momentToTextExpression = date => `at ${date.format('HH:mm')} on ${date.format('ddd')}`;
 
 const remindersConfig = [
   {
