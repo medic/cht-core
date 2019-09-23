@@ -45,13 +45,16 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
-const replaceLast = (haystack, needle) => {
+const removeLast = (haystack, needle) => {
   const index = haystack.lastIndexOf(needle);
+  if (index === -1) {
+    return haystack;
+  }
   return haystack.slice(0, index) + haystack.slice(index + needle.length);
 };
 
-const replaceRootNode = (string, node) => {
-  return replaceLast(string.replace(node, ''), ROOT_CLOSE);
+const removeRootNode = (string, node) => {
+  return removeLast(string.replace(node, ''), ROOT_CLOSE);
 };
 
 const generateForm = formXml => {
@@ -61,14 +64,14 @@ const generateForm = formXml => {
     // service to load them asynchronously
     form = form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
     // remove the root node leaving just the HTML to be rendered
-    return replaceRootNode(form, FORM_ROOT_OPEN);
+    return removeRootNode(form, FORM_ROOT_OPEN);
   });
 };
 
 const generateModel = formXml => {
   return transform(formXml, MODEL_STYLESHEET).then(model => {
     // remove the root node leaving just the model
-    return replaceRootNode(model, MODEL_ROOT_OPEN);
+    return removeRootNode(model, MODEL_ROOT_OPEN);
   });
 };
 
