@@ -493,19 +493,19 @@ module.exports = function(grunt) {
       },
       'setup-test-database': {
         cmd: [
-          `docker run -d -p 4984:5984 -p 4986:5986 --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data apache/couchdb:latest`,
-          'sleep 1',
+          `docker run -d -p 4984:5984 -p 4986:5986 --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
+          'count=0; while [ `curl -o /dev/null -s -w "%{http_code}\n" http://localhost:4984` -ne 200 -a $count -lt 20 ]; do count=$((count+=1)); echo "sleeping $count"; sleep 1; done',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
           `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"'`
-        ].join('; ')
+        ].join('&& ')
       },
       'clean-test-database': {
         cmd: [
           'docker stop e2e-couchdb',
           'docker rm -v e2e-couchdb',
-        ].join('; '),
+        ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
@@ -1162,3 +1162,5 @@ module.exports = function(grunt) {
     'jsdoc'
   ]);
 };
+
+
