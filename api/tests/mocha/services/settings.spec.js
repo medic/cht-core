@@ -25,13 +25,12 @@ describe('settings service', () => {
   });
 
   describe('update', () => {
-           it('does not overwrite if replace is set and overwrite is set', () => {
+           it('does replace if replace is set and overwrite is not set', () => {
               const update = sinon.stub(db.medic, 'put');
               let newSettings = Object.assign({}, settings);
-              delete newSettings['c'];
+              delete newSettings['a'];
               
               replace = 1;
-              overwrite = 1;
               
               return service
               .update(newSettings, replace, overwrite)
@@ -40,12 +39,13 @@ describe('settings service', () => {
                     update.args[0][0].settings.should.deep.equal(settings);
                     });
               });
-  
-           it('does overwrite if replace is not set and overwrite is set', () => {
+           
+           it('does overwrite if replace is set and overwrite is set', () => {
               const update = sinon.stub(db.medic, 'put');
               let newSettings = Object.assign({}, settings);
-              delete newSettings['c'];
+              delete newSettings['a'];
               
+              replace = 1;
               overwrite = 1;
               
               return service

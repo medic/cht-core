@@ -47,7 +47,7 @@ module.exports = {
   },
   /**
    * Process a request to either replace, overwrite or extend existing settings. 
-   * If both replace and overwite are set, then it is assumed that only replace 
+   * If both replace and overwite are set, then it is assumed that only overwite 
    * is set.
    * @param replace If true, recursively merges the properties leaving existing 
    *                properties not in the input document intact.
@@ -71,10 +71,10 @@ module.exports = {
 
         const original = JSON.stringify(doc.settings);
 
-        if (replace) {
+        if (overwrite) {
+            doc.settings = body;
+        } else if (replace) {
           doReplace(doc.settings, body);
-        } else if (overwrite) {
-          doc.settings = body;
         } else {
           doExtend(doc.settings, body);
         }
