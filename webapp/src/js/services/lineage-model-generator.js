@@ -65,6 +65,9 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               // The lineage should also be hydrated when merge is true
               const deepCopy = obj => JSON.parse(JSON.stringify(obj));
               for (let i = result.lineage.length - 2; i >= 0; i--) {
+                if (!result.lineage[i] || !result.lineage[i+1]) {
+                  continue;
+                }
                 result.lineage[i].parent = deepCopy(result.lineage[i+1]);
               }
             } else {
