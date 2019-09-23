@@ -6,7 +6,7 @@
   submitting-key="'Submitting'"
   on-cancel="userLanguageModalCtrl.cancel()"
   on-submit="userLanguageModalCtrl.submit()"
-  disable-submit="!userLanguageModalCtrl.electedLanguage"
+  disable-submit="!userLanguageModalCtrl.selectedLanguage"
 >
   <p class="horizontal-options locale">
     <a ng-repeat="language in userLanguageModalCtrl.enabledLocales track by language.code" ng-class="{selected: language.code === userLanguageModalCtrl.selectedLanguage}" ng-click="userLanguageModalCtrl.changeLanguage(language.code)">
