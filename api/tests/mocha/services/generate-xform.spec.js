@@ -6,10 +6,13 @@ const sinon = require('sinon');
 const childProcess = require('child_process');
 const db = require('../../../src/db');
 const service = require('../../../src/services/generate-xform');
+
 const FILES = {
   xform: 'xform.xml',
-  form: 'form.html',
-  model: 'model.xml'
+  givenForm: 'form.html',
+  givenModel: 'model.xml',
+  expectedForm: 'form.expected.html',
+  expectedModel: 'model.expected.xml',
 };
 
 const expectAttachments = (doc, form, model) => {
@@ -54,21 +57,21 @@ describe('generate-xform service', () => {
         on: sinon.stub()
       };
       sinon.stub(childProcess, 'spawn').returns(spawned);
-      return setup(dirname).then(given => {
-        const generate = service._generate(given.xform);
+      return setup(dirname).then(files => {
+        const generate = service._generate(files.xform);
         if (err) {
           spawned.stderr.on.args[0][1](err);
           spawned.on.args[0][1](100);
         } else {
           // child process outputs then closes with code 0
-          spawned.stdout.on.args[0][1](given.form);
+          spawned.stdout.on.args[0][1](files.givenForm);
           spawned.on.args[0][1](0);
-          spawned.stdout.on.args[1][1](given.model);
+          spawned.stdout.on.args[1][1](files.givenModel);
           spawned.on.args[2][1](0);
         }
         return generate.then(actual => {
-          expect(actual.form).to.equal(given.form);
-          expect(actual.model).to.equal(given.model);
+          expect(actual.form).to.equal(files.expectedForm);
+          expect(actual.model).to.equal(files.expectedModel);
         });
       });
     };
@@ -76,6 +79,8 @@ describe('generate-xform service', () => {
     it('generates form and model', () => runTest('simple'));
 
     it('replaces multimedia src elements', () => runTest('multimedia'));
+
+    it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root'));
 
     it('errors if child process errors', done => {
       runTest('simple', 'some error')
