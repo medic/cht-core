@@ -3,7 +3,7 @@
     "node": true
   },
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 2017,
   },
   "rules": {
     "no-console": "error"
