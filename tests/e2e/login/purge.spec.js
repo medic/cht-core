@@ -281,11 +281,6 @@ describe('Purging on login', () => {
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
 
-    browser.wait(() => utils.revertSettings(true).then(() => true));
-    commonElements.sync();
-    utils.refreshToGetNewSettings();
-    commonElements.calm();
-
     browser.wait(() => {
       let seq;
       const purgeSettings = {
@@ -293,8 +288,8 @@ describe('Purging on login', () => {
         text_expression: 'every 1 seconds',
         run_every_days: '0'
       };
-      return sentinelUtils
-        .getCurrentSeq()
+      return utils.revertSettings(true)
+        .then(() => sentinelUtils.getCurrentSeq())
         .then(result => seq = result)
         .then(() => utils.updateSettings({ purge: purgeSettings}, true))
         .then(() => restartSentinel())
