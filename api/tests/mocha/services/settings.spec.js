@@ -1,9 +1,11 @@
 const sinon = require('sinon').sandbox.create();
+const path = require('path');
 require('chai').should();
 
 const service = require('../../../src/services/settings'),
       db = require('../../../src/db'),
-      defaults = require('../../../src/config.default.json');
+      environment = require('../../../src/environment'),
+      defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.json');
 
 let settings,
     replace;
@@ -13,6 +15,9 @@ describe('settings service', () => {
     settings = { a: 'a', permissions: { b: 'b'} };
     replace = 1;
     sinon.stub(db.medic, 'get').resolves({ settings });
+
+    const resourceDirectory = path.resolve(__dirname, '../../../../build/ddocs/medic/_attachments');
+    sinon.stub(environment, 'getExtractedResourcesPath').returns(resourceDirectory);
   });
 
   afterEach(function() {

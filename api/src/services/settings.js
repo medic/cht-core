@@ -1,7 +1,9 @@
-const _ = require('underscore'),
-      defaults = require('../config.default.json'),
-      db = require('../db'),
-      logger = require('../logger');
+const _ = require('underscore');
+const path = require('path');
+
+const db = require('../db');
+const environment = require('../environment');
+const { info } = require('../logger');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -47,6 +49,9 @@ module.exports = {
    * @param replace If true, recursively merges the properties.
    */
   update: (body, replace) => {
+    const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.json');
+    const defaultConfig = require(pathToDefaultConfig);
+
     return getDoc()
       .catch(err => {
         if (err.status === 404) {
@@ -68,13 +73,13 @@ module.exports = {
         }
 
         if (doc.settings.permissions) {
-          _.defaults(doc.settings.permissions, defaults.permissions);
+          _.defaults(doc.settings.permissions, defaultConfig.permissions);
         } else {
-          doc.settings.permissions = defaults.permissions;
+          doc.settings.permissions = defaultConfig.permissions;
         }
 
         if (JSON.stringify(doc.settings) !== original) {
-          logger.info('Updating settings with new defaults');
+          info('Updating settings with new defaults');
           return db.medic.put(doc);
         } 
         
