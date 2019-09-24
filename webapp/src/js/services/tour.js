@@ -1,6 +1,8 @@
 var _ = require('underscore'),
     Tour = require('bootstrap-tour');
 
+$.fn.tooltip.Constructor.DEFAULTS.whiteList.button = ['data-role'];
+
 angular.module('inboxServices').service('Tour',
   function(
     $log,
