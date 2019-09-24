@@ -36,95 +36,37 @@ const getRequestDoc = (method, body, isAttachment) => {
   return body;
 };
 
-const getSubjectIds = (viewResults) => {
-  const subjectIds = [];
-  if (viewResults.replicationKeys) {
-    viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
-      subjectIds.push(subjectId);
-      if (submitterId) {
-        subjectIds.push(submitterId);
-      }
-    });
-  }
-
-  return subjectIds;
-};
-
 module.exports = {
   filterOfflineRequest: (userCtx, params, method, query, body) => {
     const isAttachment = params.attachmentId;
     let stored;
     let requested;
 
-    let authorizationContext;
-    let subjectIds = [];
-
     return Promise
       .all([
         getStoredDoc(params, method, query, isAttachment),
         getRequestDoc(method, body, isAttachment),
-        authorization.getAuthorizationContext(userCtx, true)
       ])
-      .then(([ storedDoc, requestDoc, authCtx ]) => {
-        authorizationContext = authCtx;
+      .then(([ storedDoc, requestDoc ]) => {
+        stored = { doc: storedDoc };
+        requested = { doc: requestDoc };
 
-        if (storedDoc) {
-          stored = {
-            doc: storedDoc,
-            viewResults: authorization.getViewResults(storedDoc),
-          };
-          stored.subjectIds = getSubjectIds(stored.viewResults);
-          subjectIds.push(...stored.subjectIds);
-        }
-
-        if (requestDoc) {
-          requested = {
-            doc: requestDoc,
-            viewResults: authorization.getViewResults(requestDoc),
-          };
-          requested.subjectIds = getSubjectIds(requested.viewResults);
-          subjectIds.push(...requested.subjectIds);
-        }
-
-        subjectIds = _.uniq(subjectIds);
-
-        return db.medic.query('medic-client/contacts_by_reference', { keys: subjectIds.map(id => ['shortcode', id])});
+        return authorization.getReducedAuthorizationContext(userCtx, [stored, requested]);
       })
-      .then(contactsByReference => {
-        const contactUuids = subjectIds.map(subjectId => {
-          const byReference = contactsByReference.rows.find(row => row.key[1] === subjectId);
-          return byReference && byReference.id || subjectId;
-        });
-
-        return db.medic.allDocs({ keys: contactUuids, include_docs: true });
-      })
-      .then(contacts => {
-        if (!stored && !requested) {
+      .then(authorizationContext => {
+        if (!stored.doc && !requested.doc) {
           return false;
         }
 
-        contacts.rows.forEach(row => {
-          if (!row.doc) {
-            return;
-          }
-          const viewResults = authorization.getViewResults(row.doc);
-          if (authorization.allowedDoc(row.id, authorizationContext, viewResults)) {
-            authorizationContext.subjectIds.push(row.id);
-            if (viewResults.contactsByDepth[0][1]) {
-              authorizationContext.subjectIds.push(viewResults.contactsByDepth[0][1]);
-            }
-          }
-        });
-
         // user must be allowed to see existent document
-        if (stored &&
+        if (stored.doc &&
             !authorization.allowedDoc(stored.doc._id, authorizationContext, stored.viewResults) &&
             !authorization.isDeleteStub(stored.doc)) {
           return false;
         }
 
         // user must be allowed to see new/updated document or be allowed to create this document
-        if (requested &&
+        if (requested.doc &&
             !authorization.alwaysAllowCreate(requested.doc) &&
             !authorization.allowedDoc(requested.doc._id, authorizationContext, requested.viewResults)) {
           return false;
@@ -133,11 +75,6 @@ module.exports = {
         if (method === 'GET' && !isAttachment) {
           // we have already requested the doc with same query options
           return stored.doc;
-        }
-
-        console.log('allowed', (stored && stored.doc._id) || (requested && requested.doc._id), isAttachment);
-        if (stored && stored.doc._id === 'allowed_attach') {
-          console.log(JSON.stringify(stored.doc, null, 2));
         }
 
         return true;

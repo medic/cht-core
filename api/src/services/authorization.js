@@ -163,16 +163,14 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getAuthorizationContext = (userCtx, skipSubjects = false) => {
-  const authorizationCtx = {
-    userCtx,
-    contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
-    subjectIds: []
-  };
+const getExtendedContext = (userCtx) => ({
+  userCtx,
+  contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
+  subjectIds: []
+});
 
-  if (skipSubjects) {
-    return Promise.resolve(authorizationCtx);
-  }
+const getAuthorizationContext = (userCtx) => {
+  const authorizationCtx = getExtendedContext(userCtx);
 
   return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
@@ -193,6 +191,62 @@ const getAuthorizationContext = (userCtx, skipSubjects = false) => {
     }
     return authorizationCtx;
   });
+};
+
+
+const getReplicationKeys = (viewResults) => {
+  const subjectIds = [];
+  if (viewResults.replicationKeys) {
+    viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
+      subjectIds.push(subjectId);
+      if (submitterId) {
+        subjectIds.push(submitterId);
+      }
+    });
+  }
+
+  return subjectIds;
+};
+
+const getReducedAuthorizationContext = (userCtx, docsCtx) => {
+  const authorizationCtx = getExtendedContext(userCtx);
+  if (!docsCtx.some(ctx => ctx && ctx.doc)) {
+    return authorizationCtx;
+  }
+
+  let patientIds = [];
+  docsCtx.forEach(docCtx => {
+    docCtx.viewResults = docCtx.doc && getViewResults(docCtx.doc);
+    patientIds.push(...getReplicationKeys(docCtx.viewResults));
+  });
+  patientIds = _.uniq(patientIds);
+
+  return db.medic
+    .query('medic-client/contacts_by_reference', { keys: patientIds.map(id => ['shortcode', id])})
+    .then(result => {
+      const contactIds = patientIds.map(subjectId => {
+        const row = result.rows.find(row => row.key[1] === subjectId);
+        return row && row.id || subjectId;
+      });
+      return db.medic.allDocs({ keys: contactIds, include_docs: true });
+    })
+    .then(result => {
+      result.rows.forEach(row => {
+        if (!row.doc) {
+          return;
+        }
+
+        const viewResults = getViewResults(row.doc);
+        if (allowedDoc(row.id, authorizationCtx, viewResults)) {
+          authorizationCtx.subjectIds.push(row.id);
+          if (viewResults.contactsByDepth[0][1]) {
+            authorizationCtx.subjectIds.push(viewResults.contactsByDepth[0][1]);
+          }
+        }
+      });
+
+      return authorizationCtx;
+    });
 };
 
 
@@ -273,4 +327,5 @@ module.exports = {
   isDeleteStub: tombstoneUtils._isDeleteStub,
   generateTombstoneId: tombstoneUtils.generateTombstoneId,
   convertTombstoneId: convertTombstoneId,
+  getReducedAuthorizationContext: getReducedAuthorizationContext,
 };
