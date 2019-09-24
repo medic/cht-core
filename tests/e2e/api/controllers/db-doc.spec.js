@@ -1,7 +1,8 @@
-const _ = require('underscore'),
-  utils = require('../../../utils'),
-  sUtils = require('../../sentinel/utils'),
-  constants = require('../../../constants');
+const _ = require('underscore');
+const chai = require('chai');
+const utils = require('../../../utils');
+const sUtils = require('../../sentinel/utils');
+const constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -53,19 +54,56 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
+const clinics = [
+  {
+    _id: 'fixture:offline:clinic',
+    name: 'offline clinic',
+    type: 'clinic',
+    parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:online:clinic',
+    name: 'online clinic',
+    type: 'clinic',
+    parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+];
+
 const patients = [
   {
     _id: 'fixture:offline:patient',
     name: 'offline patient',
     patient_id: '123456',
-
-  }
-];
-
-const reports = [
+    type: 'person',
+    parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
   {
-
-  }
+    _id: 'fixture:offline:clinic:patient',
+    name: 'offline patient',
+    patient_id: 'c123456',
+    type: 'person',
+    parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:online:patient',
+    name: 'online patient',
+    patient_id: '654321',
+    type: 'person',
+    parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:online:clinic:patient',
+    name: 'online patient',
+    patient_id: 'c654321',
+    type: 'person',
+    parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+    reported_date: 1
+  },
 ];
 
 describe('db-doc handler', () => {
@@ -73,6 +111,7 @@ describe('db-doc handler', () => {
     utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
+      .then(() => utils.saveDocs([...clinics, ...patients]))
       .then(done);
   });
 
@@ -97,7 +136,7 @@ describe('db-doc handler', () => {
       });
 
       return utils.requestOnTestDb(onlineRequestOptions).then(result => {
-        expect(_.omit(result, '_rev', 'reported_date')).toEqual({
+        chai.expect(result).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
           type: 'person',
@@ -120,14 +159,14 @@ describe('db-doc handler', () => {
       return utils
         .requestOnTestDb(onlineRequestOptions)
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({
+          chai.expect(result).to.include({
             id: 'db_doc_post',
             ok: true,
           });
           return utils.getDoc('db_doc_post');
         })
         .then(result => {
-          expect(_.omit(result, '_rev')).toEqual({
+          chai.expect(result).to.include({
             _id: 'db_doc_post',
             type: 'district_hospital',
             name: 'NEW PLACE',
@@ -153,11 +192,11 @@ describe('db-doc handler', () => {
           return utils.requestOnTestDb(onlineRequestOptions);
         })
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_put', ok: true });
+          chai.expect(result).to.include({ id: 'db_doc_put', ok: true });
           return utils.getDoc('db_doc_put');
         })
         .then(result => {
-          expect(_.omit(result, '_rev')).toEqual({
+          chai.expect(result).to.include({
             _id: 'db_doc_put',
             type: 'clinic',
             name: 'my updated clinic',
@@ -177,14 +216,14 @@ describe('db-doc handler', () => {
           return utils.requestOnTestDb(onlineRequestOptions);
         })
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({
+          chai.expect(result).to.include({
             id: 'db_doc_delete',
             ok: true,
           });
           return utils.getDoc('db_doc_delete');
         })
         .catch(err => {
-          expect(err.responseBody.error).toEqual('not_found');
+          chai.expect(err.responseBody.error).to.equal('not_found');
         });
     });
 
@@ -205,7 +244,7 @@ describe('db-doc handler', () => {
           return utils.requestOnTestDb(onlineRequestOptions, false, true);
         })
         .then(result => {
-          expect(result).toEqual('my attachment content');
+          chai.expect(result).to.equal('my attachment content');
         });
     });
 
@@ -224,7 +263,7 @@ describe('db-doc handler', () => {
         })
         .then(result => utils.requestOnTestDb(`/with_attachments/new_attachment?rev=${result.rev}`))
         .then(result => {
-          expect(result).toEqual('my new attachment content');
+          chai.expect(result).to.equal('my new attachment content');
         });
     });
   });
@@ -237,18 +276,14 @@ describe('db-doc handler', () => {
         utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
         utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
       ]).then(results => {
-        expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
+        chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
           type: 'person',
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
 
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody).toEqual({
-          error: 'forbidden',
-          reason: 'Insufficient privileges',
-        });
+        chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
       });
     });
 
@@ -272,37 +307,19 @@ describe('db-doc handler', () => {
 
       return utils
         .saveDocs(docs)
-        .then(result =>
-          Promise.all(
-            docs.map((doc, key) =>
-              utils.requestOnTestDb({
-                method: 'DELETE',
-                path: `/${doc._id}?rev=${result[key].rev}`,
-              })
-            )
-          )
-        )
+        .then(result => Promise.all(docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`,}))))
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
-          return Promise.all(
-            docs.map(doc =>
-              utils.requestOnTestDb(
-                _.defaults(
-                  { path: `/${doc._id}?rev=${doc._rev}` },
-                  offlineRequestOptions
-                )
-              )
-            )
-          );
+          return Promise.all(docs.map(doc => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}?rev=${doc._rev}` }, offlineRequestOptions))));
         })
         .then(results => {
-          expect(results.length).toEqual(2);
-          expect(results[0]).toEqual({
+          chai.expect(results.length).to.equal(2);
+          chai.expect(results[0]).to.deep.equal({
             _id: 'a1',
             _rev: docs[0]._rev,
             _deleted: true,
           });
-          expect(results[1]).toEqual({
+          chai.expect(results[1]).to.deep.equal({
             _id: 'd1',
             _rev: docs[1]._rev,
             _deleted: true,
@@ -368,6 +385,7 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
+
           return Promise.all(docs.map(doc => utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)));
         })
         .then(results =>
@@ -375,48 +393,36 @@ describe('db-doc handler', () => {
             _.flatten(
               results.map(result => {
                 const open_revs = result._revisions.ids.map((rev, key) => `${result._revisions.start - key}-${rev}`);
+                const path = `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}`;
+                const pathAll = `/${result._id}?rev=${result._rev}&open_revs=all`;
                 return [
-                  utils.requestOnTestDb(_.defaults({ path: `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}` }, offlineRequestOptions)),
-                  utils.requestOnTestDb(_.defaults({ path: `/${result._id}?rev=${result._rev}&open_revs=all` }, offlineRequestOptions)),
+                  utils.requestOnTestDb(_.defaults({ path: path }, offlineRequestOptions)),
+                  utils.requestOnTestDb(_.defaults({ path: pathAll }, offlineRequestOptions)),
                 ];
               })
             )
           )
         )
         .then(results => {
-          expect(results[0].length).toEqual(3);
-          expect(results[0][0].ok._rev.startsWith('1')).toBe(true);
-          expect(results[0][1].ok._rev.startsWith('2')).toBe(true);
-          expect(results[0][2].ok._rev.startsWith('4')).toBe(true);
-          expect(
-            results[0].every(
-              result =>
-                result.ok._id === 'a1_revs' &&
-                (result.ok._deleted ||
-                  result.ok.parent._id === 'fixture:offline')
-            )
-          ).toBe(true);
+          chai.expect(results[0].length).to.equal(3);
+          chai.expect(results[0][0].ok._rev.startsWith('1')).to.equal(true);
+          chai.expect(results[0][1].ok._rev.startsWith('2')).to.equal(true);
+          chai.expect(results[0][2].ok._rev.startsWith('4')).to.equal(true);
+          chai.expect(results[0].every(result => result.ok._id === 'a1_revs' && (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))).to.equal(true);
 
-          expect(results[1].length).toEqual(1);
-          expect(results[1][0].ok._deleted).toBe(true);
+          chai.expect(results[1].length).to.equal(1);
+          chai.expect(results[1][0].ok._deleted).to.equal(true);
 
-          expect(results[2].length).toEqual(2);
-          expect(results[2][0].ok._rev.startsWith('3')).toBe(true);
-          expect(results[2][1].ok._rev.startsWith('4')).toBe(true);
-          expect(
-            results[2].every(
-              result =>
-                result.ok._id === 'd1_revs' &&
-                (result.ok._deleted ||
-                  result.ok.parent._id === 'fixture:offline')
-            )
-          ).toBe(true);
+          chai.expect(results[2].length).to.equal(2);
+          chai.expect(results[2][0].ok._rev.startsWith('3')).to.equal(true);
+          chai.expect(results[2][1].ok._rev.startsWith('4')).to.equal(true);
+          chai.expect(results[2].every(result => result.ok._id === 'd1_revs' && (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))).to.equal(true);
 
-          expect(results[3].length).toEqual(1);
-          expect(results[3][0].ok._deleted).toBe(true);
+          chai.expect(results[3].length).to.equal(1);
+          chai.expect(results[3][0].ok._deleted).to.equal(true);
 
-          expect(results[4].length).toEqual(0);
-          expect(results[5].length).toEqual(0);
+          chai.expect(results[4].length).to.equal(0);
+          chai.expect(results[5].length).to.equal(0);
         });
     });
 
@@ -466,29 +472,29 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0]._attachments).not.toBeDefined();
-          expect(results[0]._revisions).toBeDefined();
-          expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`).toEqual(revs.allowed_attach[0]);
+          chai.expect(results[0]._attachments).to.be.undefined;
+          chai.expect(results[0]._revisions).to.be.ok;
+          chai.expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`).to.equal(revs.allowed_attach[0]);
 
-          expect(results[1]._attachments).toBeDefined();
-          expect(results[1]._attachments.att_name).toBeDefined();
-          expect(results[1]._attachments.att_name.data).toBeDefined();
-          expect(results[1]._revisions).not.toBeDefined();
-          expect(results[1]._revs_info).not.toBeDefined();
+          chai.expect(results[1]._attachments).to.be.ok;
+          chai.expect(results[1]._attachments.att_name).to.be.ok;
+          chai.expect(results[1]._attachments.att_name.data).to.be.ok;
+          chai.expect(results[1]._revisions).to.be.undefined;
+          chai.expect(results[1]._revs_info).to.be.undefined;
 
-          expect(results[2]._attachments).toBeDefined();
-          expect(results[2]._attachments.att_name).toBeDefined();
-          expect(results[2]._attachments.att_name.data).not.toBeDefined();
-          expect(results[2]._attachments.att_name.stub).toEqual(true);
-          expect(results[2]._revisions).toBeDefined();
-          expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`).toEqual(revs.allowed_attach[1]);
-          expect(results[2]._revs_info).toBeDefined();
-          expect(results[2]._revs_info.length).toEqual(results[2]._revisions.ids.length);
-          expect(results[2]._revs_info[0]).toEqual({ rev: revs.allowed_attach[1], status: 'available' });
+          chai.expect(results[2]._attachments).to.be.ok;
+          chai.expect(results[2]._attachments.att_name).to.be.ok;
+          chai.expect(results[2]._attachments.att_name.data).to.be.undefined;
+          chai.expect(results[2]._attachments.att_name.stub).to.deep.equal(true);
+          chai.expect(results[2]._revisions).to.be.ok;
+          chai.expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`).to.deep.equal(revs.allowed_attach[1]);
+          chai.expect(results[2]._revs_info).to.be.ok;
+          chai.expect(results[2]._revs_info.length).to.deep.equal(results[2]._revisions.ids.length);
+          chai.expect(results[2]._revs_info[0]).to.deep.equal({ rev: revs.allowed_attach[1], status: 'available' });
 
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[4].statusCode).toEqual(403);
-          expect(results[5].statusCode).toEqual(403);
+          chai.expect(results[3].statusCode).to.deep.equal(403);
+          chai.expect(results[4].statusCode).to.deep.equal(403);
+          chai.expect(results[5].statusCode).to.deep.equal(403);
         });
     });
 
@@ -511,26 +517,14 @@ describe('db-doc handler', () => {
       };
 
       return Promise.all([
-        utils
-          .requestOnTestDb(_.defaults({ body: allowedDoc, path: '/' }, offlineRequestOptions)),
-        utils
-          .requestOnTestDb(_.defaults({ body: deniedDoc, path: '/' }, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions))
-          .catch(err => err),
+        utils.requestOnTestDb(_.defaults({ body: JSON.stringify(allowedDoc), path: '/' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ body: JSON.stringify(deniedDoc), path: '/' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions)).catch(err => err),
       ])
         .then(([allowed, denied, forbidden]) => {
-          expect(_.omit(allowed, 'rev')).toEqual({
-            id: 'allowed_doc_post',
-            ok: true,
-          });
-          expect(denied.statusCode).toEqual(403);
-          expect(denied.responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(forbidden.responseBody.error).toEqual('forbidden');
+          chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true,});
+          chai.expect(denied).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(forbidden.responseBody.error).to.equal('forbidden');
 
           return Promise.all([
             utils.getDoc('allowed_doc_post'),
@@ -538,14 +532,14 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(([allowed, denied]) => {
-          expect(_.omit(allowed, '_rev')).toEqual(allowedDoc);
-          expect(denied.statusCode).toEqual(404);
+          chai.expect(allowed).to.deep.include(allowedDoc);
+          chai.expect(denied.statusCode).to.deep.equal(404);
 
           const ids = ['allowed_doc_post', 'denied_doc_post'];
           return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
         }).then(([allowedInfo, deniedInfo]) => {
-          expect(allowedInfo).toBeDefined();
-          expect(deniedInfo).not.toBeDefined();
+          chai.expect(allowedInfo).to.be.ok;
+          chai.expect(deniedInfo).to.be.undefined;
         });
     });
 
@@ -614,50 +608,29 @@ describe('db-doc handler', () => {
 
           return Promise.all(updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
               .catch(err => err))
           );
         })
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            ok: true,
-            id: 'n_put_1',
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(_.omit(results[2], 'rev')).toEqual({
-            ok: true,
-            id: 'a_put_1',
-          });
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[4].statusCode).toEqual(403);
-          expect(results[4].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[5].statusCode).toEqual(403);
-          expect(results[5].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.include({ ok: true, id: 'n_put_1' });
+          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[2]).to.include({ ok: true, id: 'a_put_1',});
+
+          chai.expect(results[3]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[4]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[5]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
 
           const ids = ['a_put_1', 'a_put_2', 'd_put_1', 'd_put_2', 'n_put_1', 'n_put_2'];
 
           return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
-          expect(a1._rev.substring(0, 2)).toEqual('3-');
-          expect(a2._rev.substring(0, 2)).toEqual('2-');
-          expect(d1._rev.substring(0, 2)).toEqual('2-');
-          expect(d2._rev.substring(0, 2)).toEqual('2-');
-          expect(n1._rev.substring(0, 2)).toEqual('2-');
-          expect(n2).not.toBeDefined();
+          chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(a2._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(d1._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(d2._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(n1._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(n2).to.be.undefined;
         });
     });
 
@@ -728,20 +701,10 @@ describe('db-doc handler', () => {
           );
         })
         .then(results => {
-          expect(results[0].statusCode).toEqual(409);
-          expect(results[0].responseBody.error).toEqual('conflict');
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[2].statusCode).toEqual(403);
-          expect(results[2].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[3].statusCode).toEqual(409);
-          expect(results[3].responseBody.error).toEqual('conflict');
+          chai.expect(results[0]).to.deep.include({ statusCode: 409, responseBody: { error: 'conflict' }});
+          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[2]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[0]).to.deep.include({ statusCode: 409, responseBody: { error: 'conflict' }});
         });
     });
 
@@ -782,15 +745,8 @@ describe('db-doc handler', () => {
           ])
         )
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            id: 'allowed_del',
-            ok: true,
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.deep.include({ id: 'allowed_del', ok: true });
+          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' } });
 
           return Promise.all([
             utils.getDoc('allowed_del').catch(err => err),
@@ -798,13 +754,8 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0].statusCode).toEqual(404);
-          expect(results[0].responseBody).toEqual({
-            error: 'not_found',
-            reason: 'deleted',
-          });
-
-          expect(_.omit(results[1], '_rev')).toEqual({
+          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: {error: 'not_found', reason: 'deleted' } });
+          chai.expect(results[1]).to.deep.include({
             _id: 'denied_del',
             type: 'clinic',
             parent: { _id: 'fixture:online' },
@@ -862,17 +813,9 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0]).toEqual('"my attachment content"');
-          expect(results[1].statusCode).toEqual(404);
-          expect(results[1].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-          expect(results[2].statusCode).toEqual(403);
-          expect(results[2].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.equal('my attachment content');
+          chai.expect(results[1]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' }});
+          chai.expect(results[2]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' }});
 
           return Promise.all([
             utils.getDoc('allowed_attach'),
@@ -903,16 +846,16 @@ describe('db-doc handler', () => {
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
-          expect(results[1]).toEqual('"my attachment content"');
+          chai.expect(results[1]).to.equal('"my attachment content"');
           // allowed_attach is not allowed and has attachment
-          expect(results[2].responseBody.error).toEqual('forbidden');
+          chai.expect(results[2]responseBody..error).to.equal('forbidden');
 
           // denied_attach is not allowed, but missing attachment
-          expect(results[3].responseBody.error).toEqual('forbidden');
+          chai.expect(results[3].responseBody.error).to.equal('forbidden');
           // denied_attach is not allowed and has attachment
-          expect(results[4].responseBody.error).toEqual('forbidden');
+          chai.expect(results[4].responseBody.error).to.equal('forbidden');
           // denied_attach is allowed and has attachment
-          expect(results[5]).toEqual('"my attachment content"');
+          chai.expect(results[5]).to.equal('my attachment content');
 
           //attachments for deleted docs
           return Promise.all([
@@ -936,25 +879,11 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0].statusCode).toEqual(404);
-          expect(results[0].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
+          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' } });
+          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' } });
 
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-
-          expect(results[2].statusCode).toEqual(404);
-          expect(results[2].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-
-          expect(results[3]).toEqual('"my attachment content"');
+          chai.expect(results[2]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' } });
+          chai.expect(results[3]).to.equal('"my attachment content"');
         });
     });
 
@@ -1008,8 +937,8 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0]).toEqual('"my attachment content"');
-          expect(results[1]).toEqual('"my attachment content"');
+          chai.expect(results[0]).to.equal('"my attachment content"');
+          chai.expect(results[1]).to.equal('"my attachment content"');
 
           expect(results[2].statusCode).toEqual(404);
           expect(results[2].responseBody).toEqual({
@@ -1047,20 +976,20 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          expect(results[0].responseBody).toEqual({
+          chai.expect(results[0].responseBody).to.equal({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
-          expect(results[1]).toEqual('my attachment content');
+          chai.expect(results[1]).to.equal('my attachment content');
           // allowed_attach is not allowed and has attachment
-          expect(results[2].responseBody.error).toEqual('forbidden');
+          chai.expect(results[2].responseBody.error).to.equal('forbidden');
           // denied_attach is not allowed, but missing attachment
-          expect(results[3].responseBody.error).toEqual('forbidden');
+          chai.expect(results[3].responseBody.error).to.equal('forbidden');
           // denied_attach is not allowed and has attachment
-          expect(results[4].responseBody.error).toEqual('forbidden');
+          chai.expect(results[4].responseBody.error).to.equal('forbidden');
           // denied_attach is allowed and has attachment
-          expect(results[5]).toEqual('my attachment content');
+          chai.expect(results[5]).to.equal('my attachment content');
         });
     });
 
@@ -1126,14 +1055,14 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           expect(results[0]._attachments.new_attachment).toBeTruthy();
-          expect(results[0]._id).toEqual('a_with_attachments');
+          chai.expect(results[0]._id).to.equal('a_with_attachments');
 
-          expect(results[1]).toEqual('my new attachment content');
+          chai.expect(results[1]).to.equal('my new attachment content');
 
           expect(results[2]._attachments).not.toBeTruthy();
-          expect(results[2]._id).toEqual('d_with_attachments');
+          chai.expect(results[2]._id).to.equal('d_with_attachments');
 
-          expect(results[3].responseBody.error).toEqual('not_found');
+          chai.expect(results[3].responseBody.error).to.equal('not_found');
         });
     });
   });
@@ -1246,7 +1175,7 @@ describe('db-doc handler', () => {
           return utils.requestOnMedicDb(onlineRequestOptions, false, true);
         })
         .then(result => {
-          expect(result).toEqual('my attachment content');
+          chai.expect(result).to.equal('my attachment content');
         });
     });
 
@@ -1265,7 +1194,7 @@ describe('db-doc handler', () => {
         })
         .then(result => utils.requestOnMedicDb(`/with_attachments/new_attachment?rev=${result.rev}`))
         .then(result => {
-          expect(result).toEqual('my new attachment content');
+          chai.expect(result).to.equal('my new attachment content');
         });
     });
   });
@@ -1351,8 +1280,8 @@ describe('db-doc handler', () => {
         return utils.getDoc('fb1');
       })
       .then(result => {
-        expect(result._rev).toEqual(doc._rev);
-        expect(result.content).toEqual('content');
+        chai.expect(result._rev).to.equal(doc._rev);
+        chai.expect(result.content).to.equal('content');
       });
   });
 
@@ -1366,7 +1295,7 @@ describe('db-doc handler', () => {
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, offlineRequestOptions)).catch(err => err)
         ])
         .then(results => {
-          expect(results[0]._id).toEqual('_design/medic-client');
+          chai.expect(results[0]._id).to.equal('_design/medic-client');
 
           expect(results[1].statusCode).toEqual(403);
           expect(results[1].responseBody.error).toEqual('forbidden');
