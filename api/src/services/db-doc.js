@@ -86,7 +86,7 @@ module.exports = {
   // - PUT `db-docs` they are and will be allowed to see
   // - GET/PUT/DELETE `attachments` of `db-docs` they are allowed to see
   // this filters audited endpoints, so valid requests are allowed to pass through to the next route
-  filterOfflineRequestOld: (userCtx, params, method, query, body) => {
+  filterOfflineRequest11: (userCtx, params, method, query, body) => {
     const isAttachment = params.attachmentId;
 
     return Promise

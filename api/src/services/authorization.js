@@ -163,14 +163,14 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getExtendedContext = (userCtx) => ({
+const getContextObject = (userCtx) => ({
   userCtx,
   contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
   subjectIds: []
 });
 
 const getAuthorizationContext = (userCtx) => {
-  const authorizationCtx = getExtendedContext(userCtx);
+  const authorizationCtx = getContextObject(userCtx);
 
   return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
@@ -196,30 +196,25 @@ const getAuthorizationContext = (userCtx) => {
 
 const getReplicationKeys = (viewResults) => {
   const subjectIds = [];
-  if (viewResults.replicationKeys) {
-    viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
-      subjectIds.push(subjectId);
-      if (submitterId) {
-        subjectIds.push(submitterId);
-      }
-    });
+  if (!viewResults || !viewResults.replicationKeys) {
+    return subjectIds;
   }
+
+  viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
+    subjectIds.push(subjectId);
+    if (submitterId) {
+      subjectIds.push(submitterId);
+    }
+  });
 
   return subjectIds;
 };
 
-const getReducedAuthorizationContext = (userCtx, docsCtx) => {
-  const authorizationCtx = getExtendedContext(userCtx);
-  if (!docsCtx.some(ctx => ctx && ctx.doc)) {
-    return authorizationCtx;
-  }
-
-  let patientIds = [];
-  docsCtx.forEach(docCtx => {
-    docCtx.viewResults = docCtx.doc && getViewResults(docCtx.doc);
-    patientIds.push(...getReplicationKeys(docCtx.viewResults));
-  });
+const findContactsByPatientIds = (patientIds) => {
   patientIds = _.uniq(patientIds);
+  if (!patientIds.length) {
+    return [];
+  }
 
   return db.medic
     .query('medic-client/contacts_by_reference', { keys: patientIds.map(id => ['shortcode', id])})
@@ -228,25 +223,49 @@ const getReducedAuthorizationContext = (userCtx, docsCtx) => {
         const row = result.rows.find(row => row.key[1] === subjectId);
         return row && row.id || subjectId;
       });
+
       return db.medic.allDocs({ keys: contactIds, include_docs: true });
     })
-    .then(result => {
-      result.rows.forEach(row => {
-        if (!row.doc) {
-          return;
-        }
+    .then(result => result.rows && result.rows.map(row => row.doc));
+};
 
-        const viewResults = getViewResults(row.doc);
-        if (allowedDoc(row.id, authorizationCtx, viewResults)) {
-          authorizationCtx.subjectIds.push(row.id);
-          if (viewResults.contactsByDepth[0][1]) {
-            authorizationCtx.subjectIds.push(viewResults.contactsByDepth[0][1]);
-          }
-        }
-      });
+// in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
+// request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
+// over the provided docs, read all contacts that the docs emit in `medic/docs_by_replication_key` and create a
+// reduced set of relevant subject ids that the user is allowed to see.
+const getReducedAuthorizationContext = (userCtx, docObjs) => {
+  const authorizationCtx = getContextObject(userCtx);
 
-      return authorizationCtx;
+  docObjs.filter(docObj => docObj.doc);
+  if (!docObjs.length) {
+    return authorizationCtx;
+  }
+
+  const patientIds = [];
+  docObjs.forEach(docCtx => {
+    docCtx.viewResults = getViewResults(docCtx.doc);
+    patientIds.push(...getReplicationKeys(docCtx.viewResults));
+  });
+
+  return findContactsByPatientIds(patientIds).then(contacts => {
+    contacts.forEach(contact => {
+      if (!contact) {
+        return;
+      }
+
+      const viewResults = getViewResults(contact);
+      if (!allowedDoc(contact._id, authorizationCtx, viewResults)) {
+        return;
+      }
+
+      authorizationCtx.subjectIds.push(contact._id);
+      if (viewResults.contactsByDepth[0][1]) {
+        authorizationCtx.subjectIds.push(viewResults.contactsByDepth[0][1]);
+      }
     });
+
+    return authorizationCtx;
+  });
 };
 
 

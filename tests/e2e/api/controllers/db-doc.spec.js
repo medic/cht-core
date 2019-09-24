@@ -53,6 +53,21 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
+const patients = [
+  {
+    _id: 'fixture:offline:patient',
+    name: 'offline patient',
+    patient_id: '123456',
+
+  }
+];
+
+const reports = [
+  {
+
+  }
+];
+
 describe('db-doc handler', () => {
   beforeAll(done => {
     utils
@@ -219,14 +234,8 @@ describe('db-doc handler', () => {
       offlineRequestOptions.method = 'GET';
 
       return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)
-        ),
-        utils
-          .requestOnTestDb(
-            _.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)
-          )
-          .catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
       ]).then(results => {
         expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
           _id: 'fixture:user:offline',
