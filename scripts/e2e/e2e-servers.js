@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { fork } = require('child_process');
 
-const constants = require('./../tests/constants');
-const utils = require('../tests/utils');
+const constants = require('../../tests/constants');
+const utils = require('../../tests/utils');
 
 // This is a dev dependency in the root package.json
 const express = require('express');
