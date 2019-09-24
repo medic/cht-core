@@ -7,7 +7,7 @@
     "no-console": "off"
   },
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 2017
   },
   "globals": {
     "emit": true
