@@ -66,7 +66,8 @@ describe('Tests for past pregnancy condition card', () => {
     expect(fields[4]).to.deep.equal({
       'icon': 'icon-risk',
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'width': 6
     });
   });
@@ -118,7 +119,8 @@ describe('Tests for past pregnancy condition card', () => {
     expect(fields[4]).to.deep.equal({
       'icon': 'icon-risk',
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'width': 6
     });
   });
@@ -223,7 +225,8 @@ describe('Tests for past pregnancy condition card', () => {
     expect(fields[13]).to.deep.equal({
       'icon': 'icon-risk',
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'width': 6
     });
   });
@@ -275,7 +278,8 @@ describe('Tests for past pregnancy condition card', () => {
     });
     expect(fields[4]).to.deep.equal({
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'icon': 'icon-risk',
       'width': 6
     });
@@ -328,7 +332,8 @@ describe('Tests for past pregnancy condition card', () => {
     });
     expect(fields[4]).to.deep.equal({
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'icon': 'icon-risk',
       'width': 6
     });

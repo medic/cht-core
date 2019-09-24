@@ -18,7 +18,7 @@ describe('Tests for active pregnancy condition card', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
+    if (clock) { clock.restore(); }
   });
 
   it('pregnancy registration with risk factors, danger signs, past and future visits', async () => {
@@ -55,13 +55,15 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[2]).to.deep.equal({
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'icon': 'icon-risk',
       'width': 6
     });
     expect(fields[3]).to.deep.equal({
       'label': 'contact.profile.danger_signs.current',
-      'value': 'Vaginal bleeding',
+      'value': 'contact.profile.danger_sign.vaginal_bleeding',
+      'translate': true,
       'width': 6
     });
     expect(fields[4]).to.deep.equal({
@@ -76,7 +78,9 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[5]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': '0 weeks ago',
+      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
+      'context': { 'weeks': 0 },
+      'translate': true,
       'width': 6
     });
     expect(fields[6]).to.deep.equal({
@@ -127,7 +131,9 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[3]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': '0 weeks ago',
+      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
+      'context': { 'weeks': 0 },
+      'translate': true,
       'width': 6
     });
   });
@@ -171,13 +177,15 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[2]).to.deep.equal({
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; Diabetes; underweight; hypothyroidism',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'icon': 'icon-risk',
       'width': 6
     });
     expect(fields[3]).to.deep.equal({
       'label': 'contact.profile.danger_signs.current',
-      'value': 'Vaginal bleeding, Fits, Severe abdominal pain, Severe headache, Very pale, Fever, Breaking of water, Getting tired easily, Swelling of face and hands, Breathlessness',
+      'value': 'contact.profile.danger_sign.multiple',
+      'translate': true,
       'width': 6
     });
     expect(fields[4]).to.deep.equal({
@@ -192,7 +200,9 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[5]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': '0 weeks ago',
+      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
+      'context': { 'weeks': 0 },
+      'translate': true,
       'width': 6
     });
   });
@@ -248,13 +258,15 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[4]).to.deep.equal({
       'label': 'contact.profile.risk.high',
-      'value': 'Asthma; underweight',
+      'value': 'contact.profile.risk.multiple',
+      'translate': true,
       'icon': 'icon-risk',
       'width': 6
     });
     expect(fields[5]).to.deep.equal({
       'label': 'contact.profile.danger_signs.current',
-      'value': 'Vaginal bleeding',
+      'value': 'contact.profile.danger_sign.vaginal_bleeding',
+      'translate': true,
       'width': 6
     });
     expect(fields[6]).to.deep.equal({
@@ -269,7 +281,9 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[7]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': '0 weeks ago',
+      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
+      'context': { 'weeks': 0 },
+      'translate': true,
       'width': 6
     });
   });
