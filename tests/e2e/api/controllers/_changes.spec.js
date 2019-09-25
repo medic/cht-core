@@ -684,11 +684,11 @@ describe('changes handler', () => {
             method: 'PUT',
             body: _.extend(user, { facility_id: 'fixture:bobville' })
           })
-          // we "move" his medic user to a place that doesn't exist. He should still get bobville docs
-          .then(() => Promise.all([
-            utils.saveDoc(_.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] })),
-            utils.saveDocs(allowedBob),
-            utils.saveDocs(allowedSteve),
+          .then(() => utils.saveDocs([
+            // we "move" his medic user to a place that doesn't exist. He should still get bobville docs
+            _.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] }),
+            ...allowedSteve,
+            ...allowedBob,
           ]));
       };
 
@@ -701,7 +701,7 @@ describe('changes handler', () => {
         ]))
         .then(([ user, medicUser ]) => Promise.all([
           requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-          utils.delayPromise(() => updateSteve(user, medicUser), 1000),
+          utils.delayPromise(() => updateSteve(user, medicUser), 500),
         ]))
         .then(([ changes ]) => {
           const bobvilleIds = getIds(allowedBob);
