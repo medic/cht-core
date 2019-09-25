@@ -625,10 +625,10 @@
             <value>The following tasks will appear:</value>
           </text>
           <text id="/delivery/summary/r_fup_danger_sign:label">
-            <value>Please conduct a danger sign follow-up in 3 days.</value>
+            <value>Please conduct a danger sign follow-up for the mother in 3 days.</value>
           </text>
           <text id="/delivery/summary/r_fup_danger_sign_baby:label">
-            <value>Please conduct a baby danger sign follow-up in 3 days.</value>
+            <value>Please conduct a danger sign follow-up for the baby in 3 days.</value>
           </text>
           <text id="/delivery/summary/r_mom_alive_unwell:label">
             <value>Mom is alive and unwell</value>
@@ -4080,7 +4080,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-09-04 07:45:50">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-09-25 08:45:01">
           <inputs>
             <meta>
               <location>
@@ -4458,28 +4458,28 @@
         <root>
           <item>
             <itextId>static_instance-babies_alive-0</itextId>
-            <name>0</name>
             <count>0</count>
+            <name>0</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-1</itextId>
-            <name>1</name>
             <count>1</count>
+            <name>1</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-2</itextId>
-            <name>2</name>
             <count>2</count>
+            <name>2</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-3</itextId>
-            <name>3</name>
             <count>3</count>
+            <name>3</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-4</itextId>
-            <name>other</name>
             <count>4</count>
+            <name>other</name>
           </item>
         </root>
       </instance>
@@ -4543,28 +4543,28 @@
         <root>
           <item>
             <itextId>static_instance-pnc_visits-0</itextId>
-            <name>within_24_hrs</name>
             <count>0</count>
+            <name>within_24_hrs</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-1</itextId>
-            <name>3_days</name>
             <count>3</count>
+            <name>3_days</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-2</itextId>
-            <name>7_days</name>
             <count>7</count>
+            <name>7_days</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-3</itextId>
-            <name>6_weeks</name>
             <count>42</count>
+            <name>6_weeks</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-4</itextId>
-            <name>none</name>
             <count>0</count>
+            <name>none</name>
           </item>
         </root>
       </instance>
