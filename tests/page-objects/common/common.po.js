@@ -23,7 +23,8 @@ const medicLogo = element(by.className('logo-full')),
   // User settings
   settings = element.all(by.css('.configuration a>span')),
   // Report bug
-  bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
+  bugDescriptionField = element(by.css('[placeholder="Bug description"]')),
+  modalFooter = element(by.css('.modal-footer'));
 
 module.exports = {
   calm: () => {
@@ -56,6 +57,7 @@ module.exports = {
   checkReportBug: () => {
     openSubmenu('report bug');
     helper.waitElementToBeVisible(bugDescriptionField);
+    helper.waitElementToBeVisible(modalFooter);
     expect(genericSubmitButton.getText()).toEqual('Submit');
     genericCancelBtn.click();
   },
