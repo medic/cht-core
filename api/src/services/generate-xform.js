@@ -45,25 +45,33 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
+const removeLast = (haystack, needle) => {
+  const index = haystack.lastIndexOf(needle);
+  if (index === -1) {
+    return haystack;
+  }
+  return haystack.slice(0, index) + haystack.slice(index + needle.length);
+};
+
+const removeRootNode = (string, node) => {
+  return removeLast(string.replace(node, ''), ROOT_CLOSE);
+};
+
 const generateForm = formXml => {
   return transform(formXml, FORM_STYLESHEET).then(form => {
-    return form
-      // remove the root node leaving just the HTML to be rendered
-      .replace(FORM_ROOT_OPEN, '')
-      .replace(ROOT_CLOSE, '')
-      // rename the media src attributes so the browser doesn't try and
-      // request them, instead leaving it to custom code in the Enketo
-      // service to load them asynchronously
-      .replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
+    // rename the media src attributes so the browser doesn't try and
+    // request them, instead leaving it to custom code in the Enketo
+    // service to load them asynchronously
+    form = form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
+    // remove the root node leaving just the HTML to be rendered
+    return removeRootNode(form, FORM_ROOT_OPEN);
   });
 };
 
 const generateModel = formXml => {
   return transform(formXml, MODEL_STYLESHEET).then(model => {
-    return model
-      // remove the root node leaving just the HTML to be rendered
-      .replace(MODEL_ROOT_OPEN, '')
-      .replace(ROOT_CLOSE, '');
+    // remove the root node leaving just the model
+    return removeRootNode(model, MODEL_ROOT_OPEN);
   });
 };
 
