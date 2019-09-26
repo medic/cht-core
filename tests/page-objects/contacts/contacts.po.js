@@ -72,6 +72,9 @@ module.exports = {
     helper.waitElementToBeVisible(newPersonButton);
     newPersonButton.click();
     newPersonTextBox.sendKeys('Todd');
+    dateOfBirthField.sendKeys('2000-01-01');
+    helper.scrollElementIntoView(contactSexField);
+    contactSexField.click();
     nextButton.click();
     const writeNameHC = element(by.css('[name="/data/clinic/is_name_generated"][value="false"]'));
     helper.waitElementToBeVisible(writeNameHC);
