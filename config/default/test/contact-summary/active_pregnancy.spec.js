@@ -78,9 +78,8 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[5]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
-      'context': { 'weeks': 0 },
-      'translate': true,
+      'value': moment('2000-01-01').valueOf(),
+      'filter': 'relativeDay',
       'width': 6
     });
     expect(fields[6]).to.deep.equal({
@@ -131,9 +130,8 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[3]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
-      'context': { 'weeks': 0 },
-      'translate': true,
+      'value': moment('2000-01-01').valueOf(),
+      'filter': 'relativeDay',
       'width': 6
     });
   });
@@ -200,9 +198,8 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[5]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
-      'context': { 'weeks': 0 },
-      'translate': true,
+      'value': moment('2000-01-22').valueOf(),
+      'filter': 'relativeDay',
       'width': 6
     });
   });
@@ -281,9 +278,8 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[7]).to.deep.equal({
       'label': 'contact.profile.last_visited',
-      'value': 'contact.profile.anc.weeks_since_last_anc.plural',
-      'context': { 'weeks': 0 },
-      'translate': true,
+      'value': moment('2000-01-22').valueOf(),
+      'filter': 'relativeDay',
       'width': 6
     });
   });

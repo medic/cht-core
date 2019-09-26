@@ -53,7 +53,6 @@ const cards = [
 
       const mostRecentANC = getNewestReport(allReports, ['pregnancy', 'pregnancy_home_visit']);
       const mostRecentANCDate = moment(mostRecentANC.reported_date);
-      const weeksSinceLastANC = today.diff(mostRecentANCDate, 'weeks');
       const lmp_date = getMostRecentLMPDateForPregnancy(allReports, report);
       const edd_ms = getMostRecentEDDForPregnancy(allReports, report);
       const nextAncVisitDate = getNextANCVisitDate(allReports, report);
@@ -107,7 +106,7 @@ const cards = [
 
       fields.push(
         { label: 'contact.profile.visit', value: 'contact.profile.visits.of', context: { count: countANCFacilityVisits(allReports, report), total: 8 }, translate: true, width: 6 },
-        { label: 'contact.profile.last_visited', value: weeksSinceLastANC === 1 ? 'contact.profile.anc.weeks_since_last_anc.singular' : 'contact.profile.anc.weeks_since_last_anc.plural', translate: true, context: { weeks: weeksSinceLastANC }, width: 6 }
+        { label: 'contact.profile.last_visited', value: mostRecentANCDate.valueOf(), filter: 'relativeDay', width: 6 }
       );
 
       if (nextAncVisitDate && nextAncVisitDate.isSameOrAfter(today)) {
