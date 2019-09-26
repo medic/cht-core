@@ -45,12 +45,12 @@ const _ = require('underscore'),
   uuid = require('uuid'),
   compression = require('compression'),
   BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
-  extractedResourceDirectory = require('./resource-extraction').getDestinationDirectory(),
   app = express();
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({ limit: '32mb' });
 const jsonQueryParser = require('./middleware/query-parser').json;
+const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {

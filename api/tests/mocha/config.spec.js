@@ -1,15 +1,17 @@
-const config = require('../../src/config'),
+const _ = require('underscore'),
+  chai = require('chai'),
+  path = require('path'),
   sinon = require('sinon'),
+  config = require('../../src/config'),
   db = require('../../src/db'),
   logger = require('../../src/logger'),
+  environment = require('../../src/environment'),
   ddocExtraction = require('../../src/ddoc-extraction'),
+  defaults = require('./../../../build/ddocs/medic/_attachments/default-docs/settings.json'),
   resourceExtraction = require('../../src/resource-extraction'),
-  translations = require('../../src/translations'),
   settingsService = require('../../src/services/settings'),
-  viewMapUtils = require('@medic/view-map-utils'),
-  defaults = require('../../src/config.default.json'),
-  _ = require('underscore'),
-  chai = require('chai');
+  translations = require('../../src/translations'),
+  viewMapUtils = require('@medic/view-map-utils');
 
 let on;
 
@@ -27,6 +29,7 @@ describe('Config', () => {
     sinon.stub(translations, 'run').resolves();
     sinon.stub(settingsService, 'get').resolves();
     sinon.stub(settingsService, 'update').resolves();
+    sinon.stub(environment, 'getExtractedResourcesPath').returns(path.resolve(__dirname, './../../../build/ddocs/medic/_attachments'));
   });
 
   afterEach(() => {

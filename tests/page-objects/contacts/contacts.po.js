@@ -13,6 +13,8 @@ const newPersonButton = element(by.css('[name="/data/init/create_new_person"][va
 const writeName = element(by.css('[name="/data/district_hospital/is_name_generated"][value="false"]'));
 const contactName = element(by.css('.heading-content'));
 const rows = element.all(by.className('content-row'));
+const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
+const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
 
 module.exports = {
   contactName,
@@ -32,6 +34,9 @@ module.exports = {
     newPersonButton.click();
     newPersonTextBox.sendKeys('Bede');
     personNotes.sendKeys('Main CHW');
+    dateOfBirthField.sendKeys('2000-01-01');
+    helper.scrollElementIntoView(contactSexField);
+    contactSexField.click();
     nextButton.click();
     helper.waitElementToBeVisible(writeName);
     writeName.click();
@@ -46,6 +51,9 @@ module.exports = {
     helper.waitElementToBeVisible(newPersonButton);
     newPersonButton.click();
     newPersonTextBox.sendKeys('Gareth');
+    dateOfBirthField.sendKeys('2000-01-01');
+    helper.scrollElementIntoView(contactSexField);
+    contactSexField.click();
     nextButton.click();
     const writeNameHC = element(by.css('[name="/data/health_center/is_name_generated"][value="false"]'));
     helper.waitElementToBeVisible(writeNameHC);

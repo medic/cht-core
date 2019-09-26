@@ -1,16 +1,18 @@
 const _ = require('underscore');
+const path = require('path');
+
 const db = require('./db');
 const ddocExtraction = require('./ddoc-extraction');
-const resourceExtraction = require('./resource-extraction');
-const translations = require('./translations');
-const defaults = require('./config.default.json');
-const settingsService = require('./services/settings');
+const environment = require('./environment');
 const generateXform = require('./services/generate-xform');
-const translationCache = {};
 const logger = require('./logger');
-const viewMapUtils = require('@medic/view-map-utils');
+const resourceExtraction = require('./resource-extraction');
+const settingsService = require('./services/settings');
+const translations = require('./translations');
 const translationUtils = require('@medic/translation-utils');
+const viewMapUtils = require('@medic/view-map-utils');
 
+const translationCache = {};
 let settings = {};
 let transitionsLib;
 
@@ -58,15 +60,17 @@ const getMessage = (value, locale) => {
 };
 
 const loadSettings = function() {
+  const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.json');
+  const defaultConfig = require(pathToDefaultConfig);
   return settingsService.get().then(newSettings => {
     settings = newSettings || {};
     const original = JSON.stringify(settings);
-    _.defaults(settings, defaults);
+    _.defaults(settings, defaultConfig);
     // add any missing permissions
     if (settings.permissions) {
-      _.defaults(settings.permissions, defaults.permissions);
+      _.defaults(settings.permissions, defaultConfig.permissions);
     } else {
-      settings.permissions = defaults.permissions;
+      settings.permissions = defaultConfig.permissions;
     }
     if (JSON.stringify(settings) !== original) {
       logger.info('Updating settings with new defaults');

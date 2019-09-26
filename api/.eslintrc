@@ -9,6 +9,9 @@
   "rules": {
     "no-console": "error"
   },
+  "parserOptions": {
+    "ecmaVersion": 2017,
+  },
   "overrides": [
     {
       "env": {

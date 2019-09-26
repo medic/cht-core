@@ -238,22 +238,22 @@ describe('changes handler', () => {
     /^org.couchdb.user/,
   ];
 
-  beforeAll(done => {
+  beforeAll(async done => {
     // Bootstrap users
-    let promises = utils.saveDoc(parentPlace);
+    await utils.saveDoc(parentPlace);
 
-    users.forEach(user => {
-      promises = promises.then(() => utils.request({
+    for (let user of users) {
+      await utils.request({
         path: '/api/v1/users',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: user
-      }));
-    });
+      });
+    }
 
-    return promises.then(done);
+    done();
   });
 
   afterAll(done =>

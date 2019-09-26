@@ -1,6 +1,8 @@
-const url = require('url'),
-      logger = require('./logger'),
-      { COUCH_URL, UNIT_TEST_ENV } = process.env;
+const path = require('path');
+const url = require('url');
+const logger = require('./logger');
+
+const { UNIT_TEST_ENV, COUCH_URL, MEDIC_API_RESOURCE_PATH, NODE_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
   module.exports = {
@@ -38,4 +40,16 @@ let deployInfo;
 module.exports.setDeployInfo = newDeployInfo => {
   deployInfo = newDeployInfo;
 };
+
 module.exports.getDeployInfo = () => deployInfo;
+
+module.exports.getExtractedResourcesPath = () => {
+  let destination = MEDIC_API_RESOURCE_PATH;
+  if (!destination) {
+    const isProduction = NODE_ENV === 'production';
+    const defaultLocation = path.join(__dirname, `extracted-resources`);
+    destination = isProduction ? '/tmp/extracted-resources' : defaultLocation;
+  }
+
+  return path.resolve(destination);
+};
