@@ -20,7 +20,7 @@ const uploadDocumentsInFolder = async folderPath => {
     });
   
   // Settings doc requires special casing because it does not have an id
-  const settingsDoc = parsedFiles.find(file => file.name === 'settings.json');
+  const settingsDoc = parsedFiles.find(file => file.name === 'settings.doc.json');
   if (settingsDoc) {
     await settingService.update(settingsDoc.doc);
   }

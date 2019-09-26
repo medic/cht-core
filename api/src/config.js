@@ -60,7 +60,7 @@ const getMessage = (value, locale) => {
 };
 
 const loadSettings = function() {
-  const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.json');
+  const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
   const defaultConfig = require(pathToDefaultConfig);
   return settingsService.get().then(newSettings => {
     settings = newSettings || {};

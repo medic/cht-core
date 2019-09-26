@@ -46,7 +46,7 @@ describe('upload default docs', () => {
   });
 
   it('settings doc is uploaded via settings service', async () => {
-    mocks.fs.readdirSync.returns(['settings.json']);
+    mocks.fs.readdirSync.returns(['settings.doc.json']);
     await uploadDefaultDocs.run();
     expect(mocks.fs.readFileSync.callCount).to.eq(1);
     expect(mocks.settingService.update.callCount).to.eq(1);

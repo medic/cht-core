@@ -90,7 +90,7 @@ describe('Resource Extraction', () => {
     expect(isAttachmentExtractable('audio/alert.mp3')).to.eq(true);
     expect(isAttachmentExtractable('js/inbox.js')).to.eq(true);
     expect(isAttachmentExtractable('manifest.json')).to.eq(true);
-    expect(isAttachmentExtractable('default-docs/settings.json')).to.eq(true);
+    expect(isAttachmentExtractable('default-docs/settings.doc.json')).to.eq(true);
     expect(isAttachmentExtractable('templates/inbox.html')).to.eq(true);
 
     expect(isAttachmentExtractable('translations/messages-en.properties')).to.eq(false);
