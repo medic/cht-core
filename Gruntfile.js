@@ -654,7 +654,7 @@ module.exports = function(grunt) {
       },
       'build-config': {
         cmd: () => {
-          const medicConfPath = path.resolve('./node_modules/@kennsippell/medic-conf/src/bin/medic-conf.js');
+          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
           const configPath = path.resolve('./config/default');
           const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];

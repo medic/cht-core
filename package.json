@@ -16,7 +16,6 @@
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "devDependencies": {
-    "@kennsippell/medic-conf": "^3.0.7",
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.7.8",
     "autoprefixer": "^9.6.0",
@@ -60,7 +59,7 @@
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "0.0.32",
     "loose-envify": "^1.4.0",
-    "medic-conf": "^3.0.4",
+    "medic-conf": "^3.0.5",
     "mocha": "^6.1.4",
     "moment": "^2.24.0",
     "node-sass": "^4.12.0",
