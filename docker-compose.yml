@@ -1,0 +1,17 @@
+version: "3.4"
+services: 
+  couchdb:
+    image: couchdb:2
+    ports: 
+      - 5984:5984
+    environment: 
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=pass
+      - NODENAME=127.0.0.1
+
+  couch-setup:
+    # build: .
+    image: waitforcouch
+    environment:
+      - COUCH_HOST=http://couchdb:5984
+      - COUCH_SECURE=http://admin:pass@couchdb:5984
