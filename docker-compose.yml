@@ -10,8 +10,14 @@ services:
       - NODENAME=127.0.0.1
 
   couch-setup:
-    # build: .
-    image: waitforcouch
+    build: .
     environment:
       - COUCH_HOST=http://couchdb:5984
       - COUCH_SECURE=http://admin:pass@couchdb:5984
+  
+  medic-api:
+    build: ./api
+    depends_on:
+      - couchdb
+      - couch-setup
+  
