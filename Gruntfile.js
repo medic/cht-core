@@ -651,6 +651,15 @@ module.exports = function(grunt) {
                  'rm inbox.tmp.js && ' +
                  'echo "Envify complete"';
         }
+      },
+      'build-config': {
+        cmd: () => {
+          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
+          const configPath = path.resolve('./config/default');
+          const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
+          const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
+          return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
+        }
       }
     },
     watch: {
@@ -987,6 +996,7 @@ module.exports = function(grunt) {
     'exec:set-horticulturalist-metadata',
     'build-admin',
     'build-ddoc',
+    'exec:build-config',
   ]);
 
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [

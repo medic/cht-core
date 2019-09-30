@@ -29,7 +29,7 @@ describe('Navigation tests : ', () => {
 
   it('should open Analytics or Targets tab', () => {
     commonElements.goToAnalytics();
-    expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
+    expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics/targets');
   });
 
   it('should open Configuration wizard', () => {

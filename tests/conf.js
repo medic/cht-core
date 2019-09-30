@@ -1,12 +1,12 @@
 const fs = require('fs');
+const path = require('path');
+const request = require('request-promise-native');
 const utils = require('./utils');
 const constants = require('./constants');
 const auth = require('./auth')();
-const contactForms = require('./contact-forms.json');
 const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
-const request = require('request-promise-native');
 
 const baseConfig = {
   params:{
@@ -122,14 +122,13 @@ const login = browser => {
 };
 
 const setupSettings = () => {
-  return utils.saveDocs(contactForms).then(() => {
-    // saves the standard contact forms
-    return utils.request({
-      path: '/api/v1/settings',
-      method: 'PUT',
-      body: JSON.stringify({ setup_complete: true }),
-      headers: { 'Content-Type': 'application/json' }
-    });
+  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
+  const defaultAppSettings = fs.readFileSync(pathToDefaultAppSettings).toString();
+  return utils.request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: defaultAppSettings,
+    headers: { 'Content-Type': 'application/json' },
   });
 };
 

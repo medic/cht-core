@@ -896,7 +896,7 @@ describe('reminders', () => {
         });
         assert.equal(bulkDocsArgs[0].tasks[0].messages.length, 1);
         assert.deepInclude(bulkDocsArgs[0].tasks[0].messages[0], {
-          message: 'Please send form for doc 1 tier2 1-1970',
+          message: `Please send form for doc 1 tier2 1-${date.format('YYYY')}`,
           to: '1234'
         });
         assert.deepEqual(bulkDocsArgs[0].contact, { _id: 'contact1' });
@@ -911,7 +911,7 @@ describe('reminders', () => {
         });
         assert.equal(bulkDocsArgs[1].tasks[0].messages.length, 1);
         assert.deepInclude(bulkDocsArgs[1].tasks[0].messages[0], {
-          message: 'Please send form for doc 2 tier2 1-1970',
+          message: `Please send form for doc 2 tier2 1-${date.format('YYYY')}`,
           to: '4567'
         });
         assert.deepEqual(bulkDocsArgs[1].contact, { _id: 'contact2' });
