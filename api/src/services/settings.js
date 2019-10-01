@@ -49,7 +49,7 @@ module.exports = {
    * @param replace If true, recursively merges the properties.
    */
   update: (body, replace) => {
-    const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.json');
+    const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
     return getDoc()
