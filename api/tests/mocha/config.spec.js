@@ -36,15 +36,6 @@ describe('Config', () => {
   });
 
   describe('load', () => {
-    it('calls back with error when db errors', () => {
-      db.medic.query.resolves({ rows: [] });
-      settingsService.get.returns(Promise.reject('someError'));
-      return config.load().catch(err => {
-        chai.expect(err).to.equal('someError');
-        chai.expect(settingsService.update.callCount).to.equal(0);
-      });
-    });
-
     it('loads app settings combining with default config, loads views into ViewMaps, loads translations', () => {
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get
@@ -53,12 +44,6 @@ describe('Config', () => {
       db.medic.query.resolves({ rows: [] });
 
       return config.load().then(() => {
-        chai.expect(settingsService.get.callCount).to.equal(1);
-        chai.expect(settingsService.update.callCount).to.equal(1);
-        chai
-          .expect(settingsService.update.args[0][0])
-          .to.deep.equal(_.extend({ foo: 'bar' }, defaults));
-
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
         chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
@@ -78,23 +63,6 @@ describe('Config', () => {
             }).callCount
           )
           .to.equal(1);
-      });
-    });
-
-    it('does not update ddoc if no changes are detected', () => {
-      const ddoc = {
-        _id: '_design/medic',
-        app_settings: defaults,
-      };
-
-      settingsService.get.resolves(defaults);
-      db.medic.query.resolves({ rows: [] });
-      db.medic.get.withArgs('_design/medic').callsArgWith(1, null, ddoc);
-
-      return config.load().then(() => {
-        chai.expect(db.medic.get.callCount).to.equal(1);
-        chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
-        chai.expect(settingsService.update.callCount).to.equal(0);
       });
     });
 
