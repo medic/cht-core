@@ -59,24 +59,10 @@ const getMessage = (value, locale) => {
   return result;
 };
 
-const loadSettings = function() {
-  const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
-  const defaultConfig = require(pathToDefaultConfig);
-  return settingsService.get().then(newSettings => {
-    settings = newSettings || {};
-    const original = JSON.stringify(settings);
-    _.defaults(settings, defaultConfig);
-    // add any missing permissions
-    if (settings.permissions) {
-      _.defaults(settings.permissions, defaultConfig.permissions);
-    } else {
-      settings.permissions = defaultConfig.permissions;
-    }
-    if (JSON.stringify(settings) !== original) {
-      logger.info('Updating settings with new defaults');
-      return settingsService.update(settings);
-    }
-  });
+const loadSettings = () => {
+  return settingsService.update({})
+    .then(() => settingsService.get())
+    .then(newSettings => settings = newSettings);
 };
 
 const initTransitionLib = () => {
