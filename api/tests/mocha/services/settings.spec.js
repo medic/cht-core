@@ -5,7 +5,7 @@ require('chai').should();
 const service = require('../../../src/services/settings'),
       db = require('../../../src/db'),
       environment = require('../../../src/environment'),
-      defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.json');
+      defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
 
 let settings,
     replace;
