@@ -61,11 +61,6 @@ const settings = {
 
 describe('extract-person-contacts migration', function() {
 
-  beforeEach(() => {
-    const resourceDirectory = path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments');
-    sinon.stub(environment, 'getExtractedResourcesPath').returns(resourceDirectory);
-  });
-
   afterEach(function() {
     sinon.restore();
     return utils.tearDown();
