@@ -128,9 +128,11 @@ module.exports = [
     actions: [{
       type: 'report',
       form: 'pregnancy_facility_visit_reminder',
-      label: 'Pregnancy facility visit reminder'
-    }
-    ],
+      label: 'Pregnancy facility visit reminder',
+      modifyContent: function (content, contact, report) {
+        content.source_visit_date = getField(report, 't_pregnancy_follow_up_date');
+      }
+    }],
     events: [{
       id: 'pregnancy-facility-visit-reminder',
       start: 3,

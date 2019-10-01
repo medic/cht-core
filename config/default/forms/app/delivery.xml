@@ -625,10 +625,10 @@
             <value>The following tasks will appear:</value>
           </text>
           <text id="/delivery/summary/r_fup_danger_sign:label">
-            <value>Please conduct a danger sign follow-up in 3 days.</value>
+            <value>Please conduct a danger sign follow-up for the mother in 3 days.</value>
           </text>
           <text id="/delivery/summary/r_fup_danger_sign_baby:label">
-            <value>Please conduct a baby danger sign follow-up in 3 days.</value>
+            <value>Please conduct a danger sign follow-up for the baby in 3 days.</value>
           </text>
           <text id="/delivery/summary/r_mom_alive_unwell:label">
             <value>Mom is alive and unwell</value>
@@ -673,10 +673,7 @@
             <value>PNC Visits</value>
           </text>
           <text id="/delivery/summary/r_pnc_visits_add:label">
-            <value>Additional PNC visits completed:</value>
-          </text>
-          <text id="/delivery/summary/r_pnc_visits_additional:label">
-            <value><output value=" /delivery/pnc_visits/pnc_visits_additional "/></value>
+            <value>Additional PNC visits completed: <output value=" /delivery/pnc_visits/pnc_visits_additional "/></value>
           </text>
           <text id="/delivery/summary/r_pnc_visits_completed:label">
             <value>PNC visits completed so far:</value>
@@ -1746,9 +1743,6 @@
             <value>-</value>
           </text>
           <text id="/delivery/summary/r_pnc_visits_add:label">
-            <value>-</value>
-          </text>
-          <text id="/delivery/summary/r_pnc_visits_additional:label">
             <value>-</value>
           </text>
           <text id="/delivery/summary/r_pnc_visits_completed:label">
@@ -2830,9 +2824,6 @@
           <text id="/delivery/summary/r_pnc_visits_add:label">
             <value>-</value>
           </text>
-          <text id="/delivery/summary/r_pnc_visits_additional:label">
-            <value>-</value>
-          </text>
           <text id="/delivery/summary/r_pnc_visits_completed:label">
             <value>-</value>
           </text>
@@ -3912,9 +3903,6 @@
           <text id="/delivery/summary/r_pnc_visits_add:label">
             <value>-</value>
           </text>
-          <text id="/delivery/summary/r_pnc_visits_additional:label">
-            <value>-</value>
-          </text>
           <text id="/delivery/summary/r_pnc_visits_completed:label">
             <value>-</value>
           </text>
@@ -4080,7 +4068,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-09-04 07:45:50">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-09-26 08:34:57">
           <inputs>
             <meta>
               <location>
@@ -4322,7 +4310,6 @@
             <r_pnc_visit_6weeks/>
             <r_pnc_visit_none/>
             <r_pnc_visits_add/>
-            <r_pnc_visits_additional/>
             <r_referrals/>
             <r_refer_clinic_immediately/>
             <r_refer_danger_sign/>
@@ -4774,17 +4761,17 @@ selected(../../death_info_woman/woman_death_birth, 'yes')" type="string"/>
       <bind nodeset="/delivery/summary/r_mom_convulsion" readonly="true()" relevant="selected(../../pnc_danger_sign_check/convulsion, 'yes')" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visits" readonly="true()" relevant="selected(../../condition/woman_outcome, 'alive_well') or
 selected(../../condition/woman_outcome, 'alive_unwell') or
-../delivery_outcome/babies_alive_num &gt; 0" type="string"/>
+../delivery_outcome/babies_alive_num &gt; 0 or
+../../pnc_visits/pnc_visits_additional != ''" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visits_completed" readonly="true()" relevant="selected(../../condition/woman_outcome, 'alive_well') or
 selected(../../condition/woman_outcome, 'alive_unwell') or
-../delivery_outcome/babies_alive_num &gt; 0" type="string"/>
+../../delivery_outcome/babies_alive_num &gt; 0" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visit_24hrs" readonly="true()" relevant="selected(../../pnc_visits/pnc_visits_attended, 'within_24_hrs')" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visit_3days" readonly="true()" relevant="selected(../../pnc_visits/pnc_visits_attended, '3_days')" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visit_7days" readonly="true()" relevant="selected(../../pnc_visits/pnc_visits_attended, '7_days')" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visit_6weeks" readonly="true()" relevant="selected(../../pnc_visits/pnc_visits_attended, '6_weeks')" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visit_none" readonly="true()" relevant="selected(../../pnc_visits/pnc_visits_attended, 'none')" type="string"/>
       <bind nodeset="/delivery/summary/r_pnc_visits_add" readonly="true()" relevant="../../pnc_visits/pnc_visits_additional != ''" type="string"/>
-      <bind nodeset="/delivery/summary/r_pnc_visits_additional" readonly="true()" relevant="../../pnc_visits/pnc_visits_additional != ''" type="string"/>
       <bind nodeset="/delivery/summary/r_referrals" readonly="true()" relevant="not(selected(../../condition/woman_outcome, 'deceased')) or
 ../../delivery_outcome/babies_alive_num &gt; 0" type="string"/>
       <bind nodeset="/delivery/summary/r_refer_clinic_immediately" readonly="true()" relevant="../../pnc_danger_sign_check/r_pnc_danger_sign_present = 'yes' or
@@ -5457,9 +5444,6 @@ selected(../../condition/woman_outcome, 'alive_unwell')" type="string"/>
       </input>
       <input ref="/delivery/summary/r_pnc_visits_add">
         <label ref="jr:itext('/delivery/summary/r_pnc_visits_add:label')"/>
-      </input>
-      <input appearance="li" ref="/delivery/summary/r_pnc_visits_additional">
-        <label ref="jr:itext('/delivery/summary/r_pnc_visits_additional:label')"/>
       </input>
       <input appearance="h1 lime" ref="/delivery/summary/r_referrals">
         <label ref="jr:itext('/delivery/summary/r_referrals:label')"/>

@@ -87,7 +87,7 @@
             <value>Did <output value=" /pnc_danger_sign_follow_up_mother/patient_short_name "/> visit the health facility as recommended?</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_mother/danger_signs:label">
-            <value>Danger Sign Follow Up</value>
+            <value>Danger Sign Follow-up - Mother</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_mother/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
@@ -143,7 +143,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-09-17 11:30:07">
+        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-09-25 10:51:59">
           <inputs>
             <meta>
               <location>

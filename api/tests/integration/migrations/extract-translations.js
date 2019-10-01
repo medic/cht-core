@@ -1,17 +1,8 @@
-const path = require('path');
-const sinon = require('sinon');
-
-const environment = require('../../../src/environment');
-const utils = require('./utils');
+var utils = require('./utils');
 
 describe('extract-translations', function() {
-  beforeEach(() => {
-    sinon.stub(environment, 'getExtractedResourcesPath').returns(path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments'));
-  });
-
-  afterEach(() => {
-    utils.tearDown();
-    sinon.restore();
+  afterEach(function() {
+    return utils.tearDown();
   });
 
   it('should update existing translations and remove them from app_settings', function() {

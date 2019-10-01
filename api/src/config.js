@@ -1,7 +1,9 @@
 const _ = require('underscore');
+const path = require('path');
 
 const db = require('./db');
 const ddocExtraction = require('./ddoc-extraction');
+const environment = require('./environment');
 const generateXform = require('./services/generate-xform');
 const logger = require('./logger');
 const resourceExtraction = require('./resource-extraction');
@@ -63,6 +65,7 @@ const loadSettings = function() {
   return settingsService.get().then(newSettings => {
     settings = newSettings || {};
     const original = JSON.stringify(settings);
+    _.defaults(settings, defaultConfig);
     // add any missing permissions
     if (settings.permissions) {
       _.defaults(settings.permissions, defaultConfig.permissions);

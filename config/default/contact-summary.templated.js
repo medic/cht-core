@@ -2,9 +2,9 @@ const moment = require('moment');
 const extras = require('./contact-summary-extras');
 const { today, MAX_DAYS_IN_PREGNANCY, isHighRiskPregnancy, getNewestReport, getSubsequentPregnancyFollowUps,
   getSubsequentDeliveries, isAlive, isReadyForNewPregnancy, isReadyForDelivery, isActivePregnancy, countANCFacilityVisits,
-  getAllRiskFactorCodes, getRiskFactorTextFromCodes, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
+  getAllRiskFactors, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
   getMostRecentLMPDateForPregnancy, getMostRecentEDDForPregnancy, getDeliveryDate, getFormArraySubmittedInWindow,
-  getRecentANCVisitWithEvent, getRiskFactorExtra, getField } = extras;
+  getRecentANCVisitWithEvent, getAllRiskFactorExtra, getField } = extras;
 
 //contact, reports, lineage are globally available for contact-summary
 const thisContact = contact;
@@ -21,7 +21,7 @@ const fields = [
   { appliesToType: 'person', label: 'patient_id', value: thisContact.patient_id, width: 4 },
   { appliesToType: 'person', label: 'contact.age', value: thisContact.date_of_birth, width: 4, filter: 'age' },
   { appliesToType: 'person', label: 'contact.sex', value: 'contact.sex.' + thisContact.sex, translate: true, width: 4 },
-  { appliesToType: 'person', label: 'contact.phone', value: thisContact.phone, width: 4 },
+  { appliesToType: 'person', label: 'person.field.phone', value: thisContact.phone, width: 4 },
   { appliesToType: 'person', label: 'person.field.alternate_phone', value: thisContact.phone_alternate, width: 4 },
   { appliesToType: 'person', label: 'External ID', value: thisContact.external_id, width: 4 },
   { appliesToType: 'person', label: 'contact.parent', value: thisLineage, filter: 'lineage' },
@@ -44,16 +44,15 @@ const cards = [
     appliesIf: function (report) { return isActivePregnancy(thisContact, allReports, report); },
     fields: function (report) {
       const fields = [];
-      const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(allReports, report));
-      const riskFactorCustom = getRiskFactorExtra(report);
-      if (riskFactorCustom) { riskFactors.push(riskFactorCustom); }
+      const riskFactors = getAllRiskFactors(allReports, report);
+      const riskFactorsCustom = getAllRiskFactorExtra(allReports, report);
+      //if (riskFactorCustom) { riskFactors.push(riskFactorCustom); }
       const dangerSigns = getLatestDangerSignsForPregnancy(allReports, report);
 
       const highRisk = isHighRiskPregnancy(allReports, report);
 
       const mostRecentANC = getNewestReport(allReports, ['pregnancy', 'pregnancy_home_visit']);
       const mostRecentANCDate = moment(mostRecentANC.reported_date);
-      const weeksSinceLastANC = today.diff(mostRecentANCDate, 'weeks');
       const lmp_date = getMostRecentLMPDateForPregnancy(allReports, report);
       const edd_ms = getMostRecentEDDForPregnancy(allReports, report);
       const nextAncVisitDate = getNextANCVisitDate(allReports, report);
@@ -68,8 +67,6 @@ const cards = [
             lmp_approx = getField(followUpReport, 'lmp_method_approx');
           }
         }
-        const riskFactorCustomNew = getRiskFactorExtra(followUpReport);
-        if (riskFactorCustomNew) { riskFactors.push(riskFactorCustomNew); }
       });
 
       const migratedReport = getRecentANCVisitWithEvent(allReports, report, 'migrated');
@@ -88,18 +85,28 @@ const cards = [
       );
 
       if (highRisk) {
+        let riskValue = '';
+        if (!riskFactors && riskFactorsCustom) {
+          riskValue = riskFactorsCustom.join(', ');
+        }
+        else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
+          riskValue = 'contact.profile.risk.multiple';
+        }
+        else {
+          riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
+        }
         fields.push(
-          { label: 'contact.profile.risk.high', value: riskFactors.join('; '), icon: 'icon-risk', width: 6 }
+          { label: 'contact.profile.risk.high', value: riskValue, translate: true, icon: 'icon-risk', width: 6 }
         );
       }
 
       if (dangerSigns.length > 0) {
-        fields.push({ label: 'contact.profile.danger_signs.current', value: dangerSigns.join(', '), width: 6 });
+        fields.push({ label: 'contact.profile.danger_signs.current', value: dangerSigns.length > 1 ? 'contact.profile.danger_sign.multiple' : 'contact.profile.danger_sign.' + dangerSigns[0], translate: true, width: 6 });
       }
 
       fields.push(
         { label: 'contact.profile.visit', value: 'contact.profile.visits.of', context: { count: countANCFacilityVisits(allReports, report), total: 8 }, translate: true, width: 6 },
-        { label: 'contact.profile.last_visited', value: weeksSinceLastANC + (weeksSinceLastANC === 1 ? ' week ago' : ' weeks ago'), width: 6 }
+        { label: 'contact.profile.last_visited', value: mostRecentANCDate.valueOf(), filter: 'relativeDay', width: 6 }
       );
 
       if (nextAncVisitDate && nextAncVisitDate.isSameOrAfter(today)) {
@@ -116,28 +123,21 @@ const cards = [
       let hivTested = getField(report, 'hiv_status_known');
       let dewormingMedicationReceived = getField(report, 'deworming_med_received');
       let ttReceived = getField(report, 'tt_received');
-      const riskFactorCodes = getAllRiskFactorCodes(allReports, report);
-      const riskFactorsCustom = getRiskFactorExtra(report) ? [getRiskFactorExtra(report)] : [];
+      const riskFactorCodes = getAllRiskFactors(allReports, report);
+      const riskFactorsCustom = getAllRiskFactorExtra(allReports, report);
       let pregnancyFollowupDateRecent = getField(report, 't_pregnancy_follow_up_date');
 
-      let reportDate = report.reported_date;
       const followUps = getSubsequentPregnancyFollowUps(allReports, report);
       followUps.forEach(function (followUpReport) {
-        if (followUpReport.reported_date > reportDate) {
-          reportDate = followUpReport.reported_date;
-          if (getField(followUpReport, 'lmp_updated') === 'yes') {
-            lmpDate = getField(followUpReport, 'lmp_date_8601');
-            lmpMethodApprox = getField(followUpReport, 'lmp_method_approx');
-          }
-          hivTested = getField(followUpReport, 'hiv_status_known');
-          dewormingMedicationReceived = getField(followUpReport, 'deworming_med_received');
-          ttReceived = getField(followUpReport, 'tt_received');
-          if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes') { pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date'); }
+        if (getField(followUpReport, 'lmp_updated') === 'yes') {
+          lmpDate = getField(followUpReport, 'lmp_date_8601');
+          lmpMethodApprox = getField(followUpReport, 'lmp_method_approx');
         }
-        const riskFactorCustomNew = getRiskFactorExtra(followUpReport);
-        if (riskFactorCustomNew) {
-          riskFactorsCustom.push(riskFactorCustomNew);
-        }
+        hivTested = getField(followUpReport, 'hiv_status_known');
+        dewormingMedicationReceived = getField(followUpReport, 'deworming_med_received');
+        ttReceived = getField(followUpReport, 'tt_received');
+        if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes') { pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date'); }
+
       });
       ctx.lmp_date_8601 = lmpDate;
       ctx.lmp_method_approx = lmpMethodApprox;
@@ -290,13 +290,23 @@ const cards = [
         fields.push(
           { label: 'contact.profile.anc_visit', value: ancFacilityVisits, width: 3 }
         );
-        const riskFactors = getRiskFactorTextFromCodes(getAllRiskFactorCodes(allReports, relevantPregnancy));
-        const riskFactorCustom = getRiskFactorExtra(relevantPregnancy);
-        if (riskFactorCustom) { riskFactors.push(riskFactorCustom); }
+
         const highRisk = isHighRiskPregnancy(allReports, relevantPregnancy);
         if (highRisk) {
+          let riskValue = '';
+          const riskFactors = getAllRiskFactors(allReports, relevantPregnancy);
+          const riskFactorsCustom = getAllRiskFactorExtra(allReports, relevantPregnancy);
+          if (!riskFactors && riskFactorsCustom) {
+            riskValue = riskFactorsCustom.join(', ');
+          }
+          else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
+            riskValue = 'contact.profile.risk.multiple';
+          }
+          else {
+            riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
+          }
           fields.push(
-            { label: 'contact.profile.risk.high', value: riskFactors.join('; '), icon: 'icon-risk', width: 6 }
+            { label: 'contact.profile.risk.high', value: riskValue, translate: true, icon: 'icon-risk', width: 6 }
           );
         }
       }

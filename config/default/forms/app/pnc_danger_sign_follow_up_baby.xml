@@ -117,7 +117,7 @@
             <value>Yellow skin color</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/danger_signs:label">
-            <value>Danger Sign Follow Up</value>
+            <value>Danger Sign Follow-up - Baby</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
@@ -173,7 +173,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-09-17 11:30:19">
+        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-09-25 10:47:08">
           <inputs>
             <meta>
               <location>
