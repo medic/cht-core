@@ -55,9 +55,12 @@ You will need to install the following:
 - [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) 2.x
 - xsltproc
-- python 2.7 
-- Java JDK (for running end-to-end tests only)
-- Docker (for running end-to-end tests only)
+- python 2.7
+
+To run end-to-end tests you will also need:
+
+- Java JDK
+- Docker
 
 Installation instructions for these tools differ heavily based on your operating system and aren't covered here.
 
