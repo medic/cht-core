@@ -4,7 +4,6 @@ const _ = require('underscore'),
   sinon = require('sinon'),
   config = require('../../src/config'),
   db = require('../../src/db'),
-  logger = require('../../src/logger'),
   environment = require('../../src/environment'),
   ddocExtraction = require('../../src/ddoc-extraction'),
   defaults = require('./../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json'),
@@ -148,7 +147,6 @@ describe('Config', () => {
       on.callCount.should.equal(2);
       const changeCallback = on.args[0][1];
 
-      logger.info(changeCallback);
       changeCallback(change);
       chai.expect(db.medic.query.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
