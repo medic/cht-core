@@ -258,7 +258,7 @@ Looking for other ways to help? You can also:
 * Try to reproduce issues and help with troubleshooting
 * Or share a new idea or question with us!
 
-The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). You can even [request access](mailto:info@communityhealthtoolkit.org) to our community forum.
+The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Community Forum](https://forum.communityhealthtoolkit.org).
 
 For more information check out our [contributor guidelines](CONTRIBUTING.md).
 
