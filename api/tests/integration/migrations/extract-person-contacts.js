@@ -1,9 +1,11 @@
 const sinon = require('sinon');
+const path = require('path');
 const utils = require('./utils');
 
 const ANY_STRING = new RegExp('^.*$');
 const ANY_NUMBER = new RegExp('^[0-9]+(\\.[0-9]*)?$');
 
+const environment = require('../../../src/environment');
 const config = require('../../../src/config');
 
 const settings = {
