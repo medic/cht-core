@@ -1,3 +1,4 @@
+const path = require('path');
 const sinon = require('sinon');
 
 const environment = require('../../../src/environment');
