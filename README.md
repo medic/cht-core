@@ -53,7 +53,16 @@ You will need to install the following:
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
-- [CouchDB](https://couchdb.apache.org) v2.x
+- [CouchDB](https://couchdb.apache.org) 2.x
+- xsltproc
+- python 2.7
+
+To run end-to-end tests you will also need:
+
+- Java JDK
+- Docker
+
+Installation instructions for these tools differ heavily based on your operating system and aren't covered here.
 
 ### Setup CouchDB on a single node
 
