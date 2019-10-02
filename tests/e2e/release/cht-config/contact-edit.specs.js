@@ -1,5 +1,4 @@
 const utils = require('../../../utils');
-const helper = require('../../../helper');
 const commonElements = require('../../../page-objects/common/common.po.js');
 const contactPage = require('../../../page-objects/contacts/contacts.po.js');
 const uuid = require('uuid');
