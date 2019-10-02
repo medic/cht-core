@@ -24,7 +24,8 @@ const medicLogo = element(by.className('logo-full')),
   settings = element.all(by.css('.configuration a>span')),
   // Report bug
   bugDescriptionField = element(by.css('[placeholder="Bug description"]')),
-  modalFooter = element(by.css('.modal-footer'));
+  modalFooter = element(by.css('.modal-footer')),
+  deleteButton = $('[ng-show="!status.processing"]');
 
 module.exports = {
   calm: () => {
@@ -151,6 +152,11 @@ module.exports = {
     hamburgerMenu.click();
     helper.waitUntilReady(hamburgerMenuOptions);
   },
+
+  deleteRecord: async () => {
+    await helper.waitUntilReady(deleteButton);
+    await deleteButton.click();
+  }
 };
 
 function openSubmenu(menuName) {
