@@ -8,14 +8,23 @@ angular.module('controllers').controller('FormsXmlCtrl',
     AddAttachment,
     DB,
     FileReader,
-    JsonParse,
-    XmlForms
+    JsonParse
   ) {
 
     'use strict';
     'ngInject';
 
     $scope.status = { uploading: false };
+
+    const getForms = function() {
+      const options = {
+        include_docs: true,
+        key: ['form']
+      };
+      return DB()
+        .query('medic-client/doc_by_type', options)
+        .then(res => res.rows.map(row => row.doc));
+    };
 
     var uploadFinished = function(err) {
       if (err) {
@@ -108,7 +117,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
         .catch(uploadFinished);
     };
 
-    XmlForms.list()
+    getForms()
       .then(function(forms) {
         $scope.xForms = forms;
       })
