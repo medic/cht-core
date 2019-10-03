@@ -15,7 +15,7 @@ const rows = element.all(by.className('content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
 const peopleRows = element.all(by.repeater('group in contactsContentCtrl.selectedContact.children'));
-const deleteContact = $('[ng-click="deleteDoc(actionBarCtrl.selectedContactDoc)"]');
+const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 
 module.exports = {
   peopleRows,

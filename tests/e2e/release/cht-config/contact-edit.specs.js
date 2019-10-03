@@ -11,7 +11,7 @@ const personId = uuid.v4();
 
 describe('Editing contacts with the CHT config', function() {
   beforeAll(done => {
-    return Promise.all([utils.saveDocs(expectedDocs)])
+    utils.saveDocs(expectedDocs)
       .then(() => done())
       .catch(done.fail);
   });
@@ -57,7 +57,7 @@ describe('Editing contacts with the CHT config', function() {
     commonElements.goToPeople();
     contactPage.selectLHSRowByText(healtchCenterName);
     contactPage.deleteContactByName(expectedDocs[2].name);
-    commonElements.deleteRecord();
+    commonElements.confirmDelete();
     contactPage.selectLHSRowByText(healtchCenterName);
     expect(contactPage.peopleRows.count()).toBe(0);
   });

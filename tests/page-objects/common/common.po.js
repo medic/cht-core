@@ -25,7 +25,9 @@ const medicLogo = element(by.className('logo-full')),
   // Report bug
   bugDescriptionField = element(by.css('[placeholder="Bug description"]')),
   modalFooter = element(by.css('.modal-footer')),
-  deleteButton = $('[ng-show="!status.processing"]');
+  deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
+
+
 
 module.exports = {
   calm: () => {
@@ -153,7 +155,7 @@ module.exports = {
     helper.waitUntilReady(hamburgerMenuOptions);
   },
 
-  deleteRecord: async () => {
+  confirmDelete: async () => {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
   }
