@@ -14,10 +14,15 @@ const contactName = element(by.css('.heading-content'));
 const rows = element.all(by.className('content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
-const peopleRows = element.all(by.repeater('group in contactsContentCtrl.selectedContact.children'));
+const peopleRows = element.all(by.repeater('child in group.contacts'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
+const editContact = $('[href$="/edit"]');
+const contactSelect = element(by.className('select2-selection__rendered'));
 
 module.exports = {
+  contactRowById: (id) => {
+    return element(by.css(`[href="#contacts/${id}`));
+  },
   peopleRows,
   contactName,
   getSubmitButton: () => submitButton,
@@ -111,6 +116,15 @@ module.exports = {
     peopleRow.click();
     helper.waitUntilReady(deleteContact);
     deleteContact.click();
+  },
+
+  selectNewPrimaryContact: async contactName => {
+    helper.waitUntilReady(editContact);
+    await editContact.click();
+    helper.waitUntilReady(contactSelect);
+    contactSelect.click();
+    helper.searchSelect2(contactName, 1, '', contactName).click();
+    await submitButton.click();
   }
 };
 

@@ -92,57 +92,6 @@ describe('Send message', () => {
     helper.waitElementToBeVisible(element(by.id('send-message')), 5000);
   };
 
-  const findSelect2Entry = (selector, expectedValue) => {
-    return element
-      .all(by.css('.select2-results__option' + selector))
-      .filter(item => {
-        return item
-          .getText()
-          .then(text => {
-            return text === expectedValue;
-          })
-          .catch(err => {
-            // item may have been detached from the page, so whatever it's invalid,
-            // we ignore it. Log the error just for kicks.
-            console.log('Caught and ignoring an error trying to getText', err);
-          });
-      });
-  };
-
-  const searchSelect2 = (
-    searchText,
-    totalExpectedResults,
-    entrySelector,
-    entryText
-  ) => {
-    element(by.css('#send-message input.select2-search__field')).sendKeys(
-      searchText
-    );
-
-    browser.wait(() => {
-      return protractor.promise
-        .all([
-          findSelect2Entry(entrySelector, entryText)
-            .count()
-            .then(utils.countOf(1)),
-          element
-            .all(by.css('.select2-results__option.loading-results'))
-            .count()
-            .then(utils.countOf(0)),
-          element
-            .all(by.css('.select2-results__option'))
-            .count()
-            .then(utils.countOf(totalExpectedResults)),
-        ])
-        .then(results => {
-          // My kingdom for results.reduce(&&);
-          return results[0] && results[1] && results[2];
-        });
-    }, 10000);
-
-    return findSelect2Entry(entrySelector, entryText).first();
-  };
-
   const enterCheckAndSelect = (
     searchText,
     totalExpectedResults,
@@ -155,7 +104,7 @@ describe('Send message', () => {
       existingEntryCount
     );
 
-    const entry = searchSelect2(
+    const entry = helper.searchSelect2(
       searchText,
       totalExpectedResults,
       entrySelector,

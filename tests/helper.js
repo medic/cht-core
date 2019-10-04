@@ -1,5 +1,6 @@
 const fs = require('fs'),
-  EC = protractor.ExpectedConditions;
+  EC = protractor.ExpectedConditions,
+  utils = require('./utils');
 
 function writeScreenShot(data, filename) {
   const stream = fs.createWriteStream('./tests/results/' + filename);
@@ -243,9 +244,56 @@ module.exports = {
 
   waitUntilReady: elm => {
     return (
+      browser.wait(EC.presenceOf(elm), 10000) &&
       browser.wait(() => elm.isPresent(), 10000) &&
       browser.wait(() => elm.isDisplayed(), 12000)
     );
   },
   handleUpdateModal,
+
+  findSelect2Entry: (selector, expectedValue) => {
+    return element
+      .all(by.css('.select2-results__option' + selector))
+      .filter(item => {
+        return item
+          .getText()
+          .then(text => {
+            return text.includes(expectedValue);
+          })
+          .catch(err => {
+            // item may have been detached from the page, so whatever it's invalid,
+            // we ignore it. Log the error just for kicks.
+            console.log('Caught and ignoring an error trying to getText', err);
+          });
+      });
+  },
+
+  searchSelect2: ( searchText, totalExpectedResults, entrySelector, entryText) => {
+    element(by.css('input.select2-search__field')).sendKeys(
+      searchText
+    );
+
+    browser.wait(() => {
+      return protractor.promise
+        .all([
+          module.exports.findSelect2Entry(entrySelector, entryText)
+            .count()
+            .then(utils.countOf(1)),
+          element
+            .all(by.css('.select2-results__option.loading-results'))
+            .count()
+            .then(utils.countOf(0)),
+          element
+            .all(by.css('.select2-results__option'))
+            .count()
+            .then(utils.countOf(totalExpectedResults)),
+        ])
+        .then(results => {
+          // My kingdom for results.reduce(&&);
+          return results[0] && results[1] && results[2];
+        });
+    }, 10000);
+
+    return module.exports.findSelect2Entry(entrySelector, entryText).first();
+  }
 };
