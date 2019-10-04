@@ -10,7 +10,7 @@ const healtchCenterName = uuid.v4();
 const personName = uuid.v4();
 const personId = uuid.v4();
 const primaryPersonId = uuid.v4();
-const primaryHealthCenterId = uuid.v4()
+const primaryHealthCenterId = uuid.v4();
 
 describe('Editing contacts with the CHT config', function() {
   beforeAll(done => {
