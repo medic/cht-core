@@ -9,6 +9,8 @@ const healthCenterId = uuid.v4();
 const healtchCenterName = uuid.v4();
 const personName = uuid.v4();
 const personId = uuid.v4();
+const primaryPersonId = uuid.v4();
+const primaryHealthCenterId = uuid.v4()
 
 describe('Editing contacts with the CHT config', function() {
   beforeAll(done => {
@@ -16,8 +18,6 @@ describe('Editing contacts with the CHT config', function() {
       .then(() => done())
       .catch(done.fail);
   });
-
-  afterEach(utils.afterEach);
 
   const expectedDocs = [
     {
@@ -46,7 +46,7 @@ describe('Editing contacts with the CHT config', function() {
       type: 'person',
       _id: personId,
       name: personName,
-      date_of_birth: '2000-02-01',
+      date_of_birth: '1999-02-01',
       sex: 'female',
       role: 'patient',
       parent: {
@@ -55,14 +55,38 @@ describe('Editing contacts with the CHT config', function() {
       }
     },
     {
+      _id: primaryHealthCenterId,
+      parent: {
+        _id: districtId
+      },
+      name: uuid.v4(),
+      type: 'health_center',
+      reported_date: Date.now(),
+      contact: {
+        _id: primaryPersonId,
+      }
+    },
+    {
       type: 'person',
-      _id: uuid.v4(),
+      _id: primaryPersonId,
       name: uuid.v4(),
       date_of_birth: '1989-02-01',
       sex: 'female',
       role: 'patient',
       parent: {
-        _id: healthCenterId,
+        _id: primaryHealthCenterId,
+        parent: { _id: districtId }
+      }
+    },
+    {
+      type: 'person',
+      _id: uuid.v4(),
+      name: uuid.v4(),
+      date_of_birth: '1979-02-01',
+      sex: 'female',
+      role: 'patient',
+      parent: {
+        _id: primaryHealthCenterId,
         parent: { _id: districtId }
       }
     }
@@ -78,9 +102,10 @@ describe('Editing contacts with the CHT config', function() {
   });
 
   it('should update the primary contact to a new person', async function(){
-    const expectedContact = expectedDocs[3];
+    const expectedContact = expectedDocs[5];
+    const healthCenter = expectedDocs[3];
     commonElements.goToPeople();
-    contactPage.selectLHSRowByText(healtchCenterName);
+    contactPage.selectLHSRowByText(healthCenter.name);
     contactPage.selectNewPrimaryContact(expectedContact.name);  
     helper.waitUntilReady(contactPage.contactRowById(expectedContact._id));
     const text = await contactPage.peopleRows.first().getText();
