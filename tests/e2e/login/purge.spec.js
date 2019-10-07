@@ -268,6 +268,7 @@ describe('Purging on login', () => {
     });
 
     utils.resetBrowser();
+    commonElements.calm();
     helper.waitForAngularComplete();
 
     getPurgeLog().then(result => {
