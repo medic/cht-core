@@ -438,7 +438,7 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh) =>
+  updateSettings: (updates, ignoreRefresh = false) =>
     updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();

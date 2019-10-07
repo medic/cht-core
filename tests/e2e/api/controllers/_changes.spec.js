@@ -1120,7 +1120,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
@@ -1210,7 +1210,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
