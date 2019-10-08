@@ -25,3 +25,4 @@ config/*/backups/*
 api/src/extracted-resources/**/*
 api/build/**/*
 jsdocs
+config/*/.gdrive.*.json
