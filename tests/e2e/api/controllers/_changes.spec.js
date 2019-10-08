@@ -26,12 +26,9 @@ const isFormOrTranslation = id => defaultDocRegex.test(id);
 const assertChangeIds = function (changes) {
   changes = changes.results;
 
-  // * filter out deleted entries - we never delete in our production code, but
-  // some docs are deleted in the test setup/teardown
-  //  * also filter out translation documents and other expected documents
+  //  * filter out translation documents and other expected documents
   changes = changes.filter(change => {
-    return !change.deleted &&
-           !isFormOrTranslation(change.id) &&
+    return !isFormOrTranslation(change.id) &&
            !DEFAULT_EXPECTED.includes(change.id);
   });
   const expectedIds = Array.prototype.slice.call(arguments, 1);
@@ -742,9 +739,7 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
-          const changeIds = getIds(changes.results);
-          // can't use assertChangeIds here because it ignores deletes, and all we get are deletes
-          chai.expect(_.uniq(changeIds)).to.have.members(getIds(allowedDocs));
+          assertChangeIds(changes, ...getIds(allowedDocs));
           changes.results.forEach(change => chai.expect(change.deleted).to.equal(true));
         });
     });
@@ -783,9 +778,7 @@ describe('changes handler', () => {
         })
         .then(() => consumeChanges('steve', [], currentSeq))
         .then(changes => {
-          const changeIds = getIds(changes.results);
-          // can't use assertChangeIds here because it ignores deletes, and all we get are deletes
-          chai.expect(_.uniq(changeIds)).to.have.members(allowedDocIds);
+          assertChangeIds(changes, ...allowedDocIds);
           changes.results.forEach(change => chai.expect(change.deleted).to.equal(true));
         });
     });
@@ -823,9 +816,8 @@ describe('changes handler', () => {
          consumeChanges('steve', [], stevesSeq),
        ]))
        .then(([ bobsChanges, stevesChanges ]) => {
-         // can't use assertChangeIds here because it ignores deletes, and all we get are deletes
-         chai.expect(_.uniq(getIds(bobsChanges.results))).to.have.members(getIds(allowedBob));
-         chai.expect(_.uniq(getIds(stevesChanges.results))).to.have.members(getIds(allowedSteve));
+         assertChangeIds(bobsChanges, ...getIds(allowedBob));
+         assertChangeIds(stevesChanges, ...getIds(allowedSteve));
        });
     });
 
