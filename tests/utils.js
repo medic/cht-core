@@ -3,6 +3,8 @@ const _ = require('underscore'),
   constants = require('./constants'),
   { spawn } = require('child_process'),
   rpn = require('request-promise-native'),
+  path = require('path'),
+  Tail = require('tail').Tail,
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 
@@ -286,6 +288,36 @@ const createUsers = async (users, meta = false) => {
   }
 };
 
+const watchFile = (filename, line) => new Promise((resolve, reject) => {
+  const tail = new Tail(filename);
+  const regex = new RegExp(line);
+  tail.on('line', data => {
+    if (regex.test(data)) {
+      tail.unwatch();
+      resolve();
+    }
+  });
+  tail.on('error', reject);
+  // auto resolve after 5 seconds
+  setTimeout(resolve, 5000);
+});
+
+const waitForNewSettingsToBeEnabled = () => {
+  const apiLogLine = 'Settings reloaded successfully';
+  const sentinelLogLine = 'Configuration reloaded successfully';
+  let apiLogPath = path.join(__dirname, 'logs', 'api.e2e.log');
+  let sentinelLogPath = path.join(__dirname, 'logs', 'sentinel.e2e.log');
+  if (process.env.TRAVIS) {
+    apiLogPath = path.join(__dirname, 'logs', 'horti.log');
+    sentinelLogPath = path.join(__dirname, 'logs', 'horti.log');
+  }
+
+  return Promise.all([
+    watchFile(apiLogPath, apiLogLine),
+    watchFile(sentinelLogPath, sentinelLogLine),
+  ]);
+};
+
 module.exports = {
   db: db,
   sentinelDb: sentinel,
@@ -439,11 +471,16 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   updateSettings: (updates, ignoreRefresh = false) =>
-    updateSettings(updates).then(() => {
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
-    }),
+    Promise
+      .all([
+        waitForNewSettingsToBeEnabled(),
+        updateSettings(updates),
+      ])
+      .then(() => {
+        if (!ignoreRefresh) {
+          return refreshToGetNewSettings();
+        }
+      }),
 
   /**
    * Revert settings and refresh if required
@@ -452,11 +489,16 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   revertSettings: ignoreRefresh =>
-    revertSettings().then(() => {
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
-    }),
+    Promise
+      .all([
+        waitForNewSettingsToBeEnabled(),
+        revertSettings(),
+      ])
+      .then(() => {
+        if (!ignoreRefresh) {
+          return refreshToGetNewSettings();
+        }
+      }),
 
   seedTestData: (done, userContactDoc, documents) => {
     protractor.promise

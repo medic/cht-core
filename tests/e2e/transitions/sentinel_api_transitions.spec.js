@@ -337,7 +337,7 @@ describe('transitions', () => {
         ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
@@ -631,7 +631,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -747,7 +747,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -845,7 +845,7 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings, false)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
