@@ -146,13 +146,13 @@
           <text id="/pregnancy/danger_signs/fits:label">
             <value>Fits</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/no:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/no:label">
             <value>No</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/yes:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements:label">
             <value>Reduced or no fetal movements</value>
           </text>
           <text id="/pregnancy/danger_signs/refer_patient_note_1:label">
@@ -563,7 +563,7 @@
           <text id="/pregnancy/summary/r_danger_sign_fits:label">
             <value>Fits</value>
           </text>
-          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements:label">
             <value>Reduced or no fetal movements</value>
           </text>
           <text id="/pregnancy/summary/r_danger_sign_severe_abdominal_pain:label">
@@ -847,13 +847,13 @@
           <text id="/pregnancy/danger_signs/r_danger_sign_present:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/no:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/no:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/yes:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/yes:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/danger_signs/refer_patient_note_1:label">
@@ -901,136 +901,7 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_household_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_source:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_source_id:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_additional_high_risk_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_additional_high_risk_condition_to_report:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_asthma:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_breaking_water:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_breathlessness:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_diabetes:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_easily_tired:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_edd:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_face_hand_swelling:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_fever:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_first_pregnancy:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_fits:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_has_danger_sign:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_has_risk_factors:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_heart_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_high_blood_pressure:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_last_baby_born_less_than_1_year_ago:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_approx_months:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_approx_weeks:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_date:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_method:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_more_than_4_children:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_next_anc_hf_visit_date:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_next_anc_hf_visit_date_known:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_no_lmp_why_register:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_num_previous_anc_hf_visits:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_anc_hf_visit_dates:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_difficulties:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_miscarriage:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_received_deworming_meds:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_received_tetanus_toxoid_this_pregnancy:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_reduced_or_no_foetal_movements:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_severe_abdominal_pain:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_severe_headache:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_takes_iron_folate_daily:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_tested_for_hiv_in_past_3_months:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_uses_llin:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_vaginal_bleeding:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_very_pale:label">
+          <text id="/pregnancy/data/meta:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data:label">
@@ -1519,7 +1390,7 @@
           <text id="/pregnancy/summary/r_danger_sign_fits:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/summary/r_danger_sign_severe_abdominal_pain:label">
@@ -1833,13 +1704,13 @@
           <text id="/pregnancy/danger_signs/r_danger_sign_present:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/no:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/no:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/yes:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/yes:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/danger_signs/refer_patient_note_1:label">
@@ -1887,136 +1758,7 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_household_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_source:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_source_id:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_additional_high_risk_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_additional_high_risk_condition_to_report:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_asthma:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_breaking_water:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_breathlessness:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_diabetes:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_easily_tired:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_edd:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_face_hand_swelling:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_fever:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_first_pregnancy:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_fits:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_has_danger_sign:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_has_risk_factors:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_heart_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_high_blood_pressure:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_last_baby_born_less_than_1_year_ago:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_approx_months:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_approx_weeks:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_date:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_method:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_more_than_4_children:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_next_anc_hf_visit_date:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_next_anc_hf_visit_date_known:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_no_lmp_why_register:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_num_previous_anc_hf_visits:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_anc_hf_visit_dates:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_difficulties:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_miscarriage:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_received_deworming_meds:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_received_tetanus_toxoid_this_pregnancy:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_reduced_or_no_foetal_movements:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_severe_abdominal_pain:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_severe_headache:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_takes_iron_folate_daily:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_tested_for_hiv_in_past_3_months:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_uses_llin:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_vaginal_bleeding:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_very_pale:label">
+          <text id="/pregnancy/data/meta:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data:label">
@@ -2505,7 +2247,7 @@
           <text id="/pregnancy/summary/r_danger_sign_fits:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/summary/r_danger_sign_severe_abdominal_pain:label">
@@ -2819,13 +2561,13 @@
           <text id="/pregnancy/danger_signs/r_danger_sign_present:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/no:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/no:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements/yes:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements/yes:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/danger_signs/reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/danger_signs/reduced_or_no_fetal_movements:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/danger_signs/refer_patient_note_1:label">
@@ -2873,136 +2615,7 @@
           <text id="/pregnancy/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/data/m_household_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_source:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/m_source_id:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_additional_high_risk_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_additional_high_risk_condition_to_report:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_asthma:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_breaking_water:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_breathlessness:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_diabetes:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_easily_tired:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_edd:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_face_hand_swelling:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_fever:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_first_pregnancy:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_fits:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_has_danger_sign:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_has_risk_factors:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_heart_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_high_blood_pressure:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_last_baby_born_less_than_1_year_ago:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_approx_months:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_approx_weeks:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_date:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_lmp_method:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_more_than_4_children:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_next_anc_hf_visit_date:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_next_anc_hf_visit_date_known:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_no_lmp_why_register:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_num_previous_anc_hf_visits:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_anc_hf_visit_dates:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_difficulties:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_previous_miscarriage:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_received_deworming_meds:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_received_tetanus_toxoid_this_pregnancy:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_reduced_or_no_foetal_movements:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_severe_abdominal_pain:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_severe_headache:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_takes_iron_folate_daily:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_tested_for_hiv_in_past_3_months:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_uses_llin:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_vaginal_bleeding:label">
-            <value>-</value>
-          </text>
-          <text id="/pregnancy/data/o_very_pale:label">
+          <text id="/pregnancy/data/meta:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/data:label">
@@ -3491,7 +3104,7 @@
           <text id="/pregnancy/summary/r_danger_sign_fits:label">
             <value>-</value>
           </text>
-          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements:label">
+          <text id="/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements:label">
             <value>-</value>
           </text>
           <text id="/pregnancy/summary/r_danger_sign_severe_abdominal_pain:label">
@@ -3644,7 +3257,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-09-20 11:15:16">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-10-08 13:29:12">
           <inputs>
             <meta>
               <location>
@@ -3785,7 +3398,7 @@
             <severe_headache/>
             <very_pale/>
             <fever/>
-            <reduced_or_no_foetal_movements/>
+            <reduced_or_no_fetal_movements/>
             <breaking_water/>
             <easily_tired/>
             <face_hand_swelling/>
@@ -3851,7 +3464,7 @@
             <r_danger_sign_severe_headache/>
             <r_danger_sign_very_pale/>
             <r_danger_sign_fever/>
-            <r_danger_sign_reduced_or_no_foetal_movements/>
+            <r_danger_sign_reduced_or_no_fetal_movements/>
             <r_danger_sign_breaking_water/>
             <r_danger_sign_easily_tired/>
             <r_danger_sign_face_hand_swelling/>
@@ -3887,50 +3500,52 @@
             </custom_translations>
           </summary>
           <data tag="hidden">
-            <o_lmp_method/>
-            <o_no_lmp_why_register/>
-            <o_lmp_date/>
-            <o_lmp_approx_weeks/>
-            <o_lmp_approx_months/>
-            <o_edd/>
-            <o_num_previous_anc_hf_visits/>
-            <o_previous_anc_hf_visit_dates/>
-            <o_next_anc_hf_visit_date_known/>
-            <o_next_anc_hf_visit_date/>
-            <o_has_risk_factors/>
-            <o_first_pregnancy/>
-            <o_previous_miscarriage/>
-            <o_previous_difficulties/>
-            <o_more_than_4_children/>
-            <o_last_baby_born_less_than_1_year_ago/>
-            <o_heart_condition/>
-            <o_asthma/>
-            <o_high_blood_pressure/>
-            <o_diabetes/>
-            <o_additional_high_risk_condition_to_report/>
-            <o_additional_high_risk_condition/>
-            <o_has_danger_sign/>
-            <o_vaginal_bleeding/>
-            <o_fits/>
-            <o_severe_abdominal_pain/>
-            <o_severe_headache/>
-            <o_very_pale/>
-            <o_fever/>
-            <o_reduced_or_no_foetal_movements/>
-            <o_breaking_water/>
-            <o_easily_tired/>
-            <o_face_hand_swelling/>
-            <o_breathlessness/>
-            <o_uses_llin/>
-            <o_takes_iron_folate_daily/>
-            <o_received_deworming_meds/>
-            <o_tested_for_hiv_in_past_3_months/>
-            <o_received_tetanus_toxoid_this_pregnancy/>
-            <m_patient_uuid/>
-            <m_patient_id/>
-            <m_household_uuid/>
-            <m_source/>
-            <m_source_id/>
+            <__lmp_method/>
+            <__no_lmp_registration_reason/>
+            <__lmp_date/>
+            <__lmp_approx_weeks/>
+            <__lmp_approx_months/>
+            <__edd/>
+            <__num_previous_anc_hf_visits/>
+            <__previous_anc_hf_visit_dates/>
+            <__next_anc_hf_visit_date_known/>
+            <__next_anc_hf_visit_date/>
+            <__has_risk_factors/>
+            <__first_pregnancy/>
+            <__previous_miscarriage/>
+            <__previous_difficulties/>
+            <__more_than_4_children/>
+            <__last_baby_born_less_than_1_year_ago/>
+            <__heart_condition/>
+            <__asthma/>
+            <__high_blood_pressure/>
+            <__diabetes/>
+            <__additional_high_risk_condition_to_report/>
+            <__additional_high_risk_condition/>
+            <__has_danger_sign/>
+            <__vaginal_bleeding/>
+            <__fits/>
+            <__severe_abdominal_pain/>
+            <__severe_headache/>
+            <__very_pale/>
+            <__fever/>
+            <__reduced_or_no_fetal_movements/>
+            <__breaking_water/>
+            <__easily_tired/>
+            <__face_hand_swelling/>
+            <__breathlessness/>
+            <__uses_llin/>
+            <__takes_iron_folate_daily/>
+            <__received_deworming_meds/>
+            <__tested_for_hiv_in_past_3_months/>
+            <__received_tetanus_toxoid_this_pregnancy/>
+            <meta tag="hidden">
+              <__patient_uuid/>
+              <__patient_id/>
+              <__household_uuid/>
+              <__source/>
+              <__source_id/>
+            </meta>
           </data>
           <meta tag="hidden">
             <instanceID/>
@@ -4045,7 +3660,7 @@ selected(../risk_factors_present/additional_risk_check, 'yes')
       <bind nodeset="/pregnancy/danger_signs/severe_headache" required="true()" type="select1"/>
       <bind nodeset="/pregnancy/danger_signs/very_pale" required="true()" type="select1"/>
       <bind nodeset="/pregnancy/danger_signs/fever" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy/danger_signs/reduced_or_no_foetal_movements" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy/danger_signs/reduced_or_no_fetal_movements" required="true()" type="select1"/>
       <bind nodeset="/pregnancy/danger_signs/breaking_water" required="true()" type="select1"/>
       <bind nodeset="/pregnancy/danger_signs/easily_tired" required="true()" type="select1"/>
       <bind nodeset="/pregnancy/danger_signs/face_hand_swelling" required="true()" type="select1"/>
@@ -4056,7 +3671,7 @@ or selected(../severe_abdominal_pain, 'yes')
 or selected(../severe_headache, 'yes')
 or selected(../very_pale, 'yes')
 or selected(../fever, 'yes')
-or selected(../reduced_or_no_foetal_movements, 'yes')
+or selected(../reduced_or_no_fetal_movements, 'yes')
 or selected(../breaking_water, 'yes')
 or selected(../easily_tired, 'yes')
 or selected(../face_hand_swelling, 'yes')
@@ -4068,7 +3683,7 @@ and selected(../severe_abdominal_pain, 'no')
 and selected(../severe_headache, 'no')
 and selected(../very_pale, 'no')
 and selected(../fever, 'no')
-and selected(../reduced_or_no_foetal_movements, 'no')
+and selected(../reduced_or_no_fetal_movements, 'no')
 and selected(../breaking_water, 'no')
 and selected(../easily_tired, 'no')
 and selected(../face_hand_swelling, 'no')
@@ -4123,7 +3738,7 @@ selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')" nodeset="/pregn
       <bind nodeset="/pregnancy/summary/r_danger_sign_severe_headache" readonly="true()" relevant="selected(../../danger_signs/severe_headache, 'yes')" type="string"/>
       <bind nodeset="/pregnancy/summary/r_danger_sign_very_pale" readonly="true()" relevant="selected(../../danger_signs/very_pale, 'yes')" type="string"/>
       <bind nodeset="/pregnancy/summary/r_danger_sign_fever" readonly="true()" relevant="selected(../../danger_signs/fever, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements" readonly="true()" relevant="selected(../../danger_signs/reduced_or_no_foetal_movements, 'yes')" type="string"/>
+      <bind nodeset="/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements" readonly="true()" relevant="selected(../../danger_signs/reduced_or_no_fetal_movements, 'yes')" type="string"/>
       <bind nodeset="/pregnancy/summary/r_danger_sign_breaking_water" readonly="true()" relevant="selected(../../danger_signs/breaking_water, 'yes')" type="string"/>
       <bind nodeset="/pregnancy/summary/r_danger_sign_easily_tired" readonly="true()" relevant="selected(../../danger_signs/easily_tired, 'yes')" type="string"/>
       <bind nodeset="/pregnancy/summary/r_danger_sign_face_hand_swelling" readonly="true()" relevant="selected(../../danger_signs/face_hand_swelling, 'yes')" type="string"/>
@@ -4165,50 +3780,50 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
       <bind calculate="jr:choice-name( /pregnancy/summary/custom_translations/custom_woman_label_translator ,' /pregnancy/summary/custom_translations/custom_woman_label_translator ')" nodeset="/pregnancy/summary/custom_translations/custom_woman_label" type="string"/>
       <bind calculate="&quot;woman-start&quot;" nodeset="/pregnancy/summary/custom_translations/custom_woman_start_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /pregnancy/summary/custom_translations/custom_woman_start_label_translator ,' /pregnancy/summary/custom_translations/custom_woman_start_label_translator ')" nodeset="/pregnancy/summary/custom_translations/custom_woman_start_label" type="string"/>
-      <bind calculate=" /pregnancy/gestational_age/register_method/lmp_method " nodeset="/pregnancy/data/o_lmp_method" type="string"/>
-      <bind calculate=" /pregnancy/gestational_age/method_none/no_info_pregnancy_reason " nodeset="/pregnancy/data/o_no_lmp_why_register" type="string"/>
-      <bind calculate=" /pregnancy/lmp_date_8601 " nodeset="/pregnancy/data/o_lmp_date" type="string"/>
-      <bind calculate=" /pregnancy/gestational_age/method_approx/lmp_approx_weeks " nodeset="/pregnancy/data/o_lmp_approx_weeks" type="string"/>
-      <bind calculate=" /pregnancy/gestational_age/method_approx/lmp_approx_months " nodeset="/pregnancy/data/o_lmp_approx_months" type="string"/>
-      <bind calculate=" /pregnancy/edd_8601 " nodeset="/pregnancy/data/o_edd" type="string"/>
-      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy/data/o_num_previous_anc_hf_visits" type="string"/>
-      <bind calculate="coalesce( /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single , join(',',  /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date ))" nodeset="/pregnancy/data/o_previous_anc_hf_visit_dates" type="string"/>
-      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known " nodeset="/pregnancy/data/o_next_anc_hf_visit_date_known" type="string"/>
-      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date " nodeset="/pregnancy/data/o_next_anc_hf_visit_date" type="string"/>
-      <bind calculate=" /pregnancy/risk_factors/r_risk_factor_present " nodeset="/pregnancy/data/o_has_risk_factors" type="string"/>
-      <bind calculate=" /pregnancy/risk_factors/risk_factors_history/first_pregnancy " nodeset="/pregnancy/data/o_first_pregnancy" type="string"/>
-      <bind calculate=" /pregnancy/risk_factors/risk_factors_history/previous_miscarriage " nodeset="/pregnancy/data/o_previous_miscarriage" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'previous_difficulties'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/o_previous_difficulties" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'more_than_4_children'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/o_more_than_4_children" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'last_baby_born_less_than_1_year_ago'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/o_last_baby_born_less_than_1_year_ago" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'heart_condition'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'heart_condition'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_heart_condition" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'asthma'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'asthma'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_asthma" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'high_blood_pressure'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'high_blood_pressure'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_high_blood_pressure" type="string"/>
-      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'diabetes'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'diabetes'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/o_diabetes" type="string"/>
-      <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk_check " nodeset="/pregnancy/data/o_additional_high_risk_condition_to_report" type="string"/>
-      <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk " nodeset="/pregnancy/data/o_additional_high_risk_condition" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/r_danger_sign_present " nodeset="/pregnancy/data/o_has_danger_sign" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/vaginal_bleeding " nodeset="/pregnancy/data/o_vaginal_bleeding" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/fits " nodeset="/pregnancy/data/o_fits" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/severe_abdominal_pain " nodeset="/pregnancy/data/o_severe_abdominal_pain" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/severe_headache " nodeset="/pregnancy/data/o_severe_headache" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/very_pale " nodeset="/pregnancy/data/o_very_pale" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/fever " nodeset="/pregnancy/data/o_fever" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/reduced_or_no_foetal_movements " nodeset="/pregnancy/data/o_reduced_or_no_foetal_movements" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/breaking_water " nodeset="/pregnancy/data/o_breaking_water" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/easily_tired " nodeset="/pregnancy/data/o_easily_tired" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/face_hand_swelling " nodeset="/pregnancy/data/o_face_hand_swelling" type="string"/>
-      <bind calculate=" /pregnancy/danger_signs/breathlessness " nodeset="/pregnancy/data/o_breathlessness" type="string"/>
-      <bind calculate=" /pregnancy/safe_pregnancy_practices/malaria/uses_llin " nodeset="/pregnancy/data/o_uses_llin" type="string"/>
-      <bind calculate=" /pregnancy/safe_pregnancy_practices/iron_folate/iron_folate_daily " nodeset="/pregnancy/data/o_takes_iron_folate_daily" type="string"/>
-      <bind calculate=" /pregnancy/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy/data/o_received_deworming_meds" type="string"/>
-      <bind calculate=" /pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy/data/o_tested_for_hiv_in_past_3_months" type="string"/>
-      <bind calculate=" /pregnancy/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy/data/o_received_tetanus_toxoid_this_pregnancy" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy/data/m_patient_uuid" type="string"/>
-      <bind calculate="../../patient_id" nodeset="/pregnancy/data/m_patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy/data/m_household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/pregnancy/data/m_source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/pregnancy/data/m_source_id" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/register_method/lmp_method " nodeset="/pregnancy/data/__lmp_method" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/method_none/no_info_pregnancy_reason " nodeset="/pregnancy/data/__no_lmp_registration_reason" type="string"/>
+      <bind calculate=" /pregnancy/lmp_date_8601 " nodeset="/pregnancy/data/__lmp_date" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/method_approx/lmp_approx_weeks " nodeset="/pregnancy/data/__lmp_approx_weeks" type="string"/>
+      <bind calculate=" /pregnancy/gestational_age/method_approx/lmp_approx_months " nodeset="/pregnancy/data/__lmp_approx_months" type="string"/>
+      <bind calculate=" /pregnancy/edd_8601 " nodeset="/pregnancy/data/__edd" type="string"/>
+      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy/data/__num_previous_anc_hf_visits" type="string"/>
+      <bind calculate="coalesce( /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single , join(',',  /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date ))" nodeset="/pregnancy/data/__previous_anc_hf_visit_dates" type="string"/>
+      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known " nodeset="/pregnancy/data/__next_anc_hf_visit_date_known" type="string"/>
+      <bind calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date " nodeset="/pregnancy/data/__next_anc_hf_visit_date" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/r_risk_factor_present " nodeset="/pregnancy/data/__has_risk_factors" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/risk_factors_history/first_pregnancy " nodeset="/pregnancy/data/__first_pregnancy" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/risk_factors_history/previous_miscarriage " nodeset="/pregnancy/data/__previous_miscarriage" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'previous_difficulties'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/__previous_difficulties" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'more_than_4_children'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/__more_than_4_children" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'last_baby_born_less_than_1_year_ago'), &quot;yes&quot;, &quot;no&quot;)" nodeset="/pregnancy/data/__last_baby_born_less_than_1_year_ago" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'heart_condition'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'heart_condition'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/__heart_condition" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'asthma'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'asthma'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/__asthma" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'high_blood_pressure'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'high_blood_pressure'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/__high_blood_pressure" type="string"/>
+      <bind calculate="if(selected( /pregnancy/risk_factors/risk_factors_present/primary_condition , 'diabetes'), &quot;yes&quot;, if(selected( /pregnancy/risk_factors/risk_factors_present/secondary_condition , 'diabetes'), &quot;yes&quot;, &quot;no&quot;))" nodeset="/pregnancy/data/__diabetes" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk_check " nodeset="/pregnancy/data/__additional_high_risk_condition_to_report" type="string"/>
+      <bind calculate=" /pregnancy/risk_factors/risk_factors_present/additional_risk " nodeset="/pregnancy/data/__additional_high_risk_condition" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/r_danger_sign_present " nodeset="/pregnancy/data/__has_danger_sign" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/vaginal_bleeding " nodeset="/pregnancy/data/__vaginal_bleeding" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/fits " nodeset="/pregnancy/data/__fits" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/severe_abdominal_pain " nodeset="/pregnancy/data/__severe_abdominal_pain" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/severe_headache " nodeset="/pregnancy/data/__severe_headache" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/very_pale " nodeset="/pregnancy/data/__very_pale" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/fever " nodeset="/pregnancy/data/__fever" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/reduced_or_no_fetal_movements " nodeset="/pregnancy/data/__reduced_or_no_fetal_movements" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/breaking_water " nodeset="/pregnancy/data/__breaking_water" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/easily_tired " nodeset="/pregnancy/data/__easily_tired" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/face_hand_swelling " nodeset="/pregnancy/data/__face_hand_swelling" type="string"/>
+      <bind calculate=" /pregnancy/danger_signs/breathlessness " nodeset="/pregnancy/data/__breathlessness" type="string"/>
+      <bind calculate=" /pregnancy/safe_pregnancy_practices/malaria/uses_llin " nodeset="/pregnancy/data/__uses_llin" type="string"/>
+      <bind calculate=" /pregnancy/safe_pregnancy_practices/iron_folate/iron_folate_daily " nodeset="/pregnancy/data/__takes_iron_folate_daily" type="string"/>
+      <bind calculate=" /pregnancy/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy/data/__received_deworming_meds" type="string"/>
+      <bind calculate=" /pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy/data/__tested_for_hiv_in_past_3_months" type="string"/>
+      <bind calculate=" /pregnancy/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy/data/__received_tetanus_toxoid_this_pregnancy" type="string"/>
+      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/pregnancy/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../inputs/source" nodeset="/pregnancy/data/meta/__source" type="string"/>
+      <bind calculate="../../inputs/source_id" nodeset="/pregnancy/data/meta/__source_id" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -4606,14 +4221,14 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
           <value>no</value>
         </item>
       </select1>
-      <select1 ref="/pregnancy/danger_signs/reduced_or_no_foetal_movements">
-        <label ref="jr:itext('/pregnancy/danger_signs/reduced_or_no_foetal_movements:label')"/>
+      <select1 ref="/pregnancy/danger_signs/reduced_or_no_fetal_movements">
+        <label ref="jr:itext('/pregnancy/danger_signs/reduced_or_no_fetal_movements:label')"/>
         <item>
-          <label ref="jr:itext('/pregnancy/danger_signs/reduced_or_no_foetal_movements/yes:label')"/>
+          <label ref="jr:itext('/pregnancy/danger_signs/reduced_or_no_fetal_movements/yes:label')"/>
           <value>yes</value>
         </item>
         <item>
-          <label ref="jr:itext('/pregnancy/danger_signs/reduced_or_no_foetal_movements/no:label')"/>
+          <label ref="jr:itext('/pregnancy/danger_signs/reduced_or_no_fetal_movements/no:label')"/>
           <value>no</value>
         </item>
       </select1>
@@ -4847,8 +4462,8 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
       <input appearance="li" ref="/pregnancy/summary/r_danger_sign_fever">
         <label ref="jr:itext('/pregnancy/summary/r_danger_sign_fever:label')"/>
       </input>
-      <input appearance="li" ref="/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements">
-        <label ref="jr:itext('/pregnancy/summary/r_danger_sign_reduced_or_no_foetal_movements:label')"/>
+      <input appearance="li" ref="/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements">
+        <label ref="jr:itext('/pregnancy/summary/r_danger_sign_reduced_or_no_fetal_movements:label')"/>
       </input>
       <input appearance="li" ref="/pregnancy/summary/r_danger_sign_breaking_water">
         <label ref="jr:itext('/pregnancy/summary/r_danger_sign_breaking_water:label')"/>
@@ -4933,6 +4548,8 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
         </select1>
       </group>
     </group>
-    <group appearance="hidden" ref="/pregnancy/data"/>
+    <group appearance="hidden" ref="/pregnancy/data">
+      <group ref="/pregnancy/data/meta"/>
+    </group>
   </h:body>
 </h:html>

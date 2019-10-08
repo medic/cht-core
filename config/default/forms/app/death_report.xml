@@ -94,7 +94,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
         </translation>
       </itext>
       <instance>
-        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-09-04 07:32:21">
+        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-10-08 13:30:41">
           <inputs>
             <meta>
               <location>
@@ -148,6 +148,20 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
             <r_referral/>
             <r_undo/>
           </group_review>
+          <data tag="hidden">
+            <__death_details/>
+            <__date_of_death/>
+            <__place_of_death/>
+            <__place_of_death_other/>
+            <__death_information/>
+            <meta tag="hidden">
+              <__patient_uuid/>
+              <__patient_id/>
+              <__household_uuid/>
+              <__source/>
+              <__source_id/>
+            </meta>
+          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -191,6 +205,16 @@ concat(../../patient_age_in_years, ' years old')))" nodeset="/death_report/group
       <bind nodeset="/death_report/group_review/blank_note" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_referral" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_undo" readonly="true()" type="string"/>
+      <bind calculate=" /death_report/death_details " nodeset="/death_report/data/__death_details" type="string"/>
+      <bind calculate=" /death_report/death_details/date_of_death " nodeset="/death_report/data/__date_of_death" type="string"/>
+      <bind calculate=" /death_report/death_details/place_of_death " nodeset="/death_report/data/__place_of_death" type="string"/>
+      <bind calculate=" /death_report/death_details/place_of_death_other " nodeset="/death_report/data/__place_of_death_other" type="string"/>
+      <bind calculate=" /death_report/death_details/death_information " nodeset="/death_report/data/__death_information" type="string"/>
+      <bind calculate="../../inputs/contact/_id" nodeset="/death_report/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/death_report/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/death_report/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../inputs/source" nodeset="/death_report/data/meta/__source" type="string"/>
+      <bind calculate="../../inputs/source_id" nodeset="/death_report/data/meta/__source_id" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/death_report/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -263,6 +287,9 @@ concat(../../patient_age_in_years, ' years old')))" nodeset="/death_report/group
       <input ref="/death_report/group_review/r_undo">
         <label ref="jr:itext('/death_report/group_review/r_undo:label')"/>
       </input>
+    </group>
+    <group appearance="hidden" ref="/death_report/data">
+      <group ref="/death_report/data/meta"/>
     </group>
   </h:body>
 </h:html>
