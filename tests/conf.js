@@ -18,7 +18,7 @@ const baseConfig = {
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    e2e:'e2e/**/*.js',
+    e2e:'e2e/**/db-doc.spec.js',
     performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',

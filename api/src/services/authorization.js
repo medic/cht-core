@@ -193,7 +193,6 @@ const getAuthorizationContext = (userCtx) => {
   });
 };
 
-
 const getReplicationKeys = (viewResults) => {
   const subjectIds = [];
   if (!viewResults || !viewResults.replicationKeys) {
@@ -213,7 +212,7 @@ const getReplicationKeys = (viewResults) => {
 const findContactsByPatientIds = (patientIds) => {
   patientIds = _.uniq(patientIds);
   if (!patientIds.length) {
-    return [];
+    return Promise.resolve([]);
   }
 
   return db.medic
@@ -229,11 +228,13 @@ const findContactsByPatientIds = (patientIds) => {
     .then(result => result.rows && result.rows.map(row => row.doc));
 };
 
+const getPatientId = (viewResults) => viewResults.contactsByDepth && viewResults.contactsByDepth[0] && viewResults.contactsByDepth[0][1];
+
 // in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
 // over the provided docs, read all contacts that the docs emit in `medic/docs_by_replication_key` and create a
-// reduced set of relevant subject ids that the user is allowed to see.
-const getReducedAuthorizationContext = (userCtx, docObjs) => {
+// reduced set of relevant allowed subject ids.
+const getMinimalAuthorizationContext = (userCtx, docObjs) => {
   const authorizationCtx = getContextObject(userCtx);
 
   docObjs.filter(docObj => docObj.doc);
@@ -241,13 +242,15 @@ const getReducedAuthorizationContext = (userCtx, docObjs) => {
     return authorizationCtx;
   }
 
+  // collect all values that the docs would emit in `docs_by_replication_key`
   const patientIds = [];
-  docObjs.forEach(docCtx => {
-    docCtx.viewResults = getViewResults(docCtx.doc);
-    patientIds.push(...getReplicationKeys(docCtx.viewResults));
+  docObjs.forEach(docObj => {
+    docObj.viewResults = docObj.viewResults || getViewResults(docObj.doc);
+    patientIds.push(...getReplicationKeys(docObj.viewResults));
   });
 
   return findContactsByPatientIds(patientIds).then(contacts => {
+    // we simulate a `medic/contacts_by_depth` filter over the list contacts
     contacts.forEach(contact => {
       if (!contact) {
         return;
@@ -259,8 +262,9 @@ const getReducedAuthorizationContext = (userCtx, docObjs) => {
       }
 
       authorizationCtx.subjectIds.push(contact._id);
-      if (viewResults.contactsByDepth[0][1]) {
-        authorizationCtx.subjectIds.push(viewResults.contactsByDepth[0][1]);
+      const patientId = getPatientId(viewResults);
+      if (patientId) {
+        authorizationCtx.subjectIds.push(patientId);
       }
     });
 
@@ -346,5 +350,5 @@ module.exports = {
   isDeleteStub: tombstoneUtils._isDeleteStub,
   generateTombstoneId: tombstoneUtils.generateTombstoneId,
   convertTombstoneId: convertTombstoneId,
-  getReducedAuthorizationContext: getReducedAuthorizationContext,
+  getMinimalAuthorizationContext: getMinimalAuthorizationContext,
 };

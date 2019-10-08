@@ -283,7 +283,7 @@ describe('db-doc handler', () => {
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
 
-        chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+        chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
       });
     });
 
@@ -523,8 +523,8 @@ describe('db-doc handler', () => {
       ])
         .then(([allowed, denied, forbidden]) => {
           chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true,});
-          chai.expect(denied).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
-          chai.expect(forbidden.responseBody.error).to.equal('forbidden');
+          chai.expect(denied).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(forbidden).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.getDoc('allowed_doc_post'),
@@ -595,31 +595,25 @@ describe('db-doc handler', () => {
               name: 'n2',
             }, // new denied
             _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
-            _.defaults(
-              { name: 'a2 updated', parent: { _id: 'fixture:online' } },
-              docs[1]
-            ), // stored allowed, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored allowed, new denied
             _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
-            _.defaults(
-              { name: 'd2 updated', parent: { _id: 'fixture:offline' } },
-              docs[3]
-            ), // stored denied, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new allowed
           ];
 
-          return Promise.all(updates.map(doc =>
+          const promises = updates.map(doc =>
             utils
               .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
-              .catch(err => err))
-          );
+              .catch(err => err));
+          return Promise.all(promises);
         })
         .then(results => {
           chai.expect(results[0]).to.include({ ok: true, id: 'n_put_1' });
-          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
           chai.expect(results[2]).to.include({ ok: true, id: 'a_put_1',});
 
-          chai.expect(results[3]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
-          chai.expect(results[4]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
-          chai.expect(results[5]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           const ids = ['a_put_1', 'a_put_2', 'd_put_1', 'd_put_2', 'n_put_1', 'n_put_2'];
 
@@ -683,28 +677,21 @@ describe('db-doc handler', () => {
 
           const updates = [
             _.defaults({ name: 'a1 updated' }, docs[0]), // prev allowed, deleted, new allowed
-            _.defaults(
-              { name: 'a2 updated', parent: { _id: 'fixture:online' } },
-              docs[1]
-            ), // prev allowed, deleted, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // prev allowed, deleted, new denied
             _.defaults({ name: 'd1 updated' }, docs[2]), // prev denied, deleted, new denied
-            _.defaults(
-              { name: 'd2 updated', parent: { _id: 'fixture:offline' } },
-              docs[3]
-            ), // prev denied, deleted, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // prev denied, deleted, new allowed
           ];
 
           return Promise.all(updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
-              .catch(err => err))
-          );
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
+              .catch(err => err)));
         })
         .then(results => {
-          chai.expect(results[0]).to.deep.include({ statusCode: 409, responseBody: { error: 'conflict' }});
-          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
-          chai.expect(results[2]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' }});
-          chai.expect(results[0]).to.deep.include({ statusCode: 409, responseBody: { error: 'conflict' }});
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
         });
     });
 
@@ -728,25 +715,13 @@ describe('db-doc handler', () => {
         ])
         .then(results =>
           Promise.all([
-            utils.requestOnTestDb(
-              _.extend(
-                { path: `/allowed_del?rev=${results[0].rev}` },
-                offlineRequestOptions
-              )
-            ),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: `/denied_del?rev=${results[1].rev}` },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
           ])
         )
         .then(results => {
           chai.expect(results[0]).to.deep.include({ id: 'allowed_del', ok: true });
-          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden' } });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.getDoc('allowed_del').catch(err => err),
@@ -754,7 +729,7 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: {error: 'not_found', reason: 'deleted' } });
+          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: { error: 'not_found', reason: 'deleted' } });
           chai.expect(results[1]).to.deep.include({
             _id: 'denied_del',
             type: 'clinic',
@@ -802,14 +777,9 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils
-              .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)),
-            utils
-              .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
-              .catch(err => err),
-            utils
-              .requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`}, offlineRequestOptions))
-              .catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions), false, true),
+            utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
           ]);
         })
         .then(results => {
@@ -831,17 +801,17 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
-          const getRequestForIdRev = (id, rev) => utils
-            .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
-            .catch(err => err);
-
           const promises = [];
-          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => getRequestForIdRev(id, rev))));
+          const attachmentRequest = (rev, id) =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions), false, true)
+              .catch(err => err);
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
           return Promise.all(promises);
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          expect(results[0].responseBody).toEqual({
+          chai.expect(results[0].responseBody).to.deep.equal({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
@@ -865,24 +835,16 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return Promise.all([
-            utils
-              .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions))
-              .catch(err => err),
-            utils
-              .requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions))
-              .catch(err => err),
-            utils
-              .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
-              .catch(err => err),
-            utils
-              .requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions), false, true),
           ]);
         })
         .then(results => {
-          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' } });
-          chai.expect(results[1]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' } });
-
-          chai.expect(results[2]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' } });
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
           chai.expect(results[3]).to.equal('"my attachment content"');
         });
     });
@@ -924,33 +886,18 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils
-              .requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions)),
-            utils
-              .requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false }, offlineRequestOptions)),
-            utils
-              .requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions))
-              .catch(err => err),
-            utils
-              .requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`, json: false }, offlineRequestOptions))
-              .catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions), false, true),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`}, offlineRequestOptions), false, true),
+            utils.requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions)).catch(err => err),
           ]);
         })
         .then(results => {
           chai.expect(results[0]).to.equal('"my attachment content"');
           chai.expect(results[1]).to.equal('"my attachment content"');
 
-          expect(results[2].statusCode).toEqual(404);
-          expect(results[2].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.getDoc('allowed_attach_1'),
@@ -966,17 +913,17 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
-          const getRequestForIdRev = (id, rev) => utils
-            .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}` }, offlineRequestOptions))
-            .catch(err => err);
-
           const promises = [];
-          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => getRequestForIdRev(id, rev))));
+          const attachmentRequest = (rev, id) =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}` }, offlineRequestOptions), false, true)
+              .catch(err => err);
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
           return Promise.all(promises);
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          chai.expect(results[0].responseBody).to.equal({
+          chai.expect(results[0].responseBody).to.deep.equal({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
@@ -1015,51 +962,30 @@ describe('db-doc handler', () => {
             name: 'denied attach',
           },
         ])
-        .then(results =>
-          Promise.all(
-            results.map(result =>
-              utils
-                .requestOnTestDb(
-                  _.extend(
-                    { path: `/${result.id}/new_attachment?rev=${result.rev}` },
-                    offlineRequestOptions
-                  )
-                )
-                .catch(err => err)
-            )
-          )
+        .then(results => Promise.all(
+          results.map(result =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions))
+              .catch(err => err)))
         )
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            ok: true,
-            id: 'a_with_attachments',
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.deep.include({ ok: true,  id: 'a_with_attachments' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.requestOnTestDb({ path: '/a_with_attachments' }),
-            utils.requestOnTestDb(
-              { path: '/a_with_attachments/new_attachment' },
-              false,
-              true
-            ),
+            utils.requestOnTestDb({ path: '/a_with_attachments/new_attachment' }, false, true),
             utils.requestOnTestDb({ path: '/d_with_attachments' }),
-            utils
-              .requestOnTestDb({ path: '/d_with_attachments/new_attachment' })
-              .catch(err => err),
+            utils.requestOnTestDb({ path: '/d_with_attachments/new_attachment' }).catch(err => err),
           ]);
         })
         .then(results => {
-          expect(results[0]._attachments.new_attachment).toBeTruthy();
+          chai.expect(results[0]._attachments.new_attachment).to.be.ok;
           chai.expect(results[0]._id).to.equal('a_with_attachments');
 
           chai.expect(results[1]).to.equal('my new attachment content');
 
-          expect(results[2]._attachments).not.toBeTruthy();
+          chai.expect(results[2]._attachments).to.be.undefined;
           chai.expect(results[2]._id).to.equal('d_with_attachments');
 
           chai.expect(results[3].responseBody.error).to.equal('not_found');
@@ -1075,18 +1001,13 @@ describe('db-doc handler', () => {
         utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
         utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
       ]).then(results => {
-        expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
+        chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
           type: 'person',
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody).toEqual({
-          error: 'forbidden',
-          reason: 'Insufficient privileges',
-        });
+        chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
       });
     });
 
@@ -1146,16 +1067,12 @@ describe('db-doc handler', () => {
           );
         })
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({ ok: true, id: 'n_put_1' });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(_.omit(results[2], 'rev')).toEqual({ ok: true, id: 'a_put_1' });
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(results[4].statusCode).toEqual(403);
-          expect(results[4].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(results[5].statusCode).toEqual(403);
-          expect(results[5].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          chai.expect(results[0]).to.deep.include({ ok: true, id: 'n_put_1' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.include({ ok: true, id: 'a_put_1' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 
@@ -1192,7 +1109,7 @@ describe('db-doc handler', () => {
 
           return utils.requestOnMedicDb(onlineRequestOptions);
         })
-        .then(result => utils.requestOnMedicDb(`/with_attachments/new_attachment?rev=${result.rev}`))
+        .then(result => utils.requestOnMedicDb(`/with_attachments/new_attachment?rev=${result.rev}`, false, true))
         .then(result => {
           chai.expect(result).to.equal('my new attachment content');
         });
@@ -1234,7 +1151,7 @@ describe('db-doc handler', () => {
         ])
       )
       .then(results => {
-        expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).toBe(true);
+        chai.expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).to.equal(true);
       });
   });
 
@@ -1254,7 +1171,7 @@ describe('db-doc handler', () => {
         return utils.getDoc('fb1');
       })
       .then(result => {
-        expect(_.omit(result, '_rev')).toEqual(doc);
+        chai.expect(result).to.deep.include(doc);
       });
   });
 
@@ -1275,8 +1192,7 @@ describe('db-doc handler', () => {
         return utils.requestOnTestDb(offlineRequestOptions).catch(err => err);
       })
       .then(result => {
-        expect(result.responseBody.error).toEqual('forbidden');
-        expect(result.statusCode).toEqual(403);
+        chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         return utils.getDoc('fb1');
       })
       .then(result => {
@@ -1297,14 +1213,9 @@ describe('db-doc handler', () => {
         .then(results => {
           chai.expect(results[0]._id).to.equal('_design/medic-client');
 
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody.error).toEqual('forbidden');
-
-          expect(results[2].statusCode).toEqual(403);
-          expect(results[2].responseBody.error).toEqual('forbidden');
-
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody.error).toEqual('forbidden');
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 
@@ -1314,56 +1225,19 @@ describe('db-doc handler', () => {
         body: { some: 'data' },
       };
 
-      return Promise.all([
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic-client' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/something' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic-admin' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-      ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(403);
-        expect(results[3].responseBody.error).toEqual('forbidden');
-      });
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+        ])
+        .then(results => {
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        });
     });
 
     it('blocks DELETEing any ddoc', () => {
@@ -1371,35 +1245,20 @@ describe('db-doc handler', () => {
         method: 'DELETE',
       };
 
-      return Promise.all([
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
-          .catch(err => err),
-      ]).then(results => {
-        results.forEach(result => {
-          expect(result.statusCode).toEqual(403);
-          expect(result.responseBody.error).toEqual('forbidden');
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+        ])
+        .then(results => {
+          results.forEach(result => {
+            chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
       });
     });

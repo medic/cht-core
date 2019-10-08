@@ -48,10 +48,16 @@ module.exports = {
         getRequestDoc(method, body, isAttachment),
       ])
       .then(([ storedDoc, requestDoc ]) => {
-        stored = { doc: storedDoc };
-        requested = { doc: requestDoc };
+        stored = {
+          doc: storedDoc,
+          viewResults: authorization.getViewResults(storedDoc)
+        };
+        requested = {
+          doc: requestDoc,
+          viewResults: authorization.getViewResults(requestDoc)
+        };
 
-        return authorization.getReducedAuthorizationContext(userCtx, [stored, requested]);
+        return authorization.getMinimalAuthorizationContext(userCtx, [ stored, requested ]);
       })
       .then(authorizationContext => {
         if (!stored.doc && !requested.doc) {
