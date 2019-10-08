@@ -275,7 +275,7 @@ describe('changes handler', () => {
           body: { doc_ids: ['org.couchdb.user:bob'] },
         })
         .then(result => {
-          chai.assert(result.results);
+          chai.expect(result.results).to.be.ok;
         });
     });
 
@@ -286,9 +286,9 @@ describe('changes handler', () => {
           resolveWithFullResponse: true,
         })
         .then(response => {
-          chai.assert(response.headers);
+          chai.expect(response.headers).to.be.ok;
           chai.expect(response.headers['content-type']).to.equal('application/json');
-          chai.assert(response.headers.server);
+          chai.expect(response.headers.server).to.be.ok;
         });
     });
 
@@ -883,7 +883,7 @@ describe('changes handler', () => {
     it('sends an error when couchdb returns an error', () => {
       return requestChanges('bob', { style: 'couchdb will love this', seq_interval: 'this as well' })
         .catch(err => {
-          chai.assert(err);
+          chai.expect(err).to.be.ok;
           chai.expect(err.statusCode).to.equal(500);
         });
     });
