@@ -182,7 +182,7 @@ describe('Telemetry service', () => {
         chai.expect(DB.put.callCount).to.equal(1);
 
         const aggregatedDoc = DB.put.args[0][0];
-        chai.expect(aggregatedDoc._id).to.match(/telemetry-2018-9-greg/);
+        chai.expect(aggregatedDoc._id).to.match(/telemetry-2018-10-greg/);
         chai.expect(aggregatedDoc.metrics).to.deep.equal({
           foo: 'stats',
           bar: 'more stats',
