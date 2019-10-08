@@ -54,35 +54,62 @@ const request = (options, { debug } = {}) => {
   return deferred.promise;
 };
 
+const watchFile = (filename, line) => {
+  const tail = new Tail(filename);
+  const regex = new RegExp(line);
+  const deferred = protractor.promise.defer();
+  tail.on('line', data => {
+    if (regex.test(data)) {
+      tail.unwatch();
+      deferred.fulfill();
+    }
+  });
+  tail.on('error', deferred.reject);
+
+  return { promise: deferred.promise, unwatch: () => tail.isWatching && tail.unwatch() };
+};
+
+const getSettingsRev = () => db.get('settings').then(doc => doc._rev);
+
 // Update both ddocs, to avoid instability in tests.
 // Note that API will be copying changes to medic over to medic-client, so change
 // medic-client first (api does nothing) and medic after (api copies changes over to
 // medic-client, but the changes are already there.)
-const updateSettings = updates => {
+const updateSettings = async updates => {
   if (originalSettings) {
     throw new Error('A previous test did not call revertSettings');
   }
-  return request({
-    path: '/api/v1/settings',
-    method: 'GET',
-  })
-    .then(settings => {
-      originalSettings = settings;
-      // Make sure all updated fields are present in originalSettings, to enable reverting later.
-      Object.keys(updates).forEach(updatedField => {
-        if (!_.has(originalSettings, updatedField)) {
-          originalSettings[updatedField] = null;
-        }
-      });
-      return;
-    })
-    .then(() => {
-      return request({
-        path: '/api/v1/settings?replace=1',
-        method: 'PUT',
-        body: updates,
-      });
-    });
+
+  const settings = await request({ path: '/api/v1/settings', method: 'GET' });
+  // eslint-disable-next-line require-atomic-updates
+  originalSettings = settings;
+  // Make sure all updated fields are present in originalSettings, to enable reverting later.
+  Object.keys(updates).forEach(updatedField => {
+    if (!_.has(originalSettings, updatedField)) {
+      originalSettings[updatedField] = null;
+    }
+  });
+
+  const rev = await getSettingsRev();
+  const apiLogPath = path.join(__dirname, 'logs', process.env.TRAVIS ? 'horti.log' : 'api.e2e.log');
+  const sentinelLogPath = path.join(__dirname, 'logs', process.env.TRAVIS ? 'horti.log' : 'sentinel.e2e.log');
+  const apiWatch = watchFile(apiLogPath, 'Settings reloaded successfully');
+  const sentinelWatch = watchFile(sentinelLogPath, 'Configuration reloaded successfully');
+
+  await request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: updates,
+  });
+
+  const newRev = await getSettingsRev();
+  if (newRev === rev) {
+    apiWatch.unwatch();
+    sentinelWatch.unwatch();
+    return;
+  }
+
+  return Promise.all([ apiWatch.promise, sentinelWatch.promise ]);
 };
 
 const revertSettings = () => {
@@ -288,36 +315,6 @@ const createUsers = async (users, meta = false) => {
   }
 };
 
-const watchFile = (filename, line) => new Promise((resolve, reject) => {
-  const tail = new Tail(filename);
-  const regex = new RegExp(line);
-  tail.on('line', data => {
-    if (regex.test(data)) {
-      tail.unwatch();
-      resolve();
-    }
-  });
-  tail.on('error', reject);
-  // auto resolve after 5 seconds
-  setTimeout(resolve, 5000);
-});
-
-const waitForNewSettingsToBeEnabled = () => {
-  const apiLogLine = 'Settings reloaded successfully';
-  const sentinelLogLine = 'Configuration reloaded successfully';
-  let apiLogPath = path.join(__dirname, 'logs', 'api.e2e.log');
-  let sentinelLogPath = path.join(__dirname, 'logs', 'sentinel.e2e.log');
-  if (process.env.TRAVIS) {
-    apiLogPath = path.join(__dirname, 'logs', 'horti.log');
-    sentinelLogPath = path.join(__dirname, 'logs', 'horti.log');
-  }
-
-  return Promise.all([
-    watchFile(apiLogPath, apiLogLine),
-    watchFile(sentinelLogPath, sentinelLogLine),
-  ]);
-};
-
 module.exports = {
   db: db,
   sentinelDb: sentinel,
@@ -470,17 +467,12 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) =>
-    Promise
-      .all([
-        waitForNewSettingsToBeEnabled(),
-        updateSettings(updates),
-      ])
-      .then(() => {
-        if (!ignoreRefresh) {
-          return refreshToGetNewSettings();
-        }
-      }),
+  updateSettings: (updates, ignoreRefresh) =>
+    updateSettings(updates).then(() => {
+      if (!ignoreRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }),
 
   /**
    * Revert settings and refresh if required
@@ -489,16 +481,11 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   revertSettings: ignoreRefresh =>
-    Promise
-      .all([
-        waitForNewSettingsToBeEnabled(),
-        revertSettings(),
-      ])
-      .then(() => {
-        if (!ignoreRefresh) {
-          return refreshToGetNewSettings();
-        }
-      }),
+    revertSettings().then(() => {
+      if (!ignoreRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }),
 
   seedTestData: (done, userContactDoc, documents) => {
     protractor.promise
