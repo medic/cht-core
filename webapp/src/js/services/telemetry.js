@@ -120,7 +120,7 @@ angular
 
         return {
           year: date.year(),
-          month: date.month(),
+          month: date.month() + 1,
           user: Session.userCtx().name,
           deviceId: getUniqueDeviceId(),
           versions: {
