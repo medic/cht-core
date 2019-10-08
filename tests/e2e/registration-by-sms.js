@@ -1,4 +1,5 @@
 const utils = require('../utils'),
+      sUtils = require('./sentinel/utils'),
       commonElements = require('../page-objects/common/common.po.js'),
       helper = require('../helper'),
       moment = require('moment');
@@ -231,10 +232,8 @@ describe('registration transition', () => {
       utils.updateSettings(CONFIG)
         .then(() => protractor.promise.all(DOCS.map(utils.saveDoc)))
         .then(() => submit(body))
-        .then(() => {
-          // delay by a second to allow sentinel to process the message
-          setTimeout(done, 1000);
-        })
+        .then(() => sUtils.waitForSentinel())
+        .then(done)
         .catch(done.fail);
     });
     beforeEach(function() {

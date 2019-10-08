@@ -208,7 +208,7 @@ describe('Purging on login', () => {
       }))
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => seq = result)
-      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }), true)
+      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true))
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => done()).catch(done.fail);
