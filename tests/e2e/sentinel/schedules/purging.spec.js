@@ -242,7 +242,7 @@ describe('server side purge', () => {
     return sentinelUtils.getCurrentSeq()
       .then(result => {
         seq = result;
-        return utils.updateSettings({ purge: purgeSettings }, true);
+        return utils.updateSettings({ purge: purgeSettings });
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
@@ -278,7 +278,7 @@ describe('server side purge', () => {
         chai.expect(purgedIdsUser2.purged_ids).to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
       })
       .then(() => utils.revertSettings())
-      .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }, true))
+      .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }))
       .then(() => Promise.all([
         requestChanges('user1'),
         requestChanges('user2'),
@@ -304,7 +304,7 @@ describe('server side purge', () => {
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => {
         seq = result;
-        return utils.updateSettings({ purge: purgeSettings }, true);
+        return utils.updateSettings({ purge: purgeSettings });
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
@@ -348,7 +348,7 @@ describe('server side purge', () => {
       .then(result => {
         seq = result;
         purgeSettings.fn = reversePurgeFn.toString();
-        return utils.updateSettings({ purge: purgeSettings }, true);
+        return utils.updateSettings({ purge: purgeSettings });
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))

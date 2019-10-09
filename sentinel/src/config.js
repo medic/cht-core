@@ -69,7 +69,6 @@ const initConfig = () => {
       );
       initTransitionLib();
       require('./transitions').loadTransitions();
-      logger.debug('Configuration reloaded successfully');
     })
     .catch(err => {
       logger.error('%o', err);

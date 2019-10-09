@@ -3,8 +3,6 @@ const _ = require('underscore'),
   constants = require('./constants'),
   { spawn } = require('child_process'),
   rpn = require('request-promise-native'),
-  path = require('path'),
-  Tail = require('tail').Tail,
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 
@@ -54,62 +52,35 @@ const request = (options, { debug } = {}) => {
   return deferred.promise;
 };
 
-const watchFile = (filename, line) => {
-  const tail = new Tail(filename);
-  const regex = new RegExp(line);
-  const deferred = protractor.promise.defer();
-  tail.on('line', data => {
-    if (regex.test(data)) {
-      tail.unwatch();
-      deferred.fulfill();
-    }
-  });
-  tail.on('error', deferred.reject);
-
-  return { promise: deferred.promise, unwatch: () => tail.isWatching && tail.unwatch() };
-};
-
-const getSettingsRev = () => db.get('settings').then(doc => doc._rev);
-
 // Update both ddocs, to avoid instability in tests.
 // Note that API will be copying changes to medic over to medic-client, so change
 // medic-client first (api does nothing) and medic after (api copies changes over to
 // medic-client, but the changes are already there.)
-const updateSettings = async updates => {
+const updateSettings = updates => {
   if (originalSettings) {
     throw new Error('A previous test did not call revertSettings');
   }
-
-  const settings = await request({ path: '/api/v1/settings', method: 'GET' });
-  // eslint-disable-next-line require-atomic-updates
-  originalSettings = settings;
-  // Make sure all updated fields are present in originalSettings, to enable reverting later.
-  Object.keys(updates).forEach(updatedField => {
-    if (!_.has(originalSettings, updatedField)) {
-      originalSettings[updatedField] = null;
-    }
-  });
-
-  const rev = await getSettingsRev();
-  const apiLogPath = path.join(__dirname, 'logs', process.env.TRAVIS ? 'horti.log' : 'api.e2e.log');
-  const sentinelLogPath = path.join(__dirname, 'logs', process.env.TRAVIS ? 'horti.log' : 'sentinel.e2e.log');
-  const apiWatch = watchFile(apiLogPath, 'Settings reloaded successfully');
-  const sentinelWatch = watchFile(sentinelLogPath, 'Configuration reloaded successfully');
-
-  await request({
-    path: '/api/v1/settings?replace=1',
-    method: 'PUT',
-    body: updates,
-  });
-
-  const newRev = await getSettingsRev();
-  if (newRev === rev) {
-    apiWatch.unwatch();
-    sentinelWatch.unwatch();
-    return;
-  }
-
-  return Promise.all([ apiWatch.promise, sentinelWatch.promise ]);
+  return request({
+    path: '/api/v1/settings',
+    method: 'GET',
+  })
+    .then(settings => {
+      originalSettings = settings;
+      // Make sure all updated fields are present in originalSettings, to enable reverting later.
+      Object.keys(updates).forEach(updatedField => {
+        if (!_.has(originalSettings, updatedField)) {
+          originalSettings[updatedField] = null;
+        }
+      });
+      return;
+    })
+    .then(() => {
+      return request({
+        path: '/api/v1/settings?replace=1',
+        method: 'PUT',
+        body: updates,
+      });
+    });
 };
 
 const revertSettings = () => {
@@ -467,7 +438,7 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh) =>
+  updateSettings: (updates, ignoreRefresh = false) =>
     updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();

@@ -159,8 +159,7 @@ module.exports = {
               logger.error('Failed to reload settings: %o', err);
               process.exit(1);
             })
-            .then(() => initTransitionLib())
-            .then(() => logger.debug('Settings reloaded successfully'));
+            .then(() => initTransitionLib());
         } else if (change.id.startsWith('messages-')) {
           logger.info('Detected translations change - reloading');
           loadTranslations().then(() => initTransitionLib());

@@ -75,7 +75,6 @@
     "semver": "^6.1.2",
     "sinon": "^7.3.2",
     "sw-precache": "^5.2.1",
-    "tail": "^2.0.3",
     "time-grunt": "^2.0.0",
     "underscore": "^1.9.1"
   },
