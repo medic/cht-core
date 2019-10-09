@@ -1,4 +1,5 @@
 const helper = require('../../helper');
+
 const searchBox = element(by.css('#freetext'));
 const seachButton = element(by.css('#search'));
 const refreshButton = element(by.css('.fa fa-undo'));
@@ -14,19 +15,16 @@ const contactName = element(by.css('.heading-content'));
 const rows = element.all(by.className('content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
-const peopleRows = element.all(by.repeater('group in contactsContentCtrl.selectedContact.children'));
-const deleteContact = $('[ng-click="deleteDoc(actionBarCtrl.selectedContactDoc)"]');
 
 module.exports = {
-  peopleRows,
   contactName,
   getSubmitButton: () => submitButton,
-  selectLHSRowByText: async text => {
+  selectLHSRowByText: text => {
     module.exports.search(text);
     helper.waitUntilReady(rows.last());
     module.exports.clickRowByName(text);
     helper.waitUntilReady(contactName);
-    expect(await contactName.getText()).toBe(text);
+    expect(contactName.getText()).toBe(text);
   },
 
   addNewDistrict: async districtName => {
@@ -99,20 +97,5 @@ module.exports = {
 
   clickRowByName: async name => {
     await rows.filter(elem => elem.getText().then(text => text === name)).first().click();
-  },
-
-  deleteContactByName: async contactName => {
-    let peopleRow = peopleRows.filter((row) => {
-      return row.getText().then((text) => {
-        return text.includes(contactName);
-      });
-    });
-    helper.waitUntilReady(peopleRow);
-    peopleRow.click();
-    helper.waitUntilReady(deleteContact);
-    deleteContact.click();
   }
 };
-
-
-
