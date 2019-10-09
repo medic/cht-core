@@ -14,6 +14,12 @@ const SKIPPED_BY_SENTINEL = RegExp(/^_design\/|(-info|____tombstone)$/);
 // api SMS endpoints that generated docs with ids we do not know.
 const waitForSentinel = docIds => {
   return requestOnSentinelTestDb('/_local/sentinel-meta-data')
+    .catch(err => {
+      if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
+        return { processed_seq: 0 };
+      }
+      throw err;
+    })
     .then(metaData => metaData.processed_seq)
     .then(seq => {
       const opts = {
@@ -30,11 +36,6 @@ const waitForSentinel = docIds => {
       return utils.requestOnTestDb(opts);
     })
     .then(response => {
-      if (!response.results) {
-        // something went wrong
-        return true;
-      }
-
       // sentinel doesn't bump the `processed_seq` in it's metadata doc when a change it ignores comes in
       // so we ignore those too
       if (!response.results.length || response.results.every(change => SKIPPED_BY_SENTINEL.test(change.id))) {
@@ -42,15 +43,8 @@ const waitForSentinel = docIds => {
         return;
       }
 
-      return true;
-    })
-    .catch(err => {
-      if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
-        return true;
-      }
-      throw err;
-    })
-    .then(retry => retry && utils.delayPromise(() => waitForSentinel(docIds), 100));
+      return utils.delayPromise(() => waitForSentinel(docIds), 100);
+    });
 };
 
 const requestOnSentinelTestDb = (options) => {

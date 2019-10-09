@@ -20,7 +20,7 @@ const DEFAULT_EXPECTED = [
   '_design/medic-client'
 ];
 
-const defaultDocRegex = new RegExp(/^(messages-|form:contact:)/);
+const defaultDocRegex = new RegExp(/^(messages-|form:)/);
 const isFormOrTranslation = id => defaultDocRegex.test(id);
 
 const assertChangeIds = function (changes) {
@@ -1110,7 +1110,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
@@ -1200,7 +1200,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place

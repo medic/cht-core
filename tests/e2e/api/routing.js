@@ -129,10 +129,10 @@ describe('routing', () => {
 
     it('API allows endpoints which do not need authentication', () => {
       return Promise.all([
-        utils.requestOnTestDb(_.extend({ path: '/login', json: false }, unauthenticatedRequestOptions), false, true),
+        utils.requestOnTestDb(_.extend({ path: '/login', json: false }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/login/style.css' }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
-        utils.requestOnMedicDb(_.extend({ path: '/login' }, unauthenticatedRequestOptions), false, true),
+        utils.requestOnMedicDb(_.extend({ path: '/login', json: false }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/api/info' }, unauthenticatedRequestOptions)),
       ]).then(results => {
