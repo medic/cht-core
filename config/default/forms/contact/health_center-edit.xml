@@ -56,7 +56,7 @@
             <value>Contact primaire</value>
           </text>
           <text id="/data/health_center/external_id:label">
-            <value>-</value>
+            <value>Code externe</value>
           </text>
           <text id="/data/health_center/is_name_generated/false:label">
             <value>Non, je veux nommer ça manuellement</value>
@@ -270,7 +270,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2019-07-18 23-45">
+        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2019-10-09_12-30">
           <inputs>
             <meta>
               <location>

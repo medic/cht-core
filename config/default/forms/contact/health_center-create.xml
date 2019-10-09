@@ -23,12 +23,6 @@
           <text id="/data/health_center/notes:label">
             <value>Notes</value>
           </text>
-          <text id="/data/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/contact/date_of_birth_method:label">
-            <value>Method to select date of birth</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>**Age**</value>
           </text>
@@ -180,12 +174,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/health_center/notes:label">
             <value>Notes</value>
           </text>
-          <text id="/data/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -214,9 +202,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/contact/external_id:label">
@@ -341,12 +326,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/health_center/notes:label">
             <value>नोट्स</value>
           </text>
-          <text id="/data/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -375,9 +354,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/contact/external_id:label">
@@ -502,12 +478,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/health_center/notes:label">
             <value>Catatan</value>
           </text>
-          <text id="/data/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -536,9 +506,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/contact/external_id:label">
@@ -663,12 +630,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/health_center/notes:label">
             <value>टिप्पणि</value>
           </text>
-          <text id="/data/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -697,9 +658,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/contact/external_id:label">
@@ -824,12 +782,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/health_center/notes:label">
             <value>Maelezo</value>
           </text>
-          <text id="/data/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -858,9 +810,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/contact/external_id:label">
@@ -968,7 +917,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2019-08-09 14-19">
+        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2019-10-09_12-27">
           <inputs>
             <meta>
               <location>
