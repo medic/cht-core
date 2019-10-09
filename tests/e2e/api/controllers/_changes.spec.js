@@ -20,7 +20,7 @@ const DEFAULT_EXPECTED = [
   '_design/medic-client'
 ];
 
-const defaultDocRegex = new RegExp(/^(messages-|form:)/);
+const defaultDocRegex = new RegExp(/^(messages-|form:contact:)/);
 const isFormOrTranslation = id => defaultDocRegex.test(id);
 
 const assertChangeIds = function (changes) {
@@ -689,9 +689,7 @@ describe('changes handler', () => {
           ]));
       };
 
-      return utils
-        .updateSettings({ changes_controller: _.defaults({ reiterate_changes: true }, defaultSettings) }, true)
-        .then(() => getCurrentSeq('steve'))
+      return getCurrentSeq('steve')
         .then(() => Promise.all([
           utils.request({ path: '/_users/org.couchdb.user:steve' }),
           utils.getDoc('org.couchdb.user:steve')
