@@ -1,9 +1,7 @@
 const _ = require('underscore');
-const path = require('path');
 
 const db = require('./db');
 const ddocExtraction = require('./ddoc-extraction');
-const environment = require('./environment');
 const generateXform = require('./services/generate-xform');
 const logger = require('./logger');
 const resourceExtraction = require('./resource-extraction');
@@ -59,24 +57,10 @@ const getMessage = (value, locale) => {
   return result;
 };
 
-const loadSettings = function() {
-  const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
-  const defaultConfig = require(pathToDefaultConfig);
-  return settingsService.get().then(newSettings => {
-    settings = newSettings || {};
-    const original = JSON.stringify(settings);
-    _.defaults(settings, defaultConfig);
-    // add any missing permissions
-    if (settings.permissions) {
-      _.defaults(settings.permissions, defaultConfig.permissions);
-    } else {
-      settings.permissions = defaultConfig.permissions;
-    }
-    if (JSON.stringify(settings) !== original) {
-      logger.info('Updating settings with new defaults');
-      return settingsService.update(settings);
-    }
-  });
+const loadSettings = () => {
+  return settingsService.update({})
+    .then(() => settingsService.get())
+    .then(newSettings => settings = newSettings);
 };
 
 const initTransitionLib = () => {
