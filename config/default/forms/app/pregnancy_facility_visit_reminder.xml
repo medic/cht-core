@@ -80,7 +80,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-08 13:36:05">
+        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-10 14:34:21">
           <inputs>
             <meta>
               <location>
@@ -174,11 +174,11 @@
       <bind calculate="&quot;woman-start&quot;" nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator ,' /pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator ')" nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label" type="string"/>
       <bind calculate=" /pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method " nodeset="/pregnancy_facility_visit_reminder/data/__how_reminded" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__patient_uuid" type="string"/>
-      <bind calculate="../../patient_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/pregnancy_facility_visit_reminder/data/meta/__source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__source_id" type="string"/>
+      <bind calculate="../../../inputs/contact/_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../../inputs/contact/patient_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../../inputs/contact/parent/_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../../inputs/source" nodeset="/pregnancy_facility_visit_reminder/data/meta/__source" type="string"/>
+      <bind calculate="../../../inputs/source_id" nodeset="/pregnancy_facility_visit_reminder/data/meta/__source_id" type="string"/>
       <bind calculate=" /pregnancy_facility_visit_reminder/pregnancy_uuid_ctx " nodeset="/pregnancy_facility_visit_reminder/data/meta/__pregnancy_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy_facility_visit_reminder/meta/instanceID" readonly="true()" type="string"/>
     </model>

@@ -173,7 +173,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-08 13:35:19">
+        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-10 14:10:58">
           <inputs>
             <meta>
               <location>
@@ -320,11 +320,11 @@ selected(../blue_skin, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_ba
       <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/fever " nodeset="/pnc_danger_sign_follow_up_baby/data/__fever" type="string"/>
       <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/blue_skin " nodeset="/pnc_danger_sign_follow_up_baby/data/__blue_skin_color" type="string"/>
       <bind calculate=" /pnc_danger_sign_follow_up_baby/danger_signs/r_danger_sign_present " nodeset="/pnc_danger_sign_follow_up_baby/data/__has_danger_sign" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__patient_uuid" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__source_id" type="string"/>
+      <bind calculate="../../../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../../inputs/contact/parent/_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../../inputs/source" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__source" type="string"/>
+      <bind calculate="../../../inputs/source_id" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__source_id" type="string"/>
       <bind calculate="../../inputs/delivery_uuid" nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__delivery_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pnc_danger_sign_follow_up_baby/meta/instanceID" readonly="true()" type="string"/>
     </model>
