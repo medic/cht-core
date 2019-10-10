@@ -184,7 +184,7 @@ describe('Purged Docs service', () => {
           return service.getPurgedIds(['a', 'b'], ['4', '5', '6']);
         })
         .then(result => {
-          // second time we all `db.exists` it returns false
+          // second time we call `db.exists` it returns false
           chai.expect(result).to.deep.equal([]);
           chai.expect(db.exists.callCount).to.equal(2);
           const purgeDbs = service.__get__('purgeDbs');
