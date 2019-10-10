@@ -28,6 +28,48 @@ describe('Users Controller', () => {
       res = { json: sinon.stub() };
     });
 
+    it('should catch auth context errors', () => {
+      serverUtils.error.resolves();
+      authorization.getAuthorizationContext.rejects({ some: 'err' });
+      return controller.info(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
+        chai.expect(res.json.callCount).to.equal(0);
+        chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
+        chai.expect(authorization.getAllowedDocIds.callCount).to.equal(0);
+      });
+    });
+
+    it('should catch auth ids errors', () => {
+      serverUtils.error.resolves();
+      authorization.getAuthorizationContext.resolves({});
+      authorization.getAllowedDocIds.rejects({ some: 'other err' });
+      sinon.stub(purgedDocs, 'getUnPurgedIds');
+      return controller.info(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'other err' }, req, res]);
+        chai.expect(res.json.callCount).to.equal(0);
+        chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
+        chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
+        chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(0);
+      });
+    });
+
+    it('should catch purge ids errors', () => {
+      serverUtils.error.resolves();
+      authorization.getAuthorizationContext.resolves({});
+      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').rejects({ some: 'err' });
+      return controller.info(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
+        chai.expect(res.json.callCount).to.equal(0);
+        chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
+        chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
+        chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
+      });
+    });
+
     describe('online users', () => {
       beforeEach(() => {
         auth.isOnlineOnly.returns(true);

@@ -157,6 +157,89 @@ describe('Purged Docs service', () => {
       });
     });
 
+    it('should return empty list when purgeDB has been deleted', () => {
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+      sinon.stub(db, 'exists')
+        .onCall(0).resolves(true)
+        .onCall(1).resolves(false);
+
+      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
+      const cache = {
+        get: sinon.stub().returns(false),
+        ttl: sinon.stub(),
+        set: sinon.stub()
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
+      const purgeDb = { changes: sinon.stub().resolves({ results: [{ id: 'purged:1' }] }) };
+      sinon.stub(db, 'get').returns(purgeDb);
+
+      return service
+        .getPurgedIds(['a', 'b'], ['1', '2', '3'])
+        .then(result => {
+          chai.expect(result).to.deep.equal(['1']);
+          chai.expect(db.exists.callCount).to.equal(1);
+          const purgeDbs = service.__get__('purgeDbs');
+          chai.expect(Object.keys(purgeDbs)).to.deep.equal(['some_random_hash']);
+          return service.getPurgedIds(['a', 'b'], ['4', '5', '6']);
+        })
+        .then(result => {
+          // second time we all `db.exists` it returns false
+          chai.expect(result).to.deep.equal([]);
+          chai.expect(db.exists.callCount).to.equal(2);
+          const purgeDbs = service.__get__('purgeDbs');
+          chai.expect(Object.keys(purgeDbs)).to.deep.equal([]);
+        });
+    });
+
+    it('should return empty list when the changes request throws a 404', () => {
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+      sinon.stub(db, 'exists').resolves(true);
+
+      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
+      const cache = {
+        get: sinon.stub().returns(false),
+        ttl: sinon.stub(),
+        set: sinon.stub()
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
+      const purgeDb = { changes: sinon.stub().rejects({ status: 404 }) };
+      sinon.stub(db, 'get').returns(purgeDb);
+
+      return service
+        .getPurgedIds(['a', 'b'], ['1', '2', '3'])
+        .then(result => {
+          chai.expect(result).to.deep.equal([]);
+          chai.expect(db.exists.callCount).to.equal(1);
+        });
+    });
+
+    it('should throw an error when the changes request throws an error that is not a 404', () => {
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+      sinon.stub(db, 'exists').resolves(true);
+
+      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
+      const cache = {
+        get: sinon.stub().returns(false),
+        ttl: sinon.stub(),
+        set: sinon.stub()
+      };
+      sinon.stub(cacheService, 'instance').returns(cache);
+      const purgeDb = { changes: sinon.stub().rejects({ status: 500 }) };
+      sinon.stub(db, 'get').returns(purgeDb);
+
+      return service
+        .getPurgedIds(['a', 'b'], ['1', '2', '3'])
+        .then(result => {
+          chai.expect(result).to.deep('should have thrown');
+        })
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 500 });
+        });
+    });
+
     it('should request changes from correct purge db depending on roles and save cache', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
