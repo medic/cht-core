@@ -31,24 +31,26 @@ describe('Pregnancy danger sign form analytic field tests', () => {
         await harness.loadForm('pregnancy_danger_sign');
         const dangerSignForm = await harness.fillForm(...pregnancyDangerSignScenarios.danger);
         expect(dangerSignForm.report.fields.data).to.deep.include({
-            o_vaginal_bleeding: 'yes',
-            o_fits: 'yes',
-            o_severe_abdominal_pain: 'yes',
-            o_severe_headache: 'yes',
-            o_very_pale: 'yes',
-            o_fever: 'yes',
-            o_reduced_or_no_foetal_movements: 'yes',
-            o_breaking_water: 'yes',
-            o_easily_tired: 'yes',
-            o_face_hand_swelling: 'yes',
-            o_breathlessness: 'yes',
-            o_has_danger_sign: 'yes',
-            m_patient_uuid: 'patient_id',
-            m_patient_id: 'patient_id',
-            m_household_uuid: 'patient_parent_id',
-            m_source: 'action',
-            m_source_id: '',
-            m_pregnancy_uuid: '1'
+            __vaginal_bleeding: 'yes',
+            __fits: 'yes',
+            __severe_abdominal_pain: 'yes',
+            __severe_headache: 'yes',
+            __very_pale: 'yes',
+            __fever: 'yes',
+            __reduced_or_no_fetal_movements: 'yes',
+            __breaking_water: 'yes',
+            __easily_tired: 'yes',
+            __face_hand_swelling: 'yes',
+            __breathlessness: 'yes',
+            __has_danger_sign: 'yes',
+            meta: {
+                __patient_uuid: 'patient_id',
+                __patient_id: 'patient_id',
+                __household_uuid: 'patient_parent_id',
+                __source: 'action',
+                __source_id: '',
+                __pregnancy_uuid: '1'
+            }
         });
         expect(dangerSignForm.errors).to.be.empty;
         const tasksAfterDangerSignReport = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
@@ -58,26 +60,28 @@ describe('Pregnancy danger sign form analytic field tests', () => {
         const dangerSignFollowupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.cured);
         expect(dangerSignFollowupFormResult.errors).to.be.empty;
         expect(dangerSignFollowupFormResult.report.fields.data).to.deep.include({
-            o_visited_hf: 'yes',
-            o_still_experiencing_danger_sign: 'no',
-            o_vaginal_bleeding: '',
-            o_fits: '',
-            o_severe_abdominal_pain: '',
-            o_severe_headache: '',
-            o_very_pale: '',
-            o_fever: '',
-            o_reduced_or_no_foetal_movements: '',
-            o_breaking_water: '',
-            o_easily_tired: '',
-            o_face_hand_swelling: '',
-            o_breathlessness: '',
-            o_has_danger_sign: 'no',
-            m_patient_uuid: 'patient_id',
-            m_patient_id: 'patient_id',
-            m_household_uuid: 'patient_parent_id',
-            m_source: 'task',
-            m_source_id: '2',
-            m_pregnancy_uuid: '1'
+            __visited_hf: 'yes',
+            __still_experiencing_danger_sign: 'no',
+            __vaginal_bleeding: '',
+            __fits: '',
+            __severe_abdominal_pain: '',
+            __severe_headache: '',
+            __very_pale: '',
+            __fever: '',
+            __reduced_or_no_fetal_movements: '',
+            __breaking_water: '',
+            __easily_tired: '',
+            __face_hand_swelling: '',
+            __breathlessness: '',
+            __has_danger_sign: 'no',
+            meta: {
+                __patient_uuid: 'patient_id',
+                __patient_id: 'patient_id',
+                __household_uuid: 'patient_parent_id',
+                __source: 'task',
+                __source_id: '2',
+                __pregnancy_uuid: '1'
+            }
         });
     });
 });

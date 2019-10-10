@@ -29,12 +29,6 @@
           <text id="/data/inputs/user/name:label">
             <value>Name of the logged in user</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>Method to select date of birth</value>
-          </text>
           <text id="/data/person/ephemeral_dob/age_label:label">
             <value>**Please enter date of birth**</value>
           </text>
@@ -49,9 +43,6 @@
           </text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>Years</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>DOB</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>Date of Birth</value>
@@ -68,9 +59,6 @@ Year: <output value=" /data/person/ephemeral_dob/ephemeral_years "/>
 DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/person/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
-            <value>Date of Birth</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
             <value>Date of birth unknown</value>
           </text>
@@ -174,12 +162,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>Nom</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Date de naissance</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -195,9 +177,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -208,9 +187,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -320,12 +296,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>लॉग इन यूज़र का नाम</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>जन्म की तारीख</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -341,9 +311,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -354,9 +321,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -466,12 +430,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>Nama dari login user</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Tanggal Lahir</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -487,9 +445,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -500,9 +455,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -612,12 +564,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>जन्म मिती</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -633,9 +579,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -646,9 +589,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -758,12 +698,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>Jina ya mtumizi</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Tarehe ya Kuzaliwa</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
@@ -779,9 +713,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -792,9 +723,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -881,7 +809,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-08-09 14-18">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-10-09_12-32">
           <inputs>
             <meta>
               <location>
