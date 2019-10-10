@@ -59,7 +59,7 @@
         </translation>
       </itext>
       <instance>
-        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-09-04 07:32:35">
+        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-10-08 13:30:47">
           <inputs>
             <meta>
               <location>
@@ -99,6 +99,16 @@
           <undo>
             <undo_information/>
           </undo>
+          <data tag="hidden">
+            <__confirm_undo/>
+            <meta tag="hidden">
+              <__patient_uuid/>
+              <__patient_id/>
+              <__household_uuid/>
+              <__source/>
+              <__source_id/>
+            </meta>
+          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -125,6 +135,12 @@
       <bind calculate="../inputs/contact/short_name" nodeset="/undo_death_report/patient_short_name" type="string"/>
       <bind calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))" nodeset="/undo_death_report/patient_display_name" type="string"/>
       <bind constraint=". = 'yes'" jr:constraintMsg="jr:itext('/undo_death_report/undo/undo_information:jr:constraintMsg')" nodeset="/undo_death_report/undo/undo_information" required="true()" type="select1"/>
+      <bind calculate=" /undo_death_report/undo/undo_information " nodeset="/undo_death_report/data/__confirm_undo" type="string"/>
+      <bind calculate="../../inputs/contact/_id" nodeset="/undo_death_report/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../patient_id" nodeset="/undo_death_report/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../inputs/contact/parent/_id" nodeset="/undo_death_report/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../inputs/source" nodeset="/undo_death_report/data/meta/__source" type="string"/>
+      <bind calculate="../../inputs/source_id" nodeset="/undo_death_report/data/meta/__source_id" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/undo_death_report/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -159,6 +175,9 @@
           <value>no</value>
         </item>
       </select1>
+    </group>
+    <group appearance="hidden" ref="/undo_death_report/data">
+      <group ref="/undo_death_report/data/meta"/>
     </group>
   </h:body>
 </h:html>

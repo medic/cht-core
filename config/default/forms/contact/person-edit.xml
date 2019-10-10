@@ -71,9 +71,6 @@
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>Years</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>DOB</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>Date of Birth</value>
           </text>
@@ -89,9 +86,6 @@ Year: <output value=" /data/person/ephemeral_dob/ephemeral_years "/>
 DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/person/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
-            <value>Date of Birth</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
             <value>Date unknown</value>
           </text>
@@ -231,9 +225,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -244,9 +235,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -392,9 +380,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -405,9 +390,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -553,9 +535,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -566,9 +545,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -714,9 +690,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -727,9 +700,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -875,9 +845,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
@@ -888,9 +855,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -971,7 +935,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2019-08-09 14-19">
+        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2019-10-09_12-32">
           <inputs>
             <meta>
               <location>
