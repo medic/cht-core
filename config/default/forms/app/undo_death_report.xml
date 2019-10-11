@@ -59,7 +59,7 @@
         </translation>
       </itext>
       <instance>
-        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-10-08 13:30:47">
+        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-10-10 14:11:18">
           <inputs>
             <meta>
               <location>
@@ -136,11 +136,11 @@
       <bind calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))" nodeset="/undo_death_report/patient_display_name" type="string"/>
       <bind constraint=". = 'yes'" jr:constraintMsg="jr:itext('/undo_death_report/undo/undo_information:jr:constraintMsg')" nodeset="/undo_death_report/undo/undo_information" required="true()" type="select1"/>
       <bind calculate=" /undo_death_report/undo/undo_information " nodeset="/undo_death_report/data/__confirm_undo" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/undo_death_report/data/meta/__patient_uuid" type="string"/>
-      <bind calculate="../../patient_id" nodeset="/undo_death_report/data/meta/__patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/undo_death_report/data/meta/__household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/undo_death_report/data/meta/__source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/undo_death_report/data/meta/__source_id" type="string"/>
+      <bind calculate="../../../inputs/contact/_id" nodeset="/undo_death_report/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../../inputs/contact/patient_id" nodeset="/undo_death_report/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../../inputs/contact/parent/_id" nodeset="/undo_death_report/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../../inputs/source" nodeset="/undo_death_report/data/meta/__source" type="string"/>
+      <bind calculate="../../../inputs/source_id" nodeset="/undo_death_report/data/meta/__source_id" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/undo_death_report/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>

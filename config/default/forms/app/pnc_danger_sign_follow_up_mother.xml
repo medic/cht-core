@@ -143,7 +143,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-10-08 13:35:34">
+        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-10-10 14:18:14">
           <inputs>
             <meta>
               <location>
@@ -279,12 +279,12 @@ selected(../convulsion, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_m
       <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/vaginal_discharge " nodeset="/pnc_danger_sign_follow_up_mother/data/__vaginal_discharge" type="string"/>
       <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/convulsion " nodeset="/pnc_danger_sign_follow_up_mother/data/__convulsions" type="string"/>
       <bind calculate=" /pnc_danger_sign_follow_up_mother/danger_signs/r_danger_sign_present " nodeset="/pnc_danger_sign_follow_up_mother/data/__has_danger_sign" type="string"/>
-      <bind calculate="../../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__patient_uuid" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__patient_id" type="string"/>
-      <bind calculate="../../inputs/contact/parent/_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__household_uuid" type="string"/>
-      <bind calculate="../../inputs/source" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__source" type="string"/>
-      <bind calculate="../../inputs/source_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__source_id" type="string"/>
-      <bind calculate="../../inputs/delivery_uuid" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__delivery_uuid" type="string"/>
+      <bind calculate="../../../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__patient_uuid" type="string"/>
+      <bind calculate="../../../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__patient_id" type="string"/>
+      <bind calculate="../../../inputs/contact/parent/_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__household_uuid" type="string"/>
+      <bind calculate="../../../inputs/source" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__source" type="string"/>
+      <bind calculate="../../../inputs/source_id" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__source_id" type="string"/>
+      <bind calculate="../../../inputs/delivery_uuid" nodeset="/pnc_danger_sign_follow_up_mother/data/meta/__delivery_uuid" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pnc_danger_sign_follow_up_mother/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
