@@ -106,6 +106,63 @@ const patients = [
   },
 ];
 
+const reportForPatient = (patientUuid, username, fields) => {
+  const patient = patients.find(p => p._id === patientUuid);
+  let contact = {};
+  if (username) {
+    const user = users.find(u => u.username === username);
+    contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
+  }
+  return {
+    _id: `report_${contact._id}_${patient._id}`,
+    type: 'data_record',
+    form: 'some-form',
+    content_type: 'xml',
+    fields: {
+      patient_id: fields.includes('patient_id') && patient.patient_id,
+      patient_uuid: fields.includes('patient_uuid') && patient._id,
+    },
+    contact: contact
+  };
+};
+
+/*const reportsForPatient = (patient, contacts = []) => {
+  return contacts.map(contact => ({
+    _id: `report_${contact._id}_${patient._id}`,
+    type: 'data_record',
+    form: 'some-form',
+    content_type: 'xml',
+    fields: {
+      patient_id: patient.patient_id,
+    },
+    contact: contact
+  }));
+  return [
+
+    {
+      _id: `${patientDoc._id}_report_offline_contact`,
+      type: 'data_record',
+      form: 'some-form',
+      content_type: 'xml',
+      fields: {
+        patient_uuid: patientDoc._id
+      },
+      contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+    },
+    {
+      _id: `${patientDoc._id}_report_online_contact`,
+      type: 'data_record',
+      form: 'some-form',
+      content_type: 'xml',
+      fields: {
+        patient_id: patientDoc.patient_id,
+        patient_uuid: patientDoc._id,
+      },
+      contact: { _id: 'fixture:user:online', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } }
+    },
+  ];
+};*/
+
 describe('db-doc handler', () => {
   beforeAll(done => {
     utils
@@ -285,6 +342,12 @@ describe('db-doc handler', () => {
 
         chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
       });
+    });
+
+    it('GET all many of reports', () => {
+      const scenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ) }
+      ];
     });
 
     it('GET delete stubs', () => {
