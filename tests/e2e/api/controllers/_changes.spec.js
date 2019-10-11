@@ -705,7 +705,7 @@ describe('changes handler', () => {
 
           // Sometimes the changes request ends before all our changes are processed and doesn't contain the
           // update to Steve's user :(
-          if (changeIds.incluedes('org.couchdb.user:steve')) {
+          if (changeIds.includes('org.couchdb.user:steve')) {
             // steve was moved to bobville, so we expect him to get `allowedSteveIds` + his own user
             chai.expect(changeIds).to.have.members(['org.couchdb.user:steve', ...bobvilleIds]);
             // we also expect him to *not* get any of the steveville changes
