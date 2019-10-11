@@ -703,10 +703,17 @@ describe('changes handler', () => {
           const stevevilleIds = getIds(allowedSteve);
           const changeIds = getIds(changes.results);
 
-          // steve was moved to bobville, so we expect him to get `allowedSteveIds` + his own user
-          chai.expect(changeIds).to.have.members(['org.couchdb.user:steve', ...bobvilleIds]);
-          // we also expect him to *not* get any of the steveville changes
-          stevevilleIds.forEach(id => chai.expect(changeIds).to.not.include(id));
+          // Sometimes the changes request ends before all our changes are processed and doesn't contain the
+          // update to Steve's user :(
+          if (changeIds.incluedes('org.couchdb.user:steve')) {
+            // steve was moved to bobville, so we expect him to get `allowedSteveIds` + his own user
+            chai.expect(changeIds).to.have.members(['org.couchdb.user:steve', ...bobvilleIds]);
+            // we also expect him to *not* get any of the steveville changes
+            stevevilleIds.forEach(id => chai.expect(changeIds).to.not.include(id));
+          } else {
+            // when we didn't receive Steve's update, we should only get steveVille docs
+            chai.expect(stevevilleIds).to.include(changeIds);
+          }
         })
         .then(() => utils.request({ path: '/_users/org.couchdb.user:steve' }))
         // revert steve, he didn't like it in bobville
