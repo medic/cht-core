@@ -14,25 +14,6 @@ const {
 module.exports = [
 
   {
-    id: 'newborn-mortality',
-    type: 'percent',
-    icon: 'icon-death-neonatal',
-    goal: 0,
-    translation_key: 'targets.anc.newborn_mortality.title',
-    subtitle_translation_key: 'targets.all_time.subtitle',
-    appliesTo: 'contacts',
-    appliesToType: ['person'],
-    appliesIf: function (contact) {
-      return contact && contact.contact.date_of_birth && addDays(contact.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > today;
-    },
-    passesIf: function (contact) {
-      return contact.contact.date_of_death && addDays(contact.contact.date_of_birth, FIVE_YEARS_IN_DAYS) > new Date(contact.contact.date_of_death);
-    },
-    date: 'now',
-    idType: 'contact'
-  },
-
-  {
     id: 'deaths-this-month',
     type: 'count',
     icon: 'icon-death-general',
