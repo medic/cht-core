@@ -813,7 +813,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-10_14-10">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-10_22-11">
           <inputs>
             <meta>
               <location>
@@ -1228,28 +1228,28 @@
         <root>
           <item>
             <itextId>static_instance-babies_alive-0</itextId>
-            <name>0</name>
             <count>0</count>
+            <name>0</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-1</itextId>
-            <name>1</name>
             <count>1</count>
+            <name>1</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-2</itextId>
-            <name>2</name>
             <count>2</count>
+            <name>2</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-3</itextId>
-            <name>3</name>
             <count>3</count>
+            <name>3</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-4</itextId>
-            <name>other</name>
             <count>4</count>
+            <name>other</name>
           </item>
         </root>
       </instance>
@@ -1313,28 +1313,28 @@
         <root>
           <item>
             <itextId>static_instance-pnc_visits-0</itextId>
-            <name>within_24_hrs</name>
             <count>0</count>
+            <name>within_24_hrs</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-1</itextId>
-            <name>3_days</name>
             <count>3</count>
+            <name>3_days</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-2</itextId>
-            <name>7_days</name>
             <count>7</count>
+            <name>7_days</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-3</itextId>
-            <name>6_weeks</name>
             <count>42</count>
+            <name>6_weeks</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-4</itextId>
-            <name>none</name>
             <count>0</count>
+            <name>none</name>
           </item>
         </root>
       </instance>
@@ -1575,13 +1575,13 @@ selected(../../condition/woman_outcome, 'alive_unwell')" type="string"/>
       <bind calculate="jr:choice-name( /delivery/summary/custom_translations/delivery_place_label_translator ,' /delivery/summary/custom_translations/delivery_place_label_translator ')" nodeset="/delivery/summary/custom_translations/delivery_place_label" type="string"/>
       <bind calculate=" /delivery/death_info_woman/woman_death_place " nodeset="/delivery/summary/custom_translations/woman_death_place_label_translator" type="select1"/>
       <bind calculate="jr:choice-name( /delivery/summary/custom_translations/woman_death_place_label_translator ,' /delivery/summary/custom_translations/woman_death_place_label_translator ')" nodeset="/delivery/summary/custom_translations/woman_death_place_label" type="string"/>
-      <bind calculate="../../woman_outcome" nodeset="/delivery/data/__woman_condition" type="string"/>
-      <bind calculate="../../condition/fever" nodeset="/delivery/data/__fever" type="string"/>
-      <bind calculate="../../severe_headache" nodeset="/delivery/data/__severe_headache" type="string"/>
-      <bind calculate="../../vaginal_bleeding" nodeset="/delivery/data/__vaginal_bleeding" type="string"/>
-      <bind calculate="../../vaginal_discharge" nodeset="/delivery/data/__vaginal_discharge" type="string"/>
-      <bind calculate="../../convulsion" nodeset="/delivery/data/__convulsions" type="string"/>
-      <bind calculate="../../r_pnc_danger_sign_present" nodeset="/delivery/data/__has_danger_sign" type="string"/>
+      <bind calculate=" /delivery/condition/woman_outcome " nodeset="/delivery/data/__woman_condition" type="string"/>
+      <bind calculate="../../pnc_danger_sign_check/fever" nodeset="/delivery/data/__fever" type="string"/>
+      <bind calculate="../../pnc_danger_sign_check/severe_headache" nodeset="/delivery/data/__severe_headache" type="string"/>
+      <bind calculate="../../pnc_danger_sign_check/vaginal_bleeding" nodeset="/delivery/data/__vaginal_bleeding" type="string"/>
+      <bind calculate="../../pnc_danger_sign_check/vaginal_discharge" nodeset="/delivery/data/__vaginal_discharge" type="string"/>
+      <bind calculate="../../pnc_danger_sign_check/convulsion" nodeset="/delivery/data/__convulsions" type="string"/>
+      <bind calculate=" /delivery/pnc_danger_sign_check/r_pnc_danger_sign_present " nodeset="/delivery/data/__has_danger_sign" type="string"/>
       <bind calculate=" /delivery/death_info_woman/woman_death_date " nodeset="/delivery/data/__woman_death_date" type="string"/>
       <bind calculate=" /delivery/death_info_woman/woman_death_place " nodeset="/delivery/data/__woman_death_place" type="string"/>
       <bind calculate=" /delivery/death_info_woman/woman_death_birth " nodeset="/delivery/data/__delivered_before_death" type="string"/>
