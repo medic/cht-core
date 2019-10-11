@@ -24,8 +24,6 @@ describe('Purged Docs service', () => {
   });
 
   afterEach(() => {
-    const purgeDbs = service.__get__('purgeDbs');
-    Object.keys(purgeDbs).forEach(hash => delete purgeDbs[hash]);
     sinon.restore();
   });
 
@@ -179,43 +177,18 @@ describe('Purged Docs service', () => {
         .then(result => {
           chai.expect(result).to.deep.equal(['1']);
           chai.expect(db.exists.callCount).to.equal(1);
-          const purgeDbs = service.__get__('purgeDbs');
-          chai.expect(Object.keys(purgeDbs)).to.deep.equal(['some_random_hash']);
+          chai.expect(db.get.callCount).to.equal(1);
           return service.getPurgedIds(['a', 'b'], ['4', '5', '6']);
         })
         .then(result => {
           // second time we call `db.exists` it returns false
           chai.expect(result).to.deep.equal([]);
           chai.expect(db.exists.callCount).to.equal(2);
-          const purgeDbs = service.__get__('purgeDbs');
-          chai.expect(Object.keys(purgeDbs)).to.deep.equal([]);
+          chai.expect(db.get.callCount).to.equal(1);
         });
     });
 
-    it('should return empty list when the changes request throws a 404', () => {
-      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
-      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
-      sinon.stub(db, 'exists').resolves(true);
-
-      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      const cache = {
-        get: sinon.stub().returns(false),
-        ttl: sinon.stub(),
-        set: sinon.stub()
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
-      const purgeDb = { changes: sinon.stub().rejects({ status: 404 }) };
-      sinon.stub(db, 'get').returns(purgeDb);
-
-      return service
-        .getPurgedIds(['a', 'b'], ['1', '2', '3'])
-        .then(result => {
-          chai.expect(result).to.deep.equal([]);
-          chai.expect(db.exists.callCount).to.equal(1);
-        });
-    });
-
-    it('should throw an error when the changes request throws an error that is not a 404', () => {
+    it('should throw an error when the changes request throws an error', () => {
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
       sinon.stub(db, 'exists').resolves(true);
@@ -272,7 +245,7 @@ describe('Purged Docs service', () => {
         chai.expect(cache.ttl.callCount).to.equal(0);
 
         chai.expect(db.get.callCount).to.equal(1);
-        chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name']);
+        chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name', { skip_setup: true }]);
         chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
         chai.expect(purgingUtils.getPurgeDbName.args[0]).to.deep.equal([environment.db, 'some_random_hash']);
         chai.expect(purgingUtils.getRoleHash.callCount).to.equal(1);
@@ -407,7 +380,7 @@ describe('Purged Docs service', () => {
       return service.getPurgedIdsSince(['a', 'b'], ids, { checkPointerId: 'uniqe_uuid' }).then(result => {
         chai.expect(result).to.deep.equal({ purgedDocIds: ['2', '3', '4', '6'], lastSeq: '112-seq' });
         chai.expect(db.get.callCount).to.equal(1);
-        chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name']);
+        chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name', { skip_setup: true }]);
         chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
         chai.expect(purgingUtils.getPurgeDbName.args[0]).to.deep.equal([environment.db, 'some_random_hash']);
         chai.expect(purgingUtils.getRoleHash.callCount).to.equal(1);
@@ -486,7 +459,7 @@ describe('Purged Docs service', () => {
       return service.info().then(result => {
         chai.expect(result).to.equal(info);
         chai.expect(db.get.callCount).to.equal(1);
-        chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name']);
+        chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name', { skip_setup: true }]);
         chai.expect(purgeDb.info.callCount).to.equal(1);
       });
     });
@@ -508,6 +481,50 @@ describe('Purged Docs service', () => {
       return service.info().catch(err => {
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
+    });
+  });
+
+  describe('getPurgeDb', () => {
+    it('should throw an error when the db does not exist', () => {
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+      sinon.stub(db, 'exists').resolves(false);
+      sinon.stub(db, 'get');
+
+      return service
+        .__get__('getPurgeDb')(['role1', 'role2'])
+        .then(r => chai.expect(r).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err.message).to.deep.equal('not_found');
+          chai.expect(db.exists.callCount).to.equal(1);
+          chai.expect(db.exists.args[0]).to.deep.equal(['purge-db-name']);
+          chai.expect(purgingUtils.getRoleHash.callCount).to.equal(1);
+          chai.expect(purgingUtils.getRoleHash.args[0]).to.deep.equal([['role1', 'role2']]);
+          chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
+          chai.expect(purgingUtils.getPurgeDbName.args[0][1]).to.equal('some_random_hash');
+          chai.expect(db.get.callCount).to.equal(0);
+        });
+    });
+
+    it('should return the pouchdb object when the db exists', () => {
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+      sinon.stub(db, 'exists').resolves(true);
+      sinon.stub(db, 'get').returns('my db object');
+
+      return service
+        .__get__('getPurgeDb')(['role1', 'role2'])
+        .then(result => {
+          chai.expect(db.exists.callCount).to.equal(1);
+          chai.expect(db.exists.args[0]).to.deep.equal(['purge-db-name']);
+          chai.expect(purgingUtils.getRoleHash.callCount).to.equal(1);
+          chai.expect(purgingUtils.getRoleHash.args[0]).to.deep.equal([['role1', 'role2']]);
+          chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
+          chai.expect(purgingUtils.getPurgeDbName.args[0][1]).to.equal('some_random_hash');
+          chai.expect(db.get.callCount).to.equal(1);
+          chai.expect(db.get.args[0]).to.deep.equal(['purge-db-name', { skip_setup: true }]);
+          chai.expect(result).to.equal('my db object');
+        });
     });
   });
 });

@@ -8,22 +8,19 @@ const utils = require('../controllers/utils');
 
 const CACHE_NAME = 'purged-docs';
 const DB_NOT_FOUND_ERROR = new Error('not_found');
-const purgeDbs = {};
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
   const dbName = purgingUtils.getPurgeDbName(environment.db, hash);
   return db.exists(dbName).then(exists => {
     if (!exists) {
-      delete purgeDbs[hash];
       throw DB_NOT_FOUND_ERROR;
     }
-    purgeDbs[hash] = purgeDbs[hash] || db.get(dbName);
-    return purgeDbs[hash];
+    return db.get(dbName, { skip_setup: true });
   });
 };
 
 const catchDbNotFoundError = (err) => {
-  if (err !== DB_NOT_FOUND_ERROR && err.status !== 404) {
+  if (err !== DB_NOT_FOUND_ERROR) {
     throw err;
   }
 };
