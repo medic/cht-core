@@ -2,7 +2,7 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk: oraclejdk9
+jdk: oraclejdk11
 dist: xenial
 
 addons:
