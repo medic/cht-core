@@ -3,6 +3,7 @@ const chai = require('chai');
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
 const constants = require('../../../constants');
+const uuid = require('uuid');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -106,7 +107,7 @@ const patients = [
   },
 ];
 
-const reportForPatient = (patientUuid, username, fields) => {
+const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false) => {
   const patient = patients.find(p => p._id === patientUuid);
   let contact = {};
   if (username) {
@@ -114,54 +115,18 @@ const reportForPatient = (patientUuid, username, fields) => {
     contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
   }
   return {
-    _id: `report_${contact._id}_${patient._id}`,
+    _id: uuid(),
     type: 'data_record',
     form: 'some-form',
     content_type: 'xml',
     fields: {
       patient_id: fields.includes('patient_id') && patient.patient_id,
       patient_uuid: fields.includes('patient_uuid') && patient._id,
+      needs_signoff: needs_signoff
     },
     contact: contact
   };
 };
-
-/*const reportsForPatient = (patient, contacts = []) => {
-  return contacts.map(contact => ({
-    _id: `report_${contact._id}_${patient._id}`,
-    type: 'data_record',
-    form: 'some-form',
-    content_type: 'xml',
-    fields: {
-      patient_id: patient.patient_id,
-    },
-    contact: contact
-  }));
-  return [
-
-    {
-      _id: `${patientDoc._id}_report_offline_contact`,
-      type: 'data_record',
-      form: 'some-form',
-      content_type: 'xml',
-      fields: {
-        patient_uuid: patientDoc._id
-      },
-      contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
-    },
-    {
-      _id: `${patientDoc._id}_report_online_contact`,
-      type: 'data_record',
-      form: 'some-form',
-      content_type: 'xml',
-      fields: {
-        patient_id: patientDoc.patient_id,
-        patient_uuid: patientDoc._id,
-      },
-      contact: { _id: 'fixture:user:online', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } }
-    },
-  ];
-};*/
 
 describe('db-doc handler', () => {
   beforeAll(done => {
@@ -331,7 +296,13 @@ describe('db-doc handler', () => {
 
       return Promise.all([
         utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:patient' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, offlineRequestOptions)),
         utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:patient' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic:patient' }, offlineRequestOptions)).catch(err => err),
       ]).then(results => {
         chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
@@ -339,15 +310,116 @@ describe('db-doc handler', () => {
           type: 'person',
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
+        chai.expect(results[1]).to.deep.include(clinics.find(clinic => clinic._id === 'fixture:offline:clinic'));
+        chai.expect(results[2]).to.deep.include(patients.find(patient => patient._id === 'fixture:offline:patient'));
+        chai.expect(results[3]).to.deep.include(patients.find(patient => patient._id === 'fixture:offline:clinic:patient'));
 
-        chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[6]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[7]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
       });
     });
 
-    it('GET all many of reports', () => {
-      const scenarios = [
-        { doc: reportForPatient('fixture:offline:patient', null, ) }
+    it('GET many types of reports', () => {
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+
+        { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
       ];
+      const docs = reportScenarios.map(scenario => scenario.doc);
+      return utils
+        .saveDocs(docs)
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('GET many types of reports and replication depth and needs_signoff', () => {
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+      const docs = reportScenarios.map(scenario => scenario.doc);
+      return utils
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => utils.saveDocs(docs))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
     });
 
     it('GET delete stubs', () => {
@@ -606,6 +678,107 @@ describe('db-doc handler', () => {
         });
     });
 
+    it('POST many types of reports', () => {
+      offlineRequestOptions.method = 'POST';
+      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+
+        { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      return Promise
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err)))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('POST many types of reports and replication depth and needs_signoff', () => {
+      offlineRequestOptions.method = 'POST';
+      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+      return utils
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
     it('PUT', () => {
       _.extend(offlineRequestOptions, {
         method: 'PUT',
@@ -755,6 +928,107 @@ describe('db-doc handler', () => {
           chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
           chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
           chai.expect(results[3]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
+        });
+    });
+
+    it('PUT many types of reports', () => {
+      offlineRequestOptions.method = 'PUT';
+      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+
+        { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      return Promise
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err)))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('PUT many types of reports and replication depth and needs_signoff', () => {
+      offlineRequestOptions.method = 'PUT';
+      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+      return utils
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
         });
     });
 
