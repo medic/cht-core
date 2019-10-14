@@ -21,6 +21,7 @@ describe('db-doc service', () => {
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'alwaysAllowCreate');
     sinon.stub(authorization, 'getAuthorizationContext').resolves({ subjectIds: [1, 3, 4], userCtx: { name: 'user' } });
+    sinon.stub(authorization, 'getMinimalAuthorizationContext').resolves({ userCtx: { name: 'user' }, subjectIds: [1, 2] });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(authorization, 'isDeleteStub').returns(false);
     sinon.stub(db.medic, 'get').resolves({});
@@ -174,12 +175,17 @@ describe('db-doc service', () => {
         });
     });
 
-    it('calls authorization.getAuthorizationContext with correct params', () => {
+    it('calls authorization.getMinimalAuthorizationContext with correct params', () => {
+      method = 'PUT';
+      const stored = { _id: 'id', _rev: '1-rev' };
+      body = { _id: 'id', _rev: '2-rev' };
+      db.medic.get.resolves(stored);
+
       return service
         .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(1);
-          authorization.getAuthorizationContext.args[0].should.deep.equal([{ name: 'user' }]);
+          authorization.getMinimalAuthorizationContext.callCount.should.equal(1);
+          authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([{ name: 'user' }, [{ doc: stored, views: { view: stored } }, { doc: body, views: { view: body } }]]);
         });
     });
 
@@ -190,12 +196,12 @@ describe('db-doc service', () => {
       return service
         .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
-          authorization.getViewResults.callCount.should.equal(1);
+          authorization.getViewResults.callCount.should.equal(2);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
+          authorization.getViewResults.args[0].should.deep.equal([false]);
 
           authorization.allowedDoc.callCount.should.equal(1);
-          authorization.allowedDoc.args[0].should.deep.equal(
-            ['id', { subjectIds: [1, 3, 4], userCtx: { name: 'user' }}, { view: doc } ]);
+          authorization.allowedDoc.args[0].should.deep.equal(['id', { subjectIds: [1, 2], userCtx: { name: 'user' }}, { view: doc } ]);
         });
     });
 
