@@ -107,25 +107,35 @@ const patients = [
   },
 ];
 
-const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false) => {
-  const patient = patients.find(p => p._id === patientUuid);
-  let contact = {};
-  if (username) {
-    const user = users.find(u => u.username === username);
-    contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
+const setReportContact = (report, username) => {
+  if (!username) {
+    return;
   }
-  return {
-    _id: uuid(),
-    type: 'data_record',
-    form: 'some-form',
-    content_type: 'xml',
-    fields: {
-      patient_id: fields.includes('patient_id') && patient.patient_id,
-      patient_uuid: fields.includes('patient_uuid') && patient._id,
-      needs_signoff: needs_signoff
-    },
-    contact: contact
+  const user = users.find(u => u.username === username);
+  report.contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
+  return report;
+};
+
+const setReportPatient = (report, patientUuid, fields) => {
+  const patient = patients.find(p => p._id === patientUuid);
+  if (!patient) {
+    return;
+  }
+  report.fields = {
+    patient_id: fields.includes('patient_id') && patient.patient_id,
+    patient_uuid: fields.includes('patient_uuid') && patient._id,
   };
+  return report;
+};
+
+const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false) => {
+  const report = { _id: uuid(), type: 'data_record', form: 'some-form', content_type: 'xml', fields: {} };
+
+  setReportContact(report, username);
+  setReportPatient(report, patientUuid, fields);
+  report.fields.needs_signoff = needs_signoff;
+
+  return report;
 };
 
 describe('db-doc handler', () => {
@@ -1020,6 +1030,43 @@ describe('db-doc handler', () => {
       ];
       return utils
         .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('PUT with reports and existent docs', () => {
+      offlineRequestOptions.method = 'PUT';
+      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+
+      const existentReports = [
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      let reportScenarios;
+
+      return utils
+        .saveDocs(existentReports.map(scenario => scenario.doc))
+        .then(results =>  {
+          reportScenarios = [
+            { doc: setReportPatient(existentReports[0].doc, 'fixture:online:patient', ['patient_id']), allowed: false },
+            { doc: setReportContact(existentReports[1].doc, 'offline'), allowed: true },
+
+            { doc: setReportPatient(existentReports[2].doc, 'fixture:offline:patient', ['patient_uuid']), allowed: false },
+            { doc: setReportContact(existentReports[3].doc, 'offline'), allowed: false },
+          ];
+          results.forEach((result, i) => reportScenarios[i].doc._rev = result.rev);
+        })
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
