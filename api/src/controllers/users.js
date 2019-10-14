@@ -201,10 +201,12 @@ module.exports = {
     } catch (err) {
       return serverUtils.error(err, req, res);
     }
-    return getAllowedDocIds(userCtx).then(docIds => res.json({
-      total_docs: docIds.length,
-      warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT,
-      limit: usersService.DOC_IDS_WARN_LIMIT
-    }));
+    return getAllowedDocIds(userCtx)
+      .then(docIds => res.json({
+        total_docs: docIds.length,
+        warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT,
+        limit: usersService.DOC_IDS_WARN_LIMIT
+      }))
+      .catch(err => serverUtils.error(err, req, res));
   },
 };
