@@ -27,8 +27,6 @@ const medicLogo = element(by.className('logo-full')),
   modalFooter = element(by.css('.modal-footer')),
   deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 
-
-
 module.exports = {
   calm: () => {
     const bootstrapperSelector = by.css('.bootstrap-layer');
