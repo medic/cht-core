@@ -209,16 +209,16 @@ const getReplicationKeys = (viewResults) => {
   return subjectIds;
 };
 
-const findContactsByPatientIds = (patientIds) => {
-  patientIds = _.uniq(patientIds);
-  if (!patientIds.length) {
+const findContactsBySubjectIds = (subjectIds) => {
+  subjectIds = _.uniq(subjectIds);
+  if (!subjectIds.length) {
     return Promise.resolve([]);
   }
 
   return db.medic
-    .query('medic-client/contacts_by_reference', { keys: patientIds.map(id => ['shortcode', id])})
+    .query('medic-client/contacts_by_reference', { keys: subjectIds.map(id => ['shortcode', id])})
     .then(result => {
-      const contactIds = patientIds.map(subjectId => {
+      const contactIds = subjectIds.map(subjectId => {
         const row = result.rows.find(row => row.key[1] === subjectId);
         return row && row.id || subjectId;
       });
@@ -237,19 +237,19 @@ const getPatientId = (viewResults) => viewResults.contactsByDepth && viewResults
 const getMinimalAuthorizationContext = (userCtx, docObjs) => {
   const authorizationCtx = getContextObject(userCtx);
 
-  docObjs.filter(docObj => docObj.doc);
+  docObjs = docObjs.filter(docObj => docObj.doc);
   if (!docObjs.length) {
-    return authorizationCtx;
+    return Promise.resolve(authorizationCtx);
   }
 
   // collect all values that the docs would emit in `docs_by_replication_key`
-  const patientIds = [];
+  const subjectIds = [];
   docObjs.forEach(docObj => {
     docObj.viewResults = docObj.viewResults || getViewResults(docObj.doc);
-    patientIds.push(...getReplicationKeys(docObj.viewResults));
+    subjectIds.push(...getReplicationKeys(docObj.viewResults));
   });
 
-  return findContactsByPatientIds(patientIds).then(contacts => {
+  return findContactsBySubjectIds(subjectIds).then(contacts => {
     // we simulate a `medic/contacts_by_depth` filter over the list contacts
     contacts.forEach(contact => {
       if (!contact) {
