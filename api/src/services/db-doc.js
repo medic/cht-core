@@ -93,43 +93,6 @@ module.exports = {
       });
   },
 
-  filterOfflineRequest11: (userCtx, params, method, query, body) => {
-    const isAttachment = params.attachmentId;
-
-    return Promise
-      .all([
-        getStoredDoc(params, method, query, isAttachment),
-        getRequestDoc(method, body, isAttachment),
-        authorization.getAuthorizationContext(userCtx)
-      ])
-      .then(([ storedDoc, requestDoc, authorizationContext ]) => {
-        if (!storedDoc && !requestDoc) {
-          return false;
-        }
-
-        // user must be allowed to see existent document
-        if (storedDoc &&
-            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc)) &&
-            !authorization.isDeleteStub(storedDoc)) {
-          return false;
-        }
-
-        // user must be allowed to see new/updated document or be allowed to create this document
-        if (requestDoc &&
-            !authorization.alwaysAllowCreate(requestDoc) &&
-            !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {
-          return false;
-        }
-
-        if (method === 'GET' && !isAttachment) {
-          // we have already requested the doc with same query options
-          return storedDoc;
-        }
-
-        return true;
-      });
-  },
-
   // db-doc GET requests with `open_revs` return a list of requested revisions of the requested doc id
   filterOfflineOpenRevsRequest: (userCtx, params, query) => {
     let stored;
@@ -154,22 +117,4 @@ module.exports = {
           .map(storedDoc => ({ ok: storedDoc.doc }));
       });
   },
-  filterOfflineOpenRevsRequest11: (userCtx, params, query) => {
-    return Promise
-      .all([
-        getStoredDoc(params, 'GET', query),
-        authorization.getAuthorizationContext(userCtx)
-      ])
-      .then(([ storedDocs, authorizationContext ]) => {
-        return storedDocs.filter(storedDoc => {
-          if (!storedDoc.ok) {
-            return false;
-          }
-
-          const viewResults = authorization.getViewResults(storedDoc.ok);
-          return authorization.allowedDoc(storedDoc.ok._id, authorizationContext, viewResults) ||
-                 authorization.isDeleteStub(storedDoc.ok);
-        });
-      });
-  }
 };
