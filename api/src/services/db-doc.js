@@ -37,6 +37,12 @@ const getRequestDoc = (method, body, isAttachment) => {
 };
 
 module.exports = {
+  // offline users will only be able to:
+  // - GET/DELETE `db-docs` they are allowed to see
+  // - POST `db-docs` they will be allowed to see
+  // - PUT `db-docs` they are and will be allowed to see
+  // - GET/PUT/DELETE `attachments` of `db-docs` they are allowed to see
+  // this filters audited endpoints, so valid requests are allowed to pass through to the next route
   filterOfflineRequest: (userCtx, params, method, query, body) => {
     const isAttachment = params.attachmentId;
     let stored;
@@ -86,12 +92,7 @@ module.exports = {
         return true;
       });
   },
-  // offline users will only be able to:
-  // - GET/DELETE `db-docs` they are allowed to see
-  // - POST `db-docs` they will be allowed to see
-  // - PUT `db-docs` they are and will be allowed to see
-  // - GET/PUT/DELETE `attachments` of `db-docs` they are allowed to see
-  // this filters audited endpoints, so valid requests are allowed to pass through to the next route
+
   filterOfflineRequest11: (userCtx, params, method, query, body) => {
     const isAttachment = params.attachmentId;
 
@@ -131,6 +132,29 @@ module.exports = {
 
   // db-doc GET requests with `open_revs` return a list of requested revisions of the requested doc id
   filterOfflineOpenRevsRequest: (userCtx, params, query) => {
+    let stored;
+    return getStoredDoc(params, 'GET', query)
+      .then(storedDocs => {
+        stored = storedDocs.map(storedDoc => ({
+          doc: storedDoc.ok,
+          viewResults: authorization.getViewResults(storedDoc.ok)
+        }));
+        return authorization.getMinimalAuthorizationContext(userCtx, stored);
+      })
+      .then(authorizationContext => {
+        return stored
+          .filter(storedDoc => {
+            if (!storedDoc.doc) {
+              return false;
+            }
+
+            return authorization.allowedDoc(storedDoc.doc._id, authorizationContext, storedDoc.viewResults) ||
+                   authorization.isDeleteStub(storedDoc.doc);
+          })
+          .map(storedDoc => ({ ok: storedDoc.doc }));
+      });
+  },
+  filterOfflineOpenRevsRequest11: (userCtx, params, query) => {
     return Promise
       .all([
         getStoredDoc(params, 'GET', query),
@@ -149,11 +173,3 @@ module.exports = {
       });
   }
 };
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
-    _getStoredDoc: getStoredDoc,
-    _getRequestDoc: getRequestDoc
-  });
-}

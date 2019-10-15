@@ -1083,10 +1083,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'karma:unit',
-    'karma:admin',
+    //'karma:unit',
+    //'karma:admin',
     'env:unit-test',
-    'exec:shared-lib-unit',
+    //'exec:shared-lib-unit',
     'mochaTest:unit',
     'env:general',
   ]);
