@@ -123,11 +123,13 @@ const login = browser => {
 
 const setupSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
-  const defaultAppSettings = fs.readFileSync(pathToDefaultAppSettings).toString();
+  const defaultAppSettings = JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
+  defaultAppSettings.transitions = {};
+
   return utils.request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
-    body: defaultAppSettings,
+    body: JSON.stringify(defaultAppSettings),
     headers: { 'Content-Type': 'application/json' },
   });
 };
