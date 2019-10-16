@@ -210,10 +210,11 @@ const getReplicationKeys = (viewResults) => {
 };
 
 const findContactsBySubjectIds = (subjectIds) => {
-  subjectIds = _.uniq(subjectIds);
-  if (!subjectIds.length) {
+  if (!subjectIds || !subjectIds.length) {
     return Promise.resolve([]);
   }
+
+  subjectIds = _.uniq(subjectIds);
 
   return db.medic
     .query('medic-client/contacts_by_reference', { keys: subjectIds.map(id => ['shortcode', id])})
@@ -225,10 +226,21 @@ const findContactsBySubjectIds = (subjectIds) => {
 
       return db.medic.allDocs({ keys: contactIds, include_docs: true });
     })
-    .then(result => result.rows && result.rows.map(row => row.doc));
+    .then(result => {
+      if (!result.rows) {
+        return [];
+      }
+
+      return result.rows
+        .map(row => row.doc)
+        .filter(doc => doc);
+    });
 };
 
-const getPatientId = (viewResults) => viewResults.contactsByDepth && viewResults.contactsByDepth[0] && viewResults.contactsByDepth[0][1];
+const getPatientId = (viewResults) => viewResults &&
+                                      viewResults.contactsByDepth &&
+                                      viewResults.contactsByDepth[0] &&
+                                      viewResults.contactsByDepth[0][1];
 
 // in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
