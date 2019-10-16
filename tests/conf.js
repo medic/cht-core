@@ -90,11 +90,11 @@ const startApi = () =>
 const listenForApi = () => {
   console.log('Checking API');
   return utils.request({ path: '/api/info' }).catch(() => {
-    console.log('API check failed, trying again in 5 seconds');
+    console.log('API check failed, trying again in 1 second');
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(listenForApi());
-      }, 5000);
+      }, 1000);
     });
   });
 };
