@@ -9,14 +9,14 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^4.2.0",
-    "chai-exclude": "^2.0.1",
+    "chai-exclude": "^2.0.2",
     "jsverify": "^0.8.4",
-    "mocha": "^6.1.4",
-    "sinon": "^7.3.2"
+    "mocha": "^6.2.1",
+    "sinon": "^7.5.0"
   },
   "dependencies": {
-    "@medic/lineage": "file:../lineage",
     "@medic/infodoc": "file:../infodoc",
+    "@medic/lineage": "file:../lineage",
     "@medic/message-utils": "file:../message-utils",
     "@medic/phone-number": "file:../phone-number",
     "@medic/registration-utils": "file:../registration-utils",
@@ -24,10 +24,10 @@
     "async": "^3.1.0",
     "bikram-sambat": "^1.6.0",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.1",
+    "google-libphonenumber": "^3.2.5",
     "gsm": "^0.1.4",
     "moment": "^2.22.2",
-    "mustache": "^3.0.1",
+    "mustache": "^3.1.0",
     "object-path": "^0.11.4",
     "underscore": "^1.9.1"
   }
