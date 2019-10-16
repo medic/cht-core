@@ -100,7 +100,7 @@ var passwordTester = require('simple-password-tester'),
 
       var validatePasswordFields = function() {
         return validateRequired('password', 'Password') &&
-          (!ctrl.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
+          validateRequired('currentPassword', 'Current Password') &&
           validatePasswordStrength() &&
           validateConfirmPasswordMatches();
       };
