@@ -341,9 +341,6 @@
           <text id="/pregnancy/inputs/user/parent/_id:label">
             <value>Parent ID</value>
           </text>
-          <text id="/pregnancy/inputs/user/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pregnancy/inputs/user:label">
             <value>User</value>
           </text>
@@ -671,7 +668,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-10-16 05:28:47">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-10-17 05:01:12">
           <inputs>
             <meta>
               <location>
@@ -1248,9 +1245,7 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
         <input appearance="db-object" ref="/pregnancy/inputs/user/contact_id">
           <label ref="jr:itext('/pregnancy/inputs/user/contact_id:label')"/>
         </input>
-        <group ref="/pregnancy/inputs/user/parent">
-          <label ref="jr:itext('/pregnancy/inputs/user/parent:label')"/>
-        </group>
+        <group ref="/pregnancy/inputs/user/parent"/>
       </group>
       <group ref="/pregnancy/inputs/contact">
         <input appearance="db-object" ref="/pregnancy/inputs/contact/_id">

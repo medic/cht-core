@@ -414,9 +414,6 @@
           <text id="/delivery/inputs/contact/parent/parent/parent/_id:label">
             <value>Health Facility ID</value>
           </text>
-          <text id="/delivery/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/delivery/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -798,7 +795,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-16_05-28">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-17_05-01">
           <inputs>
             <meta>
               <location>
@@ -1609,7 +1606,6 @@ if(selected( /delivery/pnc_visits/pnc_visits_attended , '6_weeks'), 1, 0))" node
           <label ref="jr:itext('/delivery/inputs/contact/_id:label')"/>
         </input>
         <group ref="/delivery/inputs/contact/parent">
-          <label ref="jr:itext('/delivery/inputs/contact/parent:label')"/>
           <input appearance="hidden" ref="/delivery/inputs/contact/parent/_id">
             <label ref="jr:itext('/delivery/inputs/contact/parent/_id:label')"/>
           </input>

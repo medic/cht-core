@@ -137,9 +137,6 @@
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -161,7 +158,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-16 05:28:46">
+        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-17 05:01:30">
           <inputs>
             <meta>
               <location>
@@ -324,7 +321,6 @@ selected(../blue_skin, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_ba
           <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent">
-          <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/parent:label')"/>
           <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent">
             <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact"/>
           </group>

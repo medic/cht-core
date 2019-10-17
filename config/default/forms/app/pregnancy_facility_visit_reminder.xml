@@ -44,9 +44,6 @@
           <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pregnancy_facility_visit_reminder/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -68,7 +65,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-16 05:28:47">
+        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-17 05:00:49">
           <inputs>
             <meta>
               <location>
@@ -178,7 +175,6 @@
           <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent">
-          <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/parent:label')"/>
           <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent">
             <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact"/>
           </group>
