@@ -20,15 +20,6 @@
           <text id="/undo_death_report/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/undo_death_report/inputs/contact/parent/parent/contact:label">
-            <value>Contact</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/undo_death_report/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -38,17 +29,11 @@
           <text id="/undo_death_report/inputs/contact/short_name:label">
             <value>Short Name</value>
           </text>
-          <text id="/undo_death_report/inputs/contact:label">
-            <value>Contact</value>
-          </text>
           <text id="/undo_death_report/inputs/source:label">
             <value>Source</value>
           </text>
           <text id="/undo_death_report/inputs/source_id:label">
             <value>Source ID</value>
-          </text>
-          <text id="/undo_death_report/inputs:label">
-            <value>Patient</value>
           </text>
           <text id="/undo_death_report/undo/undo_information:jr:constraintMsg">
             <value>Only submit this report if you want to undo the death report.</value>
@@ -59,7 +44,7 @@
         </translation>
       </itext>
       <instance>
-        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-10-10 14:11:18">
+        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-10-16 05:28:46">
           <inputs>
             <meta>
               <location>
@@ -146,19 +131,13 @@
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/undo_death_report/inputs">
-      <label ref="jr:itext('/undo_death_report/inputs:label')"/>
       <group ref="/undo_death_report/inputs/contact">
-        <label ref="jr:itext('/undo_death_report/inputs/contact:label')"/>
         <input appearance="db-object" ref="/undo_death_report/inputs/contact/_id">
           <label ref="jr:itext('/undo_death_report/inputs/contact/_id:label')"/>
         </input>
         <group ref="/undo_death_report/inputs/contact/parent">
-          <label ref="jr:itext('/undo_death_report/inputs/contact/parent:label')"/>
           <group ref="/undo_death_report/inputs/contact/parent/parent">
-            <label ref="jr:itext('/undo_death_report/inputs/contact/parent/parent:label')"/>
-            <group ref="/undo_death_report/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/undo_death_report/inputs/contact/parent/parent/contact:label')"/>
-            </group>
+            <group ref="/undo_death_report/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>

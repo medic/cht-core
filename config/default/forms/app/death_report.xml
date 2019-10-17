@@ -64,12 +64,6 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
           <text id="/death_report/inputs/contact/parent/parent/contact:label">
             <value>Contact</value>
           </text>
-          <text id="/death_report/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/death_report/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/death_report/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -88,13 +82,10 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
           <text id="/death_report/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/death_report/inputs:label">
-            <value>Patient</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-10-10 14:34:16">
+        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-10-16 05:28:46">
           <inputs>
             <meta>
               <location>
@@ -218,16 +209,13 @@ concat(../../patient_age_in_years, ' years old')))" nodeset="/death_report/group
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/death_report/inputs">
-      <label ref="jr:itext('/death_report/inputs:label')"/>
       <group ref="/death_report/inputs/contact">
         <label ref="jr:itext('/death_report/inputs/contact:label')"/>
         <input appearance="db-object" ref="/death_report/inputs/contact/_id">
           <label ref="jr:itext('/death_report/inputs/contact/_id:label')"/>
         </input>
         <group ref="/death_report/inputs/contact/parent">
-          <label ref="jr:itext('/death_report/inputs/contact/parent:label')"/>
           <group ref="/death_report/inputs/contact/parent/parent">
-            <label ref="jr:itext('/death_report/inputs/contact/parent/parent:label')"/>
             <group ref="/death_report/inputs/contact/parent/parent/contact">
               <label ref="jr:itext('/death_report/inputs/contact/parent/parent/contact:label')"/>
             </group>

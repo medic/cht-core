@@ -320,15 +320,6 @@
           <text id="/pregnancy/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/pregnancy/inputs/contact/parent/parent/contact:label">
-            <value>Contact</value>
-          </text>
-          <text id="/pregnancy/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/pregnancy/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pregnancy/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -337,9 +328,6 @@
           </text>
           <text id="/pregnancy/inputs/contact/short_name:label">
             <value>Short Name</value>
-          </text>
-          <text id="/pregnancy/inputs/contact:label">
-            <value>Contact</value>
           </text>
           <text id="/pregnancy/inputs/source:label">
             <value>Source</value>
@@ -358,9 +346,6 @@
           </text>
           <text id="/pregnancy/inputs/user:label">
             <value>User</value>
-          </text>
-          <text id="/pregnancy/inputs:label">
-            <value>Patient</value>
           </text>
           <text id="/pregnancy/risk_factors/risk_factors_history/first_pregnancy/no:label">
             <value>No</value>
@@ -686,7 +671,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-10-10 14:09:30">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-10-16 05:28:47">
           <inputs>
             <meta>
               <location>
@@ -1258,7 +1243,6 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy/inputs">
-      <label ref="jr:itext('/pregnancy/inputs:label')"/>
       <group ref="/pregnancy/inputs/user">
         <label ref="jr:itext('/pregnancy/inputs/user:label')"/>
         <input appearance="db-object" ref="/pregnancy/inputs/user/contact_id">
@@ -1269,17 +1253,12 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
         </group>
       </group>
       <group ref="/pregnancy/inputs/contact">
-        <label ref="jr:itext('/pregnancy/inputs/contact:label')"/>
         <input appearance="db-object" ref="/pregnancy/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy/inputs/contact/parent">
-          <label ref="jr:itext('/pregnancy/inputs/contact/parent:label')"/>
           <group ref="/pregnancy/inputs/contact/parent/parent">
-            <label ref="jr:itext('/pregnancy/inputs/contact/parent/parent:label')"/>
-            <group ref="/pregnancy/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/pregnancy/inputs/contact/parent/parent/contact:label')"/>
-            </group>
+            <group ref="/pregnancy/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>
