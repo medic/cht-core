@@ -144,6 +144,7 @@ describe('EditUserCtrl controller', () => {
       translate.withArgs('password.length.minimum', { minimum: 8 }).returns(Promise.resolve('short'));
       setTimeout(() => {
         ctrl.editUserModel.password = '2sml4me';
+        ctrl.editUserModel.currentPassword = '2xml4me';
         ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('short');
@@ -157,6 +158,7 @@ describe('EditUserCtrl controller', () => {
       translate.withArgs('password.weak').returns(Promise.resolve('hackable'));
       setTimeout(() => {
         ctrl.editUserModel.password = 'password';
+        ctrl.editUserModel.currentPassword = '2xml4me';
         ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('hackable');
@@ -172,6 +174,7 @@ describe('EditUserCtrl controller', () => {
         const password = '1QrAs$$3%%kkkk445234234234';
         ctrl.editUserModel.password = password;
         ctrl.editUserModel.passwordConfirm = password + 'a';
+        ctrl.editUserModel.currentPassword = '2xml4me';
         ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('wrong');
