@@ -1,10 +1,13 @@
-var _ = require('underscore'),
-    transition = require('../../src/transitions/registration'),
-    sinon = require('sinon'),
-    assert = require('chai').assert,
-    moment = require('moment'),
-    transitionUtils = require('../../src/transitions/utils'),
-    utils = require('../../src/lib/utils');
+const _ = require('underscore');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const assert = require('chai').assert;
+const moment = require('moment');
+const transitionUtils = require('../../src/transitions/utils');
+const utils = require('../../src/lib/utils');
+const config = require('../../src/config');
+
+const transition = rewire('../../src/transitions/registration');
 
 const getMessage = doc => {
     if (!doc || !doc.tasks) {
@@ -13,11 +16,12 @@ const getMessage = doc => {
     return _.first(_.first(doc.tasks).messages).message;
 };
 
-describe('patient registration', () => {
+describe('pregnancy registration', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(transition, 'getConfig').returns([{
+    transition.setExpectedBirthDate = transition.__get__('setExpectedBirthDate');
+    sinon.stub(config, 'get').returns([{
         form: 'p',
         type: 'pregnancy',
         events: [
@@ -131,19 +135,6 @@ describe('patient registration', () => {
       assert(transition.filter(doc));
   });
 
-  it('is id only', () => {
-      assert.equal(transition.isIdOnly({}), false);
-      assert.equal(transition.isIdOnly({
-          getid: undefined
-      }), false);
-      assert.equal(transition.isIdOnly({
-          getid: ''
-      }), false);
-      assert.equal(transition.isIdOnly({
-          getid: 'x'
-      }), true);
-  });
-
   it('setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0', () => {
       var doc = { fields: { lmp: 0 }, type: 'data_record' };
       transition.setExpectedBirthDate(doc);
@@ -176,12 +167,9 @@ describe('patient registration', () => {
   it('valid adds lmp_date and patient_id', () => {
       var start = moment().startOf('day').subtract(5, 'weeks');
 
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
+      sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-          doc.patient_id = 12345;
-          callback();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
       const doc = {
           form: 'p',
@@ -201,8 +189,8 @@ describe('patient registration', () => {
   });
 
   it('pregnancies on existing patients fail without valid patient id', () => {
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
 
       const doc = {
           form: 'ep',
@@ -221,8 +209,8 @@ describe('patient registration', () => {
   });
 
   it('pregnancies on existing patients succeeds with a valid patient id', () => {
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
       const doc = {
           form: 'ep',
@@ -241,12 +229,9 @@ describe('patient registration', () => {
 
 
   it('zero lmp value only registers patient', () => {
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
+      sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-          doc.patient_id = 12345;
-          callback();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
       const doc = {
           form: 'p',
@@ -266,12 +251,9 @@ describe('patient registration', () => {
   });
 
   it('id only logic with valid name', () => {
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
+      sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-          doc.patient_id = 12345;
-          callback();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
       const doc = {
           form: 'p',
@@ -291,8 +273,8 @@ describe('patient registration', () => {
   });
 
   it('id only logic with invalid name', () => {
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
       const doc = {
           form: 'p',
