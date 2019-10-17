@@ -303,8 +303,8 @@ const assignSchedule = (options) => {
 };
 
 const setId = (options) => {
-  const doc = options.doc,
-      patientIdField = options.params.patient_id_field;
+  const doc = options.doc;
+  const patientIdField = options.params.patient_id_field;
 
   if (patientIdField) {
     const providedId = doc.fields[options.params.patient_id_field];
@@ -317,15 +317,20 @@ const setId = (options) => {
     return transitionUtils
       .isIdUnique(providedId)
       .then(isUnique => {
-        if (isUnique) {
-          doc.patient_id = providedId;
+        if (!isUnique) {
+          transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
           return;
         }
 
-        transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
+        doc.patient_id = providedId;
       });
   } else {
-    return transitionUtils.addUniqueId(doc);
+    return transitionUtils
+      .getUniqueId()
+      .then(uniqueId => {
+        doc.patient_id = uniqueId;
+        return;
+      });
   }
 };
 

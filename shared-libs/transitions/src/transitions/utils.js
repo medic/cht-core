@@ -46,10 +46,15 @@ module.exports = {
       .query('medic-client/contacts_by_reference', { key: [ 'shortcode', id ]})
       .then(results => !(results && results.rows && results.rows.length));
   },
+  getUniqueId: () => {
+    return idGenerator.next().value;
+  },
   addUniqueId: (doc) => {
-    return idGenerator.next().value.then(patientId => {
-      doc.patient_id = patientId;
-    });
+    return module.exports
+      .getUniqueId()
+      .then(patientId => {
+        doc.patient_id = patientId;
+      });
   },
   hasRun: (doc, transition) => {
     return !!(doc.transitions && doc.transitions[transition]);
