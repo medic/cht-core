@@ -222,15 +222,9 @@ describe('due tasks', () => {
     const translate = sinon
       .stub(utils, 'translate')
       .returns('Please visit {{patient_name}} asap');
-    const getRegistrations = sinon
-      .stub(utils, 'getRegistrations')
-      .callsArgWith(1, null, []);
-    const getPatientContactUuid = sinon
-      .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(1, null, patientUuid);
-    const fetchHydratedDoc = sinon
-      .stub(schedule._lineage, 'fetchHydratedDoc')
-      .callsArgWith(1, null, { name: 'jim' });
+    const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
+    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves(patientUuid);
+    const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     const minified = {
@@ -301,7 +295,7 @@ describe('due tasks', () => {
     });
     sinon
       .stub(schedule._lineage, 'hydrateDocs')
-      .returns(Promise.resolve([hydrated]));
+      .resolves([hydrated]);
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
 
     schedule.execute(err => {
@@ -335,15 +329,11 @@ describe('due tasks', () => {
     const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
     const expectedMessage = 'old message';
-    const getRegistrations = sinon
-      .stub(utils, 'getRegistrations')
-      .callsArgWith(1, null, []);
-    const getPatientContactUuid = sinon
-      .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(1, null, patientUuid);
+    const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
+    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves(patientUuid);
     const fetchHydratedDoc = sinon
       .stub(schedule._lineage, 'fetchHydratedDoc')
-      .callsArgWith(1, null, { name: 'jim' });
+      .resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     const minified = {
@@ -443,8 +433,8 @@ describe('due tasks', () => {
           phone = '123456789';
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null);
+    sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
+    sinon.stub(utils, 'getPatientContactUuid').resolves(null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState');
 
@@ -523,8 +513,8 @@ describe('due tasks', () => {
           phone = '123456789';
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null);
+    sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
+    sinon.stub(utils, 'getPatientContactUuid').resolves(null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState').callsFake((task, state) => task.state = state);
 
