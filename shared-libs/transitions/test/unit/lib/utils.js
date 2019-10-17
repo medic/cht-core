@@ -36,12 +36,11 @@ describe('utils util', () => {
   });
 
   describe('getRegistrations', () => {
-    it('works with single key', done => {
+    it('works with single key', () => {
       sinon.stub(config, 'getAll').returns({});
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       db.medic.query.resolves({ rows: [] });
-      utils.getRegistrations({ id: 'my_id' }, (err, result) => {
-        (!!err).should.equal(false);
+      return utils.getRegistrations({ id: 'my_id' }).then((result) => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
         db.medic.query.args[0][0].should.equal('medic-client/registered_patients');
@@ -49,16 +48,14 @@ describe('utils util', () => {
           include_docs: true,
           key: 'my_id'
         });
-        done();
       });
     });
 
-    it('should work with multiple keys', done => {
+    it('should work with multiple keys', () => {
       sinon.stub(config, 'getAll').returns({});
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       db.medic.query.resolves({ rows: [] });
-      utils.getRegistrations({ ids: ['1', '2', '3'] }, (err, result) => {
-        (!!err).should.equal(false);
+      return utils.getRegistrations({ ids: ['1', '2', '3'] }).then((result) => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
         db.medic.query.args[0][0].should.equal('medic-client/registered_patients');
@@ -66,22 +63,22 @@ describe('utils util', () => {
           include_docs: true,
           keys: ['1', '2', '3']
         });
-        done();
       });
     });
 
-    it('should catch db errors', done => {
+    it('should catch db errors', () => {
       sinon.stub(config, 'getAll');
       sinon.stub(registrationUtils, 'isValidRegistration');
       db.medic.query.rejects({ some: 'error' });
-      utils.getRegistrations({ id: 'my_id' }, (err, result) => {
-        err.should.deep.equal({ some: 'error' });
-        (!!result).should.equal(false);
-        done();
-      });
+      return utils
+        .getRegistrations({ id: 'my_id' })
+        .then(r => r.should.deep.equal('Should have thrown'))
+        .catch(err => {
+          err.should.deep.equal({ some: 'error' });
+        });
     });
 
-    it('should test each registration for validity and only return valid ones', done => {
+    it('should test each registration for validity and only return valid ones', () => {
       sinon.stub(config, 'getAll').returns('config');
       sinon.stub(registrationUtils, 'isValidRegistration').callsFake(doc => !!doc.valid);
 
@@ -93,8 +90,7 @@ describe('utils util', () => {
         { _id: 'reg5', valid: false }
       ];
       db.medic.query.resolves({ rows: registrations.map(registration => ({ doc: registration }))});
-      utils.getRegistrations({ id: 'my_id' }, (err, result) => {
-        (!!err).should.equal(false);
+      return utils.getRegistrations({ id: 'my_id' }).then((result) => {
         result.should.deep.equal([
           { _id: 'reg1', valid: true },
           { _id: 'reg4', valid: true }
@@ -109,7 +105,6 @@ describe('utils util', () => {
           [{ _id: 'reg4', valid: true }, 'config'],
           [{ _id: 'reg5', valid: false }, 'config']
         ]);
-        done();
       });
     });
   });
