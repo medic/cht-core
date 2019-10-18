@@ -43,31 +43,25 @@ Currently, the latest versions of Chrome, Chrome for Android and Firefox are fun
 
 ## Easy Deployment
 
-There are two easy ways of doing this, both involving docker.
+We are going to use Docker to start a Core Framework environment on your local machine.
 
-### First, install Docker
+First, install Docker by following the [docker desktop instructions](https://www.docker.com/products/docker-desktop) for your operating system. If you're on Linux you'll need to work out the right approach for your specific distribution, including install docker-compose separately.
 
-Follow the [docker desktop instructions](https://www.docker.com/products/docker-desktop) for your operating system. If you're on Linux you'll need to work out the right approach for your specific distribution.
+Next, download the [docker-compose.yml](./docker-compose.yml) file from GitHub and place it in a directory of your choosing. If you are unfamilar with terminals (see below) we recommend you place it in your home directory in MacOS, and your XYZ directory in Windows.
 
-### Using Kitematic (recommended)
+Now you need to open a terminal. This will let you start the Core Framework, see any logging output and stop it once you're done.
 
-Once you've installed docker desktop and run it there should be a link to start Kitematic (on MacOS it is in the tray icon menu). It may prompt you to then install Kitematic separately.
+In **MacOS**: Open finder, click "Applications" and navigate to "Utilities" then "Terminal"
 
-Once you have loaded Kitematic search for **TODO HAREET**, and click 'CREATE'. This will download an image that contains the core framework, and may take some time. Once it's finished downloading it will automatically start.
+In **Windows**: TODO
 
-You should then be able to naviagate to [https://localhost](https://localhost), and log in with the username `medic` and the password `TODO HAREET`.
-
-### Using Docker Compose
-
-Download the [docker-compose.yml](./docker-compose.yml) file from GitHub and place it in a directory of your choosing.
-
-Then, in a terminal, enter that directory and type:
+Now you have a terminal, type:
 
 ```sh
 docker-compose up
 ```
 
-You should then be able to naviagate to [https://localhost](https://localhost), and log in with the username `medic` and the password `password`.
+And hit enter. This will do a lot of stuff. Once it's settled down, you should then be able to navigate to [https://localhost](https://localhost), and log in with the username `medic` and the password `password`.
 
 To kill the core framework you can use `CTRL+C`.
 
