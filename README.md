@@ -10,10 +10,10 @@ For the latest changes and release announcements see our [release notes](https:/
 ## Table of Contents
 
   - [Overview](#overview)
-  - [Easy deployment](#easy-deployment)
+  - [Using the Core Framework](#using-the-core-framework)
+  - [Easy Deployment](#easy-deployment)
   - [Development setup](#development-setup)
   - [Tests](#tests)
-  - [Configuring the standard application](#configuring-the-standard-application)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -29,22 +29,57 @@ For more information about Medic Mobile's architecture and how the pieces fit to
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
+## Using the Core Framework
+
+If you wish to evaluate the core framework, _or_ you are a developer looking to create or modify core framework configurations, you should use the [easy deployment](#easy-deployment) instructions.
+
+If you are a developer looking to contribute to the core framework itself, you should follow the [development setup instructions](#development-instructions).
+
+If you're looking to modify the default configuration or upload your own you will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf).
+
+### Supported Browsers
+
+Currently, the latest versions of Chrome, Chrome for Android and Firefox are functionally supported. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+
 ## Easy Deployment
 
-To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md). You can then [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
+There are two easy ways of doing this, both involving docker.
 
+### First, install Docker
+
+Follow the [docker desktop instructions](https://www.docker.com/products/docker-desktop) for your operating system. If you're on Linux you'll need to work out the right approach for your specific distribution.
+
+### Using Kitematic (recommended)
+
+Once you've installed docker desktop and run it there should be a link to start Kitematic (on MacOS it is in the tray icon menu). It may prompt you to then install Kitematic separately.
+
+Once you have loaded Kitematic search for **TODO HAREET**, and click 'CREATE'. This will download an image that contains the core framework, and may take some time. Once it's finished downloading it will automatically start.
+
+You should then be able to naviagate to [https://localhost](https://localhost), and log in with the username `medic` and the password `TODO HAREET`.
+
+### Using Docker Compose
+
+Download the [docker-compose.yml](./docker-compose.yml) file from GitHub and place it in a directory of your choosing.
+
+Then, in a terminal, enter that directory and type:
+
+```sh
+docker-compose up
+```
+
+You should then be able to naviagate to [https://localhost](https://localhost), and log in with the username `medic` and the password `password`.
+
+To kill the core framework you can use `CTRL+C`.
 
 ## Development Setup
+
+These instructions are for developers who want to contribute to the core framework (this repository). If you want to just run the framework (ie with the reference configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](#easy-deployment) instead.
 
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
 ### Supported Operating Systems
 
 Developers are actively using both Linux and MacOS, so both of those platforms are well supported for development. We don't support Windows out of the box. However, you can try using the Windows Subsystem for Linux. See the [Windows Subsystem for Linux notes](https://github.com/medic/medic-docs/blob/master/development/using-windows.md) for how the installation instructions differ.
-
-### Supported Browsers
-
-Currently, the latest versions of Chrome, Chrome for Android and Firefox are functionally supported. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
 
 ### Dependencies
 
@@ -235,21 +270,6 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`. Docker is require
 ### Build documentation
 
 To build reference documentation into a local folder `jsdoc-docs`: `grunt build-documentation`
-
-## Configuring the standard application
-
-This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further.
-
-This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard).
-
-Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
-
-To import the standard configuration:
-
-1. Install medic-conf: `npm install -g medic-conf`
-2. Navigate to the configuration you want to import: `cd <medic-repo>/config/standard`
-1. Ensure the app/api is running. Specifically on localhost for these instructions.
-3. Import the config: `medic-conf --url=http://username:password@localhost:5988`
 
 ## Automated Deployment on Travis
 
