@@ -31,7 +31,7 @@
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.2.5",
     "gsm": "^0.1.4",
-    "jquery": "^3.4.1",
+    "jquery": "3.2.x",
     "lodash": "^4.17.15",
     "medic-nootils": "^2.0.0",
     "messageformat": "^2.3.0",
@@ -49,7 +49,7 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
-    "select2": "^4.0.11",
+    "select2": "^4.0.3",
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.9.1",
     "uuid": "^3.3.3"
