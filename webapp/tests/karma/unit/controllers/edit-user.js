@@ -206,4 +206,23 @@ describe('EditUserCtrl controller', () => {
     });
   });
 
+  describe('ctrl.currentPassword', () => {
+
+    it('errors if current password is not provided', done => {
+      Translate.fieldIsRequired.withArgs('Current Password').returns(Promise.resolve('Current password field must be filled'));
+      mockEditCurrentUser(userToEdit);
+      setTimeout(() => {
+        translate.withArgs('Current Password').returns(Promise.resolve('wrong'));
+        const password = '1QrAs$$3%%kkkk445234234234';
+        ctrl.editUserModel.password = password;
+        ctrl.editUserModel.passwordConfirm = password;
+        ctrl.updatePassword();
+        setTimeout(() => {
+          chai.expect(ctrl.errors.currentPassword).to.equal('Current password field must be filled');
+          done();
+        });
+      });
+    });
+
+  });
 });
