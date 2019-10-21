@@ -8,8 +8,6 @@ const _ = require('underscore'),
       auth = require('../../../auth')(),
       semver = require('semver');
 const chai = require('chai');
-// so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
-chai.config.truncateThreshold = 0;
 
 const DEFAULT_EXPECTED = [
   'service-worker-meta',
@@ -20,7 +18,7 @@ const DEFAULT_EXPECTED = [
   '_design/medic-client'
 ];
 
-const defaultDocRegex = new RegExp(/^(messages-|form:)/);
+const defaultDocRegex = /^(messages-|form:)/;
 const isFormOrTranslation = id => defaultDocRegex.test(id);
 
 const assertChangeIds = function (changes) {
@@ -219,7 +217,7 @@ const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 
     const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
 
     if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
-      return utils.delayPromise(() => getChangesForIds(username, docIds, retry, last_seq, limit, results), 50);
+      return getChangesForIds(username, docIds, retry, last_seq, limit, results);
     }
 
     return results;
@@ -591,6 +589,7 @@ describe('changes handler', () => {
         .all([
           requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
           requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
+          // we delay the settings update request to make sure it happens AFTER the longpoll feeds have been created
           utils.delayPromise(() => utils.updateSettings(settingsUpdates, true), 300)
         ])
         .then(([ stevesChanges, bobsChanges ]) => {

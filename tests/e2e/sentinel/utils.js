@@ -2,7 +2,7 @@ const utils = require('../../utils'),
       querystring = require('querystring'),
       constants = require('../../constants');
 
-const SKIPPED_BY_SENTINEL = RegExp(/^_design\/|(-info|____tombstone)$/);
+const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 
 // This function resolves after Sentinel has processed required all docs (matched by provided docIds).
 // We achieve this by getting the last seq that sentinel has processed, querying the main db's changes feed,
