@@ -25,36 +25,34 @@ describe('settings service', () => {
   });
 
   describe('update', () => {
-           it('does replace if replace is set and overwrite is not set', () => {
-              const update = sinon.stub(db.medic, 'put');
-              let newSettings = Object.assign({}, settings);
-              delete newSettings['a'];
+    it('does replace if replace is set and overwrite is not set', () => {
+      const update = sinon.stub(db.medic, 'put');
+      let newSettings = Object.assign({}, settings);
+      delete newSettings['a'];
+      replace = 1;
               
-              replace = 1;
-              
-              return service
-              .update(newSettings, replace, overwrite)
-              .then(() => {
-                    update.callCount.should.equal(1);
-                    update.args[0][0].settings.should.deep.equal(settings);
-                    });
-              });
+      return service
+        .update(newSettings, replace, overwrite)
+        .then(() => {
+          update.callCount.should.equal(1);
+          update.args[0][0].settings.should.deep.equal(settings);
+        });
+    });
            
-           it('does overwrite if replace is set and overwrite is set', () => {
-              const update = sinon.stub(db.medic, 'put');
-              let newSettings = Object.assign({}, settings);
-              delete newSettings['a'];
+    it('does overwrite if replace is set and overwrite is set', () => {
+      const update = sinon.stub(db.medic, 'put');
+      let newSettings = Object.assign({}, settings);
+      delete newSettings['a'];
+      replace = 1;
+      overwrite = 1;
               
-              replace = 1;
-              overwrite = 1;
-              
-              return service
-              .update(newSettings, replace, overwrite)
-              .then(() => {
-                    update.callCount.should.equal(1);
-                    update.args[0][0].settings.should.deep.equal(newSettings);
-                    });
-              });
+      return service
+        .update(newSettings, replace, overwrite)
+        .then(() => {
+          update.callCount.should.equal(1);
+          update.args[0][0].settings.should.deep.equal(newSettings);
+        });
+    });
            
     it('does not update if the settings doc has not been modified when replacing', () => {
       defaults.permissions = {};
