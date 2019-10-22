@@ -14,7 +14,7 @@ const userName = 'fulltester' + new Date().getTime(),
       password = 'StrongP@ssword1';
 
 const options = {
-  auth: `${userName}:${password}`,
+  auth: { username: userName, password },
   method: 'GET',
   userName: userName
 };
@@ -23,7 +23,7 @@ describe('Create user meta db : ', () => {
 
   afterAll(done => {
     commonElements.goToLoginPage();
-    loginPage.login(auth.user, auth.pass);
+    loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${userName}`)
       .then(doc => utils.request({
@@ -53,22 +53,18 @@ describe('Create user meta db : ', () => {
     helper.waitForAngularComplete();
 
     const doc = { _id: userName };
-    const postData = JSON.stringify(doc);
+    const postData = doc;
 
     browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({ 
-        method: 'POST', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': postData.length,
-        },
+      return utils.requestOnTestMetaDb(_.defaults({
+        method: 'POST',
         body: postData
       }, options));
     });
 
     browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({ 
-        path: '/_changes' 
+      return utils.requestOnTestMetaDb(_.defaults({
+        path: '/_changes'
       }, options)).then(response => {
         const changes = response.results;
         const ids = _.pluck(changes, 'id').sort();

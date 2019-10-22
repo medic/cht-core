@@ -2,8 +2,6 @@ const _ = require('underscore'),
   auth = require('./auth')(),
   constants = require('./constants'),
   { spawn } = require('child_process'),
-  http = require('http'),
-  path = require('path'),
   rpn = require('request-promise-native'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -11,36 +9,21 @@ const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(
-  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
-    constants.COUCH_PORT
-  }/${constants.DB_NAME}`
-);
-const sentinel = new PouchDB(
-  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
-    constants.COUCH_PORT
-  }/${constants.DB_NAME}-sentinel`
-);
+const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
+const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 
 let originalSettings;
 let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug, noAuth, notJson } = {}) => {
-  if (typeof options === 'string') {
-    options = {
-      path: options,
-    };
+const request = (options, { debug } = {}) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  if (!options.noAuth) {
+    options.auth = options.auth || auth;
   }
-
-  const deferred = protractor.promise.defer();
-
-  options.hostname = constants.API_HOST;
-  options.port = options.port || constants.API_PORT;
-  if (!noAuth) {
-    options.auth = options.auth || auth.user + ':' + auth.pass;
-  }
+  options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
+  options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
     console.log('!!!!!!!REQUEST!!!!!!!');
@@ -50,63 +33,22 @@ const request = (options, { debug, noAuth, notJson } = {}) => {
     console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
-  // TODO: replace with request-promise-native
-  const req = http.request(options, res => {
-    res.setEncoding('utf8');
-    let body = '';
-    res.on('data', chunk => {
-      body += chunk;
-    });
-    res.on('end', () => {
-      try {
-        if (notJson) {
-          return deferred.fulfill(body);
-        }
-
-        body = JSON.parse(body);
-        if (body.error) {
-          const err = new Error(
-            `Request failed: ${JSON.stringify(options)}\n  response: ${JSON.stringify(body)}`
-          );
-          err.responseBody = body;
-          err.statusCode = res.statusCode;
-          deferred.reject(err);
-        } else {
-          deferred.fulfill(body);
-        }
-      } catch (e) {
-        let errorMessage = `Server returned an error for request: ${JSON.stringify(
-          options
-        )}\n  `;
-
-        if (body === 'Server error') {
-          errorMessage += 'Check medic-api logs for details.';
-        } else {
-          errorMessage += `Response status: ${res.statusCode}, body: ${body}`;
-        }
-
-        const err = new Error(errorMessage);
-        err.responseBody = body;
-        err.statusCode = res.statusCode;
-        deferred.reject(err);
-      }
-    });
-  });
-  req.on('error', e => {
-    console.log('Request failed: ' + e.message);
-    deferred.reject(e);
-  });
-
-  if (options.body) {
-    if (typeof options.body === 'string') {
-      req.write(options.body);
-    } else {
-      req.write(JSON.stringify(options.body));
+  options.transform = (body, response, resolveWithFullResponse) => {
+    // we might get a json response for a non-json request.
+    if (response.headers['content-type'].startsWith('application/json') && !options.json) {
+      response.body = JSON.parse(response.body);
     }
-  }
+    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
+    return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
+  };
 
-  req.end();
-
+  const deferred = protractor.promise.defer();
+  rpn(options)
+    .then((resp) => deferred.fulfill(resp))
+    .catch(err => {
+      err.responseBody = err.response && err.response.body;
+      deferred.reject(err);
+    });
   return deferred.promise;
 };
 
@@ -136,8 +78,7 @@ const updateSettings = updates => {
       return request({
         path: '/api/v1/settings?replace=1',
         method: 'PUT',
-        body: JSON.stringify(updates),
-        headers: { 'Content-Type': 'application/json' },
+        body: updates,
       });
     });
 };
@@ -149,8 +90,7 @@ const revertSettings = () => {
   return request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
-    body: JSON.stringify(originalSettings),
-    headers: { 'Content-Type': 'application/json' },
+    body: originalSettings,
   }).then(() => {
     originalSettings = null;
     return true;
@@ -191,8 +131,8 @@ const deleteAll = (except = []) => {
 
   // Get, filter and delete documents
   return module.exports
-    .request({
-      path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
+    .requestOnTestDb({
+      path: '/_all_docs?include_docs=true',
       method: 'GET',
     })
     .then(({ rows }) =>
@@ -211,12 +151,13 @@ const deleteAll = (except = []) => {
       }
       const infoIds = ids.map(id => `${id}-info`);
       return Promise.all([
-        module.exports.request({
-          path: path.join('/', constants.DB_NAME, '_bulk_docs'),
+        module.exports
+        .requestOnTestDb({
+          path: '/_bulk_docs',
           method: 'POST',
-          body: JSON.stringify({ docs: toDelete }),
-          headers: { 'content-type': 'application/json' },
-        }).then(response => {
+          body: { docs: toDelete },
+        })
+        .then(response => {
           if (e2eDebug) {
             console.log(`Deleted docs: ${JSON.stringify(response)}`);
           }
@@ -283,9 +224,8 @@ const setUserContactDoc = () => {
     })
     .then(newDoc => request({
       path: `/${dbName}/${docId}`,
-      body: JSON.stringify(newDoc),
+      body: newDoc,
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
     }));
 };
 
@@ -301,46 +241,49 @@ const revertDb = (except, ignoreRefresh) => {
   });
 };
 
-const deleteUsers = usernames => {
-  const userIds = JSON.stringify(
-    usernames.map(user => `org.couchdb.user:${user}`)
-        ),
-        method = 'POST',
-        headers = { 'Content-Type': 'application/json' };
+const deleteUsers = async (users, meta = false) => {
+  const usernames = users.map(user => `org.couchdb.user:${user.username}`);
+  const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
+  const medicDocs = await request({ path: '/medic/_all_docs', method: 'POST', body: { keys: usernames } });
+  const toDelete = userDocs.rows
+    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .filter(stub => stub);
+  const toDeleteMedic = medicDocs.rows
+    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .filter(stub => stub);
 
-  return Promise.all([
-    request(
-      `/${constants.DB_NAME}/_all_docs?include_docs=true&keys=${userIds}`
-    ),
-    request(`/_users/_all_docs?include_docs=true&keys=${userIds}`),
-  ]).then(results => {
-    const docs = results.map(result =>
-      result.rows
-        .map(row => {
-          if (row.doc) {
-            row.doc._deleted = true;
-            row.doc.type = 'tombstone';
-            return row.doc;
-          }
-        })
-        .filter(doc => doc)
-    );
+  await Promise.all([
+    request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
+    request({ path: '/medic/_bulk_docs', method: 'POST', body: { docs: toDeleteMedic } }),
+  ]);
 
-    return Promise.all([
-      request({
-        path: `/${constants.DB_NAME}/_bulk_docs`,
-        body: { docs: docs[0] },
-        method,
-        headers,
-      }),
-      request({
-        path: `/_users/_bulk_docs`,
-        body: { docs: docs[1] },
-        method,
-        headers,
-      }),
-    ]);
-  });
+  if (!meta) {
+    return;
+  }
+
+  for (let user of users) {
+    await request({ path: `/medic-user-${user.username}-meta`,  method: 'DELETE' });
+  }
+};
+
+const createUsers = async (users, meta = false) => {
+  const createUserOpts = {
+    path: '/api/v1/users',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  };
+
+  for (let user of users) {
+    await request(Object.assign({ body: user }, createUserOpts));
+  }
+
+  if (!meta) {
+    return;
+  }
+
+  for (let user of users) {
+    await request({ path: `/medic-user-${user.username}-meta`,  method: 'PUT' });
+  }
 };
 
 module.exports = {
@@ -373,7 +316,7 @@ module.exports = {
     }
   }),
 
-  requestOnTestDb: (options, debug, notJson) => {
+  requestOnTestDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -384,37 +327,36 @@ module.exports = {
     if (pathAndReqType !== '/GET') {
       options.path = '/' + constants.DB_NAME + (options.path || '');
     }
-    return request(options, { debug: debug, notJson: notJson });
+    return request(options, { debug });
   },
 
-  requestOnTestMetaDb: (options, debug, notJson) => {
+  requestOnTestMetaDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
         path: options,
       };
     }
     options.path = `/medic-user-${options.userName}-meta${options.path || ''}`;
-    return request(options, { debug: debug, notJson: notJson });
+    return request(options, { debug: debug });
   },
 
-  requestOnMedicDb: (options, debug, notJson) => {
+  requestOnMedicDb: (options, debug ) => {
     if (typeof options === 'string') {
       options = { path: options };
     }
     options.path = `/medic${options.path || ''}`;
-    return request(options, { debug: debug, notJson: notJson });
+    return request(options, { debug: debug });
   },
 
   saveDoc: doc => {
-    const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({
       path: '/', // so audit picks this up
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': postData.length,
+        'Content-Length': JSON.stringify(doc).length,
       },
-      body: postData,
+      body: doc,
     });
   },
 
@@ -423,8 +365,7 @@ module.exports = {
       .requestOnTestDb({
         path: '/_bulk_docs',
         method: 'POST',
-        body: { docs: docs },
-        headers: { 'content-type': 'application/json' },
+        body: { docs: docs }
       })
       .then(results => {
         if (results.find(r => !r.ok)) {
@@ -466,7 +407,6 @@ module.exports = {
         path: '/_bulk_docs',
         method: 'POST',
         body: { docs },
-        headers: { 'content-type': 'application/json' },
       });
     });
   },
@@ -498,7 +438,7 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh) =>
+  updateSettings: (updates, ignoreRefresh = false) =>
     updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
@@ -586,7 +526,7 @@ module.exports = {
   },
 
   getCouchUrl: () =>
-    `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
+    `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${
       constants.COUCH_PORT
     }/${constants.DB_NAME}`,
 
@@ -606,8 +546,15 @@ module.exports = {
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted
+  // @param {Boolean} meta - if true, deletes meta db-s as well, default true
   // @return {Promise}
   deleteUsers: deleteUsers,
+
+  // Creates users - optionally also creating their meta dbs
+  // @param {Array} users - list of users to be created
+  // @param {Boolean} meta - if true, creates meta db-s as well, default false
+  // @return {Promise}
+  createUsers: createUsers,
 
   setDebug: debug => e2eDebug = debug,
 
@@ -633,6 +580,14 @@ module.exports = {
       return rpn.post('http://localhost:31337/sentinel/start');
     }
   },
+
+  // delays executing a function that returns a promise with the provided interval (in ms)
+  delayPromise: (promiseFn, interval) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => promiseFn().then(resolve).catch(reject), interval);
+    });
+  },
+
   setProcessedSeqToNow: () => {
     return Promise.all([
       sentinel.get('_local/sentinel-meta-data'),

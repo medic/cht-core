@@ -10,7 +10,7 @@ describe('server', () => {
       const opts = {
         method: 'POST',
         path: '/login',
-        body: {}
+        json: false
       };
 
       return utils.requestOnTestDb(opts, true)

@@ -179,7 +179,7 @@ const requestChanges = (username, params = {}) => {
   const queryParams = querystring.stringify(params);
   const options = {
     path: `/_changes${queryParams ? `?${queryParams}`: ''}`,
-    auth: `${username}:${password}`
+    auth: { username, password },
   };
   return utils.requestOnTestDb(options);
 };
@@ -187,7 +187,7 @@ const requestChanges = (username, params = {}) => {
 const getPurgeInfo = username => {
   const options = {
     path: `/purging`,
-    auth: `${username}:${password}`,
+    auth: { username, password },
     headers: { 'medic-replication-id': username }
   };
   return utils.request(options);
@@ -196,7 +196,7 @@ const getPurgeInfo = username => {
 const writePurgeCheckpoint = (username, seq) => {
   const options = {
     path: `/purging/checkpoint?seq=${seq || 'now'}`,
-    auth: `${username}:${password}`,
+    auth: { username, password },
     headers: { 'medic-replication-id': username }
   };
   return utils.request(options);
@@ -205,7 +205,7 @@ const writePurgeCheckpoint = (username, seq) => {
 const requestPurges = username => {
   const options = {
     path: '/purging/changes',
-    auth: `${username}:${password}`,
+    auth: { username, password },
     headers: { 'medic-replication-id': username }
   };
   return utils.request(options);
@@ -213,7 +213,7 @@ const requestPurges = username => {
 const requestPurgeInfo = username => {
   const options = {
     path: '/purging',
-    auth: `${username}:${password}`,
+    auth: { username, password },
   };
   return utils.request(options);
 };
@@ -225,21 +225,14 @@ describe('server side purge', () => {
   beforeAll(done => {
     return utils
       .saveDocs(docs)
-      .then(() => users.reduce((p, user) => {
-        return p.then(() => utils.request({
-          path: '/api/v1/users',
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: user
-        }));
-      }, Promise.resolve()))
+      .then(() => utils.createUsers(users))
       .then(() => done());
   });
   afterAll(done =>
     utils
       .revertDb()
       .then(() => sentinelUtils.deletePurgeDbs())
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(() => done()));
 
   afterEach(done => utils.revertSettings().then(done));

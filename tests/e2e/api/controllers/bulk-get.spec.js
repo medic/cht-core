@@ -53,23 +53,18 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
-describe('bulk-docs handler', () => {
+describe('bulk-get handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() => Promise.all(users.map(user => utils.request({
-        path: '/api/v1/users',
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: user
-      }))))
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done)
   );
 
@@ -77,16 +72,14 @@ describe('bulk-docs handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_get',
-      auth: `offline:${password}`,
+      auth: { username: 'offline', password },
       method: 'POST',
-      headers: {'Content-Type': 'application/json'}
     };
 
     onlineRequestOptions = {
       path: '/_bulk_get',
-      auth: `online:${password}`,
+      auth: { username: 'online', password },
       method: 'POST',
-      headers: {'Content-Type': 'application/json'}
     };
   });
 
@@ -99,14 +92,14 @@ describe('bulk-docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(results => {
-        onlineRequestOptions.body = JSON.stringify({
+        onlineRequestOptions.body = {
           docs: [
             { id: 'ICanBeAnything', rev: results[0].rev },
             { id: 'NEW_PLACE' },
             { id: 'PARENT_PLACE' },
             { id: 'org.couchdb.user:offline' }
           ]
-        });
+        };
 
         return utils.requestOnTestDb(onlineRequestOptions);
       })
@@ -143,7 +136,7 @@ describe('bulk-docs handler', () => {
       .then(results => {
         results.forEach((row, idx) => docs[idx]._rev = row.rev);
 
-        offlineRequestOptions.body = JSON.stringify({
+        offlineRequestOptions.body = {
           docs: [
             { id: 'allowed_contact_1' },
             { id: 'allowed_contact_2', rev: docs[1].rev },
@@ -152,7 +145,7 @@ describe('bulk-docs handler', () => {
             { id: 'denied_contact_2', rev: docs[2].rev },
             { id: 'denied_contact_2', rev: 'somerev' },
           ]
-        });
+        };
 
         return utils.requestOnTestDb(offlineRequestOptions);
       })
@@ -197,7 +190,7 @@ describe('bulk-docs handler', () => {
       .then(results => {
         results.forEach(result => revs[result.id].push(result.rev));
 
-        offlineRequestOptions.body = JSON.stringify({
+        offlineRequestOptions.body = {
           docs: [
             { id: 'a1', rev: revs.a1[0] }, // allowed
             { id: 'a1', rev: revs.a1[1] }, // allowed
@@ -208,7 +201,7 @@ describe('bulk-docs handler', () => {
             { id: 'd2', rev: revs.d2[0] }, // denied
             { id: 'd2', rev: revs.d2[1] } // allowed
           ]
-        });
+        };
         offlineRequestOptions.path = '/_bulk_get?latest=true';
 
         return utils.requestOnTestDb(offlineRequestOptions);
@@ -244,7 +237,7 @@ describe('bulk-docs handler', () => {
       { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
     ];
 
-    offlineRequestOptions.body = JSON.stringify({ docs: [{ id: 'a1' }, { id: 'a2' }] });
+    offlineRequestOptions.body = { docs: [{ id: 'a1' }, { id: 'a2' }] };
 
     return utils
       .saveDocs(docs)
@@ -252,7 +245,7 @@ describe('bulk-docs handler', () => {
         path: `/a1/att1?rev=${result[0].rev}`,
         method: 'PUT',
         headers: { 'Content-Type': 'text/plain' },
-        body: 'a1 attachment content'
+        body: 'a1 attachment content',
       }))
       .then(() => utils.requestOnTestDb(offlineRequestOptions))
       .then(result => {
@@ -311,13 +304,13 @@ describe('bulk-docs handler', () => {
       ))
       .then(results => {
         results.forEach((result, key) => docs[key]._rev = result.rev);
-        offlineRequestOptions.body = JSON.stringify({
+        offlineRequestOptions.body = {
           docs: [
             { id: 'a1', rev: results[0].rev },
             { id: 'a2', rev: results[1].rev },
             { id: 'a3', rev: results[2].rev }
           ]
-        });
+        };
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {
@@ -346,7 +339,7 @@ describe('bulk-docs handler', () => {
       .then(results => {
         results.forEach((row, idx) => docs[idx]._rev = row.rev);
 
-        offlineRequestOptions.body = JSON.stringify({
+        offlineRequestOptions.body = {
           docs: [
             { id: 'allowed_contact_1' },
             { id: 'allowed_contact_2', rev: docs[1].rev },
@@ -355,7 +348,7 @@ describe('bulk-docs handler', () => {
             { id: 'denied_contact_2', rev: docs[2].rev },
             { id: 'denied_contact_2', rev: 'somerev' },
           ]
-        });
+        };
 
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
@@ -373,7 +366,7 @@ describe('bulk-docs handler', () => {
 
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
     const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
-    offlineRequestOptions.body = JSON.stringify({ docs: [{ _id: 'denied_report' }] });
+    offlineRequestOptions.body = { docs: [{ _id: 'denied_report' }] };
 
     return utils
       .saveDoc(doc)

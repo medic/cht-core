@@ -11,7 +11,7 @@ describe('Protractor utils', () => {
 
   describe('deleteAllDocs', () => {
     it('Deletes all docs and infodocs except some core ones', () => {
-      const request = sinon.stub(utils, 'request');
+      const request = sinon.stub(utils, 'requestOnTestDb');
       request.onFirstCall().resolves({rows: [
         {id: '_design/cats', doc: {_id: '_design/cats'}},
         {id: 'service-worker-meta', doc: {_id: 'service-worker-meta'}},
@@ -42,18 +42,18 @@ describe('Protractor utils', () => {
       return utils.deleteAllDocs()
         .then(() => {
           const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
           assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'me-info', _rev: '1-abc', _deleted: true}]);
         });
     });
     it('Supports extra strings as exceptions', () => {
-      const request = sinon.stub(utils, 'request');
-      request.onFirstCall().returns(Promise.resolve({rows: [
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
         {id: 'ME', doc: {_id: 'ME'}},
         {id: 'YOU', doc: {_id: 'YOU'}}
-      ]}));
-      request.onSecondCall().returns(Promise.resolve());
+      ]});
+      request.onSecondCall().resolves();
 
       const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
       sentinelAllDocs.resolves({
@@ -70,18 +70,18 @@ describe('Protractor utils', () => {
       return utils.deleteAllDocs(['YOU'])
         .then(() => {
           const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
           assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'ME-info', _rev: '1-abc', _deleted: true}]);
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
     it('Supports extra regex as exceptions', () => {
-      const request = sinon.stub(utils, 'request');
-      request.onFirstCall().returns(Promise.resolve({rows: [
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
         {id: 'ME', doc: {_id: 'ME'}},
         {id: 'YOU', doc: {_id: 'YOU'}}
-      ]}));
-      request.onSecondCall().returns(Promise.resolve());
+      ]});
+      request.onSecondCall().resolves();
 
       const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
       sentinelAllDocs.resolves({
@@ -98,17 +98,17 @@ describe('Protractor utils', () => {
       return utils.deleteAllDocs([/^YOU$/])
         .then(() => {
           const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
     it('Supports extra functions as exceptions', () => {
-      const request = sinon.stub(utils, 'request');
-      request.onFirstCall().returns(Promise.resolve({rows: [
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
         {id: 'ME', doc: {_id: 'ME'}},
         {id: 'YOU', doc: {_id: 'YOU'}}
-      ]}));
-      request.onSecondCall().returns(Promise.resolve());
+      ]});
+      request.onSecondCall().resolves();
 
       const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
       sentinelAllDocs.resolves({
@@ -126,8 +126,8 @@ describe('Protractor utils', () => {
       return utils.deleteAllDocs([doc => doc._id === 'YOU'])
         .then(() => {
           const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
   });

@@ -66,7 +66,7 @@ module.exports = {
   sync: () => {
     module.exports.openMenu();
     openSubmenu('sync now');
-    helper.waitForAngularComplete();
+    helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
   checkUserSettings: () => {
