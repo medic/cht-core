@@ -127,6 +127,12 @@ describe('rules-state-store', () => {
     expect(rulesStateStore.hasAllContacts()).to.be.false;
   });
 
+  it('rewinding clock makes contacts dirty', async () => {
+    await rulesStateStore.build({}, {});
+    await rulesStateStore.markFresh(Date.now() + 1000, 'a');
+    expect(rulesStateStore.isDirty('a')).to.be.true;
+  });
+
   it('contact marked fresh a month ago is not fresh', async () => {
     await rulesStateStore.build(['a'], {});
     await rulesStateStore.markFresh(Date.now(), 'a');

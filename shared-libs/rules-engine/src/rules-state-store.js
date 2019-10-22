@@ -78,10 +78,12 @@ const self = {
       return true;
     }
 
+    const now = Date.now();
     const { calculatedAt, isDirty } = state.contactState[contactId];
     return !calculatedAt ||
       isDirty ||
-      /* isExpired */ calculatedAt < Date.now() - EXPIRE_CALCULATION_AFTER_MS;
+      /* user rewinded their clock */ calculatedAt > now ||
+      /* isExpired */ calculatedAt < now - EXPIRE_CALCULATION_AFTER_MS;
   },
 
   /**

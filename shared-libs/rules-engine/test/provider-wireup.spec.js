@@ -316,7 +316,6 @@ describe('provider-wireup integration tests', () => {
       sinon.spy(db, 'bulkDocs');
       const earlierEmission = mockChtEmission();
       rulesEmitter.getEmissionsFor.resolves({ tasks: [earlierEmission], targets: [] });
-      await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
       const displayed = await wireup.fetchTasksFor(provider);
 
       const secondDoc = getWrittenTaskDoc();
