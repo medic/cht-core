@@ -809,7 +809,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-10-09_12-32">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-10-22_00-21">
           <inputs>
             <meta>
               <location>
@@ -892,10 +892,10 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/dob_method" type="select"/>
       <bind calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%m&quot;) - ../age_months + 12, format-date-time(today(),&quot;%m&quot;) - ../age_months)" nodeset="/data/person/ephemeral_dob/ephemeral_months" type="string"/>
       <bind calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)" nodeset="/data/person/ephemeral_dob/ephemeral_years" type="string"/>
-      <bind calculate="date(concat(string( /data/person/ephemeral_dob/ephemeral_years ),'-',if( /data/person/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/person/ephemeral_dob/ephemeral_months )),  /data/person/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;))))" nodeset="/data/person/ephemeral_dob/dob_approx" type="string"/>
-      <bind calculate="if(not(selected( ../dob_method,'approx')), 
-../dob_calendar,
-../dob_approx)" nodeset="/data/person/ephemeral_dob/dob_raw" type="string"/>
+      <bind calculate="concat(string( /data/person/ephemeral_dob/ephemeral_years ),'-',if( /data/person/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/person/ephemeral_dob/ephemeral_months )),  /data/person/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))" nodeset="/data/person/ephemeral_dob/dob_approx" type="string"/>
+      <bind calculate="if(not(selected(  /data/person/ephemeral_dob/dob_method ,'approx')), 
+ /data/person/ephemeral_dob/dob_calendar ,
+ /data/person/ephemeral_dob/dob_approx )" nodeset="/data/person/ephemeral_dob/dob_raw" type="string"/>
       <bind calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)" nodeset="/data/person/ephemeral_dob/dob_iso" type="string"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" relevant="false()" type="string"/>
       <bind nodeset="/data/person/sex" required="true()" type="select1"/>
