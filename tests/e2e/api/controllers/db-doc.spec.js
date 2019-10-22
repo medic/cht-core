@@ -273,7 +273,8 @@ describe('db-doc handler', () => {
         )
         .then(() => {
           onlineRequestOptions.path = '/with_attachments/att_name';
-          return utils.requestOnTestDb(onlineRequestOptions, false, true);
+          onlineRequestOptions.json = false;
+          return utils.requestOnTestDb(onlineRequestOptions);
         })
         .then(result => {
           chai.expect(result).to.equal('my attachment content');
@@ -289,6 +290,7 @@ describe('db-doc handler', () => {
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
             body: 'my new attachment content',
+            json: false,
           });
 
           return utils.requestOnTestDb(onlineRequestOptions);
@@ -601,6 +603,7 @@ describe('db-doc handler', () => {
                 method: 'PUT',
                 body: 'my attachment content',
                 headers: { 'Content-Type': 'text/plain' },
+                json: false,
               });
             })
           );
@@ -644,9 +647,7 @@ describe('db-doc handler', () => {
     });
 
     it('POST', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'POST',
-      });
+      offlineRequestOptions.method = 'POST';
 
       const allowedDoc = {
         _id: 'allowed_doc_post',
@@ -662,8 +663,8 @@ describe('db-doc handler', () => {
       };
 
       return Promise.all([
-        utils.requestOnTestDb(_.defaults({ body: JSON.stringify(allowedDoc), path: '/' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ body: JSON.stringify(deniedDoc), path: '/' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ body: allowedDoc, path: '/' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ body: deniedDoc, path: '/' }, offlineRequestOptions)).catch(err => err),
         utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions)).catch(err => err),
       ])
         .then(([allowed, denied, forbidden]) => {
@@ -690,7 +691,7 @@ describe('db-doc handler', () => {
 
     it('POST many types of reports', () => {
       offlineRequestOptions.method = 'POST';
-      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+
       const reportScenarios = [
         { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
@@ -745,7 +746,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
       ];
       return Promise
-        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err)))
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -759,7 +760,7 @@ describe('db-doc handler', () => {
 
     it('POST many types of reports and replication depth and needs_signoff', () => {
       offlineRequestOptions.method = 'POST';
-      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+
       const reportScenarios = [
         { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
         { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
@@ -777,7 +778,7 @@ describe('db-doc handler', () => {
       ];
       return utils
         .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -790,10 +791,7 @@ describe('db-doc handler', () => {
     });
 
     it('PUT', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      offlineRequestOptions.method = 'PUT';
 
       const docs = [
         {
@@ -848,7 +846,7 @@ describe('db-doc handler', () => {
 
           const promises = updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
               .catch(err => err));
           return Promise.all(promises);
         })
@@ -875,9 +873,7 @@ describe('db-doc handler', () => {
     });
 
     it('PUT over DELETE stubs', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'PUT',
-      });
+      offlineRequestOptions.method = 'PUT';
 
       const docs = [
         {
@@ -930,7 +926,7 @@ describe('db-doc handler', () => {
 
           return Promise.all(updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
               .catch(err => err)));
         })
         .then(results => {
@@ -943,7 +939,7 @@ describe('db-doc handler', () => {
 
     it('PUT many types of reports', () => {
       offlineRequestOptions.method = 'PUT';
-      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+
       const reportScenarios = [
         { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
@@ -998,7 +994,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
       ];
       return Promise
-        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err)))
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1012,7 +1008,7 @@ describe('db-doc handler', () => {
 
     it('PUT many types of reports and replication depth and needs_signoff', () => {
       offlineRequestOptions.method = 'PUT';
-      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+
       const reportScenarios = [
         { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
         { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
@@ -1030,7 +1026,7 @@ describe('db-doc handler', () => {
       ];
       return utils
         .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1044,7 +1040,6 @@ describe('db-doc handler', () => {
 
     it('PUT with reports and existent docs', () => {
       offlineRequestOptions.method = 'PUT';
-      offlineRequestOptions.headers = { 'Content-Type': 'application/json' };
 
       const existentReports = [
         { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
@@ -1067,7 +1062,7 @@ describe('db-doc handler', () => {
           ];
           results.forEach((result, i) => reportScenarios[i].doc._rev = result.rev);
         })
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: JSON.stringify(scenario.doc) }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1154,6 +1149,7 @@ describe('db-doc handler', () => {
                 method: 'PUT',
                 body: 'my attachment content',
                 headers: { 'Content-Type': 'text/plain' },
+                json: false,
               });
             })
           )
@@ -1161,7 +1157,7 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions), false, true),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
             utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
             utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
           ]);
@@ -1188,7 +1184,7 @@ describe('db-doc handler', () => {
           const promises = [];
           const attachmentRequest = (rev, id) =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions), false, true)
+              .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}`, json: false }, offlineRequestOptions))
               .catch(err => err);
           Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
           return Promise.all(promises);
@@ -1200,9 +1196,9 @@ describe('db-doc handler', () => {
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
-          chai.expect(results[1]).to.equal('"my attachment content"');
+          chai.expect(results[1]).to.equal('my attachment content');
           // allowed_attach is not allowed and has attachment
-          chai.expect(results[2]responseBody..error).to.equal('forbidden');
+          chai.expect(results[2].responseBody.error).to.equal('forbidden');
 
           // denied_attach is not allowed, but missing attachment
           chai.expect(results[3].responseBody.error).to.equal('forbidden');
@@ -1222,14 +1218,14 @@ describe('db-doc handler', () => {
             utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)).catch(err => err),
             utils.requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)).catch(err => err),
             utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions), false, true),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)),
           ]);
         })
         .then(results => {
           chai.expect(results[0]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
           chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
           chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
-          chai.expect(results[3]).to.equal('"my attachment content"');
+          chai.expect(results[3]).to.equal('my attachment content');
         });
     });
 
@@ -1263,6 +1259,7 @@ describe('db-doc handler', () => {
                 method: 'PUT',
                 body: 'my attachment content',
                 headers: { 'Content-Type': 'text/plain' },
+                json: false,
               });
             })
           )
@@ -1270,15 +1267,15 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions), false, true),
-            utils.requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`}, offlineRequestOptions), false, true),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false }, offlineRequestOptions)),
             utils.requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions)).catch(err => err),
             utils.requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions)).catch(err => err),
           ]);
         })
         .then(results => {
-          chai.expect(results[0]).to.equal('"my attachment content"');
-          chai.expect(results[1]).to.equal('"my attachment content"');
+          chai.expect(results[0]).to.equal('my attachment content');
+          chai.expect(results[1]).to.equal('my attachment content');
 
           chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
           chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
@@ -1300,7 +1297,7 @@ describe('db-doc handler', () => {
           const promises = [];
           const attachmentRequest = (rev, id) =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}` }, offlineRequestOptions), false, true)
+              .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false }, offlineRequestOptions))
               .catch(err => err);
           Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
           return Promise.all(promises);
@@ -1329,6 +1326,7 @@ describe('db-doc handler', () => {
         method: 'PUT',
         headers: { 'Content-Type': 'text/plain' },
         body: 'my new attachment content',
+        json: false,
       });
 
       return utils
@@ -1358,7 +1356,7 @@ describe('db-doc handler', () => {
 
           return Promise.all([
             utils.requestOnTestDb({ path: '/a_with_attachments' }),
-            utils.requestOnTestDb({ path: '/a_with_attachments/new_attachment' }, false, true),
+            utils.requestOnTestDb({ path: '/a_with_attachments/new_attachment', json: false }),
             utils.requestOnTestDb({ path: '/d_with_attachments' }),
             utils.requestOnTestDb({ path: '/d_with_attachments/new_attachment' }).catch(err => err),
           ]);
@@ -1396,10 +1394,7 @@ describe('db-doc handler', () => {
     });
 
     it('PUT', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      offlineRequestOptions.method = 'PUT';
 
       const docs = [
         {
@@ -1469,11 +1464,13 @@ describe('db-doc handler', () => {
             method: 'PUT',
             body: 'my attachment content',
             headers: { 'Content-Type': 'text/plain' },
+            json: false,
           })
         )
         .then(() => {
           onlineRequestOptions.path = '/with_attachments/att_name';
-          return utils.requestOnMedicDb(onlineRequestOptions, false, true);
+          onlineRequestOptions.json = false;
+          return utils.requestOnMedicDb(onlineRequestOptions);
         })
         .then(result => {
           chai.expect(result).to.equal('my attachment content');
@@ -1489,11 +1486,12 @@ describe('db-doc handler', () => {
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
             body: 'my new attachment content',
+            json: false,
           });
 
           return utils.requestOnMedicDb(onlineRequestOptions);
         })
-        .then(result => utils.requestOnMedicDb(`/with_attachments/new_attachment?rev=${result.rev}`, false, true))
+        .then(result => utils.requestOnMedicDb({ path: `/with_attachments/new_attachment?rev=${result.rev}`, json: false }))
         .then(result => {
           chai.expect(result).to.equal('my new attachment content');
         });
