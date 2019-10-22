@@ -23,16 +23,12 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
     Settings()
       .then(function(settings) {
         $scope.loading = false;
-
         $scope.roles = settings.roles;
-
-        // add the configured permissions
-        $scope.permissions = [];
-        Object.keys(settings.permissions).forEach(function(key) {
-          $scope.permissions.push({
+        $scope.permissions = Object.keys(settings.permissions).map(key => {
+          return {
             name: key,
             roles: makeRoleModel(settings.permissions[key]),
-          });
+          };
         });
       })
       .catch(function(err) {

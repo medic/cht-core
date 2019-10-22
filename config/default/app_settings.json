@@ -140,9 +140,6 @@
     "can_export_all": [
       "program_officer"
     ],
-    "can_export_audit": [
-      "program_officer"
-    ],
     "can_export_contacts": [
       "program_officer",
       "chw_supervisor",
@@ -164,17 +161,6 @@
       "chw"
     ],
     "can_log_out_on_android": [],
-    "can_update_messages": [
-      "gateway",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_update_people": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
     "can_update_places": [
       "program_officer",
       "chw_supervisor",
@@ -215,13 +201,6 @@
       "chw"
     ],
     "can_view_contacts_tab": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_data_records": [
-      "analytics",
-      "gateway",
       "program_officer",
       "chw_supervisor",
       "chw"
