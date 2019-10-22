@@ -1,0 +1,164 @@
+# Reference configuration changes cookbook
+
+These instructions are aimed at developers and technical people who are exploring the reference configuration and are looking to make small changes and explore what is possible. They are necessarily hands-off, as explaining in detail everything that can be accompilshed is a larger task suited to more detailed documentation.
+
+Slower paced bottom-up tutorials on how to create Core Framework Configurations from scratch have begun, and will be [available here](LINK). They are designed to clearly explain and walk developers through everything that can be accompilshed in the Core Framework, providing a base of understanding to make changes in all facets of a configuration.
+
+Detailed reference documentation on the various features is being revamped from existing documentation and will be [available here](LINK).
+
+## Modifying the reference config
+
+You should have the [Core Framework running](TODO easy setup instructions), have installed [medic-conf](TODO medic-conf install instructions) and have checked out or otherwise downloaded the [Reference Configuration](TODO link to dir on github).
+
+Once you've made a change you can upload the configuration on disk (including pre-steps like compiling forms from spreadsheets into XML etc), by using `medic-conf`'s default action:
+
+```sh
+# TODO get this right for easy setup instruction URLs
+medic-conf --local
+```
+
+To perform less but more specific actions, see [medic-conf's documentation](TODO readme link).
+
+## Modifying Forms
+
+Generally, the forms are created and edited in XLSX format (a spreadsheet, openable with Excel, Libreoffice or your favourite office tool) and later converted into XML format to upload to the instance. The forms are categorized into app forms (action/task forms such as pregnancy registration, delivery report) and contact forms (place/person forms).
+
+To edit app forms, see `./forms/app/*.xlsx`. To edit contact forms, see `./forms/contact/*.xlsx`.
+
+**NB:** if you are using couch2pg to create a read-only replicate of your data in PostgreSQL, it’s important to remember that changes to forms may require changes to your queries or views in PostgreSQL.
+
+### Adding a new question
+
+Each question is defined in a row in XLSForm with a type such as: text, integer, select_one, select_multiple. (See the [XLSForm documentation](https://xlsform.org/en/#question-types) for a full list of types).
+
+Example:
+
+| type | name       | label:en                                |
+| ---- | ---------- | --------------------------------------- |
+| date | u_lmp_date | Please enter the start date of the LMP. |
+
+To add a new question, simply add a new row.
+
+### Adding a new page of questions
+
+To add a new page, you need to add a group. The group starts with a row that has type “begin group” and ends with type “end group”.  The "name" field is also required for "begin group" type. The "name" field is not required in the “end group” row, but you may want to keep it just for reference. Otherwise, it can get very confusing when there are many groups inside group (nested groups).
+
+More information: https://xlsform.org/en/#grouping-questions
+
+### Removing questions
+
+You can remove a question by simply removing the row specific to that question in XLS form. However, any other row should not depend on it.
+
+For example, there is a question that asks date of birth (DOB) from the user. If you remove it, you need to make sure that DOB is not used anywhere else. It might have been used to calculate the age of the user, which will fail without DOB info. The question being removed could have been used elsewhere in the configuration, outside the forms, such as in tasks, targets or contact-summary. One easy way to find the usage of the question is by searching throughout the configuration with its name.
+
+### Adding choice questions
+
+Instructions are same [as adding a new question](#adding-a-new-question), except note that you need to add your new choice options in the "choices" sheet.
+
+## Tasks
+
+Tasks are calculated and shown at run-time, i.e. when the app is loaded or reloaded. Once calculated, they are not stored anywhere and are re-calculated when any user visits the app next time.
+
+Tasks are defined inside the file `tasks.js`. An example task:
+
+```js
+  {
+    icon: 'icon-follow-up',
+    title: 'task.pnc.danger_sign_followup_baby.title',
+    appliesTo: 'reports',
+    appliesToType: ['pnc_danger_sign_follow_up_baby'],
+    appliesIf: function (contact, report) {
+      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
+    },
+    resolvedIf: function (contact, report, event, dueDate) {
+      //(refused or migrated) and cleared tasks
+      if (isPregnancyTaskMuted(contact)) { return true; }
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
+      //reported_date + 1 so that source ds_follow_up does not resolve itself
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
+    },
+    actions: [
+      {
+        type: 'report',
+        form: 'pnc_danger_sign_follow_up_baby',
+        modifyContent: function (content, contact, report) {
+          content.delivery_uuid = getField(report, 'inputs.delivery_uuid');
+        }
+      }
+    ],
+    events: [
+      {
+        id: 'pnc-danger-sign-follow-up-baby',
+        start: 3,
+        end: 7,
+        dueDate: function (event, contact, report) {
+          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
+        }
+      }
+    ]
+  }
+```
+
+A Task can apply to certain contacts or contacts with specific reports with specific properties that are defined in `appliesIf` function of the task. The criteria for resolving/clearing the task is defined in the `resolvedIf` function.
+
+To show up a task following conditions need to be satisfied:
+- `appliesIf` results to true
+- `resolvedIf` results to false
+- Current day/time falls in the time window
+
+For more information: [Tasks documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#tasks).
+
+### Changing the time window
+
+The time period for which a task can appear is called "time window". There are three settings that affect the time window:
+
+1. `dueDate`: The date at which the task is marked as due
+2. `start`: Number of days before the due date from which the task will start appearing
+3. `end`: Number of days after the due date from which the task will stop appearing
+
+For example, if start = 6, end = 7, the tasks will show for a total of 6 + 1 + 7 = 14 days i.e. 2 weeks.
+It is easy to change the start and end days of the time window. Changing a dueDate, however, requires some calculation based on other factors such as reported date or LMP date.
+
+## Targets
+
+The targets are configured inside the file `targets.js`. An example target:
+
+```js
+  {
+    id: 'facility-deliveries',
+    type: 'percent',
+    icon: 'icon-mother-child',
+    goal: -1,
+    translation_key: 'targets.anc.facility_deliveries.title',
+    subtitle_translation_key: 'targets.all_time.subtitle',
+    appliesTo: 'reports',
+    appliesToType: ['delivery'],
+    appliesIf: function (contact, report) {
+      return getField(report, 'delivery_outcome.delivery_place');
+    },
+    passesIf: function (contact, report) {
+      return getField(report, 'delivery_outcome.delivery_place') === 'health_facility';
+    },
+    date: 'now',
+    idType: 'contact'
+  },
+```
+
+For more information: [Targets documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#targets).
+
+### Editing a goal
+
+To edit a goal, change the `goal` value. This value is an integer that can range from 0-100, where `-1` means no goal.
+
+In the above example setting it to `75` would change the goal to be 75% of deliveries being in a health facility.
+
+## Contact Summary Profiles
+
+Condition cards are defined inside the `cards` section of the `contact-summary-templated.js` file.
+
+To add a condition card, add it to the "cards" section.
+To add a field inside an existing condition card, add it to the "fields" section of that card.
+You can remove the fields or condition cards that you don't want to show by deleting the whole code block belonging to that field/card.
+
+For more information: [Condition Cards documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#cards)
