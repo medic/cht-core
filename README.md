@@ -35,7 +35,7 @@ If you wish to evaluate the core framework, _or_ you are a developer looking to 
 
 If you are a developer looking to contribute to the core framework itself, you should follow the [development setup instructions](#development-instructions).
 
-If you're looking to modify the default configuration or upload your own you will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf).
+If you're looking to modify the default configuration or upload your own you will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf). A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
 ### Supported Browsers
 
