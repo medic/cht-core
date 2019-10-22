@@ -6,7 +6,7 @@ const isReportValid = function (report) {
   return false;
 };
 
-const pregnancyForms = ['pregnancy'];
+const pregnancyForms = ['pregnancy']; 
 
 const antenatalForms = ['pregnancy_home_visit'];
 
