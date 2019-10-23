@@ -223,8 +223,8 @@ const findContactsByReplicationKeys = (replicationKeys) => {
     .query('medic-client/contacts_by_reference', { keys })
     .then(result => {
       const docIds = replicationKeys.map(replicationKey => {
-        const row = result.rows.find(row => row.key[1] === replicationKey);
-        return row && row.id || replicationKey;
+        const found = result.rows.find(row => row.key[1] === replicationKey);
+        return found && found.id || replicationKey;
       });
 
       return db.medic.allDocs({ keys: docIds, include_docs: true });
@@ -247,7 +247,7 @@ const getContactShortcode = (viewResults) => viewResults &&
 
 // in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
-// over the provided docs, read all contacts that the docs emit in `medic/docs_by_replication_key` and create a
+// over the provided docs, get all contacts that the docs emit for in `medic/docs_by_replication_key` and create a
 // reduced set of relevant allowed subject ids.
 const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
   const authorizationCtx = getContextObject(userCtx);
@@ -260,8 +260,8 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
   // collect all values that the docs would emit in `medic/docs_by_replication_key`
   const replicationKeys = [];
   scopeDocsCtx.forEach(docCtx => {
-    docCtx.viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
-    replicationKeys.push(...getReplicationKeys(docCtx.viewResults));
+    const viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
+    replicationKeys.push(...getReplicationKeys(viewResults));
   });
 
   return findContactsByReplicationKeys(replicationKeys).then(contacts => {
