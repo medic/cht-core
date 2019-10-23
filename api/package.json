@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/medic/medic-api.git"
+    "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
     "node": ">=8.11.0",
