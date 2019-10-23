@@ -740,18 +740,18 @@ describe('Authorization service', () => {
     });
   });
 
-  describe('getMinimalAuthorizationContext', () => {
+  describe('getScopedAuthorizationContext', () => {
     it('should return no subject ids if no docs provided', () => {
       return service
-        .getMinimalAuthorizationContext(userCtx, [])
+        .getScopedAuthorizationContext(userCtx, [])
         .then(result => {
           result.should.deep.equal({ userCtx, subjectIds: [], contactsByDepthKeys: [ ['facility_id'] ] });
         });
     });
 
-    it('should return no subject ids if only empty docs are provided', () => {
+    it('should return no subject ids if only falsy docs are provided', () => {
       return service
-        .getMinimalAuthorizationContext(userCtx, [{ doc: false }, { doc: undefined }, { viewResults: {} }])
+        .getScopedAuthorizationContext(userCtx, [{ doc: false }, { doc: undefined }, { viewResults: {} }, false, undefined ])
         .then(result => {
           result.should.deep.equal({ userCtx, subjectIds: [], contactsByDepthKeys: [ ['facility_id'] ] });
         });
@@ -766,7 +766,7 @@ describe('Authorization service', () => {
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
       const docs = [ { _id: 'doc1' }, { _id: 'doc2' }, { _id: 'doc3' } ];
       return service
-        .getMinimalAuthorizationContext(userCtx, [{ doc: docs[0] }, { doc: docs[1], viewResults: {} }, { doc: docs[2] }])
+        .getScopedAuthorizationContext(userCtx, [{ doc: docs[0] }, { doc: docs[1], viewResults: {} }, { doc: docs[2] }])
         .then(result => {
           result.subjectIds.should.deep.equal([]);
           contactsByDepth.callCount.should.equal(2);
@@ -846,7 +846,7 @@ describe('Authorization service', () => {
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       return service
-        .getMinimalAuthorizationContext(userCtx, docObjs)
+        .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
@@ -941,7 +941,7 @@ describe('Authorization service', () => {
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       return service
-        .getMinimalAuthorizationContext(userCtx, docObjs)
+        .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
@@ -1011,7 +1011,7 @@ describe('Authorization service', () => {
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       return service
-        .getMinimalAuthorizationContext(userCtx, docObjs)
+        .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
@@ -1096,7 +1096,7 @@ describe('Authorization service', () => {
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       return service
-        .getMinimalAuthorizationContext(userCtx, docObjs)
+        .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([

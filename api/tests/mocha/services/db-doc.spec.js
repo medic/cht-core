@@ -21,7 +21,7 @@ describe('db-doc service', () => {
 
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'alwaysAllowCreate');
-    sinon.stub(authorization, 'getMinimalAuthorizationContext').resolves({ userCtx, subjectIds: [] });
+    sinon.stub(authorization, 'getScopedAuthorizationContext').resolves({ userCtx, subjectIds: [] });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(authorization, 'isDeleteStub').returns(false);
     sinon.stub(db.medic, 'get').resolves({});
@@ -175,7 +175,7 @@ describe('db-doc service', () => {
         });
     });
 
-    it('calls authorization.getMinimalAuthorizationContext with correct params', () => {
+    it('calls authorization.getScopedAuthorizationContext with correct params', () => {
       method = 'PUT';
       const stored = { _id: 'id', _rev: '1-rev' };
       body = { _id: 'id', _rev: '2-rev' };
@@ -184,8 +184,8 @@ describe('db-doc service', () => {
       return service
         .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
-          authorization.getMinimalAuthorizationContext.callCount.should.equal(1);
-          authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+          authorization.getScopedAuthorizationContext.callCount.should.equal(1);
+          authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
             { name: 'user' },
             [
               { doc: stored, viewResults: { view: stored } }, // stored doc
@@ -198,14 +198,13 @@ describe('db-doc service', () => {
     it('calls authorization.allowedDoc with correct params for GET / DELETE  requests', () => {
       const doc = { _id: 'id', _rev: '1-rev' };
       db.medic.get.resolves(doc);
-      authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+      authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
       return service
         .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
-          authorization.getViewResults.callCount.should.equal(2);
+          authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
-          authorization.getViewResults.args[1].should.deep.equal([false]);
 
           authorization.allowedDoc.callCount.should.equal(1);
           authorization.allowedDoc.args[0].should.deep.equal(['id', { subjectIds: ['id'], userCtx }, { view: doc } ]);
@@ -218,7 +217,7 @@ describe('db-doc service', () => {
       method = 'PUT';
       body = requestDoc;
       db.medic.get.resolves(dbDoc);
-      authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+      authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
       authorization.allowedDoc.returns(true);
 
@@ -241,14 +240,13 @@ describe('db-doc service', () => {
       method = 'POST';
       body = doc;
       authorization.allowedDoc.returns(true);
-      authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+      authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
       return service
         .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
-          authorization.getViewResults.callCount.should.equal(2);
-          authorization.getViewResults.args[0].should.deep.equal([false]);
-          authorization.getViewResults.args[1].should.deep.equal([doc]);
+          authorization.getViewResults.callCount.should.equal(1);
+          authorization.getViewResults.args[0].should.deep.equal([doc]);
 
           authorization.allowedDoc.callCount.should.equal(1);
           authorization.allowedDoc.args[0].should.deep.equal(['id', { subjectIds: ['id'], userCtx }, { view: doc } ]);
@@ -300,10 +298,10 @@ describe('db-doc service', () => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev' }]);
-            authorization.getMinimalAuthorizationContext.callCount.should.equal(1);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.callCount.should.equal(1);
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [ { doc: false, viewResults: { view: false }}, { doc: false, viewResults: { view: false }} ]
+              [ undefined, undefined ]
             ]);
           });
       });
@@ -321,9 +319,9 @@ describe('db-doc service', () => {
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: []}, { view: doc} ]);
             authorization.isDeleteStub.callCount.should.equal(1);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [ { doc, viewResults: { view: doc }}, { doc: false, viewResults: { view: false } } ]
+              [ { doc, viewResults: { view: doc }}, undefined ]
             ]);
           });
       });
@@ -337,9 +335,9 @@ describe('db-doc service', () => {
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [{ doc, viewResults: { view: doc }}, { doc: false, viewResults: { view: false } }]
+              [{ doc, viewResults: { view: doc }}, undefined ]
             ]);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: doc } ]);
@@ -350,7 +348,7 @@ describe('db-doc service', () => {
       it('returns db-doc for allowed existent doc', () => {
         db.medic.get.resolves(doc);
         authorization.allowedDoc.returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -390,9 +388,9 @@ describe('db-doc service', () => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', {}]);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [ { doc: false, viewResults: { view: false } }, { doc: false, viewResults: { view: false } } ]
+              [ undefined, undefined ]
             ]);
           });
       });
@@ -407,9 +405,9 @@ describe('db-doc service', () => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx , subjectIds: []}, { view: doc } ]);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [{ doc, viewResults: { view: doc } }, { doc: false, viewResults: { view: false } }]
+              [{ doc, viewResults: { view: doc } }, undefined ]
             ]);
           });
       });
@@ -432,16 +430,16 @@ describe('db-doc service', () => {
       it('returns true for allowed existent doc', () => {
         db.medic.get.resolves(doc);
         authorization.allowedDoc.returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(true);
             authorization.allowedDoc.callCount.should.equal(1);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [{ doc: doc, viewResults: { view: doc } }, { doc: false, viewResults: { view: false } }]
+              [{ doc: doc, viewResults: { view: doc } }, undefined ]
             ]);
           });
       });
@@ -477,9 +475,9 @@ describe('db-doc service', () => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: { _id: 'id', some: 'data' }} ]);
             db.medic.get.callCount.should.equal(0);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [{ doc: false, viewResults: { view: false } }, { doc: body, viewResults: { view: body } }]
+              [ undefined, { doc: body, viewResults: { view: body } }]
             ]);
             result.should.equal(false);
           });
@@ -495,9 +493,9 @@ describe('db-doc service', () => {
             authorization.alwaysAllowCreate.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(0);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [{ doc: false, viewResults: { view: false } }, { doc: body, viewResults: { view: body } }]
+              [ undefined, { doc: body, viewResults: { view: body } }]
             ]);
             result.should.equal(true);
           });
@@ -505,7 +503,7 @@ describe('db-doc service', () => {
 
       it('returns true for allowed request doc', () => {
         authorization.allowedDoc.returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: [ body._id ] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ body._id ] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -542,7 +540,7 @@ describe('db-doc service', () => {
       it('returns true for non existent db doc, allowed request doc', () => {
         db.medic.get.rejects({ status: 404 });
         authorization.allowedDoc.returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: [body._id] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ body._id] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -573,7 +571,7 @@ describe('db-doc service', () => {
 
         authorization.allowedDoc.withArgs('id', { userCtx, subjectIds: [] }, { view: doc }).returns(false);
         authorization.allowedDoc.withArgs('id', { userCtx, subjectIds: [] }, { view: body }).returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: [] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -590,7 +588,7 @@ describe('db-doc service', () => {
 
         authorization.allowedDoc.withArgs('id', { userCtx, subjectIds: [] }, { view: doc}).returns(true);
         authorization.allowedDoc.withArgs('id', { userCtx, subjectIds: [] }, { view: body }).returns(false);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: [] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -600,7 +598,7 @@ describe('db-doc service', () => {
             authorization.allowedDoc.args[1].should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: body } ]);
             db.medic.get.callCount.should.equal(1);
             result.should.equal(false);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
               [ { doc, viewResults: { view: doc } }, { doc: body, viewResults: { view: body } } ],
             ]);
@@ -611,7 +609,7 @@ describe('db-doc service', () => {
         db.medic.get.resolves(doc);
 
         authorization.allowedDoc.returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -725,15 +723,15 @@ describe('db-doc service', () => {
       it('returns true for existent allowed doc', () => {
         db.medic.get.resolves(doc);
         authorization.allowedDoc.returns(true);
-        authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: ['id'] });
+        authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 'id'] });
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
-            authorization.getMinimalAuthorizationContext.callCount.should.equal(1);
-            authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+            authorization.getScopedAuthorizationContext.callCount.should.equal(1);
+            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
-              [{ doc, viewResults: { view: doc } }, { doc: false, viewResults: { view: false } }]
+              [{ doc, viewResults: { view: doc } }, undefined ]
             ]);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: ['id'] }, { view: doc }]);
@@ -757,13 +755,13 @@ describe('db-doc service', () => {
         });
     });
 
-    it('calls authorization.getMinimalAuthorizationContext with correct params', () => {
+    it('calls authorization.getScopedAuthorizationContext with correct params', () => {
       db.medic.get.resolves([]);
       return service
         .filterOfflineOpenRevsRequest(userCtx, params, query)
         .then(() => {
-          authorization.getMinimalAuthorizationContext.callCount.should.equal(1);
-          authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([userCtx, []]);
+          authorization.getScopedAuthorizationContext.callCount.should.equal(1);
+          authorization.getScopedAuthorizationContext.args[0].should.deep.equal([ userCtx, []]);
         });
     });
 
@@ -807,7 +805,7 @@ describe('db-doc service', () => {
       authorization.allowedDoc.withArgs('id', sinon.match.any, 5).returns(true);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 6).returns(false);
       authorization.isDeleteStub.withArgs(sinon.match({ _deleted: true })).returns(true);
-      authorization.getMinimalAuthorizationContext.resolves({ userCtx, subjectIds: [1, 5] });
+      authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 1, 5] });
 
       return service
         .filterOfflineOpenRevsRequest(userCtx, params, query)
@@ -821,8 +819,8 @@ describe('db-doc service', () => {
           authorization.getViewResults.callCount.should.equal(7);
           authorization.allowedDoc.callCount.should.equal(5);
           authorization.isDeleteStub.callCount.should.equal(3);
-          authorization.getMinimalAuthorizationContext.callCount.should.equal(1);
-          authorization.getMinimalAuthorizationContext.args[0].should.deep.equal([
+          authorization.getScopedAuthorizationContext.callCount.should.equal(1);
+          authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
             userCtx,
             [
               { doc: { _id: 'id', _rev: 1 }, viewResults: 1 },

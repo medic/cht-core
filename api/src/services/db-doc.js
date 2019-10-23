@@ -36,6 +36,17 @@ const getRequestDoc = (method, body, isAttachment) => {
   return body;
 };
 
+const getDocCtx = doc => {
+  if (!doc) {
+    return;
+  }
+
+  return {
+    doc,
+    viewResults: authorization.getViewResults(doc)
+  };
+};
+
 module.exports = {
   // offline users will only be able to:
   // - GET/DELETE `db-docs` they are allowed to see
@@ -54,31 +65,25 @@ module.exports = {
         getRequestDoc(method, body, isAttachment),
       ])
       .then(([ storedDoc, requestDoc ]) => {
-        stored = {
-          doc: storedDoc,
-          viewResults: authorization.getViewResults(storedDoc)
-        };
-        requested = {
-          doc: requestDoc,
-          viewResults: authorization.getViewResults(requestDoc)
-        };
+        stored = getDocCtx(storedDoc);
+        requested = getDocCtx(requestDoc);
 
-        return authorization.getMinimalAuthorizationContext(userCtx, [ stored, requested ]);
+        return authorization.getScopedAuthorizationContext(userCtx, [ stored, requested ]);
       })
       .then(authorizationContext => {
-        if (!stored.doc && !requested.doc) {
+        if (!stored && !requested) {
           return false;
         }
 
         // user must be allowed to see existent document
-        if (stored.doc &&
+        if (stored &&
             !authorization.allowedDoc(stored.doc._id, authorizationContext, stored.viewResults) &&
             !authorization.isDeleteStub(stored.doc)) {
           return false;
         }
 
         // user must be allowed to see new/updated document or be allowed to create this document
-        if (requested.doc &&
+        if (requested &&
             !authorization.alwaysAllowCreate(requested.doc) &&
             !authorization.allowedDoc(requested.doc._id, authorizationContext, requested.viewResults)) {
           return false;
@@ -102,7 +107,7 @@ module.exports = {
           doc: storedDoc.ok,
           viewResults: authorization.getViewResults(storedDoc.ok)
         }));
-        return authorization.getMinimalAuthorizationContext(userCtx, stored);
+        return authorization.getScopedAuthorizationContext(userCtx, stored);
       })
       .then(authorizationContext => {
         return stored

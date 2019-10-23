@@ -246,19 +246,19 @@ const getPatientId = (viewResults) => viewResults &&
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
 // over the provided docs, read all contacts that the docs emit in `medic/docs_by_replication_key` and create a
 // reduced set of relevant allowed subject ids.
-const getMinimalAuthorizationContext = (userCtx, docObjs) => {
+const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
   const authorizationCtx = getContextObject(userCtx);
 
-  docObjs = docObjs.filter(docObj => docObj.doc);
-  if (!docObjs.length) {
+  scopeDocsCtx = scopeDocsCtx.filter(docCtx => docCtx && docCtx.doc);
+  if (!scopeDocsCtx.length) {
     return Promise.resolve(authorizationCtx);
   }
 
   // collect all values that the docs would emit in `docs_by_replication_key`
   const subjectIds = [];
-  docObjs.forEach(docObj => {
-    docObj.viewResults = docObj.viewResults || getViewResults(docObj.doc);
-    subjectIds.push(...getReplicationKeys(docObj.viewResults));
+  scopeDocsCtx.forEach(docCtx => {
+    docCtx.viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
+    subjectIds.push(...getReplicationKeys(docCtx.viewResults));
   });
 
   return findContactsBySubjectIds(subjectIds).then(contacts => {
@@ -362,5 +362,5 @@ module.exports = {
   isDeleteStub: tombstoneUtils._isDeleteStub,
   generateTombstoneId: tombstoneUtils.generateTombstoneId,
   convertTombstoneId: convertTombstoneId,
-  getMinimalAuthorizationContext: getMinimalAuthorizationContext,
+  getScopedAuthorizationContext: getScopedAuthorizationContext,
 };
