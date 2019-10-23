@@ -1141,15 +1141,15 @@ describe('Authorization service', () => {
       });
     });
 
-    describe('findContactsBySubjectIds', () => {
-      const findContactsBySubjectIds = service.__get__('findContactsBySubjectIds');
+    describe('findContactsByReplicationKeys', () => {
+      const findContactsByReplicationKeys = service.__get__('findContactsByReplicationKeys');
 
       it('should return nothing with no input', () => {
         return Promise
           .all([
-            findContactsBySubjectIds(),
-            findContactsBySubjectIds(false),
-            findContactsBySubjectIds([]),
+            findContactsByReplicationKeys(),
+            findContactsByReplicationKeys(false),
+            findContactsByReplicationKeys([]),
           ])
           .then(results => {
             results.forEach(result => result.should.deep.equal([]));
@@ -1164,7 +1164,7 @@ describe('Authorization service', () => {
             { id: 'b', doc: { _id: 'b' } }
           ]
         });
-        return findContactsBySubjectIds(['a', 'b', 'b', 'a', 'a']).then(result => {
+        return findContactsByReplicationKeys(['a', 'b', 'b', 'a', 'a']).then(result => {
           result.should.deep.equal([{ _id: 'a' }, { _id: 'b' }]);
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', { keys: [['shortcode', 'a'], ['shortcode', 'b']] }]);
@@ -1186,7 +1186,7 @@ describe('Authorization service', () => {
             { key: 'patient_3', error: 'not_found' },
           ] });
 
-        return findContactsBySubjectIds(['contact1', 'patient_1', 'contact1', 'contact2', 'patient_2', 'patient_2', 'patient_3']).then(result => {
+        return findContactsByReplicationKeys(['contact1', 'patient_1', 'contact1', 'contact2', 'patient_2', 'patient_2', 'patient_3']).then(result => {
           result.should.deep.equal([ { _id: 'contact1' }, { _id: 'person1' }, { _id: 'contact2' }, { _id: 'person2' } ]);
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
@@ -1205,17 +1205,17 @@ describe('Authorization service', () => {
     });
 
     describe('getPatientId', () => {
-      const getPatientId = service.__get__('getPatientId');
+      const getContactShortcode = service.__get__('getContactShortcode');
       it('should not crash with incorrect input', () => {
-        should.not.exist(getPatientId());
-        getPatientId(false).should.equal(false);
-        should.not.exist(getPatientId({}));
-        should.not.exist(getPatientId({ contactsByDepth: [] }));
+        should.not.exist(getContactShortcode());
+        getContactShortcode(false).should.equal(false);
+        should.not.exist(getContactShortcode({}));
+        should.not.exist(getContactShortcode({ contactsByDepth: [] }));
       });
 
       it('should return patient_id', () => {
-        getPatientId({ contactsByDepth: [[['parent'], 'patient']] }).should.equal('patient');
-        getPatientId({ contactsByDepth: [[['parent'], 'patient'], [['parent', 0], 'patient']] }).should.equal('patient');
+        getContactShortcode({ contactsByDepth: [[['parent'], 'patient']] }).should.equal('patient');
+        getContactShortcode({ contactsByDepth: [[['parent'], 'patient'], [['parent', 0], 'patient']] }).should.equal('patient');
       });
     });
   });

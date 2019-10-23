@@ -36,7 +36,7 @@ const getRequestDoc = (method, body, isAttachment) => {
   return body;
 };
 
-const getDocCtx = doc => {
+const getDocCtx = (doc) => {
   if (!doc) {
     return;
   }

@@ -194,37 +194,40 @@ const getAuthorizationContext = (userCtx) => {
 };
 
 const getReplicationKeys = (viewResults) => {
-  const subjectIds = [];
+  const replicationKeys = [];
   if (!viewResults || !viewResults.replicationKeys) {
-    return subjectIds;
+    return replicationKeys;
   }
 
   viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
-    subjectIds.push(subjectId);
+    replicationKeys.push(subjectId);
     if (submitterId) {
-      subjectIds.push(submitterId);
+      replicationKeys.push(submitterId);
     }
   });
 
-  return subjectIds;
+  return replicationKeys;
 };
 
-const findContactsBySubjectIds = (subjectIds) => {
-  if (!subjectIds || !subjectIds.length) {
+// replication keys are either contact shortcodes (`patient_id` or `place_id`) or doc ids
+// returns a list of corresponding contact docs
+const findContactsByReplicationKeys = (replicationKeys) => {
+  if (!replicationKeys || !replicationKeys.length) {
     return Promise.resolve([]);
   }
 
-  subjectIds = _.uniq(subjectIds);
+  replicationKeys = _.uniq(replicationKeys);
+  const keys = replicationKeys.map(id => ['shortcode', id]);
 
   return db.medic
-    .query('medic-client/contacts_by_reference', { keys: subjectIds.map(id => ['shortcode', id])})
+    .query('medic-client/contacts_by_reference', { keys })
     .then(result => {
-      const contactIds = subjectIds.map(subjectId => {
-        const row = result.rows.find(row => row.key[1] === subjectId);
-        return row && row.id || subjectId;
+      const docIds = replicationKeys.map(replicationKey => {
+        const row = result.rows.find(row => row.key[1] === replicationKey);
+        return row && row.id || replicationKey;
       });
 
-      return db.medic.allDocs({ keys: contactIds, include_docs: true });
+      return db.medic.allDocs({ keys: docIds, include_docs: true });
     })
     .then(result => {
       if (!result.rows) {
@@ -237,10 +240,10 @@ const findContactsBySubjectIds = (subjectIds) => {
     });
 };
 
-const getPatientId = (viewResults) => viewResults &&
-                                      viewResults.contactsByDepth &&
-                                      viewResults.contactsByDepth[0] &&
-                                      viewResults.contactsByDepth[0][1];
+const getContactShortcode = (viewResults) => viewResults &&
+                                             viewResults.contactsByDepth &&
+                                             viewResults.contactsByDepth[0] &&
+                                             viewResults.contactsByDepth[0][1];
 
 // in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
@@ -254,14 +257,14 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
     return Promise.resolve(authorizationCtx);
   }
 
-  // collect all values that the docs would emit in `docs_by_replication_key`
-  const subjectIds = [];
+  // collect all values that the docs would emit in `medic/docs_by_replication_key`
+  const replicationKeys = [];
   scopeDocsCtx.forEach(docCtx => {
     docCtx.viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
-    subjectIds.push(...getReplicationKeys(docCtx.viewResults));
+    replicationKeys.push(...getReplicationKeys(docCtx.viewResults));
   });
 
-  return findContactsBySubjectIds(subjectIds).then(contacts => {
+  return findContactsByReplicationKeys(replicationKeys).then(contacts => {
     // we simulate a `medic/contacts_by_depth` filter over the list contacts
     contacts.forEach(contact => {
       if (!contact) {
@@ -274,9 +277,9 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
       }
 
       authorizationCtx.subjectIds.push(contact._id);
-      const patientId = getPatientId(viewResults);
-      if (patientId) {
-        authorizationCtx.subjectIds.push(patientId);
+      const shortcode = getContactShortcode(viewResults);
+      if (shortcode) {
+        authorizationCtx.subjectIds.push(shortcode);
       }
     });
 
