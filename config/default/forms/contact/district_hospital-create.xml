@@ -917,7 +917,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2019-10-09_12-27">
+        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2019-10-23  12-01">
           <inputs>
             <meta>
               <location>
@@ -999,7 +999,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           </meta>
         </data>
       </instance>
-      <bind nodeset="/data/inputs" relevant="false()"/>
+      <bind nodeset="/data/inputs" relevant="0"/>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
@@ -1028,14 +1028,14 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
       <bind calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%m&quot;) - ../age_months + 12, format-date-time(today(),&quot;%m&quot;) - ../age_months)" nodeset="/data/contact/ephemeral_dob/ephemeral_months" type="string"/>
       <bind calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)" nodeset="/data/contact/ephemeral_dob/ephemeral_years" type="string"/>
-      <bind calculate="date(concat(string( /data/contact/ephemeral_dob/ephemeral_years ),'-',if( /data/contact/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/contact/ephemeral_dob/ephemeral_months )),  /data/contact/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;))))" nodeset="/data/contact/ephemeral_dob/dob_approx" type="string"/>
+      <bind calculate="concat(string( /data/contact/ephemeral_dob/ephemeral_years ),'-',if( /data/contact/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/contact/ephemeral_dob/ephemeral_months )),  /data/contact/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))" nodeset="/data/contact/ephemeral_dob/dob_approx" type="string"/>
       <bind calculate="if(not(selected( ../dob_method,'approx')), 
 ../dob_calendar,
 ../dob_approx)" nodeset="/data/contact/ephemeral_dob/dob_raw" type="string"/>
       <bind calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)" nodeset="/data/contact/ephemeral_dob/dob_iso" type="string"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" relevant="false()" type="string"/>
-      <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone" relevant="selected( /data/init/create_new_person ,'new_person')" type="tel"/>
-      <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone_alternate" relevant="selected( /data/init/create_new_person ,'new_person')" type="tel"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" relevant="0" type="string"/>
+      <bind constraint="1" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone" relevant="selected( /data/init/create_new_person ,'new_person')" type="tel"/>
+      <bind constraint="1" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone_alternate" relevant="selected( /data/init/create_new_person ,'new_person')" type="tel"/>
       <bind nodeset="/data/contact/sex" relevant="selected( /data/init/create_new_person ,'new_person')" required="true()" type="select1"/>
       <bind nodeset="/data/contact/role" relevant="selected( /data/init/create_new_person ,'new_person')" type="select1"/>
       <bind nodeset="/data/contact/role_other" relevant="selected(  /data/contact/role ,'other')" required="true()" type="string"/>
