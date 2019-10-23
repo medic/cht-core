@@ -5,7 +5,7 @@
   "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "git://github.com/medic/medic.git"
+    "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
     "node": ">=8.11.0",

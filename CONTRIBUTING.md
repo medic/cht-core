@@ -16,7 +16,7 @@ We recommend you raise an issue on Github or start a conversation on our [Commun
 ## Ways to contribute
 
 ### First time contributor?
-Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start. Looking for other ways to help? You can also:
+Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wanted) are a great place to start. Looking for other ways to help? You can also:
 * Improve our [documentation](#improving-our-documentation)
 * Find and mark duplicate issues
 * Try to reproduce issues and help with troubleshooting

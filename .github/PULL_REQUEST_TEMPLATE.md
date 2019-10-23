@@ -2,7 +2,7 @@
 
 [description]
 
-medic/medic#[number]
+medic/cht-core#[number]
 
 # Code review items
 

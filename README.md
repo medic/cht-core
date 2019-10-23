@@ -4,7 +4,7 @@ These instructions are designed to help you run or develop on the Core Framework
 
 Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
 
-For the latest changes and release announcements see our [release notes](https://github.com/medic/medic/tree/master/release-notes). Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+For the latest changes and release announcements see our [release notes](https://github.com/medic/cht-core/tree/master/release-notes). Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
 
 
 ## Table of Contents
@@ -31,7 +31,7 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 ## Easy Deployment
 
-To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md). You can then [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
+To get up and running quickly, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md). You can then [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/cht-core/tree/master/config/standard) directory.
 
 
 ## Development Setup
@@ -71,8 +71,8 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 ### Build the webapp
 
 ```shell
-git clone https://github.com/medic/medic
-cd medic
+git clone https://github.com/medic/cht-core
+cd cht-core
 npm ci
 ```
 
@@ -195,7 +195,7 @@ ngrok sometimes fails due to connection throttling which can cause the service w
 
 ### Data
 
-To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic/blob/master/scripts/load_messages.js) script.
+To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/cht-core/blob/master/scripts/load_messages.js) script.
 
 Use `curl` to submit a single message:
 
@@ -230,7 +230,7 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`. Docker is require
 
 ### Integration tests
 
-[Travis](https://travis-ci.org/medic/medic) runs `grunt ci` every time some new code is pushed to github.
+[Travis](https://travis-ci.org/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
 
 ### Build documentation
 
@@ -240,7 +240,7 @@ To build reference documentation into a local folder `jsdoc-docs`: `grunt build-
 
 This app is highly configurable and can be modified to suit your needs. Read the guide for [developing community health applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) if you would like to customize your application further.
 
-This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard).
+This repo includes a standard configuration as a useful starting point. It is located at [./config/standard](https://github.com/medic/cht-core/tree/master/config/standard).
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -253,13 +253,13 @@ To import the standard configuration:
 
 ## Automated Deployment on Travis
 
-Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic) to the [staging server](https://staging.dev.medicmobile.org).
+Code is automatically published via [Travis CI](https://travis-ci.org/medic/cht-core) to the [staging server](https://staging.dev.medicmobile.org).
 
 ## Contributing
 
 The Core Framework of the [Community Health Toolkit](https://communityhealthtoolkit.org) is powered by people like you. We appreciate your contributions, and are dedicated to supporting the developers who improve our tools whenever possible.
 
-First time contributor? Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start.
+First time contributor? Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wanted) are a great place to start.
 
 Looking for other ways to help? You can also:
 * Improve documentation. Check out our style guide [here](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md)
@@ -267,15 +267,15 @@ Looking for other ways to help? You can also:
 * Try to reproduce issues and help with troubleshooting
 * Or share a new idea or question with us!
 
-The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Community Forum](https://forum.communityhealthtoolkit.org).
+The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/cht-core/issues) or [joining our Community Forum](https://forum.communityhealthtoolkit.org).
 
 For more information check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic).
+Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-core).
 
-[![Build Status](https://travis-ci.org/medic/medic.png?branch=master)](https://travis-ci.org/medic/medic/branches)
+[![Build Status](https://travis-ci.org/medic/medic.png?branch=master)](https://travis-ci.org/medic/cht-core/branches)
 
 ## Copyright
 
