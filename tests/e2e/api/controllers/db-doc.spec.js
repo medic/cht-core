@@ -532,7 +532,6 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
-
           return Promise.all(docs.map(doc => utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)));
         })
         .then(results =>
@@ -1181,12 +1180,12 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
+          const getRequestForIdRev = (id, rev) => utils
+            .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
+            .catch(err => err);
+
           const promises = [];
-          const attachmentRequest = (rev, id) =>
-            utils
-              .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}`, json: false }, offlineRequestOptions))
-              .catch(err => err);
-          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => getRequestForIdRev(id, rev))));
           return Promise.all(promises);
         })
         .then(results => {
