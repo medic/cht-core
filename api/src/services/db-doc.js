@@ -110,7 +110,7 @@ module.exports = {
       .then(authorizationContext => {
         return stored
           .filter(storedDoc => {
-            if (!storedDoc.doc) {
+            if (!storedDoc || !storedDoc.doc) {
               return false;
             }
 

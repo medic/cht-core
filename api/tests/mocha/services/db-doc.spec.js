@@ -816,7 +816,7 @@ describe('db-doc service', () => {
             { ok: { _id: 'id', _rev: 6, _deleted: true } }
           ]);
 
-          authorization.getViewResults.callCount.should.equal(7);
+          authorization.getViewResults.callCount.should.equal(5);
           authorization.allowedDoc.callCount.should.equal(5);
           authorization.isDeleteStub.callCount.should.equal(3);
           authorization.getScopedAuthorizationContext.callCount.should.equal(1);
@@ -825,11 +825,11 @@ describe('db-doc service', () => {
             [
               { doc: { _id: 'id', _rev: 1 }, viewResults: 1 },
               { doc: { _id: 'id', _rev: 2 }, viewResults: 2 },
-              { doc: undefined, viewResults: undefined },
+              undefined,
               { doc: { _id: 'id', _rev: 4 }, viewResults: 4 },
               { doc: { _id: 'id', _rev: 5 }, viewResults: 5 },
               { doc: { _id: 'id', _rev: 6, _deleted: true }, viewResults: 6 },
-              { doc: undefined, viewResults: undefined },
+              undefined,
             ],
           ]);
         });
