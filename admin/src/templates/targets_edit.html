@@ -1,13 +1,14 @@
 <form action="" method="POST" class="col-xs-8 configuration-form">
 
-  <div class="form-group" ng-class="{'has-error': errors.id}">
-    <label for="id"><span translate>analytics.target.id</span> *</label>
+  <div class="form-group required" ng-class="{'has-error': errors.id}">
+    <label for="id" translate>analytics.target.id</label>
     <input id="id" type="text" class="form-control" ng-model="target.id" ng-readonly="editing"/>
     <span class="help-block" ng-if="errors.id" translate>{{errors.id}}</span>
   </div>
 
   <div class="form-horizontal">
     <label translate>analytics.target.name</label>
+    <span class="help-block" translate>analytics.target.name.help</span>
     <div class="form-group col-xs-12" ng-repeat="name in names">
       <label class="col-xs-4">{{name.locale.name}}</label>
       <div class="col-xs-8">
@@ -24,16 +25,17 @@
   </div>
 
   <div class="form-group">
-    <label for="type"><span translate>analytics.target.type</span> *</label>
+    <label for="type" translate>analytics.target.type</label>
     <select id="type" class="form-control small" ng-model="target.type">
       <option value="count" translate>analytics.target.type.count</option>
       <option value="percent" translate>analytics.target.type.percent</option>
     </select>
   </div>
 
-  <div class="form-group" ng-class="{'has-error': errors.goal}">
-    <label for="goal"><span translate>analytics.target.goal</span> *</label>
+  <div class="form-group required" ng-class="{'has-error': errors.goal}">
+    <label for="goal" translate>analytics.target.goal</label>
     <input id="goal" type="text" class="form-control small" ng-model="target.goal" />
+    <span class="help-block" translate>analytics.target.goal.help</span>
     <span class="help-block" ng-if="errors.goal" translate>{{errors.goal}}</span>
   </div>
 
