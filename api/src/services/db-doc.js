@@ -103,10 +103,8 @@ module.exports = {
     let stored;
     return getStoredDoc(params, 'GET', query)
       .then(storedDocs => {
-        stored = storedDocs.map(storedDoc => ({
-          doc: storedDoc.ok,
-          viewResults: authorization.getViewResults(storedDoc.ok)
-        }));
+        stored = storedDocs.map(storedDoc => getDocCtx(storedDoc.ok));
+
         return authorization.getScopedAuthorizationContext(userCtx, stored);
       })
       .then(authorizationContext => {
@@ -119,6 +117,7 @@ module.exports = {
             return authorization.allowedDoc(storedDoc.doc._id, authorizationContext, storedDoc.viewResults) ||
                    authorization.isDeleteStub(storedDoc.doc);
           })
+          // return the expected response format [{ ok: <doc_json> }]
           .map(storedDoc => ({ ok: storedDoc.doc }));
       });
   },

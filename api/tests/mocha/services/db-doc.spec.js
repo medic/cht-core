@@ -805,7 +805,7 @@ describe('db-doc service', () => {
       authorization.allowedDoc.withArgs('id', sinon.match.any, 5).returns(true);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 6).returns(false);
       authorization.isDeleteStub.withArgs(sinon.match({ _deleted: true })).returns(true);
-      authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 1, 5] });
+      authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 1, 5 ] });
 
       return service
         .filterOfflineOpenRevsRequest(userCtx, params, query)
