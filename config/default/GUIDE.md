@@ -6,7 +6,7 @@ These instructions are aimed at developers and technical people who are explorin
 
 You should have the [Core Framework running](TODO easy setup instructions), have installed [medic-conf](TODO medic-conf install instructions) and have checked out or otherwise downloaded the [Reference Configuration](TODO link to dir on github).
 
-Once you've made a change you can upload the configuration on disk (including pre-steps like compiling forms from spreadsheets into XML etc), by using `medic-conf`'s default action:
+Once you've made a change you must compile and upload the configuration to the Core Framework to see the change. You can do this by using `medic-conf`'s default action:
 
 ```sh
 # TODO get this right for easy setup instruction URLs
