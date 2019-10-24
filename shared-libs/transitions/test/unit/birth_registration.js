@@ -1,19 +1,15 @@
-const sinon = require('sinon');
-const assert = require('chai').assert;
-const rewire = require('rewire');
-const  moment = require('moment');
-const transitionUtils = require('../../src/transitions/utils');
-const utils = require('../../src/lib/utils');
-const config = require('../../src/config');
-
-const transition = rewire('../../src/transitions/registration');
-transition.setBirthDate = transition.__get__('setBirthDate');
+var transition = require('../../src/transitions/registration'),
+    sinon = require('sinon'),
+    assert = require('chai').assert,
+    moment = require('moment'),
+    transitionUtils = require('../../src/transitions/utils'),
+    utils = require('../../src/lib/utils');
 
 describe('birth registration', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(config, 'get').returns([{
+    sinon.stub(transition, 'getConfig').returns([{
         form: 'BIR',
         events: [
            {
@@ -90,8 +86,12 @@ describe('birth registration', () => {
 
   it('valid form adds patient_id and expected_date', () => {
       // doc already exists bc we aren't testing the create patient step
-      sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'UUID'});
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'UUID'});
+
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+          doc.patient_id = 12345;
+          callback();
+      });
 
       var doc = {
           form: 'BIR',

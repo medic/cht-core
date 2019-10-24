@@ -13,9 +13,14 @@ module.exports = {
     return type && type.person;
   },
   onMatch: change => {
-    return transitionUtils
-      .addUniqueId(change.doc)
-      .then(() => true);
+    return new Promise((resolve, reject) => {
+      transitionUtils.addUniqueId(change.doc, err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(true);
+      });
+    });
   },
   asynchronousOnly: true
 };

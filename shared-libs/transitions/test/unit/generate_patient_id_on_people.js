@@ -14,7 +14,7 @@ describe('generate_patient_id_on_people transition', () => {
   afterEach(() => sinon.restore());
 
   it('adds patient_id to people', () => {
-    sinon.stub(transitionUtils, 'addUniqueId').resolves();
+    sinon.stub(transitionUtils, 'addUniqueId');
     transition.onMatch({}, {}, {}, {});
     assert.equal(transitionUtils.addUniqueId.callCount, 1);
   });

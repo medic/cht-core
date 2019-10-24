@@ -55,36 +55,42 @@ describe('utils', () => {
 
   describe('getPatientContactUuid', () => {
 
-    it('returns the ID for the given short code', () => {
+    it('returns the ID for the given short code', done => {
       const expected = 'abc123';
       const given = '55998';
       const patients = [ { id: expected } ];
       const query = db.medic.query.resolves({ rows: patients });
-      return utils.getPatientContactUuid(given).then((actual) => {
+      utils.getPatientContactUuid(given, (err, actual) => {
+        assert.equal(err, null);
         assert.equal(actual, expected);
         assert.equal(query.callCount, 1);
         assert.equal(query.args[0][0], 'medic-client/contacts_by_reference');
         assert.equal(query.args[0][1].key[0], 'shortcode');
         assert.equal(query.args[0][1].key[1], given);
         assert.equal(query.args[0][1].include_docs, false);
+        done();
       });
     });
 
-    it('returns empty when no patient found', () => {
+    it('returns empty when no patient found', done => {
       const given = '55998';
       const patients = [ ];
       const query = db.medic.query.resolves({ rows: patients });
-      return utils.getPatientContactUuid(given).then((actual) => {
+      utils.getPatientContactUuid(given, (err, actual) => {
+        assert.equal(err, null);
         assert.equal(actual, null);
         assert.equal(query.callCount, 1);
+        done();
       });
     });
 
-    it('returns empty when no shortcode given', () => {
+    it('returns empty when no shortcode given', done => {
       const query = db.medic.query;
-      return utils.getPatientContactUuid(null).then((actual) => {
+      utils.getPatientContactUuid(null, (err, actual) => {
+        assert.equal(err, null);
         assert.equal(actual, null);
         assert.equal(query.callCount, 0);
+        done();
       });
     });
 
@@ -134,14 +140,15 @@ describe('utils', () => {
 
   describe('getRegistrations', () => {
 
-    it('queries by id if given', () => {
+    it('queries by id if given', done => {
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       sinon.stub(config, 'getAll').returns({ config: 'all' });
       const expectedDoc = { _id: 'a' };
       const expected = [ { doc: expectedDoc } ];
       const given = '22222';
       const query = db.medic.query.resolves({ rows: expected });
-      return utils.getRegistrations({ id: given }).then((actual) => {
+      utils.getRegistrations({ id: given }, (err, actual) => {
+        assert.equal(err, null);
         assert.deepEqual(actual, [ expectedDoc ]);
         assert.equal(query.callCount, 1);
         assert.equal(registrationUtils.isValidRegistration.callCount, 1);
@@ -149,10 +156,11 @@ describe('utils', () => {
         assert.equal(query.args[0][0], 'medic-client/registered_patients');
         assert.equal(query.args[0][1].key, given);
         assert.equal(query.args[0][1].include_docs, true);
+        done();
       });
     });
 
-    it('queries by ids if given', () => {
+    it('queries by ids if given', done => {
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       sinon.stub(config, 'getAll').returns({ config: 'all' });
       const expectedDoc1 = { id: 'a' };
@@ -160,7 +168,8 @@ describe('utils', () => {
       const expected = [ { doc: expectedDoc1 } , { doc: expectedDoc2 } ];
       const given = ['11111', '22222'];
       const view = db.medic.query.resolves({ rows: expected });
-      return utils.getRegistrations({ ids: given }).then((actual) => {
+      utils.getRegistrations({ ids: given }, (err, actual) => {
+        assert.equal(err, null);
         assert.equal(registrationUtils.isValidRegistration.callCount, 2);
         assert.deepEqual(registrationUtils.isValidRegistration.args[0], [expectedDoc1, { config: 'all' }]);
         assert.deepEqual(registrationUtils.isValidRegistration.args[1], [expectedDoc2, { config: 'all' }]);
@@ -169,18 +178,21 @@ describe('utils', () => {
         assert.equal(view.args[0][0], 'medic-client/registered_patients');
         assert.equal(view.args[0][1].keys, given);
         assert.equal(view.args[0][1].include_docs, true);
+        done();
       });
     });
 
-    it('returns empty array if id or ids', () => {
+    it('returns empty array if id or ids', done => {
       const query = db.medic.query;
-      return utils.getRegistrations({ }).then((actual) => {
+      utils.getRegistrations({ }, (err, actual) => {
+        assert.equal(err, null);
         assert.deepEqual(actual, []);
         assert.equal(query.callCount, 0);
+        done();
       });
     });
 
-    it('only returns valid registrations', () => {
+    it('only returns valid registrations', done => {
       sinon.stub(registrationUtils, 'isValidRegistration');
       sinon.stub(config, 'getAll').returns({ config: 'all' });
       const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }, { _id: 'f' }];
@@ -194,9 +206,11 @@ describe('utils', () => {
         .withArgs({ _id: 'e' }).returns(false)
         .withArgs({ _id: 'f' }).returns(false);
 
-      return utils.getRegistrations({ ids: ['111', '222'] }).then((actual) => {
+      utils.getRegistrations({ ids: ['111', '222'] }, (err, actual) => {
+        assert.equal(err, null);
         assert.equal(registrationUtils.isValidRegistration.callCount, 6);
         assert.deepEqual(actual, [{ _id: 'a' }, { _id: 'd' }]);
+        done();
       });
     });
   });

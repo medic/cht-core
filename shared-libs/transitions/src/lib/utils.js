@@ -149,7 +149,7 @@ module.exports = {
   * NB: Not all ids have registration documents against them, and so this
   *     is not a valid way of determining if the patient with that id exists
   */
-  getRegistrations: (options) => {
+  getRegistrations: (options, callback) => {
     const viewOptions = {
       include_docs: true,
     };
@@ -158,15 +158,20 @@ module.exports = {
     } else if (options.ids) {
       viewOptions.keys = options.ids;
     } else {
-      return Promise.resolve([]);
+      return callback(null, []);
     }
-    return db.medic
-      .query('medic-client/registered_patients', viewOptions)
+    db.medic.query('medic-client/registered_patients', viewOptions)
       .then(data => {
-        return data.rows
-          .map(row => row.doc)
-          .filter(doc => registrationUtils.isValidRegistration(doc, config.getAll()));
-      });
+        callback(
+          null,
+          data.rows
+            .map(row => row.doc)
+            .filter(doc =>
+              registrationUtils.isValidRegistration(doc, config.getAll())
+            )
+        );
+      })
+      .catch(callback);
   },
   getForm: formCode => {
     const forms = config.get('forms');
@@ -222,8 +227,10 @@ module.exports = {
    * Given a patient "shortcode" (as used in SMS reports), return the _id
    * of the patient's person contact to the caller
    */
-  getPatientContactUuid: (patientShortcodeId) => {
-    return getPatient(patientShortcodeId, false);
+  getPatientContactUuid: (patientShortcodeId, callback) => {
+    getPatient(patientShortcodeId, false)
+      .then(results => callback(null, results))
+      .catch(callback);
   },
   /*
    * Given a patient "shortcode" (as used in SMS reports), return the
