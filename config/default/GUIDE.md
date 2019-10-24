@@ -59,46 +59,7 @@ Instructions are same [as adding a new question](#adding-a-new-question), except
 
 Tasks are calculated and shown at run-time, i.e. when the app is loaded or reloaded. Once calculated, they are not stored anywhere and are re-calculated when any user visits the app next time.
 
-Tasks are defined inside the file `tasks.js`. An example task:
-
-```js
-  {
-    icon: 'icon-follow-up',
-    title: 'task.pnc.danger_sign_followup_baby.title',
-    appliesTo: 'reports',
-    appliesToType: ['pnc_danger_sign_follow_up_baby'],
-    appliesIf: function (contact, report) {
-      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
-    },
-    resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks
-      if (isPregnancyTaskMuted(contact)) { return true; }
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
-      //reported_date + 1 so that source ds_follow_up does not resolve itself
-      const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
-    },
-    actions: [
-      {
-        type: 'report',
-        form: 'pnc_danger_sign_follow_up_baby',
-        modifyContent: function (content, contact, report) {
-          content.delivery_uuid = getField(report, 'inputs.delivery_uuid');
-        }
-      }
-    ],
-    events: [
-      {
-        id: 'pnc-danger-sign-follow-up-baby',
-        start: 3,
-        end: 7,
-        dueDate: function (event, contact, report) {
-          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
-        }
-      }
-    ]
-  }
-```
+Tasks are defined inside the file `tasks.js`.
 
 A Task can apply to certain contacts or contacts with specific reports with specific properties that are defined in `appliesIf` function of the task. The criteria for resolving/clearing the task is defined in the `resolvedIf` function.
 
@@ -122,28 +83,7 @@ It is easy to change the start and end days of the time window. Changing a dueDa
 
 ## Targets
 
-The targets are configured inside the file `targets.js`. An example target:
-
-```js
-  {
-    id: 'facility-deliveries',
-    type: 'percent',
-    icon: 'icon-mother-child',
-    goal: -1,
-    translation_key: 'targets.anc.facility_deliveries.title',
-    subtitle_translation_key: 'targets.all_time.subtitle',
-    appliesTo: 'reports',
-    appliesToType: ['delivery'],
-    appliesIf: function (contact, report) {
-      return getField(report, 'delivery_outcome.delivery_place');
-    },
-    passesIf: function (contact, report) {
-      return getField(report, 'delivery_outcome.delivery_place') === 'health_facility';
-    },
-    date: 'now',
-    idType: 'contact'
-  },
-```
+The targets are configured inside the file `targets.js`.
 
 For more information: [Targets documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#targets).
 

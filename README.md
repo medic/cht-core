@@ -31,11 +31,11 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 ## Using the Core Framework
 
-If you wish to evaluate the core framework, _or_ you are a developer looking to create or modify core framework configurations, you should use the [easy deployment](#easy-deployment) instructions.
+If you are a developer looking to contribute to the Core Framework itself, you should follow the [development setup instructions](#development-instructions).
 
-If you are a developer looking to contribute to the core framework itself, you should follow the [development setup instructions](#development-instructions).
+If you wish to evaluate the Core Framework, _or_ you are a developer looking to create or modify applications built with the Core Framework, you can instead follow the [easy deployment](#easy-deployment) instructions, which will get the latest stable release running locally via Docker.
 
-If you're looking to modify the default configuration or upload your own you will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf). A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
+You will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
 ### Supported Browsers
 
@@ -47,13 +47,13 @@ We are going to use Docker to start a Core Framework environment on your local m
 
 First, install Docker by following the [docker desktop instructions](https://www.docker.com/products/docker-desktop) for your operating system. If you're on Linux you'll need to work out the right approach for your specific distribution, including install docker-compose separately.
 
-Next, download the [docker-compose.yml](./docker-compose.yml) file from GitHub and place it in a directory of your choosing. If you are unfamilar with terminals (see below) we recommend you place it in your home directory in MacOS, and your XYZ directory in Windows.
+Next, download the [docker-compose.yml](./docker-compose.yml) file from GitHub and place it in a directory of your choosing. If you are unfamilar with terminals (see below) we recommend you place it in your home directory. (`/home/USERNAME` in MacOS, usually `C:\Users\USERNAME` in Windows).
 
 Now you need to open a terminal. This will let you start the Core Framework, see any logging output and stop it once you're done.
 
 In **MacOS**: Open finder, click "Applications" and navigate to "Utilities" then "Terminal"
 
-In **Windows**: TODO
+In **Windows**: Press `Windows+r`m type `cmd` then `enter`.
 
 Now you have a terminal, type:
 
@@ -63,11 +63,11 @@ docker-compose up
 
 And hit enter. This will do a lot of stuff. Once it's settled down, you should then be able to navigate to [https://localhost](https://localhost), and log in with the username `medic` and the password `password`.
 
-To kill the core framework you can use `CTRL+C`.
+To kill the Core Framework you can use `CTRL+C`.
 
 ## Development Setup
 
-These instructions are for developers who want to contribute to the core framework (this repository). If you want to just run the framework (ie with the reference configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](#easy-deployment) instead.
+These instructions are for developers who want to contribute to the Core Framework (this repository). If you want to just run the framework (ie with the reference configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](#easy-deployment) instead.
 
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
