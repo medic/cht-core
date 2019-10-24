@@ -1,10 +1,6 @@
 # Reference configuration changes cookbook
 
-These instructions are aimed at developers and technical people who are exploring the reference configuration and are looking to make small changes and explore what is possible. They are necessarily hands-off, as explaining in detail everything that can be accompilshed is a larger task suited to more detailed documentation.
-
-Tutorials on how to create Core Framework Configurations from scratch have begun, and will be [available here](LINK). They are designed to clearly explain and walk developers through everything that can be accompilshed in the Core Framework, providing a base of understanding to make changes in all facets of a configuration.
-
-Detailed reference documentation on the various features is being revamped from existing documentation and will be [available here](LINK).
+These instructions are aimed at developers and technical people who are exploring the reference configuration and are looking to make small changes to see what is possible. Detailed tutorials on how to build apps from scratch with the Core Framework will be available soon. In the meantime the best source for detailed documentation is available in the [Developing Community Health Aapplications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) page. 
 
 ## Modifying the reference config
 
