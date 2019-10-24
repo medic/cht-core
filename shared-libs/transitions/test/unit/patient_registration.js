@@ -244,7 +244,11 @@ describe('patient registration', () => {
 
   it('valid form adds patient_id and patient document', () => {
     sinon.stub(utils, 'getPatientContactUuid').resolves();
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake(doc => {
+      doc.patient_id = 12345;
+      return Promise.resolve();
+    });
 
     const doc = {
       _id: 'docid',
@@ -293,7 +297,7 @@ describe('patient registration', () => {
     sinon
       .stub(utils, 'getPatientContactUuid')
       .resolves({ _id: 'uuid' });
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+    sinon.stub(transitionUtils, 'addUniqueId').resolves();
 
     const doc = {
       form: 'PATR',
@@ -355,7 +359,7 @@ describe('patient registration', () => {
     sinon
       .stub(utils, 'getPatientContactUuid')
       .resolves({ _id: 'uuid' });
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+    sinon.stub(transitionUtils, 'addUniqueId').resolves();
 
     const doc = {
       form: 'PATR',
@@ -504,7 +508,7 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getRegistrations');
       sinon.stub(utils, 'getPatientContact');
       sinon.stub(utils, 'getPatientContactUuid').resolves(false);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+      sinon.stub(transitionUtils, 'addUniqueId');
 
       sinon.stub(db.medic, 'query')
         .withArgs('medic-client/contacts_by_phone')
@@ -521,7 +525,7 @@ describe('patient registration', () => {
         assert.equal(utils.getRegistrations.callCount, 0);
         assert.equal(utils.getPatientContact.callCount, 0);
         assert.equal(utils.getPatientContactUuid.callCount, 1);
-        assert.equal(transitionUtils.getUniqueId.callCount, 0);
+        assert.equal(transitionUtils.addUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_phone');
@@ -554,7 +558,7 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getRegistrations');
       sinon.stub(utils, 'getPatientContact');
       sinon.stub(utils, 'getPatientContactUuid').resolves(false);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+      sinon.stub(transitionUtils, 'addUniqueId');
 
       sinon.stub(db.medic, 'query');
       db.medic.query
@@ -578,7 +582,7 @@ describe('patient registration', () => {
         assert.equal(utils.getRegistrations.callCount, 0);
         assert.equal(utils.getPatientContact.callCount, 0);
         assert.equal(utils.getPatientContactUuid.callCount, 1);
-        assert.equal(transitionUtils.getUniqueId.callCount, 0);
+        assert.equal(transitionUtils.addUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 2);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
@@ -615,7 +619,7 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getRegistrations');
       sinon.stub(utils, 'getPatientContact');
       sinon.stub(utils, 'getPatientContactUuid').resolves(false);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+      sinon.stub(transitionUtils, 'addUniqueId');
 
       sinon.stub(db.medic, 'query');
       db.medic.query
@@ -638,7 +642,7 @@ describe('patient registration', () => {
         assert.equal(utils.getRegistrations.callCount, 0);
         assert.equal(utils.getPatientContact.callCount, 0);
         assert.equal(utils.getPatientContactUuid.callCount, 1);
-        assert.equal(transitionUtils.getUniqueId.callCount, 0);
+        assert.equal(transitionUtils.addUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 2);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
