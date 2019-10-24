@@ -12,7 +12,7 @@ Now you need to open a terminal. This will let you start the Core Framework, see
 
 In **MacOS**: Open finder, click "Applications" and navigate to "Utilities" then "Terminal"
 
-In **Windows**: Press `Windows+r`m type `cmd` then `enter`.
+In **Windows**: Press `Windows+r`, type `cmd` then `enter`.
 
 Now you have a terminal, type:
 
