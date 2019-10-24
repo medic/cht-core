@@ -148,12 +148,6 @@
     "can_export_feedback": [
       "program_officer"
     ],
-    "can_export_forms": [
-      "analytics",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
     "can_export_messages": [
       "analytics",
       "program_officer",
