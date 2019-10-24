@@ -41,9 +41,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
             });
           } else {
             $scope.names = $scope.locales.map(locale => {
-              const name =
-                $scope.target.name
-                .find(item => item.locale === locale.code);
+              const name = $scope.target.name.find(item => item.locale === locale.code);
               const content = name ? name.content : '';
               return {
                 locale,
@@ -51,6 +49,8 @@ angular.module('controllers').controller('TargetsEditCtrl',
               };
             });
           }
+        } else {
+          $scope.names = $scope.locales.map(locale => ({ locale }));
         }
       })
       .catch(function(err) {

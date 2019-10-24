@@ -146,15 +146,6 @@
           <text id="/pregnancy_danger_sign/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/parent/parent/contact:label">
-            <value>Contact</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pregnancy_danger_sign/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -173,13 +164,10 @@
           <text id="/pregnancy_danger_sign/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/pregnancy_danger_sign/inputs:label">
-            <value>Patient</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign delimiter="#" id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" version="2019-10-10 14:10:30">
+        <pregnancy_danger_sign delimiter="#" id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" version="2019-10-17 04:58:24">
           <inputs>
             <meta>
               <location>
@@ -358,19 +346,14 @@ and selected(../breathlessness, 'no'), 'no', ''))" nodeset="/pregnancy_danger_si
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_danger_sign/inputs">
-      <label ref="jr:itext('/pregnancy_danger_sign/inputs:label')"/>
       <group ref="/pregnancy_danger_sign/inputs/contact">
         <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact:label')"/>
         <input appearance="db-object" ref="/pregnancy_danger_sign/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_danger_sign/inputs/contact/parent">
-          <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact/parent:label')"/>
           <group ref="/pregnancy_danger_sign/inputs/contact/parent/parent">
-            <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact/parent/parent:label')"/>
-            <group ref="/pregnancy_danger_sign/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact/parent/parent/contact:label')"/>
-            </group>
+            <group ref="/pregnancy_danger_sign/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>

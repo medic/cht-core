@@ -176,13 +176,10 @@
           <text id="/pregnancy_danger_sign_follow_up/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/pregnancy_danger_sign_follow_up/inputs:label">
-            <value>Patient</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-10-10 14:10:24">
+        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-10-17 04:59:36">
           <inputs>
             <meta>
               <location>
@@ -357,7 +354,6 @@ or selected(../other_danger_sign, 'yes')),
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_danger_sign_follow_up/inputs">
-      <label ref="jr:itext('/pregnancy_danger_sign_follow_up/inputs:label')"/>
       <group ref="/pregnancy_danger_sign_follow_up/inputs/contact">
         <input appearance="db-object" ref="/pregnancy_danger_sign_follow_up/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_danger_sign_follow_up/inputs/contact/_id:label')"/>

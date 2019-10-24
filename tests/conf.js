@@ -8,6 +8,10 @@ const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
 
+const chai = require('chai');
+// so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
+chai.config.truncateThreshold = 0;
+
 const baseConfig = {
   params:{
     pathToConfig: false
@@ -90,11 +94,11 @@ const startApi = () =>
 const listenForApi = () => {
   console.log('Checking API');
   return utils.request({ path: '/api/info' }).catch(() => {
-    console.log('API check failed, trying again in 5 seconds');
+    console.log('API check failed, trying again in 1 second');
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(listenForApi());
-      }, 5000);
+      }, 1000);
     });
   });
 };
@@ -108,8 +112,8 @@ const getLoginUrl = () => {
 
 const login = browser => {
   browser.driver.get(getLoginUrl());
-  browser.driver.findElement(by.name('user')).sendKeys(auth.user);
-  browser.driver.findElement(by.name('password')).sendKeys(auth.pass);
+  browser.driver.findElement(by.name('user')).sendKeys(auth.username);
+  browser.driver.findElement(by.name('password')).sendKeys(auth.password);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () =>
@@ -129,13 +133,12 @@ const setupSettings = () => {
   return utils.request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
-    body: JSON.stringify(defaultAppSettings),
-    headers: { 'Content-Type': 'application/json' },
+    body: defaultAppSettings
   });
 };
 
 const setupUser = () => {
-  return utils.getDoc('org.couchdb.user:' + auth.user).then(doc => {
+  return utils.getDoc('org.couchdb.user:' + auth.username).then(doc => {
     doc.contact_id = constants.USER_CONTACT_ID;
     doc.known = true;
     doc.language = 'en';

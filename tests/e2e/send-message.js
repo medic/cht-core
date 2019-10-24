@@ -6,7 +6,7 @@ describe('Send message', () => {
   'use strict';
 
   const RAW_PH = '+447765902000';
-  const ANOTHER_RAW_PH = '+557765902000';
+  const ANOTHER_RAW_PH = '+447765902003';
 
   const ALICE = {
     _id: 'alice-contact',
@@ -148,9 +148,8 @@ describe('Send message', () => {
     totalExpectedResults,
     entrySelector,
     entryText,
-    existingEntryCount
+    existingEntryCount=0
   ) => {
-    existingEntryCount = existingEntryCount || 0;
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(
       existingEntryCount
     );
@@ -220,9 +219,7 @@ describe('Send message', () => {
     return name + ' - all contacts';
   };
 
-  const getElementText = (css, attempt) => {
-    attempt = attempt || 0;
-
+  const getElementText = (css, attempt=0) => {
     return helper.getTextFromElement(element(by.css(css)))
       .then((text) => {
         return text;
@@ -417,13 +414,17 @@ describe('Send message', () => {
 
       browser.wait(() => {
         const el = element(by.css('#message-header .name'));
-        helper.waitElementToBeVisible(el);
-        return helper.getTextFromElement(el).then(text => {
-          return text === 'Unknown sender';
-        });
+        return helper
+          .getTextFromElement(el)
+          .then(text => text === 'Unknown sender')
+          .catch(err => {
+            // item may have been removed from the page when the RHS is refreshed
+            console.log('Caught and ignoring an error trying to getText', err);
+          });
       }, 12000);
 
       expect(getElementText('#message-header .phone')).toBe(ALICE.phone);
+      expect(getElementText('#message-header .name')).toBe('Unknown sender');
     });
   });
 });

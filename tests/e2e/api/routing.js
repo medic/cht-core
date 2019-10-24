@@ -44,19 +44,18 @@ const users = [
 ];
 
 const offlineRequestOptions = {
-  auth: `offline:${password}`,
+  auth: { username: 'offline', password },
   method: 'GET',
 };
 
 const onlineRequestOptions = {
-  auth: `online:${password}`,
+  auth: { username: 'online', password },
   method: 'GET',
 };
 
 const unauthenticatedRequestOptions = {
-  auth: '--------',
   method: 'GET',
-  headers: { Accept: 'application/json' },
+  noAuth: true
 };
 
 const DOCS_TO_KEEP = [
@@ -70,25 +69,14 @@ describe('routing', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() =>
-        Promise.all(
-          users.map(user =>
-            utils.request({
-              path: '/api/v1/users',
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: user,
-            })
-          )
-        )
-      )
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done));
   afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
 
@@ -141,10 +129,10 @@ describe('routing', () => {
 
     it('API allows endpoints which do not need authentication', () => {
       return Promise.all([
-        utils.requestOnTestDb(_.extend({ path: '/login' }, unauthenticatedRequestOptions), false, true),
-        utils.request(_.extend({ path: '/login/style.css' }, unauthenticatedRequestOptions), { notJson: true }),
+        utils.requestOnTestDb(_.extend({ path: '/login', json: false }, unauthenticatedRequestOptions)),
+        utils.request(_.extend({ path: '/login/style.css' }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
-        utils.requestOnMedicDb(_.extend({ path: '/login' }, unauthenticatedRequestOptions), false, true),
+        utils.requestOnMedicDb(_.extend({ path: '/login', json: false }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
         utils.request(_.extend({ path: '/api/info' }, unauthenticatedRequestOptions)),
       ]).then(results => {
@@ -288,8 +276,7 @@ describe('routing', () => {
     it('restricts _find', () => {
       const request = {
         method: 'POST',
-        body: JSON.stringify({ selector: { type: 'person' }, limit: 1 }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { selector: { type: 'person' }, limit: 1 },
       };
 
       return Promise.all([
@@ -331,8 +318,7 @@ describe('routing', () => {
     it('restricts _explain', () => {
       const request = {
         method: 'POST',
-        body: JSON.stringify({ selector: { type: 'person' }, limit: 1 }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { selector: { type: 'person' }, limit: 1 },
       };
 
       return Promise.all([
@@ -413,7 +399,7 @@ describe('routing', () => {
     it('restricts _ensure_full_commit', () => {
       const request = {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        body: {}
       };
 
       return Promise.all([
@@ -492,8 +478,7 @@ describe('routing', () => {
     it('restricts _purge', () => {
       const request = {
         method: 'POST',
-        body: JSON.stringify({ 'some-fake-id': [] }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { 'some-fake-id': [] },
       };
 
       return Promise.all([
@@ -526,8 +511,7 @@ describe('routing', () => {
     it('allows _revs_diff, _missing_revs', () => {
       const request = {
         method: 'POST',
-        body: JSON.stringify({ 'some-fake-id': [] }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { 'some-fake-id': [] },
       };
 
       return Promise.all([
@@ -546,8 +530,7 @@ describe('routing', () => {
     it('allows _local', () => {
       const request = {
         method: 'PUT',
-        body: JSON.stringify({ _id: 'some_local_id' }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { _id: 'some_local_id' },
         path: '/_local/some_local_id',
       };
 
@@ -568,13 +551,13 @@ describe('routing', () => {
 
     it('allows access to the app', () => {
       return Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true),
-        utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions), false, true),
-        utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true)
+        utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/', json: false }, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions))
       ]).then(results => {
-        expect(results[0].includes('Found. Redirecting to')).toBe(true);
+        expect(results[0].includes('This loads as an empty page')).toBe(true); // the dummy page that clears appcache
         expect(results[1].includes('DOCTYPE html')).toBe(true);
-        expect(results[2].includes('Found. Redirecting to')).toBe(true);
+        expect(results[2].includes('This loads as an empty page')).toBe(true);
       });
     });
 
@@ -670,8 +653,7 @@ describe('routing', () => {
           const updateMedicParams = {
             path: '/_design/medic/_rewrite/update_settings/medic',
             method: 'PUT',
-            body: JSON.stringify({ medic_api_v0: 'my value 1' }),
-            headers: { 'Content-Type': 'application/json' }
+            body: { medic_api_v0: 'my value 1' },
           };
 
           return utils.requestOnMedicDb(_.defaults(updateMedicParams, onlineRequestOptions));
@@ -683,8 +665,7 @@ describe('routing', () => {
           const params = {
             path: '/_design/medic/_rewrite/update_settings/medic',
             method: 'PUT',
-            body: JSON.stringify({ test_api_v0: 'my value 2' }),
-            headers: { 'Content-Type': 'application/json' }
+            body: { test_api_v0: 'my value 2' },
           };
           return utils.requestOnTestDb(_.defaults(params, onlineRequestOptions));
         })
@@ -695,8 +676,7 @@ describe('routing', () => {
           const params = {
             path: '/_design/medic/_rewrite/update_settings/medic',
             method: 'PUT',
-            body: JSON.stringify({ test_api_v0_offline: 'offline value 2' }),
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+            body: { test_api_v0_offline: 'offline value 2' },
           };
           return utils.requestOnTestDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
         })
@@ -707,8 +687,7 @@ describe('routing', () => {
           const params = {
             path: '/_design/medic/_rewrite/update_settings/medic',
             method: 'PUT',
-            body: JSON.stringify({ medic_api_v0_offline: 'offline value 1' }),
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+            body: { medic_api_v0_offline: 'offline value 1' },
           };
           return utils.requestOnMedicDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
         })

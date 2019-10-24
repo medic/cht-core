@@ -24,6 +24,6 @@ describe('Login tests : ', () => {
   it('should try to sign in and verify that credentials were incorrect', () => {
     commonElements.goToLoginPage();
     loginPage.login(wrongUsername, wrongPassword, true);
-    loginPage.login(auth.user, auth.pass);
+    loginPage.login(auth.username, auth.password);
   });
 });

@@ -204,11 +204,11 @@ describe('Purging on login', () => {
       .then(() => utils.request({
         path: `/_users/org.couchdb.user:${restrictedUserName}`,
         method: 'PUT',
-        body: JSON.stringify(restrictedUser)
+        body: restrictedUser
       }))
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => seq = result)
-      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }))
+      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true))
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => done()).catch(done.fail);
@@ -216,7 +216,7 @@ describe('Purging on login', () => {
 
   afterAll(done => {
     commonElements.goToLoginPage();
-    loginPage.login(auth.user, auth.pass);
+    loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${restrictedUserName}`)
       .then(doc => utils.request({
@@ -268,6 +268,7 @@ describe('Purging on login', () => {
     });
 
     utils.resetBrowser();
+    commonElements.calm();
     helper.waitForAngularComplete();
 
     getPurgeLog().then(result => {
@@ -281,11 +282,6 @@ describe('Purging on login', () => {
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
 
-    browser.wait(() => utils.revertSettings(true).then(() => true));
-    commonElements.sync();
-    utils.refreshToGetNewSettings();
-    commonElements.calm();
-
     browser.wait(() => {
       let seq;
       const purgeSettings = {
@@ -293,8 +289,8 @@ describe('Purging on login', () => {
         text_expression: 'every 1 seconds',
         run_every_days: '0'
       };
-      return sentinelUtils
-        .getCurrentSeq()
+      return utils.revertSettings(true)
+        .then(() => sentinelUtils.getCurrentSeq())
         .then(result => seq = result)
         .then(() => utils.updateSettings({ purge: purgeSettings}, true))
         .then(() => restartSentinel())

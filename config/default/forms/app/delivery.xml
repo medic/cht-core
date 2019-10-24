@@ -411,20 +411,8 @@
           <text id="/delivery/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/delivery/inputs/contact/parent/parent/contact:label">
-            <value>Contact</value>
-          </text>
           <text id="/delivery/inputs/contact/parent/parent/parent/_id:label">
             <value>Health Facility ID</value>
-          </text>
-          <text id="/delivery/inputs/contact/parent/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/delivery/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/delivery/inputs/contact/parent:label">
-            <value>Parent</value>
           </text>
           <text id="/delivery/inputs/contact/patient_id:label">
             <value>Patient ID</value>
@@ -434,9 +422,6 @@
           </text>
           <text id="/delivery/inputs/contact/short_name:label">
             <value>Short Name</value>
-          </text>
-          <text id="/delivery/inputs/contact:label">
-            <value>Contact</value>
           </text>
           <text id="/delivery/inputs/source:label">
             <value>Source</value>
@@ -455,9 +440,6 @@
           </text>
           <text id="/delivery/inputs/user:label">
             <value>User</value>
-          </text>
-          <text id="/delivery/inputs:label">
-            <value>Patient</value>
           </text>
           <text id="/delivery/pnc_danger_sign_check/convulsion/no:label">
             <value>No</value>
@@ -813,7 +795,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-10_22-27">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-17_05-01">
           <inputs>
             <meta>
               <location>
@@ -1613,7 +1595,6 @@ if(selected( /delivery/pnc_visits/pnc_visits_attended , '6_weeks'), 1, 0))" node
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/delivery/inputs">
-      <label ref="jr:itext('/delivery/inputs:label')"/>
       <group ref="/delivery/inputs/user">
         <label ref="jr:itext('/delivery/inputs/user:label')"/>
         <input appearance="db-object" ref="/delivery/inputs/user/contact_id">
@@ -1621,29 +1602,23 @@ if(selected( /delivery/pnc_visits/pnc_visits_attended , '6_weeks'), 1, 0))" node
         </input>
       </group>
       <group ref="/delivery/inputs/contact">
-        <label ref="jr:itext('/delivery/inputs/contact:label')"/>
         <input appearance="db-object" ref="/delivery/inputs/contact/_id">
           <label ref="jr:itext('/delivery/inputs/contact/_id:label')"/>
         </input>
         <group ref="/delivery/inputs/contact/parent">
-          <label ref="jr:itext('/delivery/inputs/contact/parent:label')"/>
           <input appearance="hidden" ref="/delivery/inputs/contact/parent/_id">
             <label ref="jr:itext('/delivery/inputs/contact/parent/_id:label')"/>
           </input>
           <group ref="/delivery/inputs/contact/parent/parent">
-            <label ref="jr:itext('/delivery/inputs/contact/parent/parent:label')"/>
             <input appearance="hidden" ref="/delivery/inputs/contact/parent/parent/_id">
               <label ref="jr:itext('/delivery/inputs/contact/parent/parent/_id:label')"/>
             </input>
             <group ref="/delivery/inputs/contact/parent/parent/parent">
-              <label ref="jr:itext('/delivery/inputs/contact/parent/parent/parent:label')"/>
               <input appearance="hidden" ref="/delivery/inputs/contact/parent/parent/parent/_id">
                 <label ref="jr:itext('/delivery/inputs/contact/parent/parent/parent/_id:label')"/>
               </input>
             </group>
-            <group ref="/delivery/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/delivery/inputs/contact/parent/parent/contact:label')"/>
-            </group>
+            <group ref="/delivery/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>

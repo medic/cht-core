@@ -57,32 +57,21 @@ describe('db-doc handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() =>
-        Promise.all(
-          users.map(user =>
-            utils.request({
-              path: '/api/v1/users',
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: user,
-            })
-          )
-        )
-      )
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done));
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
 
   beforeEach(() => {
-    offlineRequestOptions = { auth: `offline:${password}` };
-    onlineRequestOptions = { auth: `online:${password}` };
+    offlineRequestOptions = { auth: { username: 'offline', password }, };
+    onlineRequestOptions = { auth: { username: 'online', password }, };
   });
 
   describe('does not restrict online users', () => {
@@ -106,12 +95,11 @@ describe('db-doc handler', () => {
       _.extend(onlineRequestOptions, {
         path: '/',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           _id: 'db_doc_post',
           type: 'district_hospital',
           name: 'NEW PLACE',
-        }),
+        },
       });
 
       return utils
@@ -139,13 +127,12 @@ describe('db-doc handler', () => {
           _.extend(onlineRequestOptions, {
             method: 'PUT',
             path: '/db_doc_put',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
               _id: 'db_doc_put',
               type: 'clinic',
               name: 'my updated clinic',
               _rev: result.rev,
-            }),
+            },
           });
 
           return utils.requestOnTestDb(onlineRequestOptions);
@@ -170,7 +157,6 @@ describe('db-doc handler', () => {
           _.extend(onlineRequestOptions, {
             method: 'DELETE',
             path: `/db_doc_delete?rev=${result.rev}`,
-            headers: { 'Content-Type': 'application/json' },
           });
 
           return utils.requestOnTestDb(onlineRequestOptions);
@@ -196,6 +182,7 @@ describe('db-doc handler', () => {
             method: 'PUT',
             body: 'my attachment content',
             headers: { 'Content-Type': 'text/plain' },
+            json: false
           })
         )
         .then(() => {
@@ -220,13 +207,7 @@ describe('db-doc handler', () => {
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
-        .then(result =>
-          utils.requestOnTestDb(
-            `/with_attachments/new_attachment?rev=${result.rev}`,
-            false,
-            true
-          )
-        )
+        .then(result => utils.requestOnTestDb(`/with_attachments/new_attachment?rev=${result.rev}`))
         .then(result => {
           expect(result).toEqual('my new attachment content');
         });
@@ -378,31 +359,16 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
-
-          return Promise.all(
-            docs.map(doc =>
-              utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)
-            )
-          );
+          return Promise.all(docs.map(doc => utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)));
         })
         .then(results =>
           Promise.all(
             _.flatten(
               results.map(result => {
-                const open_revs = result._revisions.ids.map(
-                    (rev, key) => `${result._revisions.start - key}-${rev}`
-                  ),
-                  path = `/${result._id}?rev=${
-                    result._rev
-                  }&open_revs=${JSON.stringify(open_revs)}`,
-                  pathAll = `/${result._id}?rev=${result._rev}&open_revs=all`;
+                const open_revs = result._revisions.ids.map((rev, key) => `${result._revisions.start - key}-${rev}`);
                 return [
-                  utils.requestOnTestDb(
-                    _.defaults({ path: path }, offlineRequestOptions)
-                  ),
-                  utils.requestOnTestDb(
-                    _.defaults({ path: pathAll }, offlineRequestOptions)
-                  ),
+                  utils.requestOnTestDb(_.defaults({ path: `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}` }, offlineRequestOptions)),
+                  utils.requestOnTestDb(_.defaults({ path: `/${result._id}?rev=${result._rev}&open_revs=all` }, offlineRequestOptions)),
                 ];
               })
             )
@@ -520,7 +486,6 @@ describe('db-doc handler', () => {
     it('POST', () => {
       _.extend(offlineRequestOptions, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
       });
 
       const allowedDoc = {
@@ -537,19 +502,10 @@ describe('db-doc handler', () => {
       };
 
       return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults(
-            { body: JSON.stringify(allowedDoc), path: '/' },
-            offlineRequestOptions
-          )
-        ),
         utils
-          .requestOnTestDb(
-            _.defaults(
-              { body: JSON.stringify(deniedDoc), path: '/' },
-              offlineRequestOptions
-            )
-          )
+          .requestOnTestDb(_.defaults({ body: allowedDoc, path: '/' }, offlineRequestOptions)),
+        utils
+          .requestOnTestDb(_.defaults({ body: deniedDoc, path: '/' }, offlineRequestOptions))
           .catch(err => err),
         utils
           .requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions))
@@ -647,17 +603,10 @@ describe('db-doc handler', () => {
             ), // stored denied, new allowed
           ];
 
-          return Promise.all(
-            updates.map(doc =>
-              utils
-                .requestOnTestDb(
-                  _.extend(
-                    { path: `/${doc._id}`, body: JSON.stringify(doc) },
-                    offlineRequestOptions
-                  )
-                )
-                .catch(err => err)
-            )
+          return Promise.all(updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .catch(err => err))
           );
         })
         .then(results => {
@@ -706,7 +655,6 @@ describe('db-doc handler', () => {
     it('PUT over DELETE stubs', () => {
       _.extend(offlineRequestOptions, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
       });
 
       const docs = [
@@ -764,17 +712,10 @@ describe('db-doc handler', () => {
             ), // prev denied, deleted, new allowed
           ];
 
-          return Promise.all(
-            updates.map(doc =>
-              utils
-                .requestOnTestDb(
-                  _.extend(
-                    { path: `/${doc._id}`, body: JSON.stringify(doc) },
-                    offlineRequestOptions
-                  )
-                )
-                .catch(err => err)
-            )
+          return Promise.all(updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .catch(err => err))
           );
         })
         .then(results => {
@@ -868,6 +809,7 @@ describe('db-doc handler', () => {
         allowed_attach: [],
         denied_attach: [],
       };
+      offlineRequestOptions.json = false;
 
       return utils
         .saveDocs([
@@ -900,34 +842,18 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(
-              _.extend(
-                { path: '/allowed_attach/att_name' },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
             utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/denied_attach/att_name' },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)),
+            utils
+              .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
               .catch(err => err),
             utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: `/denied_attach/att_name?rev=${results[1].rev}` },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`}, offlineRequestOptions))
               .catch(err => err),
           ]);
         })
         .then(results => {
-          expect(results[0]).toEqual('my attachment content');
+          expect(results[0]).toEqual('"my attachment content"');
           expect(results[1].statusCode).toEqual(404);
           expect(results[1].responseBody).toEqual({
             error: 'bad_request',
@@ -953,42 +879,31 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
-          return Promise.all(
-            _.flatten(
-              _.map(revs, (revisions, id) => {
-                return revisions.map(rev =>
-                  utils
-                    .requestOnTestDb(
-                      _.extend(
-                        { path: `/${id}/att_name?rev=${rev}` },
-                        offlineRequestOptions
-                      ),
-                      false,
-                      true
-                    )
-                    .catch(err => err)
-                );
-              })
-            )
-          );
+          const getRequestForIdRev = (id, rev) => utils
+            .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
+            .catch(err => err);
+
+          const promises = [];
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => getRequestForIdRev(id, rev))));
+          return Promise.all(promises);
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          expect(JSON.parse(results[0])).toEqual({
+          expect(results[0].responseBody).toEqual({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
-          expect(results[1]).toEqual('my attachment content');
+          expect(results[1]).toEqual('"my attachment content"');
           // allowed_attach is not allowed and has attachment
-          expect(JSON.parse(results[2]).error).toEqual('forbidden');
+          expect(results[2].responseBody.error).toEqual('forbidden');
 
           // denied_attach is not allowed, but missing attachment
-          expect(JSON.parse(results[3]).error).toEqual('forbidden');
+          expect(results[3].responseBody.error).toEqual('forbidden');
           // denied_attach is not allowed and has attachment
-          expect(JSON.parse(results[4]).error).toEqual('forbidden');
+          expect(results[4].responseBody.error).toEqual('forbidden');
           // denied_attach is allowed and has attachment
-          expect(results[5]).toEqual('my attachment content');
+          expect(results[5]).toEqual('"my attachment content"');
 
           //attachments for deleted docs
           return Promise.all([
@@ -999,37 +914,16 @@ describe('db-doc handler', () => {
         .then(results => {
           return Promise.all([
             utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/allowed_attach/att_name' },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions))
               .catch(err => err),
             utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: `/allowed_attach/att_name?rev=${results[0].rev}` },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions))
               .catch(err => err),
             utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/denied_attach/att_name' },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
               .catch(err => err),
-            utils.requestOnTestDb(
-              _.extend(
-                { path: `/denied_attach/att_name?rev=${results[1].rev}` },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
+            utils
+              .requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)),
           ]);
         })
         .then(results => {
@@ -1051,7 +945,7 @@ describe('db-doc handler', () => {
             reason: 'Invalid rev format',
           });
 
-          expect(results[3]).toEqual('my attachment content');
+          expect(results[3]).toEqual('"my attachment content"');
         });
     });
 
@@ -1092,51 +986,21 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(
-              _.extend(
-                { path: '/allowed_attach_1/att_name/1/2/3/etc' },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
-            utils.requestOnTestDb(
-              _.extend(
-                {
-                  path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${
-                    results[0].rev
-                  }`,
-                },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
             utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/denied_attach_1/att_name/1/2/3/etc' },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions)),
+            utils
+              .requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false }, offlineRequestOptions)),
+            utils
+              .requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions))
               .catch(err => err),
             utils
-              .requestOnTestDb(
-                _.extend(
-                  {
-                    path: `/denied_attach_1/att_name/1/2/3/etc?rev=${
-                      results[1].rev
-                    }`,
-                  },
-                  offlineRequestOptions
-                )
-              )
+              .requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`, json: false }, offlineRequestOptions))
               .catch(err => err),
           ]);
         })
         .then(results => {
-          expect(results[0]).toEqual('my attachment content');
-          expect(results[1]).toEqual('my attachment content');
+          expect(results[0]).toEqual('"my attachment content"');
+          expect(results[1]).toEqual('"my attachment content"');
 
           expect(results[2].statusCode).toEqual(404);
           expect(results[2].responseBody).toEqual({
@@ -1164,40 +1028,28 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
-          return Promise.all(
-            _.flatten(
-              _.map(revs, (revisions, id) => {
-                return revisions.map(rev =>
-                  utils
-                    .requestOnTestDb(
-                      _.extend(
-                        { path: `/${id}/att_name/1/2/3/etc?rev=${rev}` },
-                        offlineRequestOptions
-                      ),
-                      false,
-                      true
-                    )
-                    .catch(err => err)
-                );
-              })
-            )
-          );
+          const getRequestForIdRev = (id, rev) => utils
+            .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}` }, offlineRequestOptions))
+            .catch(err => err);
+
+          const promises = [];
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => getRequestForIdRev(id, rev))));
+          return Promise.all(promises);
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          expect(JSON.parse(results[0])).toEqual({
+          expect(results[0].responseBody).toEqual({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
           expect(results[1]).toEqual('my attachment content');
           // allowed_attach is not allowed and has attachment
-          expect(JSON.parse(results[2]).error).toEqual('forbidden');
-
+          expect(results[2].responseBody.error).toEqual('forbidden');
           // denied_attach is not allowed, but missing attachment
-          expect(JSON.parse(results[3]).error).toEqual('forbidden');
+          expect(results[3].responseBody.error).toEqual('forbidden');
           // denied_attach is not allowed and has attachment
-          expect(JSON.parse(results[4]).error).toEqual('forbidden');
+          expect(results[4].responseBody.error).toEqual('forbidden');
           // denied_attach is allowed and has attachment
           expect(results[5]).toEqual('my attachment content');
         });
@@ -1350,7 +1202,7 @@ describe('db-doc handler', () => {
           return Promise.all(
             updates.map(doc =>
               utils
-                .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
+                .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
                 .catch(err => err)
             )
           );
@@ -1402,13 +1254,7 @@ describe('db-doc handler', () => {
 
           return utils.requestOnMedicDb(onlineRequestOptions);
         })
-        .then(result =>
-          utils.requestOnMedicDb(
-            `/with_attachments/new_attachment?rev=${result.rev}`,
-            false,
-            true
-          )
-        )
+        .then(result => utils.requestOnMedicDb(`/with_attachments/new_attachment?rev=${result.rev}`))
         .then(result => {
           expect(result).toEqual('my new attachment content');
         });
@@ -1460,8 +1306,7 @@ describe('db-doc handler', () => {
     _.extend(offlineRequestOptions, {
       path: '/',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(doc),
+      body: doc,
     });
 
     return utils
@@ -1487,8 +1332,7 @@ describe('db-doc handler', () => {
         _.extend(offlineRequestOptions, {
           method: 'PUT',
           path: '/fb1',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(doc),
+          body: doc,
         });
         return utils.requestOnTestDb(offlineRequestOptions).catch(err => err);
       })
@@ -1529,8 +1373,7 @@ describe('db-doc handler', () => {
     it('blocks PUTting any ddoc', () => {
       const request = {
         method: 'PUT',
-        body: JSON.stringify({ some: 'data' }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { some: 'data' },
       };
 
       return Promise.all([
