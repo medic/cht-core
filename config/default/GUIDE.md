@@ -2,7 +2,7 @@
 
 These instructions are aimed at developers and technical people who are exploring the reference configuration and are looking to make small changes and explore what is possible. They are necessarily hands-off, as explaining in detail everything that can be accompilshed is a larger task suited to more detailed documentation.
 
-Slower paced bottom-up tutorials on how to create Core Framework Configurations from scratch have begun, and will be [available here](LINK). They are designed to clearly explain and walk developers through everything that can be accompilshed in the Core Framework, providing a base of understanding to make changes in all facets of a configuration.
+Tutorials on how to create Core Framework Configurations from scratch have begun, and will be [available here](LINK). They are designed to clearly explain and walk developers through everything that can be accompilshed in the Core Framework, providing a base of understanding to make changes in all facets of a configuration.
 
 Detailed reference documentation on the various features is being revamped from existing documentation and will be [available here](LINK).
 
