@@ -17,7 +17,7 @@ Once you've made a change you can upload the configuration on disk (including pr
 medic-conf --local
 ```
 
-To perform less but more specific actions, see [medic-conf's documentation](TODO readme link).
+To perform individual actions, see [medic-conf's documentation](TODO readme link).
 
 ## Modifying Forms
 
