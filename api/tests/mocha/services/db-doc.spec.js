@@ -298,11 +298,7 @@ describe('db-doc service', () => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev' }]);
-            authorization.getScopedAuthorizationContext.callCount.should.equal(1);
-            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
-              userCtx,
-              [ undefined, undefined ]
-            ]);
+            authorization.getScopedAuthorizationContext.callCount.should.equal(0);
           });
       });
 
@@ -388,10 +384,7 @@ describe('db-doc service', () => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', {}]);
-            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
-              userCtx,
-              [ undefined, undefined ]
-            ]);
+            authorization.getScopedAuthorizationContext.callCount.should.equal(0);
           });
       });
 
