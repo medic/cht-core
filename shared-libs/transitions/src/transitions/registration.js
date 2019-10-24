@@ -97,174 +97,6 @@ const getDOB = doc => {
   return reportedDate;
 };
 
-const setBirthDate = doc => {
-  const dob = getDOB(doc);
-  if (dob) {
-    doc.birth_date = dob.toISOString();
-  }
-};
-
-// NB: this is very similar to a function in accept_patient_reports, except
-//     we also allow for an empty event_type
-const messageRelevant = (msg, doc) => {
-  if (!msg.event_type || msg.event_type === 'report_accepted') {
-    const expr = msg.bool_expr;
-    if (utils.isNonEmptyString(expr)) {
-      return utils.evalExpression(expr, { doc: doc });
-    } else {
-      return true;
-    }
-  }
-};
-
-const assignSchedule = (options) => {
-  const patientId = options.doc.fields && options.doc.fields.patient_id;
-
-  return getRegistrations(patientId).then(registrations => {
-    options.params.forEach(scheduleName => {
-      const schedule = schedules.getScheduleConfig(scheduleName);
-      schedules.assignSchedule(
-        options.doc,
-        schedule,
-        registrations,
-        options.doc.patient
-      );
-    });
-  });
-};
-
-const addMessages = (config, doc) => {
-  const patientId = doc.fields && doc.fields.patient_id;
-  if (!config.messages || !config.messages.length) {
-    return;
-  }
-
-  return getRegistrations(patientId).then(registrations => {
-    const context = {
-      patient: doc.patient,
-      registrations: registrations,
-      templateContext: {
-        next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
-      },
-    };
-    config.messages.forEach(msg => {
-      if (messageRelevant(msg, doc)) {
-        messages.addMessage(doc, msg, msg.recipient, context);
-      }
-    });
-  });
-};
-
-const setId = (options) => {
-  const doc = options.doc;
-  const patientIdField = options.params.patient_id_field;
-
-  if (patientIdField) {
-    const providedId = doc.fields[options.params.patient_id_field];
-
-    if (!providedId) {
-      transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'no_provided_patient_id');
-      return Promise.resolve();
-    }
-
-    return transitionUtils
-      .isIdUnique(providedId)
-      .then(isUnique => {
-        if (!isUnique) {
-          transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
-          return;
-        }
-
-        doc.patient_id = providedId;
-      });
-  } else {
-    return transitionUtils.addUniqueId(doc);
-  }
-};
-
-const addPatient = (options) => {
-  const doc = options.doc,
-        patientShortcode = doc.patient_id,
-        patientNameField = getPatientNameField(options.params);
-
-  return utils
-    .getPatientContactUuid(patientShortcode)
-    .then(patientContactId => {
-      if (patientContactId) {
-        return;
-      }
-
-      return db.medic
-        .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
-        .then(result => {
-          const contact = result && result.rows && result.rows[0] && result.rows[0].doc;
-          lineage.minify(contact);
-
-          const patient = {
-            name: doc.fields[patientNameField],
-            created_by: contact && contact._id,
-            parent: contact && contact.parent,
-            reported_date: doc.reported_date,
-            patient_id: patientShortcode,
-            source_id: doc._id,
-          };
-          if (options.params.contact_type) {
-            patient.type = 'contact';
-            patient.contact_type = options.params.contact_type;
-          } else {
-            patient.type = 'person';
-          }
-          // include the DOB if it was generated on report
-          if (doc.birth_date) {
-            patient.date_of_birth = doc.birth_date;
-          }
-          return db.medic.post(patient);
-        });
-    });
-
-};
-
-/*
- * Given a doc get the LMP value as a number, including 0.  Supports three
- * property names atm.
- * */
-const getWeeksSinceLMP = doc => {
-  const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
-  let ret;
-  props.forEach(prop => {
-    if (_.isNumber(ret) && !_.isNaN(ret)) {
-      return;
-    }
-    const val = Number(doc.fields && doc.fields[prop]);
-    if (_.isNumber(val)) {
-      ret = val;
-    }
-  });
-  return ret;
-};
-
-const setExpectedBirthDate = doc => {
-  const lmp = Number(getWeeksSinceLMP(doc)),
-        start = moment(doc.reported_date).startOf('day');
-  if (lmp === 0) {
-    // means baby was already born, chw just wants a registration.
-    doc.lmp_date = null;
-    doc.expected_date = null;
-  } else {
-    start.subtract(lmp, 'weeks');
-    doc.lmp_date = start.toISOString();
-    doc.expected_date = start
-      .clone()
-      .add(40, 'weeks')
-      .toISOString();
-  }
-};
-
-const validate = (config, doc) => {
-  const validations = config && config.validations && config.validations.list;
-  return new Promise(resolve => validation.validate(doc, validations, resolve));
-};
-
 const getYearsSinceDOB = doc => {
   const fields = ['years_since_dob', 'years_since_birth', 'age_in_years'];
   return findFirstDefinedValue(doc, fields);
@@ -290,6 +122,40 @@ const getDaysSinceDOB = doc => {
   return findFirstDefinedValue(doc, fields);
 };
 
+/*
+ * Given a doc get the LMP value as a number, including 0.  Supports three
+ * property names atm.
+ * */
+const getWeeksSinceLMP = doc => {
+  const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
+  let prop = props.find(prop => !isNaN(Number(doc.fields && doc.fields[prop])));
+  return prop && doc.fields[prop];
+};
+
+const setExpectedBirthDate = doc => {
+  const lmp = Number(getWeeksSinceLMP(doc)),
+        start = moment(doc.reported_date).startOf('day');
+  if (lmp === 0) {
+    // means baby was already born, chw just wants a registration.
+    doc.lmp_date = null;
+    doc.expected_date = null;
+  } else {
+    start.subtract(lmp, 'weeks');
+    doc.lmp_date = start.toISOString();
+    doc.expected_date = start
+      .clone()
+      .add(40, 'weeks')
+      .toISOString();
+  }
+};
+
+const setBirthDate = doc => {
+  const dob = getDOB(doc);
+  if (dob) {
+    doc.birth_date = dob.toISOString();
+  }
+};
+
 const getConfig = () => config.get('registrations');
 
 /*
@@ -297,6 +163,11 @@ const getConfig = () => config.get('registrations');
  * */
 const getRegistrationConfig = (config, form_code) => {
   return config.find(conf => utils.isFormCodeSame(form_code, conf.form));
+};
+
+const validate = (config, doc) => {
+  const validations = config && config.validations && config.validations.list;
+  return new Promise(resolve => validation.validate(doc, validations, resolve));
 };
 
 const triggers = {
@@ -314,13 +185,13 @@ const triggers = {
     return triggers.add_patient(options);
   },
   add_expected_date: (options) => {
-    setExpectedBirthDate(options.doc);
+    return setExpectedBirthDate(options.doc);
   },
   add_birth_date: (options) => {
-    setBirthDate(options.doc);
+    return setBirthDate(options.doc);
   },
   assign_schedule: (options) => {
-    assignSchedule(options);
+    return assignSchedule(options);
   },
   clear_schedule: (options) => {
     // Registration forms that clear schedules do so fully
@@ -335,16 +206,14 @@ const triggers = {
         ids: utils.getSubjectIds(options.doc.patient),
         registrations: true
       })
-      .then(registrations => {
-        return new Promise((resolve, reject) => {
-          acceptPatientReports.silenceRegistrations(
-            config,
-            options.doc,
-            registrations,
-            (err, result) => err ? reject(err) : resolve(result)
-          );
-        });
-      });
+      .then(registrations => new Promise((resolve, reject) => {
+        acceptPatientReports.silenceRegistrations(
+          config,
+          options.doc,
+          registrations,
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      }));
   },
 };
 
@@ -356,7 +225,8 @@ const fireConfiguredTriggers = (registrationConfig, doc) => {
         return;
       }
 
-      const obj = Object.assign({}, doc.fields, doc);
+      const obj = _.defaults({}, doc, doc.fields);
+
       if (booleanExpressionFails(obj, event.bool_expr)) {
         return;
       }
@@ -372,9 +242,129 @@ const fireConfiguredTriggers = (registrationConfig, doc) => {
     .filter(item => !!item);
 
   return promises
-    .reduce((promise, triggerFn) => promise.then(triggerFn), Promise.resolve())
+    .reduce((promise, trigger) => promise.then(trigger), Promise.resolve())
     .then(() => addMessages(registrationConfig, doc))
     .then(() => true);
+};
+
+// NB: this is very similar to a function in accept_patient_reports, except
+//     we also allow for an empty event_type
+const messageRelevant = (msg, doc) => {
+  if (!msg.event_type || msg.event_type === 'report_accepted') {
+    const expr = msg.bool_expr;
+    if (utils.isNonEmptyString(expr)) {
+      return utils.evalExpression(expr, { doc: doc });
+    } else {
+      return true;
+    }
+  }
+};
+
+const addMessages = (config, doc) => {
+  const patientId = doc.fields && doc.fields.patient_id;
+  if (!config.messages || !config.messages.length) {
+    return;
+  }
+
+  return getRegistrations(patientId).then(registrations => {
+    const context = {
+      patient: doc.patient,
+      registrations: registrations,
+      templateContext: {
+        next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
+      },
+    };
+    config.messages.forEach(msg => {
+      if (messageRelevant(msg, doc)) {
+        messages.addMessage(doc, msg, msg.recipient, context);
+      }
+    });
+  });
+};
+
+const assignSchedule = (options) => {
+  const patientId = options.doc.fields && options.doc.fields.patient_id;
+
+  return getRegistrations(patientId).then(registrations => {
+    options.params.forEach(scheduleName => {
+      const schedule = schedules.getScheduleConfig(scheduleName);
+      schedules.assignSchedule(
+        options.doc,
+        schedule,
+        registrations,
+        options.doc.patient
+      );
+    });
+  });
+};
+
+const setId = (options) => {
+  const doc = options.doc,
+      patientIdField = options.params.patient_id_field;
+
+  if (patientIdField) {
+    const providedId = doc.fields[options.params.patient_id_field];
+
+    if (!providedId) {
+      transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'no_provided_patient_id');
+      return Promise.resolve();
+    }
+
+    return transitionUtils
+      .isIdUnique(providedId)
+      .then(isUnique => {
+        if (isUnique) {
+          doc.patient_id = providedId;
+          return;
+        }
+
+        transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
+      });
+  } else {
+    return transitionUtils.addUniqueId(doc);
+  }
+};
+
+const addPatient = (options) => {
+  const doc = options.doc,
+        patientShortcode = doc.patient_id,
+        patientNameField = getPatientNameField(options.params);
+
+  return utils
+    .getPatientContactUuid(patientShortcode)
+    .then(patientContactId => {
+      if (patientContactId) {
+        return;
+      }
+
+      return db.medic
+        .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
+        .then(result => {
+          const contact = _.result(_.first(result.rows), 'doc');
+          lineage.minify(contact);
+          // create a new patient with this patient_id
+          const patient = {
+            name: doc.fields[patientNameField],
+            created_by: contact && contact._id,
+            parent: contact && contact.parent,
+            reported_date: doc.reported_date,
+            patient_id: patientShortcode,
+            source_id: doc._id,
+          };
+          if (options.params.contact_type) {
+            patient.type = 'contact';
+            patient.contact_type = options.params.contact_type;
+          } else {
+            patient.type = 'person';
+          }
+          // include the DOB if it was generated on report
+          if (doc.birth_date) {
+            patient.date_of_birth = doc.birth_date;
+          }
+          return db.medic.post(patient);
+        });
+    });
+
 };
 
 module.exports = {
