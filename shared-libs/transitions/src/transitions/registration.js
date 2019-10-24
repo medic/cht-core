@@ -178,12 +178,7 @@ const setId = (options) => {
         doc.patient_id = providedId;
       });
   } else {
-    return transitionUtils
-      .getUniqueId()
-      .then(uniqueId => {
-        doc.patient_id = uniqueId;
-        return;
-      });
+    return transitionUtils.addUniqueId(doc);
   }
 };
 

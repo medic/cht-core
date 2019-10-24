@@ -79,7 +79,10 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
+        doc.patient_id = patientId;
+        return Promise.resolve();
+      });
 
       return transition.onMatch(change).then(() => {
         getPatientContactUuid.callCount.should.equal(1);
@@ -204,7 +207,10 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves('05649');
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
+        doc.patient_id = '05649';
+        return Promise.resolve();
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -339,7 +345,10 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
+        doc.patient_id = patientId;
+        return Promise.resolve();
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -385,7 +394,10 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
+        doc.patient_id = patientId;
+        return Promise.resolve();
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -428,10 +440,13 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
+        doc.patient_id = patientId;
+        return Promise.resolve();
+      });
+
 
       return transition.onMatch(change).then(() => {
-        console.log(JSON.stringify(saveDoc.args, null, 2));
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
       });
