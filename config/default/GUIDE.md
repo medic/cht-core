@@ -1,19 +1,20 @@
 # Reference configuration changes cookbook
 
-These instructions are aimed at developers and technical people who are exploring the reference configuration and are looking to make small changes to see what is possible. Detailed tutorials on how to build apps from scratch with the Core Framework will be available soon. In the meantime the best source for detailed documentation is available in the [Developing Community Health Aapplications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) page. 
+These instructions are aimed at developers and technical people who are exploring the reference configuration and are looking to make small changes to see what is possible.
+
+Detailed tutorials on how to build apps from scratch with the Core Framework will be available soon. In the meantime the best source for detailed documentation is available in the [Developing Community Health Applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) page.
 
 ## Modifying the reference config
 
-You should have the [Core Framework running](TODO easy setup instructions), have installed [medic-conf](TODO medic-conf install instructions) and have checked out or otherwise downloaded the [Reference Configuration](TODO link to dir on github).
+You should have the [Core Framework running](../../INSTALL.md), have installed [medic-conf](https://github.com/medic/medic-conf) and have checked out or otherwise downloaded the [Reference Configuration](./).
 
 Once you've made a change you must compile and upload the configuration to the Core Framework to see the change. You can do this by using `medic-conf`'s default action:
 
 ```sh
-# TODO get this right for easy setup instruction URLs
-medic-conf --local
+medic-conf --local --url=https://medic:pass@localhost
 ```
 
-To perform individual actions, see [medic-conf's documentation](TODO readme link).
+To perform individual actions, see [medic-conf's documentation](https://github.com/medic/medic-conf).
 
 ## Modifying Forms
 
