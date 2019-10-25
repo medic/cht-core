@@ -1,6 +1,6 @@
 var moment = require('moment');
 
-angular.module('controllers').controller('SettingsBackupCtrl',
+angular.module('controllers').controller('BackupCtrl',
   function (
     $log,
     $scope,

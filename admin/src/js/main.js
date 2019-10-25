@@ -37,8 +37,8 @@ require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
-require('./controllers/settings-backup');
 require('./controllers/settings-basic');
+require('./controllers/backup');
 require('./controllers/targets');
 require('./controllers/targets-edit');
 require('./controllers/translation-application');
@@ -189,14 +189,10 @@ angular.module('adminApp').config(function(
         }
       }
     })
-    .state('settings.backup', {
+    .state('backup', {
       url: '/backup',
-      views: {
-        tab: {
-          controller: 'SettingsBackupCtrl',
-          templateUrl: 'templates/settings_backup.html'
-        }
-      }
+      controller: 'BackupCtrl',
+      templateUrl: 'templates/backup.html'
     })
     .state('users', {
       url: '/users',
