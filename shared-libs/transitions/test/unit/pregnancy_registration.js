@@ -169,10 +169,10 @@ describe('pregnancy registration', () => {
 
       sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake(doc => {
-      doc.patient_id = 12345;
-      return Promise.resolve();
-    });
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake(doc => {
+        doc.patient_id = 12345;
+        return Promise.resolve();
+      });
 
       const doc = {
           form: 'p',
@@ -259,10 +259,10 @@ describe('pregnancy registration', () => {
   it('id only logic with valid name', () => {
       sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
-      doc.patient_id = 12345;
-      return Promise.resolve();
-    });
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
+        doc.patient_id = 12345;
+        return Promise.resolve();
+      });
 
       const doc = {
           form: 'p',
