@@ -44,7 +44,7 @@ describe('Export Data V2.0', () => {
     beforeAll(() => utils.saveDocs(docs));
 
     it('Returns all reports that exist in the system', () =>
-      utils.request('/api/v2/export/reports', {notJson: true}).then(result => {
+      utils.request({ path: '/api/v2/export/reports' }).then(result => {
         const rows = result.split('\n');
         rows.pop(); // Last row is empty string, discard
         const expected = [
@@ -63,18 +63,13 @@ describe('Export Data V2.0', () => {
       utils.request({
         method: 'POST',
         path: '/api/v2/export/reports',
-        headers: {
-          'content-type': 'application/json'
-        },
         body: {
           filters: {
             forms: {
               selected: [{code: 'b'}]
             }
           }
-        }}, {
-          notJson: true
-        }).then(result => {
+        }}).then(result => {
           const rows = result.split('\n');
           rows.pop(); // Last row is empty string, discard
           const expected = [
@@ -120,18 +115,13 @@ describe('Export Data V2.0', () => {
       utils.request({
         method: 'POST',
         path: '/api/v2/export/reports',
-        headers: {
-          'content-type': 'application/json'
-        },
         body: {
           filters: {
             forms: {
               selected: [{code: 'weird-data-types'}]
             }
           }
-        }}, {
-          notJson: true
-        }).then(result => {
+        }}).then(result => {
           const rows = result.split('\n');
           rows.pop(); // Last row is empty string, discard
           //

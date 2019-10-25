@@ -5,11 +5,11 @@ Using [Mocha](https://mochajs.org/)  we create test suites and test cases.
 
 Mocha has hooks that are good for setting up data or configuring a bunch of reports.  In our `before` hook we set up Nools and our utilities through the test-wrapper, a predefined contact, and get the nools session. The `after` hooks remove nools facts from the nools engine and tear down the flow.  The available hooks in mocha are `before`, `beforeEach`, `after`, and `afterEach`. [Mocha hooks docs](https://mochajs.org/#hooks)
 
-[Use of hooks in test case](https://github.com/medic/medic/blob/a4d63cab20adaf3b3304a255182b846f78436e10/config/sample_config_tests/tests/tasks.spec.js#L7-L29)
+[Use of hooks in test case](https://github.com/medic/cht-core/blob/a4d63cab20adaf3b3304a255182b846f78436e10/config/sample_config_tests/tests/tasks.spec.js#L7-L29)
 
 Use describe for grouping types of tests. Larger projects might break down individual tasks into suites and use individual test cases(it) to trigger different portions of tasks. 
 
-[Example Test Case](https://github.com/medic/medic/blob/a4d63cab20adaf3b3304a255182b846f78436e10/config/sample_config_tests/tests/tasks.spec.js#L31-L36)
+[Example Test Case](https://github.com/medic/cht-core/blob/a4d63cab20adaf3b3304a255182b846f78436e10/config/sample_config_tests/tests/tasks.spec.js#L31-L36)
 
 The tests needs to create a contact, report, scheduled_task, or a combination of these docs. Then add them to the nools engine through session.assert. From there to test tasks you call session.emitTasks and the nools engine will execute against the facts added to the engine and send back tasks that apply. 
 

@@ -1,6 +1,6 @@
-const openrosaFormList = require('openrosa-formlist'),
-  serverUtils = require('../server-utils'),
-  db = require('../db');
+const openrosaFormList = require('openrosa-formlist');
+const serverUtils = require('../server-utils');
+const formsService = require('../services/forms');
 
 const XML_RESPONSE_HEADERS = {
   'Content-Type': 'text/xml; charset=utf-8',
@@ -10,11 +10,6 @@ const XML_RESPONSE_HEADERS = {
 const JSON_RESPONSE_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
 };
-
-// removes "form:" prefix on form docs
-const removePrefix = str => str.replace(/^form:/, '');
-
-const isXMLForm = doc => doc && doc._attachments && doc._attachments.xml;
 
 const isCollectForm = doc => doc && doc.context && doc.context.collect;
 
@@ -28,15 +23,10 @@ const isCollectForm = doc => doc && doc.context && doc.context.collect;
 //
 // @param {Object} data - couchdb view data
 // @param {Object} req - the request object
-const listFormsXML = (data, req) => {
-  const urls = data.rows
-    .filter(row => isXMLForm(row.doc) && isCollectForm(row.doc))
-    .map(
-      row =>
-        `${req.protocol}://${req.headers.host}/api/v1/forms/${
-          row.doc.internalId
-        }.xml`
-    );
+const listFormsXML = (forms, req) => {
+  const urls = forms
+    .filter(form => isCollectForm(form))
+    .map(form => `${req.protocol}://${req.headers.host}/api/v1/forms/${form.internalId}.xml`);
   return new Promise((resolve, reject) => {
     openrosaFormList(urls, (err, xml) => {
       if (err) {
@@ -52,44 +42,22 @@ const listFormsXML = (data, req) => {
 // form. e.g. {{form_id}}.{{format}}
 //
 // @param {Object} data - couchdb view data
-const listFormsJSON = data => {
-  const forms = data.rows
-    .filter(row => isXMLForm(row.doc))
-    .map(row => removePrefix(row.doc._id) + '.xml');
-  return JSON.stringify(forms);
-};
-
-const getFormAttachment = (form, format) => {
-  const opts = {
-    key: form,
-    limit: 1,
-    include_docs: true,
-    attachments: true,
-    binary: true,
-  };
-  return db.medic.query('medic-client/forms', opts).then(data => {
-    return (
-      data.rows.length &&
-      data.rows[0].doc &&
-      data.rows[0].doc._attachments &&
-      data.rows[0].doc._attachments[format]
-    );
-  });
+const listFormsJSON = forms => {
+  return JSON.stringify(forms.map(form => form.internalId + '.xml'));
 };
 
 module.exports = {
   list: (req, res) => {
-    return db.medic
-      .query('medic-client/forms', { include_docs: true })
-      .then(data => {
+    return formsService.getFormDocs()
+      .then(forms => {
         if (req.headers['x-openrosa-version']) {
-          return listFormsXML(data, req).then(xml => {
+          return listFormsXML(forms, req).then(xml => {
             res.writeHead(200, XML_RESPONSE_HEADERS);
             res.end(xml);
           });
         } else {
           res.writeHead(200, JSON_RESPONSE_HEADERS);
-          res.end(listFormsJSON(data));
+          res.end(listFormsJSON(forms));
         }
       })
       .catch(err => serverUtils.error(err, req, res));
@@ -98,14 +66,23 @@ module.exports = {
     const parts = req.params.form.split('.'),
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
-    if (!form || !format) {
+    if (!form) {
       const error = {
         code: 400,
-        message: `Invalid form parameter (form="${form}", format="${format}")`,
+        message: `Invalid form name (form="${form}", format="${format}")`,
       };
       return serverUtils.error(error, req, res);
     }
-    return getFormAttachment(form, format)
+    if (format !== 'xml') {
+      const error = {
+        code: 400,
+        message: `Invalid file format (format="${format}")`,
+      };
+      return serverUtils.error(error, req, res);
+    }
+    return formsService.getFormDocs()
+      .then(docs => docs.find(doc => doc.internalId === form))
+      .then(doc => formsService.getXFormAttachment(doc))
       .then(attachment => {
         if (!attachment) {
           return Promise.reject({

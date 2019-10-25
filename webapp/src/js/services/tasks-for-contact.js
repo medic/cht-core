@@ -75,7 +75,7 @@ angular.module('inboxServices').factory('TasksForContact',
       if (!model.type.person && model.children) {
         model.children.forEach(child => {
           if (child.type.person && child.contacts && child.contacts.length) {
-            contactIds.push(...child.contacts.map(contact => contact._id));
+            contactIds.push(...child.contacts.map(contact => contact.id));
           }
         });
       }

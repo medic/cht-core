@@ -7,35 +7,26 @@ Therefore, we extract all cacheable resources into a folder and serve them as pu
 const
   fs = require('fs'),
   path = require('path'),
-  { env } = require('process'),
   db = require('./db'),
-  logger = require('./logger'),
-  isAttachmentCacheable = name => name === 'manifest.json' || !!name.match(/(?:audio|css|fonts|templates|img|js|xslt)\/.*/);
+  environment = require('./environment'),
+  logger = require('./logger');
+
+const extractableFolders = ['audio', 'css', 'fonts', 'default-docs', 'templates', 'img', 'js'];
+const isAttachmentExtractable = name => name === 'manifest.json' || extractableFolders.some(prefix => name.startsWith(`${prefix}/`));
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
 let extractedDigests = {};
 
 const createFolderIfDne = x => !fs.existsSync(x) && fs.mkdirSync(x);
 
-const getDestinationDirectory = () => {
-  let destination = env['MEDIC_API_RESOURCE_PATH'];
-  if (!destination) {
-    const isProduction = env['NODE_ENV'] === 'production';
-    const defaultLocation = path.join(__dirname, `extracted-resources`);
-    destination = isProduction ? '/tmp/extracted-resources' : defaultLocation;
-  }
-
-  return path.resolve(destination);
-};
-
-const extractCacheableAttachments = () => {
-  const extractToDirectory = getDestinationDirectory();
+const extractResources = () => {
+  const extractToDirectory = environment.getExtractedResourcesPath();
   createFolderIfDne(extractToDirectory);
   return db.medic
     .get('_design/medic')
     .then(ddoc => Promise.resolve(Object.keys(ddoc._attachments))
       .then(attachmentNames => attachmentNames.filter(name => extractedDigests[name] !== ddoc._attachments[name].digest))
-      .then(attachmentNames => attachmentNames.filter(isAttachmentCacheable))
+      .then(attachmentNames => attachmentNames.filter(isAttachmentExtractable))
       .then(requiredNames => Promise.all(requiredNames.map(required => extractAttachment(extractToDirectory, required))))
       .then(attachmentNames => attachmentNames.forEach(name => extractedDigests[name] = ddoc._attachments[name].digest))
     );
@@ -57,7 +48,6 @@ const extractAttachment = (extractToDirectory, attachmentName) => db.medic
   }));
 
 module.exports = {
-  run: extractCacheableAttachments,
-  getDestinationDirectory,
+  run: extractResources,
   clearCache: () => extractedDigests = {},
 };

@@ -7,9 +7,9 @@ const _ = require('underscore'),
 /**
  * Custom Medic Mobile Javarosa message parser.
  *
- * @param {Object} def - forms form definition
- * @param {Object} doc - sms_message document
- * @returns {Object - A parsed object of the sms message or an empty
+ * @param {Object} def forms form definition
+ * @param {Object} doc sms_message document
+ * @returns {Object} A parsed object of the sms message or an empty
  * object if parsing fails.
  */
 exports.parse = (def, doc) => {

@@ -96,8 +96,8 @@ describe('db-doc service', () => {
         .catch(err => err.should.deep.equal({ some: 'error' }));
     });
 
-    it('unstringifies open_revs query param', () => {
-      query.open_revs = JSON.stringify(['a', 'b', 'c']);
+    it('array open_revs query param', () => {
+      query.open_revs = ['a', 'b', 'c'];
       db.medic.get.resolves({ some: 'thing'});
       return service
         ._getStoredDoc(params, method, query)
@@ -134,11 +134,11 @@ describe('db-doc service', () => {
 
     it('throws when incorrect open_revs param', () => {
       query.open_revs = 'something';
-      db.medic.get.resolves({ some: 'thing'});
+      db.medic.get.rejects({ some: 'thing'});
       return service
         ._getStoredDoc(params, method, query)
         .then(result => result.should.equal('Should throw an error'))
-        .catch(err => err.should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' }));
+        .catch(err => err.should.deep.equal({ some: 'thing'}));
     });
 
     it('omits latest query param', () => {
@@ -184,7 +184,7 @@ describe('db-doc service', () => {
     });
 
     it('calls authorization.allowedDoc with correct params for GET / DELETE  requests', () => {
-      const doc = { _id: 'id', _rev: '1' };
+      const doc = { _id: 'id', _rev: '1-rev' };
       db.medic.get.resolves(doc);
 
       return service
@@ -200,8 +200,8 @@ describe('db-doc service', () => {
     });
 
     it('calls authorization.allowedDoc with correct params for PUT requests', () => {
-      const dbDoc = { _id: 'id', _rev: '1' },
-            requestDoc = { _id: 'id', _rev: '1', some: 'data' };
+      const dbDoc = { _id: 'id', _rev: '1-rev' },
+            requestDoc = { _id: 'id', _rev: '1-rev', some: 'data' };
       method = 'PUT';
       body = requestDoc;
       db.medic.get.resolves(dbDoc);
@@ -224,7 +224,7 @@ describe('db-doc service', () => {
     });
 
     it('calls authorization.allowedDoc with correct params for POST requests', () => {
-      const doc = { _id: 'id', _rev: '1' };
+      const doc = { _id: 'id', _rev: '1-rev' };
       params = {};
       method = 'POST';
       body = doc;
@@ -274,7 +274,7 @@ describe('db-doc service', () => {
 
   describe('Scenarios', () => {
     beforeEach(() => {
-      query = { rev: '1' };
+      query = { rev: '1-rev' };
     });
 
     describe('GET', () => {
@@ -285,7 +285,7 @@ describe('db-doc service', () => {
           .then(result => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
-            db.medic.get.args[0].should.deep.equal(['id', { rev: '1' }]);
+            db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev' }]);
           });
       });
 
@@ -659,7 +659,7 @@ describe('db-doc service', () => {
 
     describe('attachments', () => {
       beforeEach(() => {
-        query = { rev: '1' };
+        query = { rev: '1-rev' };
         params.attachmentId = 'attachmentID';
       });
 
@@ -671,7 +671,7 @@ describe('db-doc service', () => {
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
-            db.medic.get.args[0].should.deep.equal([ 'id', { rev: '1' } ]);
+            db.medic.get.args[0].should.deep.equal([ 'id', { rev: '1-rev' } ]);
             result.should.equal(false);
           });
       });
@@ -687,7 +687,7 @@ describe('db-doc service', () => {
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            db.medic.get.args[0].should.deep.equal(['id', { rev: '1' }]);
+            db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev' }]);
 
             result.should.equal(false);
           });
@@ -705,7 +705,7 @@ describe('db-doc service', () => {
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            db.medic.get.args[0].should.deep.equal(['id', { rev: '1'}]);
+            db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev'}]);
 
             result.should.equal(true);
           });
@@ -736,7 +736,7 @@ describe('db-doc service', () => {
 
     it('calls db get with correct params', () => {
       db.medic.get.resolves([]);
-      query.open_revs = JSON.stringify(['a', 'b', 'c']);
+      query.open_revs = ['a', 'b', 'c'];
       return service
         .filterOfflineOpenRevsRequest(userCtx, params, query)
         .then(result => {
@@ -747,11 +747,11 @@ describe('db-doc service', () => {
     });
 
     it('throws error when open_revs is incorrect', () => {
-      db.medic.get.resolves([]);
+      db.medic.get.rejects({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
       return service
         .filterOfflineOpenRevsRequest(userCtx, params, query)
         .catch(err => {
-          db.medic.get.callCount.should.equal(0);
+          db.medic.get.callCount.should.equal(1);
           err.should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
         });
     });

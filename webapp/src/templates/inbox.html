@@ -13,18 +13,23 @@
     <link rel="manifest" href="/manifest.json">
     <title></title>
   </head>
-  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl as inboxCtrl" ng-class="{'show-content': inboxCtrl.showContent, 'bootstrapped': inboxCtrl.version && dbWarmedUp, 'select-mode': inboxCtrl.selectMode}">
+  <body class="inbox {{inboxCtrl.currentTab}}" ng-controller="InboxCtrl as inboxCtrl" ng-class="{'show-content': inboxCtrl.showContent, 'bootstrapped': inboxCtrl.version && inboxCtrl.dbWarmedUp, 'select-mode': inboxCtrl.selectMode}">
     <div class="bootstrap-layer">
       <div>
         <div class="loader"></div>
         <div class="status"></div>
+        <div class="error"></div>
       </div>
     </div>
 
-    <mm-actionbar></mm-actionbar>
+    <mm-actionbar non-contact-forms="inboxCtrl.nonContactForms"></mm-actionbar>
 
     <div class="container-fluid">
-      <mm-header admin-url="inboxCtrl.adminUrl"></mm-header>
+      <mm-header
+        admin-url="inboxCtrl.adminUrl"
+        can-log-out="inboxCtrl.canLogOut"
+        tours="inboxCtrl.tours"
+      ></mm-header>
       <div class="row content" ui-view></div>
     </div>
 

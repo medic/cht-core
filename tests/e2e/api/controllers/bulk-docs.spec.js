@@ -1,5 +1,6 @@
 const _ = require('underscore'),
   utils = require('../../../utils'),
+  sUtils = require('../../sentinel/utils'),
   constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
@@ -56,45 +57,32 @@ describe('bulk-docs handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() =>
-        Promise.all(
-          users.map(user =>
-            utils.request({
-              path: '/api/v1/users',
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: user,
-            })
-          )
-        )
-      )
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done));
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_docs',
-      auth: `offline:${password}`,
+      auth: { username: 'offline', password },
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
     };
 
     onlineRequestOptions = {
       path: '/_bulk_docs',
-      auth: `online:${password}`,
+      auth: { username: 'online', password },
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
     };
   });
 
-  it('does not filter docs for online users', () => {
+  it('does not filter doc writes for online users', () => {
     const docs = [
       {
         _id: 'NEW_PARENT_PLACE',
@@ -111,7 +99,7 @@ describe('bulk-docs handler', () => {
       { _id: 'ICanBeAnything' },
     ];
 
-    onlineRequestOptions.body = JSON.stringify({ docs: docs });
+    onlineRequestOptions.body = { docs };
 
     return utils
       .requestOnTestDb(onlineRequestOptions)
@@ -214,57 +202,87 @@ describe('bulk-docs handler', () => {
     return utils
       .saveDocs(existentDocs)
       .then(result => {
+        let ids = result.map(r => r.id);
+        let existentDocsInfodocs;
+
         result.forEach(
           row => (docs.find(doc => doc._id === row.id)._rev = row.rev)
         );
-        offlineRequestOptions.body = JSON.stringify({ docs: docs });
-        return utils.requestOnTestDb(offlineRequestOptions);
-      })
-      .then(result => {
-        expect(result.length).toEqual(8);
-        expect(_.pick(result[0], 'ok', 'id')).toEqual({
-          ok: true,
-          id: 'new_allowed_contact_1',
-        });
-        expect(_.pick(result[5], 'ok', 'id')).toEqual({
-          ok: true,
-          id: 'allowed_contact_2',
-        });
-        expect(_.pick(result[7], 'ok')).toEqual({ ok: true });
 
-        expect(result[1]).toEqual({
-          id: 'new_denied_contact_1',
-          error: 'forbidden',
-        });
-        expect(result[2]).toEqual({
-          id: 'denied_contact_1',
-          error: 'forbidden',
-        });
-        expect(result[3]).toEqual({
-          id: 'denied_contact_2',
-          error: 'forbidden',
-        });
-        expect(result[4]).toEqual({
-          id: 'allowed_contact_1',
-          error: 'forbidden',
-        });
-        expect(result[6]).toEqual({ error: 'forbidden' });
+        return sUtils.waitForSentinel(ids)
+          .then(() => sUtils.getInfoDocs(ids))
+          .then(result => {
+            existentDocsInfodocs = result;
+            offlineRequestOptions.body = { docs };
+            return utils.requestOnTestDb(offlineRequestOptions);
+          }).then(result => {
+            expect(result.length).toEqual(8);
+            expect(_.pick(result[0], 'ok', 'id')).toEqual({
+              ok: true,
+              id: 'new_allowed_contact_1',
+            });
+            expect(_.pick(result[5], 'ok', 'id')).toEqual({
+              ok: true,
+              id: 'allowed_contact_2',
+            });
+            expect(_.pick(result[7], 'ok')).toEqual({ ok: true });
 
-        return Promise.all(
-          result.map(row => utils.getDoc(row.id).catch(err => err))
-        );
-      })
-      .then(results => {
-        expect(results.length).toEqual(8);
-        expect(_.omit(results[0], '_rev')).toEqual(docs[0]);
-        expect(results[1].responseBody.error).toEqual('not_found');
-        expect(_.omit(results[2], '_rev')).toEqual(existentDocs[2]);
-        expect(_.omit(results[3], '_rev')).toEqual(existentDocs[3]);
-        expect(_.omit(results[4], '_rev')).toEqual(existentDocs[0]);
-        expect(_.omit(results[5], '_rev')).toEqual(_.omit(docs[5], '_rev'));
-        expect(results[6].responseBody.error).toEqual('not_found');
-        expect(_.omit(results[7], '_rev', '_id')).toEqual(docs[7]);
-      });
+            expect(result[1]).toEqual({
+              id: 'new_denied_contact_1',
+              error: 'forbidden',
+            });
+            expect(result[2]).toEqual({
+              id: 'denied_contact_1',
+              error: 'forbidden',
+            });
+            expect(result[3]).toEqual({
+              id: 'denied_contact_2',
+              error: 'forbidden',
+            });
+            expect(result[4]).toEqual({
+              id: 'allowed_contact_1',
+              error: 'forbidden',
+            });
+            expect(result[6]).toEqual({ error: 'forbidden' });
+
+            ids = result.map(r => r.id).filter(id => id);
+
+            return Promise.all(
+              result.map(row => utils.getDoc(row.id).catch(err => err)),
+            );
+          }).then(result => {
+            expect(result.length).toEqual(8);
+            expect(_.omit(result[0], '_rev')).toEqual(docs[0]);
+            expect(result[1].responseBody.error).toEqual('not_found');
+            expect(_.omit(result[2], '_rev')).toEqual(existentDocs[2]);
+            expect(_.omit(result[3], '_rev')).toEqual(existentDocs[3]);
+            expect(_.omit(result[4], '_rev')).toEqual(existentDocs[0]);
+            expect(_.omit(result[5], '_rev')).toEqual(_.omit(docs[5], '_rev'));
+            expect(result[6].responseBody.error).toEqual('not_found');
+            expect(_.omit(result[7], '_rev', '_id')).toEqual(docs[7]);
+
+            return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+          }).then(result => {
+            expect(result.length).toEqual(7);
+            // Successful new write
+            expect(result[0]._id).toEqual('new_allowed_contact_1-info');
+
+            // Unsuccessful new write
+            expect(result[1]).not.toBeDefined();
+
+            // Unsuccessful writes to existing
+            expect(_.pick(result[2], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[2], '_id', 'latest_replication_date'));
+            expect(_.pick(result[3], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[3], '_id', 'latest_replication_date'));
+            expect(_.pick(result[4], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[0], '_id', 'latest_replication_date'));
+
+            // Successful write to existing
+            expect(result[5]._id).toEqual(existentDocsInfodocs[1]._id);
+            expect(result[5].latest_replication_date).not.toEqual(existentDocsInfodocs[1].latest_replication_date);
+
+            // Successful completely new write
+            expect(result[6]).toBeDefined();
+          });
+    });
   });
 
   it('reiterates over docs', () => {
@@ -324,7 +342,7 @@ describe('bulk-docs handler', () => {
         parent: { _id: 'fixture:online' },
       },
     ];
-    offlineRequestOptions.body = JSON.stringify({ docs: docs });
+    offlineRequestOptions.body = { docs };
 
     return utils.requestOnTestDb(offlineRequestOptions).then(result => {
       expect(result.length).toEqual(8);
@@ -441,7 +459,7 @@ describe('bulk-docs handler', () => {
         result.forEach(
           row => (docs.find(doc => doc._id === row.id)._rev = row.rev)
         );
-        offlineRequestOptions.body = JSON.stringify({ docs: docs });
+        offlineRequestOptions.body = { docs };
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(result => {
@@ -478,7 +496,7 @@ describe('bulk-docs handler', () => {
       type: 'data_record',
       form: 'a',
     };
-    offlineRequestOptions.body = JSON.stringify({ docs: [doc] });
+    offlineRequestOptions.body = { docs: [doc] };
 
     return Promise.all([
       utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
@@ -537,10 +555,10 @@ describe('bulk-docs handler', () => {
       },
     ];
 
-    offlineRequestOptions.body = JSON.stringify({
+    offlineRequestOptions.body = {
       docs: docs,
       new_edits: false,
-    });
+    };
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
@@ -562,7 +580,7 @@ describe('bulk-docs handler', () => {
       { _id: 'fb2', type: 'feedback', content: 'feedback2' },
     ];
 
-    offlineRequestOptions.body = JSON.stringify({ docs: docs });
+    offlineRequestOptions.body = { docs };
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
@@ -591,7 +609,7 @@ describe('bulk-docs handler', () => {
           docs[idx].content += 'update';
         });
 
-        offlineRequestOptions.body = JSON.stringify({ docs: docs });
+        offlineRequestOptions.body = { docs };
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {

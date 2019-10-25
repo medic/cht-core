@@ -16,6 +16,16 @@ angular.module('controllers').controller('FormsXmlCtrl',
 
     $scope.status = { uploading: false };
 
+    const getForms = function() {
+      const options = {
+        include_docs: true,
+        key: ['form']
+      };
+      return DB()
+        .query('medic-client/doc_by_type', options)
+        .then(res => res.rows.map(row => row.doc));
+    };
+
     var uploadFinished = function(err) {
       if (err) {
         $log.error('Upload failed', err);
@@ -27,20 +37,6 @@ angular.module('controllers').controller('FormsXmlCtrl',
         error: !!err,
         success: !err,
       };
-    };
-
-    var getForms = function() {
-      return DB()
-        .query('medic-client/forms', { include_docs: true })
-        .then(function(res) {
-          return res.rows
-            .filter(function(row) {
-              return row.doc._attachments.xml;
-            })
-            .map(function(row) {
-              return row.doc;
-            });
-        });
     };
 
     $scope.upload = function() {

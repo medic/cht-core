@@ -1,0 +1,4 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,name,sex,date_of_birth,phone,reported_date:timestamp
+person_4,area_1,Andra Anderson,female,1985-01-01,+9779841299392,1544031155715
+person_5,area_2,Brinda Bestee,female,1986-01-01,+9779841278828,1544031155715
+person_6,area_3,Carla Cotte,female,1987-01-01,+9779841645872,1544031155715

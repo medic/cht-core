@@ -14,11 +14,47 @@ var getValue = function(resultObject) {
   return resultObject.v;
 };
 
+var now_and_today = function() { return { t: 'date', v: new Date() }; };
+
+var toISOLocalString = function(date) {
+  if (date.toString() === 'Invalid Date') {
+    return date.toString();
+  }
+
+  var dt = new Date(date.getTime() - (date.getTimezoneOffset() * 60 * 1000))
+            .toISOString()
+            .replace('Z', module.exports.getTimezoneOffsetAsTime(date));
+
+  return dt;
+};
+
+var getTimezoneOffsetAsTime = function(date) {
+  var pad2 = function(x) {
+    return ( x < 10 ) ? '0' + x : x;
+  };
+
+  if (date.toString() === 'Invalid Date') {
+    return date.toString();
+  }
+
+  const offsetMinutesTotal = date.getTimezoneOffset();
+
+  const direction = (offsetMinutesTotal < 0) ? '+' : '-';
+  const hours = pad2(Math.abs(Math.floor(offsetMinutesTotal / 60)));
+  const minutes = pad2(Math.abs(Math.floor(offsetMinutesTotal % 60)));
+
+  return direction + hours + ':' + minutes;
+};
+
 module.exports = {
+  getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
+  toISOLocalString: toISOLocalString,
   init: function(_zscoreUtil) {
     zscoreUtil = _zscoreUtil;
   },
   func: {
+    now: now_and_today,
+    today: now_and_today,
     'z-score': function() {
       var args = Array.from(arguments).map(function(arg) {
         return getValue(arg);
@@ -29,5 +65,16 @@ module.exports = {
       }
       return { t: 'num', v: result };
     }
+  },
+  process: {
+    toExternalResult: function(r) {
+      if(r.t === 'date') {
+        return {
+          resultType: XPathResult.STRING_TYPE,
+          numberValue: r.v.getTime(),
+          stringValue: module.exports.toISOLocalString(r.v),
+        };
+      }
+    }  
   }
 };

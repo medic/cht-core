@@ -13,7 +13,7 @@ Individual document conflicts are probably best resolved in Fauxton's interface.
 Pass a Medic CouchDB url, and it outputs diffs for all 2-rev (ie one main and one leaf) conflicts, skipping over more complicated conflicts.
 
 ```
-node diff.js http://someserver.app.medicmobile.org/_couch/medic
+node diff.js http://someserver.app.medicmobile.org/medic
 ```
 
 TODO:
@@ -24,6 +24,9 @@ TODO:
 **MASSIVE WORK IN PROGRESS**
 
 Pass a Medic CouchDB url, and it attempts to resolve conflicts for you.
+```
+node auto-resolve.js http://someserver.app.medicmobile.org/medic
+```
 
 This is currently a big work in progress, and I wouldn't bother to use it. The architecture I went with needs to be flipped around to allow for more complicated inspection of the diff, though even then it might not work great.
 

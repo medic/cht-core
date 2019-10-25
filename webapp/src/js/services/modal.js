@@ -42,15 +42,18 @@ angular.module('inboxServices').factory('Modal',
       scope.setProcessing = function() {
         scope.status.processing = true;
         scope.status.error = false;
+        scope.status.severity = false;
       };
       scope.setFinished = function() {
         scope.status.processing = false;
         scope.status.error = false;
+        scope.status.severity = false;
       };
-      scope.setError = function(err, message) {
+      scope.setError = function(err, message, severity) {
         $log.error('Error submitting modal', err);
         scope.status.processing = false;
         scope.status.error = message;
+        scope.status.severity = severity;
       };
       return scope;
     };

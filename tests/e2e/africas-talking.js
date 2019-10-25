@@ -137,8 +137,8 @@ describe('africas talking api', () => {
     return utils.request({
       port: constants.COUCH_PORT,
       method: 'PUT',
-      path: `/_node/${process.env.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com:incoming`,
-      body: `"${INCOMING_KEY}"`
+      path: `/_node/${constants.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com:incoming`,
+      body: `${INCOMING_KEY}`
     });
   });
 
@@ -153,6 +153,7 @@ describe('africas talking api', () => {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': content.length,
         },
+        json: false,
       });
     };
 
@@ -205,6 +206,7 @@ describe('africas talking api', () => {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': content.length,
         },
+        json: false,
       });
     };
 

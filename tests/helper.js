@@ -138,6 +138,8 @@ module.exports = {
       });
   },
 
+  scrollElementIntoView: element => browser.executeScript('arguments[0].scrollIntoView();', element.getWebElement()),
+
   /**
    * Usage: selectDropdownByNumber ( element, index)
    * element : select element

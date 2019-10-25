@@ -3,7 +3,6 @@ Controller for the Modal service which executes $window.reload when submitted.
 */
 angular.module('inboxControllers').controller('ReloadingModalCtrl',
   function (
-    $scope,
     $uibModalInstance,
     $window
   ) {
@@ -11,12 +10,14 @@ angular.module('inboxControllers').controller('ReloadingModalCtrl',
     'use strict';
     'ngInject';
 
-    $scope.submit = function() {
+    const ctrl = this;
+
+    ctrl.submit = function() {
       $uibModalInstance.close();
       $window.location.reload();
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 

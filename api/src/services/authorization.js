@@ -1,6 +1,6 @@
 const db = require('../db'),
       auth = require('../auth'),
-      _ = require('underscore'),
+      _ = require('lodash'),
       config = require('../config'),
       viewMapUtils = require('@medic/view-map-utils'),
       tombstoneUtils = require('@medic/tombstone-utils');
@@ -23,7 +23,7 @@ const getDepth = (userCtx) => {
   let depth = -1;
   userCtx.roles.forEach(function(role) {
     // find the role with the deepest depth
-    const setting = _.findWhere(settings, { role: role });
+    const setting = settings.find(setting => setting.role === role);
     const settingDepth = setting && parseInt(setting.depth, 10);
     if (!isNaN(settingDepth) && settingDepth > depth) {
       depth = settingDepth;
@@ -205,7 +205,7 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   return !allowedSubmitter;
 };
 
-const getAllowedDocIds = (feed) => {
+const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
     const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name],
           tombstoneIds = [];
@@ -216,8 +216,7 @@ const getAllowedDocIds = (feed) => {
       }
 
       if (tombstoneUtils.isTombstoneId(row.id)) {
-        tombstoneIds.push(row.id);
-        return;
+        return includeTombstones && tombstoneIds.push(row.id);
       }
 
       validatedIds.push(row.id);
@@ -240,9 +239,8 @@ const excludeTombstoneIds = (docIds) => {
   return docIds.filter(docId => !tombstoneUtils.isTombstoneId(docId));
 };
 
-const convertTombstoneIds = (docIds) => {
-  return docIds.map(docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId);
-};
+const convertTombstoneId = docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId;
+const convertTombstoneIds = docIds => docIds.map(convertTombstoneId);
 
 const getViewResults = (doc) => {
   return {
@@ -268,5 +266,7 @@ module.exports = {
   alwaysAllowCreate: alwaysAllowCreate,
   updateContext: updateContext,
   filterAllowedDocs: filterAllowedDocs,
-  isDeleteStub: tombstoneUtils._isDeleteStub
+  isDeleteStub: tombstoneUtils._isDeleteStub,
+  generateTombstoneId: tombstoneUtils.generateTombstoneId,
+  convertTombstoneId: convertTombstoneId
 };

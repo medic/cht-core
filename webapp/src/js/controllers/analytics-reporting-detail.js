@@ -5,6 +5,7 @@ var _ = require('underscore'),
 angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
@@ -12,7 +13,9 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     ChildFacility,
     DB,
     FormatDataRecord,
+    GlobalActions,
     PlaceHierarchy,
+    Selectors,
     Settings
   ) {
 
@@ -20,16 +23,29 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     'ngInject';
 
     const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        filters: Selectors.getFilters(state)
+      };
+    };
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setFilter: globalActions.setFilter
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
     ctrl.error = false;
 
-    $scope.filters.form = $state.params.form;
-    $scope.filters.place = $state.params.place;
+    ctrl.setFilter({ form: $state.params.form });
+    ctrl.setFilter({ place: $state.params.place });
     ctrl.facilities = [];
 
     Settings()
       .then(function(settings) {
-        var newSettings = _.findWhere(settings['kujua-reporting'], { code: $scope.filters.form });
-        $scope.filters.reporting_freq = newSettings && newSettings.reporting_freq;
+        var newSettings = _.findWhere(settings['kujua-reporting'], { code: ctrl.filters.form });
+        ctrl.setFilter({ reporting_freq: newSettings && newSettings.reporting_freq });
       })
       .catch(function(err) {
         $log.error('Error fetching settings', err);
@@ -54,24 +70,24 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       ]
     };
 
-    $scope.getTranslationKey = function(key, plural) {
+    ctrl.getTranslationKey = function(key, plural) {
       return TRANSLATION_KEYS[key][ (plural ? 1 : 0) ];
     };
 
-    $scope.expandClinic = function(id) {
-      if ($scope.expandedClinic === id) {
-        $scope.expandedClinic = null;
+    ctrl.expandClinic = function(id) {
+      if (ctrl.expandedClinic === id) {
+        ctrl.expandedClinic = null;
       } else {
-        $scope.expandedClinic = id;
+        ctrl.expandedClinic = id;
       }
     };
 
-    $scope.expandRecord = function(id) {
+    ctrl.expandRecord = function(id) {
       if (!id) {
         return;
       }
-      if ($scope.expandedRecord === id) {
-        $scope.expandedRecord = null;
+      if (ctrl.expandedRecord === id) {
+        ctrl.expandedRecord = null;
       } else {
         $timeout(function() {
           ctrl.loadingRecord = id;
@@ -82,8 +98,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
           .then(function(formatted) {
             $timeout(function() {
               ctrl.loadingRecord = false;
-              $scope.formattedRecord = formatted[0];
-              $scope.expandedRecord = id;
+              ctrl.formattedRecord = formatted[0];
+              ctrl.expandedRecord = id;
             });
           })
           .catch(function(err) {
@@ -93,13 +109,13 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       }
     };
 
-    $scope.setTimeUnit = function(time) {
-      $scope.filters.time_unit = time;
+    ctrl.setTimeUnit = function(time) {
+      ctrl.setFilter({ time_unit: time });
       setDistrict();
     };
 
-    $scope.setTimeQuantity = function(num) {
-      $scope.filters.quantity = num;
+    ctrl.setTimeQuantity = function(num) {
+      ctrl.setFilter({ quantity: num });
       setDistrict();
     };
 
@@ -137,7 +153,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       return d.y;
     };
 
-    $scope.pieChartOptions = {
+    ctrl.pieChartOptions = {
       chart: {
         type: 'pieChart',
         height: 220,
@@ -160,7 +176,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       }
     };
 
-    $scope.miniPieChartOptions = {
+    ctrl.miniPieChartOptions = {
       chart: {
         type: 'pieChart',
         height: 40,
@@ -185,9 +201,9 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     var setDistrict = function(placeId) {
       ctrl.error = false;
       ctrl.loadingTotals = true;
-      var dates = reportingUtils.getDates($scope.filters);
+      var dates = reportingUtils.getDates(ctrl.filters);
       DB()
-        .get(placeId || $scope.place._id)
+        .get(placeId || ctrl.place._id)
         .then(function(place) {
           return $q.all([
             ChildFacility(place),
@@ -197,20 +213,20 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
               var facilities = results[0];
               var reports = results[1];
 
-              $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
+              ctrl.totals = reportingUtils.getTotals(facilities, reports, dates);
               var rows = getRows(place.type, facilities, reports, dates);
               if (place.type === 'health_center') {
-                $scope.clinics = rows;
+                ctrl.clinics = rows;
               } else {
                 ctrl.facilities = rows;
               }
-              $scope.chart = [
-                { key: 'valid', y: $scope.totals.complete },
-                { key: 'missing', y: $scope.totals.not_submitted },
-                { key: 'invalid', y: $scope.totals.incomplete }
+              ctrl.chart = [
+                { key: 'valid', y: ctrl.totals.complete },
+                { key: 'missing', y: ctrl.totals.not_submitted },
+                { key: 'invalid', y: ctrl.totals.incomplete }
               ];
-              $scope.filters.district = findDistrict(place);
-              $scope.place = place;
+              ctrl.setFilter({ district: findDistrict(place) });
+              ctrl.place = place;
               ctrl.loadingTotals = false;
             });
         })
@@ -255,5 +271,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
           return saved_data;
         });
     };
+
+    $scope.$on('$destroy', unsubscribe);
   }
 );

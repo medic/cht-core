@@ -128,15 +128,10 @@ const report = {
 
 describe('sms-gateway api', () => {
   const pollSmsApi = body => {
-    const content = JSON.stringify(body);
     return utils.request({
       method: 'POST',
       path: '/api/sms',
-      body: content,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': content.length,
-      },
+      body: body
     });
   };
 
@@ -159,6 +154,7 @@ describe('sms-gateway api', () => {
     afterEach(helper.handleUpdateModal);
 
     it('- shows content', () => {
+      utils.resetBrowser();
       helper.clickElement(element(by.id('messages-tab')));
 
       // LHS

@@ -1,17 +1,18 @@
-const _ = require('underscore'),
-  db = require('./db'),
-  ddocExtraction = require('./ddoc-extraction'),
-  resourceExtraction = require('./resource-extraction'),
-  translations = require('./translations'),
-  defaults = require('./config.default.json'),
-  settingsService = require('./services/settings'),
-  translationCache = {},
-  logger = require('./logger'),
-  viewMapUtils = require('@medic/view-map-utils'),
-  translationUtils = require('@medic/translation-utils');
+const _ = require('underscore');
 
-let settings = {},
-    transitionsLib;
+const db = require('./db');
+const ddocExtraction = require('./ddoc-extraction');
+const generateXform = require('./services/generate-xform');
+const logger = require('./logger');
+const resourceExtraction = require('./resource-extraction');
+const settingsService = require('./services/settings');
+const translations = require('./translations');
+const translationUtils = require('@medic/translation-utils');
+const viewMapUtils = require('@medic/view-map-utils');
+
+const translationCache = {};
+let settings = {};
+let transitionsLib;
 
 const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
@@ -56,22 +57,10 @@ const getMessage = (value, locale) => {
   return result;
 };
 
-const loadSettings = function() {
-  return settingsService.get().then(newSettings => {
-    settings = newSettings || {};
-    const original = JSON.stringify(settings);
-    _.defaults(settings, defaults);
-    // add any missing permissions
-    if (settings.permissions) {
-      _.defaults(settings.permissions, defaults.permissions);
-    } else {
-      settings.permissions = defaults.permissions;
-    }
-    if (JSON.stringify(settings) !== original) {
-      logger.info('Updating settings with new defaults');
-      return settingsService.update(settings);
-    }
-  });
+const loadSettings = () => {
+  return settingsService.update({})
+    .then(() => settingsService.get())
+    .then(newSettings => settings = newSettings);
 };
 
 const initTransitionLib = () => {
@@ -171,9 +160,14 @@ module.exports = {
               process.exit(1);
             })
             .then(() => initTransitionLib());
-        } else if (change.id.indexOf('messages-') === 0) {
+        } else if (change.id.startsWith('messages-')) {
           logger.info('Detected translations change - reloading');
           loadTranslations().then(() => initTransitionLib());
+        } else if (change.id.startsWith('form:')) {
+          logger.info('Detected form change - generating attachments');
+          generateXform.update(change.id).catch(err => {
+            logger.error('Failed to update xform: %o', err);
+          });
         }
       })
       .on('error', err => {

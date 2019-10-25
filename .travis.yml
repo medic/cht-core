@@ -2,7 +2,8 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk: oraclejdk8
+jdk: oraclejdk9
+dist: xenial
 
 addons:
   chrome: 'stable'
@@ -15,7 +16,8 @@ env:
   matrix:
     - TEST_SUITE=integration NODE_VERSION=8
     - TEST_SUITE=integration NODE_VERSION=10
-    - TEST_SUITE=performance NODE_VERSION=10
+    - TEST_SUITE=integration NODE_VERSION=12
+    - TEST_SUITE=performance NODE_VERSION=12
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost
@@ -35,6 +37,7 @@ before_install:
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
   - ./scripts/travis/couch-start
+  - sudo apt-get install xsltproc
 
 install: nvm install $NODE_VERSION
 
@@ -71,7 +74,7 @@ stages:
 jobs:
   include:
     - stage: compile
-      env: NODE_VERSION=10
+      env: NODE_VERSION=12
       before_script:
         - ./scripts/travis/npm-init
         - npm install -g grunt-cli
@@ -83,7 +86,7 @@ jobs:
       after_failure: # overwrite default
     - stage: publish
       if: type != pull_request
-      env: NODE_VERSION=10
+      env: NODE_VERSION=12
       before_script: # overwrite default
       script:
         - cd scripts/travis

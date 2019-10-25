@@ -82,8 +82,6 @@ describe('Service worker cache', () => {
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
-      '/xslt/openrosa2html5form.xsl',
-      '/xslt/openrosa2xmlmodel.xsl',
     ]);
   });
 
@@ -100,9 +98,6 @@ describe('Service worker cache', () => {
       await expectCachedState(true, '/');
       await expectCachedState(true, '/', { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3' });
       
-      await expectCachedState(true, '/xslt/openrosa2xmlmodel.xsl');
-      await expectCachedState(true, '/xslt/openrosa2xmlmodel.xsl', { 'Accept': 'application/json, text/plain, */*' });
-
       // no part of syncing is cached
       await expectCachedState(false, '/dbinfo', { 'Accept': 'application/json' });
       await expectCachedState(false, '/medic/_changes?style=all_docs&limit=100');

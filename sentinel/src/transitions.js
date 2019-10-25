@@ -98,7 +98,7 @@ const deleteReadDocs = change => {
   );
 
   return db.allDbs().then(dbs => {
-    const userDbs = dbs.filter(db => db.indexOf('medic-user-') === 0);
+    const userDbs = dbs.filter(dbName => dbName.indexOf(`${db.medicDbName}-user-`) === 0);
     return userDbs.reduce((p, userDb) => {
       return p.then(() => {
         const metaDb = db.get(userDb);

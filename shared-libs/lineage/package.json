@@ -2,7 +2,7 @@
   "name": "@medic/lineage",
   "version": "1.0.0",
   "description": "Lineage and hydration library",
-  "main": "src/lineage.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test --require test/setup.js"
   },
@@ -12,14 +12,14 @@
     "@medic/memdown": "file:../memdown",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "chai-exclude": "^1.0.12",
+    "chai-exclude": "^2.0.2",
     "chai-shallow-deep-equal": "^1.4.6",
-    "mocha": "^5.2.0",
-    "sinon": "^7.1.1",
-    "pouchdb-adapter-memory": "^7.0.0",
-    "pouchdb-core": "^7.0.0",
-    "pouchdb-mapreduce": "^7.0.0",
-    "uuid": "^3.3.2"
+    "mocha": "^6.2.1",
+    "pouchdb-adapter-memory": "^7.1.1",
+    "pouchdb-core": "^7.1.1",
+    "pouchdb-mapreduce": "^7.1.1",
+    "sinon": "^7.5.0",
+    "uuid": "^3.3.3"
   },
   "dependencies": {
     "underscore": "^1.9.1"

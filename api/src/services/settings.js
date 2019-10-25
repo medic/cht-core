@@ -1,4 +1,9 @@
+const _ = require('underscore');
+const path = require('path');
+
 const db = require('../db');
+const environment = require('../environment');
+const { info } = require('../logger');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -41,9 +46,17 @@ module.exports = {
       });
   },
   /**
-   * @param replace If true, recursively merges the properties.
+   * Process a request to either replace, overwrite or extend existing settings. 
+   * If both replace and overwite are set, then it is assumed that only overwite 
+   * is set.
+   * @param replace If true, recursively merges the properties leaving existing 
+   *                properties not in the input document intact.
+   * @param overwrite If true, replace the settings document with input document.
    */
-  update: (body, replace) => {
+  update: (body, replace, overwrite) => {
+    const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
+    const defaultConfig = require(pathToDefaultConfig);
+
     return getDoc()
       .catch(err => {
         if (err.status === 404) {
@@ -55,12 +68,29 @@ module.exports = {
         if (!doc.settings) {
           doc.settings = {};
         }
-        if (replace) {
+
+        const original = JSON.stringify(doc.settings);
+
+        if (overwrite) {
+            doc.settings = body;
+        } else if (replace) {
           doReplace(doc.settings, body);
         } else {
           doExtend(doc.settings, body);
         }
-        return db.medic.put(doc);
+
+        if (doc.settings.permissions) {
+          _.defaults(doc.settings.permissions, defaultConfig.permissions);
+        } else {
+          doc.settings.permissions = defaultConfig.permissions;
+        }
+
+        if (JSON.stringify(doc.settings) !== original) {
+          info('Updating settings with new defaults');
+          return db.medic.put(doc);
+        } 
+        
+        return Promise.resolve();
       });
   }
 };

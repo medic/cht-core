@@ -1,15 +1,20 @@
 <div class="col-sm-12">
 
+  <p>
+    <span translate>images.icons.description</span>
+    <a href="https://github.com/medic/icon-library" translate>icon.library</a>.
+  </p>
+
   <form id="icon-upload">
     <legend translate>upload.icon</legend>
 
-    <div class="form-group">
-      <label for="name" translate>Name</label> *
+    <div class="form-group required">
+      <label for="name" translate>Name</label>
       <input id="name" name="name" class="form-control small" ng-model="name">
     </div>
 
-    <div class="form-group">
-      <label translate>icon</label> *
+    <div class="form-group required">
+      <label translate>icon</label>
       <div>
         <button type="button" class="btn btn-default choose" ng-disabled="uploading">
           <i class="fa fa-arrow-up"></i>
@@ -23,7 +28,7 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>submit.icon</button>
       <div class="loader inline small" ng-show="submitting"></div>
       <p class="error">{{error}}</p>
     </div>

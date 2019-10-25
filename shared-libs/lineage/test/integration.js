@@ -1,5 +1,5 @@
-const chai = require('chai');
-const lineageFactory = require('../src/lineage');
+const { assert, expect } = require('chai');
+const lineageFactory = require('../src');
 const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
 
@@ -59,6 +59,27 @@ const circular_report = {
     parent: { _id: circular_area._id }
   },
   form: {}
+};
+const person_with_circular_ids = {
+  _id: 'circular_person',
+  type: 'person',
+  parent: { _id: 'circular_person' },
+  reported_date: '5',
+};
+const place_with_circular_ids = {
+  _id: 'circular_place',
+  type: 'clinic',
+  contact: { _id: 'circular_place' },
+  parent: { _id: 'circular_person' },
+  reported_date: '5',
+};
+const report_with_circular_ids = {
+  _id: 'report_with_circular_ids',
+  type: 'data_record',
+  contact: { _id: 'circular_place' },
+  parent: { _id: 'circular_person' },
+  patient_id: 'circular_person',
+  reported_date: '5',
 };
 const dummyDoc = {
   _id: 'dummyDoc',
@@ -297,6 +318,9 @@ const fixtures = [
   child_is_parent,
   child_is_grandparent,
   circular_area,
+  person_with_circular_ids,
+  place_with_circular_ids,
+  report_with_circular_ids,
   circular_chw,
   circular_report,
   dummyDoc,
@@ -361,9 +385,9 @@ describe('Lineage', function() {
   describe('fetchLineageById', function() {
     it('returns correct lineage', function() {
       return lineage.fetchLineageById(one_parent._id).then(result => {
-        chai.expect(result).to.have.lengthOf(2);
-        chai.expect(result[0]).excluding('_rev').to.deep.equal(one_parent);
-        chai.expect(result[1]).excluding('_rev').to.deep.equal(dummyDoc);
+        expect(result).to.have.lengthOf(2);
+        expect(result[0]).excluding('_rev').to.deep.equal(one_parent);
+        expect(result[1]).excluding('_rev').to.deep.equal(dummyDoc);
       });
     });
   });
@@ -371,11 +395,11 @@ describe('Lineage', function() {
   describe('fetchLineageByIds', function() {
     it('returns correct lineages', function() {
       return lineage.fetchLineageByIds([one_parent._id]).then(result => {
-        chai.expect(result).to.have.lengthOf(1);
-        chai.expect(result[0]).to.have.lengthOf(2);
+        expect(result).to.have.lengthOf(1);
+        expect(result[0]).to.have.lengthOf(2);
         //We get all parent info for each doc (_rev, name, etc)
-        chai.expect(result[0][0].name).to.equal(one_parent.name);
-        chai.expect(result[0][1].name).to.equal(dummyDoc.name);
+        expect(result[0][0].name).to.equal(one_parent.name);
+        expect(result[0][1].name).to.equal(dummyDoc.name);
       });
     });
   });
@@ -384,8 +408,8 @@ describe('Lineage', function() {
     it('clones any reused contacts', function() {
       const lineageDocs = [ circular_chw, circular_area ];
       return lineage.fetchContacts(lineageDocs).then(result => {
-        chai.expect(result[0]._id).to.equal(circular_chw._id);
-        chai.expect(result[0]).to.not.equal(circular_chw);
+        expect(result[0]._id).to.equal(circular_chw._id);
+        expect(result[0]).to.not.equal(circular_chw);
       });
     });
   });
@@ -397,20 +421,20 @@ describe('Lineage', function() {
           throw new Error('should have thrown a 404');
         },
         err => {
-          chai.expect(err.status).to.equal(404);
+          expect(err.status).to.equal(404);
         }
       );
     });
 
     it('returns unmodified doc when there is no lineage and no contact', function() {
       return lineage.fetchHydratedDoc('no_lineageContact').then(actual => {
-        chai.expect(actual).excluding('_rev').to.deep.equal(no_lineageContact);
+        expect(actual).excluding('_rev').to.deep.equal(no_lineageContact);
       });
     });
 
     it('handles doc with unknown parent by leaving just the stub', function() {
       return lineage.fetchHydratedDoc(stub_parents._id).then(actual => {
-        chai.expect(actual).excludingEvery('_rev').to.deep.equal({
+        expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: stub_parents._id,
           type: stub_parents.type,
           contact: { _id: 'something' },
@@ -424,7 +448,7 @@ describe('Lineage', function() {
 
     it('handles doc with unknown contact by leaving just the stub', function() {
       return lineage.fetchHydratedDoc(stub_contacts._id).then(actual => {
-        chai.expect(actual).excludingEvery('_rev').to.deep.equal({
+        expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: stub_contacts._id,
           type: stub_contacts.type,
           contact: {
@@ -438,13 +462,13 @@ describe('Lineage', function() {
 
     it('handles missing contacts', function() {
       return lineage.fetchHydratedDoc(no_contact._id).then(actual => {
-        chai.expect(actual).excluding('_rev').to.deep.equal(no_contact);
+        expect(actual).excluding('_rev').to.deep.equal(no_contact);
       });
     });
 
     it('attaches the full lineage for reports', function() {
       return lineage.fetchHydratedDoc(report._id).then(actual => {
-        chai.assert.checkDeepProperties(actual, {
+        assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
             name: report_patient.name,
@@ -468,7 +492,7 @@ describe('Lineage', function() {
 
     it('attaches patient lineage when using patient_uuid field', () => {
       return lineage.fetchHydratedDoc(report2._id).then(actual => {
-        chai.assert.checkDeepProperties(actual, {
+        assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
             name: report_patient.name,
@@ -492,7 +516,7 @@ describe('Lineage', function() {
 
     it('attaches patient lineage when using patient_id field that contains a uuid', () => {
       return lineage.fetchHydratedDoc(report3._id).then(actual => {
-        chai.assert.checkDeepProperties(actual, {
+        assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
             name: report_patient.name,
@@ -516,8 +540,8 @@ describe('Lineage', function() {
 
     it('should work when patient is not found', () => {
       return lineage.fetchHydratedDoc(report4._id).then(actual => {
-        chai.expect(actual.patient).to.equal(undefined);
-        chai.assert.checkDeepProperties(actual, {
+        expect(actual.patient).to.equal(undefined);
+        assert.checkDeepProperties(actual, {
           form: 'A',
           contact: {
             name: report_contact.name,
@@ -537,7 +561,7 @@ describe('Lineage', function() {
 
     it('attaches the contacts', function() {
       return lineage.fetchHydratedDoc(place._id).then(actual => {
-        chai.assert.checkDeepProperties(actual, {
+        assert.checkDeepProperties(actual, {
           name: place.name,
           contact: { phone: '+789' },
           parent: {
@@ -556,12 +580,12 @@ describe('Lineage', function() {
     it('attaches re-used contacts, minify handles the circular references', function() {
       return lineage.fetchHydratedDoc(circular_report._id).then(actual => {
         // The contact and the contact's parent's contact are the hydrated CHW
-        chai.expect(actual.contact.parent.contact.hydrated).to.equal(true);
-        chai.expect(actual.contact.hydrated).to.equal(true);
+        expect(actual.contact.parent.contact.hydrated).to.equal(true);
+        expect(actual.contact.hydrated).to.equal(true);
 
         // And we can minify back to the original without error
         lineage.minify(actual);
-        chai.expect(actual).excludingEvery('_rev').to.deep.equal(circular_report);
+        expect(actual).excludingEvery('_rev').to.deep.equal(circular_report);
       });
     });
 
@@ -569,7 +593,7 @@ describe('Lineage', function() {
       const reportCopy = cloneDeep(report);
       return lineage.fetchHydratedDoc(reportCopy._id).then(actual => {
         lineage.minify(actual);
-        chai.expect(actual).excluding('_rev').to.deep.equal(report);
+        expect(actual).excluding('_rev').to.deep.equal(report);
       });
     });
 
@@ -577,19 +601,19 @@ describe('Lineage', function() {
       const placeCopy = cloneDeep(place);
       return lineage.fetchHydratedDoc(placeCopy._id).then(actual => {
         lineage.minify(actual);
-        chai.expect(actual).excluding('_rev').to.deep.equal(place);
+        expect(actual).excluding('_rev').to.deep.equal(place);
       });
     });
 
     it('works for SMS reports', function() {
       return lineage.fetchHydratedDoc(sms_doc._id).then(actual => {
-        chai.expect(actual).excluding('_rev').to.deep.equal(sms_doc);
+        expect(actual).excluding('_rev').to.deep.equal(sms_doc);
       });
     });
 
     it('handles doc with empty-object parent by removing it', function() {
       return lineage.fetchHydratedDoc(emptyObjectParent._id).then(actual => {
-        chai.expect(actual).excludingEvery('_rev').to.deep.equal({
+        expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: emptyObjectParent._id,
           contact: emptyObjectParent.contact,
           parent: dummyDoc,
@@ -605,7 +629,7 @@ describe('Lineage', function() {
 
       return lineage.hydrateDocs(docs)
         .then(([ hydratedReport, hydratedPlace ]) => {
-          chai.assert.checkDeepProperties(hydratedReport, {
+          assert.checkDeepProperties(hydratedReport, {
             contact: {
               name: report_contact.name,
               parent: {
@@ -618,9 +642,24 @@ describe('Lineage', function() {
               }
             },
             parent: undefined,
-            patient: { _id: report_patient._id }
+            patient: {
+              _id: report_patient._id,
+              name: report_patient.name,
+              parent: {
+                _id: report_contact._id,
+                name: report_contact.name,
+                parent: {
+                  _id: report_parent._id,
+                  name: report_parent.name,
+                  contact: {
+                    _id: report_parentContact._id,
+                    name: report_parentContact.name,
+                  }
+                }
+              }
+            }
           });
-          chai.assert.checkDeepProperties(hydratedPlace, {
+          assert.checkDeepProperties(hydratedPlace, {
             contact: { name: place_contact.name },
             parent: {
               name: place_parent.name,
@@ -640,7 +679,7 @@ describe('Lineage', function() {
       return deleteDocs([place_parent._id, report_parentContact._id])
         .then(() => lineage.hydrateDocs(docs))
         .then(([ hydratedReport, hydratedPlace ]) => {
-          chai.assert.checkDeepProperties(hydratedReport, {
+          assert.checkDeepProperties(hydratedReport, {
             contact: {
               name: report_contact.name,
               parent: {
@@ -657,7 +696,7 @@ describe('Lineage', function() {
             },
             parent: undefined
           });
-          chai.assert.checkDeepProperties(hydratedPlace, {
+          assert.checkDeepProperties(hydratedPlace, {
             contact: { name: place_contact.name },
             parent: {
               _id: place_parent._id,
@@ -678,27 +717,100 @@ describe('Lineage', function() {
         .then(([ hydratedReport, hydratedPlace ]) => {
           lineage.minify(hydratedReport);
           lineage.minify(hydratedPlace);
-          chai.expect(hydratedReport).excluding('_rev').to.deep.equal(report);
-          chai.expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
+          expect(hydratedReport).excluding('_rev').to.deep.equal(report);
+          expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
+        });
+    });
+
+    it('does not return a report with circular references', function () {
+      return lineage.hydrateDocs([circular_report])
+        .then(([ actual ]) => {
+          // The contact and the contact's parent's contact are the hydrated CHW
+          expect(actual.contact.parent.contact.hydrated).to.equal(true);
+          expect(actual.contact.hydrated).to.equal(true);
+
+          // And we can minify back to the original without error
+          lineage.minify(actual);
+          expect(actual).excludingEvery('_rev').to.deep.equal(circular_report);
+        });
+    });
+
+    it('handles person with circular reference ids', () => {
+      return lineage.hydrateDocs([person_with_circular_ids])
+        .then(([ actual ]) => {
+          expect(actual._id).to.eq(person_with_circular_ids._id);
+          expect(actual.parent._id).to.eq(person_with_circular_ids._id);
+          expect(actual.parent.parent._id).to.eq(person_with_circular_ids._id);
+          expect(actual.parent.parent.parent).to.be.undefined;
+        });
+    });
+
+    it('handles place with circular reference ids', () => {
+      return lineage.hydrateDocs([place_with_circular_ids])
+        .then(([ actual ]) => {
+          assert.checkDeepProperties(actual, {
+            _id: place_with_circular_ids._id,
+            type: 'clinic',
+
+            contact: {
+              _id: place_with_circular_ids._id,
+              parent: {
+                _id: person_with_circular_ids._id
+              },
+              contact: {
+                _id: place_with_circular_ids._id,
+                contact: undefined,
+              },
+            },
+
+            parent: {
+              _id: person_with_circular_ids._id,
+              parent: {
+                _id: person_with_circular_ids._id,
+                parent: undefined,
+              }
+            },
+          });
+        });
+    });
+
+    it('handles report with circular reference ids', () => {
+      return lineage.hydrateDocs([report_with_circular_ids])
+        .then(([ actual ]) => {
+          assert.checkDeepProperties(actual, {
+            _id: report_with_circular_ids._id,
+            patient: {
+              _id: person_with_circular_ids._id,
+              type: 'person',
+              parent: {
+                _id: person_with_circular_ids._id,
+                type: 'person',
+                parent: {
+                  _id: person_with_circular_ids._id,
+                  parent: undefined,
+                }
+              }
+            },
+          });
         });
     });
 
     it('processing a doc with itself as a parent errors out', function() {
       const docs = [ cloneDeep(child_is_parent) ];
 
-      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+      expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
 
     it('processing a doc with itself as a grandparent errors out', function() {
       const docs = [ cloneDeep(child_is_grandparent) ];
 
-      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+      expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
 
     it('processing a doc with itself as a grandparent referenced through intermediate docs errors out', function() {
       const docs = [ cloneDeep(child_is_great_grandparent), cloneDeep(cigg_parent), cloneDeep(cigg_grandparent) ];
 
-      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+      expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
   });
 });

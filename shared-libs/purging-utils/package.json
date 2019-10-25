@@ -1,0 +1,16 @@
+{
+  "name": "@medic/purging-utils",
+  "version": "1.0.0",
+  "description": "Purging common utility functions",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.1",
+    "sinon": "^7.5.0"
+  }
+}

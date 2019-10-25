@@ -22,7 +22,7 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,css,img,js,xslt}', '*'),
+      path.join(staticDirectoryPath, '{audio,css,img,js}', '*'),
       path.join(staticDirectoryPath, 'manifest.json'),
 
       // Fonts

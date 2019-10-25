@@ -31,8 +31,10 @@ const _ = require('underscore'),
   settings = require('./controllers/settings'),
   bulkDocs = require('./controllers/bulk-docs'),
   africasTalking = require('./controllers/africas-talking'),
+  infodoc = require('./controllers/infodoc'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
+  purgedDocsController = require('./controllers/purged-docs'),
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -43,11 +45,12 @@ const _ = require('underscore'),
   uuid = require('uuid'),
   compression = require('compression'),
   BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
-  extractedResourceDirectory = require('./resource-extraction').getDestinationDirectory(),
   app = express();
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({ limit: '32mb' });
+const jsonQueryParser = require('./middleware/query-parser').json;
+const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
@@ -102,6 +105,7 @@ app.use((req, res, next) => {
 });
 
 morgan.token('id', req => req.id);
+
 app.use(
   morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
     immediate: true,
@@ -349,6 +353,7 @@ app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
+app.get('/api/v1/users-info', authorization.getUserSettings, users.info);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth
@@ -396,6 +401,10 @@ app.get('/api/v1/settings', settings.get);
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
+app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
+app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
+app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
+
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
 const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy),
@@ -424,11 +433,12 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request,
   allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, onlineUserProxy, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, jsonQueryParser, allDocsHandler);
 app.post(
   allDocsPath,
   onlineUserProxy,
   jsonParser,
+  jsonQueryParser,
   allDocsHandler
 );
 
@@ -438,6 +448,7 @@ app.post(
   routePrefix + '_bulk_get(/*)?',
   onlineUserProxy,
   jsonParser,
+  jsonQueryParser,
   bulkGetHandler
 );
 
@@ -445,8 +456,10 @@ app.post(
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
   routePrefix + '_bulk_docs(/*)?',
-  authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
+  infodoc.mark,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonQueryParser,
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -461,6 +474,7 @@ const dbDocHandler = require('./controllers/db-doc'),
 app.get(
   ddocPath,
   onlineUserProxy,
+  jsonQueryParser,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -468,36 +482,50 @@ app.get(
 app.get(
   docPath,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
+  jsonQueryParser,
   dbDocHandler.request
 );
 app.post(
-  routePrefix,
+  `/+${environment.db}/?`,
+  jsonParser,
+  infodoc.mark,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
-  jsonParser, // request body must be json
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.put(
   docPath,
-  authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
+  infodoc.mark,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route,
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.delete(
   docPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
-const metaPathPrefix = '/medic-user-*-meta/';
+const metaPathPrefix = `/${environment.db}-user-*-meta/`;
+
+app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
+  if (environment.db !== 'medic') {
+    req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
+  }
+  next();
+});
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
@@ -508,6 +536,7 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
 app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
+
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
@@ -678,5 +707,8 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
     proxyRes.pipe(res);
   }
 });
+
+proxyForAuth.on('proxyRes', infodoc.update);
+proxy.on('proxyRes', infodoc.update);
 
 module.exports = app;

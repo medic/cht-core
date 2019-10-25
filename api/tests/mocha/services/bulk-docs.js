@@ -26,12 +26,12 @@ describe('Bulk Docs Service', function () {
     userCtx = { name: 'user' };
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
-    sinon.stub(authorization, 'getAllowedDocIds').resolves([]);
     sinon.stub(authorization, 'excludeTombstoneIds').callsFake(list => list);
-    sinon.stub(authorization, 'convertTombstoneIds').callsFake(list => list);
+    sinon.stub(authorization, 'convertTombstoneId').callsFake(list => list);
     sinon.stub(authorization, 'filterAllowedDocs').returns([]);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(authorization, 'alwaysAllowCreate').returns(false);
+    sinon.stub(authorization, 'allowedDoc');
   });
 
   afterEach(function() {
@@ -281,7 +281,6 @@ describe('Bulk Docs Service', function () {
 
     it('filters allowed docs by their posted content', () => {
       const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }];
-      const allowedDocIds = [1, 2, 3, 4, 5];
 
       authorization.filterAllowedDocs.returns([
         { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }}, allowed: false },
@@ -289,7 +288,7 @@ describe('Bulk Docs Service', function () {
         { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }}, allowed: false },
       ]);
 
-      return service._filterRequestDocs({ allowedDocIds }, docs).then(result => {
+      return service._filterRequestDocs({ }, docs).then(result => {
         result.length.should.equal(3);
         result.should.deep.equal([{ _id: 1 }, { _id: 5 }, { _id: 3 }]);
         authorization.filterAllowedDocs.callCount.should.equal(1);
@@ -305,12 +304,21 @@ describe('Bulk Docs Service', function () {
 
     it('returns filtered list when none of the docs are new', () => {
       const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }];
-      const allowedDocIds = ['a', 'c', 'e'];
       authorization.filterAllowedDocs.callsFake((ctx, docs) => docs);
-      db.medic.allDocs.resolves({rows: [{ id: 'b' }, { id: 'd' }]});
+      db.medic.allDocs.resolves({ rows: [
+          { id: 'a', doc: { _id: 'a' } },
+          { id: 'b', doc: { _id: 'b' } },
+          { id: 'c', doc: { _id: 'c' } },
+          { id: 'd', doc: { _id: 'd' } },
+          { id: 'e', doc: { _id: 'e' } }
+        ]});
+      authorization.allowedDoc.returns(false)
+        .withArgs('a').returns(true)
+        .withArgs('c').returns(true)
+        .withArgs('e').returns(true);
 
-      return service._filterRequestDocs({ userCtx, allowedDocIds }, docs).then(result => {
-        authorization.getViewResults.callCount.should.equal(5);
+      return service._filterRequestDocs({ userCtx }, docs).then(result => {
+        authorization.getViewResults.callCount.should.equal(10);
         authorization.filterAllowedDocs.callCount.should.equal(1);
         authorization.filterAllowedDocs.args[0][1].should.deep.equal([
           { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
@@ -321,7 +329,7 @@ describe('Bulk Docs Service', function () {
         ]);
 
         db.medic.allDocs.callCount.should.equal(1);
-        db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['b', 'd'] });
+        db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['a', 'b', 'c', 'd', 'e'], include_docs: true });
 
         result.length.should.equal(3);
         result.should.deep.equal([{ _id: 'a' }, { _id: 'c' }, { _id: 'e' }]);
@@ -330,7 +338,6 @@ describe('Bulk Docs Service', function () {
 
     it('returns filtered list along with allowed new docs', () => {
       const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }, { _id: 'f' }, { key: 'g' }];
-      const allowedDocIds = ['a', 'c'];
 
       authorization.getViewResults.withArgs({ key: 'g' }).returns({ view1: 'g' });
       authorization.filterAllowedDocs.returns([
@@ -340,12 +347,18 @@ describe('Bulk Docs Service', function () {
         { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' }, allowed: false }
       ]);
 
-      db.medic.allDocs
-        .withArgs({ keys: ['b', 'd'] })
-        .resolves({ rows: [{ id: 'b' }, { key: 'd' }]});
+      db.medic.allDocs.resolves({ rows: [
+          { id: 'a', doc: { _id: 'a' }},
+          { id: 'b', doc: { _id: 'b' }},
+          { id: 'd', doc: { _id: 'd' }}
+        ]});
+      authorization.allowedDoc.returns(false)
+        .withArgs('a').returns(true)
+        .withArgs('d').returns(true);
 
-      return service._filterRequestDocs({ userCtx, allowedDocIds }, docs).then(result => {
-        authorization.getViewResults.callCount.should.equal(7);
+      return service._filterRequestDocs({ userCtx }, docs).then(result => {
+        authorization.getViewResults.callCount.should.equal(10);
+        db.medic.allDocs.callCount.should.equal(1);
 
         result.should.deep.equal([{ _id: 'a' }, { _id: 'd' }, { key: 'g' }]);
         authorization.filterAllowedDocs.callCount.should.equal(1);
@@ -358,6 +371,53 @@ describe('Bulk Docs Service', function () {
           { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } }, allowed: false },
           { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' }, allowed: false }
         ]);
+      });
+    });
+
+    it('returns filtered list along with allowed new docs and allowed deletes', () => {
+      const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }, { _id: 'f' }];
+      authorization.filterAllowedDocs.returns([
+        { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
+        { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
+        { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
+        { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } }, allowed: false },
+        { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } }, allowed: false },
+      ]);
+
+      db.medic.allDocs
+        .withArgs({ keys: ['a', 'b', 'd', 'e', 'f'], include_docs: true })
+        .resolves({ rows: [
+            { id: 'a', doc: { _id: 'a' } },
+            { key: 'b', error: 'not_found' },
+            { id: 'd', doc: null, value: { deleted: true, rev: 'd-rev' } },
+            { id: 'e', doc: null, value: { deleted: true, rev: 'e-rev' } },
+            { id: 'f', doc: { _id: 'f' } },
+          ]});
+
+      sinon.stub(authorization, 'generateTombstoneId').callsFake(id => id + '-tombstone');
+      db.medic.allDocs
+        .withArgs({ keys: ['d-tombstone', 'e-tombstone'], include_docs: true })
+        .resolves({ rows: [
+            { id: 'd-tombstone', doc: { _id: 'd-tombstone' } },
+            { id: 'e-tombstone', doc: { _id: 'e-tombstone' } },
+          ]});
+
+      authorization.convertTombstoneId.withArgs('d-tombstone').returns('d');
+      authorization.convertTombstoneId.withArgs('e-tombstone').returns('e');
+
+      authorization.allowedDoc.returns(false)
+        .withArgs('a').returns(true)
+        .withArgs('d').returns(true);
+
+      return service._filterRequestDocs({ userCtx }, docs).then(result => {
+        authorization.getViewResults.callCount.should.equal(10);
+        db.medic.allDocs.callCount.should.equal(2);
+        authorization.allowedDoc.callCount.should.equal(4);
+        authorization.generateTombstoneId.callCount.should.equal(2);
+        authorization.generateTombstoneId.args[0].should.deep.equal(['d', 'd-rev']);
+        authorization.generateTombstoneId.args[1].should.deep.equal(['e', 'e-rev']);
+
+        result.should.deep.equal([{ _id: 'a' }, { _id: 'b' }, { _id: 'd' }]);
       });
     });
   });
@@ -397,22 +457,6 @@ describe('Bulk Docs Service', function () {
       docs = [ { _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' } ];
     });
 
-    it('calls authorization.getAllowedIds and authorization.getAuthorizationData with correct parameters', () => {
-      authorization.getAuthorizationContext.resolves({ subjectIds: ['a'],  userCtx: { name: 'user' } });
-      authorization.getAllowedDocIds.resolves(['a', 'b']);
-
-      return service
-        .filterOfflineRequest(userCtx, docs)
-        .then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(1);
-          authorization.getAuthorizationContext.args[0][0].should.equal(userCtx);
-
-          authorization.getAllowedDocIds.callCount.should.equal(1);
-          authorization.getAllowedDocIds.args[0][0].should.deep.equal(
-            { userCtx: { name: 'user' }, subjectIds: ['a'], allowedDocIds: ['a', 'b']});
-      });
-    });
-
     it('throws authorization.getAuthorizationData errors', () => {
       authorization.getAuthorizationContext.rejects(new Error('something'));
 
@@ -423,18 +467,7 @@ describe('Bulk Docs Service', function () {
       });
     });
 
-    it('throws authorization.getAllowedIds errors', () => {
-      authorization.getAllowedDocIds.rejects(new Error('something'));
-
-      return service
-        .filterOfflineRequest(userCtx, docs)
-        .catch(err => {
-          err.message.should.equal('something');
-        });
-    });
-
     it('replaces request body with filtered docs', () => {
-      authorization.getAllowedDocIds.resolves(['a', 'b']);
       authorization.filterAllowedDocs.returns([{ doc: { _id: 'a'} }, { doc: { _id: 'b' } }]);
       db.medic.allDocs.resolves({ rows: [{ id: 'c' }, { id: 'd' }, { id: 'e' }] });
 
@@ -445,58 +478,100 @@ describe('Bulk Docs Service', function () {
       });
     });
 
-    it('converts allowed tombstone ids', () => {
-      authorization.getAllowedDocIds.resolves(['a', 'tombstone-c', 'tombstone-e']);
-      authorization.filterAllowedDocs.returns([ { doc: { _id: 'a' } }, { doc: { _id: 'c' } }, { doc: { _id: 'e' } } ]);
-      authorization.convertTombstoneIds.withArgs(['a', 'tombstone-c', 'tombstone-e']).returns(['a', 'c', 'e']);
+    it('updates allowed deleted docs', () => {
+      authorization.filterAllowedDocs.returns([
+        { doc: { _id: 'a' } },
+        { doc: { _id: 'b' } },
+        { doc: { _id: 'c' } },
+        { doc: { _id: 'e' } }
+        ]);
+      sinon.stub(authorization, 'generateTombstoneId').callsFake(id => id + '-tombstone');
+      authorization.convertTombstoneId.callsFake(id => id.replace('-tombstone', ''));
 
       db.medic.allDocs
-        .withArgs({ keys: ['b', 'd'] })
-        .resolves({ rows: [{ id: 'd' }, { id: 'b' }] });
+        .withArgs({ keys: ['a', 'b', 'c', 'e'], include_docs: true })
+        .resolves({ rows: [
+            { id: 'a', doc: { _id: 'a' } },
+            { id: 'b', doc: null, value: { deleted: true, rev: 'b-rev' }},
+            { id: 'c', doc: null, value: { deleted: true, rev: 'c-rev' }},
+            { id: 'e', doc: null, value: { deleted: true, rev: 'e-rev' }}
+          ]});
+      db.medic.allDocs
+        .withArgs({ keys: ['b-tombstone', 'c-tombstone', 'e-tombstone'], include_docs: true })
+        .resolves({ rows: [
+            { id: 'b-tombstone', error: 'not_found' },
+            { id: 'c-tombstone', doc: { _id: 'c-tombstone' } },
+            { id: 'e-tombstone', doc: { _id: 'e-tombstone' } },
+          ]});
+
+      authorization.allowedDoc.returns(false)
+        .withArgs('c').returns(true);
 
       return service
         .filterOfflineRequest(userCtx, docs)
         .then(result => {
-          result.should.deep.equal([
-            { _id: 'a' },
-            { _id: 'c' },
-            { _id: 'e' },
-          ]);
+          result.should.deep.equal([{ _id: 'b' }, { _id: 'c' }]);
+          authorization.allowedDoc.callCount.should.equal(3);
+          authorization.allowedDoc.calledWith('a').should.equal(true);
+          authorization.allowedDoc.calledWith('c').should.equal(true);
+          authorization.allowedDoc.calledWith('e').should.equal(true);
+
       });
     });
 
     it('filters request', () => {
       docs = [
-        { _id: 'a'}, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
+        { _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
         { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' },
         { _id: 'fb1' }, { _id: 'fb2' }
       ];
 
-      authorization.getAllowedDocIds.resolves(['a', 'c', 'd', 'e', 'deleted-tombstone']);
+      sinon.stub(authorization, 'generateTombstoneId').callsFake(id => id + '-tombstone');
       authorization.filterAllowedDocs.returns([
-        { doc :{ _id: 'b' }}, { doc :{ _id: 'c' }}, { doc: { _id: 'g' }},  { doc: { name: 'a' }},
-        { doc: { _id: 'deleted' }}, { doc: { _id: 'fb1' }}, { doc: { _id: 'fb2' }}
+        { doc: { _id: 'b' }},
+        { doc: { _id: 'c' }},
+        { doc: { _id: 'g' }},
+        { doc: { name: 'a' }},
+        { doc: { _id: 'deleted' }},
+        { doc: { _id: 'fb1' }},
+        { doc: { _id: 'fb2' }}
       ]);
 
       authorization.alwaysAllowCreate
         .withArgs({ _id: 'fb1'}).returns(true)
         .withArgs({ _id: 'fb2'}).returns(true);
 
-      authorization.convertTombstoneIds
-        .withArgs(['a', 'c', 'd', 'e', 'deleted-tombstone']).returns(['a', 'c', 'd', 'e', 'deleted']);
+      authorization.convertTombstoneId.withArgs('deleted-tombstone').returns('deleted');
 
       db.medic.allDocs
-        .withArgs({ keys: [ 'b', 'g', 'fb1', 'fb2'] })
-        .resolves({ rows: [{ id: 'b' }, { id: 'fb2' }]});
+        .withArgs({ keys: ['b', 'c', 'g', 'deleted', 'fb1', 'fb2'], include_docs: true })
+        .resolves({ rows: [
+            { id: 'b', doc: { _id: 'b' } },
+            { id: 'c', doc: { _id: 'c' } },
+            { id: 'g', doc: { _id: 'g' } },
+            { id: 'deleted', doc: null, value: { deleted: true, rev: 'rev' }},
+            { key: 'fb1', error: 'not_found' },
+            { id: 'fb2', doc: { _id: 'fb2' } }
+          ]});
+
+      db.medic.allDocs
+        .withArgs({ keys: ['deleted-tombstone'], include_docs: true })
+        .resolves({ rows: [{ id: 'deleted-tombstone', doc: { _id: 'deleted-tombstone' } }] });
+
+      authorization.allowedDoc.returns(false)
+        .withArgs('c').returns(true)
+        .withArgs('g').returns(true)
+        .withArgs('deleted').returns(true)
+        .withArgs('fb2').returns(false);
 
       return service
         .filterOfflineRequest(userCtx, docs)
         .then(result => {
           result.should.deep.equal([
             { _id: 'c' },
-            { _id: 'deleted' },
             { _id: 'g' },
             { name: 'a'},
+            { _id: 'deleted' },
             { _id: 'fb1'}
           ]);
       });

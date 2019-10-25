@@ -23,7 +23,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     };
     const unsubscribe = $ngRedux.connect(null, mapDispatchToTarget)(ctrl);
 
-    $scope.analyticsModules = [];
+    ctrl.analyticsModules = [];
 
     ctrl.loading = true;
 
@@ -46,20 +46,12 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
       }
 
       ctrl.loading = false;
-      $scope.analyticsModules = modules;
+      ctrl.analyticsModules = modules;
     });
 
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);
     }
-
-    $scope.loadPatient = function(id) {
-      $state.go('reports.detail', { query: 'patient_id:' + id });
-    };
-
-    $scope.loadContact = function(id) {
-      $state.go('reports.detail', { query: 'contact:' + id });
-    };
 
     $scope.$on('$destroy', unsubscribe);
   }

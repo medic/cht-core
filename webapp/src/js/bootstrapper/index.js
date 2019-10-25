@@ -2,11 +2,15 @@
 
   'use strict';
 
-  const purger = require('./purger');
   const registerServiceWorker = require('./swRegister');
   const translator = require('./translator');
+  const utils = require('./utils');
+  const purger = require('./purger');
 
   const ONLINE_ROLE = 'mm-online';
+
+  let remoteDocCount;
+  let localDocCount;
 
   var getUserCtx = function() {
     var userCtx, locale;
@@ -32,14 +36,10 @@
   };
 
   const getDbInfo = function() {
-    // parse the URL to determine the remote and local database names
-    const location = window.location;
     const dbName = 'medic';
-    const port = location.port ? ':' + location.port : '';
-    const remoteDB = location.protocol + '//' + location.hostname + port + '/' + dbName;
     return {
       name: dbName,
-      remote: remoteDB
+      remote: `${utils.getBaseUrl()}/${dbName}`
     };
   };
 
@@ -47,31 +47,77 @@
     return dbInfo.name + '-user-' + username;
   };
 
+  const docCountPoll = (localDb) => {
+    setUiStatus('POLL_REPLICATION');
+    const fetchOpts = {
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    };
+    return Promise
+      .all([
+        localDb.allDocs({ limit: 1 }),
+        fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
+      ])
+      .then(([ local, remote ]) => {
+        localDocCount = local.total_rows;
+        remoteDocCount = remote.total_docs;
+
+        if (remote.warn) {
+          return new Promise(resolve => {
+            const errorMessage = translator.translate('TOO_MANY_DOCS', { count: remoteDocCount, limit: remote.limit });
+            const continueBtn = translator.translate('CONTINUE');
+            const abort = translator.translate('ABORT');
+
+            $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
+            $('.bootstrap-layer .error').show();
+            $('.bootstrap-layer .error').html('<div><p class="alert alert-warning">' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
+            $('#btn-continue').click(() => resolve());
+            $('#btn-abort').click(() => {
+              document.cookie = 'login=force;path=/';
+              window.location.reload(false);
+            });
+          });
+        }
+      });
+  };
+
+  const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
+    return localDb.id().then(id => {
+      POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
+    });
+  };
+
   var initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
-    var replicator = localDb.replicate
-      .from(remoteDb, {
-        live: false,
-        retry: false,
-        heartbeat: 10000,
-        timeout: 1000 * 60 * 10, // try for ten minutes then give up
-      });
 
-    replicator
-      .on('change', function(info) {
-        console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', { count: info.docs_read || '?' });
-      });
+    return purger
+      .info()
+      .then(info => {
+        const replicator = localDb.replicate
+          .from(remoteDb, {
+            live: false,
+            retry: false,
+            heartbeat: 10000,
+            timeout: 1000 * 60 * 10, // try for ten minutes then give up,
+            query_params: { initial_replication: true }
+          });
 
-    return replicator
-      .then(function() {
-        var duration = Date.now() - dbSyncStartTime;
+        replicator
+          .on('change', function(info) {
+            console.log('initialReplication()', 'change', info);
+            setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
+          });
+
+        return replicator.then(() => purger.checkpoint(info));
+      })
+      .then(() => {
+        const duration = Date.now() - dbSyncStartTime;
         console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
         if (dbSyncStartData) {
-          var dbSyncEndData = getDataUsage();
-          var rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+          const dbSyncEndData = getDataUsage();
+          const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
           console.info('Initial sync received ' + rx + 'B of data');
         }
       });
@@ -108,21 +154,24 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
-  var setUiStatus = function(translationKey, args) {
-    var translated = translator.translate(translationKey, args);
+  const setUiStatus = (translationKey, args)  => {
+    const translated = translator.translate(translationKey, args);
+    $('.bootstrap-layer .status, .bootstrap-layer .loader').show();
+    $('.bootstrap-layer .error').hide();
     $('.bootstrap-layer .status').text(translated);
   };
 
-  var setUiError = function() {
-    var errorMessage = translator.translate('ERROR_MESSAGE');
-    var tryAgain = translator.translate('TRY_AGAIN');
-    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
+  const setUiError = err => {
+    const errorMessage = translator.translate(err && err.key || 'ERROR_MESSAGE');
+    const tryAgain = translator.translate('TRY_AGAIN');
+    $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
     $('#btn-reload').click(() => window.location.reload(false));
+    $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
+    $('.bootstrap-layer .error').show();
   };
 
-  var getDdoc = function(localDb) {
-    return localDb.get('_design/medic-client');
-  };
+  const getDdoc = localDb => localDb.get('_design/medic-client');
+  const getSettingsDoc = localDb => localDb.get('settings');
 
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
@@ -147,15 +196,20 @@
     const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
     const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
 
-    const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
+    const testReplicationNeeded = () => Promise
+      .all([getDdoc(localDb), getSettingsDoc(localDb)])
+      .then(() => false)
+      .catch(() => true);
 
     let isInitialReplicationNeeded;
-    Promise.all([swRegistration, testReplicationNeeded()])
+    Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
       .then(function(resolved) {
+        purger.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
-          return initialReplication(localDb, remoteDb)
+          return docCountPoll(localDb)
+            .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
             .then(isReplicationStillNeeded => {
               if (isReplicationStillNeeded) {
@@ -164,17 +218,21 @@
             });
         }
       })
-      .then(() => purger(localDb, userCtx, isInitialReplicationNeeded)
-        .on('start', () => setUiStatus('PURGE_INIT'))
-        .on('progress', function(progress) {
-          setUiStatus('PURGE_INFO', {
-            count: progress.purged,
-            percent: Math.floor((progress.processed / progress.total) * 100)
+      .then(() => {
+        return purger
+          .shouldPurge(localDb, userCtx)
+          .then(shouldPurge => {
+            if (!shouldPurge) {
+              return;
+            }
+
+            return purger
+              .purge(localDb, userCtx)
+              .on('start', () => setUiStatus('PURGE_INIT'))
+              .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+              .catch(err => console.error('Error attempting to purge', err));
           });
-        })
-        .on('optimise', () => setUiStatus('PURGE_AFTER'))
-        .catch(console.error)
-      )
+      })
       .then(() => setUiStatus('STARTING_APP'))
       .catch(err => err)
       .then(function(err) {
@@ -185,7 +243,7 @@
             return redirectToLogin(dbInfo, err, callback);
           }
 
-          setUiError();
+          setUiError(err);
         }
 
         callback(err);

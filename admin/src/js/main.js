@@ -326,7 +326,10 @@ angular.module('adminApp').config(function(
     .state('targets-edit', {
       url: '/targets/edit/:id',
       controller: 'TargetsEditCtrl',
-      templateUrl: 'templates/targets_edit.html'
+      templateUrl: 'templates/targets_edit.html',
+      params: {
+        id: null
+      },
     })
     .state('translation', {
       url: '/translation',

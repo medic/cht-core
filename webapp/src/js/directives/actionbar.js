@@ -10,10 +10,14 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
+          actionBar: Selectors.getActionBar(state),
+          currentTab: Selectors.getCurrentTab(state),
           isAdmin: Selectors.getIsAdmin(state),
           loadingContent: Selectors.getLoadingContent(state),
           loadingSubActionBar: Selectors.getLoadingSubActionBar(state),
           selectMode: Selectors.getSelectMode(state),
+          selectedContactDoc: Selectors.getSelectedContactDoc(state),
+          selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
           showActionBar: Selectors.getShowActionBar(state)
         };
       };
@@ -21,6 +25,9 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
 
       $scope.$on('$destroy', unsubscribe);
     },
-    controllerAs: 'actionBarCtrl'
+    controllerAs: 'actionBarCtrl',
+    bindToController: {
+      nonContactForms: '<'
+    }
   };
 });

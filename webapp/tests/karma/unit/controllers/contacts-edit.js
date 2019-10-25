@@ -21,7 +21,6 @@ describe('Contacts Edit controller', () => {
     globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), stubbedGlobalActions);
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
-    scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
     contactTypes = { get: sinon.stub().resolves({}) };
     scope.settingSelected = sinon.stub();
@@ -50,7 +49,8 @@ describe('Contacts Edit controller', () => {
         'Enketo': sinon.stub(),
         'LineageModelGenerator': { contact: sinon.stub().resolves() },
         'Snackbar': sinon.stub(),
-        'SessionStorage': sessionStorage
+        'SessionStorage': sessionStorage,
+        'XmlForms': sinon.stub().resolves()
       });
     };
   }));

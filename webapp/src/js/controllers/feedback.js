@@ -13,7 +13,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     'ngInject';
 
     const ctrl = this;
-    $scope.model = {};
+    ctrl.model = {};
     ctrl.error = {};
 
     var validateMessage = function(message) {
@@ -28,14 +28,14 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
       }
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
-    $scope.submit = function() {
+    ctrl.submit = function() {
       $scope.setProcessing();
 
-      var message = $scope.model.message && $scope.model.message.trim();
+      var message = ctrl.model.message && ctrl.model.message.trim();
       return validateMessage(message)
         .then(function() {
           if (ctrl.error.message) {

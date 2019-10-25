@@ -40,6 +40,17 @@ if (UNIT_TEST_ENV) {
     changes: stubMe('changes'),
   };
 
+  module.exports.users = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    put: stubMe('put'),
+    post: stubMe('post'),
+    query: stubMe('query'),
+    get: stubMe('get'),
+    changes: stubMe('changes'),
+  };
+
+
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
 } else if (COUCH_URL) {
@@ -67,6 +78,8 @@ if (UNIT_TEST_ENV) {
     });
   });
   module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.couchUrl = couchUrl;
+  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

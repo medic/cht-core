@@ -1,5 +1,4 @@
-var filter = require('async/filter');
-var TABS = [
+const TABS = [
   { state: 'messages.detail', perm: 'can_view_messages_tab'  },
   { state: 'tasks.detail',    perm: 'can_view_tasks_tab'     },
   { state: 'reports.detail',  perm: 'can_view_reports_tab'   },
@@ -9,7 +8,7 @@ var TABS = [
 
 angular.module('inboxControllers').controller('HomeCtrl',
   function (
-    $log,
+    $q,
     $state,
     Auth
   ) {
@@ -17,29 +16,24 @@ angular.module('inboxControllers').controller('HomeCtrl',
     'use strict';
     'ngInject';
 
-    var findFirstAuthorizedTab = function(callback) {
-      filter(TABS, function(tab, callback) {
-        Auth(tab.perm)
-          .then(function() {
-            callback(null, true);
-          })
-          .catch(function() {
-            callback(null, false);
-          });
-      }, function(err, results) {
-        if (err) {
-          return callback(err);
+    const hasAuth = perm => {
+      return Auth(perm)
+        .then(() => true)
+        .catch(() => false);
+    };
+
+    const findFirstAuthorizedTab = () => {
+      return $q.all(TABS.map(tab => hasAuth(tab.perm))).then(results => {
+        const idx = results.findIndex(result => result);
+        if (idx === -1) {
+          return;
         }
-        if (!results.length) {
-          return callback(new Error('No tabs available'));
-        }
-        callback(null, results[0].state);
+        return TABS[idx].state;
       });
     };
 
-    findFirstAuthorizedTab(function(err, state) {
-      if (err) {
-        $log.error(err);
+    findFirstAuthorizedTab().then(state => {
+      if (!state) {
         state = 'error';
       }
       $state.go(state, { code: 403 }, { location: 'replace' });

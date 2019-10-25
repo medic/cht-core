@@ -28,6 +28,8 @@ const envVarsCheck = () => {
   envValueAndExample.forEach(([envconst, example]) => {
     if (!process.env[envconst]) {
       failures.push(`${envconst} must be set. For example: ${envconst}=${example}`);
+    } else {
+      console.log(envconst, process.env[envconst]);
     }
   });
 
@@ -50,7 +52,7 @@ const couchDbNoAdminPartyModeCheck = () => {
       } else {
         console.error('Expected a 401 when accessing db without authentication.');
         console.error(`Instead we got a ${statusCode}`);
-        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic#enabling-a-secure-couchdb'));
+        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core#enabling-a-secure-couchdb'));
       }
     });
   });

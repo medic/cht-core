@@ -13,6 +13,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     ContactViewModelGenerator,
     ContactsActions,
     Debounce,
+    GlobalActions,
     Selectors,
     Snackbar,
     UserSettings
@@ -33,7 +34,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
     const mapDispatchToTarget = function(dispatch) {
       const contactsActions = ContactsActions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
+        settingSelected: globalActions.settingSelected,
         updateSelectedContact: contactsActions.updateSelectedContact
       };
     };
@@ -43,25 +46,25 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         reportStartDate,
         usersHomePlaceId;
 
-    $scope.filterTasks = function(task) {
+    ctrl.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
     };
-    $scope.filterReports = function(report) {
+    ctrl.filterReports = function(report) {
       return !reportStartDate || reportStartDate.isBefore(report.reported_date);
     };
 
-    $scope.setReportsTimeWindowMonths = function(months) {
-      $scope.reportsTimeWindowMonths = months;
+    ctrl.setReportsTimeWindowMonths = function(months) {
+      ctrl.reportsTimeWindowMonths = months;
       reportStartDate = months ? moment().subtract(months, 'months') : null;
     };
 
-    $scope.setTasksTimeWindowWeeks = function(weeks) {
-      $scope.tasksTimeWindowWeeks = weeks;
+    ctrl.setTasksTimeWindowWeeks = function(weeks) {
+      ctrl.tasksTimeWindowWeeks = weeks;
       taskEndDate = weeks ? moment().add(weeks, 'weeks') : null;
     };
 
-    $scope.setTasksTimeWindowWeeks(1);
-    $scope.setReportsTimeWindowMonths(3);
+    ctrl.setTasksTimeWindowWeeks(1);
+    ctrl.setReportsTimeWindowMonths(3);
 
     var getHomePlaceId = function() {
       return UserSettings()
@@ -83,7 +86,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         .then(function(model) {
           var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
           $scope.setSelected(model, options);
-          $scope.settingSelected(refreshing);
+          ctrl.settingSelected(refreshing);
         })
         .catch(function(err) {
           if (err.code === 404 && !silent) {

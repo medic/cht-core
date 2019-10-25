@@ -9,32 +9,34 @@ angular.module('inboxControllers').controller('BulkDeleteConfirm',
     'use strict';
     'ngInject';
 
-    $scope.totalDocsSelected = 0;
-    $scope.totalDocsDeleted = 0;
+    const ctrl = this;
+
+    ctrl.totalDocsSelected = 0;
+    ctrl.totalDocsDeleted = 0;
     function updateTotalDocsDeleted(totalDocsDeleted) {
       $timeout(function() {
-        $scope.totalDocsDeleted = totalDocsDeleted;
+        ctrl.totalDocsDeleted = totalDocsDeleted;
       });
     }
 
     $scope.$on('modal.closing', function() {
-      if ($scope.deleteComplete) {
+      if (ctrl.deleteComplete) {
         return $window.location.reload();
       }
     });
 
-    $scope.submit = function() {
-      if ($scope.deleteComplete) {
+    ctrl.submit = function() {
+      if (ctrl.deleteComplete) {
         return $window.location.reload();
       }
 
       var docs = $scope.model.docs;
-      $scope.totalDocsSelected = docs.length;
-      $scope.totalDocsDeleted = 0;
+      ctrl.totalDocsSelected = docs.length;
+      ctrl.totalDocsDeleted = 0;
       $scope.setProcessing();
       DeleteDocs(docs, { progress: updateTotalDocsDeleted })
         .then(function() {
-          $scope.deleteComplete = true;
+          ctrl.deleteComplete = true;
           $scope.setFinished();
         })
         .catch(function(err) {
@@ -42,7 +44,7 @@ angular.module('inboxControllers').controller('BulkDeleteConfirm',
         });
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
   }

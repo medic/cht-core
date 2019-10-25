@@ -4,12 +4,12 @@
   title-key="'Report Bug'"
   submit-key="'Submit'"
   submitting-key="'Submitting'"
-  on-cancel="cancel()"
-  on-submit="submit()"
+  on-cancel="feedbackCtrl.cancel()"
+  on-submit="feedbackCtrl.submit()"
 >
   <form action="" method="POST">
     <div class="form-group" ng-class="{ 'has-error': feedbackCtrl.error.message }">
-      <textarea ng-model="model.message" class="form-control" translate translate-attr-placeholder="Bug description"></textarea>
+      <textarea ng-model="feedbackCtrl.model.message" class="form-control" translate translate-attr-placeholder="Bug description"></textarea>
       <span class="help-block" ng-show="feedbackCtrl.error.message">{{feedbackCtrl.error.message}}</span>
     </div>
   </form>
