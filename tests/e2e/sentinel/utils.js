@@ -4,7 +4,7 @@ const utils = require('../../utils'),
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 
-// This function resolves after Sentinel has processed required all docs (matched by provided docIds).
+// This function resolves after Sentinel has processed all required docs (matched by provided docIds).
 // We achieve this by getting the last seq that sentinel has processed, querying the main db's changes feed,
 // filtering by the provided ids and using Sentinel's processed_seq as a since param - simulating what Sentinel's
 // queue would be like. If we receive no results, we are finished. If we receive results, we try again in 100ms.

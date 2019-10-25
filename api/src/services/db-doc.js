@@ -1,6 +1,6 @@
 const db = require('../db');
 const authorization = require('./authorization');
-const _ = require('underscore');
+const _ = require('lodash');
 
 const getStoredDoc = (params, method, query, isAttachment) => {
   if (!params || !params.docId) {
@@ -36,6 +36,17 @@ const getRequestDoc = (method, body, isAttachment) => {
   return body;
 };
 
+const getDocCtx = (doc) => {
+  if (!doc) {
+    return;
+  }
+
+  return {
+    doc,
+    viewResults: authorization.getViewResults(doc)
+  };
+};
+
 module.exports = {
   // offline users will only be able to:
   // - GET/DELETE `db-docs` they are allowed to see
@@ -50,61 +61,62 @@ module.exports = {
       .all([
         getStoredDoc(params, method, query, isAttachment),
         getRequestDoc(method, body, isAttachment),
-        authorization.getAuthorizationContext(userCtx)
       ])
-      .then(([ storedDoc, requestDoc, authorizationContext ]) => {
+      .then(([ storedDoc, requestDoc ]) => {
         if (!storedDoc && !requestDoc) {
           return false;
         }
 
-        // user must be allowed to see existent document
-        if (storedDoc &&
-            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc)) &&
-            !authorization.isDeleteStub(storedDoc)) {
-          return false;
-        }
+        const stored = getDocCtx(storedDoc);
+        const requested = getDocCtx(requestDoc);
 
-        // user must be allowed to see new/updated document or be allowed to create this document
-        if (requestDoc &&
-            !authorization.alwaysAllowCreate(requestDoc) &&
-            !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {
-          return false;
-        }
+        return authorization
+          .getScopedAuthorizationContext(userCtx, [ stored, requested ])
+          .then(authorizationContext => {
+            // user must be allowed to see existent document
+            if (stored &&
+                !authorization.allowedDoc(stored.doc._id, authorizationContext, stored.viewResults) &&
+                !authorization.isDeleteStub(stored.doc)) {
+              return false;
+            }
 
-        if (method === 'GET' && !isAttachment) {
-          // we have already requested the doc with same query options
-          return storedDoc;
-        }
+            // user must be allowed to see new/updated document or be allowed to create this document
+            if (requested &&
+                !authorization.alwaysAllowCreate(requested.doc) &&
+                !authorization.allowedDoc(requested.doc._id, authorizationContext, requested.viewResults)) {
+              return false;
+            }
 
-        return true;
+            if (method === 'GET' && !isAttachment) {
+              // we have already requested the doc with same query options
+              return stored.doc;
+            }
+
+            return true;
+          });
       });
   },
 
   // db-doc GET requests with `open_revs` return a list of requested revisions of the requested doc id
   filterOfflineOpenRevsRequest: (userCtx, params, query) => {
-    return Promise
-      .all([
-        getStoredDoc(params, 'GET', query),
-        authorization.getAuthorizationContext(userCtx)
-      ])
-      .then(([ storedDocs, authorizationContext ]) => {
-        return storedDocs.filter(storedDoc => {
-          if (!storedDoc.ok) {
-            return false;
-          }
+    return getStoredDoc(params, 'GET', query).then(storedDocs => {
+      const stored = storedDocs.map(storedDoc => getDocCtx(storedDoc.ok));
 
-          const viewResults = authorization.getViewResults(storedDoc.ok);
-          return authorization.allowedDoc(storedDoc.ok._id, authorizationContext, viewResults) ||
-                 authorization.isDeleteStub(storedDoc.ok);
+      return authorization
+        .getScopedAuthorizationContext(userCtx, stored)
+        .then(authorizationContext => {
+          return stored
+            .filter(storedDoc => {
+              if (!storedDoc || !storedDoc.doc) {
+                return false;
+              }
+
+              return authorization.allowedDoc(storedDoc.doc._id, authorizationContext, storedDoc.viewResults) ||
+                     authorization.isDeleteStub(storedDoc.doc);
+            })
+            // return the expected response format [{ ok: <doc_json> }]
+            .map(storedDoc => ({ ok: storedDoc.doc }));
         });
-      });
-  }
+    });
+  },
 };
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
-    _getStoredDoc: getStoredDoc,
-    _getRequestDoc: getRequestDoc
-  });
-}

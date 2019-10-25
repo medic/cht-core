@@ -163,12 +163,14 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
+const getContextObject = (userCtx) => ({
+  userCtx,
+  contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
+  subjectIds: []
+});
+
 const getAuthorizationContext = (userCtx) => {
-  const authorizationCtx = {
-    userCtx,
-    contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
-    subjectIds: []
-  };
+  const authorizationCtx = getContextObject(userCtx);
 
   return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
@@ -187,6 +189,100 @@ const getAuthorizationContext = (userCtx) => {
     if (hasAccessToUnassignedDocs(userCtx)) {
       authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
     }
+    return authorizationCtx;
+  });
+};
+
+const getReplicationKeys = (viewResults) => {
+  const replicationKeys = [];
+  if (!viewResults || !viewResults.replicationKeys) {
+    return replicationKeys;
+  }
+
+  viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
+    replicationKeys.push(subjectId);
+    if (submitterId) {
+      replicationKeys.push(submitterId);
+    }
+  });
+
+  return replicationKeys;
+};
+
+// replication keys are either contact shortcodes (`patient_id` or `place_id`) or doc ids
+// returns a list of corresponding contact docs
+const findContactsByReplicationKeys = (replicationKeys) => {
+  if (!replicationKeys || !replicationKeys.length) {
+    return Promise.resolve([]);
+  }
+
+  replicationKeys = _.uniq(replicationKeys);
+  const keys = replicationKeys.map(id => ['shortcode', id]);
+
+  return db.medic
+    .query('medic-client/contacts_by_reference', { keys })
+    .then(result => {
+      const docIds = replicationKeys.map(replicationKey => {
+        const found = result.rows.find(row => row.key[1] === replicationKey);
+        return found && found.id || replicationKey;
+      });
+
+      return db.medic.allDocs({ keys: docIds, include_docs: true });
+    })
+    .then(result => {
+      if (!result.rows) {
+        return [];
+      }
+
+      return result.rows
+        .map(row => row.doc)
+        .filter(doc => doc);
+    });
+};
+
+const getContactShortcode = (viewResults) => viewResults &&
+                                             viewResults.contactsByDepth &&
+                                             viewResults.contactsByDepth[0] &&
+                                             viewResults.contactsByDepth[0][1];
+
+// in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
+// request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
+// over the provided docs, get all contacts that the docs emit for in `medic/docs_by_replication_key` and create a
+// reduced set of relevant allowed subject ids.
+const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
+  const authorizationCtx = getContextObject(userCtx);
+
+  scopeDocsCtx = scopeDocsCtx.filter(docCtx => docCtx && docCtx.doc);
+  if (!scopeDocsCtx.length) {
+    return Promise.resolve(authorizationCtx);
+  }
+
+  // collect all values that the docs would emit in `medic/docs_by_replication_key`
+  const replicationKeys = [];
+  scopeDocsCtx.forEach(docCtx => {
+    const viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
+    replicationKeys.push(...getReplicationKeys(viewResults));
+  });
+
+  return findContactsByReplicationKeys(replicationKeys).then(contacts => {
+    // we simulate a `medic/contacts_by_depth` filter over the list contacts
+    contacts.forEach(contact => {
+      if (!contact) {
+        return;
+      }
+
+      const viewResults = getViewResults(contact);
+      if (!allowedDoc(contact._id, authorizationCtx, viewResults)) {
+        return;
+      }
+
+      authorizationCtx.subjectIds.push(contact._id);
+      const shortcode = getContactShortcode(viewResults);
+      if (shortcode) {
+        authorizationCtx.subjectIds.push(shortcode);
+      }
+    });
+
     return authorizationCtx;
   });
 };
@@ -268,5 +364,6 @@ module.exports = {
   filterAllowedDocs: filterAllowedDocs,
   isDeleteStub: tombstoneUtils._isDeleteStub,
   generateTombstoneId: tombstoneUtils.generateTombstoneId,
-  convertTombstoneId: convertTombstoneId
+  convertTombstoneId: convertTombstoneId,
+  getScopedAuthorizationContext: getScopedAuthorizationContext,
 };
