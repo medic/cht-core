@@ -239,6 +239,8 @@ describe('Due Tasks', () => {
       .then(() => utils.saveDocs(reports))
       .then(() => utils.startSentinel())
       .then(() => sentinelUtils.waitForSentinel(ids))
+      // we can't reliably *know* when the scheduler has finished processing the docs, so I'm just waiting for the revs to change
+      .then(() => utils.waitForDocRev([{ id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }]))
       .then(() => utils.getDocs(ids))
       .then(updatedReports => {
         // report1 should not have been changed
