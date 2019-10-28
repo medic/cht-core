@@ -1,6 +1,6 @@
 # Development Setup
 
-These instructions are for developers who want to contribute to the Core Framework (this repository). If you want to just run the framework (ie with the reference configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](./INSTALL.md) instead.
+These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](./INSTALL.md) instead.
 
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
