@@ -4,6 +4,7 @@ const people = require('./people');
 const utils = require('./utils');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const contactTypesUtils = require('@medic/contact-types-utils');
 const PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
 const getPlace = id => {
@@ -23,17 +24,13 @@ const getPlace = id => {
 };
 
 const getContactType = place => {
-  const types = config.get('contact_types') || [];
-  const typeId = place.contact_type || place.type;
-  return types.find(type => type.id === typeId);
+  const typeId = contactTypesUtils.getTypeId(place);
+  return contactTypesUtils.getTypeById(config, typeId);
 };
 
 const isAPlace = place => {
-  if (place.contact_type && place.type !== 'contact') {
-    return false;
-  }
-  const type = getContactType(place);
-  return type && !type.person;
+  const typeId = contactTypesUtils.getTypeId(place);
+  return contactTypesUtils.isPlaceType(config, typeId);
 };
 
 /*
@@ -72,12 +69,12 @@ const validatePlace = place => {
     return err(`Property "name" on place ${placeId} must be a string.`);
   }
   const type = getContactType(place);
-  if (type.parents && type.parents.length) {
+  if (contactTypesUtils.hasParents(type)) {
     if (!place.parent) {
       return err(`Place ${placeId} is missing a "parent" property.`);
     }
-    const parentType = place.parent.contact_type || place.parent.type;
-    if (!type.parents.includes(parentType)) {
+    const parentTypeId = contactTypesUtils.getTypeId(place.parent);
+    if (!contactTypesUtils.isParentOf(parentTypeId, type)) {
       return err(`${type.id} "${placeId}" should have one of the following parent types: "${type.parents}".`);
     }
   }

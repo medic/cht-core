@@ -39,7 +39,7 @@ const extractAttachment = (extractToDirectory, attachmentName) => db.medic
     createFolderIfDne(path.dirname(outputPath));
 
     fs.writeFile(outputPath, raw, err => {
-      logger.debug(`Extracted attachment ${outputPath}`);
+      //logger.debug(`Extracted attachment ${outputPath}`);
       if (err) {
         return reject(err);
       }

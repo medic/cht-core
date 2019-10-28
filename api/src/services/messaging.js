@@ -69,12 +69,12 @@ const getOutgoingMessageService = () => {
 };
 
 const checkDbForMessagesToSend = () => {
-  logger.debug('Checking for a configured outgoing message service');
+  //logger.debug('Checking for a configured outgoing message service');
   const service = getOutgoingMessageService();
   if (!service) {
     return Promise.resolve();
   }
-  logger.debug('Checking for pending outgoing messages');
+  //logger.debug('Checking for pending outgoing messages');
   return module.exports.getOutgoingMessages()
     .then(messages => {
       logger.info(`Sending ${messages.length} messages`);
@@ -184,7 +184,7 @@ const resolveMissingUuids = changes => {
 };
 
 module.exports = {
-  
+
   /**
    * Sends pending messages on the doc with the given ID using the
    * configured outgoing message service.
@@ -305,7 +305,7 @@ module.exports = {
   isMedicGatewayEnabled: () => {
     return getConfig().outgoing_service === 'medic-gateway';
   }
-  
+
 };
 
 if (process.env.UNIT_TEST_ENV) {

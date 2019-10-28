@@ -112,12 +112,12 @@ const getReportsWithinTimeWindow = (
     .then(data => data.rows.map(row => row.doc));
 };
 
-const getPatient = (patientShortcodeId, includeDocs) => {
-  if (!patientShortcodeId) {
+const getContact = (shortCodeId, includeDocs) => {
+  if (!shortCodeId) {
     return Promise.resolve();
   }
   const viewOpts = {
-    key: ['shortcode', patientShortcodeId],
+    key: ['shortcode', shortCodeId],
     include_docs: includeDocs,
   };
   return db.medic.query('medic-client/contacts_by_reference', viewOpts).then(results => {
@@ -127,12 +127,12 @@ const getPatient = (patientShortcodeId, includeDocs) => {
 
     if (results.rows.length > 1) {
       logger.warn(
-        `More than one patient person document for shortcode ${patientShortcodeId}`
+        `More than one contact document for shortcode ${shortCodeId}`
       );
     }
 
-    const patient = results.rows[0];
-    return includeDocs ? patient.doc : patient.id;
+    const contact = results.rows[0];
+    return includeDocs ? contact.doc : contact.id;
   });
 };
 
@@ -219,20 +219,17 @@ module.exports = {
     return msg && msg.trim();
   },
   /*
-   * Given a patient "shortcode" (as used in SMS reports), return the _id
-   * of the patient's person contact to the caller
+   * Given a contact "shortcode" (as used in SMS reports), return the _id
+   * of the contact to the caller
    */
-  getPatientContactUuid: (patientShortcodeId) => {
-    return getPatient(patientShortcodeId, false);
+  getContactUuid: (shortCodeId) => {
+    return getContact(shortCodeId, false);
   },
   /*
-   * Given a patient "shortcode" (as used in SMS reports), return the
-   * patient's person record
+   * Given a contact "shortcode" (as used in SMS reports), return the contact record
    */
-  getPatientContact: (patientShortcodeId, callback) => {
-    getPatient(patientShortcodeId, true)
-      .then(results => callback(null, results))
-      .catch(callback);
+  getContact: (shortCodeId) => {
+    return getContact(shortCodeId, true);
   },
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),

@@ -113,7 +113,7 @@ const updateAttachments = (accumulator, doc) => {
       results.push(null); // not an enketo form - no update required
       return results;
     }
-    logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
+    //logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
     return module.exports._generate(form.data.toString()).then(result => {
       results.push(result);
       return results;
@@ -134,7 +134,7 @@ const updateAllAttachments = docs => {
 module.exports = {
 
   /**
-   * Updates the model and form attachments of the given form if necessary. 
+   * Updates the model and form attachments of the given form if necessary.
    * @param {string} docId - The db id of the doc defining the form.
    */
   update: docId => {
@@ -143,10 +143,10 @@ module.exports = {
       .then(docs => {
         const doc = docs.length && docs[0];
         if (doc) {
-          logger.info(`Updating form with ID "${docId}"`);
+          //logger.info(`Updating form with ID "${docId}"`);
           return db.medic.put(doc);
         } else {
-          logger.info(`Form with ID "${docId}" does not need to be updated.`);
+          //logger.info(`Form with ID "${docId}" does not need to be updated.`);
         }
       });
   },
@@ -163,7 +163,7 @@ module.exports = {
         return updateAllAttachments(docs);
       })
       .then(toSave => {
-        logger.info(`Updating ${toSave.length} enketo form${toSave.length === 1 ? '' : 's'}`);
+        //logger.info(`Updating ${toSave.length} enketo form${toSave.length === 1 ? '' : 's'}`);
         if (!toSave.length) {
           return;
         }

@@ -5,6 +5,8 @@ const _ = require('underscore'),
   rpn = require('request-promise-native'),
   htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
+const fs = require('fs');
+const path = require('path');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -315,6 +317,11 @@ const waitForDocRev = (ids) => {
     }
     return module.exports.delayPromise(() => waitForDocRev(ids), 100);
   });
+};
+
+const getDefaultSettings = () => {
+  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
+  return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
 module.exports = {
@@ -631,4 +638,6 @@ module.exports = {
   refreshToGetNewSettings: refreshToGetNewSettings,
 
   waitForDocRev: waitForDocRev,
+
+  getDefaultSettings: getDefaultSettings,
 };

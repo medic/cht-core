@@ -4,6 +4,7 @@ const config = require('../config');
 const utils = require('./utils');
 const places = require('./places');
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const contactTypeUtils = require('@medic/contact-types-utils');
 
 const getPerson = id => {
   return lineage.fetchHydratedDoc(id)
@@ -21,32 +22,14 @@ const getPerson = id => {
     });
 };
 
-const getContactType = typeId => {
-  const types = config.get('contact_types') || [];
-  return types.find(type => type.id === typeId);
-};
-
 const isAPerson = person => {
-  let type;
-  if (person.type === 'person') {
-    // backwards compatibility mode
-    type = getContactType('person');
-  } else if (person.type === 'contact') {
-    // configurable hierarchy mode
-    type = getContactType(person.contact_type);
-  } else {
-    // invalid type
-    return false;
-  }
-  return type && type.person;
+  const getTypeId = contactTypeUtils.getTypeId(person);
+  return contactTypeUtils.isPersonType(config, getTypeId);
 };
 
 const getDefaultPersonType = () => {
-  const types = config.get('contact_types') || [];
-  // the old hardcoded type was "person" - kept for backwards compatibility
-  if (types.some(type => type.id === 'person')) {
-    return 'person';
-  }
+  const type = contactTypeUtils.getTypeById(config,'person');
+  return type && type.id;
 };
 
 const validatePerson = obj => {

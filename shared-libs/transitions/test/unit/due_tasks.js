@@ -500,8 +500,8 @@ describe('due tasks', () => {
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.args[0][0], '123');
+      assert.equal(utils.getContactUuid.callCount, 1);
+      assert.equal(utils.getContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 0);
       done();
@@ -590,8 +590,8 @@ describe('due tasks', () => {
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.args[0][0], '123');
+      assert.equal(utils.getContactUuid.callCount, 1);
+      assert.equal(utils.getContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 1);
       assert.deepEqual(utils.setTaskState.args[0], [
