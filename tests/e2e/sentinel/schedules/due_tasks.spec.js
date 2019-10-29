@@ -93,7 +93,7 @@ const contacts = [
 
 const reports = [
   {
-    _id: 'report1', // no scheduled
+    _id: 'report1', // no tasks
     type: 'data_record',
     contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
     fields: { patient_id: 'patient1', value: 1 },
@@ -107,21 +107,21 @@ const reports = [
     reported_date: oneMonthAgo,
     scheduled_tasks: [
       {
-        due: oneMonthAgo, // older scheduled message
+        due: oneMonthAgo, // too old
         message_key: 'messages.one',
         recipient: 'clinic',
         state_history: [],
         state: 'scheduled',
       },
       {
-        due: nearFuture, // future scheduled message
+        due: nearFuture, // future
         message_key: 'messages.two',
         recipient: 'clinic',
         state_history: [],
         state: 'scheduled',
       },
       {
-        due: twoDaysAgo, // future scheduled message
+        due: twoDaysAgo, // non-scheduled state
         message_key: 'messages.two',
         recipient: 'clinic',
         state_history: [],
@@ -137,28 +137,28 @@ const reports = [
     reported_date: oneMonthAgo,
     scheduled_tasks: [
       {
-        due: oneMonthAgo, // older scheduled mesage
+        due: oneMonthAgo, // too old
         message_key: 'messages.one',
         recipient: 'clinic',
         state_history: [],
         state: 'scheduled',
       },
       {
-        due: nearFuture, // future scheduled message
+        due: nearFuture, // future
         message_key: 'messages.two',
         recipient: 'clinic',
         state_history: [],
         state: 'scheduled',
       },
       {
-        due: threeDaysAgo, // "current" scheduled message
+        due: threeDaysAgo, // non-scheduled state
         message_key: 'messages.one',
         recipient: 'clinic',
         state_history: [],
         state: 'sent',
       },
       {
-        due: twoDaysAgo, // "current" scheduled message
+        due: twoDaysAgo, // task to be "pending"
         message_key: 'messages.one',
         recipient: 'ancestor:health_center',
         state_history: [],
@@ -174,21 +174,21 @@ const reports = [
     reported_date: oneMonthAgo,
     scheduled_tasks: [
       {
-        due: twoDaysAgo, // message with translation sent to "clinic"
+        due: twoDaysAgo, // task with translation sent to "clinic"
         message_key: 'messages.one',
         recipient: 'clinic',
         state_history: [],
         state: 'scheduled',
       },
       {
-        due: threeDaysAgo, // message with translation sent to "sender"
+        due: threeDaysAgo, // task with translation sent to "sender"
         message_key: 'messages.two',
         recipient: 'reporting_unit',
         state_history: [],
         state: 'scheduled',
       },
       {
-        due: threeDaysAgo, // message with text
+        due: threeDaysAgo, // task with text
         message: [{
           content: 'THREE. Reported by {{contact.name}}. Patient {{patient_name}}({{patient_id}}). Value {{fields.value}}',
           locale: 'test'
@@ -198,7 +198,7 @@ const reports = [
         state: 'scheduled',
       },
       {
-        due: threeDaysAgo, // message with missing translation key
+        due: threeDaysAgo, // task with missing translation key
         message_key: 'non.exisiting.key',
         recipient: 'clinic',
         state_history: [],
@@ -269,6 +269,9 @@ describe('Due Tasks', () => {
           message: 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 2',
           to: '555666' // ancestor:health_center
         });
+        chai.expect(updatedReports[2].scheduled_tasks[0].messages).to.equal(undefined);
+        chai.expect(updatedReports[2].scheduled_tasks[1].messages).to.equal(undefined);
+        chai.expect(updatedReports[2].scheduled_tasks[2].messages).to.equal(undefined);
 
         // report 4 should have been edited
         chai.expect(updatedReports[3]).to.deep.nested.include({
@@ -292,6 +295,8 @@ describe('Due Tasks', () => {
           message: 'THREE. Reported by Chw1. Patient Patient2(patient2). Value 2',
           to: '555666' // health_center
         });
+
+        chai.expect(updatedReports[3].scheduled_tasks[3].messages).to.equal(undefined);
       });
   });
 });
