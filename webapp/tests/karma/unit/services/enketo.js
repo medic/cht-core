@@ -69,7 +69,6 @@ describe('Enketo service', () => {
   let ServicesActions;
 
   const enketoInit = sinon.stub();
-  const transform = sinon.stub();
   const dbGetAttachment = sinon.stub();
   const dbGet = sinon.stub();
   const dbBulkDocs = sinon.stub();
