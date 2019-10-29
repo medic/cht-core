@@ -23,7 +23,7 @@
     overflow: hidden;
     cursor: pointer;
     &:hover {
-      background-color: @highlight-color;
+      background-color: @list-highlight-color;
     }
   }
 
@@ -50,7 +50,7 @@
       height: @icon-small;
     }
     &:after {
-      color: @grey;
+      color: @label-color;
       content: '\f054'; // http://fontawesome.io/icon/chevron-right/
       font-family: FontAwesome;
     }
@@ -60,7 +60,7 @@
 
 .dropup .dropdown-menu.mm-dropdown-menu {
   padding: 0;
-  border-top: 5px solid @grey;
+  border-top: 5px solid @label-color;
   border-radius: 0;
   box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
   max-width: 90%;
@@ -183,7 +183,7 @@
     }
     .mm-button-icon,
     .mm-button-text {
-      color: @grey;
+      color: @label-color;
     }
   }
 }
@@ -269,7 +269,7 @@
     top: auto;
     bottom: 100%;
     padding: 0;
-    border-top: 5px solid @grey;
+    border-top: 5px solid @label-color;
     left: 0;
     right: 0;
     margin-bottom: 1px;

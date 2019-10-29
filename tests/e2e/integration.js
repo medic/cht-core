@@ -44,10 +44,10 @@ describe('Integration', () => {
     return utils.request({
       method: 'POST',
       path: '/_session',
-      body: JSON.stringify({
-        name: auth.user,
-        password: auth.pass
-      })
+      body: {
+        name: auth.username,
+        password: auth.password
+      }
     });
   };
 

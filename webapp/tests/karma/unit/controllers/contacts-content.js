@@ -61,6 +61,7 @@ describe('ContactsContentCtrl', () => {
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
     scope.setSelected = selected => contactsActions.setSelectedContact(selected);
+
     state = {
       current: {
         name: 'something'

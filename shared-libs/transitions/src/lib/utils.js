@@ -89,6 +89,7 @@ const getReportsWithSameParentAndForm = (options={}) => {
     startkey: [formName, parentId],
     endkey: [formName, parentId],
     include_docs: true,
+    reduce: false,
   }).then(data => data.rows);
 };
 

@@ -139,7 +139,7 @@ module.exports = function(grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [couchConfig.withPathNoAuth('medic-test')]: 'build/ddocs/medic.json',
+          ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
       },
       staging: {
@@ -366,11 +366,13 @@ module.exports = function(grunt) {
         ],
         dest: 'webapp/node_modules_backup',
       },
-      'enketo-xslt': {
+      'test-libraries-to-patch': {
         expand: true,
-        flatten: true,
-        src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
-        dest: 'build/ddocs/medic/_attachments/xslt/',
+        cwd: 'node_modules',
+        src: [
+          'protractor/node_modules/webdriver-manager/**'
+        ],
+        dest: 'node_modules_backup',
       },
     },
     exec: {
@@ -489,16 +491,24 @@ module.exports = function(grunt) {
           ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
-      'reset-test-databases': {
-        stderr: false,
-        cmd: ['medic-test', 'medic-test-audit', 'medic-test-user-admin-meta', 'medic-test-sentinel', 'medic-test-users-meta']
-          .map(
-            name => `curl -X DELETE ${couchConfig.withPath(name)}`
-          )
-          .join(' && '),
+      'setup-test-database': {
+        cmd: [
+          `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
+          'sh scripts/e2e/wait_for_couch.sh 4984',
+          `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
+          'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
+          // Useful for debugging etc, as it allows you to use Fauxton easily
+          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"'`
+        ].join('&& ')
+      },
+      'clean-test-database': {
+        cmd: [
+          'docker stop e2e-couchdb'
+        ].join('&& '),
+        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: 'node ./scripts/e2e-servers.js &'
+        cmd: 'node ./scripts/e2e/e2e-servers.js &'
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -554,6 +564,25 @@ module.exports = function(grunt) {
           }).join(' && ');
         },
       },
+      'undo-test-patches': {
+        cmd: () => {
+          const modulesToPatch = [
+            'protractor/node_modules/webdriver-manager'
+          ];
+
+          return modulesToPatch.map(module => {
+            const backupPath = 'node_modules_backup/' + module;
+            const modulePath = 'node_modules/' + module;
+            return `
+              [ -d ${backupPath} ] &&
+              rm -rf ${modulePath} &&
+              mv ${backupPath} ${modulePath} &&
+              echo "Module restored: ${module}" ||
+              echo "No restore required for: ${module}"
+            `;
+          }).join(' && ');
+        },
+      },
       'test-standard': {
         cmd: [
           'cd config/standard',
@@ -592,8 +621,20 @@ module.exports = function(grunt) {
             // patch enketo to always mark the /inputs group as relevant
             'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
 
+            // patch enketo so forms with no active pages are considered valid
+            // https://github.com/medic/medic/issues/5484
+            'patch webapp/node_modules/enketo-core/src/js/page.js < webapp/patches/enketo-handle-no-active-pages.patch',
+
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
+          ];
+          return patches.join(' && ');
+        },
+      },
+      'apply-test-patches': {
+        cmd: () => {
+          const patches = [
+            'patch node_modules/protractor/node_modules/webdriver-manager/built/config.json < tests/patches/webdriver-manager-config.patch',
           ];
           return patches.join(' && ');
         },
@@ -609,6 +650,15 @@ module.exports = function(grunt) {
                  'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
                  'rm inbox.tmp.js && ' +
                  'echo "Envify complete"';
+        }
+      },
+      'build-config': {
+        cmd: () => {
+          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
+          const configPath = path.resolve('./config/default');
+          const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
+          const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
+          return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
       }
     },
@@ -741,24 +791,33 @@ module.exports = function(grunt) {
     protractor: {
       'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests.conf.js',
-        },
+          args: {
+            suite: 'e2e'
+          },
+          configFile: 'tests/conf.js'
+        }
       },
       'e2e-tests-debug': {
         options: {
-          configFile: 'tests/e2e.tests.debug.conf.js',
-        },
+          configFile: 'tests/conf.js',
+          args: {
+            suite: 'e2e'
+          },
+          capabilities: {
+            chromeOptions: {
+              args: ['window-size=1024,768']
+            }
+          }
+        }
       },
       'performance-tests-and-services': {
         options: {
-          configFile: 'tests/performance.tests-and-services.conf.js',
-        },
-      },
-      'performance-tests-only': {
-        options: {
-          configFile: 'tests/performance.tests-only.conf.js',
-        },
-      },
+          args: {
+            suite: 'performance'
+          },
+          configFile: 'tests/conf.js'
+        }
+      }
     },
     mochaTest: {
       unit: {
@@ -829,16 +888,6 @@ module.exports = function(grunt) {
         outputStyle: 'expanded',
         flatten: true,
         extDot: 'last',
-      },
-    },
-    xmlmin: {
-      'enketo-xslt': {
-        files: {
-          'build/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl':
-            'build/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl',
-          'build/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl':
-            'build/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl',
-        },
       },
     },
     'optimize-js': {
@@ -921,11 +970,6 @@ module.exports = function(grunt) {
     'postcss',
   ]);
 
-  grunt.registerTask('enketo-xslt', 'Process enketo XSL stylesheets', [
-    'copy:enketo-xslt',
-    'xmlmin:enketo-xslt',
-  ]);
-
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
@@ -947,12 +991,12 @@ module.exports = function(grunt) {
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
     'build-js',
-    'enketo-xslt',
     'copy:webapp',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',
     'build-admin',
     'build-ddoc',
+    'exec:build-config',
   ]);
 
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
@@ -986,10 +1030,22 @@ module.exports = function(grunt) {
     'exec:pack-node-modules',
   ]);
 
+  grunt.registerTask('patch-webdriver', 'Patches webdriver to support latest Chrome', [
+    'exec:undo-test-patches',
+    'copy:test-libraries-to-patch',
+    'exec:apply-test-patches',
+  ]);
+
+  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
+    'patch-webdriver',
+    'exec:start-webdriver',
+  ]);
+
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
-    'exec:start-webdriver',
-    'exec:reset-test-databases',
+    'start-webdriver',
+    'exec:clean-test-database',
+    'exec:setup-test-database',
     'couch-push:test',
     'exec:e2e-servers',
   ]);
@@ -997,15 +1053,18 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-tests',
+    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
     'protractor:e2e-tests-debug',
+    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
-    'exec:reset-test-databases',
+    'exec:clean-test-database',
+    'exec:setup-test-database',
     'build-node-modules',
     'build-ddoc',
     'couch-compile:primary',
@@ -1056,12 +1115,12 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'exec:start-webdriver',
+    'start-webdriver',
     'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'exec:start-webdriver',
+    'start-webdriver',
     'protractor:performance-tests-and-services',
   ]);
 
@@ -1112,3 +1171,5 @@ module.exports = function(grunt) {
     'jsdoc'
   ]);
 };
+
+

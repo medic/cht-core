@@ -2,7 +2,9 @@ const db = require('../db'),
       lineage = require('@medic/lineage')(Promise, db.medic),
       utils = require('./utils'),
       moment = require('moment'),
-      infodoc = require('./infodoc');
+      infodoc = require('@medic/infodoc');
+
+infodoc.initLib(db.medic, db.sentinel);
 
 const BATCH_SIZE = 50;
 
@@ -104,23 +106,21 @@ const updateMutingHistories = (contacts, muted, reportId) => {
   }
 
   return infodoc
-    .bulkGet(contacts.map(contact => ({ id: contact._id })))
+    .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact})))
     .then(infoDocs => infoDocs.map(info => addMutingHistory(info, muted, reportId)))
     .then(infoDocs => infodoc.bulkUpdate(infoDocs));
 };
 
-const updateMutingHistory = (contact, muted) => {
-  const mutedParentId = isMutedInLineage(contact);
+const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
+  const mutedParentId = isMutedInLineage(contact, initialReplicationDatetime);
 
   return infodoc
-    .bulkGet([{ id: mutedParentId }])
-    .then(infos => {
-      const reportId = infos &&
-                       infos[0] &&
-                       infos[0].muting_history &&
-                       infos[0].muting_history.length &&
-                       infos[0].muting_history[infos[0].muting_history.length - 1] &&
-                       infos[0].muting_history[infos[0].muting_history.length - 1].report_id;
+    .get({ id: mutedParentId })
+    .then(infoDoc => {
+      const reportId = infoDoc &&
+                       infoDoc.muting_history &&
+                       infoDoc.muting_history[infoDoc.muting_history.length - 1] &&
+                       infoDoc.muting_history[infoDoc.muting_history.length - 1].report_id;
 
       return updateMutingHistories([contact], muted, reportId);
     });
@@ -170,10 +170,10 @@ const updateMuteState = (contact, muted, reportId) => {
   });
 };
 
-const isMutedInLineage = doc => {
+const isMutedInLineage = (doc, beforeMillis) => {
   let parent = doc && doc.parent;
   while (parent) {
-    if (parent.muted) {
+    if (parent.muted && (beforeMillis ? new Date(parent.muted).getTime() <= beforeMillis : true)) {
       return parent._id;
     }
     parent = parent.parent;

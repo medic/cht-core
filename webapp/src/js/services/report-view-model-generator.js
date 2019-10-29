@@ -24,7 +24,7 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
 
     return function(report) {
       const id = _.isString(report) ? report : report._id;
-      return LineageModelGenerator.report(id, { merge: true })
+      return LineageModelGenerator.report(id)
         .then(function(model) {
           if (!model.doc) {
             return model;

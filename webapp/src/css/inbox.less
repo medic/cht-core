@@ -112,7 +112,7 @@ body {
 }
 
 .header {
-  background-color: @medic-slate-color;
+  background-color: @top-header-color;
   text-align: center;
   padding-top: 5px;
   z-index: 3;
@@ -176,7 +176,7 @@ body {
       background-color: #ffffff;
 
       .mm-icon {
-        color: @medic-slate-color;
+        color: @top-header-color;
       }
     }
   }
@@ -317,7 +317,7 @@ body {
     a {
       display: inline-block;
       text-align: center;
-      color: @grayDark;
+      color: @text-normal-color;
       font-size: @font-extra-extra-large;
       float: left;
       width: 50px;
@@ -389,14 +389,14 @@ body {
   .simprints-filter {
     line-height: 38px;
     > a {
-      color: @grayDark;
+      color: @text-normal-color;
       display: inline-block;
       text-align: center;
       padding: 0 10px;
 
       &.disabled {
         cursor: default;
-        color: @grey;
+        color: @inactive-color;
       }
     }
   }
@@ -533,9 +533,13 @@ body {
 
 .contacts {
   .fa-star.primary {
-    color: @primary-color;
+    color: @contacts-primary-color;
     font-size: 12px;
     vertical-align: middle;
+  }
+  .card .resource-icon img {
+    width: @icon-small;
+    height: @icon-small;
   }
   .card.children .row a:hover {
     border-color: @contacts-color;
@@ -646,19 +650,32 @@ body {
     &.scheduled:before {
       color: @scheduled-state-color;
     }
-    &.pending:before,
-    &.forwarded-to-gateway:before,
-    &.received-by-gateway:before {
+    &.pending:before {
       color: @pending-state-color;
     }
-    &.sent:before,
-    &.delivered:before {
+    &.forwarded-to-gateway:before {
+      color: @forwarded-to-gateway-state-color;
+    }
+    &.forwarded-by-gateway:before {
+      color: @forwarded-by-gateway-state-color
+    }
+    &.received-by-gateway:before {
+      color: @received-by-gateway-state-color;
+    }
+    &.sent:before {
       color: @sent-state-color;
     }
-    &.muted:before,
-    &.cleared:before,
-    &.denied:before {
+    &.delivered:before {
+      color: @delivered-state-color;
+    }
+    &.muted:before {
       color: @muted-state-color;
+    }
+    &.cleared:before {
+      color: @cleared-state-color;
+    }
+    &.denied:before {
+      color: @denied-state-color;
     }
     &.failed:before {
       color: @failed-state-color;
@@ -676,7 +693,7 @@ body {
 .item-content {
   padding: 30px;
   .body p {
-    word-wrap: break-word;
+    word-break: break-word;
     margin: 0;
   }
   > div {
@@ -805,7 +822,7 @@ a.fa:hover {
       }
 
       .missing p {
-        color: @lightgrey;
+        color: @inactive-color;
       }
     }
     label {
@@ -852,9 +869,9 @@ a.fa:hover {
 
   .actions {
     max-width: 500px;
-    background-color: @grey;
+    background-color: @label-color;
     background-color: rgba(0, 0, 0, 0.65);
-    border-color: @lightgrey;
+    border-color: @separator-color;
     border-color: rgba(0, 0, 0, 0.8);
     border-width: 1px;
     border-style: solid;
@@ -920,6 +937,8 @@ a.fa:hover {
       border-radius: 0;
       border: none;
       display: flex;
+      max-width: none;
+      overflow-y: hidden;
       box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
 
       .mm-icon-caption {
@@ -927,7 +946,7 @@ a.fa:hover {
         line-height: 1;
         color: @label-color;
         max-width: none;
-        margin: 6px 0 0;
+        padding: 6px 0 0;
         .verify-icon {
           display: block;
           margin: 0 auto 3px auto;
@@ -942,16 +961,16 @@ a.fa:hover {
       }
 
       .verify-error.active {
-        color: @error-color;
+        color: @report-review-error-color;
         svg path {
-          fill: @error-color;
+          fill: @report-review-error-color;
         }
       }
 
       .verify-valid.active {
-        color: @ok-color;
+        color: @report-review-verified-color;
         svg path {
-          fill: @ok-color;
+          fill: @report-review-verified-color;
         }
       }
     }
@@ -979,9 +998,10 @@ a.fa:hover {
 
 .reporting,
 .about,
-.configuration {
+.configuration,
+.theme {
   background-color: #ffffff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid @separator-color;
   border-width: 0 1px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1189,7 +1209,8 @@ a.fa:hover {
 }
 
 .about,
-.analytics {
+.analytics,
+.theme {
   .content {
     .inner {
       /* allow the scrollable content to grow to full width */
@@ -1261,11 +1282,8 @@ a.fa:hover {
     .navigation .mm-button {
       vertical-align: top;
     }
-    .dropdown {
-      max-width: 80px;
-      &.analytics-module {
-        width: 80px;
-      }
+    .dropdown.analytics-module {
+      width: 80px;
     }
     .mm-button-text {
       width: 0;
@@ -1459,9 +1477,8 @@ a.fa:hover {
   .logo {
     display: none;
   }
-  .filters .mm-button-icon {
-    font-size: @font-medium;
-    padding-top: 10px;
+  .filters .filter {
+    width: 17%;
   }
   .header {
     .tabs {

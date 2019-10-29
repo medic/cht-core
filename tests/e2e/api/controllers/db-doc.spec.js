@@ -1,6 +1,9 @@
-const _ = require('underscore'),
-  utils = require('../../../utils'),
-  constants = require('../../../constants');
+const _ = require('underscore');
+const chai = require('chai');
+const utils = require('../../../utils');
+const sUtils = require('../../sentinel/utils');
+const constants = require('../../../constants');
+const uuid = require('uuid');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -52,36 +55,109 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
+const clinics = [
+  {
+    _id: 'fixture:offline:clinic',
+    name: 'offline clinic',
+    type: 'clinic',
+    parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:online:clinic',
+    name: 'online clinic',
+    type: 'clinic',
+    parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+];
+
+const patients = [
+  {
+    _id: 'fixture:offline:patient',
+    name: 'offline patient',
+    patient_id: '123456',
+    type: 'person',
+    parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:offline:clinic:patient',
+    name: 'offline patient',
+    patient_id: 'c123456',
+    type: 'person',
+    parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:online:patient',
+    name: 'online patient',
+    patient_id: '654321',
+    type: 'person',
+    parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } },
+    reported_date: 1
+  },
+  {
+    _id: 'fixture:online:clinic:patient',
+    name: 'online patient',
+    patient_id: 'c654321',
+    type: 'person',
+    parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+    reported_date: 1
+  },
+];
+
+const setReportContact = (report, username) => {
+  if (!username) {
+    return;
+  }
+  const user = users.find(u => u.username === username);
+  report.contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
+  return report;
+};
+
+const setReportPatient = (report, patientUuid, fields) => {
+  const patient = patients.find(p => p._id === patientUuid);
+  if (!patient) {
+    return;
+  }
+  report.fields = {
+    patient_id: fields.includes('patient_id') && patient.patient_id,
+    patient_uuid: fields.includes('patient_uuid') && patient._id,
+  };
+  return report;
+};
+
+const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false) => {
+  const report = { _id: uuid(), type: 'data_record', form: 'some-form', content_type: 'xml', fields: {} };
+
+  setReportContact(report, username);
+  setReportPatient(report, patientUuid, fields);
+  report.fields.needs_signoff = needs_signoff;
+
+  return report;
+};
+
 describe('db-doc handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() =>
-        Promise.all(
-          users.map(user =>
-            utils.request({
-              path: '/api/v1/users',
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: user,
-            })
-          )
-        )
-      )
+      .then(() => utils.createUsers(users))
+      .then(() => utils.saveDocs([...clinics, ...patients]))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done));
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
 
   beforeEach(() => {
-    offlineRequestOptions = { auth: `offline:${password}` };
-    onlineRequestOptions = { auth: `online:${password}` };
+    offlineRequestOptions = { auth: { username: 'offline', password }, };
+    onlineRequestOptions = { auth: { username: 'online', password }, };
   });
 
   describe('does not restrict online users', () => {
@@ -92,7 +168,7 @@ describe('db-doc handler', () => {
       });
 
       return utils.requestOnTestDb(onlineRequestOptions).then(result => {
-        expect(_.omit(result, '_rev', 'reported_date')).toEqual({
+        chai.expect(result).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
           type: 'person',
@@ -105,25 +181,24 @@ describe('db-doc handler', () => {
       _.extend(onlineRequestOptions, {
         path: '/',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           _id: 'db_doc_post',
           type: 'district_hospital',
           name: 'NEW PLACE',
-        }),
+        },
       });
 
       return utils
         .requestOnTestDb(onlineRequestOptions)
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({
+          chai.expect(result).to.include({
             id: 'db_doc_post',
             ok: true,
           });
           return utils.getDoc('db_doc_post');
         })
         .then(result => {
-          expect(_.omit(result, '_rev')).toEqual({
+          chai.expect(result).to.include({
             _id: 'db_doc_post',
             type: 'district_hospital',
             name: 'NEW PLACE',
@@ -138,23 +213,22 @@ describe('db-doc handler', () => {
           _.extend(onlineRequestOptions, {
             method: 'PUT',
             path: '/db_doc_put',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
               _id: 'db_doc_put',
               type: 'clinic',
               name: 'my updated clinic',
               _rev: result.rev,
-            }),
+            },
           });
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_put', ok: true });
+          chai.expect(result).to.include({ id: 'db_doc_put', ok: true });
           return utils.getDoc('db_doc_put');
         })
         .then(result => {
-          expect(_.omit(result, '_rev')).toEqual({
+          chai.expect(result).to.include({
             _id: 'db_doc_put',
             type: 'clinic',
             name: 'my updated clinic',
@@ -169,20 +243,19 @@ describe('db-doc handler', () => {
           _.extend(onlineRequestOptions, {
             method: 'DELETE',
             path: `/db_doc_delete?rev=${result.rev}`,
-            headers: { 'Content-Type': 'application/json' },
           });
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({
+          chai.expect(result).to.include({
             id: 'db_doc_delete',
             ok: true,
           });
           return utils.getDoc('db_doc_delete');
         })
         .catch(err => {
-          expect(err.responseBody.error).toEqual('not_found');
+          chai.expect(err.responseBody.error).to.equal('not_found');
         });
     });
 
@@ -195,14 +268,16 @@ describe('db-doc handler', () => {
             method: 'PUT',
             body: 'my attachment content',
             headers: { 'Content-Type': 'text/plain' },
+            json: false
           })
         )
         .then(() => {
           onlineRequestOptions.path = '/with_attachments/att_name';
-          return utils.requestOnTestDb(onlineRequestOptions, false, true);
+          onlineRequestOptions.json = false;
+          return utils.requestOnTestDb(onlineRequestOptions);
         })
         .then(result => {
-          expect(result).toEqual('my attachment content');
+          chai.expect(result).to.equal('my attachment content');
         });
     });
 
@@ -215,19 +290,14 @@ describe('db-doc handler', () => {
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
             body: 'my new attachment content',
+            json: false,
           });
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
-        .then(result =>
-          utils.requestOnTestDb(
-            `/with_attachments/new_attachment?rev=${result.rev}`,
-            false,
-            true
-          )
-        )
+        .then(result => utils.requestOnTestDb(`/with_attachments/new_attachment?rev=${result.rev}`))
         .then(result => {
-          expect(result).toEqual('my new attachment content');
+          chai.expect(result).to.equal('my new attachment content');
         });
     });
   });
@@ -237,28 +307,131 @@ describe('db-doc handler', () => {
       offlineRequestOptions.method = 'GET';
 
       return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)
-        ),
-        utils
-          .requestOnTestDb(
-            _.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)
-          )
-          .catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:patient' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:patient' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic:patient' }, offlineRequestOptions)).catch(err => err),
       ]).then(results => {
-        expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
+        chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
           type: 'person',
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
+        chai.expect(results[1]).to.deep.include(clinics.find(clinic => clinic._id === 'fixture:offline:clinic'));
+        chai.expect(results[2]).to.deep.include(patients.find(patient => patient._id === 'fixture:offline:patient'));
+        chai.expect(results[3]).to.deep.include(patients.find(patient => patient._id === 'fixture:offline:clinic:patient'));
 
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody).toEqual({
-          error: 'forbidden',
-          reason: 'Insufficient privileges',
-        });
+        chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[6]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[7]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
       });
+    });
+
+    it('GET many types of reports', () => {
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+
+        { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      const docs = reportScenarios.map(scenario => scenario.doc);
+      return utils
+        .saveDocs(docs)
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('GET many types of reports and replication depth and needs_signoff', () => {
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+      const docs = reportScenarios.map(scenario => scenario.doc);
+      return utils
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => utils.saveDocs(docs))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
     });
 
     it('GET delete stubs', () => {
@@ -281,37 +454,19 @@ describe('db-doc handler', () => {
 
       return utils
         .saveDocs(docs)
-        .then(result =>
-          Promise.all(
-            docs.map((doc, key) =>
-              utils.requestOnTestDb({
-                method: 'DELETE',
-                path: `/${doc._id}?rev=${result[key].rev}`,
-              })
-            )
-          )
-        )
+        .then(result => Promise.all(docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`,}))))
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
-          return Promise.all(
-            docs.map(doc =>
-              utils.requestOnTestDb(
-                _.defaults(
-                  { path: `/${doc._id}?rev=${doc._rev}` },
-                  offlineRequestOptions
-                )
-              )
-            )
-          );
+          return Promise.all(docs.map(doc => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}?rev=${doc._rev}` }, offlineRequestOptions))));
         })
         .then(results => {
-          expect(results.length).toEqual(2);
-          expect(results[0]).toEqual({
+          chai.expect(results.length).to.equal(2);
+          chai.expect(results[0]).to.deep.equal({
             _id: 'a1',
             _rev: docs[0]._rev,
             _deleted: true,
           });
-          expect(results[1]).toEqual({
+          chai.expect(results[1]).to.deep.equal({
             _id: 'd1',
             _rev: docs[1]._rev,
             _deleted: true,
@@ -377,70 +532,43 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
-
-          return Promise.all(
-            docs.map(doc =>
-              utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)
-            )
-          );
+          return Promise.all(docs.map(doc => utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)));
         })
         .then(results =>
           Promise.all(
             _.flatten(
               results.map(result => {
-                const open_revs = result._revisions.ids.map(
-                    (rev, key) => `${result._revisions.start - key}-${rev}`
-                  ),
-                  path = `/${result._id}?rev=${
-                    result._rev
-                  }&open_revs=${JSON.stringify(open_revs)}`,
-                  pathAll = `/${result._id}?rev=${result._rev}&open_revs=all`;
+                const open_revs = result._revisions.ids.map((rev, key) => `${result._revisions.start - key}-${rev}`);
+                const path = `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}`;
+                const pathAll = `/${result._id}?rev=${result._rev}&open_revs=all`;
                 return [
-                  utils.requestOnTestDb(
-                    _.defaults({ path: path }, offlineRequestOptions)
-                  ),
-                  utils.requestOnTestDb(
-                    _.defaults({ path: pathAll }, offlineRequestOptions)
-                  ),
+                  utils.requestOnTestDb(_.defaults({ path: path }, offlineRequestOptions)),
+                  utils.requestOnTestDb(_.defaults({ path: pathAll }, offlineRequestOptions)),
                 ];
               })
             )
           )
         )
         .then(results => {
-          expect(results[0].length).toEqual(3);
-          expect(results[0][0].ok._rev.startsWith('1')).toBe(true);
-          expect(results[0][1].ok._rev.startsWith('2')).toBe(true);
-          expect(results[0][2].ok._rev.startsWith('4')).toBe(true);
-          expect(
-            results[0].every(
-              result =>
-                result.ok._id === 'a1_revs' &&
-                (result.ok._deleted ||
-                  result.ok.parent._id === 'fixture:offline')
-            )
-          ).toBe(true);
+          chai.expect(results[0].length).to.equal(3);
+          chai.expect(results[0][0].ok._rev.startsWith('1')).to.equal(true);
+          chai.expect(results[0][1].ok._rev.startsWith('2')).to.equal(true);
+          chai.expect(results[0][2].ok._rev.startsWith('4')).to.equal(true);
+          chai.expect(results[0].every(result => result.ok._id === 'a1_revs' && (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))).to.equal(true);
 
-          expect(results[1].length).toEqual(1);
-          expect(results[1][0].ok._deleted).toBe(true);
+          chai.expect(results[1].length).to.equal(1);
+          chai.expect(results[1][0].ok._deleted).to.equal(true);
 
-          expect(results[2].length).toEqual(2);
-          expect(results[2][0].ok._rev.startsWith('3')).toBe(true);
-          expect(results[2][1].ok._rev.startsWith('4')).toBe(true);
-          expect(
-            results[2].every(
-              result =>
-                result.ok._id === 'd1_revs' &&
-                (result.ok._deleted ||
-                  result.ok.parent._id === 'fixture:offline')
-            )
-          ).toBe(true);
+          chai.expect(results[2].length).to.equal(2);
+          chai.expect(results[2][0].ok._rev.startsWith('3')).to.equal(true);
+          chai.expect(results[2][1].ok._rev.startsWith('4')).to.equal(true);
+          chai.expect(results[2].every(result => result.ok._id === 'd1_revs' && (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))).to.equal(true);
 
-          expect(results[3].length).toEqual(1);
-          expect(results[3][0].ok._deleted).toBe(true);
+          chai.expect(results[3].length).to.equal(1);
+          chai.expect(results[3][0].ok._deleted).to.equal(true);
 
-          expect(results[4].length).toEqual(0);
-          expect(results[5].length).toEqual(0);
+          chai.expect(results[4].length).to.equal(0);
+          chai.expect(results[5].length).to.equal(0);
         });
     });
 
@@ -474,6 +602,7 @@ describe('db-doc handler', () => {
                 method: 'PUT',
                 body: 'my attachment content',
                 headers: { 'Content-Type': 'text/plain' },
+                json: false,
               });
             })
           );
@@ -490,98 +619,178 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0]._attachments).not.toBeDefined();
-          expect(results[0]._revisions).toBeDefined();
-          expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`).toEqual(revs.allowed_attach[0]);
+          chai.expect(results[0]._attachments).to.be.undefined;
+          chai.expect(results[0]._revisions).to.be.ok;
+          chai.expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`).to.equal(revs.allowed_attach[0]);
 
-          expect(results[1]._attachments).toBeDefined();
-          expect(results[1]._attachments.att_name).toBeDefined();
-          expect(results[1]._attachments.att_name.data).toBeDefined();
-          expect(results[1]._revisions).not.toBeDefined();
-          expect(results[1]._revs_info).not.toBeDefined();
+          chai.expect(results[1]._attachments).to.be.ok;
+          chai.expect(results[1]._attachments.att_name).to.be.ok;
+          chai.expect(results[1]._attachments.att_name.data).to.be.ok;
+          chai.expect(results[1]._revisions).to.be.undefined;
+          chai.expect(results[1]._revs_info).to.be.undefined;
 
-          expect(results[2]._attachments).toBeDefined();
-          expect(results[2]._attachments.att_name).toBeDefined();
-          expect(results[2]._attachments.att_name.data).not.toBeDefined();
-          expect(results[2]._attachments.att_name.stub).toEqual(true);
-          expect(results[2]._revisions).toBeDefined();
-          expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`).toEqual(revs.allowed_attach[1]);
-          expect(results[2]._revs_info).toBeDefined();
-          expect(results[2]._revs_info.length).toEqual(results[2]._revisions.ids.length);
-          expect(results[2]._revs_info[0]).toEqual({ rev: revs.allowed_attach[1], status: 'available' });
+          chai.expect(results[2]._attachments).to.be.ok;
+          chai.expect(results[2]._attachments.att_name).to.be.ok;
+          chai.expect(results[2]._attachments.att_name.data).to.be.undefined;
+          chai.expect(results[2]._attachments.att_name.stub).to.deep.equal(true);
+          chai.expect(results[2]._revisions).to.be.ok;
+          chai.expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`).to.deep.equal(revs.allowed_attach[1]);
+          chai.expect(results[2]._revs_info).to.be.ok;
+          chai.expect(results[2]._revs_info.length).to.deep.equal(results[2]._revisions.ids.length);
+          chai.expect(results[2]._revs_info[0]).to.deep.equal({ rev: revs.allowed_attach[1], status: 'available' });
 
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[4].statusCode).toEqual(403);
-          expect(results[5].statusCode).toEqual(403);
+          chai.expect(results[3].statusCode).to.deep.equal(403);
+          chai.expect(results[4].statusCode).to.deep.equal(403);
+          chai.expect(results[5].statusCode).to.deep.equal(403);
         });
     });
 
     it('POST', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      offlineRequestOptions.method = 'POST';
 
       const allowedDoc = {
-          _id: 'allowed_doc_post',
-          type: 'clinic',
-          parent: { _id: 'fixture:offline' },
-          name: 'allowed',
-        },
-        deniedDoc = {
-          _id: 'denied_doc_post',
-          type: 'clinic',
-          parent: { _id: 'fixture:online' },
-          name: 'denied',
-        };
+        _id: 'allowed_doc_post',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'allowed',
+      };
+      const deniedDoc = {
+        _id: 'denied_doc_post',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'denied',
+      };
 
       return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults(
-            { body: JSON.stringify(allowedDoc), path: '/' },
-            offlineRequestOptions
-          )
-        ),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { body: JSON.stringify(deniedDoc), path: '/' },
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions))
-          .catch(err => err),
+        utils.requestOnTestDb(_.defaults({ body: allowedDoc, path: '/' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ body: deniedDoc, path: '/' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions)).catch(err => err),
       ])
-        .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            id: 'allowed_doc_post',
-            ok: true,
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[2].responseBody.error).toEqual('forbidden');
+        .then(([allowed, denied, forbidden]) => {
+          chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true,});
+          chai.expect(denied).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(forbidden).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.getDoc('allowed_doc_post'),
             utils.getDoc('denied_doc_post').catch(err => err),
           ]);
         })
+        .then(([allowed, denied]) => {
+          chai.expect(allowed).to.deep.include(allowedDoc);
+          chai.expect(denied.statusCode).to.deep.equal(404);
+
+          const ids = ['allowed_doc_post', 'denied_doc_post'];
+          return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+        }).then(([allowedInfo, deniedInfo]) => {
+          chai.expect(allowedInfo).to.be.ok;
+          chai.expect(deniedInfo).to.be.undefined;
+        });
+    });
+
+    it('POST many types of reports', () => {
+      offlineRequestOptions.method = 'POST';
+
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+
+        { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      return Promise
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
         .then(results => {
-          expect(_.omit(results[0], '_rev')).toEqual(allowedDoc);
-          expect(results[1].statusCode).toEqual(404);
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('POST many types of reports and replication depth and needs_signoff', () => {
+      offlineRequestOptions.method = 'POST';
+
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+      return utils
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
         });
     });
 
     it('PUT', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      offlineRequestOptions.method = 'PUT';
 
       const docs = [
         {
@@ -629,67 +838,41 @@ describe('db-doc handler', () => {
               name: 'n2',
             }, // new denied
             _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
-            _.defaults(
-              { name: 'a2 updated', parent: { _id: 'fixture:online' } },
-              docs[1]
-            ), // stored allowed, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored allowed, new denied
             _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
-            _.defaults(
-              { name: 'd2 updated', parent: { _id: 'fixture:offline' } },
-              docs[3]
-            ), // stored denied, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new allowed
           ];
 
-          return Promise.all(
-            updates.map(doc =>
-              utils
-                .requestOnTestDb(
-                  _.extend(
-                    { path: `/${doc._id}`, body: JSON.stringify(doc) },
-                    offlineRequestOptions
-                  )
-                )
-                .catch(err => err)
-            )
-          );
+          const promises = updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .catch(err => err));
+          return Promise.all(promises);
         })
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            ok: true,
-            id: 'n_put_1',
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(_.omit(results[2], 'rev')).toEqual({
-            ok: true,
-            id: 'a_put_1',
-          });
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[4].statusCode).toEqual(403);
-          expect(results[4].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-          expect(results[5].statusCode).toEqual(403);
-          expect(results[5].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.include({ ok: true, id: 'n_put_1' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.include({ ok: true, id: 'a_put_1',});
+
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+
+          const ids = ['a_put_1', 'a_put_2', 'd_put_1', 'd_put_2', 'n_put_1', 'n_put_2'];
+
+          return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+        }).then(([a1, a2, d1, d2, n1, n2]) => {
+          chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(a2._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(d1._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(d2._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(n1._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(n2).to.be.undefined;
         });
     });
 
     it('PUT over DELETE stubs', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      offlineRequestOptions.method = 'PUT';
 
       const docs = [
         {
@@ -735,45 +918,158 @@ describe('db-doc handler', () => {
 
           const updates = [
             _.defaults({ name: 'a1 updated' }, docs[0]), // prev allowed, deleted, new allowed
-            _.defaults(
-              { name: 'a2 updated', parent: { _id: 'fixture:online' } },
-              docs[1]
-            ), // prev allowed, deleted, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // prev allowed, deleted, new denied
             _.defaults({ name: 'd1 updated' }, docs[2]), // prev denied, deleted, new denied
-            _.defaults(
-              { name: 'd2 updated', parent: { _id: 'fixture:offline' } },
-              docs[3]
-            ), // prev denied, deleted, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // prev denied, deleted, new allowed
           ];
 
-          return Promise.all(
-            updates.map(doc =>
-              utils
-                .requestOnTestDb(
-                  _.extend(
-                    { path: `/${doc._id}`, body: JSON.stringify(doc) },
-                    offlineRequestOptions
-                  )
-                )
-                .catch(err => err)
-            )
-          );
+          return Promise.all(updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .catch(err => err)));
         })
         .then(results => {
-          expect(results[0].statusCode).toEqual(409);
-          expect(results[0].responseBody.error).toEqual('conflict');
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
+        });
+    });
+
+    it('PUT many types of reports', () => {
+      offlineRequestOptions.method = 'PUT';
+
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+
+        { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      return Promise
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
           });
-          expect(results[2].statusCode).toEqual(403);
-          expect(results[2].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
+        });
+    });
+
+    it('PUT many types of reports and replication depth and needs_signoff', () => {
+      offlineRequestOptions.method = 'PUT';
+
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+      return utils
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
           });
-          expect(results[3].statusCode).toEqual(409);
-          expect(results[3].responseBody.error).toEqual('conflict');
+        });
+    });
+
+    it('PUT with reports and existent docs', () => {
+      offlineRequestOptions.method = 'PUT';
+
+      const existentReports = [
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', 'offline', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+      ];
+      let reportScenarios;
+
+      return utils
+        .saveDocs(existentReports.map(scenario => scenario.doc))
+        .then(results =>  {
+          reportScenarios = [
+            { doc: setReportPatient(existentReports[0].doc, 'fixture:online:patient', ['patient_id']), allowed: false },
+            { doc: setReportContact(existentReports[1].doc, 'offline'), allowed: true },
+
+            { doc: setReportPatient(existentReports[2].doc, 'fixture:offline:patient', ['patient_uuid']), allowed: false },
+            { doc: setReportContact(existentReports[3].doc, 'offline'), allowed: false },
+          ];
+          results.forEach((result, i) => reportScenarios[i].doc._rev = result.rev);
+        })
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
         });
     });
 
@@ -797,32 +1093,13 @@ describe('db-doc handler', () => {
         ])
         .then(results =>
           Promise.all([
-            utils.requestOnTestDb(
-              _.extend(
-                { path: `/allowed_del?rev=${results[0].rev}` },
-                offlineRequestOptions
-              )
-            ),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: `/denied_del?rev=${results[1].rev}` },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
           ])
         )
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            id: 'allowed_del',
-            ok: true,
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.deep.include({ id: 'allowed_del', ok: true });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.getDoc('allowed_del').catch(err => err),
@@ -830,13 +1107,8 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(results[0].statusCode).toEqual(404);
-          expect(results[0].responseBody).toEqual({
-            error: 'not_found',
-            reason: 'deleted',
-          });
-
-          expect(_.omit(results[1], '_rev')).toEqual({
+          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: { error: 'not_found', reason: 'deleted' } });
+          chai.expect(results[1]).to.deep.include({
             _id: 'denied_del',
             type: 'clinic',
             parent: { _id: 'fixture:online' },
@@ -850,6 +1122,7 @@ describe('db-doc handler', () => {
         allowed_attach: [],
         denied_attach: [],
       };
+      offlineRequestOptions.json = false;
 
       return utils
         .saveDocs([
@@ -875,6 +1148,7 @@ describe('db-doc handler', () => {
                 method: 'PUT',
                 body: 'my attachment content',
                 headers: { 'Content-Type': 'text/plain' },
+                json: false,
               });
             })
           )
@@ -882,44 +1156,15 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(
-              _.extend(
-                { path: '/allowed_attach/att_name' },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/denied_attach/att_name' },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: `/denied_attach/att_name?rev=${results[1].rev}` },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
           ]);
         })
         .then(results => {
-          expect(results[0]).toEqual('my attachment content');
-          expect(results[1].statusCode).toEqual(404);
-          expect(results[1].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-          expect(results[2].statusCode).toEqual(403);
-          expect(results[2].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.equal('my attachment content');
+          chai.expect(results[1]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' }});
+          chai.expect(results[2]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' }});
 
           return Promise.all([
             utils.getDoc('allowed_attach'),
@@ -935,42 +1180,31 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
-          return Promise.all(
-            _.flatten(
-              _.map(revs, (revisions, id) => {
-                return revisions.map(rev =>
-                  utils
-                    .requestOnTestDb(
-                      _.extend(
-                        { path: `/${id}/att_name?rev=${rev}` },
-                        offlineRequestOptions
-                      ),
-                      false,
-                      true
-                    )
-                    .catch(err => err)
-                );
-              })
-            )
-          );
+          const getRequestForIdRev = (id, rev) => utils
+            .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
+            .catch(err => err);
+
+          const promises = [];
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => getRequestForIdRev(id, rev))));
+          return Promise.all(promises);
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          expect(JSON.parse(results[0])).toEqual({
+          chai.expect(results[0].responseBody).to.deep.equal({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
-          expect(results[1]).toEqual('my attachment content');
+          chai.expect(results[1]).to.equal('my attachment content');
           // allowed_attach is not allowed and has attachment
-          expect(JSON.parse(results[2]).error).toEqual('forbidden');
+          chai.expect(results[2].responseBody.error).to.equal('forbidden');
 
           // denied_attach is not allowed, but missing attachment
-          expect(JSON.parse(results[3]).error).toEqual('forbidden');
+          chai.expect(results[3].responseBody.error).to.equal('forbidden');
           // denied_attach is not allowed and has attachment
-          expect(JSON.parse(results[4]).error).toEqual('forbidden');
+          chai.expect(results[4].responseBody.error).to.equal('forbidden');
           // denied_attach is allowed and has attachment
-          expect(results[5]).toEqual('my attachment content');
+          chai.expect(results[5]).to.equal('my attachment content');
 
           //attachments for deleted docs
           return Promise.all([
@@ -980,60 +1214,17 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return Promise.all([
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/allowed_attach/att_name' },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: `/allowed_attach/att_name?rev=${results[0].rev}` },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/denied_attach/att_name' },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
-            utils.requestOnTestDb(
-              _.extend(
-                { path: `/denied_attach/att_name?rev=${results[1].rev}` },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)),
           ]);
         })
         .then(results => {
-          expect(results[0].statusCode).toEqual(404);
-          expect(results[0].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
-
-          expect(results[2].statusCode).toEqual(404);
-          expect(results[2].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-
-          expect(results[3]).toEqual('my attachment content');
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
+          chai.expect(results[3]).to.equal('my attachment content');
         });
     });
 
@@ -1067,6 +1258,7 @@ describe('db-doc handler', () => {
                 method: 'PUT',
                 body: 'my attachment content',
                 headers: { 'Content-Type': 'text/plain' },
+                json: false,
               });
             })
           )
@@ -1074,63 +1266,18 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(
-              _.extend(
-                { path: '/allowed_attach_1/att_name/1/2/3/etc' },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
-            utils.requestOnTestDb(
-              _.extend(
-                {
-                  path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${
-                    results[0].rev
-                  }`,
-                },
-                offlineRequestOptions
-              ),
-              false,
-              true
-            ),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  { path: '/denied_attach_1/att_name/1/2/3/etc' },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
-            utils
-              .requestOnTestDb(
-                _.extend(
-                  {
-                    path: `/denied_attach_1/att_name/1/2/3/etc?rev=${
-                      results[1].rev
-                    }`,
-                  },
-                  offlineRequestOptions
-                )
-              )
-              .catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions)).catch(err => err),
           ]);
         })
         .then(results => {
-          expect(results[0]).toEqual('my attachment content');
-          expect(results[1]).toEqual('my attachment content');
+          chai.expect(results[0]).to.equal('my attachment content');
+          chai.expect(results[1]).to.equal('my attachment content');
 
-          expect(results[2].statusCode).toEqual(404);
-          expect(results[2].responseBody).toEqual({
-            error: 'bad_request',
-            reason: 'Invalid rev format',
-          });
-
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.getDoc('allowed_attach_1'),
@@ -1146,42 +1293,30 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
-          return Promise.all(
-            _.flatten(
-              _.map(revs, (revisions, id) => {
-                return revisions.map(rev =>
-                  utils
-                    .requestOnTestDb(
-                      _.extend(
-                        { path: `/${id}/att_name/1/2/3/etc?rev=${rev}` },
-                        offlineRequestOptions
-                      ),
-                      false,
-                      true
-                    )
-                    .catch(err => err)
-                );
-              })
-            )
-          );
+          const promises = [];
+          const attachmentRequest = (rev, id) =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false }, offlineRequestOptions))
+              .catch(err => err);
+          Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
+          return Promise.all(promises);
         })
         .then(results => {
           // allowed_attach is allowed, but missing attachment
-          expect(JSON.parse(results[0])).toEqual({
+          chai.expect(results[0].responseBody).to.deep.equal({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
           // allowed_attach is allowed and has attachment
-          expect(results[1]).toEqual('my attachment content');
+          chai.expect(results[1]).to.equal('my attachment content');
           // allowed_attach is not allowed and has attachment
-          expect(JSON.parse(results[2]).error).toEqual('forbidden');
-
+          chai.expect(results[2].responseBody.error).to.equal('forbidden');
           // denied_attach is not allowed, but missing attachment
-          expect(JSON.parse(results[3]).error).toEqual('forbidden');
+          chai.expect(results[3].responseBody.error).to.equal('forbidden');
           // denied_attach is not allowed and has attachment
-          expect(JSON.parse(results[4]).error).toEqual('forbidden');
+          chai.expect(results[4].responseBody.error).to.equal('forbidden');
           // denied_attach is allowed and has attachment
-          expect(results[5]).toEqual('my attachment content');
+          chai.expect(results[5]).to.equal('my attachment content');
         });
     });
 
@@ -1190,6 +1325,7 @@ describe('db-doc handler', () => {
         method: 'PUT',
         headers: { 'Content-Type': 'text/plain' },
         body: 'my new attachment content',
+        json: false,
       });
 
       return utils
@@ -1207,54 +1343,33 @@ describe('db-doc handler', () => {
             name: 'denied attach',
           },
         ])
-        .then(results =>
-          Promise.all(
-            results.map(result =>
-              utils
-                .requestOnTestDb(
-                  _.extend(
-                    { path: `/${result.id}/new_attachment?rev=${result.rev}` },
-                    offlineRequestOptions
-                  )
-                )
-                .catch(err => err)
-            )
-          )
+        .then(results => Promise.all(
+          results.map(result =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions))
+              .catch(err => err)))
         )
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({
-            ok: true,
-            id: 'a_with_attachments',
-          });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({
-            error: 'forbidden',
-            reason: 'Insufficient privileges',
-          });
+          chai.expect(results[0]).to.deep.include({ ok: true,  id: 'a_with_attachments' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
           return Promise.all([
             utils.requestOnTestDb({ path: '/a_with_attachments' }),
-            utils.requestOnTestDb(
-              { path: '/a_with_attachments/new_attachment' },
-              false,
-              true
-            ),
+            utils.requestOnTestDb({ path: '/a_with_attachments/new_attachment', json: false }),
             utils.requestOnTestDb({ path: '/d_with_attachments' }),
-            utils
-              .requestOnTestDb({ path: '/d_with_attachments/new_attachment' })
-              .catch(err => err),
+            utils.requestOnTestDb({ path: '/d_with_attachments/new_attachment' }).catch(err => err),
           ]);
         })
         .then(results => {
-          expect(results[0]._attachments.new_attachment).toBeTruthy();
-          expect(results[0]._id).toEqual('a_with_attachments');
+          chai.expect(results[0]._attachments.new_attachment).to.be.ok;
+          chai.expect(results[0]._id).to.equal('a_with_attachments');
 
-          expect(results[1]).toEqual('my new attachment content');
+          chai.expect(results[1]).to.equal('my new attachment content');
 
-          expect(results[2]._attachments).not.toBeTruthy();
-          expect(results[2]._id).toEqual('d_with_attachments');
+          chai.expect(results[2]._attachments).to.be.undefined;
+          chai.expect(results[2]._id).to.equal('d_with_attachments');
 
-          expect(results[3].responseBody.error).toEqual('not_found');
+          chai.expect(results[3].responseBody.error).to.equal('not_found');
         });
     });
   });
@@ -1267,26 +1382,18 @@ describe('db-doc handler', () => {
         utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
         utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
       ]).then(results => {
-        expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
+        chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
           type: 'person',
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody).toEqual({
-          error: 'forbidden',
-          reason: 'Insufficient privileges',
-        });
+        chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
       });
     });
 
     it('PUT', () => {
-      _.extend(offlineRequestOptions, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      offlineRequestOptions.method = 'PUT';
 
       const docs = [
         {
@@ -1332,22 +1439,18 @@ describe('db-doc handler', () => {
           return Promise.all(
             updates.map(doc =>
               utils
-                .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc) }, offlineRequestOptions))
+                .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
                 .catch(err => err)
             )
           );
         })
         .then(results => {
-          expect(_.omit(results[0], 'rev')).toEqual({ ok: true, id: 'n_put_1' });
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(_.omit(results[2], 'rev')).toEqual({ ok: true, id: 'a_put_1' });
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(results[4].statusCode).toEqual(403);
-          expect(results[4].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(results[5].statusCode).toEqual(403);
-          expect(results[5].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          chai.expect(results[0]).to.deep.include({ ok: true, id: 'n_put_1' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.include({ ok: true, id: 'a_put_1' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 
@@ -1360,14 +1463,16 @@ describe('db-doc handler', () => {
             method: 'PUT',
             body: 'my attachment content',
             headers: { 'Content-Type': 'text/plain' },
+            json: false,
           })
         )
         .then(() => {
           onlineRequestOptions.path = '/with_attachments/att_name';
-          return utils.requestOnMedicDb(onlineRequestOptions, false, true);
+          onlineRequestOptions.json = false;
+          return utils.requestOnMedicDb(onlineRequestOptions);
         })
         .then(result => {
-          expect(result).toEqual('my attachment content');
+          chai.expect(result).to.equal('my attachment content');
         });
     });
 
@@ -1380,19 +1485,14 @@ describe('db-doc handler', () => {
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
             body: 'my new attachment content',
+            json: false,
           });
 
           return utils.requestOnMedicDb(onlineRequestOptions);
         })
-        .then(result =>
-          utils.requestOnMedicDb(
-            `/with_attachments/new_attachment?rev=${result.rev}`,
-            false,
-            true
-          )
-        )
+        .then(result => utils.requestOnMedicDb({ path: `/with_attachments/new_attachment?rev=${result.rev}`, json: false }))
         .then(result => {
-          expect(result).toEqual('my new attachment content');
+          chai.expect(result).to.equal('my new attachment content');
         });
     });
   });
@@ -1432,7 +1532,7 @@ describe('db-doc handler', () => {
         ])
       )
       .then(results => {
-        expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).toBe(true);
+        chai.expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).to.equal(true);
       });
   });
 
@@ -1442,8 +1542,7 @@ describe('db-doc handler', () => {
     _.extend(offlineRequestOptions, {
       path: '/',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(doc),
+      body: doc,
     });
 
     return utils
@@ -1453,7 +1552,7 @@ describe('db-doc handler', () => {
         return utils.getDoc('fb1');
       })
       .then(result => {
-        expect(_.omit(result, '_rev')).toEqual(doc);
+        chai.expect(result).to.deep.include(doc);
       });
   });
 
@@ -1469,19 +1568,17 @@ describe('db-doc handler', () => {
         _.extend(offlineRequestOptions, {
           method: 'PUT',
           path: '/fb1',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(doc),
+          body: doc,
         });
         return utils.requestOnTestDb(offlineRequestOptions).catch(err => err);
       })
       .then(result => {
-        expect(result.responseBody.error).toEqual('forbidden');
-        expect(result.statusCode).toEqual(403);
+        chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         return utils.getDoc('fb1');
       })
       .then(result => {
-        expect(result._rev).toEqual(doc._rev);
-        expect(result.content).toEqual('content');
+        chai.expect(result._rev).to.equal(doc._rev);
+        chai.expect(result.content).to.equal('content');
       });
   });
 
@@ -1495,76 +1592,33 @@ describe('db-doc handler', () => {
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, offlineRequestOptions)).catch(err => err)
         ])
         .then(results => {
-          expect(results[0]._id).toEqual('_design/medic-client');
+          chai.expect(results[0]._id).to.equal('_design/medic-client');
 
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody.error).toEqual('forbidden');
-
-          expect(results[2].statusCode).toEqual(403);
-          expect(results[2].responseBody.error).toEqual('forbidden');
-
-          expect(results[3].statusCode).toEqual(403);
-          expect(results[3].responseBody.error).toEqual('forbidden');
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 
     it('blocks PUTting any ddoc', () => {
       const request = {
         method: 'PUT',
-        body: JSON.stringify({ some: 'data' }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { some: 'data' },
       };
 
-      return Promise.all([
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic-client' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/something' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults(
-              { path: '/_design/medic-admin' },
-              request,
-              offlineRequestOptions
-            )
-          )
-          .catch(err => err),
-      ]).then(results => {
-        expect(results[0].statusCode).toEqual(403);
-        expect(results[0].responseBody.error).toEqual('forbidden');
-
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
-
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].statusCode).toEqual(403);
-        expect(results[3].responseBody.error).toEqual('forbidden');
-      });
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+        ])
+        .then(results => {
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        });
     });
 
     it('blocks DELETEing any ddoc', () => {
@@ -1572,35 +1626,20 @@ describe('db-doc handler', () => {
         method: 'DELETE',
       };
 
-      return Promise.all([
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
-          .catch(err => err),
-      ]).then(results => {
-        results.forEach(result => {
-          expect(result.statusCode).toEqual(403);
-          expect(result.responseBody.error).toEqual('forbidden');
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+        ])
+        .then(results => {
+          results.forEach(result => {
+            chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
       });
     });

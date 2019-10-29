@@ -65,6 +65,9 @@ var passwordTester = require('simple-password-tester'),
           Translate.fieldIsRequired(fieldDisplayName)
             .then(function(value) {
               ctrl.errors[fieldName] = value;
+            })
+            .catch(function(err) {
+              $log.error(`Error translating field display name '${fieldDisplayName}'`, err);
             });
           return false;
         }

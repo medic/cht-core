@@ -1,8 +1,11 @@
-var utils = require('./utils');
+const sinon = require('sinon');
+const path = require('path');
+const utils = require('./utils');
 
-var ANY_STRING = new RegExp('^.*$');
-var ANY_NUMBER = new RegExp('^[0-9]+(\\.[0-9]*)?$');
+const ANY_STRING = new RegExp('^.*$');
+const ANY_NUMBER = new RegExp('^[0-9]+(\\.[0-9]*)?$');
 
+const environment = require('../../../src/environment');
 const config = require('../../../src/config');
 
 const settings = {
@@ -58,11 +61,17 @@ const settings = {
 
 describe('extract-person-contacts migration', function() {
 
+  beforeEach(() => {
+    const resourceDirectory = path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments');
+    sinon.stub(environment, 'getExtractedResourcesPath').returns(resourceDirectory);
+  });
+
   afterEach(function() {
+    sinon.restore();
     return utils.tearDown();
   });
 
-  it('converts and minifies a 0.4 structure into a 2.x one', () => {
+  it('converts and minifies a 0.4 structure into a 2.x one', async () => {
     const clinic = {
       _id: 'clinic-id',
       type: 'clinic',
@@ -217,13 +226,13 @@ describe('extract-person-contacts migration', function() {
       }
     };
 
-    return utils.initDb([clinic, healthCenter, districtHospital])
-      .then(() => utils.initSettings(settings))
-      .then(() => config.load())
-      .then(() => utils.runMigration('extract-person-contacts'))
-      .then(() => utils.assertDb([districtHospitalFixed, districtHospitalContact,
-                                  healthCenterFixed, healthCenterContact,
-                                  clinicFixed, clinicContact]));
+    await utils.initDb([clinic, healthCenter, districtHospital]);
+    await utils.initSettings(settings);
+    await config.load();
+    await utils.runMigration('extract-person-contacts');
+    await utils.assertDb([districtHospitalFixed, districtHospitalContact,
+              healthCenterFixed, healthCenterContact,
+              clinicFixed, clinicContact]);
   });
 
   it('should create a new Person from facility.contact', function() {

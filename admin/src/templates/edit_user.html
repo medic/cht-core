@@ -2,7 +2,7 @@
   status="status"
   id="'edit-user-profile'"
   title-key="editUserModel.id ? 'Edit User' : 'Add User'"
-  submit-key="'Submit'"
+  submit-key="editUserModel.id ? 'Submit' : 'Add User'"
   submitting-key="'Submitting'"
   on-cancel="cancel()"
   on-submit="editUser()"
@@ -12,12 +12,14 @@
     <div class="form-group required" ng-class="{'has-error': errors.username}">
       <label for="username" translate>User Name</label>
       <input id="username" type="text" class="form-control" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
+      <span class="help-block" translate>user.username.help</span>
       <span class="help-block">{{errors.username}}</span>
     </div>
 
     <div class="form-group">
       <label for="fullname" translate>Full Name</label>
       <input id="fullname" type="text" class="form-control" ng-model="editUserModel.fullname" />
+      <span class="help-block" translate>user.fullname.help</span>
     </div>
 
     <div class="form-group" ng-class="{'has-error': errors.email}">
@@ -29,6 +31,7 @@
     <div class="form-group">
       <label for="phone" translate>Phone Number</label>
       <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
+      <span class="help-block" translate>user.phone.help</span>
     </div>
 
     <div class="form-group">
@@ -49,6 +52,7 @@
         <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
       </select>
       <span class="help-block">{{errors.place}}</span>
+      <span class="help-block" translate>user.place.help</span>
     </div>
 
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': roles[editUserModel.role].offline}">

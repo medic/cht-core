@@ -2,7 +2,8 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk: oraclejdk8
+jdk: oraclejdk9
+dist: xenial
 
 addons:
   chrome: 'stable'
@@ -36,6 +37,7 @@ before_install:
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
   - ./scripts/travis/couch-start
+  - sudo apt-get install xsltproc
 
 install: nvm install $NODE_VERSION
 

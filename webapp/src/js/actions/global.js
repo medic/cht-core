@@ -204,6 +204,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setFilters,
         setForms,
         setIsAdmin,
+        setLastChangedDoc,
         setLeftActionBar,
         setLoadingContent,
         setLoadingShowContent,
@@ -219,7 +220,6 @@ angular.module('inboxServices').factory('GlobalActions',
         updateReplicationStatus,
         updateUnreadCount,
         unsetSelected,
-
         settingSelected
       };
     };

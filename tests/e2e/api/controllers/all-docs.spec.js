@@ -76,19 +76,14 @@ describe('all_docs handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() => Promise.all(users.map(user => utils.request({
-        path: '/api/v1/users',
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: user
-      }))))
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done)
   );
 
@@ -96,13 +91,13 @@ describe('all_docs handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_all_docs',
-      auth: `offline:${password}`,
+      auth: { username: 'offline', password },
       method: 'GET'
     };
 
     onlineRequestOptions = {
       path: '/_all_docs',
-      auth: `online:${password}`,
+      auth: { username: 'online', password },
       method: 'GET'
     };
   });
@@ -176,7 +171,7 @@ describe('all_docs handler', () => {
 
     const request = {
       method: 'POST',
-      body: JSON.stringify({ keys }),
+      body: { keys },
       headers: { 'Content-Type': 'application/json' }
     };
 

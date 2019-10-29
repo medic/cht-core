@@ -9,7 +9,8 @@ const tasks = {
   dueTasks: transitionsLib.dueTasks,
   reminders: require('./reminders'),
   replications: require('./replications'),
-  outbound: require('./outbound')
+  outbound: require('./outbound'),
+  purging: require('./purging')
 };
 
 function getTime(_hour, _minute) {
@@ -34,6 +35,7 @@ exports.sendable = function(config, now) {
   return now >= after && now <= until;
 };
 
+
 exports.checkSchedule = function() {
   const now = moment(date.getDate());
 
@@ -52,7 +54,8 @@ exports.checkSchedule = function() {
       cb => {
         tasks.replications.execute(cb);
       },
-      tasks.outbound.execute
+      tasks.outbound.execute,
+      tasks.purging.execute
     ],
     err => {
       if (err) {

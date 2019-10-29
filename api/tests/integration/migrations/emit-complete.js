@@ -1,8 +1,18 @@
-var utils = require('./utils');
+const path = require('path');
+const sinon = require('sinon');
+
+const environment = require('../../../src/environment');
+const utils = require('./utils');
 
 describe('emit-complete', function() {
-  beforeEach(() => utils.initDb([]));
-  afterEach(() => utils.tearDown());
+  beforeEach(async () => {
+    await utils.initDb([]);
+    sinon.stub(environment, 'getExtractedResourcesPath').returns(path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments'));
+  });
+  afterEach(() => {
+    utils.tearDown();
+    sinon.restore();
+  });
 
   it('should do nothing when tasks not configured', function() {
     // given

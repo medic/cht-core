@@ -23,7 +23,9 @@ const medicLogo = element(by.className('logo-full')),
   // User settings
   settings = element.all(by.css('.configuration a>span')),
   // Report bug
-  bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
+  bugDescriptionField = element(by.css('[placeholder="Bug description"]')),
+  modalFooter = element(by.css('.modal-footer')),
+  deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 
 module.exports = {
   calm: () => {
@@ -56,8 +58,15 @@ module.exports = {
   checkReportBug: () => {
     openSubmenu('report bug');
     helper.waitElementToBeVisible(bugDescriptionField);
+    helper.waitElementToBeVisible(modalFooter);
     expect(genericSubmitButton.getText()).toEqual('Submit');
     genericCancelBtn.click();
+  },
+
+  sync: () => {
+    module.exports.openMenu();
+    openSubmenu('sync now');
+    helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
   checkUserSettings: () => {
@@ -92,10 +101,10 @@ module.exports = {
     helper.waitUntilReady(element(by.id('message-list')));
   },
 
-  goToPeople: () => {
-    browser.get(utils.getBaseUrl() + 'contacts/');
-    helper.waitUntilReady(medicLogo);
-    helper.waitUntilReady(element(by.id('contacts-list')));
+  goToPeople: async () => {
+    await browser.get(utils.getBaseUrl() + 'contacts/');
+    await helper.waitUntilReady(medicLogo);
+    await helper.waitUntilReady(element(by.id('contacts-list')));
   },
 
   goToReports: refresh => {
@@ -143,6 +152,11 @@ module.exports = {
     hamburgerMenu.click();
     helper.waitUntilReady(hamburgerMenuOptions);
   },
+
+  confirmDelete: async () => {
+    await helper.waitUntilReady(deleteButton);
+    await deleteButton.click();
+  }
 };
 
 function openSubmenu(menuName) {

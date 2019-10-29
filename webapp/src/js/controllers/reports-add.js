@@ -65,7 +65,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         });
       }
       if ($state.params.reportId) { // editing
-        return LineageModelGenerator.report($state.params.reportId, { merge: true })
+        return LineageModelGenerator.report($state.params.reportId)
           .then(function(result) {
             return {
               doc: result.doc,

@@ -116,7 +116,6 @@ const extractServiceWorkerMetaDoc = ddoc => {
     })
     .catch(err => {
       if (err.status === 404) {
-        // create new appcache doc
         return { _id: SWMETA_DOC_ID, digest: attachmentDigest };
       }
       throw err;

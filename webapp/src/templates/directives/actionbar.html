@@ -155,7 +155,7 @@
             </a>
             <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-hide="(!actionBarCtrl.actionBar.right.relevantForms || !actionBarCtrl.actionBar.right.relevantForms.length)">
               <li ng-repeat="form in actionBarCtrl.actionBar.right.relevantForms | orderBy: 'title' track by form.code">
-                <a show-muted-modal to-state="contacts.report" to-state-params="{ id: actionBarCtrl.actionBar.right.selected[0]._id, formId: form.code }">
+                <a show-muted-modal to-state="contacts.report" to-state-params="{ id: actionBarCtrl.selectedContactDoc._id, formId: form.code }">
                   <span ng-bind-html="form.icon | resourceIcon"></span>
                   <span class="content">{{form.title}}</span>
                 </a>
@@ -171,7 +171,7 @@
             </a>
             <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-if="group.types.length > 1">
               <li ng-repeat="type in group.types | orderBy: 'id' track by type.id">
-                <a class="mm-icon mm-icon-caption" ui-sref="contacts.addChild({ type: type.id, parent_id: actionBarCtrl.actionBar.right.selected[0]._id })">
+                <a class="mm-icon mm-icon-caption" ui-sref="contacts.addChild({ type: type.id, parent_id: actionBarCtrl.selectedContactDoc._id })">
                   <span class="fa-stack">
                     <i ng-bind-html="type.icon | resourceIcon"></i>
                     <i class="fa fa-plus fa-stack-1x"></i>
@@ -181,7 +181,7 @@
               </li>
             </ul>
 
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-if="group.types.length === 1" ui-sref="contacts.addChild({ type: group.types[0].id, parent_id: actionBarCtrl.actionBar.right.selected[0]._id })">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-if="group.types.length === 1" ui-sref="contacts.addChild({ type: group.types[0].id, parent_id: actionBarCtrl.selectedContactDoc._id })">
               <span class="fa-stack">
                 <i ng-bind-html="group.types[0].icon | resourceIcon"></i>
                 <i class="fa fa-plus fa-stack-1x"></i>

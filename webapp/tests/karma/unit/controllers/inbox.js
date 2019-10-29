@@ -50,6 +50,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('DBSync', {
         addUpdateListener: sinon.stub(),
         sync: sinon.stub(),
+        isEnabled: sinon.stub().returns(true)
       });
       $provide.value('Changes', changes);
       $provide.value('CheckDate', sinon.stub());

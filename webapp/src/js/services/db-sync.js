@@ -1,7 +1,7 @@
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
 const DDOC_PREFIX = ['_design/'];
-const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
+const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
@@ -157,6 +157,9 @@ angular
       }, SYNC_INTERVAL);
     };
 
+    // online users have potentially too much data so bypass local pouch
+    const isEnabled = () => !Session.isOnlineOnly();
+
     return {
       /**
        * Adds a listener function to be notified of replication state changes.
@@ -189,14 +192,17 @@ angular
       },
 
       /**
+       * @returns {boolean} Whether or not syncing is available for this user.
+       */
+      isEnabled: isEnabled,
+
+      /**
        * Synchronize the local database with the remote database.
        *
        * @returns Promise which resolves when both directions of the replication complete.
        */
       sync: force => {
-        if (Session.isOnlineOnly()) {
-          // online users have potentially too much data so bypass local pouch
-          $log.debug('You have administrative privileges; not replicating');
+        if (!isEnabled()) {
           sendUpdate({ state: 'disabled' });
           return $q.resolve();
         }

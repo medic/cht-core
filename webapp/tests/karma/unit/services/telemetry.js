@@ -182,14 +182,14 @@ describe('Telemetry service', () => {
         chai.expect(DB.put.callCount).to.equal(1);
 
         const aggregatedDoc = DB.put.args[0][0];
-        chai.expect(aggregatedDoc._id).to.match(/telemetry-2018-9-greg/);
+        chai.expect(aggregatedDoc._id).to.match(/telemetry-2018-10-greg/);
         chai.expect(aggregatedDoc.metrics).to.deep.equal({
           foo: 'stats',
           bar: 'more stats',
         });
         chai.expect(aggregatedDoc.type).to.equal('telemetry');
         chai.expect(aggregatedDoc.metadata.year).to.equal(2018);
-        chai.expect(aggregatedDoc.metadata.month).to.equal(9);
+        chai.expect(aggregatedDoc.metadata.month).to.equal(10);
         chai.expect(aggregatedDoc.metadata.user).to.equal('greg');
         chai.expect(aggregatedDoc.metadata.versions).to.deep.equal({
           app: '3.0.0',

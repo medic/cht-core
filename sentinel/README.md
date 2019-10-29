@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/medic/medic-sentinel.png?branch=master)](https://travis-ci.org/medic/medic-sentinel)
-
 ## Install
 
 Get node deps with  `npm ci`.
@@ -12,17 +10,11 @@ Debug mode:
 
 `node server.js debug`
 
-## Run Tests
-
-`grunt test`
-
-
 ## Overview
 
 Sentinel listens to the CouchDB changes feed and runs a set of
 [transitions](#additional-documentation) on a given database change.  It also
 manages scheduled tasks like message schedules.
-
 
 ## Settings
 

@@ -37,8 +37,8 @@ require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
-require('./controllers/settings-backup');
 require('./controllers/settings-basic');
+require('./controllers/backup');
 require('./controllers/targets');
 require('./controllers/targets-edit');
 require('./controllers/translation-application');
@@ -112,9 +112,6 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
-require('../../../webapp/src/js/services/user-contact');
-require('../../../webapp/src/js/services/xml-forms');
-require('../../../webapp/src/js/services/xml-forms-context-utils');
 require('../../../webapp/src/js/actions');
 require('../../../webapp/src/js/selectors');
 require('../../../webapp/src/js/reducers');
@@ -192,14 +189,10 @@ angular.module('adminApp').config(function(
         }
       }
     })
-    .state('settings.backup', {
+    .state('backup', {
       url: '/backup',
-      views: {
-        tab: {
-          controller: 'SettingsBackupCtrl',
-          templateUrl: 'templates/settings_backup.html'
-        }
-      }
+      controller: 'BackupCtrl',
+      templateUrl: 'templates/backup.html'
     })
     .state('users', {
       url: '/users',
@@ -329,7 +322,10 @@ angular.module('adminApp').config(function(
     .state('targets-edit', {
       url: '/targets/edit/:id',
       controller: 'TargetsEditCtrl',
-      templateUrl: 'templates/targets_edit.html'
+      templateUrl: 'templates/targets_edit.html',
+      params: {
+        id: null
+      },
     })
     .state('translation', {
       url: '/translation',

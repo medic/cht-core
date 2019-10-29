@@ -1,28 +1,30 @@
-const sinon = require('sinon'),
-      auth = require('../../../src/auth'),
-      controller = require('../../../src/controllers/changes'),
-      authorization = require('../../../src/services/authorization'),
-      tombstoneUtils = require('@medic/tombstone-utils'),
-      db = require('../../../src/db'),
-      inherits = require('util').inherits,
-      EventEmitter = require('events'),
-      _ = require('underscore'),
-      config = require('../../../src/config'),
-      serverChecks = require('@medic/server-checks'),
-      environment = require('../../../src/environment');
+const sinon = require('sinon');
+const auth = require('../../../src/auth');
+const controller = require('../../../src/controllers/changes');
+const authorization = require('../../../src/services/authorization');
+const tombstoneUtils = require('@medic/tombstone-utils');
+const db = require('../../../src/db');
+const inherits = require('util').inherits;
+const EventEmitter = require('events');
+const _ = require('underscore');
+const config = require('../../../src/config');
+const serverChecks = require('@medic/server-checks');
+const environment = require('../../../src/environment');
+const logger = require('../../../src/logger');
+const purgedDocs = require('../../../src/services/purged-docs');
 
 require('chai').should();
-let testReq,
-    testRes,
-    userCtx,
-    ChangesEmitter,
-    changesSpy,
-    changesCancelSpy,
-    clock,
-    emitters,
-    reqOnClose,
-    defaultSettings,
-    realSetTimeout;
+let testReq;
+let testRes;
+let userCtx;
+let ChangesEmitter;
+let changesSpy;
+let changesCancelSpy;
+let clock;
+let emitters;
+let reqOnClose;
+let defaultSettings;
+let realSetTimeout;
 
 const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
 
@@ -38,7 +40,7 @@ describe('Changes controller', () => {
     realSetTimeout = setTimeout;
     clock = sinon.useFakeTimers();
     emitters = [];
-    userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
+    userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact', roles: ['a', 'b'] };
     testReq = { on: sinon.stub().callsFake((event, fn) => reqOnClose = fn), userCtx: userCtx};
     testRes = {
       type: sinon.stub(),
@@ -63,7 +65,7 @@ describe('Changes controller', () => {
     sinon.stub(authorization, 'getViewResults').returns({});
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'getDepth').returns(1);
-    sinon.stub(authorization, 'getAuthorizationContext').resolves({});
+    sinon.stub(authorization, 'getAuthorizationContext').resolves({ userCtx });
     sinon.stub(authorization, 'getAllowedDocIds').resolves({});
     sinon.stub(authorization, 'isAuthChange').returns(false);
     sinon.stub(authorization, 'filterAllowedDocs').returns([]);
@@ -76,6 +78,8 @@ describe('Changes controller', () => {
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
     sinon.stub(config, 'get').returns(defaultSettings);
     sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
+
+    sinon.stub(purgedDocs, 'getUnPurgedIds').callsFake((roles, ids) => Promise.resolve(ids));
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -299,7 +303,7 @@ describe('Changes controller', () => {
       const subjectIds = ['s1', 's2', 's3'],
             allowedDocIds = ['d1', 'd2', 'd3'],
             contactsByDepthKeys = [['facility_id']];
-      authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys });
+      authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
       controller.request(testReq, testRes);
       return nextTick().then(() => {
@@ -311,6 +315,59 @@ describe('Changes controller', () => {
           .callCount.should.equal(1);
         const feed = controller._getNormalFeeds()[0];
         feed.allowedDocIds.should.deep.equal(allowedDocIds);
+      });
+    });
+
+    it('should filter allowedDocIds to not include purges when performing an initial replication', () => {
+      const subjectIds = ['s1', 's2', 's3'];
+      const allowedDocIds = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
+      const purgedIds = ['d2', 'd6', 'd3'];
+      const contactsByDepthKeys = [['facility_id']];
+      userCtx.roles = ['a', 'b'];
+
+      authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
+      authorization.getAllowedDocIds.resolves(allowedDocIds);
+      testReq.query = { initial_replication: true };
+      purgedDocs.getUnPurgedIds.resolves(_.difference(allowedDocIds, purgedIds));
+
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        authorization.getAuthorizationContext.callCount.should.equal(1);
+        authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
+        authorization.getAllowedDocIds.callCount.should.equal(1);
+        authorization.getAllowedDocIds
+          .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
+          .callCount.should.equal(1);
+        const feed = controller._getNormalFeeds()[0];
+        purgedDocs.getUnPurgedIds.callCount.should.equal(1);
+        purgedDocs.getUnPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
+        feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
+      });
+    });
+
+    it('should filter allowedDocIds to not include purges when performing any replication', () => {
+      const subjectIds = ['s1', 's2', 's3'];
+      const allowedDocIds = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
+      const purgedIds = ['d2', 'd6', 'd3'];
+      const contactsByDepthKeys = [['facility_id']];
+      userCtx.roles = ['a', 'b'];
+
+      authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
+      authorization.getAllowedDocIds.resolves(allowedDocIds);
+      purgedDocs.getUnPurgedIds.resolves(_.difference(allowedDocIds, purgedIds));
+
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        authorization.getAuthorizationContext.callCount.should.equal(1);
+        authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
+        authorization.getAllowedDocIds.callCount.should.equal(1);
+        authorization.getAllowedDocIds
+          .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
+          .callCount.should.equal(1);
+        const feed = controller._getNormalFeeds()[0];
+        purgedDocs.getUnPurgedIds.callCount.should.equal(1);
+        purgedDocs.getUnPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
+        feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
       });
     });
   });
@@ -1391,7 +1448,7 @@ describe('Changes controller', () => {
       defaultSettings.reiterate_changes = false;
       testReq.query = { feed: 'longpoll', since: 'seq' };
       testReq.id = 'myFeed';
-      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'], contactsByDepthKeys: []});
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'], contactsByDepthKeys: [], userCtx});
       authorization.getAllowedDocIds.onCall(0).resolves([ 'a', 'b' ]);
       authorization.getAllowedDocIds.onCall(1).resolves([ 'a', 'b', 'c', 'd' ]);
       authorization.allowedDoc.withArgs(1).returns(true);
@@ -1959,6 +2016,99 @@ describe('Changes controller', () => {
       controller._getLimitChangesRequests().should.equal(true);
       controller._shouldLimitChangesRequests('2.20.0');
       controller._getLimitChangesRequests().should.equal(true);
+    });
+  });
+
+  describe('doc count warnings', () => {
+    let userCtxA;
+    let testReqA;
+    let testResA;
+
+    let userCtxB;
+    let testReqB;
+    let testResB;
+
+    let userCtxC;
+    let testReqC;
+    let testResC;
+
+    beforeEach(() => {
+      userCtxA = { name: 'userA', facility_id: 'facilityA', contact_id: 'contactA' };
+      testReqA = Object.assign({ id: 'A' }, testReq, { userCtx: userCtxA });
+      testResA = Object.assign({}, testRes);
+
+      userCtxB = { name: 'userB', facility_id: 'facilityB', contact_id: 'contactB' };
+      testReqB = Object.assign({ id: 'B' }, testReq, { userCtx: userCtxB });
+      testResB = Object.assign({}, testRes);
+
+      userCtxC = { name: 'userC', facility_id: 'facilityC', contact_id: 'contactC' };
+      testReqC = Object.assign({ id: 'C' }, testReq, { userCtx: userCtxC });
+      testResC = Object.assign({}, testRes);
+
+      sinon.stub(logger, 'warn');
+    });
+
+    it('should not log when users replicate less than 10000 docs', () => {
+      authorization.getAllowedDocIds
+        .withArgs(sinon.match({ id: 'A' })).resolves(Array.from(Array(20), (a, i) => i))
+        .withArgs(sinon.match({ id: 'B' })).resolves(Array.from(Array(150), (a, i) => i))
+        .withArgs(sinon.match({ id: 'C' })).resolves(Array.from(Array(4000), (a, i) => i));
+
+      controller.request(testReqA, testResA);
+      controller.request(testReqB, testResB);
+      controller.request(testReqC, testResC);
+
+      return nextTick().then(() => {
+        authorization.getAllowedDocIds.callCount.should.equal(3);
+        controller._logWarnings();
+        logger.warn.callCount.should.equal(0);
+      });
+    });
+
+    it('should only log users that replicate more than 10000 docs', () => {
+      authorization.getAllowedDocIds
+        .withArgs(sinon.match({ id: 'A' })).resolves(Array.from(Array(7500), (a, i) => i))
+        .withArgs(sinon.match({ id: 'B' })).resolves(Array.from(Array(10500), (a, i) => i))
+        .withArgs(sinon.match({ id: 'C' })).resolves(Array.from(Array(15000), (a, i) => i));
+
+      controller.request(testReqA, testResA);
+      controller.request(testReqB, testResB);
+      controller.request(testReqC, testResC);
+
+      return nextTick().then(() => {
+        authorization.getAllowedDocIds.callCount.should.equal(3);
+        controller._logWarnings();
+        logger.warn.callCount.should.equal(2);
+        logger.warn.args[0].should.deep.equal(['User "userB" replicates "10500" docs']);
+        logger.warn.args[1].should.deep.equal(['User "userC" replicates "15000" docs']);
+      });
+    });
+
+    it('should not spam the logs', () => {
+      authorization.getAllowedDocIds
+        .withArgs(sinon.match({ id: 'A' })).resolves(Array.from(Array(7500), (a, i) => i))
+        .withArgs(sinon.match({ id: 'B' })).resolves(Array.from(Array(10500), (a, i) => i))
+        .withArgs(sinon.match({ id: 'C' })).resolves(Array.from(Array(15000), (a, i) => i));
+
+      controller.request(testReqA, testResA);
+      controller.request(testReqA, testResA);
+      controller.request(testReqB, testResB);
+      controller.request(testReqB, testResB);
+      controller.request(testReqB, testResB);
+      controller.request(testReqC, testResC);
+      controller.request(testReqC, testResC);
+      controller.request(testReqC, testResC);
+
+      return nextTick().then(() => {
+        authorization.getAllowedDocIds.callCount.should.equal(8);
+        logger.warn.callCount.should.equal(0);
+        controller._logWarnings();
+        logger.warn.callCount.should.equal(2);
+        logger.warn.args[0].should.deep.equal(['User "userB" replicates "10500" docs']);
+        logger.warn.args[1].should.deep.equal(['User "userC" replicates "15000" docs']);
+        controller._logWarnings();
+        logger.warn.callCount.should.equal(2);
+      });
     });
   });
 });

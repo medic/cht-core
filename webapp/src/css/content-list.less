@@ -39,12 +39,12 @@
 
   &.overdue {
     .date {
-      color: @high-risk-color;
+      color: @overdue-color;
       font-weight: bold;
     }
 
     &.visit-count .summary p {
-      color: @high-risk-color;
+      color: @overdue-color;
     }
   }
 
@@ -218,7 +218,7 @@
 .contacts .reports {
   .content-row {
     &.selected {
-      background-color: lighten(@reports-color, 30%);
+      background-color: @reports-highlight;
     }
     > a:hover {
       border-left-color: @reports-color;
@@ -228,7 +228,7 @@
 
 .contacts .content-row {
   &.selected {
-    background-color: lighten(@contacts-color, 30%);
+    background-color: @contacts-highlight;
   }
   > a:hover {
     border-left-color: @contacts-color;
@@ -237,7 +237,7 @@
 
 .messages .content-row {
   &.selected {
-    background-color: lighten(@messages-color, 30%);
+    background-color: @messages-highlight;
   }
   > a:hover {
     border-left-color: @messages-color;
@@ -248,7 +248,7 @@
 .contacts .tasks {
   .content-row {
     &.selected {
-      background-color: lighten(@tasks-color, 25%);
+      background-color: @tasks-highlight;
     }
     > a:hover {
       border-left-color: @tasks-color;
