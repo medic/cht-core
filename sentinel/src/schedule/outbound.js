@@ -11,6 +11,7 @@ const configService = require('../config'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
 const CONFIGURED_PUSHES = 'outbound';
+const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
 
 const fetchPassword = key => {
   return secureSettings.getCredentials(key).then(password => {
@@ -24,8 +25,8 @@ const fetchPassword = key => {
 // Returns an object containing:
 //   validTasks: an array of tasks and their hydrated docs as {task doc} objects
 //   invalidTasks: an array of tasks whose documents have been deleted
-const queuedTasks = () =>
-  db.sentinel.allDocs({
+const queuedTasks = () => {
+  return db.sentinel.allDocs({
     startkey: 'task:outbound:',
     endkey: 'task:outbound:\ufff0',
     include_docs: true
@@ -71,6 +72,7 @@ const queuedTasks = () =>
       }
     });
   });
+};
 
 // Maps a source document to a destination format using the given push config
 const mapDocumentToPayload = (doc, config, key) => {
@@ -129,7 +131,8 @@ const send = (payload, config) => {
   const sendOptions = {
     url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
-    json: true
+    json: true,
+    timeout: OUTBOUND_REQ_TIMEOUT
   };
 
   const auth = () => {
@@ -163,7 +166,8 @@ const send = (payload, config) => {
               password: password
             },
             url: urlJoin(config.destination.base_url, authConf.path),
-            json: true
+            json: true,
+            timeout: OUTBOUND_REQ_TIMEOUT
           };
 
           return request.post(authOptions)
