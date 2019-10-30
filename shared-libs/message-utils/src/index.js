@@ -13,7 +13,7 @@ var _ = require('underscore'),
 
 var getParent = function(doc, type) {
   var facility = doc.parent ? doc : doc.contact;
-  while (facility && facility.type !== type) {
+  while (facility && facility.type !== type && facility.contact_type !== type) {
     facility = facility.parent;
   }
   // don't return falsey values, eg: ""
