@@ -10,6 +10,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     GlobalActions,
     Selectors,
     Snackbar,
+    TasksActions,
     Telemetry,
     TranslateFrom,
     XmlForms
@@ -33,13 +34,15 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
+      const tasksActions = TasksActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
-        setTitle: globalActions.setTitle
+        setTitle: globalActions.setTitle,
+        setSelectedTask: tasksActions.setSelectedTask,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -71,6 +74,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
     ctrl.performAction = function(action, skipDetails) {
       ctrl.setCancelCallback(function() {
+        ctrl.setSelectedTask(null);
         if (skipDetails) {
           $state.go('tasks.detail', { id: null });
         } else {
@@ -140,7 +144,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           ctrl.setEnketoSavingStatus(false);
           ctrl.setEnketoEditedStatus(false);
           Enketo.unload(ctrl.form);
-          $scope.unsetSelected();
+          ctrl.setSelectedTask(null);
           $scope.clearSelected();
           ctrl.clearCancelCallback();
         })
