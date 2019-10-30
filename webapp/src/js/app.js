@@ -157,10 +157,6 @@ const createReduxLoggerConfig = Selectors => ({
     $ngReduxProvider.createStoreWith(RootReducer, middlewares);
   });
 
-  angular.module('inboxApp').constant('APP_CONFIG', {
-    name: '@@APP_CONFIG.name',
-    version: '@@APP_CONFIG.version',
-  });
   const POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
     remote: {

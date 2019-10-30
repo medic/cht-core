@@ -75,20 +75,6 @@ module.exports = function(grunt) {
   // Project configuration
   grunt.initConfig({
     replace: {
-      'update-app-constants': {
-        src: ['build/ddocs/medic/_attachments/js/inbox.js'],
-        overwrite: true,
-        replacements: [
-          {
-            from: /@@APP_CONFIG.version/g,
-            to: packageJson.version,
-          },
-          {
-            from: /@@APP_CONFIG.name/g,
-            to: packageJson.name,
-          },
-        ],
-      },
       'change-ddoc-id-for-testing': {
         src: ['build/ddocs/medic.json'],
         overwrite: true,
@@ -449,7 +435,7 @@ module.exports = function(grunt) {
           if (TRAVIS_TAG) {
             version = TRAVIS_TAG;
           } else {
-            version = require('./package.json').version;
+            version = packageJson.version;
             if (TRAVIS_BRANCH === 'master') {
               version += `-alpha.${TRAVIS_BUILD_NUMBER}`;
             }
@@ -462,7 +448,7 @@ module.exports = function(grunt) {
           mkdir -p build/ddocs/medic/build_info;
           cd build/ddocs/medic/build_info;
           echo "${releaseName}" > version;
-          echo "${require('./package.json').version}" > base_version;
+          echo "${packageJson.version}" > base_version;
           echo "${new Date().toISOString()}" > time;
           echo "grunt on \`whoami\`" > author;`,
       },
@@ -543,6 +529,10 @@ module.exports = function(grunt) {
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
+      'check-version':
+        // fail if this build is tagged and the tag doesn't match the package lock version
+        `if [ ! -z $TRAVIS_TAG ] && [[ $TRAVIS_TAG != ${packageJson.version}* ]]; then ` +
+        'echo "git tag does not match package.json version" && exit 1; fi',
       'undo-patches': {
         cmd: function() {
           var modulesToPatch = [
@@ -722,7 +712,6 @@ module.exports = function(grunt) {
         files: ['webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:webapp',
-          'replace:update-app-constants',
           'generate-service-worker',
           'couch-compile:primary',
           'deploy',
@@ -960,7 +949,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-js', 'Build the JS resources', [
     'browserify:webapp',
-    'replace:update-app-constants',
     'ngtemplates:inboxApp',
   ]);
 
@@ -1106,6 +1094,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
+    'exec:check-version',
     'install-dependencies',
     'static-analysis',
     'build',

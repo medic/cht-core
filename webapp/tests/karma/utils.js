@@ -32,18 +32,8 @@ window.KarmaUtils = {
   },
   promise: (err, payload) => err ? Promise.reject(err) : Promise.resolve(payload),
   // a promise than never resolves or rejects
-  nullPromise: function() {
-    return function() {
-      return Q.defer().promise;
-    };
-  },
-  mockDB: function(db) {
-    return function() {
-      return function() {
-        return db;
-      };
-    };
-  },
+  nullPromise: () => () => Q.defer().promise,
+  mockDB: db => () => () => db,
   setupMockStore: function(initialState) {
     angular.module('inboxApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
@@ -95,5 +85,3 @@ chai.assert.deepEqual = function() {
     );
   }
 };
-
-window._medicMobileTesting = true;

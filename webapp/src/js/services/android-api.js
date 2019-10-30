@@ -145,14 +145,9 @@ angular.module('inboxServices').factory('AndroidApi',
               return true;
             } else {
               var message = 'Attempt to back to an undefined state [AndroidApi.back()]';  
-              return Feedback.submit(message, false, function(err) {
-                if (err) {
-                  $log.error('Error saving feedback', err);
-                  return false;
-                }
-
-                return false;
-              });             
+              Feedback.submit(message).catch(err => {
+                $log.error('Error saving feedback', err);
+              });
             }
           }
 
