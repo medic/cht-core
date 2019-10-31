@@ -58,7 +58,8 @@ module.exports = {
       })
       .then(() => {
         const replace = req.query && req.query.replace;
-        return settingsService.update(req.body, replace);
+        const overwrite = req.query && req.query.overwrite;
+        return settingsService.update(req.body, replace, overwrite);
       })
       .then(() => {
         res.json({ success: true });

@@ -1,21 +1,38 @@
 angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
     ContactTypes,
     Contacts,
-    ScheduledForms
+    GlobalActions,
+    ScheduledForms,
+    Selectors
   ) {
 
     'use strict';
     'ngInject';
 
-    $scope.filters = {
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        filters: Selectors.getFilters(state)
+      };
+    };
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setFilters: globalActions.setFilters
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+    ctrl.setFilters({
       time_unit: 'month',
       quantity: 3
-    };
+    });
 
     const getTopLevelPlaces = () => {
       return ContactTypes.getChildren()
@@ -30,8 +47,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
       .then(function(results) {
         var forms = results[0];
         var districts = results[1];
-        $scope.forms = forms;
-        $scope.districts = districts;
+        ctrl.forms = forms;
+        ctrl.districts = districts;
         if (!forms.length) {
           throw new Error('No scheduled forms found');
         }
@@ -51,5 +68,6 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
         $log.error('Error initializing analytics reporting controller', err);
       });
 
+    $scope.$on('$destroy', unsubscribe);
   }
 );

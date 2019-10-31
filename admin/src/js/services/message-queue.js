@@ -222,7 +222,7 @@ angular.module('services').factory('MessageQueue',
           stateHistory: message.task.state_history,
           content: message.sms.message,
           due: message.due,
-          link: !!message.doc.form,
+          link: !!message.doc.form && message.doc.type === 'data_record',
           error: message.sms.error || false
         };
       });

@@ -109,7 +109,7 @@ describe('EditUserCtrl controller', () => {
       const currentUser = userToEdit;
       mockEditCurrentUser(currentUser);
       setTimeout(() => {
-        chai.expect(scope.editUserModel).to.deep.equal({
+        chai.expect(ctrl.editUserModel).to.deep.equal({
           id: currentUser._id,
           username: currentUser.name,
           fullname: currentUser.fullname,
@@ -123,15 +123,15 @@ describe('EditUserCtrl controller', () => {
 
   });
 
-  // Note : $scope.updatePassword is only called when editing the current user.
+  // Note : ctrl.updatePassword is only called when editing the current user.
   // Never when creating a new user, or editing a non-current user.
-  describe('$scope.updatePassword', () => {
+  describe('ctrl.updatePassword', () => {
     it('password must be filled', done => {
       Translate.fieldIsRequired.withArgs('Password').returns(Promise.resolve('Password field must be filled'));
       mockEditCurrentUser(userToEdit);
       setTimeout(() => {
-        scope.editUserModel.password = '';
-        scope.updatePassword();
+        ctrl.editUserModel.password = '';
+        ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('Password field must be filled');
           done();
@@ -143,8 +143,9 @@ describe('EditUserCtrl controller', () => {
       mockEditCurrentUser(userToEdit);
       translate.withArgs('password.length.minimum', { minimum: 8 }).returns(Promise.resolve('short'));
       setTimeout(() => {
-        scope.editUserModel.password = '2sml4me';
-        scope.updatePassword();
+        ctrl.editUserModel.password = '2sml4me';
+        ctrl.editUserModel.currentPassword = '2xml4me';
+        ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('short');
           done();
@@ -156,8 +157,9 @@ describe('EditUserCtrl controller', () => {
       mockEditCurrentUser(userToEdit);
       translate.withArgs('password.weak').returns(Promise.resolve('hackable'));
       setTimeout(() => {
-        scope.editUserModel.password = 'password';
-        scope.updatePassword();
+        ctrl.editUserModel.password = 'password';
+        ctrl.editUserModel.currentPassword = '2xml4me';
+        ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('hackable');
           done();
@@ -170,9 +172,10 @@ describe('EditUserCtrl controller', () => {
       setTimeout(() => {
         translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
         const password = '1QrAs$$3%%kkkk445234234234';
-        scope.editUserModel.password = password;
-        scope.editUserModel.passwordConfirm = password + 'a';
-        scope.updatePassword();
+        ctrl.editUserModel.password = password;
+        ctrl.editUserModel.passwordConfirm = password + 'a';
+        ctrl.editUserModel.currentPassword = '2xml4me';
+        ctrl.updatePassword();
         setTimeout(() => {
           chai.expect(ctrl.errors.password).to.equal('wrong');
           done();
@@ -185,11 +188,11 @@ describe('EditUserCtrl controller', () => {
       const password = '1QrAs$$3%%kkkk445234234234';
 
       setTimeout(() => {
-        scope.editUserModel.currentPassword = 'something';
-        scope.editUserModel.password = password;
-        scope.editUserModel.passwordConfirm = password;
+        ctrl.editUserModel.currentPassword = 'something';
+        ctrl.editUserModel.password = password;
+        ctrl.editUserModel.passwordConfirm = password;
 
-        scope.updatePassword();
+        ctrl.updatePassword();
 
         setTimeout(() => {
           chai.expect(UpdateUser.called).to.equal(true);
@@ -203,4 +206,23 @@ describe('EditUserCtrl controller', () => {
     });
   });
 
+  describe('ctrl.currentPassword', () => {
+
+    it('errors if current password is not provided', done => {
+      Translate.fieldIsRequired.withArgs('Current Password').returns(Promise.resolve('Current password field must be filled'));
+      mockEditCurrentUser(userToEdit);
+      setTimeout(() => {
+        translate.withArgs('Current Password').returns(Promise.resolve('wrong'));
+        const password = '1QrAs$$3%%kkkk445234234234';
+        ctrl.editUserModel.password = password;
+        ctrl.editUserModel.passwordConfirm = password;
+        ctrl.updatePassword();
+        setTimeout(() => {
+          chai.expect(ctrl.errors.currentPassword).to.equal('Current password field must be filled');
+          done();
+        });
+      });
+    });
+
+  });
 });

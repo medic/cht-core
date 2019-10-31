@@ -3,6 +3,6 @@ function(doc) {
       doc.form &&
       doc.contact &&
       doc.contact.parent) {
-    emit([doc.form, doc.contact.parent._id]);
+    emit([doc.form, doc.contact.parent._id], doc.reported_date);
   }
 }

@@ -70,15 +70,15 @@ module.exports = {
       }
 
       var lastLength;
-      async.doUntil(
+      async.doWhilst(
         function(callback) {
           batchMoveAuditDocs(auditDb, function(err, changed) {
             lastLength = changed;
             return callback(err);
           });
         },
-        function() {
-          return lastLength === 0;
+        function(cb) {
+          return cb(null, lastLength > 0);
         },
         callback);
     });

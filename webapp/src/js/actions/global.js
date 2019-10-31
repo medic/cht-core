@@ -2,6 +2,7 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
+    $timeout,
     ActionUtils,
     Selectors
   ) {
@@ -9,6 +10,30 @@ angular.module('inboxServices').factory('GlobalActions',
     'ngInject';
 
     return function(dispatch) {
+
+      function setLeftActionBar(value) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_LEFT, 'left', value));
+      }
+
+      function createSetRightActionBarAction(value) {
+        return ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT, 'right', value);
+      }
+
+      function setRightActionBar(value) {
+        dispatch(createSetRightActionBarAction(value));
+      }
+
+      function clearRightActionBar() {
+        dispatch(createSetRightActionBarAction({}));
+      }
+
+      function setRightActionBarVerified(value) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
+      }
+
+      function setAndroidAppVersion(androidAppVersion) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ANDROID_APP_VERSION, 'androidAppVersion', androidAppVersion));
+      }
 
       function createSetCancelCallbackAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
@@ -20,6 +45,10 @@ angular.module('inboxServices').factory('GlobalActions',
 
       function setCancelCallback(cancelCallback) {
         dispatch(createSetCancelCallbackAction(cancelCallback));
+      }
+
+      function setCurrentTab(currentTab) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_CURRENT_TAB, 'currentTab', currentTab));
       }
 
       function createSetEnketoStatusAction(value) {
@@ -40,6 +69,18 @@ angular.module('inboxServices').factory('GlobalActions',
 
       function setFacilities(facilities) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
+      }
+
+      function clearFilters() {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', {}));
+      }
+
+      function setFilter(filter) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTER, 'filter', filter));
+      }
+
+      function setFilters(filters) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', filters));
       }
 
       function setIsAdmin(isAdmin) {
@@ -77,25 +118,69 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      function setTitle(title) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_TITLE, 'title', title));
+      }
+
+      function setUnreadCount(unreadCount) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
+      }
+
+      function updateUnreadCount(unreadCount) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
+      }
+
       function setVersion(version) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
       }
 
+      function updateReplicationStatus(replicationStatus) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
+      }
+
+      function settingSelected(refreshing) {
+        setLoadingContent(false);
+        $timeout(function() {
+          setShowContent(true);
+          setShowActionBar(true);
+          if (!refreshing) {
+            $timeout(function() {
+              $('.item-body').scrollTop(0);
+            });
+          }
+        });
+      }
+
       return {
         clearCancelCallback,
+        clearFilters,
+        clearRightActionBar,
+        setAndroidAppVersion,
         setCancelCallback,
+        setCurrentTab,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
         setFacilities,
+        setFilter,
+        setFilters,
         setIsAdmin,
+        setLeftActionBar,
         setLastChangedDoc,
         setLoadingContent,
         setLoadingSubActionBar,
+        setRightActionBar,
+        setRightActionBarVerified,
         setSelectMode,
         setShowActionBar,
         setShowContent,
+        setTitle,
+        setUnreadCount,
         setVersion,
+        updateReplicationStatus,
+        updateUnreadCount,
+
+        settingSelected
       };
     };
   }

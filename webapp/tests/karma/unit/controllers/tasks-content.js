@@ -2,14 +2,14 @@ describe('TasksContentCtrl', () => {
   const { expect } = chai;
 
   let $scope,
+      subscribe,
       tasksActions,
       getEnketoEditedStatus,
       task,
-      watchCallback,
       ctrl,
       createController,
       render,
-      XmlForm;
+      XmlForms;
 
   beforeEach(() => {
     module('inboxApp');
@@ -19,30 +19,29 @@ describe('TasksContentCtrl', () => {
   beforeEach(inject(($controller, $ngRedux, TasksActions, Selectors) => {
     tasksActions = TasksActions($ngRedux.dispatch);
     render = sinon.stub();
-    XmlForm = sinon.stub();
+    XmlForms = { get: sinon.stub() };
     $scope = {
       $on: () => {},
-      $watch: (prop, cb) => {
-        watchCallback = cb;
-      },
       setSelected: () => tasksActions.setSelectedTask(task)
     };
+    subscribe = sinon.stub($ngRedux, 'subscribe');
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
     render.resolves();
     createController = () => {
       ctrl = $controller('TasksContentCtrl', {
         $scope: $scope,
+        $ngRedux: $ngRedux,
         $q: Q,
         Enketo: { render: render },
         DB: sinon.stub(),
-        XmlForm: XmlForm,
+        XmlForms: XmlForms,
         Telemetry: { record: sinon.stub() }
       });
     };
   }));
 
   afterEach(() => {
-    KarmaUtils.restore(render, XmlForm);
+    KarmaUtils.restore(render, XmlForms, subscribe);
   });
 
   it('loads form when task has one action and no fields', done => {
@@ -53,15 +52,16 @@ describe('TasksContentCtrl', () => {
         content: 'nothing'
       }]
     };
-    XmlForm.resolves({ id: 'myform', doc: { title: 'My Form' } });
+    const form = { _id: 'myform', title: 'My Form' };
+    XmlForms.get.resolves(form);
     createController();
-    watchCallback();
-    expect($scope.formId).to.equal('A');
+    subscribe.args[0][0](); // invoke the subscribe callback
+    expect(ctrl.formId).to.equal('A');
     setTimeout(() => {
       expect(render.callCount).to.equal(1);
       expect(render.getCall(0).args.length).to.equal(4);
       expect(render.getCall(0).args[0]).to.equal('#task-report');
-      expect(render.getCall(0).args[1]).to.equal('myform');
+      expect(render.getCall(0).args[1]).to.deep.equal(form);
       expect(render.getCall(0).args[2]).to.equal('nothing');
       expect(getEnketoEditedStatus()).to.equal(false);
       done();
@@ -73,7 +73,7 @@ describe('TasksContentCtrl', () => {
       actions: [{}, {}] // two forms
     };
     createController();
-    expect($scope.formId).to.equal(null);
+    expect(ctrl.formId).to.equal(null);
     expect(ctrl.loadingForm).to.equal(undefined);
     expect(render.callCount).to.equal(0);
     done();
@@ -97,7 +97,7 @@ describe('TasksContentCtrl', () => {
       }]
     };
     createController();
-    expect($scope.formId).to.equal(null);
+    expect(ctrl.formId).to.equal(null);
     expect(ctrl.loadingForm).to.equal(undefined);
     expect(render.callCount).to.equal(0);
     done();
@@ -112,12 +112,12 @@ describe('TasksContentCtrl', () => {
         content: 'nothing'
       }]
     };
-    XmlForm.resolves({ id: 'myform', doc: { title: 'My Form' } });
+    XmlForms.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
     createController();
-    watchCallback();
+    subscribe.args[0][0](); // invoke the subscribe callback
     setTimeout(() => {
       expect(ctrl.loadingForm).to.equal(false);
-      expect($scope.contentError).to.equal(true);
+      expect(ctrl.contentError).to.equal(true);
       done();
     });
   });

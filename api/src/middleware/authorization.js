@@ -23,6 +23,7 @@ module.exports = {
       .getUserCtx(req)
       .then(userCtx => {
         req.userCtx = userCtx;
+        req.replicationId = req.headers['medic-replication-id'];
       })
       .catch(err => {
         req.authErr = err;
@@ -76,5 +77,17 @@ module.exports = {
   setAuthorized: (req, res, next) => {
     req.authorized = true;
     next();
+  },
+
+  getUserSettings: (req, res, next) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
+    if (auth.isOnlineOnly(req.userCtx)) {
+      return next();
+    }
+
+    return getUserSettings(req).then(next);
   }
 };

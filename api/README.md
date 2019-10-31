@@ -45,6 +45,7 @@ Node server to support the medic app.
   - [POST /api/v1/users](#post-apiv1users)
   - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
+  - [GET /api/v1/users-info](#get-apiv1users-info)
 - [Bulk Operations](#bulk-operations)
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
 - [Upgrades](#upgrades)
@@ -84,16 +85,6 @@ or
 
     node server.js
 
-## Test
-
-`grunt test`
-
-## Build Status
-
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-api).
-
-[![Build Status](https://travis-ci.org/medic/medic-api.png?branch=master)](https://travis-ci.org/medic/medic-api/branches)
-
 # Migrations
 
 Migrations are scripts located in the `/migrations` directory, and are automatically by medic-api run before the webserver starts up.
@@ -125,7 +116,7 @@ Place your script in the `/migrations` folder and it will get picked up by medic
 
 ## Implementation, re-running migrations by hand
 
-See [`migrations.js`](https://github.com/medic/medic-api/blob/master/migrations.js).
+See [`migrations.js`](https://github.com/medic/cht-core/tree/master/api/src/migrations).
 
 Importantly, the record of which migrations have been run is stored in the `migrations` array of an arbitrarily named document in CouchDB with the `.type` of `meta`. Because of this it can be a hard document to find, but you can get it using `curl`, and pretty print it with `jq`:
 
@@ -177,6 +168,7 @@ Returns the settings in JSON format.
 
 | Variable | Description                                                                                             |
 | -------- | ------------------------------------------------------------------------------------------------------- |
+| overwrite  | Whether to replace settings document with input document. If both replace and overwite are set, then it overwites only. Defaults to replace. |
 | replace  | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging). |
 
 # Export
@@ -968,6 +960,71 @@ DELETE /api/v1/users/mary
 
 ```
 HTTP/1.1 200 OK
+```
+
+## GET /api/v1/users-info
+
+Returns the number of documents an offline user would replicate, along with a `warn` flag if this number exceeds the recommended limit (now set at 10 000).
+
+When the authenticated requester has an offline role, it returns the requester doc count.
+##### Example
+```
+GET /api/v1/users-info -H 'Cookie: AuthSession=OFFLINE_USER_SESSION;'
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "total_docs": 5678,
+  "warn": false,
+  "limit: 10000
+}
+```
+
+When the requester has an online role, the following query parameters are accepted:
+
+#### Query Parameters
+
+| Variable | Description                                | Required | 
+| -------- | ------------------------------------------ | -------- |
+| facility_id | String identifier representing the uuid of the user's facility  | true |
+| role | String identifier representing the user role - must be configured as an offline role. Accepts valid UTF-8 JSON array for multiple of roles. | true |
+| contact_id | String identifier representing the uuid of the user's associated contact | false | 
+ 
+##### Example
+
+```
+GET /api/v1/users-info?facility_id={{facility_uuid}}&role={{role}}&contact_id={{contact_uuid}} -H 'Cookie: AuthSession=OFFLINE_USER_SESSION;'
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "total_docs": 10265,
+  "warn": true,
+  "limit: 10000
+}
+```
+
+In case any of the required query parameters are omitted or the requested role is not configured as an offline role, the request will result in an error:
+
+
+```
+GET /api/v1/users-info?role={{online_role}} -H 'Cookie: AuthSession=OFFLINE_USER_SESSION;'
+```
+
+```
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+  "code": 400,
+  "error": "Missing required query params: role and/or facility_id"
+}
 ```
 
 # Bulk Operations

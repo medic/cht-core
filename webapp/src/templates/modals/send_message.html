@@ -4,8 +4,8 @@
   title-key="'Send Message'"
   submit-key="'Send'"
   submitting-key="'Sending'"
-  on-cancel="cancel()"
-  on-submit="submit()"
+  on-cancel="sendMessageCtrl.cancel()"
+  on-submit="sendMessageCtrl.submit()"
 >
   <form action="" method="POST" class="message-form">
     <div class="form-group" ng-class="{ 'has-error': sendMessageCtrl.error.phone }">

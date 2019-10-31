@@ -1,13 +1,14 @@
 angular.module('inboxControllers').controller('ConfigurationUserCtrl',
   function (
-    $scope,
     Modal
   ) {
 
     'use strict';
     'ngInject';
 
-    $scope.updatePassword = function() {
+    const ctrl = this;
+
+    ctrl.updatePassword = function() {
       Modal({
         templateUrl: 'templates/modals/update_password.html',
         controller: 'EditUserCtrl',
@@ -15,7 +16,7 @@ angular.module('inboxControllers').controller('ConfigurationUserCtrl',
       });
     };
 
-    $scope.editSettings = function() {
+    ctrl.editSettings = function() {
       Modal({
         templateUrl: 'templates/modals/edit_user_settings.html',
         controller: 'EditUserCtrl',

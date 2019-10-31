@@ -1,3 +1,9 @@
+/**
+ * @ngdoc service
+ * @name Telemetry
+ * @description Records, aggregates, and submits telemetry data
+ * @memberof inboxServices
+ */
 var moment = require('moment'),
   uuid = require('uuid/v4');
 
@@ -102,19 +108,19 @@ angular
     var generateMetadataSection = function() {
       return $q.all([
           DB().get('_design/medic-client'),
-          DB().query('medic-client/forms', {include_docs: true})
+          DB().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
       ]).then(([ddoc, formResults]) => {
         const date = moment(getLastAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
-          keyToVersion[row.key] = row.doc._rev;
+          keyToVersion[row.doc.internalId] = row.doc._rev;
 
           return keyToVersion;
         }, {});
 
         return {
           year: date.year(),
-          month: date.month(),
+          month: date.month() + 1,
           user: Session.userCtx().name,
           deviceId: getUniqueDeviceId(),
           versions: {
@@ -199,40 +205,40 @@ angular
     };
 
     return {
-      //
-      // Records a piece of telemetry.
-      //
-      // Specifically, a unique key that will be aggregated against, and if you
-      // are recording a timing (as opposed to an event) a value.
-      //
-      // The first time this API is called each month, the telemetry recording
-      // is followed by an aggregation of all of the previous months data.
-      // Aggregation is done using the `_stats` reduce function, which
-      // generates data like so:
-      //
-      // {
-      //   metric_a:  { sum: 492, min: 123, max: 123, count: 4, sumsqr: 60516 },
-      //   metric_b:  { sum: -16, min: -4, max: -4, count: 4, sumsqr: 64 }
-      // }
-      //
-      // See: https://wiki.apache.org/couchdb/Built-In_Reduce_Functions#A_stats
-      //
-      // This single month aggregate document is of type 'telemetry', and is
-      // stored in the user's meta DB (which replicates up to the main server)
-      //
-      // TODO: get all telemetry docs aggregate script, document it's existance here
-      //    https://github.com/medic/medic/issues/4968
-      //
-      // NOTE: While this function returns a promise, this is primarily for
-      // testing. It is not recommended you hold on to this promise and wait
-      // for it to resolve, for performance reasons.
-      //
-      // @param      {String}   key     a unique key that will be aggregated
-      //                                against later
-      // @param      {Number}   value   number to be aggregated. Defaults to 1.
-      // @return     {Promise}  resolves once the data has been recorded and
-      //                        aggregated if required
-      //
+      /**
+       * Records a piece of telemetry.
+       *
+       * Specifically, a unique key that will be aggregated against, and if you
+       * are recording a timing (as opposed to an event) a value.
+       *
+       * The first time this API is called each month, the telemetry recording
+       * is followed by an aggregation of all of the previous months data.
+       * Aggregation is done using the `_stats` reduce function, which
+       * generates data like so:
+       *
+       * {
+       *   metric_a:  { sum: 492, min: 123, max: 123, count: 4, sumsqr: 60516 },
+       *   metric_b:  { sum: -16, min: -4, max: -4, count: 4, sumsqr: 64 }
+       * }
+       *
+       * See: https://wiki.apache.org/couchdb/Built-In_Reduce_Functions#A_stats
+       *
+       * This single month aggregate document is of type 'telemetry', and is
+       * stored in the user's meta DB (which replicates up to the main server)
+       *
+       * To collect the aggregate data execute: ./scripts/get_users_meta_docs.js
+       *
+       * NOTE: While this function returns a promise, this is primarily for
+       * testing. It is not recommended you hold on to this promise and wait
+       * for it to resolve, for performance reasons.
+       *
+       * @param      {String}   key     a unique key that will be aggregated
+       *                                against later
+       * @param      {Number}   value   number to be aggregated. Defaults to 1.
+       * @returns    {Promise}  resolves once the data has been recorded and
+       *                        aggregated if required
+       * @memberof Telemetry
+       */
       record: function(key, value) {
         if (value === undefined) {
           value = 1;

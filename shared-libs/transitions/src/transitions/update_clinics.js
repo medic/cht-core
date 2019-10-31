@@ -1,9 +1,9 @@
 const transitionUtils = require('./utils'),
-  db = require('../db'),
-  lineage = require('@medic/lineage')(Promise, db.medic),
-  utils = require('../lib/utils'),
-  NAME = 'update_clinics',
-  FACILITY_NOT_FOUND = 'sys.facility_not_found';
+      db = require('../db'),
+      lineage = require('@medic/lineage')(Promise, db.medic),
+      utils = require('../lib/utils'),
+      NAME = 'update_clinics',
+      FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
 const config = require('../config');
 
@@ -86,9 +86,9 @@ module.exports = {
   filter: (doc, info = {}) => {
     return Boolean(
       doc &&
-        doc.type === 'data_record' &&
-        !doc.contact &&
-        !transitionUtils.hasRun(info, NAME)
+      doc.type === 'data_record' &&
+      !doc.contact &&
+      !transitionUtils.hasRun(info, NAME)
     );
   },
   onMatch: change => {

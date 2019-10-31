@@ -5,27 +5,34 @@ angular.module('inboxDirectives').directive('mmFormTypeFilter', function(SearchF
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/form_type.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           selectMode: Selectors.getSelectMode(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        return {
+          setFilter: globalActions.setFilter
+        };
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'formTypeFilterCtrl',
     bindToController: {
+      search: '<',
       selected: '<'
     },
-    link: function(scope) {
+    link: function(s, e, a, controller) {
       SearchFilters.formType(function(forms) {
-        scope.filters.forms = forms;
-        scope.search();
+        controller.setFilter({ forms });
+        controller.search();
       });
     }
   };

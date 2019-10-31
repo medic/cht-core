@@ -1,0 +1,19 @@
+*** config.json	Thu Sep 12 11:20:30 2019
+--- config-patched.json	Thu Sep 12 11:20:33 2019
+***************
+*** 2,8 ****
+    "webdriverVersions": {
+      "selenium": "2.53.1",
+      "chromedriver": "2.27",
+!     "maxChromedriver": "75",
+      "geckodriver": "v0.13.0",
+      "iedriver": "2.53.1",
+      "androidsdk": "24.4.1",
+--- 2,8 ----
+    "webdriverVersions": {
+      "selenium": "2.53.1",
+      "chromedriver": "2.27",
+!     "maxChromedriver": "77",
+      "geckodriver": "v0.13.0",
+      "iedriver": "2.53.1",
+      "androidsdk": "24.4.1",

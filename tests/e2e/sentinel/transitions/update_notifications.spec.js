@@ -67,7 +67,7 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -98,7 +98,7 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 

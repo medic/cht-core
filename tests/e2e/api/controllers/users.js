@@ -1,6 +1,8 @@
-const constants = require('../../../constants'),
-      http = require('http'),
-      utils = require('../../../utils');
+const constants = require('../../../constants');
+const http = require('http');
+const utils = require('../../../utils');
+const uuid = require('uuid');
+const querystring = require('querystring');
 
 const user = n => `org.couchdb.user:${n}`;
 
@@ -99,9 +101,6 @@ describe('Users API', () => {
         .then(({_rev}) => utils.request({
           path: `/_users/${user(username)}`,
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
           body: {
             _id: user(username),
             _rev: _rev,
@@ -114,9 +113,6 @@ describe('Users API', () => {
       utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: {
           place: newPlaceId
         }
@@ -130,34 +126,28 @@ describe('Users API', () => {
       utils.request({
         path: '/api/v1/users/admin',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: {
           place: newPlaceId
         },
-        auth: `${username}:${password}`
+        auth: { username, password },
       })
       .then(() => fail('You should get a 401 in this situation'))
       .catch(err => {
-        expect(err.responseBody).toBe('You do not have permissions to modify this person');
+        expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
       }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
       utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: {
           type: 'national-manager'
         },
-        auth: `${username}:${password}`
+        auth: { username, password },
       })
       .then(() => fail('You should get an error in this situation'))
       .catch(err => {
-        expect(err.responseBody).toBe('not logged in');
+        expect(err.responseBody.error).toBe('unauthorized');
       }));
 
     it('Allows for users to modify themselves with a cookie', () =>
@@ -165,13 +155,12 @@ describe('Users API', () => {
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Cookie': cookie
         },
         body: {
           fullname: 'Awesome Guy'
         },
-        auth: `${username}:${password}`
+        auth: { username, password},
       })
       .then(() => utils.getDoc(user(username)))
       .then(doc => {
@@ -183,16 +172,16 @@ describe('Users API', () => {
           path: `/api/v1/users/${username}`,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Cookie': cookie
           },
           body: {
             password: 'swizzlesticks'
           },
-        }, {noAuth: true})
+          noAuth: true
+        })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody).toBe('You must authenticate with Basic Auth to modify your password');
+          expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
@@ -200,14 +189,13 @@ describe('Users API', () => {
           path: `/api/v1/users/${username}`,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Cookie': cookie
           },
           body: {
             password: password // keeping it the same, but the security check will be equivilent,
                                // our code can't know it's the same!
           },
-          auth: `${username}:${password}`
+          auth: { username, password }
         })
         .catch(() => fail('This should not result in an error')));
 
@@ -215,17 +203,182 @@ describe('Users API', () => {
         utils.request({
           path: `/api/v1/users/${username}`,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: {
             password: password // keeping it the same, but the security check will be equivilent,
                                // our code can't know it's the same!
           },
-          auth: `${username}:${password}`
+          auth: { username, password }
         })
         .catch(() => fail('This should not result in an error')));
 
   });
 
+  describe('/api/v1/users-info', () => {
+
+    const password = 'passwordSUP3RS3CR37!';
+
+    const parentPlace = {
+      _id: 'PARENT_PLACE',
+      type: 'district_hospital',
+      name: 'Big Parent Hospital'
+    };
+
+    const users = [
+      {
+        username: 'offline',
+        password: password,
+        place: {
+          _id: 'fixture:offline',
+          type: 'health_center',
+          name: 'Offline place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:offline',
+          name: 'OfflineUser'
+        },
+        roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline']
+      },
+      {
+        username: 'online',
+        password: password,
+        place: {
+          _id: 'fixture:online',
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:online',
+          name: 'OnlineUser'
+        },
+        roles: ['national_admin']
+      }
+    ];
+
+    let offlineRequestOptions;
+    let onlineRequestOptions;
+    const nbrOfflineDocs = 30;
+    let expectedNbrDocs = nbrOfflineDocs + 4; // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let docsForAll;
+
+    beforeAll(done => {
+      utils
+        .saveDoc(parentPlace)
+        .then(() => utils.createUsers(users))
+        .then(() => {
+          const docs = Array.from(Array(nbrOfflineDocs), () => ({
+            _id: `random_contact_${uuid()}`,
+            type: `clinic`,
+            parent: { _id: 'fixture:offline' }
+          }));
+          return utils.saveDocs(docs);
+        })
+        .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
+        .then(resp => {
+          docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
+          expectedNbrDocs += resp.rows.length;
+        })
+        .then(done);
+    });
+
+    afterAll(done =>
+      utils
+        .revertDb()
+        .then(() => utils.deleteUsers(users))
+        .then(done)
+    );
+
+    beforeEach(() => {
+      offlineRequestOptions = {
+        path: '/api/v1/users-info',
+        auth: { username: 'offline', password },
+        method: 'GET'
+      };
+
+      onlineRequestOptions = {
+        path: '/api/v1/users-info',
+        auth: { username: 'online', password },
+        method: 'GET'
+      };
+    });
+
+    it('should return correct number of allowed docs for offline users', () => {
+      return utils.request(offlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      });
+    });
+
+    it('should return correct number of allowed docs when requested by online user', () => {
+      onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
+      return utils.request(onlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      });
+    });
+
+    it('should return correct number of allowed docs when requested by online user for an array of roles', () => {
+      const params = {
+        role: JSON.stringify(['random', 'district_admin', 'random']),
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils.request(onlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      });
+    });
+
+    it('should ignore parameters for requests from offline users', () => {
+      const params = {
+        role: 'district_admin',
+        facility_id: 'fixture:online'
+      };
+      offlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils.request(offlineRequestOptions).then(resp => {
+        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      });
+    });
+
+    it('should throw error when requesting for online roles', () => {
+      const params = {
+        role: 'national_admin',
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => expect(resp).toEqual('should have thrown'))
+        .catch(err => {
+          expect(err.statusCode).toEqual(400);
+        });
+    });
+
+    it('should throw error for array roles of online user', () => {
+      const params = {
+        role: JSON.stringify(['random', 'national_admin', 'random']),
+        facility_id: 'fixture:offline'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => expect(resp).toEqual('should have thrown'))
+        .catch(err => {
+          expect(err.statusCode).toEqual(400);
+        });
+    });
+
+    it('should return correct response for non-existent facility', () => {
+      const params = {
+        role: JSON.stringify(['district_admin']),
+        facility_id: 'IdonTExist'
+      };
+      onlineRequestOptions.path += '?' + querystring.stringify(params);
+      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      return utils
+        .request(onlineRequestOptions)
+        .then(resp => {
+          expect(resp).toEqual({ total_docs: docsForAll, warn: false, limit: 10000 });
+        });
+    });
+  });
 }) ;

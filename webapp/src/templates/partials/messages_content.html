@@ -17,11 +17,11 @@
       </div>
       <div id="message-content">
         <div class="loader" ng-show="messagesContentCtrl.loadingMoreContent"></div>
-        <p class="loading-status" ng-show="allLoaded" translate>No more messages</p>
+        <p class="loading-status" ng-show="messagesContentCtrl.allLoaded" translate>No more messages</p>
         <div>
           <ul>
             <li ng-repeat="message in messagesContentCtrl.selectedMessage.messages | orderBy:'doc.reported_date'" data-record-id="{{message.doc._id}}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
-              <div class="marker" ng-if="firstUnread.id === message.doc._id" translate>Unread below</div>
+              <div class="marker" ng-if="messagesContentCtrl.firstUnread.id === message.doc._id" translate>Unread below</div>
               <span class="message-body">
                 <div class="data">
                   <p>
@@ -60,13 +60,13 @@
       <div id="message-footer" class="reply message-form" ng-if="messagesContentCtrl.selectedMessage.messages[0] && (messagesContentCtrl.selectedMessage.contact.name || messagesContentCtrl.selectedMessage.contact.doc)">
         <div class="control-group">
           <div class="controls">
-            <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (messagesContentCtrl.selectedMessage.contact.doc.name || messagesContentCtrl.selectedMessage.contact.name) }"></textarea>
+            <textarea name="message" ng-model="messagesContentCtrl.send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (messagesContentCtrl.selectedMessage.contact.doc.name || messagesContentCtrl.selectedMessage.contact.name) }"></textarea>
           </div>
         </div>
         <div class="message-actions">
-          <a class="btn btn-link" ng-mousedown="addRecipients()" translate>Add recipient</a>
+          <a class="btn btn-link" ng-mousedown="messagesContentCtrl.addRecipients()" translate>Add recipient</a>
           <span class="count"></span>
-          <a class="btn submit btn-primary" ng-class="{disabled: send.message.length === 0}" ng-mousedown="sendMessage()" translate>Send</a>
+          <a class="btn submit btn-primary" ng-class="{disabled: messagesContentCtrl.send.message.length === 0}" ng-mousedown="messagesContentCtrl.sendMessage()" translate>Send</a>
         </div>
       </div>
     </div>

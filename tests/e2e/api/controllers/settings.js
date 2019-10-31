@@ -19,7 +19,7 @@ describe('Settings API', () => {
       return utils.request({
         path: uri,
         method: 'PUT',
-        body: JSON.stringify(updates),
+        body: updates,
         headers: { 'Content-Type': 'application/json' }
       });
     };
@@ -95,7 +95,7 @@ describe('Settings API', () => {
       return utils.request({
         path: uri,
         method: 'PUT',
-        body: JSON.stringify(updates),
+        body: updates,
         headers: { 'Content-Type': 'application/json' }
       });
     };

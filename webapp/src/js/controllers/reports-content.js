@@ -35,9 +35,10 @@ var _ = require('underscore');
         const reportsActions = ReportsActions(dispatch);
         return {
           clearCancelCallback: globalActions.clearCancelCallback,
+          setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
-          updateSelectedReportItem: reportsActions.updateSelectedReportItem,
-          setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty
+          setRightActionBarVerified: globalActions.setRightActionBarVerified,
+          updateSelectedReportItem: reportsActions.updateSelectedReportItem
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -46,11 +47,11 @@ var _ = require('underscore');
       ctrl.clearCancelCallback();
       $('.tooltip').remove();
 
-      $scope.canMute = function(group) {
+      ctrl.canMute = function(group) {
         return MessageState.any(group, 'scheduled');
       };
 
-      $scope.canSchedule = function(group) {
+      ctrl.canSchedule = function(group) {
        return MessageState.any(group, 'muted');
       };
 
@@ -64,15 +65,15 @@ var _ = require('underscore');
         });
       };
 
-      $scope.mute = function(report, group) {
+      ctrl.mute = function(report, group) {
         setMessageState(report, group, 'scheduled', 'muted');
       };
 
-      $scope.schedule = function(report, group) {
+      ctrl.schedule = function(report, group) {
         setMessageState(report, group, 'muted', 'scheduled');
       };
 
-      $scope.toggleExpand = function(selection) {
+      ctrl.toggleExpand = function(selection) {
         if (!ctrl.selectMode) {
           return;
         }
@@ -93,7 +94,7 @@ var _ = require('underscore');
         }
       };
 
-      $scope.deselect = function(report, $event) {
+      ctrl.deselect = function(report, $event) {
         if (ctrl.selectMode) {
           $event.stopPropagation();
           $scope.deselectReport(report);
@@ -142,7 +143,7 @@ var _ = require('underscore');
 
         ctrl.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
 
-        $scope.setSubActionBarStatus(newVerified);
+        ctrl.setRightActionBarVerified(newVerified);
       });
     }
   );

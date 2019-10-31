@@ -7,13 +7,15 @@ angular.module('inboxControllers').controller('LogoutConfirmCtrl',
     'use strict';
     'ngInject';
 
-    $scope.submit = function() {
+    const ctrl = this;
+
+    ctrl.submit = function() {
       $scope.setProcessing();
       Session.logout();
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
   }

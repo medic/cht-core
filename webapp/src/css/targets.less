@@ -20,19 +20,19 @@
     &.has-goal,
     &.has-goal:not(.goal-met) .percent {
       .number {
-        color: @high-risk-color;
+        color: @targets-below-color;
       }
       .progress-bar {
-        background-color: @high-risk-color;
+        background-color: @targets-below-color;
       }
     }
     &.has-goal.goal-met,
     .percent {
       .number {
-        color: @analytics-color;
+        color: @targets-above-goal;
       }
       .progress-bar {
-        background-color: @analytics-color;
+        background-color: @targets-above-goal;
       }
     }
     &:not(.has-goal) .goal {

@@ -1,17 +1,18 @@
 angular.module('inboxControllers').controller('NavigationConfirmCtrl',
   function (
-    $scope,
     $uibModalInstance
   ) {
 
     'use strict';
     'ngInject';
 
-    $scope.cancel = function() {
+    const ctrl = this;
+
+    ctrl.cancel = function() {
       $uibModalInstance.dismiss();
     };
 
-    $scope.submit = function() {
+    ctrl.submit = function() {
       $uibModalInstance.close();
     };
 

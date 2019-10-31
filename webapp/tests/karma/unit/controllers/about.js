@@ -2,6 +2,7 @@ describe('AboutCtrl controller', () => {
 
   'use strict';
 
+  let ctrl;
   let createController;
   let $rootScope;
   let scope;
@@ -33,7 +34,7 @@ describe('AboutCtrl controller', () => {
     Debug = { get: sinon.stub() };
     ResourceIcons = { getDocResources: sinon.stub().resolves() };
     createController = () => {
-      return $controller('AboutCtrl', {
+      ctrl = $controller('AboutCtrl', {
         $interval: $interval,
         $log: { error: sinon.stub() },
         $scope: scope,
@@ -59,11 +60,11 @@ describe('AboutCtrl controller', () => {
       chai.expect(DB.allDocs.args[0][0].key).to.equal('_design/medic-client');
       chai.expect(DB.get.callCount).to.equal(1);
       chai.expect(DB.get.args[0][0]).to.equal('_design/medic-client');
-      chai.expect(scope.dbInfo).to.deep.equal({ some: 'info' });
-      chai.expect(scope.userCtx).to.equal('session info');
+      chai.expect(ctrl.dbInfo).to.deep.equal({ some: 'info' });
+      chai.expect(ctrl.userCtx).to.equal('session info');
       chai.expect(scope.enableDebugModel).to.deep.equal({ val: 'debug stuff' });
-      chai.expect(scope.ddocVersion).to.equal('23');
-      chai.expect(scope.clientDdocVersion).to.equal('4465');
+      chai.expect(ctrl.ddocVersion).to.equal('23');
+      chai.expect(ctrl.clientDdocVersion).to.equal('4465');
       chai.expect(getVersion()).to.equal(4);
     });
   });
@@ -105,7 +106,7 @@ describe('AboutCtrl controller', () => {
     createController();
 
     return Promise.resolve().then(() => {
-      chai.expect(scope.partners[0]).to.equal('Medic Mobile');
+      chai.expect(ctrl.partners[0]).to.equal('Medic Mobile');
     });
   });
 });

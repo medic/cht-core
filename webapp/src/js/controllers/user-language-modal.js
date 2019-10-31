@@ -19,52 +19,53 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     'ngInject';
     'use strict';
 
+    const ctrl = this;
     var initialLanguageCode;
 
     Languages().then(function(languages) {
-      $scope.enabledLocales = languages;
+      ctrl.enabledLocales = languages;
     });
 
     Language()
       .then(function(language) {
         initialLanguageCode = language;
-        if (!$scope.selectedLanguage) {
-          $scope.selectedLanguage = language;
+        if (!ctrl.selectedLanguage) {
+          ctrl.selectedLanguage = language;
         }
       })
       .catch(function(err) {
         $log.error('Error loading language', err);
       });
 
-    $scope.changeLanguage = function(languageCode) {
+    ctrl.changeLanguage = function(languageCode) {
       if (languageCode) {
         SetLanguage(languageCode);
-        $scope.selectedLanguage = languageCode;
+        ctrl.selectedLanguage = languageCode;
       }
     };
 
-    $scope.submit = function() {
-      if (!$scope.selectedLanguage) {
+    ctrl.submit = function() {
+      if (!ctrl.selectedLanguage) {
         var err = new Error('No language selected');
         $log.error(err);
         return $q.reject(err);
       }
       $scope.setProcessing();
-      return UpdateUser(Session.userCtx().name, { language: $scope.selectedLanguage })
+      return UpdateUser(Session.userCtx().name, { language: ctrl.selectedLanguage })
         .then(function() {
           $scope.setFinished();
           $uibModalInstance.close();
         })
         .catch(function(err) {
           // Reset to initial language.
-          $scope.changeLanguage(initialLanguageCode);
+          ctrl.changeLanguage(initialLanguageCode);
           $scope.setError(err, 'Error updating user');
         });
     };
 
-    $scope.cancel = function() {
+    ctrl.cancel = function() {
       // Reset to initial language.
-      $scope.changeLanguage(initialLanguageCode);
+      ctrl.changeLanguage(initialLanguageCode);
       $uibModalInstance.dismiss();
     };
   }

@@ -2,7 +2,7 @@ const sinon = require('sinon'),
   assert = require('chai').assert,
   db = require('../../src/db'),
   transitions = require('../../src/transitions/index'),
-  infodoc = require('../../src/lib/infodoc');
+  infodoc = require('@medic/infodoc');
 
 describe('finalize transition', () => {
   afterEach(() => sinon.restore());

@@ -128,7 +128,9 @@ module.exports = {
     }
 
     return change;
-  }
+  },
+
+  generateTombstoneId: generateTombstoneId,
 };
 
 // exposed for testing

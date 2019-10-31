@@ -12,7 +12,7 @@ Initially it only tests replication but should be extended to test other APIs.
 - NodeJS
 - a target medic instance
 - multiple test users
-- realistic data (reports, contacts, etc)
+- realistic data (reports, contacts, etc) 
 
 ## Setup
 

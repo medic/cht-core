@@ -33,6 +33,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        currentTab: Selectors.getCurrentTab(state),
         loadingContent: Selectors.getLoadingContent(state),
         selectedMessage: Selectors.getSelectedMessage(state)
       };
@@ -45,19 +46,21 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
         setMessagesError: messagesActions.setMessagesError,
-        updateSelectedMessage: messagesActions.updateSelectedMessage
+        updateSelectedMessage: messagesActions.updateSelectedMessage,
+        setTitle: globalActions.setTitle
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    $scope.send = {
+    ctrl.send = {
       message: ''
     };
+    ctrl.allLoaded = false;
 
     const userCtx = Session.userCtx();
 
     var checkScroll = function() {
-      if (this.scrollTop === 0 && !$scope.allLoaded) {
+      if (this.scrollTop === 0 && !ctrl.allLoaded) {
         updateConversation({ skip: true });
       }
     };
@@ -80,7 +83,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       if (docs.length) {
         $scope.markConversationRead(docs);
         MarkRead(docs)
-          .then($scope.updateUnreadCount)
           .catch(function(err) {
             return $log.error('Error marking all as read', err);
           });
@@ -90,7 +92,14 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     // See $stateParams.id note at top of file
     var getContactable = function(id, type) {
       if (type === 'contact') {
-        return LineageModelGenerator.contact(id);
+        return LineageModelGenerator.contact(id)
+                                    .catch(err => {
+                                      if (err.code === 404) {
+                                        return Promise.resolve();
+                                      }
+
+                                      throw err;
+                                    });
       } else if (type === 'phone') {
         return {name: id};
       } else {
@@ -116,8 +125,27 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         MessageContacts.conversation(id)
       ])
         .then(function(results) {
-          var contactModel = results[0];
-          var conversation = results[1];
+          let contactModel = results[0];
+          const conversation = results[1];
+          if (!contactModel) {
+            const firstTaskWithContact = conversation[0].doc.tasks.find( 
+              function(task) {
+                const message = task.messages && task.messages[0];
+                return message && message.contact && message.contact._id === id;
+              }
+            );
+            const firstMessageWithContact = firstTaskWithContact.messages.find( 
+              function(message) {
+                return message.contact._id === id;
+              }
+            );
+            contactModel = {
+              doc: {
+                name: '',
+                phone: firstMessageWithContact.to
+              }
+            };
+          }
           if (ctrl.selectedMessage && ctrl.selectedMessage.id !== id) {
             // ignore response for previous request
             return;
@@ -128,11 +156,11 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           var unread = _.filter(conversation, function(message) {
             return !message.read;
           });
-          $scope.firstUnread = _.min(unread, function(message) {
+          ctrl.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;
           });
           ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
-          $scope.setTitle((contactModel.doc && contactModel.doc.name) || id);
+          ctrl.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markAllRead();
           $timeout(scrollToUnread);
         })
@@ -170,9 +198,9 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
                 }
               }
             });
-            $scope.allLoaded = conversation.length < 50;
+            ctrl.allLoaded = conversation.length < 50;
             if (options.skip) {
-              delete $scope.firstUnread;
+              delete ctrl.firstUnread;
             }
             markAllRead();
             $timeout(function() {
@@ -194,7 +222,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
-    $scope.sendMessage = () => {
+    ctrl.sendMessage = () => {
       if (!ctrl.selectedMessage) {
         $log.error('Error sending message', new Error('No facility selected'));
         return;
@@ -205,26 +233,26 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       } else { // unknown sender
         recipient = { doc: { contact: { phone: ctrl.selectedMessage.id } } };
       }
-      SendMessage(recipient, $scope.send.message)
+      SendMessage(recipient, ctrl.send.message)
         .then(() => {
-          $scope.send.message = '';
+          ctrl.send.message = '';
         })
         .catch(err => {
           $log.error('Error sending message', err);
         });
     };
 
-    $scope.addRecipients = function() {
+    ctrl.addRecipients = function() {
       Modal({
         templateUrl: 'templates/modals/send_message.html',
         controller: 'SendMessageCtrl',
         controllerAs: 'sendMessageCtrl',
         model: {
           to: ctrl.selectedMessage.id,
-          message: $scope.send.message
+          message: ctrl.send.message
         }
       });
-      $scope.send.message = '';
+      ctrl.send.message = '';
     };
 
     var changeListener = Changes({
@@ -237,7 +265,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         }
       },
       filter: function(change) {
-        return $scope.currentTab === 'messages' &&
+        return ctrl.currentTab === 'messages' &&
           ctrl.selectedMessage &&
           _.findWhere(ctrl.selectedMessage.messages, { id: change.id });
       }
@@ -253,7 +281,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     });
 
     $('.tooltip').remove();
-
 
     // See $stateParams.id note at top of file
     selectContact($stateParams.id, $stateParams.type);

@@ -8,26 +8,27 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "async": "^2.6.1",
-    "bikram-sambat": "^1.5.0",
-    "bikram-sambat-bootstrap": "^1.4.2",
+    "async": "^3.1.0",
+    "bikram-sambat": "^1.6.0",
+    "bikram-sambat-bootstrap": "^1.5.0",
     "epi-week": "^0.0.1",
-    "google-libphonenumber": "^3.2.1",
+    "google-libphonenumber": "^3.2.5",
     "gsm": "^0.1.4",
     "later": "^1.2.0",
-    "moment": "^2.22.2",
-    "mustache": "^3.0.1",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "mustache": "^3.1.0",
     "object-path": "^0.11.4",
-    "pouchdb-adapter-http": "^7.0.0",
-    "pouchdb-core": "^7.0.0",
-    "pouchdb-mapreduce": "^7.0.0",
-    "pouchdb-replication": "^7.0.0",
+    "pouchdb-adapter-http": "^7.1.1",
+    "pouchdb-core": "^7.1.1",
+    "pouchdb-mapreduce": "^7.1.1",
+    "pouchdb-replication": "^7.1.1",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "underscore": "^1.9.1",
     "url-join": "^4.0.0",
-    "uuid": "^3.3.2",
-    "winston": "^3.1.0"
+    "uuid": "^3.3.3",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "jsverify": "^0.8.4"
@@ -55,9 +56,11 @@
     "winston"
   ],
   "sharedLibs": [
+    "infodoc",
     "lineage",
     "message-utils",
     "phone-number",
+    "purging-utils",
     "registration-utils",
     "server-checks",
     "settings",

@@ -94,7 +94,7 @@ describe('update_scheduled_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -127,8 +127,8 @@ describe('update_scheduled_reports', () => {
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id ]))
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id ]))
       .then(infos => {
-        expect(infos[0].transitions).not.toBeDefined();
-        expect(infos[1].transitions).not.toBeDefined();
+        expect(Object.keys(infos[0].transitions).length).toEqual(0);
+        expect(Object.keys(infos[1].transitions).length).toEqual(0);
       });
   });
 

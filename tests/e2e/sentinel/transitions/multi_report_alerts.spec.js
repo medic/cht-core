@@ -43,7 +43,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -76,7 +76,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       });
   });
 
@@ -176,7 +176,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -247,7 +247,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -315,7 +315,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -325,7 +325,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).not.toBeDefined();
+        expect(Object.keys(info.transitions).length).toEqual(0);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {

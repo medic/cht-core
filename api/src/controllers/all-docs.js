@@ -10,13 +10,8 @@ const requestError = reason => ({
 const invalidRequest = req => {
   // error messages copied from CouchDB source
   if (req.query && req.query.keys) {
-    try {
-      const keys = JSON.parse(req.query.keys);
-      if (!_.isArray(keys)) {
-        return requestError('`keys` parameter must be an array.');
-      }
-    } catch (err) {
-      return requestError('invalid UTF-8 JSON');
+    if (!_.isArray(req.query.keys)) {
+      return requestError('`keys` parameter must be an array.');
     }
   }
 

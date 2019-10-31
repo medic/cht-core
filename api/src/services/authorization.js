@@ -1,6 +1,6 @@
 const db = require('../db'),
       auth = require('../auth'),
-      _ = require('underscore'),
+      _ = require('lodash'),
       config = require('../config'),
       viewMapUtils = require('@medic/view-map-utils'),
       tombstoneUtils = require('@medic/tombstone-utils');
@@ -23,7 +23,7 @@ const getDepth = (userCtx) => {
   let depth = -1;
   userCtx.roles.forEach(function(role) {
     // find the role with the deepest depth
-    const setting = _.findWhere(settings, { role: role });
+    const setting = settings.find(setting => setting.role === role);
     const settingDepth = setting && parseInt(setting.depth, 10);
     if (!isNaN(settingDepth) && settingDepth > depth) {
       depth = settingDepth;
@@ -163,12 +163,14 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
+const getContextObject = (userCtx) => ({
+  userCtx,
+  contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
+  subjectIds: []
+});
+
 const getAuthorizationContext = (userCtx) => {
-  const authorizationCtx = {
-    userCtx,
-    contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
-    subjectIds: []
-  };
+  const authorizationCtx = getContextObject(userCtx);
 
   return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
@@ -191,6 +193,100 @@ const getAuthorizationContext = (userCtx) => {
   });
 };
 
+const getReplicationKeys = (viewResults) => {
+  const replicationKeys = [];
+  if (!viewResults || !viewResults.replicationKeys) {
+    return replicationKeys;
+  }
+
+  viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
+    replicationKeys.push(subjectId);
+    if (submitterId) {
+      replicationKeys.push(submitterId);
+    }
+  });
+
+  return replicationKeys;
+};
+
+// replication keys are either contact shortcodes (`patient_id` or `place_id`) or doc ids
+// returns a list of corresponding contact docs
+const findContactsByReplicationKeys = (replicationKeys) => {
+  if (!replicationKeys || !replicationKeys.length) {
+    return Promise.resolve([]);
+  }
+
+  replicationKeys = _.uniq(replicationKeys);
+  const keys = replicationKeys.map(id => ['shortcode', id]);
+
+  return db.medic
+    .query('medic-client/contacts_by_reference', { keys })
+    .then(result => {
+      const docIds = replicationKeys.map(replicationKey => {
+        const found = result.rows.find(row => row.key[1] === replicationKey);
+        return found && found.id || replicationKey;
+      });
+
+      return db.medic.allDocs({ keys: docIds, include_docs: true });
+    })
+    .then(result => {
+      if (!result.rows) {
+        return [];
+      }
+
+      return result.rows
+        .map(row => row.doc)
+        .filter(doc => doc);
+    });
+};
+
+const getContactShortcode = (viewResults) => viewResults &&
+                                             viewResults.contactsByDepth &&
+                                             viewResults.contactsByDepth[0] &&
+                                             viewResults.contactsByDepth[0][1];
+
+// in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
+// request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
+// over the provided docs, get all contacts that the docs emit for in `medic/docs_by_replication_key` and create a
+// reduced set of relevant allowed subject ids.
+const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
+  const authorizationCtx = getContextObject(userCtx);
+
+  scopeDocsCtx = scopeDocsCtx.filter(docCtx => docCtx && docCtx.doc);
+  if (!scopeDocsCtx.length) {
+    return Promise.resolve(authorizationCtx);
+  }
+
+  // collect all values that the docs would emit in `medic/docs_by_replication_key`
+  const replicationKeys = [];
+  scopeDocsCtx.forEach(docCtx => {
+    const viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
+    replicationKeys.push(...getReplicationKeys(viewResults));
+  });
+
+  return findContactsByReplicationKeys(replicationKeys).then(contacts => {
+    // we simulate a `medic/contacts_by_depth` filter over the list contacts
+    contacts.forEach(contact => {
+      if (!contact) {
+        return;
+      }
+
+      const viewResults = getViewResults(contact);
+      if (!allowedDoc(contact._id, authorizationCtx, viewResults)) {
+        return;
+      }
+
+      authorizationCtx.subjectIds.push(contact._id);
+      const shortcode = getContactShortcode(viewResults);
+      if (shortcode) {
+        authorizationCtx.subjectIds.push(shortcode);
+      }
+    });
+
+    return authorizationCtx;
+  });
+};
+
 
 // Method to ensure users don't see reports submitted by their boss about the user
 const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
@@ -205,7 +301,7 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   return !allowedSubmitter;
 };
 
-const getAllowedDocIds = (feed) => {
+const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
     const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name],
           tombstoneIds = [];
@@ -216,8 +312,7 @@ const getAllowedDocIds = (feed) => {
       }
 
       if (tombstoneUtils.isTombstoneId(row.id)) {
-        tombstoneIds.push(row.id);
-        return;
+        return includeTombstones && tombstoneIds.push(row.id);
       }
 
       validatedIds.push(row.id);
@@ -240,9 +335,8 @@ const excludeTombstoneIds = (docIds) => {
   return docIds.filter(docId => !tombstoneUtils.isTombstoneId(docId));
 };
 
-const convertTombstoneIds = (docIds) => {
-  return docIds.map(docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId);
-};
+const convertTombstoneId = docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId;
+const convertTombstoneIds = docIds => docIds.map(convertTombstoneId);
 
 const getViewResults = (doc) => {
   return {
@@ -268,5 +362,8 @@ module.exports = {
   alwaysAllowCreate: alwaysAllowCreate,
   updateContext: updateContext,
   filterAllowedDocs: filterAllowedDocs,
-  isDeleteStub: tombstoneUtils._isDeleteStub
+  isDeleteStub: tombstoneUtils._isDeleteStub,
+  generateTombstoneId: tombstoneUtils.generateTombstoneId,
+  convertTombstoneId: convertTombstoneId,
+  getScopedAuthorizationContext: getScopedAuthorizationContext,
 };

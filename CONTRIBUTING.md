@@ -11,20 +11,20 @@ The Core Framework of the Community Health Toolkit is powered by people like you
   
 
 ## Communication
-We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://communityhealthtoolkit.org/forum) about the change you want to make before you start on code. Our Community Forum is especially helpful is you are a new contributor or find yourself unsure how to move forward with an issue.
+We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://forum.communityhealthtoolkit.org) about the change you want to make before you start on code. Our Community Forum is especially helpful is you are a new contributor or find yourself unsure how to move forward with an issue.
 
 ## Ways to contribute
 
 ### First time contributor?
-Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted) are a great place to start. Looking for other ways to help? You can also:
+Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wanted) are a great place to start. Looking for other ways to help? You can also:
 * Improve our [documentation](#improving-our-documentation)
 * Find and mark duplicate issues
 * Try to reproduce issues and help with troubleshooting
-* Or [share a new idea or question](https://communityhealthtoolkit.org/forum) with us!
+* Or [share a new idea or question](https://forum.communityhealthtoolkit.org) with us!
 * **Working on your first Pull Request?** Check out [How to Contribute to an Open Source Project on GitHub](https://egghead.io/lessons/javascript-introduction-to-github)
 
 ### Submitting code
-**Note:** We recommend you raise an issue on Github or start a conversation on our Community Forum about the change you want to make before you start on code.
+**Note:** We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://forum.communityhealthtoolkit.org) about the change you want to make before you start on code.
 
 1. Read our [Development Workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) to understand how we work, and review our [Code Style Guide](https://github.com/medic/medic-docs/blob/master/development/style-guide.md) before you begin.
 2. Before you submit a pull request, please make sure your contribution passes all tests. Test failures need to be addressed before we can merge your contribution.
@@ -34,7 +34,7 @@ Issues labeled [help wanted](https://github.com/medic/medic/labels/Help%20wanted
 
 ### Improving our documentation
 Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md) then open a pull request with your suggested changes or additions.
-Want to talk about Documentation generally? Join our [Community Forum](https://communityhealthtoolkit.org/forum)!
+Want to talk about Documentation generally? Join our [Community Forum](https://forum.communityhealthtoolkit.org)!
 
 ### Disclosing vulnerabilities
 

@@ -27,7 +27,6 @@ var _ = require('underscore'),
     DBSync,
     DatabaseConnectionMonitor,
     Debug,
-    Enketo,
     Feedback,
     GlobalActions,
     JsonForms,
@@ -56,11 +55,111 @@ var _ = require('underscore'),
   ) {
     'ngInject';
 
-    // Set this first so if there are any bugs in configuration we
-    // want to ensure dbsync still happens so they can be fixed
+    const ctrl = this;
+    const mapStateToTarget = function(state) {
+      return {
+        androidAppVersion: Selectors.getAndroidAppVersion(state),
+        cancelCallback: Selectors.getCancelCallback(state),
+        currentTab: Selectors.getCurrentTab(state),
+        enketoEdited: Selectors.getEnketoEditedStatus(state),
+        enketoSaving: Selectors.getEnketoSavingStatus(state),
+        replicationStatus: Selectors.getReplicationStatus(state),
+        selectMode: Selectors.getSelectMode(state),
+        showContent: Selectors.getShowContent(state),
+        version: Selectors.getVersion(state)
+      };
+    };
+    const mapDispatchToTarget = function(dispatch) {
+      const globalActions = GlobalActions(dispatch);
+      return {
+        setAndroidAppVersion: globalActions.setAndroidAppVersion,
+        setCurrentTab: globalActions.setCurrentTab,
+        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setIsAdmin: globalActions.setIsAdmin,
+        setLoadingContent: globalActions.setLoadingContent,
+        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setSelectMode: globalActions.setSelectMode,
+        setShowActionBar: globalActions.setShowActionBar,
+        setShowContent: globalActions.setShowContent,
+        setTitle: globalActions.setTitle,
+        setUnreadCount: globalActions.setUnreadCount,
+        setVersion: globalActions.setVersion,
+        updateReplicationStatus: globalActions.updateReplicationStatus
+      };
+    };
+    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+    const SYNC_STATUS = {
+      inProgress: {
+        icon: 'fa-refresh',
+        key: 'sync.status.in_progress',
+        disableSyncButton: true
+      },
+      success: {
+        icon: 'fa-check',
+        key: 'sync.status.not_required',
+        className: 'success'
+      },
+      required: {
+        icon: 'fa-exclamation-triangle',
+        key: 'sync.status.required',
+        className: 'required'
+      },
+      unknown: {
+        icon: 'fa-question-circle',
+        key: 'sync.status.unknown'
+      }
+    };
+
+    ctrl.updateReplicationStatus({
+      disabled: false,
+      lastTrigger: undefined,
+      current: SYNC_STATUS.unknown,
+    });
+
+    DBSync.addUpdateListener(({ state, to, from }) => {
+      if (state === 'disabled') {
+        ctrl.updateReplicationStatus({ disabled: true });
+        return;
+      }
+      if (state === 'unknown') {
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.unknown });
+        return;
+      }
+      const now = Date.now();
+      const lastTrigger = ctrl.replicationStatus.lastTrigger;
+      const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+      if (state === 'inProgress') {
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.inProgress });
+        ctrl.updateReplicationStatus({ lastTrigger: now });
+        $log.info(`Replication started after ${delay} seconds since previous attempt`);
+        return;
+      }
+      if (to === 'success') {
+        ctrl.updateReplicationStatus({ lastSuccessTo: now });
+      }
+      if (from === 'success') {
+        ctrl.updateReplicationStatus({ lastSuccessFrom: now });
+      }
+      if (to === 'success' && from === 'success') {
+        $log.info(`Replication succeeded after ${delay} seconds`);
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.success });
+      } else {
+        $log.info(`Replication failed after ${delay} seconds`);
+        ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
+      }
+    });
+
+    // Set this first because if there are any bugs in configuration
+    // we want to ensure dbsync still happens so they can be fixed
     // automatically.
-    // Delay it by 10 seconds so it doesn't slow down initial load.
-    $timeout(() => DBSync.sync(), 10000);
+    if (DBSync.isEnabled()) {
+      // Delay it by 10 seconds so it doesn't slow down initial load.
+      $timeout(() => DBSync.sync(), 10000);
+    } else {
+      $log.debug('You have administrative privileges; not replicating');
+      ctrl.replicationStatus.disabled = true;
+    }
 
     const dbFetch = $window.PouchDB.fetch;
     $window.PouchDB.fetch = function() {
@@ -87,100 +186,12 @@ var _ = require('underscore'),
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
 
-    var ctrl = this;
-    var mapStateToTarget = function(state) {
-      return {
-        cancelCallback: Selectors.getCancelCallback(state),
-        enketoEdited: Selectors.getEnketoEditedStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state),
-        selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state),
-        version: Selectors.getVersion(state)
-      };
-    };
-    var mapDispatchToTarget = function(dispatch) {
-      var globalActions = GlobalActions(dispatch);
-      return {
-        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setIsAdmin: globalActions.setIsAdmin,
-        setLoadingContent: globalActions.setLoadingContent,
-        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setSelectMode: globalActions.setSelectMode,
-        setShowActionBar: globalActions.setShowActionBar,
-        setShowContent: globalActions.setShowContent,
-        setVersion: globalActions.setVersion
-      };
-    };
-    var unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
     } else {
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-
-    const SYNC_STATUS = {
-      inProgress: {
-        icon: 'fa-refresh',
-        key: 'sync.status.in_progress',
-        disableSyncButton: true
-      },
-      success: {
-        icon: 'fa-check',
-        key: 'sync.status.not_required',
-        className: 'success'
-      },
-      required: {
-        icon: 'fa-exclamation-triangle',
-        key: 'sync.status.required',
-        className: 'required'
-      },
-      unknown: {
-        icon: 'fa-question-circle',
-        key: 'sync.status.unknown'
-      }
-    };
-
-    $scope.replicationStatus = {
-      disabled: false,
-      lastSuccess: {},
-      lastTrigger: undefined,
-      current: SYNC_STATUS.unknown,
-    };
-
-    DBSync.addUpdateListener(({ state, to, from }) => {
-      if (state === 'disabled') {
-        $scope.replicationStatus.disabled = true;
-        return;
-      }
-      if (state === 'unknown') {
-        $scope.replicationStatus.current = SYNC_STATUS.unknown;
-        return;
-      }
-      const now = Date.now();
-      const lastTrigger = $scope.replicationStatus.lastTrigger;
-      const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-      if (state === 'inProgress') {
-        $scope.replicationStatus.current = SYNC_STATUS.inProgress;
-        $scope.replicationStatus.lastTrigger = now;
-        $log.info(`Replication started after ${delay} seconds since previous attempt`);
-        return;
-      }
-      if (to === 'success') {
-        $scope.replicationStatus.lastSuccess.to = now;
-      }
-      if (from === 'success') {
-        $scope.replicationStatus.lastSuccess.from = now;
-      }
-      if (to === 'success' && from === 'success') {
-        $log.info(`Replication succeeded after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.success;
-      } else {
-        $log.info(`Replication failed after ${delay} seconds`);
-        $scope.replicationStatus.current = SYNC_STATUS.required;
-      }
-    });
 
     const setAppTitle = () => {
       ResourceIcons.getAppTitle().then(title => {
@@ -202,7 +213,7 @@ var _ = require('underscore'),
       key: 'sync-status',
       callback: function() {
         if (!DBSync.isSyncInProgress()) {
-          $scope.replicationStatus.current = SYNC_STATUS.required;
+          ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
         }
       },
     });
@@ -215,7 +226,7 @@ var _ = require('underscore'),
         $log.error('RuleEngine failed to Initialize', err);
       })
       .then(function() {
-        $scope.dbWarmedUp = true;
+        ctrl.dbWarmedUp = true;
 
         const dbWarmed = performance.now();
         Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
@@ -241,13 +252,7 @@ var _ = require('underscore'),
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
     ctrl.setVersion(APP_CONFIG.version);
-    $scope.error = false;
-    $scope.errorSyntax = false;
-    $scope.appending = false;
-    $scope.people = [];
-    $scope.filterQuery = { value: null };
-    $scope.actionBar = {};
-    $scope.tours = [];
+    ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
 
@@ -255,23 +260,24 @@ var _ = require('underscore'),
       $window.medicmobile_android &&
       typeof $window.medicmobile_android.getAppVersion === 'function'
     ) {
-      $scope.android_app_version = $window.medicmobile_android.getAppVersion();
+      ctrl.setAndroidAppVersion($window.medicmobile_android.getAppVersion());
     }
 
-    $scope.canLogOut = false;
-    if ($scope.android_app_version) {
+    ctrl.canLogOut = false;
+    if (ctrl.androidAppVersion) {
       Auth('can_log_out_on_android')
         .then(function() {
-          $scope.canLogOut = true;
+          ctrl.canLogOut = true;
         })
         .catch(function() {}); // not permitted to log out
     } else {
-      $scope.canLogOut = true;
+      ctrl.canLogOut = true;
     }
     $scope.logout = function() {
       Modal({
         templateUrl: 'templates/modals/logout_confirm.html',
         controller: 'LogoutConfirmCtrl',
+        controllerAs: 'logoutConfirmCtrl',
         singleton: true,
       });
     };
@@ -323,6 +329,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/navigation_confirm.html',
         controller: 'NavigationConfirmCtrl',
+        controllerAs: 'navigationConfirmCtrl',
         singleton: true,
       }).then(function() {
         ctrl.setEnketoEditedStatus(false);
@@ -342,7 +349,7 @@ var _ = require('underscore'),
       ctrl.setShowContent(false);
       ctrl.setLoadingContent(false);
       ctrl.setShowActionBar(false);
-      $scope.setTitle();
+      ctrl.setTitle();
       $scope.$broadcast('ClearSelected');
     };
 
@@ -359,42 +366,25 @@ var _ = require('underscore'),
       }
     };
 
-    $scope.settingSelected = function(refreshing) {
-      ctrl.setLoadingContent(false);
-      $timeout(function() {
-        ctrl.setShowContent(true);
-        ctrl.setShowActionBar(true);
-        if (!refreshing) {
-          $timeout(function() {
-            $('.item-body').scrollTop(0);
-          });
-        }
-      });
-    };
-
-    $scope.setTitle = function(title) {
-      $scope.title = title;
-    };
-
     $scope.setLoadingContent = function(id) {
       ctrl.setLoadingContent(id);
       ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {
-      $scope.currentTab = trans.to().name.split('.')[0];
+      ctrl.setCurrentTab(trans.to().name.split('.')[0]);
       if (!$state.includes('reports')) {
         ctrl.setSelectMode(false);
       }
     });
 
-    $scope.unreadCount = {};
+    ctrl.unreadCount = {};
     const initUnreadCount = () => {
       UnreadRecords(function(err, data) {
         if (err) {
           return $log.error('Error fetching read status', err);
         }
-        $scope.unreadCount = data;
+        ctrl.unreadCount = data;
       });
     };
 
@@ -418,7 +408,7 @@ var _ = require('underscore'),
               icon: jsonForm.icon,
             };
           });
-          XmlForms(
+          XmlForms.listen(
             'FormsFilter',
             { contactForms: false, ignoreContext: true },
             function(err, xForms) {
@@ -437,12 +427,11 @@ var _ = require('underscore'),
             }
           );
           // get the forms for the Add Report menu
-          XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+          XmlForms.listen('AddReportMenu', { contactForms: false }, function(err, xForms) {
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }
-            Enketo.clearXmlCache();
-            $scope.nonContactForms = xForms.map(function(xForm) {
+            ctrl.nonContactForms = xForms.map(function(xForm) {
               return {
                 code: xForm.internalId,
                 icon: xForm.icon,
@@ -459,7 +448,7 @@ var _ = require('underscore'),
 
     const initTours = () => {
       return Tour.getTours().then(function(tours) {
-        $scope.tours = tours;
+        ctrl.tours = tours;
       });
     };
 
@@ -467,6 +456,7 @@ var _ = require('underscore'),
       return Modal({
         templateUrl: 'templates/modals/tour_select.html',
         controller: 'TourSelectCtrl',
+        controllerAs: 'tourSelectCtrl',
         singleton: true,
       }).catch(function() {}); // modal dismissed is ok
     };
@@ -475,6 +465,7 @@ var _ = require('underscore'),
       return Modal({
         templateUrl: 'templates/modals/guided_setup.html',
         controller: 'GuidedSetupModalCtrl',
+        controllerAs: 'guidedSetupModalCtrl',
         size: 'lg',
       }).catch(function() {}); // modal dismissed is ok
     };
@@ -489,6 +480,7 @@ var _ = require('underscore'),
           return Modal({
             templateUrl: 'templates/modals/user_language.html',
             controller: 'UserLanguageModalCtrl',
+            controllerAs: 'userLanguageModalCtrl'
           }).catch(function() {});
         },
       },
@@ -501,6 +493,7 @@ var _ = require('underscore'),
           return Modal({
             templateUrl: 'templates/modals/welcome.html',
             controller: 'WelcomeModalCtrl',
+            controllerAs: 'welcomeModalCtrl',
             size: 'lg',
           }).catch(function() {});
         },
@@ -585,28 +578,6 @@ var _ = require('underscore'),
       });
     });
 
-    $scope.setSubActionBarStatus = function(verified) {
-      $scope.actionBar.right.verified = verified;
-    };
-
-    $scope.setRightActionBar = function(model) {
-      if (!$scope.actionBar) {
-        $scope.actionBar = {};
-      }
-      $scope.actionBar.right = model;
-    };
-
-    $scope.setLeftActionBar = function(model) {
-      if (!$scope.actionBar) {
-        $scope.actionBar = {};
-      }
-      $scope.actionBar.left = model;
-    };
-
-    $scope.setActionBar = function(model) {
-      $scope.actionBar = model;
-    };
-
     $scope.emit = function() {
       $rootScope.$broadcast.apply($rootScope, arguments);
     };
@@ -615,6 +586,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/delete_doc_confirm.html',
         controller: 'DeleteDocConfirm',
+        controllerAs: 'deleteDocConfirmCtrl',
         model: { doc: doc },
       }).then(function() {
         if (
@@ -638,6 +610,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/bulk_delete_confirm.html',
         controller: 'BulkDeleteConfirm',
+        controllerAs: 'bulkDeleteConfirmCtrl',
         model: { docs: docs },
       });
     };
@@ -711,6 +684,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
+        controllerAs: 'reloadingModalCtrl',
         singleton: true,
       });
       closeDropdowns();
@@ -721,6 +695,7 @@ var _ = require('underscore'),
       Modal({
         templateUrl: 'templates/modals/version_update.html',
         controller: 'ReloadingModalCtrl',
+        controllerAs: 'reloadingModalCtrl',
         singleton: true,
       }).catch(function() {
         $log.debug('Delaying update');

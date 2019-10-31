@@ -31,21 +31,6 @@ function doMocking(overwrites = {}) {
 }
 
 describe('Resource Extraction', () => {
-  describe('getDestinationDirectory', () => {
-    const testScenario = (env, expected) => resourceExtraction.__with__({
-      env,
-      __dirname: '/__dirname',
-    })(() => {
-      const actual = resourceExtraction.getDestinationDirectory();
-      expect(actual).to.eq(expected);
-    });
-
-    it('default', () => testScenario({}, '/__dirname/extracted-resources'));
-    it('explicit via env', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo' }, '/foo'));
-    it('default in production', () => testScenario({ NODE_ENV: 'production' }, '/tmp/extracted-resources'));
-    it('explit and production', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo', NODE_ENV: 'production' }, '/foo'));
-  });
-
   it('attachments written to disk', done => {
     const expected = { content: { toString: () => 'foo' } };
     doMocking(expected);
@@ -100,14 +85,15 @@ describe('Resource Extraction', () => {
     });
   });
 
-  it('isAttachmentCacheable filter properly for specific resources', () => {
-    const isAttachmentCacheable = resourceExtraction.__get__('isAttachmentCacheable');
-    expect(isAttachmentCacheable('audio/alert.mp3')).to.eq(true);
-    expect(isAttachmentCacheable('js/inbox.js')).to.eq(true);
-    expect(isAttachmentCacheable('manifest.json')).to.eq(true);
-    expect(isAttachmentCacheable('templates/inbox.html')).to.eq(true);
+  it('isAttachmentExtractable filter properly for specific resources', () => {
+    const isAttachmentExtractable = resourceExtraction.__get__('isAttachmentExtractable');
+    expect(isAttachmentExtractable('audio/alert.mp3')).to.eq(true);
+    expect(isAttachmentExtractable('js/inbox.js')).to.eq(true);
+    expect(isAttachmentExtractable('manifest.json')).to.eq(true);
+    expect(isAttachmentExtractable('default-docs/settings.doc.json')).to.eq(true);
+    expect(isAttachmentExtractable('templates/inbox.html')).to.eq(true);
 
-    expect(isAttachmentCacheable('translations/messages-en.properties')).to.eq(false);
+    expect(isAttachmentExtractable('translations/messages-en.properties')).to.eq(false);
   });
 
   it('creates destination folder as necessary', done => {
