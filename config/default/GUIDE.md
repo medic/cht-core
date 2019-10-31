@@ -18,7 +18,7 @@ To perform individual actions, see [medic-conf's documentation](https://github.c
 
 ## Modifying Forms
 
-Generally, the forms are created and edited in XLSX format (a spreadsheet, which is openable with Excel, Libreoffice or your favourite office tool) and later converted into XML format to upload to the instance. The forms are categorized into app forms (Action / Task forms such as pregnancy registration, delivery report) and contact forms (Place/Person forms).
+Generally, the forms are created and edited in XLSX format (a spreadsheet format that can be opened with Excel, Libreoffice, Google Sheets, or your favourite Office tool) and later converted into a XML format to upload to the instance. The forms are categorized into app forms (Action or Task forms such as pregnancy registration, delivery report) and contact forms (Place or Person forms).
 
 To edit app forms, see `./forms/app/*.xlsx`. To edit contact forms, see `./forms/contact/*.xlsx`.
 
