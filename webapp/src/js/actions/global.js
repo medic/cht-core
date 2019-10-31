@@ -160,7 +160,7 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       /**
-       * Unset the selected item without navigation
+       * Unset the selected item
        */
       function unsetSelected() {
         setShowContent(false);
@@ -176,10 +176,7 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       /**
-       * Clear the selected item - may update the URL
-       * rename to "back" for android back button and webapp < button?
-       * - navigation.html
-       * - android-api.js
+       * Navigate back to the previous view
        */
       function navigateBack() {
         if ($state.current.name === 'contacts.deceased') {
