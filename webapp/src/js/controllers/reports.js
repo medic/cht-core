@@ -165,7 +165,6 @@ angular
 
     $scope.selectReport = function(report) {
       if (!report) {
-        ctrl.clearSelected();
         return;
       }
       ctrl.setLoadingShowContent(report);
@@ -179,7 +178,7 @@ angular
           }
         })
         .catch(function(err) {
-          ctrl.clearSelected();
+          ctrl.unsetSelected();
           $log.error('Error selecting report', err);
         });
     };
@@ -194,7 +193,7 @@ angular
         ctrl.errorSyntax = false;
         ctrl.loading = true;
         if (ctrl.selectedReports.length && $scope.isMobile()) {
-          $scope.selectReport();
+          ctrl.unsetSelected();
         }
       }
       if (options.skip) {
@@ -388,7 +387,7 @@ angular
     };
 
     if (!$state.params.id) {
-      $scope.selectReport();
+      ctrl.unsetSelected();
     }
 
     if ($stateParams.tour) {

@@ -72,7 +72,7 @@ var _ = require('underscore'),
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
-        clearSelected: globalActions.clearSelected,
+        navigateBack: globalActions.navigateBack,
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
@@ -295,7 +295,7 @@ var _ = require('underscore'),
         if (ctrl.cancelCallback) {
           $scope.navigationCancel();
         } else {
-          ctrl.clearSelected();
+          ctrl.navigateBack();
         }
       });
     });
@@ -590,12 +590,6 @@ var _ = require('underscore'),
         controllerAs: 'bulkDeleteConfirmCtrl',
         model: { docs: docs },
       });
-    };
-
-    $scope.setSelectMode = function(value) {
-      ctrl.setSelectMode(value);
-      ctrl.clearSelected();
-      $state.go('reports.detail', { id: null });
     };
 
     $('body').on('mouseenter', '.relative-date, .autoreply', function() {

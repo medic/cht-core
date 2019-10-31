@@ -177,8 +177,11 @@ angular.module('inboxServices').factory('GlobalActions',
 
       /**
        * Clear the selected item - may update the URL
+       * rename to "back" for android back button and webapp < button?
+       * - navigation.html
+       * - android-api.js
        */
-      function clearSelected() {
+      function navigateBack() {
         if ($state.current.name === 'contacts.deceased') {
           $state.go('contacts.detail', { id: $stateParams.id });
         } else if ($stateParams.id) {
@@ -192,7 +195,7 @@ angular.module('inboxServices').factory('GlobalActions',
         clearCancelCallback,
         clearFilters,
         clearRightActionBar,
-        clearSelected,
+        navigateBack,
         setAndroidAppVersion,
         setCancelCallback,
         setCurrentTab,

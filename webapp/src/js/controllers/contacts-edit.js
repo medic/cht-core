@@ -32,7 +32,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
-        clearSelected: globalActions.clearSelected,
+        unsetSelected: globalActions.unsetSelected,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
@@ -47,7 +47,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
 
     if (!$state.params.id) {
       // adding a new contact, deselect the old one
-      ctrl.clearSelected();
+      ctrl.unsetSelected();
       ctrl.settingSelected();
     }
     ctrl.setLoadingContent(true);

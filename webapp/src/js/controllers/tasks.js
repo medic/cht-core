@@ -34,7 +34,7 @@ var _ = require('underscore');
         const globalActions = GlobalActions(dispatch);
         const tasksActions = TasksActions(dispatch);
         return {
-          clearSelected: globalActions.clearSelected,
+          unsetSelected: globalActions.unsetSelected,
           setSelectedTask: tasksActions.setSelectedTask,
           setShowContent: globalActions.setShowContent,
           setTitle: globalActions.setTitle,
@@ -60,7 +60,7 @@ var _ = require('underscore');
       $scope.setSelected = function(id) {
         if (!id) {
           LiveList.tasks.clearSelected();
-          ctrl.clearSelected();
+          ctrl.unsetSelected();
           return;
         }
         var task = _.findWhere(LiveList.tasks.getList(), { _id: id });
@@ -99,12 +99,12 @@ var _ = require('underscore');
       };
       LiveList.tasks.notifyError = function() {
         ctrl.error = true;
-        ctrl.clearSelected();
+        ctrl.unsetSelected();
       };
 
       $scope.$on('query', function() {
         if (ctrl.currentTab !== 'tasks') {
-          LiveList.tasks.clearSelected();
+          LiveList.tasks.unsetSelected();
           delete LiveList.tasks.notifyChange;
           delete LiveList.tasks.notifyError;
           return;

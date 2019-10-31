@@ -35,7 +35,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       const globalActions = GlobalActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
-        clearSelected: globalActions.clearSelected,
+        unsetSelected: globalActions.unsetSelected,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
@@ -141,7 +141,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           ctrl.setEnketoSavingStatus(false);
           ctrl.setEnketoEditedStatus(false);
           Enketo.unload(ctrl.form);
-          ctrl.clearSelected();
+          ctrl.unsetSelected();
           ctrl.clearCancelCallback();
           $state.go('tasks.detail', { id: null });
         })

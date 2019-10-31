@@ -43,7 +43,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       const messagesActions = MessagesActions(dispatch);
       return {
         addSelectedMessage: messagesActions.addSelectedMessage,
-        clearSelected: globalActions.clearSelected,
+        unsetSelected: globalActions.unsetSelected,
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingShowContent: globalActions.setLoadingShowContent,
@@ -115,7 +115,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       if (!id) {
         ctrl.setMessagesError(false);
         ctrl.setLoadingContent(false);
-        ctrl.clearSelected();
+        ctrl.unsetSelected();
         return;
       }
       $('.message-content-wrapper').off('scroll', checkScroll);

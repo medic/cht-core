@@ -16,7 +16,7 @@
             <span class="fa fa-trash-o"></span>
             <p translate>select.mode.delete.all</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="setSelectMode(false)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="actionBarCtrl.setSelect(false)">
             <span class="fa fa-times-circle"></span>
             <p translate>select.mode.stop</p>
           </a>
@@ -37,7 +37,7 @@
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)" ng-class="{'mm-icon-disabled': !actionBarCtrl.actionBar.left.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="actionBarCtrl.setSelect(true)" ng-class="{'mm-icon-disabled': !actionBarCtrl.actionBar.left.hasResults}">
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>
           </a>

@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
       const analyticsActions = AnalyticsActions(dispatch);
       const globalActions = GlobalActions(dispatch);
       return {
-        clearSelected: globalActions.clearSelected,
+        unsetSelected: globalActions.unsetSelected,
         setSelectedAnalytics: analyticsActions.setSelectedAnalytics
       };
     };
@@ -31,7 +31,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     ctrl.loading = true;
 
     ctrl.setSelectedAnalytics(null);
-    ctrl.clearSelected();
+    ctrl.unsetSelected();
 
     AnalyticsModules().then(function(modules) {
       if ($state.is('analytics')) {

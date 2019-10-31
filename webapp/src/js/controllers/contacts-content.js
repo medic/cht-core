@@ -36,7 +36,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       const contactsActions = ContactsActions(dispatch);
       const globalActions = GlobalActions(dispatch);
       return {
-        clearSelected: globalActions.clearSelected,
+        unsetSelected: globalActions.unsetSelected,
         setLoadingShowContent: globalActions.setLoadingShowContent,
         settingSelected: globalActions.settingSelected,
         updateSelectedContact: contactsActions.updateSelectedContact
@@ -94,7 +94,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           if (err.code === 404 && !silent) {
             $translate('error.404.title').then(Snackbar);
           }
-          ctrl.clearSelected();
+          ctrl.unsetSelected();
           $log.error('Error generating contact view model', err, err.message);
         });
     };
@@ -106,7 +106,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       if ($stateParams.id) {
         return selectContact($stateParams.id);
       }
-      ctrl.clearSelected();
+      ctrl.unsetSelected();
       if ($scope.isMobile()) {
         return;
       }
@@ -127,14 +127,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       callback: function(change) {
         if (ContactChangeFilter.matchContact(change, ctrl.selectedContact) && ContactChangeFilter.isDeleted(change)) {
           debouncedReloadContact.cancel();
-          var parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
-          if (parentId) {
-            // redirect to the parent
-            return $state.go($state.current.name, {id: parentId});
-          } else {
-            // top level contact deleted - clear selection
-            return ctrl.clearSelected();
-          }
+          const parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
+          return $state.go('contacts.detail', { id: parentId || null });
         }
         return debouncedReloadContact(ctrl.selectedContact.doc._id, true);
       }

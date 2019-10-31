@@ -3,6 +3,7 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('ReportsActions',
   function(
+    $log,
     ActionUtils,
     DB,
     GlobalActions,
@@ -57,6 +58,12 @@ angular.module('inboxServices').factory('ReportsActions',
         });
       }
 
+      function getContact(id) {
+        return DB().get(id)
+          // log the error but continue anyway
+          .catch(err => $log.error('Error fetching contact for action bar', err));
+      }
+
       function setRightActionBar() {
         dispatch(function(dispatch, getState) {
           const selectMode = Selectors.getSelectMode(getState());
@@ -78,16 +85,10 @@ angular.module('inboxServices').factory('ReportsActions',
             return globalActions.setRightActionBar(model);
           }
 
-          DB()
-            .get(doc.contact._id)
-            .then(function(contact) {
-              model.sendTo = contact;
-              globalActions.setRightActionBar(model);
-            })
-            .catch(function(err) {
-              globalActions.setRightActionBar(model);
-              throw err;
-            });
+          getContact(doc.contact._id).then(contact => {
+            model.sendTo = contact;
+            globalActions.setRightActionBar(model);
+          });
         });
       }
 

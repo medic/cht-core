@@ -27,9 +27,8 @@ describe('ContactsContentCtrl', () => {
       }]
     };
 
-    getContact.returns(Promise.resolve());
-    getContact.withArgs(doc._id)
-      .returns(Promise.resolve(model));
+    getContact.resolves();
+    getContact.withArgs(doc._id).resolves(model);
   };
 
   const createController = () => {
@@ -55,7 +54,7 @@ describe('ContactsContentCtrl', () => {
   beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, GlobalActions) => {
     contactsActions = ContactsActions($ngRedux.dispatch);
     globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), {
-      clearSelected: sinon.stub()
+      unsetSelected: sinon.stub()
     });
 
     scope = _$rootScope_.$new();
@@ -128,7 +127,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
           chai.assert.equal(getContact.callCount, 2);
           chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(ctrl.clearSelected.callCount, 0);
+          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
         });
       });
     });
@@ -154,7 +153,7 @@ describe('ContactsContentCtrl', () => {
         changesCallback(changes);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
         chai.assert.equal(getContact.callCount, 1);
-        chai.assert.equal(ctrl.clearSelected.callCount, 1);
+        chai.assert.equal(state.go.callCount, 1);
       });
     });
 
@@ -167,7 +166,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
           chai.assert.equal(getContact.callCount, 2);
           chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(ctrl.clearSelected.callCount, 0);
+          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
         });
       });
     });
@@ -182,7 +181,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
           chai.assert.equal(getContact.callCount, 2);
           chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(ctrl.clearSelected.callCount, 0);
+          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
         });
       });
     });
@@ -195,7 +194,7 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
         chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
         chai.assert.equal(getContact.callCount, 1);
-        chai.assert.equal(ctrl.clearSelected.callCount, 0);
+        chai.assert.equal(ctrl.unsetSelected.callCount, 0);
       });
     });
   });
