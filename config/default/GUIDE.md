@@ -1,6 +1,6 @@
 # Configuring Reference Applications
 
-These instructions are aimed at developers and technical people who are exploring our Reference Application and want to make small changes to see what is possible.
+These instructions are aimed at developers and technical people who are exploring the Reference Application and want to make small changes to see what is possible.
 
 Detailed tutorials on how to build apps from scratch with the Core Framework will be available soon. In the meantime the best source for detailed documentation is available in the [Developing Community Health Applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) page.
 
