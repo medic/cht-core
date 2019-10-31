@@ -38,7 +38,7 @@ To add a new question, simply add a new row.
 
 ### Adding a new page of questions
 
-To add a new page, you need to add a group. The group starts with a row that has type “begin group” and ends with type “end group”.  The "name" field is also required for "begin group" type. The "name" field is not required in the “end group” row, but can help provide clarity in nested groups.
+To add a new page, you need to add a group. The group starts with a row that has type “begin group” and ends with type “end group”.  The "name" field for the "begin group" row is used as the page title. The "name" field in the “end group” row is not shown in the form, but can help provide clarity for large forms and those with nested groups.
 
 More information: https://xlsform.org/en/#grouping-questions
 
