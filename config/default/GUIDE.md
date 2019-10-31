@@ -62,7 +62,7 @@ Tasks are defined inside the file `tasks.js`.
 
 A Task can apply to certain contacts or contacts with specific reports with specific properties that are defined in `appliesIf` function of the task. The criteria for resolving/clearing the Task is defined in the `resolvedIf` function.
 
-To show up a Task following conditions need to be satisfied:
+The following conditions need to be satisfied for a Task to show:
 - `appliesIf` results to true
 - `resolvedIf` results to false
 - Current day/time falls in the time window
