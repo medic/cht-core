@@ -13,6 +13,9 @@
 a {
   cursor: pointer;
 }
+.btn-primary {
+  background-color: @button-color;
+}
 
 .nav-tabs {
   padding: 0 10px;
@@ -49,8 +52,17 @@ a {
   }
 }
 
-.btn-link.btn-danger {
-  color: @error-color;
+.btn-link {
+  color: @text-link-color;
+  
+  &:hover,
+  &:focus {
+    color: @text-link-active-color;
+  }
+  
+  &.btn-danger {
+    color: @error-color;
+  }
 }
 
 .select2-chosen,
@@ -146,7 +158,7 @@ a {
 }
 
 .progress {
-  background-color: @lightgrey;
+  background-color: @separator-color;
   box-shadow: none;
   margin: 20px 0;
   .progress-bar {

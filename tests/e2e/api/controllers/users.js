@@ -101,9 +101,6 @@ describe('Users API', () => {
         .then(({_rev}) => utils.request({
           path: `/_users/${user(username)}`,
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
           body: {
             _id: user(username),
             _rev: _rev,
@@ -116,9 +113,6 @@ describe('Users API', () => {
       utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: {
           place: newPlaceId
         }
@@ -132,34 +126,28 @@ describe('Users API', () => {
       utils.request({
         path: '/api/v1/users/admin',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: {
           place: newPlaceId
         },
-        auth: `${username}:${password}`
+        auth: { username, password },
       })
       .then(() => fail('You should get a 401 in this situation'))
       .catch(err => {
-        expect(err.responseBody).toBe('You do not have permissions to modify this person');
+        expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
       }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
       utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: {
           type: 'national-manager'
         },
-        auth: `${username}:${password}`
+        auth: { username, password },
       })
       .then(() => fail('You should get an error in this situation'))
       .catch(err => {
-        expect(err.responseBody).toBe('not logged in');
+        expect(err.responseBody.error).toBe('unauthorized');
       }));
 
     it('Allows for users to modify themselves with a cookie', () =>
@@ -167,13 +155,12 @@ describe('Users API', () => {
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Cookie': cookie
         },
         body: {
           fullname: 'Awesome Guy'
         },
-        auth: `${username}:${password}`
+        auth: { username, password},
       })
       .then(() => utils.getDoc(user(username)))
       .then(doc => {
@@ -185,16 +172,16 @@ describe('Users API', () => {
           path: `/api/v1/users/${username}`,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Cookie': cookie
           },
           body: {
             password: 'swizzlesticks'
           },
-        }, {noAuth: true})
+          noAuth: true
+        })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody).toBe('You must authenticate with Basic Auth to modify your password');
+          expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
@@ -202,14 +189,13 @@ describe('Users API', () => {
           path: `/api/v1/users/${username}`,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Cookie': cookie
           },
           body: {
             password: password // keeping it the same, but the security check will be equivilent,
                                // our code can't know it's the same!
           },
-          auth: `${username}:${password}`
+          auth: { username, password }
         })
         .catch(() => fail('This should not result in an error')));
 
@@ -217,14 +203,11 @@ describe('Users API', () => {
         utils.request({
           path: `/api/v1/users/${username}`,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: {
             password: password // keeping it the same, but the security check will be equivilent,
                                // our code can't know it's the same!
           },
-          auth: `${username}:${password}`
+          auth: { username, password }
         })
         .catch(() => fail('This should not result in an error')));
 
@@ -282,12 +265,7 @@ describe('Users API', () => {
     beforeAll(done => {
       utils
         .saveDoc(parentPlace)
-        .then(() => Promise.all(users.map(user => utils.request({
-          path: '/api/v1/users',
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: user
-        }))))
+        .then(() => utils.createUsers(users))
         .then(() => {
           const docs = Array.from(Array(nbrOfflineDocs), () => ({
             _id: `random_contact_${uuid()}`,
@@ -307,20 +285,20 @@ describe('Users API', () => {
     afterAll(done =>
       utils
         .revertDb()
-        .then(() => utils.deleteUsers(users.map(user => user.username)))
+        .then(() => utils.deleteUsers(users))
         .then(done)
     );
 
     beforeEach(() => {
       offlineRequestOptions = {
         path: '/api/v1/users-info',
-        auth: `offline:${password}`,
+        auth: { username: 'offline', password },
         method: 'GET'
       };
 
       onlineRequestOptions = {
         path: '/api/v1/users-info',
-        auth: `online:${password}`,
+        auth: { username: 'online', password },
         method: 'GET'
       };
     });

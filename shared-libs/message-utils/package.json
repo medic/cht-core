@@ -9,15 +9,15 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^5.2.0"
+    "mocha": "^6.2.1"
   },
   "dependencies": {
     "@medic/phone-number": "file:../phone-number",
-    "bikram-sambat-bootstrap": "^1.4.2",
-    "google-libphonenumber": "^3.2.1",
+    "bikram-sambat-bootstrap": "^1.5.0",
+    "google-libphonenumber": "^3.2.5",
     "gsm": "^0.1.4",
-    "moment": "^2.22.2",
-    "mustache": "^3.0.1",
+    "moment": "^2.24.0",
+    "mustache": "^3.1.0",
     "object-path": "^0.11.4",
     "underscore": "^1.9.1"
   }

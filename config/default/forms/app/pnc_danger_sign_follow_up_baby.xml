@@ -137,15 +137,6 @@
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact:label">
-            <value>Contact</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -154,9 +145,6 @@
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/short_name:label">
             <value>Short Name</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs/contact:label">
-            <value>Contact</value>
           </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/delivery_uuid:label">
             <value>Delivery Report ID</value>
@@ -167,13 +155,10 @@
           <text id="/pnc_danger_sign_follow_up_baby/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/pnc_danger_sign_follow_up_baby/inputs:label">
-            <value>Patient</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-10 14:10:58">
+        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-17 05:01:30">
           <inputs>
             <meta>
               <location>
@@ -331,19 +316,13 @@ selected(../blue_skin, 'no'), 'no', ''))" nodeset="/pnc_danger_sign_follow_up_ba
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/pnc_danger_sign_follow_up_baby/inputs">
-      <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs:label')"/>
       <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact">
-        <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact:label')"/>
         <input appearance="db-object" ref="/pnc_danger_sign_follow_up_baby/inputs/contact/_id">
           <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent">
-          <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/parent:label')"/>
           <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent">
-            <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent:label')"/>
-            <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact:label')"/>
-            </group>
+            <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>

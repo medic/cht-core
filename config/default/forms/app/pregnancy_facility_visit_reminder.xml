@@ -44,15 +44,6 @@
           <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/phone:label">
             <value>CHW phone</value>
           </text>
-          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact:label">
-            <value>Contact</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent:label">
-            <value>Parent</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent:label">
-            <value>Parent</value>
-          </text>
           <text id="/pregnancy_facility_visit_reminder/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
@@ -61,9 +52,6 @@
           </text>
           <text id="/pregnancy_facility_visit_reminder/inputs/contact/short_name:label">
             <value>Short Name</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/inputs/contact:label">
-            <value>Contact</value>
           </text>
           <text id="/pregnancy_facility_visit_reminder/inputs/source:label">
             <value>Source</value>
@@ -74,13 +62,10 @@
           <text id="/pregnancy_facility_visit_reminder/inputs/source_visit_date:label">
             <value>Visit Date</value>
           </text>
-          <text id="/pregnancy_facility_visit_reminder/inputs:label">
-            <value>Patient</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-10 14:34:21">
+        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-17 05:00:49">
           <inputs>
             <meta>
               <location>
@@ -185,19 +170,13 @@
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_facility_visit_reminder/inputs">
-      <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs:label')"/>
       <group ref="/pregnancy_facility_visit_reminder/inputs/contact">
-        <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact:label')"/>
         <input appearance="db-object" ref="/pregnancy_facility_visit_reminder/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent">
-          <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/parent:label')"/>
           <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent">
-            <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/parent/parent:label')"/>
-            <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact:label')"/>
-            </group>
+            <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>

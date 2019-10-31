@@ -17,7 +17,7 @@ const defaultActions = [
 ];
 
 const applyConfig = async path => {
-  const COUCH_URL = `http://${auth.user}:${auth.pass}@${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`;
+  const COUCH_URL = `http://${auth.username}:${auth.password}@${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`;
 
   defaultActions.forEach(async function(action) {
     if (action === 'compile-app-settings') {

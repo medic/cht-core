@@ -57,41 +57,28 @@ describe('bulk-docs handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
-      .then(() =>
-        Promise.all(
-          users.map(user =>
-            utils.request({
-              path: '/api/v1/users',
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: user,
-            })
-          )
-        )
-      )
+      .then(() => utils.createUsers(users))
       .then(done);
   });
 
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => utils.deleteUsers(users))
       .then(done));
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_docs',
-      auth: `offline:${password}`,
+      auth: { username: 'offline', password },
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
     };
 
     onlineRequestOptions = {
       path: '/_bulk_docs',
-      auth: `online:${password}`,
+      auth: { username: 'online', password },
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
     };
   });
 
@@ -112,7 +99,7 @@ describe('bulk-docs handler', () => {
       { _id: 'ICanBeAnything' },
     ];
 
-    onlineRequestOptions.body = JSON.stringify({ docs: docs });
+    onlineRequestOptions.body = { docs };
 
     return utils
       .requestOnTestDb(onlineRequestOptions)
@@ -226,7 +213,7 @@ describe('bulk-docs handler', () => {
           .then(() => sUtils.getInfoDocs(ids))
           .then(result => {
             existentDocsInfodocs = result;
-            offlineRequestOptions.body = JSON.stringify({ docs: docs });
+            offlineRequestOptions.body = { docs };
             return utils.requestOnTestDb(offlineRequestOptions);
           }).then(result => {
             expect(result.length).toEqual(8);
@@ -355,7 +342,7 @@ describe('bulk-docs handler', () => {
         parent: { _id: 'fixture:online' },
       },
     ];
-    offlineRequestOptions.body = JSON.stringify({ docs: docs });
+    offlineRequestOptions.body = { docs };
 
     return utils.requestOnTestDb(offlineRequestOptions).then(result => {
       expect(result.length).toEqual(8);
@@ -472,7 +459,7 @@ describe('bulk-docs handler', () => {
         result.forEach(
           row => (docs.find(doc => doc._id === row.id)._rev = row.rev)
         );
-        offlineRequestOptions.body = JSON.stringify({ docs: docs });
+        offlineRequestOptions.body = { docs };
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(result => {
@@ -509,7 +496,7 @@ describe('bulk-docs handler', () => {
       type: 'data_record',
       form: 'a',
     };
-    offlineRequestOptions.body = JSON.stringify({ docs: [doc] });
+    offlineRequestOptions.body = { docs: [doc] };
 
     return Promise.all([
       utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
@@ -568,10 +555,10 @@ describe('bulk-docs handler', () => {
       },
     ];
 
-    offlineRequestOptions.body = JSON.stringify({
+    offlineRequestOptions.body = {
       docs: docs,
       new_edits: false,
-    });
+    };
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
@@ -593,7 +580,7 @@ describe('bulk-docs handler', () => {
       { _id: 'fb2', type: 'feedback', content: 'feedback2' },
     ];
 
-    offlineRequestOptions.body = JSON.stringify({ docs: docs });
+    offlineRequestOptions.body = { docs };
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
@@ -622,7 +609,7 @@ describe('bulk-docs handler', () => {
           docs[idx].content += 'update';
         });
 
-        offlineRequestOptions.body = JSON.stringify({ docs: docs });
+        offlineRequestOptions.body = { docs };
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {

@@ -1,1 +1,1 @@
-module.exports = () => ({ user: 'admin', pass: 'pass' });
+module.exports = () => ({ username: 'admin', password: 'pass' });

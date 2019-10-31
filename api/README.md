@@ -85,16 +85,6 @@ or
 
     node server.js
 
-## Test
-
-`grunt test`
-
-## Build Status
-
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-api).
-
-[![Build Status](https://travis-ci.org/medic/medic-api.png?branch=master)](https://travis-ci.org/medic/medic-api/branches)
-
 # Migrations
 
 Migrations are scripts located in the `/migrations` directory, and are automatically by medic-api run before the webserver starts up.
@@ -126,7 +116,7 @@ Place your script in the `/migrations` folder and it will get picked up by medic
 
 ## Implementation, re-running migrations by hand
 
-See [`migrations.js`](https://github.com/medic/medic-api/blob/master/migrations.js).
+See [`migrations.js`](https://github.com/medic/cht-core/tree/master/api/src/migrations).
 
 Importantly, the record of which migrations have been run is stored in the `migrations` array of an arbitrarily named document in CouchDB with the `.type` of `meta`. Because of this it can be a hard document to find, but you can get it using `curl`, and pretty print it with `jq`:
 
@@ -178,6 +168,7 @@ Returns the settings in JSON format.
 
 | Variable | Description                                                                                             |
 | -------- | ------------------------------------------------------------------------------------------------------- |
+| overwrite  | Whether to replace settings document with input document. If both replace and overwite are set, then it overwites only. Defaults to replace. |
 | replace  | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging). |
 
 # Export

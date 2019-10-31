@@ -69,12 +69,46 @@ describe('messageUtils', () => {
         complex: { inline: { phone: complexInlinePhone }}
       };
 
+      const flexibleDoc = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+        },
+        phone: inlinePhone,
+        contact: {
+          parent: {
+            type: 'contact',
+            contact_type: 'clinic',
+            contact: {
+              phone: clinicPhone
+            },
+            parent: {
+              type: 'contact',
+              contact_type: 'health_center',
+              contact: {
+                phone: parentPhone
+              },
+              parent: {
+                type: 'contact',
+                contact_type: 'district_hospital',
+                contact: {
+                  phone: grandparentPhone
+                }
+              }
+            }
+          }
+        },
+      };
+
       it('resolves reporting_unit correctly', () => {
         utils._getRecipient(doc, 'reporting_unit')
           .should.equal(fromPhone);
       });
       it('resolves clinic correctly', () => {
         utils._getRecipient(doc, 'clinic')
+          .should.equal(clinicPhone);
+        utils._getRecipient(flexibleDoc, 'clinic')
           .should.equal(clinicPhone);
       });
       it('resolves parent correctly', () => {
@@ -87,6 +121,8 @@ describe('messageUtils', () => {
       });
       it('resolves ancestor: correctly', () => {
         utils._getRecipient(doc, 'ancestor:health_center')
+          .should.equal(parentPhone);
+        utils._getRecipient(flexibleDoc, 'ancestor:health_center')
           .should.equal(parentPhone);
       });
       it('resolves clinic based on patient if given', () => {
@@ -106,7 +142,27 @@ describe('messageUtils', () => {
             }
           }
         };
+        const contextFlexible = {
+          patient: {
+            parent: {
+              type: 'contact',
+              contact_type: 'clinic',
+              contact: {
+                phone: '111'
+              }
+            }
+          },
+          parent: {
+            type: 'contact',
+            contact_type: 'clinic',
+            contact: {
+              phone: '222'
+            }
+          }
+        };
         utils._getRecipient(context, 'clinic')
+          .should.equal('111');
+        utils._getRecipient(contextFlexible, 'clinic')
           .should.equal('111');
       });
     });
