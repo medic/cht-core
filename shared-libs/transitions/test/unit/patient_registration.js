@@ -291,12 +291,7 @@ describe('patient registration', () => {
 
   it('registration sets up responses', () => {
     sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon
-      .stub(utils, 'getPatientContact')
-      .resolves({ _id: 'uuid' });
-    sinon
-      .stub(utils, 'getPatientContactUuid')
-      .resolves({ _id: 'uuid' });
+    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'addUniqueId').resolves();
 
     const doc = {
@@ -353,12 +348,7 @@ describe('patient registration', () => {
 
   it('registration responses support locale', () => {
     sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon
-      .stub(utils, 'getPatientContact')
-      .resolves({ _id: 'uuid' });
-    sinon
-      .stub(utils, 'getPatientContactUuid')
-      .resolves({ _id: 'uuid' });
+    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'addUniqueId').resolves();
 
     const doc = {
@@ -506,7 +496,6 @@ describe('patient registration', () => {
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContact');
       sinon.stub(utils, 'getPatientContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'addUniqueId');
 
@@ -523,7 +512,6 @@ describe('patient registration', () => {
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'no_provided_patient_id');
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContact.callCount, 0);
         assert.equal(utils.getPatientContactUuid.callCount, 1);
         assert.equal(transitionUtils.addUniqueId.callCount, 0);
 
@@ -556,7 +544,6 @@ describe('patient registration', () => {
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContact');
       sinon.stub(utils, 'getPatientContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'addUniqueId');
 
@@ -580,7 +567,6 @@ describe('patient registration', () => {
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'provided_patient_id_not_unique');
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContact.callCount, 0);
         assert.equal(utils.getPatientContactUuid.callCount, 1);
         assert.equal(transitionUtils.addUniqueId.callCount, 0);
 
@@ -617,7 +603,6 @@ describe('patient registration', () => {
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContact');
       sinon.stub(utils, 'getPatientContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'addUniqueId');
 
@@ -640,7 +625,6 @@ describe('patient registration', () => {
         assert.equal(changed, true);
         assert.equal(doc.errors, undefined);
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContact.callCount, 0);
         assert.equal(utils.getPatientContactUuid.callCount, 1);
         assert.equal(transitionUtils.addUniqueId.callCount, 0);
 
