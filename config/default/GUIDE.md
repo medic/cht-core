@@ -1,4 +1,4 @@
-# Configuring Reference Applications
+# Cookbook for Reference Applications
 
 These instructions are aimed at developers and technical people who are exploring the Reference Application and want to make small changes to see what is possible.
 
@@ -18,7 +18,7 @@ To perform individual actions, see [medic-conf's documentation](https://github.c
 
 ## Modifying Forms
 
-Generally, the forms are created and edited in XLSX format (a spreadsheet format that can be opened with Excel, Libreoffice, Google Sheets, or your favourite Office tool) and later converted into a XML format to upload to the instance. The forms are categorized into app forms (Action or Task forms such as pregnancy registration, delivery report) and contact forms (Place or Person forms).
+Generally, each form is created and edited as an [XLSForm](http://xlsform.org) file, which is an Excel spreadsheet file that uses a special notation, and can also be opened with Libreoffice, Google Sheets, or your favourite Office tool. The XLSForm is later converted into an [XForm](https://opendatakit.github.io/xforms-spec/) XML file to upload to the instance. The forms are categorized into app forms (action or task forms such as pregnancy registration, delivery report) and contact forms (Place or Person forms).
 
 To edit app forms, see `./forms/app/*.xlsx`. To edit contact forms, see `./forms/contact/*.xlsx`.
 
