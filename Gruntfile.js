@@ -529,10 +529,7 @@ module.exports = function(grunt) {
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
-      'check-version':
-        // fail if this build is tagged and the tag doesn't match the package lock version
-        `if [ ! -z $TRAVIS_TAG ] && [[ $TRAVIS_TAG != ${packageJson.version}* ]]; then ` +
-        'echo "git tag does not match package.json version" && exit 1; fi',
+      'check-version': `node scripts/travis/check-versions.js`,
       'undo-patches': {
         cmd: function() {
           var modulesToPatch = [
