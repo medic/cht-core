@@ -42,10 +42,8 @@
 
         const error = { message: exception.message, stack: exception.stack, cause: cause };
         try {
-          Feedback.submit(error, false, err => {
-            if (err) {
-              $log.error('Error saving feedback', err);
-            }
+          Feedback.submit(error).catch(err => {
+            $log.error('Error saving feedback', err);
           });
         } catch(e) {
           // stop infinite loop of exceptions

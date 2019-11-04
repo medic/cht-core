@@ -130,10 +130,6 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
       }
 
-      function setVersion(version) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
-      }
-
       function updateReplicationStatus(replicationStatus) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
       }
@@ -176,7 +172,6 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowContent,
         setTitle,
         setUnreadCount,
-        setVersion,
         updateReplicationStatus,
         updateUnreadCount,
 

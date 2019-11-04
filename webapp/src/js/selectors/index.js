@@ -22,7 +22,6 @@ const getShowActionBar = state => getGlobalState(state).showActionBar;
 const getShowContent = state => getGlobalState(state).showContent;
 const getTitle = state => getGlobalState(state).title;
 const getUnreadCount = state => getGlobalState(state).unreadCount;
-const getVersion = state => getGlobalState(state).version;
 
 // Analytics
 const getAnalyticsState = state => state.analytics;
@@ -86,7 +85,6 @@ angular.module('inboxServices').constant('Selectors', {
   getShowContent,
   getTitle,
   getUnreadCount,
-  getVersion,
 
   getAnalyticsState,
   getSelectedAnalytics,
