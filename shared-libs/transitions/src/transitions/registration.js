@@ -128,8 +128,8 @@ const getDaysSinceDOB = doc => {
  * */
 const getWeeksSinceLMP = doc => {
   const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
-  let prop = props.find(prop => !isNaN(Number(doc.fields && doc.fields[prop])));
-  return prop && doc.fields[prop];
+  const prop = props.find(prop => !isNaN(Number(doc.fields && doc.fields[prop])));
+  return Number(prop && doc.fields[prop]);
 };
 
 const setExpectedBirthDate = doc => {
