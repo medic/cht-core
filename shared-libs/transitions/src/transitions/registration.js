@@ -128,12 +128,16 @@ const getDaysSinceDOB = doc => {
  * */
 const getWeeksSinceLMP = doc => {
   const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
-  const prop = props.find(prop => !isNaN(Number(doc.fields && doc.fields[prop])));
-  return Number(prop && doc.fields[prop]);
+  for (let prop of props) {
+    const lmp = Number(doc.fields && doc.fields[prop]);
+    if (!isNaN(lmp)) {
+      return lmp;
+    }
+  }
 };
 
 const setExpectedBirthDate = doc => {
-  const lmp = Number(getWeeksSinceLMP(doc)),
+  const lmp = getWeeksSinceLMP(doc),
         start = moment(doc.reported_date).startOf('day');
   if (lmp === 0) {
     // means baby was already born, chw just wants a registration.
