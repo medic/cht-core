@@ -179,7 +179,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-11-04 13:12:45">
+        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-11-04 14:14:20">
           <inputs>
             <meta>
               <location>
@@ -245,27 +245,27 @@
             </custom_translations>
           </danger_signs>
           <data tag="hidden">
-            <__visited_hf tag="hidden"/>
-            <__still_experiencing_danger_sign tag="hidden"/>
-            <__vaginal_bleeding tag="hidden"/>
-            <__fits tag="hidden"/>
-            <__severe_abdominal_pain tag="hidden"/>
-            <__severe_headache tag="hidden"/>
-            <__very_pale tag="hidden"/>
-            <__fever tag="hidden"/>
-            <__reduced_or_no_fetal_movements tag="hidden"/>
-            <__breaking_water tag="hidden"/>
-            <__easily_tired tag="hidden"/>
-            <__face_hand_swelling tag="hidden"/>
-            <__breathlessness tag="hidden"/>
-            <__has_danger_sign tag="hidden"/>
+            <__visited_hf/>
+            <__still_experiencing_danger_sign/>
+            <__vaginal_bleeding/>
+            <__fits/>
+            <__severe_abdominal_pain/>
+            <__severe_headache/>
+            <__very_pale/>
+            <__fever/>
+            <__reduced_or_no_fetal_movements/>
+            <__breaking_water/>
+            <__easily_tired/>
+            <__face_hand_swelling/>
+            <__breathlessness/>
+            <__has_danger_sign/>
             <meta tag="hidden">
-              <__patient_uuid tag="hidden"/>
-              <__patient_id tag="hidden"/>
-              <__household_uuid tag="hidden"/>
-              <__source tag="hidden"/>
-              <__source_id tag="hidden"/>
-              <__pregnancy_uuid tag="hidden"/>
+              <__patient_uuid/>
+              <__patient_id/>
+              <__household_uuid/>
+              <__source/>
+              <__source_id/>
+              <__pregnancy_uuid/>
             </meta>
           </data>
           <meta tag="hidden">

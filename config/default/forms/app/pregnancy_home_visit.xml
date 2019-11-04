@@ -755,7 +755,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-11-04 13:57:35">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-11-04 14:18:58">
           <inputs>
             <meta>
               <location>
@@ -902,9 +902,9 @@
                 <appointment_date/>
               </anc_next_visit_date>
               <anc_visit_advice_note tag="hidden">
-                <who_recommends_note tag="hidden"/>
-                <prenancy_age_note tag="hidden"/>
-                <refer_note tag="hidden"/>
+                <who_recommends_note/>
+                <prenancy_age_note/>
+                <refer_note/>
               </anc_visit_advice_note>
             </anc_visits_hf_next>
           </anc_visits_hf>

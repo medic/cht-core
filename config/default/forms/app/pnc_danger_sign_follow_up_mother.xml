@@ -128,7 +128,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-11-04 13:13:35">
+        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-11-04 14:08:55">
           <inputs>
             <meta>
               <location>
@@ -181,10 +181,10 @@
             <refer_patient_note_1 tag="hidden"/>
             <refer_patient_note_2 tag="hidden"/>
             <custom_translations tag="hidden">
-              <custom_woman_label_translator tag="hidden"/>
-              <custom_woman_label tag="hidden"/>
-              <custom_woman_start_label_translator tag="hidden"/>
-              <custom_woman_start_label tag="hidden"/>
+              <custom_woman_label_translator/>
+              <custom_woman_label/>
+              <custom_woman_start_label_translator/>
+              <custom_woman_start_label/>
             </custom_translations>
           </danger_signs>
           <data tag="hidden">

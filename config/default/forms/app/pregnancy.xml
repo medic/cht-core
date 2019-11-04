@@ -668,7 +668,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-11-04 13:13:42">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2019-11-04 14:10:02">
           <inputs>
             <meta>
               <location>
@@ -740,13 +740,13 @@
               <u_edd/>
             </method_edd>
             <method_lmp_summary tag="hidden">
-              <lmp_check_note tag="hidden"/>
-              <lmp_approx_weeks_check_note tag="hidden"/>
-              <lmp_approx_months_check_note tag="hidden"/>
-              <u_edd_note tag="hidden"/>
-              <edd_note tag="hidden"/>
-              <lmp_note tag="hidden"/>
-              <edd_check_note tag="hidden"/>
+              <lmp_check_note/>
+              <lmp_approx_weeks_check_note/>
+              <lmp_approx_months_check_note/>
+              <u_edd_note/>
+              <edd_note/>
+              <lmp_note/>
+              <edd_check_note/>
             </method_lmp_summary>
             <g_lmp_date_8601 tag="hidden"/>
             <g_lmp_date tag="hidden"/>
@@ -781,9 +781,9 @@
                 <appointment_date/>
               </anc_next_visit_date>
               <anc_visit_advice_note tag="hidden">
-                <who_recommends_note tag="hidden"/>
-                <prenancy_age_note tag="hidden"/>
-                <refer_note tag="hidden"/>
+                <who_recommends_note/>
+                <prenancy_age_note/>
+                <refer_note/>
               </anc_visit_advice_note>
             </anc_visits_hf_next>
           </anc_visits_hf>

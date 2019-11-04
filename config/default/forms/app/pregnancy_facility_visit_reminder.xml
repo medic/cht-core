@@ -65,7 +65,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-11-04 13:13:55">
+        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-11-04 14:15:20">
           <inputs>
             <meta>
               <location>
@@ -103,7 +103,7 @@
           <patient_short_name tag="hidden"/>
           <patient_short_name_start tag="hidden"/>
           <pregnancy_uuid_ctx/>
-          <visit_date_for_task tag="hidden"/>
+          <visit_date_for_task/>
           <facility_visit_reminder>
             <remind_note tag="hidden"/>
             <remind_method/>
