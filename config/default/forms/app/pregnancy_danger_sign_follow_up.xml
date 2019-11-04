@@ -176,37 +176,10 @@
           <text id="/pregnancy_danger_sign_follow_up/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/pregnancy_danger_sign_follow_up/patient_age_in_years:label">
-            <value>Patient Age in Years</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/patient_name:label">
-            <value>Patient Name</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/patient_short_name:label">
-            <value>Patient Short Name</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/patient_short_name_start:label">
-            <value>Patient Sort Name Start Label</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/patient_uuid:label">
-            <value>Patient UUID</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/pregnancy_uuid_ctx:label">
-            <value>Pregnancy UUID</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up:label">
-            <value>Danger Signs Present</value>
-          </text>
-          <text id="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up_date:label">
-            <value>Danger Signs Follow Up Date</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-11-04 12:23:08">
+        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-11-04 13:12:45">
           <inputs>
             <meta>
               <location>
@@ -315,7 +288,7 @@
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_danger_sign_follow_up/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_danger_sign_follow_up/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_danger_sign_follow_up/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_danger_sign_follow_up/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/pregnancy_danger_sign_follow_up/patient_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_label)" nodeset="/pregnancy_danger_sign_follow_up/patient_short_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_start_label)" nodeset="/pregnancy_danger_sign_follow_up/patient_short_name_start" type="string"/>
