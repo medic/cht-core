@@ -49,7 +49,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         usersHomePlaceId;
 
     ctrl.filterTasks = function(task) {
-      return !taskEndDate || taskEndDate.isAfter(task.date);
+      return !taskEndDate || taskEndDate.isAfter(task.dueDate);
     };
     ctrl.filterReports = function(report) {
       return !reportStartDate || reportStartDate.isBefore(report.reported_date);

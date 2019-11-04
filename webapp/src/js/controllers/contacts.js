@@ -244,22 +244,14 @@ const PAGE_SIZE = 50;
                      settings.muting.unmute_forms.includes(formId));
     };
 
-    const getTasks = () => {
+    const getTaskDocs = () => {
       return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selectedContact, 'ContactsCtrl', receiveTasks))
+        .then(() => {
+          return TasksForContact(ctrl.selectedContact)
+            .then(taskDocs => ctrl.updateSelectedContact({ tasks: taskDocs.map(doc => doc.emission) }))
+            .catch(err => $log.error('Failed to load tasks for contact', err));
+        })
         .catch(() => $log.debug('Not authorized to view tasks'));
-    };
-
-    const receiveTasks = (tasks) => {
-      const tasksByContact = {};
-      tasks.forEach(task => {
-        if (task.doc && task.doc.contact) {
-          const contactId = task.doc.contact._id;
-          tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
-        }
-      });
-      ctrl.updateSelectedContact({ tasks });
-      ctrl.updateSelectedContact({ tasksByContact });
     };
 
     const getTitle = selected => {
@@ -304,11 +296,11 @@ const PAGE_SIZE = 50;
               return $q.all([
                 ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
                 Settings(),
-                getTasks()
+                getTaskDocs()
               ])
               .then(([ summary, settings ]) => {
                 ctrl.setContactsLoadingSummary(false);
-                ctrl.updateSelectedContact({ summary: summary });
+                ctrl.updateSelectedContact({ summary });
                 const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
                 XmlForms.listen('ContactsCtrl', options, function(err, forms) {
                   if (err) {
@@ -431,13 +423,7 @@ const PAGE_SIZE = 50;
         // disable UHC for DB admins
         return false;
       }
-      return Auth('can_view_last_visited_date')
-        .then(function() {
-          return true;
-        })
-        .catch(function() {
-          return false;
-        });
+      return Auth.has('can_view_last_visited_date');
     };
 
     var setupPromise = $q

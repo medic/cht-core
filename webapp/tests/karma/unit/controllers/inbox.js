@@ -57,6 +57,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('Contact', sinon.stub());
       $provide.value('CountMessages', { init: sinon.stub() });
       $provide.value('DeleteDocs', KarmaUtils.nullPromise());
+      $provide.value('Debug', { set: sinon.stub() });
       $provide.value('XmlForms', sinon.stub());
       $provide.value('Contacts', sinon.stub());
       $provide.value('PlaceHierarchy', () => Promise.resolve());
@@ -109,6 +110,12 @@ describe('InboxCtrl controller', () => {
         return $controller('InboxCtrl', {
           $scope: scope,
           $rootScope: $rootScope,
+          $window: {
+            addEventListener: () => {},
+            location: { href: '' },
+            startupTimes: {},
+            PouchDB: {},
+          },
         });
       };
     });
@@ -218,7 +225,8 @@ describe('InboxCtrl controller', () => {
   });
 
   it('InboxUserContent Changes listener callback should check current session', () => {
-    changesListener['inbox-user-context'].callback();
     chai.expect(session.init.callCount).to.equal(1);
+    changesListener['inbox-user-context'].callback();
+    chai.expect(session.init.callCount).to.equal(2);
   });
 });

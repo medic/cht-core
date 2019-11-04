@@ -17,7 +17,7 @@ describe('sender directive', function() {
   it('should render nothing when no message', function() {
     var element = compile('<mm-sender message="message"></mm-sender>')(scope);
     scope.$digest();
-    chai.expect(element.html().trim()).to.equal('<!-- ngIf: message -->');
+    chai.expect(element.html().trim()).to.equal('<!---->');
   });
 
   it('should render sender when message has from', function() {
