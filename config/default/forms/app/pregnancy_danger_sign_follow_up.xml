@@ -143,6 +143,66 @@
           <text id="/pregnancy_danger_sign_follow_up/danger_signs:label">
             <value>Danger Sign Follow-up</value>
           </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__breaking_water:label">
+            <value>Whether or not the woman's water has broken.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__breathlessness:label">
+            <value>Whether or not the woman is suffering from breathlessness.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__easily_tired:label">
+            <value>Whether or not the woman tires easily.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__face_hand_swelling:label">
+            <value>Whether or not the woman is suffering from swelling in the face and hands.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__fever:label">
+            <value>Whether or not the woman has a fever.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__fits:label">
+            <value>Whether or not the woman is suffering from fits.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__has_danger_sign:label">
+            <value>Whether or not any danger signs are present.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__reduced_or_no_fetal_movements:label">
+            <value>Whether or not the woman is experiencing reduced or no fetal movements.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__severe_abdominal_pain:label">
+            <value>Whether or not the woman is suffering from abdominal pain.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__severe_headache:label">
+            <value>Whether or not the woman is suffering from severe headaches.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__still_experiencing_danger_sign:label">
+            <value>Whether or not the woman is still experiencing any danger signs.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__vaginal_bleeding:label">
+            <value>Whether or not the woman is experiencing vaginal bleeding.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__very_pale:label">
+            <value>Whether or not the woman appears very pale.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/__visited_hf:label">
+            <value>Whether or not the woman was taken to the health facility as recommended.</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/meta/__household_uuid:label">
+            <value>Household uuid</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/meta/__patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/meta/__patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/meta/__pregnancy_uuid:label">
+            <value>Pregnancy UUID</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/meta/__source:label">
+            <value>Source</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/data/meta/__source_id:label">
+            <value>Source ID</value>
+          </text>
           <text id="/pregnancy_danger_sign_follow_up/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
@@ -176,10 +236,37 @@
           <text id="/pregnancy_danger_sign_follow_up/inputs/source_id:label">
             <value>Source ID</value>
           </text>
+          <text id="/pregnancy_danger_sign_follow_up/patient_age_in_years:label">
+            <value>Patient Age in Years</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/patient_name:label">
+            <value>Patient Name</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/patient_short_name:label">
+            <value>Patient Short Name</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/patient_short_name_start:label">
+            <value>Patient Sort Name Start Label</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/pregnancy_uuid_ctx:label">
+            <value>Pregnancy UUID</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up:label">
+            <value>Danger Signs Present</value>
+          </text>
+          <text id="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up_date:label">
+            <value>Danger Signs Follow Up Date</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-10-17 04:59:36">
+        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-11-04 09:12:34">
           <inputs>
             <meta>
               <location>
@@ -224,7 +311,7 @@
             <congratulate_no_ds_note tag="hidden"/>
             <refer_patient_note_1 tag="hidden"/>
             <refer_patient_note_2 tag="hidden"/>
-            <danger_signs_question_note/>
+            <danger_signs_question_note tag="hidden"/>
             <vaginal_bleeding/>
             <fits/>
             <severe_abdominal_pain/>
@@ -245,27 +332,27 @@
             </custom_translations>
           </danger_signs>
           <data tag="hidden">
-            <__visited_hf/>
-            <__still_experiencing_danger_sign/>
-            <__vaginal_bleeding/>
-            <__fits/>
-            <__severe_abdominal_pain/>
-            <__severe_headache/>
-            <__very_pale/>
-            <__fever/>
-            <__reduced_or_no_fetal_movements/>
-            <__breaking_water/>
-            <__easily_tired/>
-            <__face_hand_swelling/>
-            <__breathlessness/>
-            <__has_danger_sign/>
+            <__visited_hf tag="hidden"/>
+            <__still_experiencing_danger_sign tag="hidden"/>
+            <__vaginal_bleeding tag="hidden"/>
+            <__fits tag="hidden"/>
+            <__severe_abdominal_pain tag="hidden"/>
+            <__severe_headache tag="hidden"/>
+            <__very_pale tag="hidden"/>
+            <__fever tag="hidden"/>
+            <__reduced_or_no_fetal_movements tag="hidden"/>
+            <__breaking_water tag="hidden"/>
+            <__easily_tired tag="hidden"/>
+            <__face_hand_swelling tag="hidden"/>
+            <__breathlessness tag="hidden"/>
+            <__has_danger_sign tag="hidden"/>
             <meta tag="hidden">
-              <__patient_uuid/>
-              <__patient_id/>
-              <__household_uuid/>
-              <__source/>
-              <__source_id/>
-              <__pregnancy_uuid/>
+              <__patient_uuid tag="hidden"/>
+              <__patient_id tag="hidden"/>
+              <__household_uuid tag="hidden"/>
+              <__source tag="hidden"/>
+              <__source_id tag="hidden"/>
+              <__pregnancy_uuid tag="hidden"/>
             </meta>
           </data>
           <meta tag="hidden">

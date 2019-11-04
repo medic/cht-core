@@ -133,7 +133,7 @@
             <value>Yes</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/blue_skin:label">
-            <value>Blue skin color</value>
+            <value>Blue skin color (hypothermia)</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour/no:label">
             <value>No</value>
@@ -266,6 +266,102 @@
           </text>
           <text id="/delivery/condition:label">
             <value><output value=" /delivery/patient_short_name_start "/>'s Condition</value>
+          </text>
+          <text id="/delivery/data/__babies_alive:label">
+            <value>Number of babies delivered that were alive.</value>
+          </text>
+          <text id="/delivery/data/__babies_deceased:label">
+            <value>Number of babies delivered that were dead.</value>
+          </text>
+          <text id="/delivery/data/__babies_delivered:label">
+            <value>Number of babies delivered.</value>
+          </text>
+          <text id="/delivery/data/__convulsions:label">
+            <value>Whether or not the woman is suffering from convulsions.</value>
+          </text>
+          <text id="/delivery/data/__delivered_before_death:label">
+            <value>If the pregnant woman died, did she deliver any babies before dying.</value>
+          </text>
+          <text id="/delivery/data/__delivery_conductor:label">
+            <value>Who delivered the baby (skilled birth attendant, traditional, other).</value>
+          </text>
+          <text id="/delivery/data/__delivery_conductor_other:label">
+            <value>Free text describing who delivered the baby if "other" was selected for delivery_conductor.</value>
+          </text>
+          <text id="/delivery/data/__delivery_date:label">
+            <value>Date the delivery occurred.</value>
+          </text>
+          <text id="/delivery/data/__delivery_mode:label">
+            <value>Type of delivery (vaginal, cesarean).</value>
+          </text>
+          <text id="/delivery/data/__delivery_place:label">
+            <value>Where the delivery took place (health_facility, home, other).</value>
+          </text>
+          <text id="/delivery/data/__delivery_place_other:label">
+            <value>Free text describing where the delivery occurred if "other" was selected for delivery_place.</value>
+          </text>
+          <text id="/delivery/data/__fever:label">
+            <value>Whether or not the woman has a fever.</value>
+          </text>
+          <text id="/delivery/data/__has_danger_sign:label">
+            <value>Whether or not any danger signs are present.</value>
+          </text>
+          <text id="/delivery/data/__pnc_visit_3_days:label">
+            <value>Whether or not the woman attended the 3 day PNC visit.</value>
+          </text>
+          <text id="/delivery/data/__pnc_visit_6_weeks:label">
+            <value>Whether or not the woman attended the 6 week PNC visit.</value>
+          </text>
+          <text id="/delivery/data/__pnc_visit_7_days:label">
+            <value>Whether or not the woman attended the 7 day PNC visit.</value>
+          </text>
+          <text id="/delivery/data/__pnc_visit_within_24_hrs:label">
+            <value>Whether or not the woman attended a PNC visit in the first 24 hours.</value>
+          </text>
+          <text id="/delivery/data/__pnc_visits_additional:label">
+            <value>Whether or not there are additional PNC visits to report.</value>
+          </text>
+          <text id="/delivery/data/__pnc_visits_num_selected:label">
+            <value>Number of pnc visits selected (not including additional reported).</value>
+          </text>
+          <text id="/delivery/data/__severe_headache:label">
+            <value>Whether or not the woman is suffering from severe headaches.</value>
+          </text>
+          <text id="/delivery/data/__vaginal_bleeding:label">
+            <value>Whether or not the woman is experiencing vaginal bleeding.</value>
+          </text>
+          <text id="/delivery/data/__vaginal_discharge:label">
+            <value>Whether or not the woman is experiencing foul smelling vaginal discharge.</value>
+          </text>
+          <text id="/delivery/data/__woman_condition:label">
+            <value>How is the woman doing after delivery (alive well, alive unwell, deceased)</value>
+          </text>
+          <text id="/delivery/data/__woman_death_date:label">
+            <value>Date the woman died.</value>
+          </text>
+          <text id="/delivery/data/__woman_death_notes:label">
+            <value>Free text providing further information related to the death.</value>
+          </text>
+          <text id="/delivery/data/__woman_death_place:label">
+            <value>Where the woman died (health facility, home, other).</value>
+          </text>
+          <text id="/delivery/data/meta/__household_uuid:label">
+            <value>Household uuid</value>
+          </text>
+          <text id="/delivery/data/meta/__patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/delivery/data/meta/__patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/delivery/data/meta/__pregnancy_uuid:label">
+            <value>Pregnancy UUID</value>
+          </text>
+          <text id="/delivery/data/meta/__source:label">
+            <value>Source</value>
+          </text>
+          <text id="/delivery/data/meta/__source_id:label">
+            <value>Source ID</value>
           </text>
           <text id="/delivery/death_info_woman/death_baby_note:label">
             <value>If babies were delivered, you will have the chance to report on them Next &gt;.</value>
@@ -795,7 +891,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-17_05-01">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-11-04_09-05">
           <inputs>
             <meta>
               <location>
@@ -863,7 +959,7 @@
             <woman_death_birth/>
             <woman_death_add_notes/>
             <death_profile_note/>
-            <death_baby_note/>
+            <death_baby_note tag="hidden"/>
             <death_report db-doc="true" tag="hidden">
               <form/>
               <type/>

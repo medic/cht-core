@@ -119,6 +119,60 @@
           <text id="/pnc_danger_sign_follow_up_baby/danger_signs:label">
             <value>Danger Sign Follow-up - Baby</value>
           </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__blue_skin_color:label">
+            <value>Whether or not the baby has blue skin color (hypothermia).</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__body_stiffness:label">
+            <value>Whether or not the baby's body is stiff.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__convulsions:label">
+            <value>Whether or not the baby is suffering from convulsions.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__difficulty_feeding_or_drinking:label">
+            <value>Whether or not the baby is having difficulty feeding or drinking.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__drowsy_or_unconscious:label">
+            <value>Whether or not the baby is drowsy or unconscious.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__fever:label">
+            <value>Whether or not the baby has a fever.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__has_danger_sign:label">
+            <value>Whether or not any danger signs are present.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__infected_umbilical_cord:label">
+            <value>Whether or not the umbilical cord was infected.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__still_experiencing_danger_sign:label">
+            <value>Whether or not the baby is still experiencing any danger signs.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__visited_hf:label">
+            <value>Whether or not the baby was taken to the health facility as recommended.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__vomits_everything:label">
+            <value>Whether or not the baby vomits everything.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/__yellow_skin_color:label">
+            <value>Whether or not the baby has yellow skin color.</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/meta/__delivery_uuid:label">
+            <value>Delivery UUID</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/meta/__household_uuid:label">
+            <value>Household uuid</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/meta/__patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/meta/__patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/meta/__source:label">
+            <value>Source</value>
+          </text>
+          <text id="/pnc_danger_sign_follow_up_baby/data/meta/__source_id:label">
+            <value>Source ID</value>
+          </text>
           <text id="/pnc_danger_sign_follow_up_baby/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
@@ -158,7 +212,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-10-17 05:01:30">
+        <pnc_danger_sign_follow_up_baby delimiter="#" id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" version="2019-11-04 09:05:59">
           <inputs>
             <meta>
               <location>

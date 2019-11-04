@@ -5,6 +5,33 @@
     <model>
       <itext>
         <translation lang="en">
+          <text id="/death_report/data/__date_of_death:label">
+            <value>The date that the patient died.</value>
+          </text>
+          <text id="/death_report/data/__death_information:label">
+            <value>Free text providing further information related to the death.</value>
+          </text>
+          <text id="/death_report/data/__place_of_death:label">
+            <value>Where the patient died (health facility, home, other).</value>
+          </text>
+          <text id="/death_report/data/__place_of_death_other:label">
+            <value>Free text describing where the patient died if "other" was selected for place of death.</value>
+          </text>
+          <text id="/death_report/data/meta/__household_uuid:label">
+            <value>Household uuid</value>
+          </text>
+          <text id="/death_report/data/meta/__patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/death_report/data/meta/__patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/death_report/data/meta/__source:label">
+            <value>Source</value>
+          </text>
+          <text id="/death_report/data/meta/__source_id:label">
+            <value>Source ID</value>
+          </text>
           <text id="/death_report/death_details/date_of_death:jr:constraintMsg">
             <value>Date of death can only be from today up to 1 year ago.</value>
           </text>
@@ -85,7 +112,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
         </translation>
       </itext>
       <instance>
-        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-10-17 04:59:19">
+        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-11-04 09:05:51">
           <inputs>
             <meta>
               <location>
@@ -120,8 +147,8 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
           <patient_uuid tag="hidden"/>
           <patient_id tag="hidden"/>
           <patient_name tag="hidden"/>
-          <patient_short_name/>
-          <patient_display_name/>
+          <patient_short_name tag="hidden"/>
+          <patient_display_name tag="hidden"/>
           <death_details>
             <date_of_death/>
             <place_of_death/>

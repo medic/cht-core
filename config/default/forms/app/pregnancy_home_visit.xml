@@ -275,6 +275,147 @@
           <text id="/pregnancy_home_visit/danger_signs:label">
             <value>Danger Sign Check</value>
           </text>
+          <text id="/pregnancy_home_visit/data/__abortion_date:label">
+            <value>Date of the abortion procedure.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__activity_to_report:label">
+            <value>Activity being reported (home_visit, miscarriage, abortion, refused, migrated).</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__additional_anc_hf_visit_dates:label">
+            <value>Comma separated list of previous health facility visit dates.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__additional_high_risk_condition:label">
+            <value>Free text describing additional risk conditions.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__additional_high_risk_condition_to_report:label">
+            <value>Whether or not there are additional risk factors to report.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__asthma:label">
+            <value>Whether or not the woman suffers from asthma.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__breaking_water:label">
+            <value>Whether or not the woman's water has broken.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__breathlessness:label">
+            <value>Whether or not the woman is suffering from breathlessness.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__diabetes:label">
+            <value>Whether or not the woman suffers from diabetes.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__easily_tired:label">
+            <value>Whether or not the woman tires easily.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__edd_new:label">
+            <value>If updated, this is the new estimated delivery date.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__face_hand_swelling:label">
+            <value>Whether or not the woman is suffering from swelling in the face and hands.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__fever:label">
+            <value>Whether or not the woman has a fever.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__fits:label">
+            <value>Whether or not the woman is suffering from fits.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__gestational_age_correct:label">
+            <value>Whether or not the gestational age that was previously entered is correct.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__gestational_age_update_edd:label">
+            <value>If the gestational age was not correct,this is the new gestational age entered as an EDD.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__gestational_age_update_method:label">
+            <value>If the gestational age was not correct, how will the health worker enter it (weeks or edd).</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__gestational_age_update_weeks:label">
+            <value>If the gestational age was not correct,this is the new gestational age entered as weeks pregnant.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__has_danger_sign:label">
+            <value>Whether or not any danger signs are present.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__has_risk_factors_not_previously_reported:label">
+            <value>Whether or not the woman has risk factors that were not previously entered.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__heart_condition:label">
+            <value>Whether or not the woman suffers from a heart condition.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__high_blood_pressure:label">
+            <value>Whether or not the woman has high blood pressure.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__last_visit_attended:label">
+            <value>Whether or not the woman attended her last scheduled health facility visit.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__lmp_date_new:label">
+            <value>If the last menstual period date has been updated, this is the new value.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__lmp_updated:label">
+            <value>Whether or not the lmp was updated.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__miscarriage_date:label">
+            <value>The date the miscarriage took place.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__next_anc_hf_visit_date:label">
+            <value>The next scheduled health facility visit date.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__next_anc_hf_visit_date_known:label">
+            <value>Whether or not the next health facility visit date is known.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__num_additional_anc_hf_visits:label">
+            <value>Number of additional unreported health facility visits to repot.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__received_deworming_meds:label">
+            <value>Whether or not the woman has received deworming medications.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__received_tetanus_toxoid_this_pregnancy:label">
+            <value>Whether or not the woman has received tetanus toxoid during this pregnancy.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__reduced_or_no_fetal_movements:label">
+            <value>Whether or not the woman is experiencing reduced or no fetal movements.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__report_additional_anc_hf_visits:label">
+            <value>Whether or not there are any additional unreported health facility visits to report.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__severe_abdominal_pain:label">
+            <value>Whether or not the woman is suffering from abdominal pain.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__severe_headache:label">
+            <value>Whether or not the woman is suffering from severe headaches.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__takes_iron_folate_daily:label">
+            <value>Whether or not the woman is taking iron folate daily.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__tested_for_hiv_in_past_3_months:label">
+            <value>Whether or not the woman has been tested for HIV in the past 3 months.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__uses_llin:label">
+            <value>Whether or not the woman sleeps under a long lasting insecticidal net.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__vaginal_bleeding:label">
+            <value>Whether or not the woman is experiencing vaginal bleeding.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__very_pale:label">
+            <value>Whether or not the woman appears very pale.</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/__visit_task_clear_option:label">
+            <value>Which visit tasks does the health worker want to clear (current one, all).</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/meta/__household_uuid:label">
+            <value>Household uuid</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/meta/__patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/meta/__patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/meta/__pregnancy_uuid:label">
+            <value>Pregnancy UUID</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/meta/__source:label">
+            <value>Source</value>
+          </text>
+          <text id="/pregnancy_home_visit/data/meta/__source_id:label">
+            <value>Source ID</value>
+          </text>
           <text id="/pregnancy_home_visit/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
@@ -755,7 +896,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-10-17 04:59:44">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-11-04 08:56:10">
           <inputs>
             <meta>
               <location>
@@ -805,7 +946,7 @@
           <hiv_status_known tag="hidden"/>
           <tt_received tag="hidden"/>
           <deworming_med_received tag="hidden"/>
-          <context_vars>
+          <context_vars tag="hidden">
             <lmp_date_8601_ctx/>
             <lmp_method_approx_ctx/>
             <pregnancy_follow_up_date_recent_ctx/>
@@ -819,16 +960,16 @@
             <pregnancy_uuid_ctx/>
           </context_vars>
           <pregnancy_summary>
-            <current_weeks_pregnant/>
-            <current_weeks_pregnant_unknown/>
-            <current_edd/>
-            <current_edd_unknown/>
+            <current_weeks_pregnant tag="hidden"/>
+            <current_weeks_pregnant_unknown tag="hidden"/>
+            <current_edd tag="hidden"/>
+            <current_edd_unknown tag="hidden"/>
             <visit_option/>
             <g_age_correct/>
           </pregnancy_summary>
           <pregnancy_ended>
             <miscarriage_note tag="hidden"/>
-            <miscarriage_date tag="hidden"/>
+            <miscarriage_date/>
             <abortion_note tag="hidden"/>
             <abortion_date tag="hidden"/>
             <refusing_note tag="hidden"/>
@@ -857,10 +998,10 @@
               <new_edd/>
               <edd_check_note/>
             </update_summary>
-            <lmp_date_8601_new/>
-            <lmp_date_new/>
-            <edd_8601_new/>
-            <edd_new/>
+            <lmp_date_8601_new tag="hidden"/>
+            <lmp_date_new tag="hidden"/>
+            <edd_8601_new tag="hidden"/>
+            <edd_new tag="hidden"/>
           </update_g_age>
           <anc_visits_hf>
             <anc_visits_hf_past>
@@ -870,8 +1011,8 @@
               <visited_hf_count/>
               <visited_date_ask_single/>
               <visited_date_single/>
-              <visited_dates_multiple_note/>
-              <visited_dates_multiple_note_section/>
+              <visited_dates_multiple_note tag="hidden"/>
+              <visited_dates_multiple_note_section tag="hidden"/>
               <visited_dates_count/>
               <visited_dates jr:template="">
                 <visited_date_ask_multiple/>
@@ -879,18 +1020,18 @@
               </visited_dates>
             </anc_visits_hf_past>
             <risk_factors>
-              <previous_risk_factors_note/>
-              <no_previous_risks_note/>
-              <first_pregnancy_note/>
-              <previous_miscarriage_note/>
-              <previous_difficulties_note/>
-              <more_than_4_children_note/>
-              <last_baby_born_less_than_1_year_ago_note/>
-              <heart_condition_note/>
-              <asthma_note/>
-              <high_blood_pressure_note/>
-              <diabetes_note/>
-              <extra_risk_note/>
+              <previous_risk_factors_note tag="hidden"/>
+              <no_previous_risks_note tag="hidden"/>
+              <first_pregnancy_note tag="hidden"/>
+              <previous_miscarriage_note tag="hidden"/>
+              <previous_difficulties_note tag="hidden"/>
+              <more_than_4_children_note tag="hidden"/>
+              <last_baby_born_less_than_1_year_ago_note tag="hidden"/>
+              <heart_condition_note tag="hidden"/>
+              <asthma_note tag="hidden"/>
+              <high_blood_pressure_note tag="hidden"/>
+              <diabetes_note tag="hidden"/>
+              <extra_risk_note tag="hidden"/>
               <new_risks/>
               <additional_risk_check/>
               <additional_risk/>
@@ -902,9 +1043,9 @@
                 <appointment_date/>
               </anc_next_visit_date>
               <anc_visit_advice_note tag="hidden">
-                <who_recommends_note/>
-                <prenancy_age_note/>
-                <refer_note/>
+                <who_recommends_note tag="hidden"/>
+                <prenancy_age_note tag="hidden"/>
+                <refer_note tag="hidden"/>
               </anc_visit_advice_note>
             </anc_visits_hf_next>
           </anc_visits_hf>
@@ -930,7 +1071,7 @@
           <safe_pregnancy_practices>
             <malaria>
               <llin_use/>
-              <llin_advice_note/>
+              <llin_advice_note tag="hidden"/>
               <malaria_prophylaxis_note tag="hidden"/>
             </malaria>
             <iron_folate>
