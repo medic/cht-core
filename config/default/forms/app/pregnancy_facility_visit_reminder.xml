@@ -5,27 +5,6 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/pregnancy_facility_visit_reminder/data/__how_reminded:label">
-            <value>How the health worker reminded the woman, in person or by phone.</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/data/meta/__household_uuid:label">
-            <value>Household uuid</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/data/meta/__patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/data/meta/__patient_uuid:label">
-            <value>Patient UUID</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/data/meta/__pregnancy_uuid:label">
-            <value>Pregnancy UUID</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/data/meta/__source:label">
-            <value>Source</value>
-          </text>
-          <text id="/pregnancy_facility_visit_reminder/data/meta/__source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator/woman:label">
             <value>the woman</value>
           </text>
@@ -86,7 +65,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-11-04 09:12:02">
+        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-11-04 12:23:14">
           <inputs>
             <meta>
               <location>

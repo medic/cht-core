@@ -89,48 +89,6 @@
           <text id="/pnc_danger_sign_follow_up_mother/danger_signs:label">
             <value>Danger Sign Follow-up - Mother</value>
           </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__convulsions:label">
-            <value>Whether or not the woman is suffering from convulsions.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__fever:label">
-            <value>Whether or not the woman has a fever.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__has_danger_sign:label">
-            <value>Whether or not any danger signs are present.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__severe_headache:label">
-            <value>Whether or not the woman is suffering from severe headaches.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__still_experiencing_danger_sign:label">
-            <value>Whether or not the woman is still experiencing any danger signs.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__vaginal_bleeding:label">
-            <value>Whether or not the woman is experiencing vaginal bleeding.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__vaginal_discharge:label">
-            <value>Whether or not the woman is experiencing foul smelling vaginal discharge.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/__visited_hf:label">
-            <value>Whether or not the woman went to the health facility as recommended.</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/meta/__delivery_uuid:label">
-            <value>Pregnancy UUID</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/meta/__household_uuid:label">
-            <value>Household uuid</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/meta/__patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/meta/__patient_uuid:label">
-            <value>Patient UUID</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/meta/__source:label">
-            <value>Source</value>
-          </text>
-          <text id="/pnc_danger_sign_follow_up_mother/data/meta/__source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/pnc_danger_sign_follow_up_mother/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
@@ -170,7 +128,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-11-04 09:06:02">
+        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-11-04 12:22:19">
           <inputs>
             <meta>
               <location>

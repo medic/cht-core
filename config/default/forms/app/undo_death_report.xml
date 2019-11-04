@@ -5,24 +5,6 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/undo_death_report/data/__confirm_undo:label">
-            <value>Confirm Undo</value>
-          </text>
-          <text id="/undo_death_report/data/meta/__household_uuid:label">
-            <value>Household uuid</value>
-          </text>
-          <text id="/undo_death_report/data/meta/__patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/undo_death_report/data/meta/__patient_uuid:label">
-            <value>Patient UUID</value>
-          </text>
-          <text id="/undo_death_report/data/meta/__source:label">
-            <value>Source</value>
-          </text>
-          <text id="/undo_death_report/data/meta/__source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/undo_death_report/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
@@ -62,7 +44,7 @@
         </translation>
       </itext>
       <instance>
-        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-11-04 09:15:02">
+        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-11-04 12:23:44">
           <inputs>
             <meta>
               <location>
