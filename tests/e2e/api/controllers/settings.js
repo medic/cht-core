@@ -164,10 +164,11 @@ describe('Settings API', () => {
 
 
     it('should validate app_settings against schema', () => {
-      return update({ locale: [] }, true)
+      return update({ locale: [] })
         .catch(e => {
-          expect(e.code).toEqual('400');
-          expect(e.error[0].message).toEqual('should be string');
+          e = e.error;
+          expect(e.code).toEqual(400);
+          expect(JSON.parse(e.error)[0].message).toEqual('should be string');
         })
         .then(() => {
           return utils.request({
