@@ -156,6 +156,7 @@ var _ = require('underscore'),
       return $sce.trustAsHtml(getRelativeDate(dod, {
         FormatDate: FormatDate,
         RelativeDate: RelativeDate,
+        withoutTime: true,
         prefix: $translate.instant('contact.deceased.date.prefix') + '&nbsp;'
       }));
     };
