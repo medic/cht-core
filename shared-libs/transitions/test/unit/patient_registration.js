@@ -243,27 +243,20 @@ describe('patient registration', () => {
   });
 
   it('valid form adds patient_id and patient document', () => {
-    sinon.stub(utils, 'getPatientContactUuid').resolves();
+    sinon.stub(utils, 'getContactUuid').resolves();
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+    config.get.withArgs('contact_types').returns([
+      { id: 'some_place' },
+      { id: 'person', parents: ['some_place'], person: true }
+    ]);
 
     const doc = {
       _id: 'docid',
       form: 'PATR',
       fields: { patient_name: 'abc' },
+      contact: { _id: 'the-contact', parent: { _id: 'the-parent', type: 'some_place' } },
       reported_date: 'now',
     };
-    sinon.stub(db.medic, 'query').resolves({
-      rows: [
-        {
-          doc: {
-            _id: 'the-contact',
-            parent: {
-              _id: 'the-parent',
-            },
-          },
-        },
-      ],
-    });
     const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -287,7 +280,7 @@ describe('patient registration', () => {
 
   it('registration sets up responses', () => {
     sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
+    sinon.stub(utils, 'getContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
     const doc = {
@@ -344,7 +337,7 @@ describe('patient registration', () => {
 
   it('registration responses support locale', () => {
     sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
+    sinon.stub(utils, 'getContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
     const doc = {
@@ -488,18 +481,17 @@ describe('patient registration', () => {
           patient_name: 'Chris'
         },
         from: '+1234',
-        reported_date: 1234
+        reported_date: 1234,
+        contact: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place', type: 'contact', contact_type: 'place' } }
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContactUuid').resolves(false);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
-
-      sinon.stub(db.medic, 'query')
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({
-          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
-        });
+      sinon.stub(utils, 'getContactUuid').resolves(false);
+      sinon.stub(transitionUtils, 'getUniqueId');
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' },
+        { id: 'person', person: true, parents: ['place'] },
+      ]);
 
       sinon.stub(db.medic, 'post').resolves();
 
@@ -508,12 +500,9 @@ describe('patient registration', () => {
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'no_provided_patient_id');
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContactUuid.callCount, 1);
+        assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_phone');
-        assert.deepEqual(db.medic.query.args[0][1], { key: '+1234', include_docs: true });
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {
           name: 'Chris',
@@ -536,19 +525,20 @@ describe('patient registration', () => {
           my_patient_id: 'not_unique'
         },
         from: '+1234',
-        reported_date: 1234
+        reported_date: 1234,
+        contact: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place', type: 'place' } }
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContactUuid').resolves(false);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+      sinon.stub(utils, 'getContactUuid').resolves(false);
+      sinon.stub(transitionUtils, 'getUniqueId');
 
       sinon.stub(db.medic, 'query');
-      db.medic.query
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({
-          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
-        });
+
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' },
+        { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       db.medic.query
         .withArgs('medic-client/contacts_by_reference')
@@ -563,15 +553,12 @@ describe('patient registration', () => {
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'provided_patient_id_not_unique');
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContactUuid.callCount, 1);
+        assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 2);
+        assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'not_unique'] });
-
-        assert.deepEqual(db.medic.query.args[1][0], 'medic-client/contacts_by_phone');
-        assert.deepEqual(db.medic.query.args[1][1], { key: '+1234', include_docs: true });
 
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {
@@ -595,20 +582,20 @@ describe('patient registration', () => {
           my_patient_id: 'unique'
         },
         from: '+1234',
-        reported_date: 1234
+        reported_date: 1234,
+        contact: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place', type: 'place' } },
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContactUuid').resolves(false);
-      sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+      sinon.stub(utils, 'getContactUuid').resolves(false);
+      sinon.stub(transitionUtils, 'getUniqueId');
+
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' },
+        { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       sinon.stub(db.medic, 'query');
-      db.medic.query
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({
-          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
-        });
-
       db.medic.query
         .withArgs('medic-client/contacts_by_reference')
         .resolves({
@@ -621,15 +608,12 @@ describe('patient registration', () => {
         assert.equal(changed, true);
         assert.equal(doc.errors, undefined);
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContactUuid.callCount, 1);
+        assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 2);
+        assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'unique'] });
-
-        assert.deepEqual(db.medic.query.args[1][0], 'medic-client/contacts_by_phone');
-        assert.deepEqual(db.medic.query.args[1][1], { key: '+1234', include_docs: true });
 
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {

@@ -105,17 +105,17 @@ app.use((req, res, next) => {
 });
 
 morgan.token('id', req => req.id);
-//
-// app.use(
-//   morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
-//     immediate: true,
-//   })
-// );
-// app.use(
-//   morgan(
-//     'RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'
-//   )
-// );
+
+app.use(
+  morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
+    immediate: true,
+  })
+);
+app.use(
+  morgan(
+    'RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'
+  )
+);
 
 app.use(
   helmet({

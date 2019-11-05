@@ -1,4 +1,4 @@
-const getConfig = config => config.get('contact_types') || [];
+const getConfig = config => config && config.get && config.get('contact_types') || [];
 
 const getTypeId = (doc) => doc && ((doc.type === 'contact' && doc.contact_type) || doc.type);
 
@@ -16,13 +16,13 @@ const isPlaceType = (config, typeId) => {
 
 const hasParents = (type) => !!(type && type.parents && type.parents.length);
 
-const isParentOf = (config, parent, child) => {
-  const parentType = getTypeById(config, getTypeId(parent));
-  const childType = getTypeById(config, getTypeId(child));
+const isParentOf = (parentType, childType) => {
   if (!parentType || !childType) {
     return false;
   }
-  return !!(childType && childType.parents && childType.parents.includes(parentType.id));
+
+  const parentTypeId = typeof parentType === 'string' ? parentType : parentType.id;
+  return !!(childType && childType.parents && childType.parents.includes(parentTypeId));
 };
 
 // A leaf place type is a contact type that does not have any child place types, but can have child person types

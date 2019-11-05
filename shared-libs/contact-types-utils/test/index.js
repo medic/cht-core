@@ -203,8 +203,36 @@ describe('ContactType Utils', () => {
   });
 
   describe('getLeafPlaceTypes', () => {
-    it('should ', () => {
-      
+    it('should not crash with no config', () => {
+      chai.expect(utils.getLeafPlaceTypes()).to.deep.equal([]);
+      chai.expect(utils.getLeafPlaceTypes({})).to.deep.equal([]);
+    });
+
+    it('should return leaf place types', () => {
+      const hierarchy = [
+        { id: 'root' },
+        { id: 'l1', parents: ['root'] },
+        { id: 'b1', parents: ['root'] },
+        { id: 'b2', parents: ['root'] },
+        { id: 'b3', parents: ['b1'] },
+        { id: 'l2', parents: ['b2'] },
+        { id: 'l3', parents: ['b2'] },
+        { id: 'b4', parents: ['b3'] },
+        { id: 'b5', parents: ['b3'] },
+        { id: 'l4', parents: ['b4'] },
+        { id: 'l5', parents: ['b5'] },
+        { id: 'p1', parents: ['l1', 'l3', 'b3', 'b5'], person: true },
+        { id: 'p2', parents: ['root', 'l2', 'l4', 'b4'], person: true },
+        { id: 'p4', parents: ['l1', 'l2', 'l3', 'l4', 'l5'], person: true },
+      ];
+      config.get.returns(hierarchy);
+      chai.expect(utils.getLeafPlaceTypes(config)).to.have.deep.members([
+        { id: 'l1', parents: ['root'] },
+        { id: 'l2', parents: ['b2'] },
+        { id: 'l3', parents: ['b2'] },
+        { id: 'l4', parents: ['b4'] },
+        { id: 'l5', parents: ['b5'] },
+      ]);
     });
   });
 });

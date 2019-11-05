@@ -59,7 +59,7 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves();
+      const getPatientContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       const view = sinon.stub(db.medic, 'query').resolves({
         rows: [
@@ -71,6 +71,7 @@ describe('registration', () => {
           },
         ],
       });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -79,10 +80,10 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
-        doc.patient_id = patientId;
-        return Promise.resolve();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       return transition.onMatch(change).then(() => {
         getPatientContactUuid.callCount.should.equal(1);
@@ -125,6 +126,9 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(0);
@@ -142,13 +146,14 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').resolves();
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
         .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves(1);
       const eventConfig = {
         form: 'R',
@@ -163,6 +168,9 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(transitionUtils, 'isIdUnique').resolves(true);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       return transition.onMatch(change).then(() => {
         saveDoc.args[0][0].patient_id.should.equal(patientId);
@@ -183,7 +191,7 @@ describe('registration', () => {
           birth_date: '2017-03-31T01:15:09.000Z',
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').resolves();
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon.stub(db.medic, 'query').resolves({
         rows: [
@@ -195,6 +203,7 @@ describe('registration', () => {
           },
         ],
       });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -207,10 +216,10 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
-        doc.patient_id = '05649';
-        return Promise.resolve();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves('05649');
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'patient', person: true, parents: ['place'] }
+      ]);
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -230,13 +239,14 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').resolves();
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
         .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -251,6 +261,9 @@ describe('registration', () => {
       const configGet = sinon.stub(config, 'get');
       configGet.withArgs('outgoing_deny_list').returns('');
       configGet.returns([eventConfig]);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
 
@@ -276,13 +289,14 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').resolves(1);
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
         .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -301,6 +315,9 @@ describe('registration', () => {
       sinon.stub(transitionUtils, 'isIdUnique').resolves(false);
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.be.equal('undefined');
@@ -329,13 +346,14 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').resolves();
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
         .resolves({
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -345,10 +363,10 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
-        doc.patient_id = patientId;
-        return Promise.resolve();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -372,13 +390,14 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').resolves();
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .resolves(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -394,10 +413,10 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
-        doc.patient_id = patientId;
-        return Promise.resolve();
-      });
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -421,13 +440,14 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').resolves();
+      sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
         .resolves({
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -440,11 +460,10 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
-        doc.patient_id = patientId;
-        return Promise.resolve();
-      });
-
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.get.withArgs('contact_types').returns([
+        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
+      ]);
 
 
       return transition.onMatch(change).then(() => {
@@ -514,9 +533,7 @@ describe('registration', () => {
         .stub(utils, 'getRegistrations')
         .resolves([{ _id: 'xyz' }]);
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
-      sinon
-        .stub(utils, 'getPatientContactUuid')
-        .resolves({ _id: 'uuid' });
+      sinon.stub(utils, 'getContactUuid').resolves('uuid');
       const assignSchedule = sinon
         .stub(schedules, 'assignSchedule')
         .returns(true);
@@ -893,6 +910,7 @@ describe('registration', () => {
 
         const expectedContext = {
           patient: testPatient,
+          place: undefined,
           registrations: testRegistration,
           templateContext: {
             next_msg: {
@@ -950,6 +968,7 @@ describe('registration', () => {
         addMessage.callCount.should.equal(1);
         const expectedContext = {
           patient: testPatient,
+          place: undefined,
           registrations: testRegistration,
           templateContext: {
             next_msg: {

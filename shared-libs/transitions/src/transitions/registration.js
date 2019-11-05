@@ -28,19 +28,20 @@ const getRegistrations = (patientId) => {
   return utils.getRegistrations({ id: patientId });
 };
 
-const createsPlace = (trigger) => trigger === 'add_place';
+const getPatientNameField = (params) => getNameField(params, 'patient');
+const getPlaceNameField = (params) => getNameField(params, 'place');
 
-const getNameField = (params, trigger) => {
+const getNameField = (params, prefix) => {
   if (Array.isArray(params) && params.length && params[0]) {
     return params[0];
   }
 
-  const nameField = createsPlace(trigger) ? 'place_name_field' : 'patient_name_field';
+  const nameField = `${prefix}_name_field`;
   if (params && params[nameField]) {
     return params[nameField];
   }
 
-  const defaultNameField = createsPlace(trigger) ? 'place_name' : 'patient_name';
+  const defaultNameField = `${prefix}_name`;
   return defaultNameField;
 };
 
@@ -349,10 +350,27 @@ const setPatientId = (options) => {
   }
 };
 
+const getParentByPhone = options => {
+  return db.medic
+    .query('medic-client/contacts_by_phone', { key: options.doc.from, include_docs: true })
+    .then(result => result && result.rows && result.rows.length && result.rows[0].doc)
+    .then(contact => {
+      if (!contact) {
+        return;
+      }
+
+      options.doc.contact = contact;
+      return contact.parent && db.medic.get(contact.parent._id);
+    });
+};
+
 const getParent = options => {
   if (!options.params.parent_id) {
-    const parent = JSON.parse(JSON.stringify(options.doc.contact.parent));
-    return Promise.resolve(parent);
+    if (options.doc.contact && options.doc.contact.parent) {
+      return Promise.resolve(JSON.parse(JSON.stringify(options.doc.contact.parent)));
+    }
+
+    return getParentByPhone(options);
   }
 
   if (!options.doc.fields[options.params.parent_id]) {
@@ -370,17 +388,16 @@ const getParent = options => {
   });
 };
 
-const validateParent = (parent, child) => contactTypesUtils.isParentOf(config, parent, child);
+const validateParent = (parent, child) => {
+  const parentTypeId = contactTypesUtils.getTypeId(parent);
+  const childType = contactTypesUtils.getTypeById(config, contactTypesUtils.getTypeId(child));
+  return contactTypesUtils.isParentOf(parentTypeId, childType);
+};
 
 const addPatient = (options) => {
   const doc = options.doc;
   const patientShortcode = options.doc.patient_id;
-  const patientNameField = getNameField(options.params, options.trigger);
-
-  // if the previous step of adding a patient_id failed, skip creating the patient
-  if (!patientShortcode) {
-    return;
-  }
+  const patientNameField = getPatientNameField(options.params);
 
   // create a new patient with this patient_id
   const patient = {
@@ -388,7 +405,6 @@ const addPatient = (options) => {
     reported_date: doc.reported_date,
     patient_id: patientShortcode,
     source_id: doc._id,
-    created_by: doc.contact && doc.contact._id
   };
 
   if (options.params.contact_type) {
@@ -429,6 +445,7 @@ const addPatient = (options) => {
         // assign patient in doc with full parent doc - to be used in messages
         doc.patient = Object.assign({ parent }, patient);
         patient.parent = lineage.minifyLineage(parent);
+        patient.created_by = doc.contact && doc.contact._id;
 
         return db.medic.post(patient);
       });
@@ -438,7 +455,7 @@ const addPatient = (options) => {
 const addPlace = (options) => {
   const doc = options.doc;
   const placeShortcode = doc.place_id;
-  const placeNameField = getNameField(options.params, options.trigger);
+  const placeNameField = getPlaceNameField(options.params);
 
   // create a new place with this place_id
   const place = {
@@ -448,7 +465,6 @@ const addPlace = (options) => {
     reported_date: doc.reported_date,
     place_id: placeShortcode,
     source_id: doc._id,
-    created_by: doc.contact && doc.contact._id,
   };
 
   return utils
@@ -476,6 +492,7 @@ const addPlace = (options) => {
         // assign patient in doc with full parent doc - to be used in messages
         doc.place = Object.assign({ parent }, place);
         place.parent = lineage.minifyLineage(parent);
+        place.created_by = doc.contact && doc.contact._id;
 
         return db.medic.post(place);
       });

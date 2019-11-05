@@ -223,7 +223,7 @@ describe('due tasks', () => {
       .stub(utils, 'translate')
       .returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves(patientUuid);
+    const getPatientContactUuid = sinon.stub(utils, 'getContactUuid').resolves(patientUuid);
     const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
@@ -330,7 +330,7 @@ describe('due tasks', () => {
     const expectedPhone = '5556918';
     const expectedMessage = 'old message';
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves(patientUuid);
+    const getPatientContactUuid = sinon.stub(utils, 'getContactUuid').resolves(patientUuid);
     const fetchHydratedDoc = sinon
       .stub(schedule._lineage, 'fetchHydratedDoc')
       .resolves({ name: 'jim' });
@@ -434,7 +434,7 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').resolves(null);
+    sinon.stub(utils, 'getContactUuid').resolves(null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState');
 
@@ -514,7 +514,7 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').resolves(null);
+    sinon.stub(utils, 'getContactUuid').resolves(null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState').callsFake((task, state) => task.state = state);
 

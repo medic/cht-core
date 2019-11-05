@@ -276,7 +276,7 @@ describe('registration', () => {
           event_type: 'report_accepted',
           message: [{
             locale: 'en',
-            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{parent.name}}'
+            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
           }],
         }],
       }, {
@@ -293,7 +293,7 @@ describe('registration', () => {
           bool_expr: 'doc.patient',
           message: [{
             locale: 'en',
-            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{parent.name}}'
+            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
           }],
         }],
       }],
@@ -1288,7 +1288,7 @@ describe('registration', () => {
           bool_expr: 'doc.place',
           message: [{
             locale: 'en',
-            content: 'Place {{place.name}}({{place_id}}) added to {{parent.name}}'
+            content: 'Place {{place.name}}({{place_id}}) added to {{health_center.name}}'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -1312,7 +1312,7 @@ describe('registration', () => {
           bool_expr: 'doc.place',
           message: [{
             locale: 'en',
-            content: 'Place {{name}}({{place_id}}) added to {{parent.name}}'
+            content: 'Place {{name}}({{place_id}}) added to {{health_center.name}}'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -1350,7 +1350,7 @@ describe('registration', () => {
           bool_expr: 'doc.place',
           message: [{
             locale: 'en',
-            content: 'Place {{name}}({{place_id}}) added to {{parent.name}}'
+            content: 'Place {{name}}({{place_id}}) added to {{district.name}}'
           }],
         }, {
           recipient: 'reporting_unit',
