@@ -286,6 +286,37 @@ const createUsers = async (users, meta = false) => {
   }
 };
 
+const waitForDocRev = (ids) => {
+  ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id );
+
+  const validRow = row => {
+    if (!row.id || !row.value || !row.value.rev) {
+      return false;
+    }
+
+    const expectedRev = ids.find(id => id.id === row.id).rev;
+    if (!expectedRev) {
+      return false;
+    }
+
+    const existentRev = row.value.rev.split('-')[0];
+    return Number(existentRev) >= Number(expectedRev);
+  };
+
+  const opts = {
+    path: '/_all_docs',
+    body: { keys: ids.map(id => id.id) },
+    method: 'POST'
+  };
+
+  return module.exports.requestOnTestDb(opts).then(results => {
+    if (results.rows.every(validRow)) {
+      return;
+    }
+    return module.exports.delayPromise(() => waitForDocRev(ids), 100);
+  });
+};
+
 module.exports = {
   db: db,
   sentinelDb: sentinel,
@@ -598,4 +629,6 @@ module.exports = {
     });
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
+
+  waitForDocRev: waitForDocRev,
 };

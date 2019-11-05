@@ -43,7 +43,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
           return $scope.setSelected(model);
         })
         .then(function() {
-          $translate('contact.deceased')
+          $translate('contact.deceased.title')
             .then(ctrl.setTitle)
             .catch(function(err) {
               $log.error('Failed to translate title', err);

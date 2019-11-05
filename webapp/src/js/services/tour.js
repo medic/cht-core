@@ -597,10 +597,8 @@ angular.module('inboxServices').service('Tour',
               $state.go(route, { tour: name });
             } else {
               var message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
-              Feedback.submit(message, false, function(err) {
-                if (err) {
-                  $log.error('Error saving feedback', err);
-                }
+              Feedback.submit(message).catch(err => {
+                $log.error('Error saving feedback', err);
               }); 
             }
           }

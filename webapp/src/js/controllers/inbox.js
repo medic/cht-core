@@ -18,7 +18,6 @@ var _ = require('underscore'),
     $transitions,
     $translate,
     $window,
-    APP_CONFIG,
     Auth,
     Changes,
     CheckDate,
@@ -65,8 +64,7 @@ var _ = require('underscore'),
         forms: Selectors.getForms(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state),
-        version: Selectors.getVersion(state)
+        showContent: Selectors.getShowContent(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
@@ -86,7 +84,6 @@ var _ = require('underscore'),
         setShowContent: globalActions.setShowContent,
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
-        setVersion: globalActions.setVersion,
         unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus
       };
@@ -200,7 +197,7 @@ var _ = require('underscore'),
     const setAppTitle = () => {
       ResourceIcons.getAppTitle().then(title => {
         document.title = title;
-        $('.header-logo').attr('title', `${title} | ${APP_CONFIG.version}`);
+        $('.header-logo').attr('title', `${title}`);
       });
     };
     setAppTitle();
@@ -255,7 +252,6 @@ var _ = require('underscore'),
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    ctrl.setVersion(APP_CONFIG.version);
     ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
