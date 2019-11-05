@@ -20,10 +20,10 @@ angular.module('inboxServices').service('Enketo',
     ExtractLineage,
     FileReader,
     GetReportContent,
-    GlobalActions,
     Language,
     LineageModelGenerator,
     Search,
+    ServicesActions,
     SubmitFormBySms,
     TranslateFrom,
     UserContact,
@@ -45,9 +45,9 @@ angular.module('inboxServices').service('Enketo',
 
     const self = this;
     const mapDispatchToTarget = (dispatch) => {
-      const globalActions = GlobalActions(dispatch);
+      const servicesActions = ServicesActions(dispatch);
       return {
-        setLastChangedDoc: globalActions.setLastChangedDoc
+        setLastChangedDoc: servicesActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);

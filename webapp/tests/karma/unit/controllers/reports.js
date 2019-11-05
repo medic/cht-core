@@ -4,6 +4,7 @@ describe('ReportsCtrl controller', () => {
 
   let createController,
       scope,
+      globalActions,
       reportsActions,
       report,
       get,
@@ -24,39 +25,13 @@ describe('ReportsCtrl controller', () => {
 
   beforeEach(() => {
     module('inboxApp');
-    KarmaUtils.setupMockStore();
-  });
 
-  beforeEach(inject(($rootScope, $controller, $ngRedux, GlobalActions, ReportsActions) => {
     get = sinon.stub();
     post = sinon.stub();
-    scope = $rootScope.$new();
-    scope.filterModel = { date: {} };
-    report = { _id: 'x' };
-    scope.readStatus = { forms: 0, messages: 0 };
-    scope.updateReadStatus = () => {};
-    scope.isRead = () => true;
-    scope.reports = [ report, { _id: 'a' } ];
-    scope.clearSelected = () => {};
-    scope.setBackTarget = () => {};
-    scope.isMobile = () => false;
+    const DB = KarmaUtils.mockDB({ get, post })();
 
-    const globalActions = GlobalActions($ngRedux.dispatch);
-    const stubbedGlobalActions = {
-      setRightActionBar: sinon.stub()
-    };
-    reportsActions = ReportsActions($ngRedux.dispatch);
-    scope.setTitle = () => {};
-    scope.setRightActionBar = sinon.stub();
-    scope.setLeftActionBar = sinon.stub();
-    scope.settingSelected = () => {};
-
-    reportsActions = ReportsActions($ngRedux.dispatch);
-    auth = sinon.stub().resolves();
-    modal = sinon.stub().resolves();
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
-
     LiveList = {
       reports: {
         initialised: () => true,
@@ -72,6 +47,33 @@ describe('ReportsCtrl controller', () => {
       $init: liveListInit,
       $reset: liveListReset
     };
+    KarmaUtils.setupMockStore(null, { DB, LiveList });
+  });
+
+  beforeEach(inject(($rootScope, $controller, $ngRedux, GlobalActions, ReportsActions) => {
+    scope = $rootScope.$new();
+    scope.filterModel = { date: {} };
+    report = { _id: 'x' };
+    scope.readStatus = { forms: 0, messages: 0 };
+    scope.updateReadStatus = () => {};
+    scope.isRead = () => true;
+    scope.reports = [ report, { _id: 'a' } ];
+    scope.clearSelected = () => {};
+    scope.setBackTarget = () => {};
+    scope.isMobile = () => false;
+
+    globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), {
+      setRightActionBar: sinon.stub()
+    });
+    reportsActions = ReportsActions($ngRedux.dispatch);
+    scope.setTitle = () => {};
+    scope.setRightActionBar = sinon.stub();
+    scope.setLeftActionBar = sinon.stub();
+    scope.settingSelected = () => {};
+
+    auth = sinon.stub().resolves();
+    modal = sinon.stub().resolves();
+
     MarkRead = () => {};
     FormatDataRecord = data => {
       return {
@@ -108,18 +110,17 @@ describe('ReportsCtrl controller', () => {
         AddReadStatus: () => {},
         Auth: auth,
         Changes: Changes,
-        DB: KarmaUtils.mockDB({ get, post })(),
         DeleteDocs: {},
         EditGroup: {},
         Export: () => {},
         FormatDataRecord: FormatDataRecord,
-        GlobalActions: () => Object.assign({}, globalActions, stubbedGlobalActions),
-        LiveList: LiveList,
+        GlobalActions: () => globalActions,
         MarkRead: MarkRead,
         MessageState: {},
         Modal: modal,
         PlaceHierarchy: PlaceHierarchy,
         ReportViewModelGenerator: {},
+        ReportsActions: () => reportsActions,
         Search: Search,
         SearchFilters: searchFilters,
         Settings: KarmaUtils.nullPromise(),
@@ -136,24 +137,6 @@ describe('ReportsCtrl controller', () => {
     createController();
     chai.expect(liveListInit.called, true);
     chai.expect(liveListInit.args[0]).to.deep.equal([scope, 'reports', 'report-search']);
-  });
-
-  it('when selecting a report, it sets the phone number in the actionbar', done => {
-    const phone = 12345;
-    get.returns(Promise.resolve({ _id: 'def', name: 'hello', phone: phone }));
-    post.returns(Promise.resolve());
-    const ctrl = createController();
-    const report = { doc: {
-      _id: 'abc',
-      form: 'P',
-      contact: { _id: 'def' }
-    }};
-    scope.setSelected(report);
-    setTimeout(() => { // timeout to let the DB query finish
-      chai.expect(ctrl.setRightActionBar.callCount).to.equal(1);
-      chai.expect(ctrl.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
-      done();
-    });
   });
 
   describe('verifying reports', () => {

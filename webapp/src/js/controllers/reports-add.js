@@ -13,6 +13,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     GetReportContent,
     GlobalActions,
     LineageModelGenerator,
+    ReportsActions,
     Selectors,
     Snackbar,
     Telemetry,
@@ -37,13 +38,15 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
+      const reportsActions = ReportsActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
-        setLoadingContent: globalActions.setLoadingContent
+        setLoadingContent: globalActions.setLoadingContent,
+        setSelected: reportsActions.setSelected
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -91,7 +94,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     getSelected()
       .then(function(model) {
         $log.debug('setting selected', model);
-        $scope.setSelected(model);
+        ctrl.setSelected(model);
         ctrl.setLoadingContent(true);
         return $q.all([
           GetReportContent(model.doc),

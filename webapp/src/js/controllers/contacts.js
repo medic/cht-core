@@ -49,20 +49,7 @@ const PAGE_SIZE = 50;
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const contactsActions = ContactsActions(dispatch);
-      return {
-        clearCancelCallback: globalActions.clearCancelCallback,
-        clearFilters: globalActions.clearFilters,
-        clearRightActionBar: globalActions.clearRightActionBar,
-        loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
-        loadSelectedContactReports: contactsActions.loadSelectedContactReports,
-        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
-        setLeftActionBar: globalActions.setLeftActionBar,
-        setRightActionBar: globalActions.setRightActionBar,
-        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
-        setSelectedContact: contactsActions.setSelectedContact,
-        setTitle: globalActions.setTitle,
-        updateSelectedContact: contactsActions.updateSelectedContact
-      };
+      return Object.assign({}, globalActions, contactsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
@@ -359,20 +346,10 @@ const PAGE_SIZE = 50;
         });
     };
 
-    $scope.$on('ClearSelected', function() {
-      clearSelection();
-    });
-
-    const clearSelection = () => {
-      ctrl.setSelectedContact(null);
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
     ctrl.search = function() {
       if(ctrl.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        ctrl.clearSelection();
       }
 
       ctrl.loading = true;

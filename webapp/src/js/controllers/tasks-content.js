@@ -37,6 +37,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       const tasksActions = TasksActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        unsetSelected: globalActions.unsetSelected,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
@@ -144,8 +145,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           ctrl.setEnketoSavingStatus(false);
           ctrl.setEnketoEditedStatus(false);
           Enketo.unload(ctrl.form);
-          ctrl.setSelectedTask(null);
-          $scope.clearSelected();
+          ctrl.unsetSelected();
           ctrl.clearCancelCallback();
         })
         .then(() => {
@@ -179,10 +179,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     ctrl.form = null;
     ctrl.formId = null;
     $scope.setSelected($state.params.id);
-
-    $scope.$on('ClearSelected', () => {
-      Enketo.unload(ctrl.form);
-    });
 
     $scope.$on('$destroy', unsubscribe);
   }

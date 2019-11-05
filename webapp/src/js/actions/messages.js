@@ -2,12 +2,16 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('MessagesActions',
   function(
-    ActionUtils
+    ActionUtils,
+    GlobalActions,
+    Selectors
   ) {
     'use strict';
     'ngInject';
 
     return function(dispatch) {
+
+      const globalActions = GlobalActions(dispatch);
 
       function addSelectedMessage(message) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.ADD_SELECTED_MESSAGE, 'message', message));
@@ -29,12 +33,23 @@ angular.module('inboxServices').factory('MessagesActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_MESSAGE, 'selected', selected));
       }
 
+      function setSelected(doc) {
+        dispatch(function(dispatch, getState) {
+          const selected = Selectors.getSelectedMessage(getState());
+          const refreshing = (selected && selected.id) === doc.id;
+          setSelectedMessage(doc);
+          globalActions.settingSelected(refreshing);
+        });
+      }
+
       return {
         addSelectedMessage,
         removeSelectedMessage,
         setMessagesError,
         setSelectedMessage,
-        updateSelectedMessage
+        updateSelectedMessage,
+
+        setSelected
       };
     };
   }

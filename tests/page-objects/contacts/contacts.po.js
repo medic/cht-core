@@ -113,6 +113,3 @@ module.exports = {
     deleteContact.click();
   }
 };
-
-
-

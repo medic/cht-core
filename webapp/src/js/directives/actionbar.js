@@ -4,11 +4,17 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/actionbar.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function(
+      $ngRedux,
+      $scope,
+      $state,
+      GlobalActions,
+      Selectors
+    ) {
       'ngInject';
 
-      var ctrl = this;
-      var mapStateToTarget = function(state) {
+      const ctrl = this;
+      const mapStateToTarget = function(state) {
         return {
           actionBar: Selectors.getActionBar(state),
           currentTab: Selectors.getCurrentTab(state),
@@ -21,7 +27,20 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
           showActionBar: Selectors.getShowActionBar(state)
         };
       };
-      var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        return {
+          setSelectMode: globalActions.setSelectMode,
+          unsetSelected: globalActions.unsetSelected
+        };
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+      ctrl.setSelect = value => {
+        ctrl.setSelectMode(value);
+        ctrl.unsetSelected();
+        $state.go('reports.detail', { id: null });
+      };
 
       $scope.$on('$destroy', unsubscribe);
     },

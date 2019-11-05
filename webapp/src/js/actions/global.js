@@ -2,8 +2,11 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
+    $state,
+    $stateParams,
     $timeout,
     ActionUtils,
+    LiveList,
     Selectors
   ) {
     'use strict';
@@ -71,6 +74,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
       }
 
+      function setForms(forms) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FORMS, 'forms', forms));
+      }
+
       function clearFilters() {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', {}));
       }
@@ -85,10 +92,6 @@ angular.module('inboxServices').factory('GlobalActions',
 
       function setIsAdmin(isAdmin) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
-      }
-
-      function setLastChangedDoc(value) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
       }
 
       function setLoadingContent(loading) {
@@ -134,6 +137,11 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
       }
 
+      function setLoadingShowContent(id) {
+        setLoadingContent(id);
+        setShowContent(true);
+      }
+
       function settingSelected(refreshing) {
         setLoadingContent(false);
         $timeout(function() {
@@ -147,10 +155,40 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      /**
+       * Unset the selected item
+       */
+      function unsetSelected() {
+        setShowContent(false);
+        setLoadingContent(false);
+        setShowActionBar(false);
+        setTitle();
+        dispatch({ type: actionTypes.CLEAR_SELECTED });
+        LiveList['contacts'].clearSelected();
+        LiveList['contact-search'].clearSelected();
+        LiveList['reports'].clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+      }
+
+      /**
+       * Navigate back to the previous view
+       */
+      function navigateBack() {
+        if ($state.current.name === 'contacts.deceased') {
+          $state.go('contacts.detail', { id: $stateParams.id });
+        } else if ($stateParams.id) {
+          $state.go($state.current.name, { id: null });
+        } else {
+          unsetSelected();
+        }
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
         clearRightActionBar,
+        navigateBack,
         setAndroidAppVersion,
         setCancelCallback,
         setCurrentTab,
@@ -160,10 +198,11 @@ angular.module('inboxServices').factory('GlobalActions',
         setFacilities,
         setFilter,
         setFilters,
+        setForms,
         setIsAdmin,
         setLeftActionBar,
-        setLastChangedDoc,
         setLoadingContent,
+        setLoadingShowContent,
         setLoadingSubActionBar,
         setRightActionBar,
         setRightActionBarVerified,
@@ -174,7 +213,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setUnreadCount,
         updateReplicationStatus,
         updateUnreadCount,
-
+        unsetSelected,
         settingSelected
       };
     };

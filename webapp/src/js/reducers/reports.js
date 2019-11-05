@@ -1,7 +1,8 @@
 const _ = require('underscore');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
-  selected: []
+  selected: [],
+  verifyingReport: false
 };
 
 module.exports = function(state, action) {
@@ -14,6 +15,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, {
         selected: state.selected.concat(action.payload.selected)
       });
+    case actionTypes.CLEAR_SELECTED:
+      return Object.assign({}, state, { selected: [], verifyingReport: false });
     case actionTypes.REMOVE_SELECTED_REPORT: {
       const filteredSelected = _.filter(state.selected, selected => selected._id !== action.payload.id);
       return Object.assign({}, state, { selected: filteredSelected });
@@ -42,6 +45,8 @@ module.exports = function(state, action) {
     }
     case actionTypes.SET_SELECTED_REPORTS:
       return Object.assign({}, state, { selected: action.payload.selected });
+    case actionTypes.SET_VERIFYING_REPORT:
+      return Object.assign({}, state, { verifyingReport: action.payload.verifyingReport });
     case actionTypes.UPDATE_SELECTED_REPORT_ITEM: {
       const selected = state.selected.map(item => {
         if (item._id === action.payload.id) {

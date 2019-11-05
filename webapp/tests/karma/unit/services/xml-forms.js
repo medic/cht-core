@@ -198,7 +198,7 @@ describe('XmlForms service', () => {
       getContactType.resolves({ person: true });
       return service.list({ doc: { type: 'person' } }).then(actual => {
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
+        chai.assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
           'two',
@@ -271,7 +271,7 @@ describe('XmlForms service', () => {
       const service = $injector.get('XmlForms');
       getContactType.resolves({ person: false });
       return service.list({ doc: { type: 'district_hospital' } }).then(actual => {
-        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
+        chai.assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
           'three',

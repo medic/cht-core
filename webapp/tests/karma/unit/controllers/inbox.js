@@ -76,7 +76,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
-      $provide.value('Settings', () => KarmaUtils.nullPromise());
+      $provide.value('Settings', () => Promise.resolve());
       $provide.value('Snackbar', () => snackbar);
       $provide.factory('$state', () => {
         spyState = {

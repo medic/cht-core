@@ -4,6 +4,7 @@ angular.module('inboxServices').factory('ContactsActions',
   function(
     ActionUtils,
     ContactViewModelGenerator,
+    LiveList,
     Selectors
   ) {
     'use strict';
@@ -45,13 +46,21 @@ angular.module('inboxServices').factory('ContactsActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_CONTACT, 'selected', selected));
       }
 
+      function clearSelection() {
+        setSelectedContact(null);
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
+      }
+
       return {
         loadSelectedContactChildren,
         loadSelectedContactReports,
         setLoadingSelectedContact,
         setContactsLoadingSummary,
         setSelectedContact,
-        updateSelectedContact
+        updateSelectedContact,
+
+        clearSelection
       };
     };
   }

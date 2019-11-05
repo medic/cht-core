@@ -83,12 +83,6 @@ angular
       }
     };
 
-    $scope.setSelected = function(doc) {
-      var refreshing = (ctrl.selectedMessage && ctrl.selectedMessage.id) === doc.id;
-      ctrl.setSelectedMessage(doc);
-      ctrl.settingSelected(refreshing);
-    };
-
     updateConversations()
       .then(function() {
         if (
@@ -110,10 +104,6 @@ angular
       .catch(function(err) {
         $log.error('Error fetching contact', err);
       });
-
-    $scope.$on('ClearSelected', function() {
-      ctrl.setSelectedMessage(null);
-    });
 
     var changeListener = Changes({
       key: 'messages-list',

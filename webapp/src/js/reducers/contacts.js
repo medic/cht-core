@@ -13,6 +13,8 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
+    case actionTypes.CLEAR_SELECTED:
+      return Object.assign({}, state, { selected: null });
     case actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN:
       return Object.assign({}, state, {
         selected: Object.assign({}, state.selected, { children: action.payload.children }),

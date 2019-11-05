@@ -3,6 +3,8 @@ describe('ContactsContentCtrl', () => {
 
   let contactsActions,
       controller,
+      ctrl,
+      globalActions,
       stateParams,
       scope,
       state,
@@ -25,9 +27,8 @@ describe('ContactsContentCtrl', () => {
       }]
     };
 
-    getContact.returns(Promise.resolve());
-    getContact.withArgs(doc._id)
-      .returns(Promise.resolve(model));
+    getContact.resolves();
+    getContact.withArgs(doc._id).resolves(model);
   };
 
   const createController = () => {
@@ -40,7 +41,8 @@ describe('ContactsContentCtrl', () => {
       'ContactViewModelGenerator': { getContact: getContact },
       'UserSettings': KarmaUtils.promiseService(null, ''),
       'ContactChangeFilter': contactChangeFilter,
-      'Debounce': debounce
+      'Debounce': debounce,
+      'GlobalActions': () => globalActions
     });
   };
 
@@ -49,13 +51,16 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, GlobalActions) => {
     contactsActions = ContactsActions($ngRedux.dispatch);
+    globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), {
+      unsetSelected: sinon.stub()
+    });
 
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
     scope.setSelected = selected => contactsActions.setSelectedContact(selected);
-    scope.clearSelected = sinon.stub();
+
     state = {
       current: {
         name: 'something'
@@ -97,7 +102,8 @@ describe('ContactsContentCtrl', () => {
     const runChangeFeedProcessTest = () => {
       stateParams = { id: doc._id };
       stubGetContact(doc,  []);
-      return createController().setupPromise;
+      ctrl = createController();
+      return ctrl.setupPromise;
     };
 
     const stubContactChangeFilter = (config) => {
@@ -121,7 +127,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
           chai.assert.equal(getContact.callCount, 2);
           chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(scope.clearSelected.callCount, 0);
+          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
         });
       });
     });
@@ -147,7 +153,7 @@ describe('ContactsContentCtrl', () => {
         changesCallback(changes);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
         chai.assert.equal(getContact.callCount, 1);
-        chai.assert.equal(scope.clearSelected.callCount, 1);
+        chai.assert.equal(state.go.callCount, 1);
       });
     });
 
@@ -160,7 +166,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
           chai.assert.equal(getContact.callCount, 2);
           chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(scope.clearSelected.callCount, 0);
+          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
         });
       });
     });
@@ -175,7 +181,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
           chai.assert.equal(getContact.callCount, 2);
           chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(scope.clearSelected.callCount, 0);
+          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
         });
       });
     });
@@ -188,7 +194,7 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
         chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
         chai.assert.equal(getContact.callCount, 1);
-        chai.assert.equal(scope.clearSelected.callCount, 0);
+        chai.assert.equal(ctrl.unsetSelected.callCount, 0);
       });
     });
   });

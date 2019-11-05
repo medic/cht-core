@@ -14,7 +14,6 @@ var _ = require('underscore'),
     $rootScope,
     $scope,
     $state,
-    $stateParams,
     $timeout,
     $transitions,
     $translate,
@@ -62,6 +61,7 @@ var _ = require('underscore'),
         currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        forms: Selectors.getForms(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state)
@@ -70,9 +70,12 @@ var _ = require('underscore'),
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
+        navigateBack: globalActions.navigateBack,
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setFacilities: globalActions.setFacilities,
+        setForms: globalActions.setForms,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
@@ -81,6 +84,7 @@ var _ = require('underscore'),
         setShowContent: globalActions.setShowContent,
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
+        unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus
       };
     };
@@ -287,7 +291,7 @@ var _ = require('underscore'),
         if (ctrl.cancelCallback) {
           $scope.navigationCancel();
         } else {
-          $scope.clearSelected();
+          ctrl.navigateBack();
         }
       });
     });
@@ -304,7 +308,7 @@ var _ = require('underscore'),
       const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
       // unset selected when states have different base state and only when source state has selected property
       if (parentState && !trans.to().name.startsWith(parentState)) {
-        $scope.unsetSelected();
+        ctrl.unsetSelected();
       }
     });
 
@@ -336,35 +340,6 @@ var _ = require('underscore'),
           ctrl.cancelCallback();
         }
       });
-    };
-
-    /**
-     * Unset the selected item without navigation
-     */
-    $scope.unsetSelected = function() {
-      ctrl.setShowContent(false);
-      ctrl.setLoadingContent(false);
-      ctrl.setShowActionBar(false);
-      ctrl.setTitle();
-      $scope.$broadcast('ClearSelected');
-    };
-
-    /**
-     * Clear the selected item - may update the URL
-     */
-    $scope.clearSelected = function() {
-      if ($state.current.name === 'contacts.deceased') {
-        $state.go('contacts.detail', { id: $stateParams.id });
-      } else if ($stateParams.id) {
-        $state.go($state.current.name, { id: null });
-      } else {
-        $scope.unsetSelected();
-      }
-    };
-
-    $scope.setLoadingContent = function(id) {
-      ctrl.setLoadingContent(id);
-      ctrl.setShowContent(true);
     };
 
     $transitions.onSuccess({}, function(trans) {
@@ -418,7 +393,9 @@ var _ = require('underscore'),
                   icon: xForm.icon,
                 };
               });
-              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
+              const forms = xFormSummaries.concat(jsonFormSummaries);
+              $scope.forms = forms;
+              ctrl.setForms(forms);
               $rootScope.$broadcast('formLoadingComplete');
             }
           );
@@ -609,12 +586,6 @@ var _ = require('underscore'),
         controllerAs: 'bulkDeleteConfirmCtrl',
         model: { docs: docs },
       });
-    };
-
-    $scope.setSelectMode = function(value) {
-      ctrl.setSelectMode(value);
-      $scope.clearSelected();
-      $state.go('reports.detail', { id: null });
     };
 
     $('body').on('mouseenter', '.relative-date, .autoreply', function() {

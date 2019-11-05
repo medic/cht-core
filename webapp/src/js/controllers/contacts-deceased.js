@@ -3,6 +3,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     $log,
     $ngRedux,
     $scope,
+    $state,
     $stateParams,
     $translate,
     Changes,
@@ -25,6 +26,8 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
+        unsetSelected: globalActions.unsetSelected,
+        setLoadingShowContent: globalActions.setLoadingShowContent,
         setTitle: globalActions.setTitle,
         settingSelected: globalActions.settingSelected
       };
@@ -32,7 +35,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
     var selectContact = function(id, silent) {
-      $scope.setLoadingContent(id);
+      ctrl.setLoadingShowContent(id);
       ContactViewModelGenerator.getContact(id)
         .then(function(model) {
           var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
@@ -50,7 +53,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
           if (err.code === 404 && !silent) {
             $translate('error.404.title').then(Snackbar);
           }
-          $scope.clearSelected();
+          ctrl.unsetSelected();
           $log.error('Error generating contact view model', err, err.message);
         });
     };
@@ -66,17 +69,11 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
       },
       callback: function(change) {
         if (change.deleted) {
-          var parentId = ctrl.selectedContact &&
-                         ctrl.selectedContact.doc &&
-                         ctrl.selectedContact.doc.parent &&
-                         ctrl.selectedContact.doc.parent._id;
-          if (parentId) {
-            // select the parent
-            selectContact(parentId, true);
-          } else {
-            // top level contact deleted - clear selection
-            $scope.clearSelected();
-          }
+          const parentId = ctrl.selectedContact &&
+                           ctrl.selectedContact.doc &&
+                           ctrl.selectedContact.doc.parent &&
+                           ctrl.selectedContact.doc.parent._id;
+          return $state.go('contacts.detail', { id: parentId || null });
         } else {
           // refresh the updated contact
           selectContact(change.id, true);

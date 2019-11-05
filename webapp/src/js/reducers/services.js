@@ -1,6 +1,6 @@
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
-  selected: null
+  lastChangedDoc: false
 };
 
 module.exports = function(state, action) {
@@ -9,10 +9,8 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-    case actionTypes.CLEAR_SELECTED:
-      return Object.assign({}, state, { selected: null });
-    case actionTypes.SET_SELECTED_TASK:
-      return Object.assign({}, state, { selected: action.payload.selected });
+    case actionTypes.SET_LAST_CHANGED_DOC:
+      return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
     default:
       return state;
   }

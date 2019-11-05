@@ -10,7 +10,7 @@ angular
     $q,
     DB,
     ExtractLineage,
-    GlobalActions,
+    ServicesActions,
     Settings,
     UserSettings
   ) {
@@ -19,9 +19,9 @@ angular
 
     const self = this;
     const mapDispatchToTarget = (dispatch) => {
-      const globalActions = GlobalActions(dispatch);
+      const servicesActions = ServicesActions(dispatch);
       return {
-        setLastChangedDoc: globalActions.setLastChangedDoc
+        setLastChangedDoc: servicesActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);

@@ -9,7 +9,7 @@ angular.module('inboxServices').service('ContactSave',
     DB,
     EnketoTranslation,
     ExtractLineage,
-    GlobalActions
+    ServicesActions
   ) {
 
     'use strict';
@@ -18,14 +18,13 @@ angular.module('inboxServices').service('ContactSave',
     const CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
 
     const self = this;
-    const mapStateToTarget = (state) => ({ lastChangedDoc: state.lastChangedDoc });
     const mapDispatchToTarget = (dispatch) => {
-      const globalActions = GlobalActions(dispatch);
+      const servicesActions = ServicesActions(dispatch);
       return {
-        setLastChangedDoc: globalActions.setLastChangedDoc
+        setLastChangedDoc: servicesActions.setLastChangedDoc
       };
     };
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
+    $ngRedux.connect(null, mapDispatchToTarget)(self);
 
     function generateFailureMessage(bulkDocsResult) {
       return _.reduce(bulkDocsResult, function(msg, result) {

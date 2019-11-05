@@ -8,7 +8,7 @@ describe('ContactSave service', () => {
   let ContactTypes;
   let EnketoTranslation;
   let ExtractLineage;
-  let GlobalActions;
+  let ServicesActions;
 
   beforeEach(() => {
     EnketoTranslation = {
@@ -19,7 +19,7 @@ describe('ContactSave service', () => {
     ExtractLineage = sinon.stub();
     bulkDocs = sinon.stub();
     get = sinon.stub();
-    GlobalActions = { setLastChangedDoc: sinon.stub() };
+    ServicesActions = { setLastChangedDoc: sinon.stub() };
 
     module('inboxApp');
     module($provide => {
@@ -31,7 +31,7 @@ describe('ContactSave service', () => {
       $provide.value('ContactTypes', ContactTypes);
       $provide.value('EnketoTranslation', EnketoTranslation);
       $provide.value('ExtractLineage', ExtractLineage);
-      $provide.value('GlobalActions', () => GlobalActions);
+      $provide.value('ServicesActions', () => ServicesActions);
     });
     inject(_ContactSave_ => {
       service = _ContactSave_;
@@ -71,8 +71,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(GlobalActions.setLastChangedDoc.callCount, 1);
-        assert.deepEqual(GlobalActions.setLastChangedDoc.args[0], [savedDocs[0]]);
+        assert.equal(ServicesActions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(ServicesActions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
@@ -109,8 +109,8 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(GlobalActions.setLastChangedDoc.callCount, 1);
-        assert.deepEqual(GlobalActions.setLastChangedDoc.args[0], [savedDocs[0]]);
+        assert.equal(ServicesActions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(ServicesActions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
@@ -159,8 +159,8 @@ describe('ContactSave service', () => {
 
         assert.equal(ExtractLineage.callCount, 3);
 
-        assert.equal(GlobalActions.setLastChangedDoc.callCount, 1);
-        assert.deepEqual(GlobalActions.setLastChangedDoc.args[0], [savedDocs[0]]);
+        assert.equal(ServicesActions.setLastChangedDoc.callCount, 1);
+        assert.deepEqual(ServicesActions.setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 

@@ -43,11 +43,14 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       const messagesActions = MessagesActions(dispatch);
       return {
         addSelectedMessage: messagesActions.addSelectedMessage,
+        unsetSelected: globalActions.unsetSelected,
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
+        setLoadingShowContent: globalActions.setLoadingShowContent,
         setMessagesError: messagesActions.setMessagesError,
-        updateSelectedMessage: messagesActions.updateSelectedMessage,
-        setTitle: globalActions.setTitle
+        setSelected: messagesActions.setSelected,
+        setTitle: globalActions.setTitle,
+        updateSelectedMessage: messagesActions.updateSelectedMessage
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -112,13 +115,13 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       if (!id) {
         ctrl.setMessagesError(false);
         ctrl.setLoadingContent(false);
-        $scope.clearSelected();
+        ctrl.unsetSelected();
         return;
       }
       $('.message-content-wrapper').off('scroll', checkScroll);
-      $scope.setSelected({ id: id, messages: [] });
+      ctrl.setSelected({ id: id, messages: [] });
       if (!options.silent) {
-        $scope.setLoadingContent(id);
+        ctrl.setLoadingShowContent(id);
       }
       $q.all([
         getContactable(id, type),
@@ -151,7 +154,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
             return;
           }
 
-          $scope.setLoadingContent(false);
+          ctrl.setLoadingShowContent(false);
           ctrl.setMessagesError(false);
           var unread = _.filter(conversation, function(message) {
             return !message.read;
