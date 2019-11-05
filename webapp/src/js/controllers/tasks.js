@@ -49,7 +49,7 @@
       }
       
       return promiseToLoad.then(function () {
-        const task = LiveList.tasks.getList().find(taskEmission => taskEmission. _id === id);
+        const task = LiveList.tasks.getList().find(taskEmission => taskEmission._id === id);
         if (task) {
           const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
           ctrl.settingSelected(refreshing);
@@ -97,7 +97,11 @@
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     const changesFeed = Changes({
       key: 'refresh-task-list',
-      filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc) || change.doc.type === 'task'),
+      filter: change => !!change.doc && (
+        ContactTypes.includes(change.doc) ||
+        isReport(change.doc) ||
+        change.doc.type === 'task'
+      ),
       callback: () => {
         debouncedReload.cancel();
         return debouncedReload();
@@ -137,7 +141,7 @@
 
       return DB().get(task.forId)
         .then(contactDoc => {
-          for (let action of task.actions) {
+          for (const action of task.actions) {
             if (!action.content) {
               action.content = {};
             }

@@ -5,7 +5,6 @@
  * Merges emission data into an existing document, or creates a new task document (as appropriate)
  */
 
-const _ = require('lodash');
 const TaskStates = require('./task-states');
 
 /**
@@ -18,27 +17,26 @@ const TaskStates = require('./task-states');
  * @returns {Boolean} result.isUpdated True if the document is new or has been altered
  */
 module.exports = (taskEmission, calculatedAt, userContactId, existingDoc) => {
-  let emittedState = TaskStates.calculateState(taskEmission, calculatedAt);
+  const emittedState = TaskStates.calculateState(taskEmission, calculatedAt);
   const baseFromExistingDoc = !!existingDoc && (!TaskStates.isTerminal(existingDoc.state) || existingDoc.state === emittedState);
 
-  const taskDoc = baseFromExistingDoc ? deepCopy(existingDoc) : newTaskDoc(taskEmission, userContactId, calculatedAt);
+  // reduce document churn - don't tweak data on existing docs in terminal states
+  const baselineStateOfExistingDoc = baseFromExistingDoc && !TaskStates.isTerminal(existingDoc.state) && JSON.stringify(existingDoc);
+  const taskDoc = baseFromExistingDoc ? existingDoc : newTaskDoc(taskEmission, userContactId, calculatedAt);
   taskDoc.user = userContactId;
   taskDoc.requester = taskEmission.doc && taskEmission.doc.contact && taskEmission.doc.contact._id;
   taskDoc.owner = taskEmission.contact && taskEmission.contact._id;
   minifyEmission(taskDoc, taskEmission);
   TaskStates.setStateOnTaskDoc(taskDoc, emittedState, calculatedAt);
 
-  const isUpdated =
-    // do not create new documents where the initial state is cancelled (invalid emission)
-    (baseFromExistingDoc || taskDoc.state !== TaskStates.Cancelled)
-    && (
-      !existingDoc ||
-      existingDoc._id !== taskDoc._id ||
-      (
-        !TaskStates.isTerminal(existingDoc.state) &&  // reduce document churn - don't tweak data on docs in terminal states
-        JSON.stringify(taskDoc) !== JSON.stringify(existingDoc)
-      )
-    );
+  const isUpdated = (() => {
+    if (!baseFromExistingDoc) {
+      // do not create new documents where the initial state is cancelled (invalid emission)
+      return taskDoc.state !== TaskStates.Cancelled;
+    }
+
+    return baselineStateOfExistingDoc && JSON.stringify(taskDoc) !== baselineStateOfExistingDoc;
+  })();
 
   return {
     isUpdated,
@@ -47,7 +45,13 @@ module.exports = (taskEmission, calculatedAt, userContactId, existingDoc) => {
 };
 
 const minifyEmission = (taskDoc, emission) => {
-  const minified = _.pick(emission, '_id', 'title', 'icon', 'startTime', 'endTime', 'deleted', 'resolved', 'actions');
+  const minified = ['_id', 'title', 'icon', 'startTime', 'endTime', 'deleted', 'resolved', 'actions']
+    .reduce((agg, attr) => {
+      if (Object.hasOwnProperty.call(emission, attr)) {
+        agg[attr] = emission[attr];
+      }
+      return agg;
+    }, {});
 
   /*
   The declarative configuration "contactLabel" results in a task emission with a contact with only a name attribute.
@@ -71,7 +75,6 @@ const minifyEmission = (taskDoc, emission) => {
   return taskDoc;
 };
 
-const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 const newTaskDoc = (emission, userContactId, calculatedAt) => ({
   _id: `task~${userContactId}~${emission._id}~${calculatedAt}`,
   type: 'task',

@@ -53,7 +53,7 @@ angular
           checkpoint: 'source',
           filter: readOnlyFilter
         },
-        allowed: () => Auth.has('can_edit')
+        allowed: () => Auth('can_edit').then(() => true).catch(() => false)
       },
       {
         name: 'from',

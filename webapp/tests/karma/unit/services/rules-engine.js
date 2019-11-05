@@ -37,7 +37,7 @@ describe(`RulesEngine service`, () => {
       
   beforeEach(async () => {
     Auth = {
-      has: sinon.stub().resolves(true),
+      any: sinon.stub().resolves(true),
     };
     Changes = sinon.stub();
     Session = { isOnlineOnly: sinon.stub().returns(false) };
@@ -97,8 +97,7 @@ describe(`RulesEngine service`, () => {
       };
 
       it('disabled when user has no permissions', async () => {
-        Auth.has.withArgs('can_view_tasks').resolves(false);
-        Auth.has.withArgs('can_view_analytics').resolves(false);
+        Auth.any.rejects();
 
         await service._initialize();
         expectAsyncToThrow(service.isEnabled, 'permission');

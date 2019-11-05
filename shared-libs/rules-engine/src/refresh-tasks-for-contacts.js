@@ -23,9 +23,9 @@ const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
 module.exports = (freshData = {}, calculationTimestamp = Date.now()) => calculateFreshTaskDocs(freshData, calculationTimestamp)
   .then(freshResults => {
     const freshTaskDocs = freshResults.map(doc => doc.taskDoc);
-    const canceledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
+    const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
     const updatedTaskDocs = freshResults.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-    return [...updatedTaskDocs, ...canceledDocs];
+    return [...updatedTaskDocs, ...cancelledDocs];
   });
 
 const calculateFreshTaskDocs = (freshData, calculationTimestamp) => {

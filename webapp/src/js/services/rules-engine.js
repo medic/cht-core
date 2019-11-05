@@ -3,6 +3,8 @@
 const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
+const MAX_LINEAGE_DEPTH = 50;
+
 angular.module('inboxServices').factory('RulesEngine', function(
   $translate,
   Auth,
@@ -17,9 +19,9 @@ angular.module('inboxServices').factory('RulesEngine', function(
 ) {
   'ngInject';
 
-  const initialize = () => Promise.all([Auth.has('can_view_tasks'), Auth.has('can_view_analytics')])
-    .then(([tasksEnabled, targetsEnabled]) => {
-      const hasPermission = tasksEnabled || targetsEnabled;
+  const initialize = () => Auth.any(['can_view_tasks', 'can_view_analytics'])
+    .then(() => true).catch(() => false)
+    .then((hasPermission) => {
       if (!hasPermission || Session.isOnlineOnly()) {
         return false;
       }
@@ -51,7 +53,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
     });
 
     const userLineage = [];
-    for (let current = userContactDoc, i = 0; !!current && i < 50; current = current.parent, i++) {
+    for (let current = userContactDoc; !!current && userLineage.length < MAX_LINEAGE_DEPTH; current = current.parent) {
       userLineage.push(current._id);
     }
 
@@ -104,7 +106,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
     fetchTaskDocsFor: contactIds => initialized
       .then(() => RulesEngineCore.fetchTasksFor(DB(), contactIds))
       .then(translateTaskDocs),
-    
+
     // testing only - allows karma to test initialization logic
     _initialize: () => { initialized = initialize(); },
   };

@@ -77,7 +77,6 @@ module.exports = {
       return;
     }
 
-    const { stateHistory = [] } = taskDoc;
     if (!updatedState) {
       taskDoc.state = States.Cancelled;
       taskDoc.stateReason = 'invalid';
@@ -85,8 +84,7 @@ module.exports = {
       taskDoc.state = updatedState;
     }
 
-    taskDoc.stateHistory = stateHistory;
-
+    const stateHistory = taskDoc.stateHistory = taskDoc.stateHistory || [];
     const mostRecentState = stateHistory[stateHistory.length - 1];
     if (!mostRecentState || taskDoc.state !== mostRecentState.state) {
       const stateChange = { state: taskDoc.state, timestamp };

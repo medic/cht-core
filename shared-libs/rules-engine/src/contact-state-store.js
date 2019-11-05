@@ -5,7 +5,9 @@
 const md5 = require('md5');
 
 const EXPIRE_CALCULATION_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
-let state, currentUser, onStateChange;
+let state;
+let currentUser;
+let onStateChange;
 
 const self = {
   /**
@@ -72,8 +74,9 @@ const self = {
     }
 
     const { calculatedAt, isDirty } = state.contactStates[contactId];
-    const isExpired = calculatedAt < Date.now() - EXPIRE_CALCULATION_AFTER_MS;
-    return !calculatedAt || isDirty || isExpired;
+    return !calculatedAt ||
+      isDirty ||
+      /* isExpired */ calculatedAt < Date.now() - EXPIRE_CALCULATION_AFTER_MS;
   },
 
   /**
@@ -112,7 +115,7 @@ const self = {
     contactIds = contactIds.filter(id => id);
 
     if (contactIds.length === 0) {
-      return Promise.resolve();
+      return;
     }
 
     for (let contactId of contactIds) {
@@ -132,7 +135,7 @@ const self = {
     contactIds = contactIds.filter(id => id);
 
     if (contactIds.length === 0) {
-      return Promise.resolve();
+      return;
     }
 
     for (let contactId of contactIds) {
@@ -179,7 +182,6 @@ const self = {
 
 const hashRulesConfig = (settingsDoc, userDoc, salt) => {
   const rulesConfig = {
-    version: '1', // change this release-to-release to force task recalculation after deployment
     rules: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.rules,
     targets: settingsDoc && settingsDoc.targets,
     userDoc,

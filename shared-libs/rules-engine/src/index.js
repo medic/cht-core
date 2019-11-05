@@ -11,6 +11,9 @@ const taskFetcher = require('./task-fetcher');
 module.exports = {
   initialize: taskFetcher.initialize,
 
+  /**
+   * @returns {Boolean} True if the rules engine is enabled and ready for use
+   */
   isEnabled: () => rulesEmitter.isEnabled() && rulesEmitter.isLatestNoolsSchema(),
 
   fetchTasksFor: taskFetcher.fetchTasksFor,

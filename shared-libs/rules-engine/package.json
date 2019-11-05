@@ -18,7 +18,6 @@
   "homepage": "https://github.com/medic/medic/tree/master/shared-libs/rules-engine#readme",
   "dependencies": {
     "@medic/registration-utils": "file:../registration-utils",
-    "lodash": "^4.17.15",
     "md5": "^2.2.1",
     "medic-nootils": "^2.0.0"
   },

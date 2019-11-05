@@ -1,6 +1,5 @@
-const 
-  _ = require('underscore'),
-  moment = require('moment');
+const _ = require('underscore');
+const moment = require('moment');
 
 (function() {
   'use strict';
@@ -228,7 +227,8 @@ const
       .then(() => initForms())
       .then(() => initTours())
       .then(() => initUnreadCount())
-      .then(() => CheckDate());
+      .then(() => CheckDate())
+      .then(() => RulesEngine.refreshDocsDaily());
 
     Feedback.init();
 
@@ -353,9 +353,7 @@ const
 
     const initRulesEngine = () => RulesEngine.isEnabled()
       .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
-      .catch(function(err) {
-        $log.error('RuleEngine failed to initialize', err);
-      });
+      .catch(err => $log.error('RuleEngine failed to initialize', err));
 
     // get the forms for the forms filter
     const initForms = () => {

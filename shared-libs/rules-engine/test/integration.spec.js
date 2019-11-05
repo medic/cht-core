@@ -360,7 +360,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(rulesEmitter.getEmissionsFor.args).excludingEvery(['_rev', 'state', 'stateHistory']).to.deep.eq([[[], [headlessReport, headlessReport2], [taskEmittedByHeadless2]]]);
     expect(db.query.args.map(args => args[0])).to.deep.eq(expectedQueriesForAllFreshData);
     expect(firstResult).excludingEvery('_rev').to.deep.eq([taskOwnedByHeadless]);
-    expect(db.bulkDocs.callCount).to.eq(1); // taskEmittedByHeadless2 gets canceled
+    expect(db.bulkDocs.callCount).to.eq(1); // taskEmittedByHeadless2 gets cancelled
 
     await RulesEngine.updateTasksFor(db, 'headless');
     const secondResult = await RulesEngine.fetchTasksFor(db);

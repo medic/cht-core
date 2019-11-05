@@ -108,8 +108,6 @@ angular.module('inboxServices').factory('Auth',
       });
     };
 
-    auth.has = permissions => auth(permissions).then(() => true).catch(() => false);
-
     auth.any = permissionsList => {
       // The `permissionsList` is an array that contains groups of arrays mainly attributed
       // to the complexity of permssion grouping

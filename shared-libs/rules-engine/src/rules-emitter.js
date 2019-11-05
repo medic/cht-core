@@ -67,8 +67,7 @@ module.exports = {
     }
 
     const Task = flow.getDefined('task');
-    const hasSchemaAttribute = attr => Object.hasOwnProperty.call(Task.prototype, attr);
-    return hasSchemaAttribute('startTime') && hasSchemaAttribute('endTime');
+    return ['startTime', 'endTime'].every(attr => Object.hasOwnProperty.call(Task.prototype, attr));
   },
 
   /**
@@ -125,7 +124,8 @@ const startSession = function() {
   }
 
   const session = flow.getSession();
-  const tasks = [], targets = [];
+  const tasks = [];
+  const targets = [];
   session.on('task', task => tasks.push(task));
   session.on('target', target => targets.push(target));
 

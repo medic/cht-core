@@ -423,7 +423,7 @@ const PAGE_SIZE = 50;
         // disable UHC for DB admins
         return false;
       }
-      return Auth.has('can_view_last_visited_date');
+      return Auth('can_view_last_visited_date').then(() => true).catch(() => false);
     };
 
     var setupPromise = $q

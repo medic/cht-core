@@ -19,22 +19,24 @@ module.exports = {
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (db, settingsDoc, userDoc) => fetch.existingContactStateStore(db)
-    .then(existingStateDoc => {
-      if (!existingStateDoc) {
-        existingStateDoc = { _id: CONTACT_STATE_DOCID };
-      }
-
-      const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
-      if (isEnabled) {
-        if (!rulesEmitter.isLatestNoolsSchema()) {
-          throw Error('Rules engine: Updates to the nools schema are required');
+  initialize: (db, settingsDoc, userDoc) => {
+    return fetch.existingContactStateStore(db)
+      .then(existingStateDoc => {
+        if (!existingStateDoc) {
+          existingStateDoc = { _id: CONTACT_STATE_DOCID };
         }
 
-        const closure = updatedState => stateChangeCallback(db, existingStateDoc, updatedState);
-        contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, closure);
-      }
-    }),
+        const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
+        if (isEnabled) {
+          if (!rulesEmitter.isLatestNoolsSchema()) {
+            throw Error('Rules engine: Updates to the nools schema are required');
+          }
+
+          const closure = updatedState => stateChangeCallback(db, existingStateDoc, updatedState);
+          contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, closure);
+        }
+      });
+  },
 
   /**
    * Identifies the contacts whose task docs are not fresh
@@ -147,9 +149,12 @@ const fetch = {
 
   /*
   PouchDB.query slows down when provided with a large keys array.
-  For users with ~1000 users it is ~50x faster to provider a start/end key instead of specifying all ids
+  For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
   */
-  allTasks: (db, prefix) => docsOf(db.query('medic-client/tasks', { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true })),
+  allTasks: (db, prefix) => {
+    const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
+    return docsOf(db.query('medic-client/tasks', options));
+  },
 
   existingContactStateStore: db => db.get(CONTACT_STATE_DOCID).catch(() => undefined),
 
@@ -170,9 +175,10 @@ const fetch = {
           registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
           return agg;
         }, new Set(contactIds));
-
+        
+        const keys = Array.from(subjectIds).map(key => [key]);
         return Promise.all([
-            docsOf(db.query('medic-client/reports_by_subject', { keys: Array.from(subjectIds).map(key => [key]), include_docs: true })),
+            docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
             fetch.tasksByRelation(db, contactIds, 'requester'),
           ])
           .then(([reportDocs, taskDocs]) => ({
@@ -204,7 +210,7 @@ const commitTaskDocs = (db, taskDocs) => {
     return Promise.resolve([]);
   }
 
-  console.log(`Committing ${taskDocs.length} task documents updates`);
+  console.debug(`Committing ${taskDocs.length} task documents updates`);
   return db.bulkDocs(taskDocs)
     .catch(err => console.error('Error committing task documents', err));
 };
