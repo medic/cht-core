@@ -64,7 +64,19 @@ describe('Purger', () => {
       });
     });
 
-    it('should throw fetch errors', done => {
+    it('should throw when fetch rejects', done => {
+      fetch.rejects({ some: 'error' });
+      purger.info()
+        .then(() => {
+          done(new Error('Expected error to be thrown'));
+        })
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'error' });
+          done();
+        });
+    });
+
+    it('should throw when fetch resolves with an error code', done => {
       fetch.resolves({ json: sinon.stub().resolves({ code: 500, error: 'Server error' }) });
       purger.info()
         .then(() => {
@@ -78,7 +90,21 @@ describe('Purger', () => {
   });
 
   describe('checkpoint', () => {
-    it('should throw fetch errors', done => {
+
+    it('should throw when fetch rejects', done => {
+      fetch.rejects({ some: 'error' });
+      purger.checkpoint('seq')
+        .then(() => {
+          done(new Error('Expected error to be thrown'));
+        })
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'error' });
+          chai.expect(fetch.callCount).to.equal(1);
+          done();
+        });
+    });
+
+    it('should throw when fetch resolves with an error code', done => {
       fetch.resolves({ json: sinon.stub().resolves({ code: 500, error: 'Server error' }) });
       purger.checkpoint('seq')
         .then(() => {
