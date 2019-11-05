@@ -59,6 +59,9 @@
         fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
+        if (remote && remote.code && remote.code !== 200) {
+          console.warn('Error fetching users-info - ignoring', remote);
+        }
         localDocCount = local.total_rows;
         remoteDocCount = remote.total_docs;
 

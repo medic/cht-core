@@ -64,21 +64,31 @@ describe('Purger', () => {
       });
     });
 
-    it('should throw fetch errors', () => {
-      fetch.rejects({ some: 'error' });
-      return purger.info().catch(err => {
-        chai.expect(err).to.deep.equal({ some: 'error' });
-      });
+    it('should throw fetch errors', done => {
+      fetch.resolves({ json: sinon.stub().resolves({ code: 500, error: 'Server error' }) });
+      purger.info()
+        .then(() => {
+          done(new Error('Expected error to be thrown'));
+        })
+        .catch(err => {
+          chai.expect(err.message).to.equal('Error fetching purge data: {"code":500,"error":"Server error"}');
+          done();
+        });
     });
   });
 
   describe('checkpoint', () => {
-    it('should throw fetch errors', () => {
-      fetch.rejects({ some: 'error' });
-      return purger.checkpoint('seq').catch(err => {
-        chai.expect(err).to.deep.equal({ some: 'error' });
-        chai.expect(fetch.callCount).to.equal(1);
-      });
+    it('should throw fetch errors', done => {
+      fetch.resolves({ json: sinon.stub().resolves({ code: 500, error: 'Server error' }) });
+      purger.checkpoint('seq')
+        .then(() => {
+          done(new Error('Expected error to be thrown'));
+        })
+        .catch(err => {
+          chai.expect(err.message).to.equal('Error fetching purge data: {"code":500,"error":"Server error"}');
+          chai.expect(fetch.callCount).to.equal(1);
+          done();
+        });
     });
 
     it('should not call purge checkpoint when no seq provided', () => {

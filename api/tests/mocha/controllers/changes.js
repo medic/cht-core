@@ -12,8 +12,10 @@ const serverChecks = require('@medic/server-checks');
 const environment = require('../../../src/environment');
 const logger = require('../../../src/logger');
 const purgedDocs = require('../../../src/services/purged-docs');
+const serverUtils = require('../../../src/server-utils');
 
 require('chai').should();
+
 let testReq;
 let testRes;
 let userCtx;
@@ -205,6 +207,22 @@ describe('Changes controller', () => {
     it('initializes the continuous changes feed', () => {
       controller.request(testReq, testRes);
       changesSpy.callCount.should.equal(1);
+    });
+
+    it('handles initialization errors', () => {
+      const error = sinon.stub(serverUtils, 'error');
+      db.medic.info.rejects({ error: 'timeout' });
+      return controller.request(testReq, testRes).then(() => {
+        error.callCount.should.equal(1);
+      });
+    });
+
+    it('handles feed initialization errors', () => {
+      const error = sinon.stub(serverUtils, 'error');
+      authorization.getAuthorizationContext.rejects({ error: 'timeout' });
+      return controller.request(testReq, testRes).then(() => {
+        error.callCount.should.equal(1);
+      });
     });
 
     it('only initializes on first call', () => {

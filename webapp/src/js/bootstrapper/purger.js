@@ -5,7 +5,14 @@ const MAX_HISTORY_LENGTH = 10;
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 const purgeFetch = (url) => {
-  return fetch(url, { headers: opts.remote_headers, credentials: 'same-origin' }).then(res => res.json());
+  return fetch(url, { headers: opts.remote_headers, credentials: 'same-origin' })
+    .then(res => res.json())
+    .then(res => {
+      if (res && res.code && res.code !== 200) {
+        throw new Error('Error fetching purge data: ' + JSON.stringify(res));
+      }
+      return res;
+    });
 };
 
 const getPurgeLog = (localDb) => {
@@ -75,7 +82,7 @@ module.exports.shouldPurge = (localDb, userCtx) => {
       return true;
     })
     .catch(err => {
-      console.debug('Not purging:', err);
+      console.warn('Not purging:', err);
       return false;
     });
 };
