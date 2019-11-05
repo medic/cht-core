@@ -23,7 +23,7 @@ const findFirstDefinedValue = (doc, fields) => {
 
 const getRegistrations = (patientId) => {
   if (!patientId) {
-    return Promise.resolve([]);
+    return Promise.resolve();
   }
   return utils.getRegistrations({ id: patientId });
 };

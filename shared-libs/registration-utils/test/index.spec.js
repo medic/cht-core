@@ -235,11 +235,11 @@ describe('registrationUtils', () => {
 
   describe('getSubjectId', () => {
     it('should not crash on falsy input', () => {
-      chai.expect(utils.getSubjectId()).to.equal(undefined);
+      chai.expect(utils.getSubjectId()).to.equal(false);
       chai.expect(utils.getSubjectId(false)).to.equal(false);
       chai.expect(utils.getSubjectId({})).to.equal(undefined);
       chai.expect(utils.getSubjectId({ fields: {} })).to.equal(undefined);
-      chai.expect(utils.getSubjectId({ fields: { omg: 1} })).to.equal(undefined);
+      chai.expect(utils.getSubjectId({ fields: { omg: 1 } })).to.equal(undefined);
     });
 
     it('should return correct patient_id', () => {

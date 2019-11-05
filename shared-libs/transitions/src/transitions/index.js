@@ -296,7 +296,6 @@ const applyTransition = ({ key, change, transition }, callback) => {
     .catch(err => {
       // adds an error to the doc but it will only get saved if there are
       // other changes too.
-      console.log('error', err);
       const message = err.message || JSON.stringify(err);
       utils.addError(change.doc, {
         code: `${key}_error'`,

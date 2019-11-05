@@ -58,7 +58,7 @@ exports.getSubjectIds = (contact) => {
   return subjectIds;
 };
 
-const getPatientId = report => report.patient_id || (report.fields && (report.fields.patient_id || report.patient_uuid));
+const getPatientId = report => report.patient_id || (report.fields && (report.fields.patient_id || report.fields.patient_uuid));
 const getPlaceId   = report => report.place_id   || (report.fields && (report.fields.place_id));
 
 exports.getSubjectId = report => {

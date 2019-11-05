@@ -1491,6 +1491,155 @@ describe('registration', () => {
       });
   });
 
+  it('should get parent by phone when contact not available', () => {
+    // this test is kinda dumb
+    // we're testing the situation where we don't have `update_clinics` transitions enabled
+    // but still want to create people and places
+    // we have to set the forms as "public" to avoid checking the "contact" in the filter
+
+    const settings = {
+      transitions: { registration: true },
+      registrations: [
+        {
+          form: 'FORM-CLINIC',
+          events: [{
+            name: 'on_create',
+            trigger: 'add_place',
+            params: { contact_type: 'clinic', place_name_field: 'the_place_name' },
+            bool_expr: ''
+          }],
+          messages: [{
+            recipient: 'reporting_unit',
+            event_type: 'report_accepted',
+            bool_expr: 'doc.place',
+            message: [{
+              locale: 'en',
+              content: 'Place {{place.name}}({{place_id}}) added to {{health_center.name}}'
+            }],
+          }, {
+            recipient: 'reporting_unit',
+            event_type: 'invalid_parent',
+            message: [{
+              locale: 'en',
+              content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            }],
+          }],
+        },
+        {
+          form: 'FORM-PERSON',
+          events: [{
+            name: 'on_create',
+            trigger: 'add_patient',
+            params: { contact_type: 'person', patient_name_field: 'the_patient_name' },
+            bool_expr: ''
+          }],
+          messages: [{
+            recipient: 'reporting_unit',
+            event_type: 'report_accepted',
+            bool_expr: 'doc.patient',
+            message: [{
+              locale: 'en',
+              content: 'Person {{patient.name}}({{patient_id}}) added to {{clinic.name}}'
+            }],
+          }, {
+            recipient: 'reporting_unit',
+            event_type: 'invalid_parent',
+            message: [{
+              locale: 'en',
+              content: 'Cannot create a person type "person" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            }],
+          }],
+        },
+      ],
+      forms: { 'FORM-CLINIC': { public_form: true }, 'FORM-PERSON': { public_form: true }},
+    };
+
+    const createClinic = {
+      _id: 'createClinic',
+      type: 'data_record',
+      form: 'FORM-CLINIC',
+      from: '+11111111',
+      fields: {
+        the_place_name: 'Orbit',
+      },
+      reported_date: moment().valueOf(),
+    };
+
+    const createPerson = {
+      _id: 'createPerson',
+      type: 'data_record',
+      form: 'FORM-PERSON',
+      from: '+444999',
+      fields: {
+        the_patient_name: 'Mentos',
+      },
+      reported_date: moment().valueOf(),
+    };
+
+    const docs = [createClinic, createPerson];
+    const ids = docs.map(doc => doc._id);
+    let updatedDocs;
+
+    return utils
+      .updateSettings(settings)
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(ids))
+      .then(() => sentinelUtils.getInfoDocs(ids))
+      .then(infos => {
+        infos.forEach(info => {
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+        });
+      })
+      .then(() => utils.getDocs(ids))
+      .then(updated => {
+        updatedDocs = updated;
+        updated.forEach(doc => {
+          chai.expect(doc.errors).to.equal(undefined);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.patient).to.equal(undefined);
+          chai.expect(doc.place).to.equal(undefined);
+        });
+
+        chai.expect(updated[0].place_id).not.to.equal(undefined);
+        chai.expect(updated[0].tasks[0].messages[0]).to.include({
+          to: '+11111111',
+          message: `Place Orbit(${updated[0].place_id}) added to Health Center`
+        });
+
+        chai.expect(updated[1].patient_id).not.to.equal(undefined);
+        chai.expect(updated[1].tasks[0].messages[0]).to.include({
+          to: '+444999',
+          message: `Person Mentos(${updated[1].patient_id}) added to Clinic`
+        });
+
+        return getContactsByReference([updated[0].place_id, updated[1].patient_id]);
+      })
+      .then(contacts => {
+        chai.expect(contacts.rows.length).to.equal(2);
+
+        chai.expect(contacts.rows[0].doc).to.deep.include({
+          name: 'Orbit',
+          type: 'contact',
+          contact_type: 'clinic',
+          place_id: updatedDocs[0].place_id,
+          source_id: updatedDocs[0]._id,
+          created_by: updatedDocs[0].contact._id,
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        });
+        chai.expect(contacts.rows[0].doc.contact).to.equal(undefined);
+
+        chai.expect(contacts.rows[1].doc).to.deep.include({
+          name: 'Mentos',
+          type: 'contact',
+          contact_type: 'person',
+          patient_id: updatedDocs[1].patient_id,
+          source_id: updatedDocs[1]._id,
+          created_by: updatedDocs[1].contact._id,
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        });
+      });
+  });
+
   it('should assign and clear schedules', () => {
     const settings = {
       transitions: { registration: true },
@@ -1720,6 +1869,5 @@ describe('registration', () => {
         chai.expect(updated.tasks[1].messages[0].message).to.equal('alpha');
         chai.expect(updated.tasks[2].messages[0].message).to.equal('beta');
       });
-
   });
 });
