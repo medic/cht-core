@@ -33,6 +33,7 @@
       const globalActions = GlobalActions(dispatch);
       const tasksActions = TasksActions(dispatch);
       return {
+        unsetSelected: globalActions.unsetSelected,
         setSelectedTask: tasksActions.setSelectedTask,
         setShowContent: globalActions.setShowContent,
         setTitle: globalActions.setTitle,
@@ -44,7 +45,7 @@
     $scope.setSelected = function(id) {
       if (!id) {
         LiveList.tasks.clearSelected();
-        $scope.clearSelected();
+        ctrl.unsetSelected();
         return;
       }
       
@@ -87,7 +88,7 @@
     };
     LiveList.tasks.notifyError = function() {
       ctrl.error = true;
-      $scope.clearSelected();
+      ctrl.unsetSelected();
     };
 
     if ($stateParams.tour) {
