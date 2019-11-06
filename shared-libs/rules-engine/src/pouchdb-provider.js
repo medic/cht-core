@@ -1,7 +1,7 @@
 /**
- * @module task-fetcher
+ * @module pouchdb-provider
  *
- * A concrete "data provider" accessing data via medic pouch db
+ * Wireup for accessing rules document data via medic pouch db
  */
 
 const registrationUtils = require('@medic/registration-utils');
@@ -51,7 +51,7 @@ const medicPouchProvider = db => {
         return Promise.resolve([]);
       }
     
-      console.debug(`Committing ${taskDocs.length} task documents updates`);
+      console.debug(`Committing ${taskDocs.length} task document updates`);
       return db.bulkDocs(taskDocs)
         .catch(err => console.error('Error committing task documents', err));
     },
