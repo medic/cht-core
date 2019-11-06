@@ -21,7 +21,7 @@ const shutdown = () => {
 
 module.exports = {
   /**
-   * Initializes the rules engine
+   * Initializes the rules emitter
    *
    * @param {Object} settingsDoc The settings document
    * @param {Object} userDoc The logged in user's contact document

@@ -85,11 +85,10 @@ const self = {
    *
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
-   * @param {Object} salt=1 Salt to add into the configuration hash. Changing this value invalidates the cache.
    * @returns {Boolean} True if the state of all contacts has been reset
    */
-  rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
-    const rulesConfigHash = hashRulesConfig(settingsDoc, userDoc, salt);
+  rulesConfigChange: (settingsDoc, userDoc) => {
+    const rulesConfigHash = hashRulesConfig(settingsDoc, userDoc);
     if (state.rulesConfigHash !== rulesConfigHash) {
       state = {
         rulesConfigHash,
@@ -180,12 +179,11 @@ const self = {
   currentUser: () => currentUser,
 };
 
-const hashRulesConfig = (settingsDoc, userDoc, salt) => {
+const hashRulesConfig = (settingsDoc, userDoc) => {
   const rulesConfig = {
     rules: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.rules,
     targets: settingsDoc && settingsDoc.targets,
     userDoc,
-    salt,
   };
 
   const asString = JSON.stringify(rulesConfig);

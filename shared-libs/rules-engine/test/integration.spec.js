@@ -79,7 +79,9 @@ describe('Rules Engine Integration Tests', () => {
     library is created. In this case, that is the time of RulesEngine.initialize or RulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
     */
     sinon.useFakeTimers(THE_FUTURE);
-    await RulesEngine.rulesConfigChange(settingsDoc, userDoc, ++configHashSalt);
+    
+    settingsDoc.tasks.rules += ' '; // bust cache with fresh rules
+    await RulesEngine.rulesConfigChange(settingsDoc, userDoc);
     await rulesEmitter.initialize(settingsDoc, userDoc);
 
     sinon.useFakeTimers(1);

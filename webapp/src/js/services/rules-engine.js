@@ -19,26 +19,27 @@ angular.module('inboxServices').factory('RulesEngine', function(
 ) {
   'ngInject';
 
-  const initialize = () => Auth.any(['can_view_tasks', 'can_view_analytics'])
-    .then(() => true).catch(() => false)
-    .then((hasPermission) => {
-      if (!hasPermission || Session.isOnlineOnly()) {
-        return false;
-      }
+  const initialize = () => (
+    Auth.any([['can_view_tasks'], ['can_view_analytics']]).then(() => true).catch(() => false)
+      .then(hasPermission => {
+        if (!hasPermission || Session.isOnlineOnly()) {
+          return false;
+        }
 
-      return Promise.all([ Settings(), UserContact() ])
-        .then(([settingsDoc, userContactDoc]) => {
-          return RulesEngineCore.initialize(DB(), settingsDoc, userContactDoc)
-            .then(() => {
-              const isEnabled = RulesEngineCore.isEnabled();
-              if (isEnabled) {
-                monitorChanges(settingsDoc, userContactDoc);
-              }
+        return Promise.all([ Settings(), UserContact() ])
+          .then(([settingsDoc, userContactDoc]) => {
+            return RulesEngineCore.initialize(DB(), settingsDoc, userContactDoc)
+              .then(() => {
+                const isEnabled = RulesEngineCore.isEnabled();
+                if (isEnabled) {
+                  monitorChanges(settingsDoc, userContactDoc);
+                }
 
-              return isEnabled;
-            });
-        });
-    });
+                return isEnabled;
+              });
+          });
+      })
+  );
   let initialized = initialize();
 
   const monitorChanges = function (settingsDoc, userContactDoc) {
@@ -99,13 +100,17 @@ angular.module('inboxServices').factory('RulesEngine', function(
   return {
     isEnabled: () => initialized,
 
-    fetchTaskDocsForAllContacts: () => initialized
-      .then(() => RulesEngineCore.fetchTasksFor(DB()))
-      .then(translateTaskDocs),
+    fetchTaskDocsForAllContacts: () => (
+      initialized
+        .then(() => RulesEngineCore.fetchTasksFor(DB()))
+        .then(translateTaskDocs)
+    ),
 
-    fetchTaskDocsFor: contactIds => initialized
-      .then(() => RulesEngineCore.fetchTasksFor(DB(), contactIds))
-      .then(translateTaskDocs),
+    fetchTaskDocsFor: contactIds => (
+      initialized
+        .then(() => RulesEngineCore.fetchTasksFor(DB(), contactIds))
+        .then(translateTaskDocs)
+    ),
 
     // testing only - allows karma to test initialization logic
     _initialize: () => { initialized = initialize(); },

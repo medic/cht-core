@@ -146,7 +146,5 @@ describe('contact-state-store', () => {
       const actual = hashRulesConfig(settings, { _id: 'user' });
       expect(actual).to.not.be.empty;
     });
-
-    it('salt', () => expect(hashRulesConfig({}, {}, 1)).to.not.eq(hashRulesConfig({}, {}, 2)));
   });
 });

@@ -11,19 +11,17 @@ const refreshTasksFor = require('./refresh-tasks-for-contacts');
 const updateTemporalStates = require('./update-temporal-states');
 const rulesEmitter = require('./rules-emitter');
 
-const CONTACT_STATE_DOCID = '_local/taskState';
-
 module.exports = {
   /**
-   * @param {Object} db The medic PouchDB database
+   * @param {DataProvider} provider A data provider
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (db, settingsDoc, userDoc) => {
-    return fetch.existingContactStateStore(db)
+  initialize: (provider, settingsDoc, userDoc) => {
+    return provider.existingContactStateStore()
       .then(existingStateDoc => {
         if (!existingStateDoc) {
-          existingStateDoc = { _id: CONTACT_STATE_DOCID };
+          existingStateDoc = { _id: provider.CONTACT_STATE_DOCID };
         }
 
         const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
@@ -32,7 +30,7 @@ module.exports = {
             throw Error('Rules engine: Updates to the nools schema are required');
           }
 
-          const closure = updatedState => stateChangeCallback(db, existingStateDoc, updatedState);
+          const closure = updatedState => provider.stateChangeCallback(existingStateDoc, updatedState);
           contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, closure);
         }
       });
@@ -48,21 +46,21 @@ module.exports = {
    * Updates the temporal states of the task documents
    * Commits those changes (async)
    *
-   * @param {Object} db The medic PouchDB database
+   * @param {DataProvider} provider A data provider
    * @param {string[]} contactIds An array of contact ids. If undefined, all task documents
    * @returns {Promise<Object[]>} All the fresh task docs owned by contacts
    */
-  fetchTasksFor: (db, contactIds) => {
+  fetchTasksFor: (provider, contactIds) => {
     if (!rulesEmitter.isEnabled()) {
       return Promise.resolve([]);
     }
 
     const calculationTimestamp = Date.now();
-    return refreshTasks(db, calculationTimestamp, contactIds)
-      .then(() => contactIds ? fetch.tasksByRelation(db, contactIds, 'owner') : fetch.allTasks(db, 'owner'))
+    return refreshTasks(provider, calculationTimestamp, contactIds)
+      .then(() => contactIds ? provider.tasksByRelation(contactIds, 'owner') : provider.allTasks('owner'))
       .then(tasksToDisplay => {
         const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
-        commitTaskDocs(db, docsToCommit);
+        provider.commitTaskDocs(docsToCommit);
         return tasksToDisplay.filter(taskDoc => taskDoc.state === 'Ready');
       });
   },
@@ -70,32 +68,27 @@ module.exports = {
   /**
    * Indicate that the task documents associated with a given subjectId are dirty.
    * 
-   * @param {Object} db The medic PouchDB database
+   * @param {DataProvider} provider A data provider
    * @param {string[]} subjectIds An array of subject ids
    * 
    * @returns {Promise} To complete the transaction marking the subjectIds as dirty
    */
-  updateTasksFor: (db, subjectIds) => {
+  updateTasksFor: (provider, subjectIds) => {
     if (subjectIds && !Array.isArray(subjectIds)) {
       subjectIds = [subjectIds];
     }
 
-    // this function accepts subject ids, but contactStateStore accepts a contact id. attempt to lookup contact by reference */
-    return db.query('medic-client/contacts_by_reference', { keys: subjectIds.map(key => ['shortcode', key]), include_docs: true })
-      .then(results => {
-        const shortcodeIds = results.rows.map(result => result.doc._id);
-        const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
-
-        return contactStateStore.markDirty([...shortcodeIds, ...idsThatArentShortcodes]);
-      });
+    // this function accepts subject ids, but contactStateStore accepts a contact id. attempt to lookup contact by reference
+    return provider.contactsBySubjectId(subjectIds)
+      .then(contactIds => contactStateStore.markDirty(contactIds));
   },
 };
 
-const refreshTasks = (db, calculationTimestamp, contactIds) => {
-  const refreshTasksForAllContacts = (db, calculationTimestamp) => fetch.allTaskData(db)
+const refreshTasks = (provider, calculationTimestamp, contactIds) => {
+  const refreshTasksForAllContacts = (calculationTimestamp) => provider.allTaskData(contactStateStore.currentUser())
     .then(freshData => {
       return refreshTasksFor(freshData, calculationTimestamp)
-        .then(docsToCommit => commitTaskDocs(db, docsToCommit))
+        .then(docsToCommit => provider.commitTaskDocs(docsToCommit))
         .then(() => {
           const contactIds = freshData.contactDocs.map(doc => doc._id);
 
@@ -111,106 +104,25 @@ const refreshTasks = (db, calculationTimestamp, contactIds) => {
         });
     });
 
-  const refreshTasksForKnownContacts = (db, calculationTimestamp, contactIds) => {
+  const refreshTasksForKnownContacts = (calculationTimestamp, contactIds) => {
     const dirtyContactIds = contactIds.filter(contactId => contactStateStore.isDirty(contactId));
-    return fetch.taskDataFor(db, dirtyContactIds)
+    return provider.taskDataFor(dirtyContactIds, contactStateStore.currentUser())
       .then(freshData => refreshTasksFor(freshData, calculationTimestamp))
-      .then(docsToCommit => commitTaskDocs(db, docsToCommit))
+      .then(docsToCommit => provider.commitTaskDocs(docsToCommit))
       .then(() => {
         contactStateStore.markFresh(calculationTimestamp, dirtyContactIds);
       });
   };
 
   if (contactIds) {
-    return refreshTasksForKnownContacts(db, calculationTimestamp, contactIds);
+    return refreshTasksForKnownContacts(calculationTimestamp, contactIds);
   }
 
   // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in reports/tasks)
   if (!contactStateStore.hasAllContacts()) {
-    return refreshTasksForAllContacts(db, calculationTimestamp);
+    return refreshTasksForAllContacts(calculationTimestamp);
   }
 
   // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-  return refreshTasksForKnownContacts(db, calculationTimestamp, contactStateStore.getContactIds());
-};
-
-const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
-const fetch = {
-  allTaskData: db => {
-    const userDoc = contactStateStore.currentUser();
-    const userContactId = userDoc && userDoc._id;
-    return Promise.all([
-        docsOf(db.query('medic-client/contacts_by_type', { include_docs: true })),
-        docsOf(db.query('medic-client/reports_by_subject', { include_docs: true })),
-        fetch.allTasks(db, 'requester'),
-      ])
-      .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userContactId }));
-  },
-
-  /*
-  PouchDB.query slows down when provided with a large keys array.
-  For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
-  */
-  allTasks: (db, prefix) => {
-    const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
-    return docsOf(db.query('medic-client/tasks', options));
-  },
-
-  existingContactStateStore: db => db.get(CONTACT_STATE_DOCID).catch(() => undefined),
-
-  tasksByRelation: (db, contactIds, prefix) => {
-    const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
-    return docsOf(db.query('medic-client/tasks', { keys, include_docs: true }));
-  },
-
-  taskDataFor: (db, contactIds) => {
-    if (!contactIds || contactIds.length === 0) {
-      return Promise.resolve({});
-    }
-
-    const userDoc = contactStateStore.currentUser();
-    return docsOf(db.allDocs({ keys: contactIds, include_docs: true }))
-      .then(contactDocs => {
-        const subjectIds = contactDocs.reduce((agg, contactDoc) => {
-          registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
-          return agg;
-        }, new Set(contactIds));
-        
-        const keys = Array.from(subjectIds).map(key => [key]);
-        return Promise.all([
-            docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
-            fetch.tasksByRelation(db, contactIds, 'requester'),
-          ])
-          .then(([reportDocs, taskDocs]) => ({
-            userContactId: userDoc && userDoc._id,
-            contactDocs,
-            reportDocs,
-            taskDocs,
-          }));
-      });
-  },
-};
-
-// previousCommit helps avoid conflict errors since these changes are handled asynchronously
-let previousCommit = Promise.resolve();
-const stateChangeCallback = (db, stateDoc, updatedState) => {
-  Object.assign(stateDoc, { contactStateStore: updatedState });
-
-  previousCommit = previousCommit
-    .then(() => db.put(stateDoc))
-    .then(updatedDoc => { stateDoc._rev = updatedDoc.rev; })
-    .catch(err => console.error(`Error updating contactStateStore: ${err}`))
-    .then(() => { previousCommit = Promise.resolve(); });
-
-  return previousCommit;
-};
-
-const commitTaskDocs = (db, taskDocs) => {
-  if (!taskDocs || taskDocs.length === 0) {
-    return Promise.resolve([]);
-  }
-
-  console.debug(`Committing ${taskDocs.length} task documents updates`);
-  return db.bulkDocs(taskDocs)
-    .catch(err => console.error('Error committing task documents', err));
+  return refreshTasksForKnownContacts(calculationTimestamp, contactStateStore.getContactIds());
 };

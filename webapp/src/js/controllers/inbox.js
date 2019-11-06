@@ -227,8 +227,7 @@ const moment = require('moment');
       .then(() => initForms())
       .then(() => initTours())
       .then(() => initUnreadCount())
-      .then(() => CheckDate())
-      .then(() => RulesEngine.refreshDocsDaily());
+      .then(() => CheckDate());
 
     Feedback.init();
 
