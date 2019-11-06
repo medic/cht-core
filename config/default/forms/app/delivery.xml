@@ -133,7 +133,7 @@
             <value>Yes</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/blue_skin:label">
-            <value>Blue skin color</value>
+            <value>Blue skin color (hypothermia)</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour/no:label">
             <value>No</value>
@@ -795,7 +795,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-10-17_05-01">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-11-04_13-13">
           <inputs>
             <meta>
               <location>
@@ -863,7 +863,7 @@
             <woman_death_birth/>
             <woman_death_add_notes/>
             <death_profile_note/>
-            <death_baby_note/>
+            <death_baby_note tag="hidden"/>
             <death_report db-doc="true" tag="hidden">
               <form/>
               <type/>
@@ -1208,28 +1208,28 @@
         <root>
           <item>
             <itextId>static_instance-babies_alive-0</itextId>
-            <count>0</count>
             <name>0</name>
+            <count>0</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-1</itextId>
-            <count>1</count>
             <name>1</name>
+            <count>1</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-2</itextId>
-            <count>2</count>
             <name>2</name>
+            <count>2</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-3</itextId>
-            <count>3</count>
             <name>3</name>
+            <count>3</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-4</itextId>
-            <count>4</count>
             <name>other</name>
+            <count>4</count>
           </item>
         </root>
       </instance>
@@ -1293,28 +1293,28 @@
         <root>
           <item>
             <itextId>static_instance-pnc_visits-0</itextId>
-            <count>0</count>
             <name>within_24_hrs</name>
+            <count>0</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-1</itextId>
-            <count>3</count>
             <name>3_days</name>
+            <count>3</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-2</itextId>
-            <count>7</count>
             <name>7_days</name>
+            <count>7</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-3</itextId>
-            <count>42</count>
             <name>6_weeks</name>
+            <count>42</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-4</itextId>
-            <count>0</count>
             <name>none</name>
+            <count>0</count>
           </item>
         </root>
       </instance>
@@ -1356,7 +1356,7 @@
       <bind calculate="../inputs/contact/parent/parent/parent/_id" nodeset="/delivery/facility_id" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/delivery/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/delivery/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/delivery/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/delivery/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/delivery/patient_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)" nodeset="/delivery/patient_short_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)" nodeset="/delivery/patient_short_name_start" type="string"/>
