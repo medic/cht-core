@@ -1,3 +1,5 @@
+const extras = require('./nools-extras');
+
 module.exports = [
   {
     id: 'active-pregnancies',
