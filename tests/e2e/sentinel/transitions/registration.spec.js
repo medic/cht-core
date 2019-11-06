@@ -450,7 +450,7 @@ describe('registration', () => {
         }],
         messages: [{
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a person type "chw" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -480,7 +480,7 @@ describe('registration', () => {
         }],
         messages: [{
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a person type "nurse" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -611,7 +611,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[2].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a person type "chw" under parent the_clinic(contact type clinic)',
         });
         chai.expect(updated[2].tasks[0].messages[0]).to.include({
@@ -620,7 +620,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[3].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a person type "chw" under parent the_district_hospital(contact type district_hospital)',
         });
         chai.expect(updated[3].tasks[0].messages[0]).to.include({
@@ -629,7 +629,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[4].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a person type "nurse" under parent the_health_center(contact type health_center)',
         });
         chai.expect(updated[4].tasks[0].messages[0]).to.include({
@@ -1008,7 +1008,7 @@ describe('registration', () => {
         }],
         messages: [{
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -1024,7 +1024,7 @@ describe('registration', () => {
         }],
         messages: [{
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -1054,7 +1054,7 @@ describe('registration', () => {
         }],
         messages: [{
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a place type "health_center" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -1202,7 +1202,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[0].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a place type "clinic" under parent the_clinic(contact type clinic)',
         });
         chai.expect(updated[0].tasks[0].messages[0]).to.include({
@@ -1211,7 +1211,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[1].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a place type "clinic" under parent the_district_hospital(contact type district_hospital)',
         });
         chai.expect(updated[1].tasks[0].messages[0]).to.include({
@@ -1220,7 +1220,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[2].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a place type "clinic" under parent the_clinic(contact type clinic)',
         });
         chai.expect(updated[2].tasks[0].messages[0]).to.include({
@@ -1229,7 +1229,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[3].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a place type "clinic" under parent the_district_hospital(contact type district_hospital)',
         });
         chai.expect(updated[3].tasks[0].messages[0]).to.include({
@@ -1256,7 +1256,7 @@ describe('registration', () => {
         });
 
         chai.expect(updated[6].errors[0]).to.deep.equal({
-          code: 'invalid_parent',
+          code: 'parent_invalid',
           message: 'Cannot create a place type "health_center" under parent the_clinic(contact type clinic)',
         });
         chai.expect(updated[6].tasks[0].messages[0]).to.include({
@@ -1292,7 +1292,7 @@ describe('registration', () => {
           }],
         }, {
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -1316,7 +1316,7 @@ describe('registration', () => {
           }],
         }, {
           recipient: 'reporting_unit',
-          event_type: 'invalid_parent',
+          event_type: 'parent_invalid',
           message: [{
             locale: 'en',
             content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -1518,7 +1518,7 @@ describe('registration', () => {
             }],
           }, {
             recipient: 'reporting_unit',
-            event_type: 'invalid_parent',
+            event_type: 'parent_invalid',
             message: [{
               locale: 'en',
               content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
@@ -1543,7 +1543,7 @@ describe('registration', () => {
             }],
           }, {
             recipient: 'reporting_unit',
-            event_type: 'invalid_parent',
+            event_type: 'parent_invalid',
             message: [{
               locale: 'en',
               content: 'Cannot create a person type "person" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'

@@ -16,6 +16,10 @@ const _ = require('underscore'),
 const registrationUtils = require('@medic/registration-utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 
+const PARENT_NOT_FOUND = 'parent_not_found';
+const PARENT_FIELD_NOT_PROVIDED = 'parent_field_not_provided';
+const PARENT_INVALID = 'parent_invalid';
+
 const findFirstDefinedValue = (doc, fields) => {
   const definedField = fields.find(field => doc.fields[field] !== undefined && doc.fields[field] !== null);
   return definedField && doc.fields[definedField];
@@ -370,17 +374,24 @@ const getParent = options => {
       return Promise.resolve(JSON.parse(JSON.stringify(options.doc.contact.parent)));
     }
 
-    return getParentByPhone(options);
+    return getParentByPhone(options).then(parent => {
+      if (!parent) {
+        transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_NOT_FOUND);
+        return;
+      }
+
+      return parent;
+    });
   }
 
   if (!options.doc.fields[options.params.parent_id]) {
-    transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, 'parent_field_not_provided');
+    transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_FIELD_NOT_PROVIDED);
     return Promise.resolve();
   }
 
   return utils.getContact(options.doc.fields[options.params.parent_id]).then(parent => {
     if (!parent) {
-      transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, 'parent_not_found');
+      transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_NOT_FOUND);
       return;
     }
 
@@ -431,7 +442,7 @@ const addPatient = (options) => {
           transitionUtils.addRejectionMessage(
             options.doc,
             options.registrationConfig,
-            'invalid_parent',
+            PARENT_INVALID,
             { templateContext: { parent } }
             );
           return;
@@ -483,7 +494,7 @@ const addPlace = (options) => {
           transitionUtils.addRejectionMessage(
             options.doc,
             options.registrationConfig,
-            'invalid_parent',
+            PARENT_INVALID,
             { templateContext: { parent } }
           );
           return;
@@ -522,7 +533,7 @@ module.exports = {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with an unknown contact type "${typeId}"`);
             }
             if (!contactType.person) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with a place contact type "${typeId}"`);
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a person with a place contact type "${typeId}"`);
             }
           }
 
@@ -540,12 +551,15 @@ module.exports = {
 
           if (event.trigger === 'add_place') {
             const typeId = params.contact_type;
+            if (!typeId) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an undefined contact type`);
+            }
             const contactType = contactTypesUtils.getTypeById(config, typeId);
             if (!contactType) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with an unknown contact type "${typeId}"`);
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an unknown contact type "${typeId}"`);
             }
             if (contactType.person) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with a person contact type "${typeId}"`);
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with a person contact type "${typeId}"`);
             }
           }
         });
