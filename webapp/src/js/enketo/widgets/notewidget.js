@@ -5,6 +5,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 }
 
 define( function( require, exports, module ) {
+
   'use strict';
   const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
@@ -20,7 +21,7 @@ define( function( require, exports, module ) {
    * @param {(boolean|{touch: boolean, repeat: boolean})} options options
    * @param {*=} e     event
    */
-  function Notewidget( element, options ) {
+  function Notewidget( element ) {
     this.namespace = pluginName;
     this.element = element;
     this._init();
@@ -84,7 +85,6 @@ define( function( require, exports, module ) {
       let data = $this.data( pluginName );
 
       options = options || {};
-
       if ( !data && typeof options === 'object' ) {
         $this.data( pluginName, ( data = new Notewidget( this, options, event ) ) );
       } else if ( data && typeof options === 'string' ) {
@@ -92,6 +92,7 @@ define( function( require, exports, module ) {
       }
     } );
   };
+
 
   Notewidget.selector = '.note';
   Notewidget.condition = function() { return false; };
