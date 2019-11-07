@@ -3,6 +3,8 @@
  * As defined by the FHIR task standard https://www.hl7.org/fhir/task.html#statemachine
  */
 
+const moment = require('moment');
+
 const States = {
   /**
    * Task has been calculated but it is scheduled in the future
@@ -31,6 +33,26 @@ const States = {
   Failed: 'Failed',
 };
 
+const getDisplayWindow = (taskEmission) => {
+  const noolsSchema = ['date', 'displayDaysBefore', 'displayDaysAfter'].some(attr => Object.hasOwnProperty.call(taskEmission, attr));
+  if (noolsSchema) {
+    const dueDate = moment(taskEmission.date).startOf('day');
+    return {
+      dueDate: dueDate.valueOf(),
+      startTime: dueDate.clone().subtract(taskEmission.displayDaysBefore || 0, 'days').valueOf(),
+      endTime: dueDate.clone().add(taskEmission.displayDaysAfter || 0, 'days').add(1, 'day').valueOf() - 1,
+    };
+  }
+
+  // if not nools schema, the emission is in the task document schema
+  return {
+    dueDate: taskEmission.dueDate,
+    startTime: taskEmission.startTime,
+    endTime: taskEmission.endTime,
+  };
+};
+
+
 module.exports = {
   isTerminal: state => [States.Cancelled, States.Completed, States.Failed].includes(state),
 
@@ -57,20 +79,27 @@ module.exports = {
     }
 
     // invalid data yields falsey
-    if (!taskEmission.startTime || !taskEmission.endTime || taskEmission.startTime > taskEmission.endTime || taskEmission.endTime < taskEmission.startTime) {
+    if (!taskEmission.date && !taskEmission.dueDate) {
       return false;
     }
 
-    if (taskEmission.startTime > time) {
+    const { startTime, endTime } = getDisplayWindow(taskEmission);
+    if (!startTime || !endTime || startTime > endTime || endTime < startTime) {
+      return false;
+    }
+
+    if (startTime > time) {
       return States.Draft;
     }
 
-    if (taskEmission.endTime < time) {
+    if (endTime < time) {
       return States.Failed;
     }
 
     return States.Ready;
   },
+
+  getDisplayWindow,
 
   setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now()) => {
     if (!taskDoc) {

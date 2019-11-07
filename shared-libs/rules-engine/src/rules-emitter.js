@@ -67,7 +67,7 @@ module.exports = {
     }
 
     const Task = flow.getDefined('task');
-    return ['startTime', 'endTime'].every(attr => Object.hasOwnProperty.call(Task.prototype, attr));
+    return ['displayDaysBefore', 'displayDaysAfter'].every(attr => Object.hasOwnProperty.call(Task.prototype, attr));
   },
 
   /**

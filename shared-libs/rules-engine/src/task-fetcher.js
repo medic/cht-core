@@ -85,24 +85,26 @@ module.exports = {
 };
 
 const refreshTasks = (provider, calculationTimestamp, contactIds) => {
-  const refreshTasksForAllContacts = (calculationTimestamp) => provider.allTaskData(contactStateStore.currentUser())
-    .then(freshData => {
-      return refreshTasksFor(freshData, calculationTimestamp)
-        .then(docsToCommit => provider.commitTaskDocs(docsToCommit))
-        .then(() => {
-          const contactIds = freshData.contactDocs.map(doc => doc._id);
+  const refreshTasksForAllContacts = (calculationTimestamp) => (
+    provider.allTaskData(contactStateStore.currentUser())
+      .then(freshData => (
+        refreshTasksFor(freshData, calculationTimestamp)
+          .then(docsToCommit => provider.commitTaskDocs(docsToCommit))
+          .then(() => {
+            const contactIds = freshData.contactDocs.map(doc => doc._id);
 
-          const subjectIds = freshData.contactDocs.reduce((agg, contactDoc) => {
-            registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
-            return agg;
-          }, new Set());
-          const headlessSubjectIds = freshData.reportDocs
-            .map(doc => registrationUtils.getPatientId(doc))
-            .filter(patientId => !subjectIds.has(patientId));
+            const subjectIds = freshData.contactDocs.reduce((agg, contactDoc) => {
+              registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
+              return agg;
+            }, new Set());
+            const headlessSubjectIds = freshData.reportDocs
+              .map(doc => registrationUtils.getPatientId(doc))
+              .filter(patientId => !subjectIds.has(patientId));
 
-          contactStateStore.markAllFresh(calculationTimestamp, [...contactIds, ...headlessSubjectIds]);
-        });
-    });
+            contactStateStore.markAllFresh(calculationTimestamp, [...contactIds, ...headlessSubjectIds]);
+          })
+      ))
+  );
 
   const refreshTasksForKnownContacts = (calculationTimestamp, contactIds) => {
     const dirtyContactIds = contactIds.filter(contactId => contactStateStore.isDirty(contactId));

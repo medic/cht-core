@@ -32,10 +32,10 @@ describe('task-states', () => {
     });
 
     it('invalid data yields falsey', () => {
-      const first = mockEmission(0, { startTime: 2, endTime: 1 });
+      const first = mockEmission(0, { displayDaysBefore: 0, displayDaysAfter: -5 });
       expect(TaskStates.calculateState(first, Date.now())).to.eq(false);
 
-      const second = mockEmission(0, { startTime: undefined });
+      const second = mockEmission(0, { displayDaysBefore: undefined, displayDaysAfter: undefined, date: undefined, startTime: undefined });
       expect(TaskStates.calculateState(second, Date.now())).to.eq(false);
     });
 

@@ -112,7 +112,7 @@ describe('transform-task-emission-to-doc', () => {
 
   it('no new docs for cancelled state', () => {
     const invalidEmission = mockEmission(MS_IN_DAY);
-    invalidEmission.endTime = 0;
+    invalidEmission.displayDaysBefore = -1;
     const docForCancelledEmission = transformTaskEmissionToDoc(deepCopy(invalidEmission), Date.now(), 'username');
     expect(docForCancelledEmission).to.nested.include({
       isUpdated: false,
@@ -143,11 +143,12 @@ describe('transform-task-emission-to-doc', () => {
     const minifyEmission = transformTaskEmissionToDoc.__get__('minifyEmission');
 
     it('empty emission', () => {
-      expect(minifyEmission({}, {})).to.deep.eq({ emission: { dueDate: undefined } });
+      expect(minifyEmission({}, {})).to.deep.eq({ emission: {} });
     });
 
     it('invalid duedate', () => {
-      expect(minifyEmission({}, { date: 'foo' })).to.deep.eq({ emission: { dueDate: NaN } });
+      const actual = minifyEmission({}, { date: 'foo' });
+      expect(actual).to.deep.eq({ emission: { dueDate: NaN, startTime: NaN, endTime: NaN } });
     });
 
     it('action without contact', () => {
@@ -156,7 +157,6 @@ describe('transform-task-emission-to-doc', () => {
         emission: {
           actions: [{ content: {} }],
           forId: undefined,
-          dueDate: undefined
         }
       });
     });
@@ -164,20 +164,14 @@ describe('transform-task-emission-to-doc', () => {
     it('action without content', () => {
       const actual = minifyEmission({}, { actions: [{ }] });
       expect(actual).to.deep.eq({
-        emission: {
-          actions: [{ }],
-          dueDate: undefined
-        }
+        emission: { actions: [{ }] }
       });
     });
 
     it('contact without id', () => {
       const actual = minifyEmission({}, { contact: { name: 'foo' } });
       expect(actual).to.deep.eq({
-        emission: {
-          contact: { name: 'foo' },
-          dueDate: undefined
-        }
+        emission: { contact: { name: 'foo' } }
       });
     });
   });
@@ -188,6 +182,28 @@ describe('transform-task-emission-to-doc', () => {
 
     afterEach(() => {
       rulesEmitter.shutdown();
+    });
+
+    it('calculateState is the same before and after transform (Ready)', () => {
+      const TaskStates = require('../src/task-states');
+      const emission = mockEmission(0);
+      const stateOfRaw = TaskStates.calculateState(emission, Date.now());
+      expect(stateOfRaw).to.eq('Ready');
+      const transformed = transformTaskEmissionToDoc(emission, Date.now(), 'user');
+      const stateOfTransformed = TaskStates.calculateState(transformed.taskDoc.emission, Date.now());
+
+      expect(stateOfRaw).to.eq(stateOfTransformed);
+    });
+
+    it('calculateState is the same before and after transform (Draft)', () => {
+      const TaskStates = require('../src/task-states');
+      const emission = mockEmission(MS_IN_DAY * 2);
+      const stateOfRaw = TaskStates.calculateState(emission, Date.now());
+      expect(stateOfRaw).to.eq('Draft');
+      const transformed = transformTaskEmissionToDoc(emission, Date.now(), 'user');
+      const stateOfTransformed = TaskStates.calculateState(transformed.taskDoc.emission, Date.now());
+
+      expect(stateOfRaw).to.eq(stateOfTransformed);
     });
 
     it('transform task.anc.facility_reminder.title', async () => {
@@ -233,7 +249,7 @@ describe('transform-task-emission-to-doc', () => {
             resolved: false,
             startTime: NOW.clone().subtract(3, 'day').valueOf(),
             dueDate: NOW.valueOf(),
-            endTime: NOW.clone().add(8, 'day').valueOf(),
+            endTime: NOW.clone().add(8, 'day').valueOf() - 1,
           },
           stateHistory: [{
             state: 'Ready',
