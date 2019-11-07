@@ -147,8 +147,8 @@ angular
     };
 
     var generateDeviceInfo = function() {
-      if (!window.medicmobile_android || typeof window.medicmobile_android.getDeviceInfo === 'function') {
-        return JSON.parse(window.medicmobile_android.getDeviceInfo());
+      if (!$window.medicmobile_android || typeof $window.medicmobile_android.getDeviceInfo === 'function') {
+        return JSON.parse($window.medicmobile_android.getDeviceInfo());
       }
       return {};
     };
