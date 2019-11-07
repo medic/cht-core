@@ -16,7 +16,7 @@
     "chai": "^4.1.2",
     "chai-exclude": "^1.0.8",
     "medic-conf": "^3.0.6",
-    "medic-conf-test-harness": "^0.1.18",
+    "medic-conf-test-harness": "^0.1.19",
     "mocha": "^5.1.1"
   }
 }
