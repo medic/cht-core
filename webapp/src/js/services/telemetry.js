@@ -146,6 +146,13 @@ angular
       };
     };
 
+    var generateDeviceInfo = function() {
+      if (!window.medicmobile_android || typeof window.medicmobile_android.getDeviceInfo === 'function') {
+        return JSON.parse(window.medicmobile_android.getDeviceInfo());
+      }
+      return {};
+    };
+
     // This should never happen (famous last words..), because we should only
     // generate a new document for every month, which is part of the _id.
     var storeConflictedAggregate = function(aggregateDoc) {
@@ -183,7 +190,8 @@ angular
           aggregateDoc.metrics = convertReduceToKeyValues(reduceResult);
           aggregateDoc.metadata = metadata;
           aggregateDoc._id = generateAggregateDocId(aggregateDoc.metadata);
-          aggregateDoc.device = generateDeviceStats();
+          aggregateDoc.deviceStats = generateDeviceStats();
+          aggregateDoc.deviceInfo = generateDeviceInfo();
           aggregateDoc.dbInfo = infoResult;
 
           return DB({meta: true})
