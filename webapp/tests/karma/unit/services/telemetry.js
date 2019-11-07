@@ -175,9 +175,9 @@ describe('Telemetry service', () => {
 
       const deviceInfo = {
         software: {
-          androidVersion: "7.0",
+          androidVersion: '7.0',
           osApiLevel: 24,
-          osVersion: "3.18.35(1560398223)"
+          osVersion: '3.18.35(1560398223)'
         }
       };
       $window.medicmobile_android = {
@@ -269,9 +269,9 @@ describe('Telemetry service', () => {
 
       const deviceInfo = {
         software: {
-          androidVersion: "7.0",
+          androidVersion: '7.0',
           osApiLevel: 24,
-          osVersion: "3.18.35(1560398223)"
+          osVersion: '3.18.35(1560398223)'
         }
       };
       $window.medicmobile_android = {
@@ -279,7 +279,7 @@ describe('Telemetry service', () => {
           return JSON.stringify(deviceInfo);
         }
       };
-      
+
       return service.record('test', 1).then(() => {
         chai.expect($log.error.callCount).to.equal(0);
         chai.expect(DB.put.callCount).to.equal(2);
