@@ -1,4 +1,4 @@
-window.EnketoForm = require('enketo-core/src/js/Form');
+window.EnketoForm = require('enketo-core').Form;
 
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.es');
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.fr');

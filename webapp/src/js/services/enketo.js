@@ -22,6 +22,7 @@ angular.module('inboxServices').service('Enketo',
     GetReportContent,
     Language,
     LineageModelGenerator,
+    Markdown,
     Search,
     ServicesActions,
     SubmitFormBySms,
@@ -270,9 +271,9 @@ angular.module('inboxServices').service('Enketo',
 
     const renderFromXmls = function(doc, selector, instanceData) {
       const wrapper = $(selector);
-      wrapper.find('.form-footer')
-        .addClass('end')
-        .find('.previous-page,.next-page')
+      wrapper
+        .addClass('main')
+        .find('.form-footer previous-page')
         .addClass('disabled');
 
       const formContainer = wrapper.find('.container').first();
@@ -308,14 +309,31 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
+    const setupNavButtons = function(form, $wrapper, currentIndex) {
+      const lastIndex = form.pages.$activePages.length - 1;
+      if (currentIndex === 0) {
+        $wrapper.find('.form-footer .previous-page').addClass('disabled');
+      } else if (currentIndex === lastIndex) {
+        $wrapper.find('.form-footer').addClass('end')
+                .find('.next-page').addClass('disabled');
+      } else {
+        $wrapper.find('.form-footer').removeClass('end')
+                .find('.previous-page, .next-page').removeClass('disabled');
+      }
+    };
+
     const overrideNavigationButtons = function(form, $wrapper) {
       $wrapper.find('.btn.next-page')
         .off('.pagemode')
         .on('click.pagemode', function() {
-          form.pages.next()
-            .then(function(newPageIndex) {
-              if(typeof newPageIndex === 'number') {
-                $window.history.pushState({ enketo_page_number: newPageIndex }, '');
+          form.pages._next()
+            .then(function(valid) {
+              if(valid) {
+                var currentIndex = form.pages._getCurrentIndex();
+                if(typeof currentIndex === 'number') {
+                  $window.history.pushState({ enketo_page_number: currentIndex }, '');
+                }
+                setupNavButtons(form, $wrapper, currentIndex);
               }
               forceRecalculate(form);
             });
@@ -326,6 +344,7 @@ angular.module('inboxServices').service('Enketo',
         .off('.pagemode')
         .on('click.pagemode', function() {
           $window.history.back();
+          setupNavButtons(form, $wrapper, form.pages._getCurrentIndex() - 1);
           forceRecalculate(form);
           return false;
         });
@@ -358,9 +377,19 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
+    const replaceMarkup = function(doc) {
+      $('.question-label, .question > .or-hint', doc.html).each(function() {
+        $(this).html(Markdown.basic($(this).html()));
+      });
+      return doc;
+    };
+
     const renderForm = function(selector, formDoc, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
         return transformXml(formDoc, language)
+          .then(doc => {
+            return replaceMarkup(doc);
+          })
           .then(doc => {
             replaceJavarosaMediaWithLoaders(formDoc, doc.html);
             return renderFromXmls(doc, selector, instanceData, language);

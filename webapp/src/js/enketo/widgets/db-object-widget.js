@@ -7,25 +7,25 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 define( function( require, exports, module ) {
   'use strict';
   const _ = require('lodash/core');
-  const Widget = require('enketo-core/src/js/Widget');
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require('jquery');
 
   require('enketo-core/src/js/plugins');
 
   const pluginName = 'dbobjectwidget';
+  const mainSelector = '.or-appearance-db-object';
 
   /**
-     * Allows drop-down selectors for db objects.
-     *
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
-     */
-
+   * Allows drop-down selectors for db objects.
+   *
+   * @constructor
+   * @param {Element} element [description]
+   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
+   * @param {*=} e     event
+   */
   function Dbobjectwidget( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -44,17 +44,28 @@ define( function( require, exports, module ) {
   }
 
   function construct( element ) {
+
+    const $question = $( element ).parent( mainSelector );
+    let $textInput = $question.find('input');
+
+    const disabled = $textInput.prop('readonly');
+    const relevant = $textInput.attr('data-relevant');
+    const name = $textInput.attr('name');
+
+    if ( relevant ) {
+      $textInput.removeAttr('data-relevant disabled');
+      $question.attr('data-relevant', relevant);
+      $question.attr('disabled', disabled);
+      $question.attr('name', name);
+    }
+
     // timeout needed to let setting the value complete before rendering
     setTimeout(function() {
-      const $question = $( element );
-
-      const Select2Search = service('Select2Search');
-
-      let $textInput = $question.find('input');
 
       const value = $textInput.val();
-      const disabled = $textInput.prop('readonly');
-      $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+      $textInput.replaceWith($textInput[0].outerHTML
+        .replace(/^<input /, '<select ')
+        .replace(/<\/input>/, '</select>'));
       $textInput = $question.find('select');
       const preSelectedOption = $('<option></option>')
         .attr('value', value)
@@ -66,6 +77,8 @@ define( function( require, exports, module ) {
       if (!$question.hasClass('or-appearance-bind-id-only')) {
         $textInput.on('change.dbobjectwidget', changeHandler);
       }
+
+      const Select2Search = service('Select2Search');
       Select2Search($textInput, dbObjectType, {
         allowNew: $question.hasClass('or-appearance-allow-new')
       }).then(function() {
@@ -108,21 +121,13 @@ define( function( require, exports, module ) {
 
       const node = Enketo.getCurrentForm().model.node(path, index);
 
-      // Non-existant nodes still return a value, it's just an empty array
-      // Real nodes have a value, or at minimum [""]
-      if (node.getVal().length) {
+      // Non-existant nodes are undefined
+      if (typeof node.getVal() !== 'undefined') {
         node.setVal(value);
       }
     });
   };
 
-  /**
-     * This function, implemented on all enketo widgets, is only called when
-     * cloning repeated sections of a form.  It's actually called on the cloned
-     * copy of a question, and for some reason for this widget needs to destroy
-     * and then re-create the select2.
-     * @see https://github.com/medic/medic/issues/3487
-     */
   Dbobjectwidget.prototype.destroy = function( element ) {
     deconstruct( element );
     construct( element );
@@ -130,7 +135,7 @@ define( function( require, exports, module ) {
 
   /** Reverse the select2 setup steps performed in construct() */
   function deconstruct( element ) {
-    const $question = $( element );
+    const $question = $( element ).parent( mainSelector );
 
     $question.find( '.select2-container' ).remove();
 
@@ -167,8 +172,10 @@ define( function( require, exports, module ) {
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-db-object',
-  };
+  Dbobjectwidget.selector = `${mainSelector} input[type=text]`;
+  Dbobjectwidget.condition = Widget.condition;
+  Dbobjectwidget.list = function() { return true; };
+
+  module.exports = Dbobjectwidget;
+
 } );

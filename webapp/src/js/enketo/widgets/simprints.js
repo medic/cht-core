@@ -6,21 +6,21 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
   'use strict';
-  const Widget = require('enketo-core/src/js/Widget');
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   require('enketo-core/src/js/plugins');
 
   const pluginName = 'simprintswidget';
 
   /**
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
-     */
+   * @constructor
+   * @param {Element} element [description]
+   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
+   * @param {*=} e     event
+   */
   function Simprintswidget( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -75,8 +75,9 @@ define( function( require, exports, module ) {
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-simprints-reg',
-  };
+  Simprintswidget.selector = '.or-appearance-simprints-reg';
+  Simprintswidget.condition = function() { return true; };
+
+  module.exports = Simprintswidget;
+
 } );

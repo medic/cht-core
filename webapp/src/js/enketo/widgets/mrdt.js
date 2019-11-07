@@ -6,21 +6,22 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
   'use strict';
-  const Widget = require('enketo-core/src/js/Widget');
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   require('enketo-core/src/js/plugins');
 
   const pluginName = 'mrdtwidget';
+  const mainSelector = '.or-appearance-mrdt-verify';
 
   /**
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
-     */
+   * @constructor
+   * @param {Element} element [description]
+   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
+   * @param {*=} e     event
+   */
   function Mrdtwidget( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -32,7 +33,7 @@ define( function( require, exports, module ) {
 
   Mrdtwidget.prototype._init = function() {
     const self = this;
-    const $el = $( this.element );
+    const $el = $( this.element ).parent( mainSelector );
     const $input = $el.find( 'input' );
 
     // we need to make it a textarea because text inputs strip out the
@@ -98,8 +99,8 @@ define( function( require, exports, module ) {
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-mrdt-verify',
-  };
+  Mrdtwidget.selector = `${mainSelector} input`;
+  Mrdtwidget.condition = Widget.condition;
+
+  module.exports = Mrdtwidget;
 } );
