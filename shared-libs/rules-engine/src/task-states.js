@@ -34,21 +34,20 @@ const States = {
 };
 
 const getDisplayWindow = (taskEmission) => {
-  const noolsSchema = ['date', 'displayDaysBefore', 'displayDaysAfter'].some(attr => Object.hasOwnProperty.call(taskEmission, attr));
-  if (noolsSchema) {
-    const dueDate = moment(taskEmission.date).startOf('day');
+  const hasExistingDisplayWindow = taskEmission.startTime || taskEmission.endTime;
+  if (hasExistingDisplayWindow) {
     return {
-      dueDate: dueDate.valueOf(),
-      startTime: dueDate.clone().subtract(taskEmission.displayDaysBefore || 0, 'days').valueOf(),
-      endTime: dueDate.clone().add(taskEmission.displayDaysAfter || 0, 'days').add(1, 'day').valueOf() - 1,
+      dueDate: taskEmission.dueDate,
+      startTime: taskEmission.startTime,
+      endTime: taskEmission.endTime,
     };
   }
 
-  // if not nools schema, the emission is in the task document schema
+  const dueDate = moment(taskEmission.date);
   return {
-    dueDate: taskEmission.dueDate,
-    startTime: taskEmission.startTime,
-    endTime: taskEmission.endTime,
+    dueDate: dueDate.valueOf(),
+    startTime: dueDate.clone().startOf('day').subtract(taskEmission.displayDaysBefore || 0, 'days').valueOf(),
+    endTime: dueDate.clone().startOf('day').add(taskEmission.displayDaysAfter || 0, 'days').add(1, 'day').valueOf() - 1,
   };
 };
 

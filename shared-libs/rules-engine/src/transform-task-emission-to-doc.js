@@ -62,10 +62,8 @@ const minifyEmission = (taskDoc, emission) => {
   }
 
   if (emission.date || emission.dueDate) {
-    minified.dueDate = emission.dueDate || new Date(emission.date).getTime();
     const timeWindow = TaskStates.getDisplayWindow(emission);
-    minified.startTime = timeWindow.startTime;
-    minified.endTime = timeWindow.endTime;
+    Object.assign(minified, timeWindow);
   }
   minified.actions && minified.actions
     .filter(action => action && action.content)
