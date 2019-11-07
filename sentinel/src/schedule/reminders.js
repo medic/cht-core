@@ -93,7 +93,7 @@ const parseDuration = (format) => {
 
 
 const getLeafPlaceIds = (startDocId) => {
-  const keys = contactTypesUtils.getLeafPlaceTypes(config).map(type => [ type.id ]);
+  const keys = contactTypesUtils.getLeafPlaceTypes(config.getAll()).map(type => [ type.id ]);
   const query = {
     limit: BATCH_SIZE,
     keys: JSON.stringify(keys),

@@ -96,7 +96,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: 'x'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').withArgs().returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
       controller.createPerson(person).catch(err => {
@@ -111,7 +111,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '123'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').withArgs().returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
@@ -124,7 +124,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '2011-10-10T14:48:00-0300'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').withArgs().returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
@@ -152,7 +152,7 @@ describe('people controller', () => {
           _id: 'b'
         }
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').withArgs().returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
       sinon.stub(controller._lineage, 'minifyLineage').returns(minified);
       sinon.stub(db.medic, 'post').resolves();
@@ -171,7 +171,7 @@ describe('people controller', () => {
       const person = {
         name: 'Test'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').withArgs().returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];

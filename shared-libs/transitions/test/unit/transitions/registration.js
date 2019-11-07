@@ -81,9 +81,12 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-        config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] },
+        ]
+      });
 
       return transition.onMatch(change).then(() => {
         getPatientContactUuid.callCount.should.equal(1);
@@ -126,9 +129,12 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(0);
@@ -168,9 +174,12 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(transitionUtils, 'isIdUnique').resolves(true);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.args[0][0].patient_id.should.equal(patientId);
@@ -217,9 +226,12 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves('05649');
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'patient', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'patient', person: true, parents: ['place'] },
+        ]
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -261,9 +273,12 @@ describe('registration', () => {
       const configGet = sinon.stub(config, 'get');
       configGet.withArgs('outgoing_deny_list').returns('');
       configGet.returns([eventConfig]);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] },
+        ]
+      });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
 
@@ -315,9 +330,12 @@ describe('registration', () => {
       sinon.stub(transitionUtils, 'isIdUnique').resolves(false);
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.be.equal('undefined');
@@ -364,9 +382,12 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -414,9 +435,12 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] },
+        ]
+      });
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -461,9 +485,12 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' }, { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] },
+        ]
+      });
 
 
       return transition.onMatch(change).then(() => {
@@ -537,9 +564,8 @@ describe('registration', () => {
         { id: 'clinic', parents: ['health_center'] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -629,9 +655,8 @@ describe('registration', () => {
         { id: 'patient', parents: ['area_type_1'], person: true },
         { id: 'buddy', parents: ['area_type_2'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -714,9 +739,8 @@ describe('registration', () => {
         { id: 'area_type_2', parents: ['health_center'] },
         { id: 'patient', parents: ['area_type_1'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -793,9 +817,8 @@ describe('registration', () => {
         { id: 'area_type_2', parents: ['health_center'] },
         { id: 'patient', parents: ['area_type_1'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -880,9 +903,8 @@ describe('registration', () => {
         { id: 'area_type_2', parents: ['health_center'] },
         { id: 'patient', parents: ['area_type_2'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -972,9 +994,8 @@ describe('registration', () => {
         { id: 'clinic', parents: ['health_center'] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1055,9 +1076,8 @@ describe('registration', () => {
         { id: 'supervisor', parents: ['health_center_1'], person: true },
         { id: 'patient', parents: ['clinic_1'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1145,9 +1165,8 @@ describe('registration', () => {
         { id: 'supervisor', parents: ['health_center_1'], person: true },
         { id: 'patient', parents: ['clinic_1'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1243,9 +1262,8 @@ describe('registration', () => {
         { id: 'clinic', parents: ['health_center'] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1338,9 +1356,8 @@ describe('registration', () => {
         { id: 'clinic', parents: ['health_center'] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1587,9 +1604,8 @@ describe('registration', () => {
         { id: 'clinic', parents: ['health_center'] },
         { id: 'area', parents: ['local_thing'] },
       ];
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns([eventConfig])
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
@@ -1728,6 +1744,7 @@ describe('registration', () => {
       };
 
       transition.triggers.testparamparsing = sinon.stub();
+
 
       return transition.fireConfiguredTriggers(eventConfig, {}).then(() => {
         transition.triggers.testparamparsing.callCount.should.equal(1);
@@ -1878,9 +1895,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'known' }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a doc with an unknown contact type "unknown"');
     });
 
@@ -1895,9 +1912,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'place' }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a person with a place contact type "place"');
     });
 
@@ -1912,9 +1929,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'place' }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a doc with an unknown contact type "person"');
     });
 
@@ -1929,9 +1946,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'patient', person: true }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init();
       done();
     });
@@ -1947,9 +1964,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'place' }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with an undefined contact type');
     });
 
@@ -1964,9 +1981,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'place' }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with an unknown contact type "oh_noo"');
     });
 
@@ -1981,9 +1998,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'place' }, { id: 'person', person: true }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with a person contact type "person"');
     });
 
@@ -1998,9 +2015,9 @@ describe('registration', () => {
       }];
       const contactTypes = [{ id: 'place' }, { id: 'person', person: true }];
 
-      sinon.stub(config, 'get')
-        .withArgs('registrations').returns(eventConfig)
-        .withArgs('contact_types').returns(contactTypes);
+      sinon.stub(config, 'get').returns(eventConfig);
+      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+
       transition.init();
     });
   });

@@ -379,12 +379,12 @@ describe('reminders', () => {
           .withArgs({ keys: ['reminder:frm:5000:xxx'] }).resolves({ rows: [{ key: 'reminder:frm:5000:xxx', error: 'not_found' }] })
           .withArgs({ keys: ['xxx'], include_docs: true }).resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
 
-        sinon.stub(config, 'get').returns([
-          { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
-          { id: 'clinic', parents: [ 'health_center' ] },            // queried
-          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
-          { id: 'district_hospital' }
-        ]);
+        sinon.stub(config, 'getAll').returns({ contact_types: [
+            { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
+            { id: 'clinic', parents: [ 'health_center' ] },            // queried
+            { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
+            { id: 'district_hospital' }
+          ]});
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
@@ -445,12 +445,15 @@ describe('reminders', () => {
           .withArgs({ keys: ['reminder:frm:5000:xxx'] }).resolves({ rows: [{ key: 'reminder:frm:5000:xxx', error: 'not_found' }] })
           .withArgs({ keys: ['xxx'], include_docs: true }).resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
 
-        sinon.stub(config, 'get').returns([
-          { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
-          { id: 'clinic', parents: [ 'health_center' ] },            // queried
-          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
-          { id: 'district_hospital' }
-        ]);
+        sinon.stub(config, 'getAll').returns({
+          contact_types: [
+            { id: 'person', person: true, parents: [ 'clinic' ] },     // not queried because we send reminders only to places
+            { id: 'clinic', parents: [ 'health_center' ] },            // queried
+            { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
+            { id: 'district_hospital' }
+          ]
+        });
+
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
@@ -472,7 +475,7 @@ describe('reminders', () => {
     });
 
     it('should do nothing if no places found', () => {
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get').resolves({ rows: [] });
       const lineage = { hydrateDocs: sinon.stub() };
       const messages = { addMessage: sinon.stub() };
@@ -498,7 +501,7 @@ describe('reminders', () => {
     it('should exclude places that already have a reminder', () => {
       const now = moment(1000);
       const reminder = { form: 'rform' };
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }] })
         .onCall(1).resolves({ rows: [{ id: 'doc2' }] });
@@ -527,7 +530,7 @@ describe('reminders', () => {
     it('should exclude places that have no contact, are muted or have a legacy matching reminder', () => {
       const now = moment(123);
       const reminder = { form: 'vform' };
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ rows: [{ id: 'doc1' }, { id: 'doc2' }, { id: 'doc3' }, { id: 'doc4' }, { id: 'doc5' }] })
         .onCall(1).resolves({ rows: [{ id: 'doc5' }] });
@@ -576,7 +579,7 @@ describe('reminders', () => {
       clock.tick(now);
       const reminderDate = 30 * 60 * 1000; // 30 minutes
       const reminder = { form: 'vform', mute_after_form_for: '10 minute' }; // 10 * 60 * 1000
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ rows: [
           { id: 'doc1' }, // has new form
@@ -641,7 +644,7 @@ describe('reminders', () => {
     it('should create reminder docs for valid places', () => {
       const reminderDate = 30 * 60 * 1000;
       const reminder = { form: 'frm', mute_after_form_for: '10 minute', message: 'I shot the sheriff' };
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ rows: [
           { id: 'doc1' },
@@ -764,7 +767,7 @@ describe('reminders', () => {
       const date = moment(reminderDate);
       const reminder = { form: 'form', message: 'Hello, darkness, my old friend' };
 
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }]})
         .onCall(1).resolves({ rows: [{ id: 'doc2' }] });
@@ -850,7 +853,7 @@ describe('reminders', () => {
       const date = moment(reminderDate);
       const reminder = { form: 'form', message: 'Please send {{form}} for {{name}} {{type}} {{week}}-{{year}}' };
 
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ rows: [ { id: 'doc1' }, { id: 'doc2' }] })
         .onCall(1).resolves({ rows: [ { id: 'doc2' }] });
@@ -920,7 +923,7 @@ describe('reminders', () => {
     });
 
     it('should process contacts in batches, calling itself after each batch and skipping already processed contacts', () => {
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       const batches = [
         ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'],
         ['doc5', 'doc6', 'doc7', 'doc8', 'doc9'],
@@ -980,7 +983,7 @@ describe('reminders', () => {
     });
 
     it('should throw bulk save errors and stop execution', () => {
-      sinon.stub(config, 'get').returns([ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ]);
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'tier2', parents: [ 'tier1' ] }, { id: 'tier1' } ] });
       const batches = [
         ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'],
         ['doc5', 'doc6', 'doc7', 'doc8', 'doc9'],

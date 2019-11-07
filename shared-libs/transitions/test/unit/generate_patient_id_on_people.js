@@ -10,7 +10,7 @@ const types = [
 ];
 
 describe('generate_patient_id_on_people transition', () => {
-  beforeEach(() => sinon.stub(config, 'get').returns(types));
+  beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: types }));
   afterEach(() => sinon.restore());
 
   it('adds patient_id to people', () => {

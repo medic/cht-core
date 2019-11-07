@@ -4,24 +4,27 @@ const contactTypeUtils = require('@medic/contact-types-utils');
 
 module.exports = {
   filter: doc => {
-    const contactTypeId = contactTypeUtils.getTypeId(doc);
-    const contactType = contactTypeUtils.getTypeById(config, contactTypeId);
+    const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
+    if (!contactType) {
+      return;
+    }
 
-    if (!contactType ||
-        (contactType.person && doc.patient_id) ||
-        (!contactType.person && doc.place_id)) {
+    if (contactTypeUtils.isPersonType(contactType) && doc.patient_id) {
+      return;
+    }
+
+    if (contactTypeUtils.isPlaceType(contactType) && doc.place_id) {
       return;
     }
 
     return true;
   },
   onMatch: change => {
-    const contactTypeId = contactTypeUtils.getTypeId(change.doc);
-    const contactType = contactTypeUtils.getTypeById(config, contactTypeId);
+    const isPerson = contactTypeUtils.isPerson(config.getAll(), change.doc);
     return transitionUtils
       .getUniqueId()
       .then(id => {
-        const prop = contactType.person ? 'patient_id' : 'place_id';
+        const prop = isPerson ? 'patient_id' : 'place_id';
         change.doc[prop] = id;
         return true;
       });

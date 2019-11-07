@@ -1,80 +1,101 @@
 const utils = require('../src/index');
-const sinon = require('sinon');
 const chai = require('chai');
 
-let config;
+const districtHospitalType = {
+  id: 'my_district_hospital',
+  name_key: 'contact.type.district_hospital',
+  group_key: 'contact.type.district_hospital.plural',
+  create_key: 'contact.type.district_hospital.new',
+  edit_key: 'contact.type.place.edit',
+  icon: 'medic-district-hospital',
+  create_form: 'form:contact:district_hospital:create',
+  edit_form: 'form:contact:district_hospital:edit',
+};
+
+const healthCenterType = {
+  id: 'my_health_center',
+  name_key: 'contact.type.health_center',
+  group_key: 'contact.type.health_center.plural',
+  create_key: 'contact.type.health_center.new',
+  edit_key: 'contact.type.place.edit',
+  parents: [ 'my_district_hospital' ],
+  icon: 'medic-health-center',
+  create_form: 'form:contact:health_center:create',
+  edit_form: 'form:contact:health_center:edit',
+};
+
+const clinicType = {
+  id: 'my_clinic',
+  name_key: 'contact.type.clinic',
+  group_key: 'contact.type.clinic.plural',
+  create_key: 'contact.type.clinic.new',
+  edit_key: 'contact.type.place.edit',
+  parents: [ 'my_health_center' ],
+  icon: 'medic-clinic',
+  create_form: 'form:contact:clinic:create',
+  edit_form: 'form:contact:clinic:edit',
+  count_visits: true,
+  person: false,
+};
+
+const personType = {
+  id: 'person',
+  name_key: 'contact.type.person',
+  group_key: 'contact.type.person.plural',
+  create_key: 'contact.type.person.new',
+  edit_key: 'contact.type.person.edit',
+  primary_contact_key: 'clinic.field.contact',
+  parents: [ 'my_district_hospital', 'my_health_center', 'my_clinic' ],
+  icon: 'medic-person',
+  create_form: 'form:contact:person:create',
+  edit_form: 'form:contact:person:edit',
+  person: true,
+};
+
+const patientType = {
+  id: 'patient',
+  name_key: 'contact.type.patient',
+  group_key: 'contact.type.patient.plural',
+  create_key: 'contact.type.patient.new',
+  edit_key: 'contact.type.patient.edit',
+  primary_contact_key: 'clinic.field.contact',
+  parents: [ 'my_district_hospital', 'my_health_center', 'my_clinic' ],
+  icon: 'medic-person',
+  create_form: 'form:contact:patient:create',
+  edit_form: 'form:contact:patient:edit',
+  person: true,
+};
+
+const chwType = {
+  id: 'chw',
+  name_key: 'contact.type.chw',
+  group_key: 'contact.type.chw.plural',
+  create_key: 'contact.type.chw.new',
+  edit_key: 'contact.type.chw.edit',
+  primary_contact_key: 'clinic.field.contact',
+  parents: [ 'district_hospital', 'health_center' ],
+  icon: 'medic-person',
+  create_form: 'form:contact:chw:create',
+  edit_form: 'form:contact:chw:edit',
+  person: true,
+};
+
+const settings = {
+  contact_types: [
+    districtHospitalType,
+    healthCenterType,
+    clinicType,
+    chwType,
+    patientType,
+    personType,
+  ]
+};
 
 describe('ContactType Utils', () => {
-  beforeEach(() => {
-    config = { get: sinon.stub() };
-    config.get.returns([
-      {
-        id: 'my_district_hospital',
-        name_key: 'contact.type.district_hospital',
-        group_key: 'contact.type.district_hospital.plural',
-        create_key: 'contact.type.district_hospital.new',
-        edit_key: 'contact.type.place.edit',
-        icon: 'medic-district-hospital',
-        create_form: 'form:contact:district_hospital:create',
-        edit_form: 'form:contact:district_hospital:edit'
-      },
-      {
-        id: 'my_health_center',
-        name_key: 'contact.type.health_center',
-        group_key: 'contact.type.health_center.plural',
-        create_key: 'contact.type.health_center.new',
-        edit_key: 'contact.type.place.edit',
-        parents: [ 'district_hospital' ],
-        icon: 'medic-health-center',
-        create_form: 'form:contact:health_center:create',
-        edit_form: 'form:contact:health_center:edit'
-      },
-      {
-        id: 'my_clinic',
-        name_key: 'contact.type.clinic',
-        group_key: 'contact.type.clinic.plural',
-        create_key: 'contact.type.clinic.new',
-        edit_key: 'contact.type.place.edit',
-        parents: [ 'health_center' ],
-        icon: 'medic-clinic',
-        create_form: 'form:contact:clinic:create',
-        edit_form: 'form:contact:clinic:edit',
-        count_visits: true
-      },
-      {
-        id: 'my_person',
-        name_key: 'contact.type.person',
-        group_key: 'contact.type.person.plural',
-        create_key: 'contact.type.person.new',
-        edit_key: 'contact.type.person.edit',
-        primary_contact_key: 'clinic.field.contact',
-        parents: [ 'district_hospital', 'health_center', 'clinic' ],
-        icon: 'medic-person',
-        create_form: 'form:contact:person:create',
-        edit_form: 'form:contact:person:edit',
-        person: true
-      },
-      {
-        id: 'my_person2',
-        name_key: 'contact.type.person2',
-        group_key: 'contact.type.person2.plural',
-        create_key: 'contact.type.person2.new',
-        edit_key: 'contact.type.person2.edit',
-        primary_contact_key: 'clinic.field.contact',
-        parents: [ 'district_hospital', 'health_center' ],
-        icon: 'medic-person',
-        create_form: 'form:contact:person2:create',
-        edit_form: 'form:contact:person2:edit',
-        person: true
-      },
-    ]);
-  });
-  afterEach(() => sinon.restore());
-
   describe('getTypeId', () => {
     it('should not crash with no input', () => {
       chai.expect(utils.getTypeId()).to.equal(undefined);
-      chai.expect(utils.getTypeId(false)).to.equal(false);
+      chai.expect(utils.getTypeId(false)).to.equal(undefined);
       chai.expect(utils.getTypeId({})).to.equal(undefined);
     });
 
@@ -95,74 +116,63 @@ describe('ContactType Utils', () => {
 
   describe('getTypeById', () => {
     it('should return nothing when no matching type', () => {
-      chai.expect(utils.getTypeById(config, 'some_type')).to.equal(undefined);
-      chai.expect(utils.getTypeById(config, 'clinic')).to.equal(undefined);
-      chai.expect(utils.getTypeById(config, 'person')).to.equal(undefined);
+      chai.expect(utils.getTypeById()).to.equal(undefined);
+      chai.expect(utils.getTypeById({})).to.equal(undefined);
+      chai.expect(utils.getTypeById(settings, '')).to.equal(undefined);
+      chai.expect(utils.getTypeById(settings, 'some_type')).to.equal(undefined);
+      chai.expect(utils.getTypeById(settings, 'clinic')).to.equal(undefined);
+      chai.expect(utils.getTypeById(settings, 'district_hospital')).to.equal(undefined);
     });
 
     it('should return matching type', () => {
-      chai.expect(utils.getTypeById(config, 'my_person')).to.deep.equal({
-        id: 'my_person',
-        name_key: 'contact.type.person',
-        group_key: 'contact.type.person.plural',
-        create_key: 'contact.type.person.new',
-        edit_key: 'contact.type.person.edit',
-        primary_contact_key: 'clinic.field.contact',
-        parents: [ 'district_hospital', 'health_center', 'clinic' ],
-        icon: 'medic-person',
-        create_form: 'form:contact:person:create',
-        edit_form: 'form:contact:person:edit',
-        person: true
-      });
-      chai.expect(utils.getTypeById(config, 'my_person')).to.deep.equal({
-        id: 'my_person',
-        name_key: 'contact.type.person',
-        group_key: 'contact.type.person.plural',
-        create_key: 'contact.type.person.new',
-        edit_key: 'contact.type.person.edit',
-        primary_contact_key: 'clinic.field.contact',
-        parents: [ 'district_hospital', 'health_center', 'clinic' ],
-        icon: 'medic-person',
-        create_form: 'form:contact:person:create',
-        edit_form: 'form:contact:person:edit',
-        person: true
-      });
-      chai.expect(utils.getTypeById(config, 'my_district_hospital')).to.deep.equal({
-        id: 'my_district_hospital',
-        name_key: 'contact.type.district_hospital',
-        group_key: 'contact.type.district_hospital.plural',
-        create_key: 'contact.type.district_hospital.new',
-        edit_key: 'contact.type.place.edit',
-        icon: 'medic-district-hospital',
-        create_form: 'form:contact:district_hospital:create',
-        edit_form: 'form:contact:district_hospital:edit'
-      });
+      chai.expect(utils.getTypeById(settings, 'patient')).to.deep.equal(patientType);
+      chai.expect(utils.getTypeById(settings, 'chw')).to.deep.equal(chwType);
+      chai.expect(utils.getTypeById(settings, 'my_district_hospital')).to.deep.equal(districtHospitalType);
+      chai.expect(utils.getTypeById(settings, 'my_health_center')).to.deep.equal(healthCenterType);
     });
   });
 
   describe('isPersonType', () => {
+    it('should return falsy for no type', () => {
+      chai.expect(utils.isPersonType(false)).to.equal(false);
+      chai.expect(utils.isPersonType()).to.equal(undefined);
+    });
+
     it('should return false for non-person types', () => {
-      chai.expect(utils.isPersonType(config, 'nonexistent')).to.equal(false);
-      chai.expect(utils.isPersonType(config, 'my_district_hospital')).to.equal(false);
-      chai.expect(utils.isPersonType(config, 'my_health_center')).to.equal(false);
+      chai.expect(utils.isPersonType(false)).to.equal(false);
+      chai.expect(utils.isPersonType({ id: 'something' })).to.equal(false);
+      chai.expect(utils.isPersonType({ id: 'other', person: false})).to.equal(false);
+      chai.expect(utils.isPersonType(healthCenterType)).to.equal(false);
+      chai.expect(utils.isPersonType(clinicType)).to.equal(false);
     });
 
     it('should return true for person types', () => {
-      chai.expect(utils.isPersonType(config, 'my_person')).to.equal(true);
-      chai.expect(utils.isPersonType(config, 'my_person2')).to.equal(true);
+      chai.expect(utils.isPersonType({ id: 'person' })).to.equal(true);
+      chai.expect(utils.isPersonType({ id: 'other', person: true })).to.equal(true);
+      chai.expect(utils.isPersonType(personType)).to.equal(true);
+      chai.expect(utils.isPersonType(chwType)).to.equal(true);
+      chai.expect(utils.isPersonType(patientType)).to.equal(true);
     });
   });
 
   describe('isPlaceType', () => {
-    it('should return false for non-person types', () => {
-      chai.expect(utils.isPlaceType(config, 'my_district_hospital')).to.equal(true);
-      chai.expect(utils.isPlaceType(config, 'my_health_center')).to.equal(true);
+    it('should return false for no type', () => {
+      chai.expect(utils.isPlaceType(false)).to.equal(false);
+      chai.expect(utils.isPlaceType()).to.equal(undefined);
     });
 
-    it('should return true for person types or non-existent types', () => {
-      chai.expect(utils.isPlaceType(config, 'nonexistent')).to.equal(undefined);
-      chai.expect(utils.isPlaceType(config, 'my_person')).to.equal(false);
-      chai.expect(utils.isPlaceType(config, 'my_person2')).to.equal(false);
+    it('should return false for person types', () => {
+      chai.expect(utils.isPlaceType({ id: 'person' })).to.equal(false);
+      chai.expect(utils.isPlaceType(personType)).to.equal(false);
+      chai.expect(utils.isPlaceType(chwType)).to.equal(false);
+      chai.expect(utils.isPlaceType(patientType)).to.equal(false);
+    });
+
+    it('should return true for non-person types', () => {
+      chai.expect(utils.isPlaceType({ id: 'place' })).to.equal(true);
+      chai.expect(utils.isPlaceType(districtHospitalType)).to.equal(true);
+      chai.expect(utils.isPlaceType(healthCenterType)).to.equal(true);
+      chai.expect(utils.isPlaceType(clinicType)).to.equal(true);
     });
   });
 
@@ -225,14 +235,95 @@ describe('ContactType Utils', () => {
         { id: 'p2', parents: ['root', 'l2', 'l4', 'b4'], person: true },
         { id: 'p4', parents: ['l1', 'l2', 'l3', 'l4', 'l5'], person: true },
       ];
-      config.get.returns(hierarchy);
-      chai.expect(utils.getLeafPlaceTypes(config)).to.have.deep.members([
+      chai.expect(utils.getLeafPlaceTypes({ contact_types: hierarchy })).to.have.deep.members([
         { id: 'l1', parents: ['root'] },
         { id: 'l2', parents: ['b2'] },
         { id: 'l3', parents: ['b2'] },
         { id: 'l4', parents: ['b4'] },
         { id: 'l5', parents: ['b5'] },
       ]);
+    });
+  });
+
+  describe('getContactType', () => {
+    it('should return falsy when no input', () => {
+      chai.expect(utils.getContactType()).to.equal(undefined);
+      chai.expect(utils.getContactType(undefined, {})).to.equal(undefined);
+      chai.expect(utils.getContactType({})).to.equal(undefined);
+      chai.expect(utils.getContactType(settings, 'whatever')).to.equal(undefined);
+      chai.expect(utils.getContactType(settings, [])).to.equal(undefined);
+    });
+
+    it('should return falsy for non-existing contact type', () => {
+      chai.expect(utils.getContactType(settings, { type: 'contact' })).to.equal(undefined);
+      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'something' })).to.equal(undefined);
+    });
+
+    it('should return contact type', () => {
+      chai.expect(utils.getContactType(settings, { type: 'person' })).to.equal(personType);
+      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'person' })).to.equal(personType);
+      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'my_health_center' })).to.equal(healthCenterType);
+      chai.expect(utils.getContactType(settings, { type: 'my_health_center' })).to.equal(healthCenterType);
+    });
+  });
+
+  describe('isPerson', () => {
+    it('should return falsy for falsy input', () => {
+      chai.expect(utils.isPerson()).to.equal(false);
+      chai.expect(utils.isPerson(false, false)).to.equal(false);
+      chai.expect(utils.isPerson({}, false)).to.equal(false);
+      chai.expect(utils.isPerson([], false)).to.equal(false);
+      chai.expect(utils.isPerson(settings, 'whaaat')).to.equal(false);
+    });
+
+    it('should return falsy for non existent contact types', () => {
+      chai.expect(utils.isPerson(settings, { type: 'other' })).to.equal(false);
+      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: 'other' })).to.equal(false);
+    });
+
+    it('should return falsy for place types', () => {
+      chai.expect(utils.isPerson(settings, { type: districtHospitalType.id })).to.equal(false);
+      chai.expect(utils.isPerson(settings, { type: clinicType.id })).to.equal(false);
+      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: districtHospitalType.id })).to.equal(false);
+      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: clinicType.id })).to.equal(false);
+    });
+
+    it('should return true for person types', () => {
+      chai.expect(utils.isPerson({}, { type: 'person' })).to.equal(true);
+      chai.expect(utils.isPerson(settings, { type: 'person' })).to.equal(true);
+      chai.expect(utils.isPerson(settings, { type: chwType.id })).to.equal(true);
+      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: 'person' })).to.equal(true);
+      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: chwType.id })).to.equal(true);
+    });
+  });
+
+  describe('isPlace', () => {
+    it('should return falsy for falsy input', () => {
+      chai.expect(utils.isPlace()).to.equal(undefined);
+      chai.expect(utils.isPlace(false, false)).to.equal(undefined);
+      chai.expect(utils.isPlace({}, false)).to.equal(undefined);
+      chai.expect(utils.isPlace([], false)).to.equal(undefined);
+      chai.expect(utils.isPlace(settings, 'whaaat')).to.equal(undefined);
+    });
+
+    it('should return falsy for non existent contact types', () => {
+      chai.expect(utils.isPlace(settings, { type: 'other' })).to.equal(undefined);
+      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: 'other' })).to.equal(undefined);
+    });
+
+    it('should return falsy for person types', () => {
+      chai.expect(utils.isPlace({}, { type: 'person' })).to.equal(undefined);
+      chai.expect(utils.isPlace(settings, { type: personType.id })).to.equal(false);
+      chai.expect(utils.isPlace(settings, { type: patientType.id })).to.equal(false);
+      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: personType.id })).to.equal(false);
+      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: patientType.id })).to.equal(false);
+    });
+
+    it('should return true for place types', () => {
+      chai.expect(utils.isPlace(settings, { type: districtHospitalType.id })).to.equal(true);
+      chai.expect(utils.isPlace(settings, { type: clinicType.id })).to.equal(true);
+      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: clinicType.id })).to.equal(true);
+      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: healthCenterType.id })).to.equal(true);
     });
   });
 });

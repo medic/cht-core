@@ -244,11 +244,13 @@ describe('patient registration', () => {
 
   it('valid form adds patient_id and patient document', () => {
     sinon.stub(utils, 'getContactUuid').resolves();
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
-    config.get.withArgs('contact_types').returns([
-      { id: 'some_place' },
-      { id: 'person', parents: ['some_place'], person: true }
-    ]);
+    sinon.stub(transitionUtils, 'getUniqueId').resolves('12345');
+    sinon.stub(config, 'getAll').returns({
+      contact_types: [
+        { id: 'some_place' },
+        { id: 'person', parents: ['some_place'], person: true }
+      ]
+    });
 
     const doc = {
       _id: 'docid',
@@ -488,10 +490,12 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getRegistrations');
       sinon.stub(utils, 'getContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'getUniqueId');
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' },
-        { id: 'person', person: true, parents: ['place'] },
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] },
+        ]
+      });
 
       sinon.stub(db.medic, 'post').resolves();
 
@@ -535,10 +539,12 @@ describe('patient registration', () => {
 
       sinon.stub(db.medic, 'query');
 
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' },
-        { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       db.medic.query
         .withArgs('medic-client/contacts_by_reference')
@@ -590,10 +596,12 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'getUniqueId');
 
-      config.get.withArgs('contact_types').returns([
-        { id: 'place' },
-        { id: 'person', person: true, parents: ['place'] }
-      ]);
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       sinon.stub(db.medic, 'query');
       db.medic.query

@@ -22,13 +22,10 @@ const getPerson = id => {
     });
 };
 
-const isAPerson = person => {
-  const getTypeId = contactTypeUtils.getTypeId(person);
-  return contactTypeUtils.isPersonType(config, getTypeId);
-};
+const isAPerson = person => contactTypeUtils.isPerson(config.get(), person);
 
 const getDefaultPersonType = () => {
-  const type = contactTypeUtils.getTypeById(config,'person');
+  const type = contactTypeUtils.getTypeById(config.get(),'person');
   return type && type.id;
 };
 

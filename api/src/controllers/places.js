@@ -23,15 +23,8 @@ const getPlace = id => {
     });
 };
 
-const getContactType = place => {
-  const typeId = contactTypesUtils.getTypeId(place);
-  return contactTypesUtils.getTypeById(config, typeId);
-};
-
-const isAPlace = place => {
-  const typeId = contactTypesUtils.getTypeId(place);
-  return contactTypesUtils.isPlaceType(config, typeId);
-};
+const isAPlace = place => place && contactTypesUtils.isPlace(config.get(), place);
+const getContactType = place => place && contactTypesUtils.getContactType(config.get(), place);
 
 /*
  * Validate the basic data structure for a place.  Not checking against the
@@ -73,8 +66,8 @@ const validatePlace = place => {
     if (!place.parent) {
       return err(`Place ${placeId} is missing a "parent" property.`);
     }
-    const parentTypeId = contactTypesUtils.getTypeId(place.parent);
-    if (!contactTypesUtils.isParentOf(parentTypeId, type)) {
+    const parentType = getContactType(place.parent);
+    if (!contactTypesUtils.isParentOf(parentType, type)) {
       return err(`${type.id} "${placeId}" should have one of the following parent types: "${type.parents}".`);
     }
   }

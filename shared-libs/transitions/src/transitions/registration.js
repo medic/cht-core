@@ -400,9 +400,9 @@ const getParent = options => {
 };
 
 const validateParent = (parent, child) => {
-  const parentTypeId = contactTypesUtils.getTypeId(parent);
-  const childType = contactTypesUtils.getTypeById(config, contactTypesUtils.getTypeId(child));
-  return contactTypesUtils.isParentOf(parentTypeId, childType);
+  const parentType = contactTypesUtils.getContactType(config.getAll(), parent);
+  const childType = contactTypesUtils.getContactType(config.getAll(), child);
+  return contactTypesUtils.isParentOf(parentType, childType);
 };
 
 const addPatient = (options) => {
@@ -528,11 +528,11 @@ module.exports = {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: patient_id_field cannot be set to patient_id`);
             }
             const typeId = params.contact_type || 'person';
-            const contactType = contactTypesUtils.getTypeById(config, typeId);
+            const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with an unknown contact type "${typeId}"`);
             }
-            if (!contactType.person) {
+            if (!contactTypesUtils.isPersonType(contactType)) {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a person with a place contact type "${typeId}"`);
             }
           }
@@ -554,11 +554,11 @@ module.exports = {
             if (!typeId) {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an undefined contact type`);
             }
-            const contactType = contactTypesUtils.getTypeById(config, typeId);
+            const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an unknown contact type "${typeId}"`);
             }
-            if (contactType.person) {
+            if (!contactTypesUtils.isPlaceType(contactType)) {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with a person contact type "${typeId}"`);
             }
           }
