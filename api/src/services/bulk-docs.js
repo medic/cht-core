@@ -249,14 +249,15 @@ const filterRequestDocs = (authorizationContext, docs) => {
 };
 
 const stubSkipped = (docs, filteredDocs, result) => {
-  return docs.map(doc => {
-    const filteredIdx = _.findIndex(filteredDocs, doc);
-    if (filteredIdx !== -1) {
-      return result[filteredIdx];
-    }
-
-    return { id: doc._id, error: 'forbidden' };
-  });
+  return docs
+    .map(doc => {
+      const filteredIdx = _.findIndex(filteredDocs, doc);
+      if (filteredIdx !== -1) {
+        return result[filteredIdx];
+      }
+      return { id: doc._id, error: 'forbidden' };
+    })
+    .filter(resp => resp);
 };
 
 module.exports = {
@@ -299,8 +300,8 @@ module.exports = {
 
   // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
   // and forbidden docs stubs must be added
-  formatResults: (new_edits, requestDocs, filteredDocs, response) => {
-    if (new_edits !== false && _.isArray(response)) {
+  formatResults: (requestDocs, filteredDocs, response) => {
+    if (_.isArray(response)) {
       // CouchDB doesn't return results when `new_edits` parameter is `false`
       // The consensus is that the response array sequence should reflect the request array sequence.
       response = stubSkipped(requestDocs, filteredDocs, response);

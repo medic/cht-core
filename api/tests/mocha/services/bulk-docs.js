@@ -423,13 +423,9 @@ describe('Bulk Docs Service', function () {
   });
 
   describe('Format results', () => {
-    it('passes unchanged response if `new_edits` param is false', () => {
-      service.formatResults(false, [], [], ['my response']).should.deep.equal(['my response']);
-    });
-
     it('passes unchanged response for malformed responses', () => {
       const requestDocs = [{ _id: 1 }, { _id: 2 }];
-      service.formatResults(undefined, requestDocs, [], { name: 'eddie' }).should.deep.equal({ name: 'eddie' });
+      service.formatResults(requestDocs, [], { name: 'eddie' }).should.deep.equal({ name: 'eddie' });
     });
 
     it('fills for forbidden docs with stubs and preserves correct order', () => {
@@ -437,12 +433,24 @@ describe('Bulk Docs Service', function () {
             filteredDocs = [{ _id: 5 }, { _id: 2 }],
             response = [{ id: 5, ok: true }, { id: 2, ok: true }];
 
-      service.formatResults(undefined, requestDocs, filteredDocs, response).should.deep.equal([
+      service.formatResults(requestDocs, filteredDocs, response).should.deep.equal([
         { id: 1, error: 'forbidden' },
         { id: 2, ok: true },
         { id: 3, error: 'forbidden' },
         { id: undefined, error: 'forbidden' },
         { id: 5, ok: true }
+      ]);
+    });
+
+    it('should fill for forbidden docs when db response is empty', () => {
+      const requestDocs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { something: 4 }, { _id: 5 }];
+      const filteredDocs = [{ _id: 5 }, { _id: 2 }];
+      const response = [];
+
+      service.formatResults(requestDocs, filteredDocs, response).should.deep.equal([
+        { id: 1, error: 'forbidden' },
+        { id: 3, error: 'forbidden' },
+        { id: undefined, error: 'forbidden' },
       ]);
     });
   });
