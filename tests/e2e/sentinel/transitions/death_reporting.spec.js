@@ -144,7 +144,7 @@ describe('death_reporting', () => {
     };
 
     const doc = {
-      _id: 'omgid',
+      _id: uuid(),
       form: 'DEAD',
       type: 'data_record',
       reported_date: new Date().getTime(),
@@ -286,6 +286,71 @@ describe('death_reporting', () => {
       .then(() => utils.getDoc('person'))
       .then(person => {
         chai.expect(person.date_of_death).to.equal(undefined);
+      });
+  });
+
+  it('creating a patient that is already dead?', () => {
+    const settings = {
+      transitions: { death_reporting: true, registration: true },
+      death_reporting: {
+        mark_deceased_forms: ['DEAD'],
+        date_field: 'fields.time_of_death'
+      },
+      registrations: [{
+        form: 'DEAD',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '',
+          bool_expr: ''
+        }],
+        messages: [],
+      }],
+      forms: { DEAD: { } }
+    };
+
+    const doc = {
+      _id: uuid(),
+      form: 'DEAD',
+      type: 'data_record',
+      reported_date: new Date().getTime(),
+      fields: {
+        patient_name: 'Veronica',
+        time_of_death: 123456789
+      },
+      contact: { _id: 'person2' }
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
+      .then(info => {
+        chai.expect(info.transitions).to.deep.nested.include({
+          'death_reporting.ok': true,
+          'registration.ok': true,
+        });
+      })
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        chai.expect(updated.patient_id).not.to.equal(undefined);
+
+        const opts = {
+          qs: {
+            key: JSON.stringify(['shortcode', updated.patient_id]),
+            include_docs: true,
+          },
+          path: '/_design/medic-client/_view/contacts_by_reference',
+        };
+        return utils.requestOnTestDb(opts);
+      })
+      .then(result => {
+        chai.expect(result.rows.length).to.equal(1);
+        chai.expect(result.rows[0].doc).to.deep.include({
+          date_of_death: doc.fields.time_of_death,
+          name: 'Veronica'
+        });
       });
   });
 
