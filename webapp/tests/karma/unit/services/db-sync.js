@@ -242,7 +242,7 @@ describe('DBSync service', () => {
 
     let filterFunction;
 
-    before(() => {
+    beforeEach(() => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
