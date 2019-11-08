@@ -331,6 +331,8 @@ describe('death_reporting', () => {
           'death_reporting.ok': true,
           'registration.ok': true,
         });
+        // both transitions executed in the same "pass"
+        chai.expect(info.transitions.death_reporting.rev).to.equal(info.transitions.registration.rev);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
