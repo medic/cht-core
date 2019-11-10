@@ -1,6 +1,5 @@
 const _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader'),
-  lineageFactory = require('@medic/lineage');
+  scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
 
@@ -13,11 +12,8 @@ angular
     $state,
     $stateParams,
     $timeout,
-    $translate,
     AddReadStatus,
-    Auth,
     Changes,
-    DB,
     Export,
     GlobalActions,
     LiveList,
@@ -54,8 +50,6 @@ angular
       return Object.assign({}, globalActions, servicesActions, reportsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-    var lineage = lineageFactory();
 
     // Render the facilities hierarchy as the user is scrolling through the list
     // Initially, don't load/render any
@@ -277,107 +271,6 @@ angular
       query();
     };
 
-    $scope.$on('ToggleVerifyingReport', function() {
-      ctrl.setVerifyingReport(!ctrl.verifyingReport);
-      ctrl.setRightActionBar();
-    });
-
-    $scope.$on('EditReport', function() {
-      Modal({
-        templateUrl: 'templates/modals/edit_report.html',
-        controller: 'EditReportCtrl',
-        controllerAs: 'editReportCtrl',
-        model: { report: ctrl.selectedReports[0].doc },
-      });
-    });
-
-    $scope.$on('VerifyReport', function(e, reportIsValid) {
-      if (!ctrl.selectedReports[0].doc.form) {
-        return;
-      }
-
-      ctrl.setLoadingSubActionBar(true);
-
-      const promptUserToConfirmVerification = () => {
-        const verificationTranslationKey = reportIsValid ? 'reports.verify.valid' : 'reports.verify.invalid';
-        return Modal({
-          templateUrl: 'templates/modals/verify_confirm.html',
-          controller: 'VerifyReportModalCtrl',
-          model: {
-            proposedVerificationState: $translate.instant(verificationTranslationKey),
-          },
-        })
-        .then(() => true)
-        .catch(() => false);
-      };
-
-      const shouldReportBeVerified = function (canUserEdit) {
-        // verify if user verifications are allowed
-        if (canUserEdit) {
-          return true;
-        }
-
-        // don't verify if user can't edit and this is an edit
-        const docHasExistingResult = ctrl.selectedReports[0].doc.verified !== undefined;
-        if (docHasExistingResult) {
-          return false;
-        }
-
-        // verify if this is not an edit and the user accepts  prompt
-        return promptUserToConfirmVerification();
-      };
-
-      const writeVerificationToDoc = function() {
-        if (ctrl.selectedReports[0].doc.contact) {
-          const minifiedContact = lineage.minifyLineage(ctrl.selectedReports[0].doc.contact);
-          ctrl.setFirstSelectedReportDocProperty({ contact: minifiedContact });
-        }
-
-        const clearVerification = ctrl.selectedReports[0].doc.verified === reportIsValid;
-        if (clearVerification) {
-          ctrl.setFirstSelectedReportDocProperty({
-            verified: undefined,
-            verified_date: undefined,
-          });
-        } else {
-          ctrl.setFirstSelectedReportDocProperty({
-            verified: reportIsValid,
-            verified_date: Date.now(),
-          });
-        }
-        ctrl.setLastChangedDoc(ctrl.selectedReports[0].doc);
-
-        return DB()
-          .get(ctrl.selectedReports[0].doc._id)
-          .then(function(existingRecord) {
-            ctrl.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
-            return DB().post(ctrl.selectedReports[0].doc);
-          })
-          .catch(function(err) {
-            $log.error('Error verifying message', err);
-          })
-          .finally(function () {
-            $scope.$broadcast('VerifiedReport', reportIsValid);
-            ctrl.setLoadingSubActionBar(false);
-          });
-      };
-
-      ctrl.setLoadingSubActionBar(true);
-      Auth('can_edit_verification')
-        .then(() => true)
-        .catch(() => false)
-        .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
-        .then(function(shouldVerify) {
-          if (!shouldVerify) {
-            return;
-          }
-
-          return writeVerificationToDoc();
-        })
-        .catch(err => $log.error(`Error verifying message: ${err}`))
-        .finally(() => ctrl.setLoadingSubActionBar(false));
-    });
-
     var initScroll = function() {
       scrollLoader.init(function() {
         if (!ctrl.loading && ctrl.moreItems) {
@@ -463,35 +356,6 @@ angular
       });
     };
 
-    $scope.$on('SelectAll', function() {
-      ctrl.setLoadingShowContent(true);
-      Search('reports', ctrl.filters, { limit: 500, hydrateContactNames: true })
-        .then(function(summaries) {
-          var selected = summaries.map(function(summary) {
-            return {
-              _id: summary._id,
-              summary: summary,
-              expanded: false,
-              lineage: summary.lineage,
-              contact: summary.contact,
-            };
-          });
-          ctrl.setSelectedReports(selected);
-          ctrl.settingSelected(true);
-          ctrl.setRightActionBar();
-          $('#reports-list input[type="checkbox"]').prop('checked', true);
-        })
-        .catch(function(err) {
-          $log.error('Error selecting all', err);
-        });
-    });
-
-    var deselectAll = function() {
-      ctrl.setSelectedReports([]);
-      ctrl.setRightActionBar();
-      $('#reports-list input[type="checkbox"]').prop('checked', false);
-    };
-
     var setActionBarData = function() {
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasReports,
@@ -514,8 +378,6 @@ angular
     };
 
     setActionBarData();
-
-    $scope.$on('DeselectAll', deselectAll);
 
     var changeListener = Changes({
       key: 'reports-list',

@@ -16,11 +16,12 @@ describe('Store', function() {
 
   function setupStore(initialState) {
     KarmaUtils.setupMockStore(initialState);
-    module(function ($provide) {
+    module($provide => {
       'ngInject';
       $provide.value('ContactViewModelGenerator', { loadChildren, loadReports });
+      $provide.factory('DB', KarmaUtils.mockDB({ get: sinon.stub() }));
     });
-    inject(function(
+    inject((
       $ngRedux,
       AnalyticsActions,
       ContactsActions,
@@ -29,7 +30,7 @@ describe('Store', function() {
       ReportsActions,
       Selectors,
       TasksActions
-    ) {
+    ) => {
       globalActions = GlobalActions($ngRedux.dispatch);
       analyticsActions = AnalyticsActions($ngRedux.dispatch);
       contactsActions = ContactsActions($ngRedux.dispatch);

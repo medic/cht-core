@@ -136,15 +136,6 @@ var _ = require('underscore');
         unsubscribe();
         changeListener.unsubscribe();
       });
-
-      $scope.$on('VerifiedReport', function(e, valid) {
-        var oldVerified = ctrl.selectedReports[0].formatted.verified;
-        var newVerified = oldVerified === valid ? undefined : valid;
-
-        ctrl.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
-
-        ctrl.setRightActionBarVerified(newVerified);
-      });
     }
   );
 

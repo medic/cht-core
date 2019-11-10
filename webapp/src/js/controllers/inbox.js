@@ -551,10 +551,6 @@ var _ = require('underscore'),
       });
     });
 
-    $scope.emit = function() {
-      $rootScope.$broadcast.apply($rootScope, arguments);
-    };
-
     $scope.deleteDoc = function(doc) {
       Modal({
         templateUrl: 'templates/modals/delete_doc_confirm.html',

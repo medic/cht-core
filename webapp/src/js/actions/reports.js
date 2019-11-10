@@ -127,27 +127,48 @@ angular.module('inboxServices').factory('ReportsActions',
         });
       }
 
+      function deselectAll() {
+        dispatch(() => {
+          setSelectedReports([]);
+          setRightActionBar();
+          setCheckboxElements(false);
+        });
+      }
+
+      function toggleVerifyingReport() {
+        dispatch((dispatch, getState) => {
+          const verifyingReport = Selectors.getVerifyingReport(getState());
+          setVerifyingReport(!verifyingReport);
+          setRightActionBar();
+        });
+      }
+
       function clearSelection() {
         setSelectedReports([]);
         setVerifyingReport(false);
         LiveList.reports.clearSelected();
         LiveList['report-search'].clearSelected();
-        $('#reports-list input[type="checkbox"]').prop('checked', false);
+        setCheckboxElements(false);
       }
+
+      const setCheckboxElements = value => {
+        $('#reports-list input[type="checkbox"]').prop('checked', value);
+      };
 
       return {
         addSelectedReport,
+        clearSelection,
+        deselectAll,
         removeSelectedReport,
         setFirstSelectedReportDocProperty,
         setFirstSelectedReportFormattedProperty,
-        setSelectedReports,
-        updateSelectedReportItem,
-        setVerifyingReport,
-
-        clearSelection,
         setRightActionBar,
+        setSelected,
+        setSelectedReports,
         setTitle,
-        setSelected
+        setVerifyingReport,
+        toggleVerifyingReport,
+        updateSelectedReportItem,
       };
     };
   }
