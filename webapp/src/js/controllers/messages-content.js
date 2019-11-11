@@ -15,7 +15,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
-    Changes,
     GlobalActions,
     LineageModelGenerator,
     MarkRead,
@@ -256,25 +255,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       ctrl.send.message = '';
     };
 
-    var changeListener = Changes({
-      key: 'messages-content',
-      callback: function(change) {
-        if (change.deleted) {
-          ctrl.removeSelectedMessage(change.id);
-        } else {
-          updateConversation();
-        }
-      },
-      filter: function(change) {
-        return ctrl.currentTab === 'messages' &&
-          ctrl.selectedMessage &&
-          ctrl.selectedMessage.messages.some(message => message.id === change.id);
-      }
-    });
-
     $scope.$on('$destroy', function() {
       unsubscribe();
-      changeListener.unsubscribe();
       if (!$state.includes('messages.detail')) {
         $('body').off('focus', '#message-footer textarea');
         $('body').off('blur', '#message-footer textarea');
