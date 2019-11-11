@@ -28,7 +28,7 @@ describe('ReportsCtrl controller', () => {
 
     get = sinon.stub();
     post = sinon.stub();
-    const DB = KarmaUtils.mockDB({ get, post })();
+    const DB = KarmaUtils.mockDB({ get, post, info: sinon.stub() })();
 
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();

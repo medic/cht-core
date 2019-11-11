@@ -19,7 +19,7 @@ describe('Store', function() {
     module($provide => {
       'ngInject';
       $provide.value('ContactViewModelGenerator', { loadChildren, loadReports });
-      $provide.factory('DB', KarmaUtils.mockDB({ get: sinon.stub() }));
+      $provide.factory('DB', KarmaUtils.mockDB({ get: sinon.stub(), info: sinon.stub() }));
     });
     inject((
       $ngRedux,

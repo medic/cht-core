@@ -147,6 +147,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           Enketo.unload(ctrl.form);
           ctrl.unsetSelected();
           ctrl.clearCancelCallback();
+          $state.go('tasks.detail', { id: null });
         })
         .then(() => {
           telemetryData.postSave = Date.now();
