@@ -34,7 +34,8 @@ angular
       return {
         setLeftActionBar: globalActions.setLeftActionBar,
         setSelectedMessage: messagesActions.setSelectedMessage,
-        settingSelected: globalActions.settingSelected
+        settingSelected: globalActions.settingSelected,
+        updateSelectedMessage: messagesActions.updateSelectedMessage,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -48,6 +49,12 @@ angular
       if (options.changes) {
         MessageListUtils.removeDeleted(ctrl.messages, options.messages);
         MessageListUtils.mergeUpdated(ctrl.messages, options.messages);
+        const found = ctrl.messages.some(message => message.key === ctrl.selectedMessage.id);
+        if (found) {
+          MessageContacts.conversation(ctrl.selectedMessage.id).then(conversation => {
+            ctrl.updateSelectedMessage({ messages: conversation });
+          });
+        }
       } else {
         ctrl.messages = options.messages || [];
       }
