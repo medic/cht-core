@@ -47,14 +47,7 @@ angular
       options = options || {};
       if (options.changes) {
         MessageListUtils.removeDeleted(ctrl.messages, options.messages);
-        var selectedChanged = MessageListUtils.mergeUpdated(
-          ctrl.messages,
-          options.messages,
-          ctrl.selectedMessage && ctrl.selectedMessage.id
-        );
-        if (selectedChanged) {
-          $scope.$broadcast('UpdateContactConversation', { silent: true });
-        }
+        MessageListUtils.mergeUpdated(ctrl.messages, options.messages);
       } else {
         ctrl.messages = options.messages || [];
       }
