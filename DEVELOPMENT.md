@@ -33,8 +33,8 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 ## Build the webapp
 
 ```shell
-git clone https://github.com/medic/medic
-cd medic
+git clone https://github.com/medic/cht-core
+cd cht-core
 npm ci
 ```
 
