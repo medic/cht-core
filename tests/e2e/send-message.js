@@ -189,6 +189,7 @@ describe('Send message', () => {
   };
 
   const clickLhsEntry = (entryId, entryName) => {
+    entryName = entryName || entryId;
     const liIdentifier = messageInList(entryId);
 
     helper.waitUntilReady(element(by.css(liIdentifier)));
@@ -196,16 +197,14 @@ describe('Send message', () => {
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
     element(by.css(liIdentifier + ' a')).click();
 
-    if (entryName) {
-      browser.wait(() => {
-        const el = element(by.css('#message-header .name'));
-        if (helper.waitUntilReady(el)) {
-          return helper.getTextFromElement(el).then(text => {
-            return text === entryName;
-          });
-        }
-      }, 12000);
-    }
+    browser.wait(() => {
+      const el = element(by.css('#message-header .name'));
+      if (helper.waitUntilReady(el)) {
+        return helper.getTextFromElement(el).then(text => {
+          return text === entryName;
+        });
+      }
+    }, 12000);
   };
 
   const lastMessageIs = message => {
@@ -408,7 +407,12 @@ describe('Send message', () => {
       browser.wait(() => {
         return utils.deleteDocs(CONTACTS.map(contact => contact._id));
       });
-      clickLhsEntry(ALICE._id);
+
+      common.goToMessages();
+
+      const liIdentifier = messageInList(ALICE._id);
+      helper.waitUntilReady(element(by.css(liIdentifier)));
+      element(by.css(liIdentifier + ' a')).click();
 
       helper.waitForAngularComplete();
 
