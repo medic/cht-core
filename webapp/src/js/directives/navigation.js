@@ -4,11 +4,18 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/navigation.html',
-    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
+    controller: function(
+      $ngRedux,
+      $scope,
+      $state,
+      $stateParams,
+      GlobalActions,
+      Selectors
+    ) {
       'ngInject';
 
       const ctrl = this;
-      const mapStateToTarget = function(state) {
+      const mapStateToTarget = state => {
         return {
           cancelCallback: Selectors.getCancelCallback(state),
           enketoSaving: Selectors.getEnketoSavingStatus(state),
@@ -16,9 +23,21 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
         };
       };
       const mapDispatchToTarget = function(dispatch) {
-        return GlobalActions(dispatch);
+        const globalActions = GlobalActions(dispatch);
+        return { unsetSelected: globalActions.unsetSelected };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+      /**
+       * Navigate back to the previous view
+       */
+      ctrl.navigateBack = () => {
+        if ($state.current.name === 'contacts.deceased') {
+          $state.go('contacts.detail', { id: $stateParams.id });
+        } else {
+          ctrl.unsetSelected();
+        }
+      };
 
       $scope.$on('$destroy', unsubscribe);
     },
