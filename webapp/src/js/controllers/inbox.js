@@ -394,9 +394,7 @@ var _ = require('underscore'),
                 };
               });
               const forms = xFormSummaries.concat(jsonFormSummaries);
-              $scope.forms = forms;
               ctrl.setForms(forms);
-              $rootScope.$broadcast('formLoadingComplete');
             }
           );
           // get the forms for the Add Report menu
@@ -413,10 +411,7 @@ var _ = require('underscore'),
             });
           });
         })
-        .catch(function(err) {
-          $rootScope.$broadcast('formLoadingComplete');
-          $log.error('Failed to retrieve forms', err);
-        });
+        .catch(err => $log.error('Failed to retrieve forms', err));
     };
 
     const initTours = () => {

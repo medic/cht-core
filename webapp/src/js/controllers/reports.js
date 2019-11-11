@@ -309,21 +309,7 @@ angular
       ctrl.search();
     };
 
-    if (ctrl.forms) {
-      // if forms are already loaded
-      ctrl.search();
-    } else {
-      // otherwise wait for loading to complete
-      ctrl.loading = true;
-      $scope.$on('formLoadingComplete', function() {
-        ctrl.search();
-        var doc =
-          ctrl.selectedReports && ctrl.selectedReports[0] && ctrl.selectedReports[0].doc;
-        if (doc) {
-          ctrl.setTitle(doc);
-        }
-      });
-    }
+    ctrl.search();
 
     $('.inbox').on('click', '#reports-list .content-row', function(e) {
       if (ctrl.selectMode) {
