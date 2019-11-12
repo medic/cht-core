@@ -271,10 +271,6 @@ angular.module('inboxServices').service('Enketo',
 
     const renderFromXmls = function(doc, selector, instanceData) {
       const wrapper = $(selector);
-      wrapper
-        .addClass('main')
-        .find('.form-footer previous-page')
-        .addClass('disabled');
 
       const formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
@@ -304,21 +300,26 @@ angular.module('inboxServices').service('Enketo',
         overrideNavigationButtons(currentForm, wrapper);
         addPopStateHandler(currentForm, wrapper);
         forceRecalculate(currentForm);
-
+        setupNavButtons(currentForm, wrapper, 0);
         return currentForm;
       });
     };
 
     const setupNavButtons = function(form, $wrapper, currentIndex) {
-      const lastIndex = form.pages.$activePages.length - 1;
-      if (currentIndex === 0) {
-        $wrapper.find('.form-footer .previous-page').addClass('disabled');
-      } else if (currentIndex === lastIndex) {
-        $wrapper.find('.form-footer').addClass('end')
-                .find('.next-page').addClass('disabled');
-      } else {
-        $wrapper.find('.form-footer').removeClass('end')
+      if (form.pages) {
+        const lastIndex = form.pages.$activePages.length - 1;
+        const footer = $wrapper.find('.form-footer');
+        if (currentIndex >= lastIndex) {
+          footer.addClass('end').find('.next-page').addClass('disabled');
+          if (currentIndex === 0) {
+            footer.find('.previous-page').addClass('disabled');
+          }
+        } else if (currentIndex === 0) {
+          footer.find('.previous-page').addClass('disabled');
+        } else {
+          footer.removeClass('end')
                 .find('.previous-page, .next-page').removeClass('disabled');
+        }
       }
     };
 
@@ -359,7 +360,7 @@ angular.module('inboxServices').service('Enketo',
 
           if ($wrapper.find('.container').not(':empty')) {
             const pages = form.pages;
-            pages.flipTo(pages.getAllActive()[targetPage], targetPage);
+            pages._flipTo(pages.$activePages[targetPage], targetPage);
           }
         }
       });

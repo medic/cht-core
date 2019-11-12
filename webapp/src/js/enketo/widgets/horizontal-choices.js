@@ -19,7 +19,8 @@ define( function( require, exports, module ) {
     //copy the prototype functions from the Columns super class
     HorizontalChoices.prototype = Object.create( Columns.prototype );
 
-    HorizontalChoices.selector = '.or-appearance-horizontal';
+    HorizontalChoices.selector =
+      '.or-appearance-horizontal, .or-appearance-horizontal-compact';
     HorizontalChoices.condition = Columns.condition;
 
     module.exports = HorizontalChoices;
