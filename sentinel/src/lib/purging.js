@@ -7,7 +7,7 @@ const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 
-let purgeDbs = {};
+const purgeDbs = {};
 let currentlyPurging = false;
 const getPurgeDb = (hash, refresh) => {
   if (!purgeDbs[hash] || refresh) {
@@ -28,6 +28,13 @@ const initPurgeDbs = (roles) => {
         }
       });
   }));
+};
+
+const closePurgeDbs = () => {
+  Object.keys(purgeDbs).forEach(hash => {
+    purgeDbs[hash] && purgeDbs[hash].close();
+    delete purgeDbs[hash];
+  });
 };
 
 const BATCH_SIZE = 1000;
@@ -450,6 +457,7 @@ const purge = () => {
         .then(() => batchedContactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
         .then(() => {
+          closePurgeDbs();
           const duration = (performance.now() - start);
           logger.info(`Server Side Purge completed successfully in ${duration / 1000 / 60} minutes`);
           return writePurgeLog(roles, duration);

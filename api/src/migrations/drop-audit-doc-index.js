@@ -158,11 +158,16 @@ module.exports = {
   created: new Date(2016, 11, 1),
   run: promisify(function(callback) {
     const auditDb = db.get(environment.db + '-audit');
+    const closeCallback = (err, result) => {
+      auditDb.close();
+      callback(err, result);
+    };
     dropView(auditDb, function(err) {
       if (err) {
+        auditDb.close();
         return callback(err);
       }
-      changeDocIds(auditDb, callback);
+      changeDocIds(auditDb, closeCallback);
     });
   }),
 };

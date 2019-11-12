@@ -1,6 +1,6 @@
 /**
  * @module transitions
- */ 
+ */
 const async = require('async'),
       feed = require('./lib/feed'),
       db = require('./db'),
@@ -102,19 +102,26 @@ const deleteReadDocs = change => {
     return userDbs.reduce((p, userDb) => {
       return p.then(() => {
         const metaDb = db.get(userDb);
-        return metaDb.allDocs({ keys: possibleReadDocIds }).then(results => {
-          const row = results.rows.find(row => !row.error);
-          if (!row) {
-            return;
-          }
-
-          return metaDb.remove(row.id, row.value.rev).catch(err => {
-            // ignore 404s or 409s - the doc was probably deleted client side already
-            if (err && err.status !== 404 && err.status !== 409) {
-              throw err;
+        return metaDb
+          .allDocs({ keys: possibleReadDocIds })
+          .then(results => {
+            const row = results.rows.find(row => !row.error);
+            if (!row) {
+              return;
             }
+
+            return metaDb.remove(row.id, row.value.rev).catch(err => {
+              // ignore 404s or 409s - the doc was probably deleted client side already
+              if (err && err.status !== 404 && err.status !== 409) {
+                throw err;
+              }
+            });
+          })
+          .then(() => metaDb.close())
+          .catch(err => {
+            metaDb.close();
+            throw err;
           });
-        });
       });
     }, Promise.resolve());
 
