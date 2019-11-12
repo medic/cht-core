@@ -13,12 +13,12 @@ const self = {
   /**
    * Initializes the contact-state-store from an existing state. If existing state is invalid, builds an empty state.
    *
-   * @param {Object} existingState State object previously passed to the stateChangeCallback
+   * @param {Object} existingState State object previously passed to the contactStateChangeCallback
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
-   * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
+   * @param {Object} contactStateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
    */
-  load: (existingState, settingsDoc, userDoc, stateChangeCallback) => {
+  load: (existingState, settingsDoc, userDoc, contactStateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the contact-state-store multiple times.');
     }
@@ -26,12 +26,12 @@ const self = {
     const rulesConfigHash = hashRulesConfig(settingsDoc, userDoc);
     const useState = existingState && existingState.rulesConfigHash === rulesConfigHash;
     if (!useState) {
-      return self.build(settingsDoc, userDoc, stateChangeCallback);
+      return self.build(settingsDoc, userDoc, contactStateChangeCallback);
     }
 
     state = existingState;
     currentUser = userDoc;
-    onStateChange = safeCallback(stateChangeCallback);
+    onStateChange = safeCallback(contactStateChangeCallback);
   },
 
   /**
@@ -39,9 +39,9 @@ const self = {
    *
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
-   * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
+   * @param {Object} contactStateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
    */
-  build: (settingsDoc, userDoc, stateChangeCallback) => {
+  build: (settingsDoc, userDoc, contactStateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the contact-state-store multiple times.');
     }
@@ -52,7 +52,7 @@ const self = {
     };
     currentUser = userDoc;
 
-    onStateChange = safeCallback(stateChangeCallback);
+    onStateChange = safeCallback(contactStateChangeCallback);
     return onStateChange(state);
   },
 
@@ -182,7 +182,7 @@ const self = {
 const hashRulesConfig = (settingsDoc, userDoc) => {
   const rulesConfig = {
     rules: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.rules,
-    targets: settingsDoc && settingsDoc.targets,
+    targets: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.targets,
     userDoc,
   };
 

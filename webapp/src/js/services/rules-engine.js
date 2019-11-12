@@ -49,7 +49,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
       callback: change => {
         const subjectId = isReport(change.doc) ? registrationUtils.getPatientId(change.doc) : change.id;
-        RulesEngineCore.updateTasksFor(DB(), subjectId);
+        RulesEngineCore.updateEmissionsFor(DB(), subjectId);
       },
     });
 

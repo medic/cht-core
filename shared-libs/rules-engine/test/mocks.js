@@ -50,6 +50,7 @@ rule GenerateEvents {
   chtDocs,
 
   RestorableContactStateStore: () => restorable('../src/contact-state-store', ['state', 'currentUser', 'onStateChange']),
+  RestorableTargetEmissionStore: () => restorable('../src/target-emission-store', ['state', 'onStateChange']),
 };
 
 const restorable = (path, attributes = []) => {

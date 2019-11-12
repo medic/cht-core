@@ -1,13 +1,15 @@
 /**
- * @module task-fetcher
+ * @module wireup
  *
- * Wireup connecting the medic pouch db to the rules-core
+ * Wireup a data provider to the rules-engine
  */
 
 const registrationUtils = require('@medic/registration-utils');
 
 const contactStateStore = require('./contact-state-store');
-const refreshTasksFor = require('./refresh-tasks-for-contacts');
+const targetEmissionStore = require('./target-emission-store');
+const targetAggregator = require('./target-aggregator');
+const refreshRulesEmissions = require('./refresh-rules-emissions');
 const updateTemporalStates = require('./update-temporal-states');
 const rulesEmitter = require('./rules-emitter');
 
@@ -17,31 +19,26 @@ module.exports = {
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (provider, settingsDoc, userDoc) => {
-    return provider.existingContactStateStore()
-      .then(existingStateDoc => {
-        if (!existingStateDoc) {
-          existingStateDoc = { _id: provider.CONTACT_STATE_DOCID };
-        }
-
+  initialize: (provider, settingsDoc, userDoc) => (
+    Promise.all([provider.existingContactStateStore(), provider.existingTargetEmissionStore()])
+      .then(([existingStateDoc, existingTargetEmissionStore]) => {
         const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
         if (isEnabled) {
           if (!rulesEmitter.isLatestNoolsSchema()) {
             throw Error('Rules engine: Updates to the nools schema are required');
           }
 
-          const closure = updatedState => provider.stateChangeCallback(existingStateDoc, updatedState);
-          contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, closure);
+          const contactClosure = updatedState => provider.contactStateChangeCallback(existingStateDoc, updatedState);
+          contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, contactClosure);
+
+          const targetClosure = updatedState => provider.targetChangeCallback(existingTargetEmissionStore, updatedState);
+          targetEmissionStore.load(existingTargetEmissionStore.targetEmissions, settingsDoc, targetClosure);
         }
-      });
-  },
+      })
+  ),
 
   /**
-   * Identifies the contacts whose task docs are not fresh
-   * Fetches the needed data to refresh those contacts
-   * Makes necessary updates to task documents (or new task documents)
-   * Commits those document changes
-   * Marks the dirty contacts as fresh (async)
+   * Refreshes the rules emissions for all contacts
    * Fetches all tasks in non-terminal state owned by the contacts
    * Updates the temporal states of the task documents
    * Commits those changes (async)
@@ -56,7 +53,7 @@ module.exports = {
     }
 
     const calculationTimestamp = Date.now();
-    return refreshTasks(provider, calculationTimestamp, contactIds)
+    return refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds)
       .then(() => contactIds ? provider.tasksByRelation(contactIds, 'owner') : provider.allTasks('owner'))
       .then(tasksToDisplay => {
         const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
@@ -66,14 +63,35 @@ module.exports = {
   },
 
   /**
-   * Indicate that the task documents associated with a given subjectId are dirty.
+   * Refreshes the rules emissions for all contacts
+   * 
+   * @param {DataProvider} provider A data provider
+   * @returns {Promise<Object>} The fresh aggregate target doc
+   */
+  fetchTargets: provider => {
+    if (!rulesEmitter.isEnabled()) {
+      return Promise.resolve([]);
+    }
+
+    const calculationTimestamp = Date.now();
+    return refreshRulesEmissionForContacts(provider, calculationTimestamp)
+      .then(() => targetEmissionStore.getEmissions())
+      .then(emissions => {
+        const aggregated = targetAggregator(emissions);
+        provider.commitAggregatedTargets(aggregated, calculationTimestamp);
+        return aggregated;
+      });
+  },
+
+  /**
+   * Indicate that the rules emissions associated with a given subjectId are dirty
    * 
    * @param {DataProvider} provider A data provider
    * @param {string[]} subjectIds An array of subject ids
    * 
    * @returns {Promise} To complete the transaction marking the subjectIds as dirty
    */
-  updateTasksFor: (provider, subjectIds) => {
+  updateEmissionsFor: (provider, subjectIds) => {
     if (subjectIds && !Array.isArray(subjectIds)) {
       subjectIds = [subjectIds];
     }
@@ -84,12 +102,26 @@ module.exports = {
   },
 };
 
-const refreshTasks = (provider, calculationTimestamp, contactIds) => {
-  const refreshTasksForAllContacts = (calculationTimestamp) => (
+/**
+ * Identifies the contacts whose task docs are not fresh
+ * Fetches the needed data to refresh those contacts
+ * Makes necessary updates to task documents (or new task documents)
+ * Commits those document changes
+ * Marks the dirty contacts as fresh (async)
+ */
+const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
+  const refreshAndHandleRulesEmissions = freshData => (
+    refreshRulesEmissions(freshData, calculationTimestamp)
+      .then(refreshed => Promise.all([
+        targetEmissionStore.updateEmissionsFor(contactIds, refreshed.targetEmissions),
+        provider.commitTaskDocs(refreshed.updatedTaskDocs),
+      ]))
+  );
+
+  const refreshForAllContacts = (calculationTimestamp) => (
     provider.allTaskData(contactStateStore.currentUser())
       .then(freshData => (
-        refreshTasksFor(freshData, calculationTimestamp)
-          .then(docsToCommit => provider.commitTaskDocs(docsToCommit))
+        refreshAndHandleRulesEmissions(freshData)
           .then(() => {
             const contactIds = freshData.contactDocs.map(doc => doc._id);
 
@@ -106,25 +138,24 @@ const refreshTasks = (provider, calculationTimestamp, contactIds) => {
       ))
   );
 
-  const refreshTasksForKnownContacts = (calculationTimestamp, contactIds) => {
+  const refreshForKnownContacts = (calculationTimestamp, contactIds) => {
     const dirtyContactIds = contactIds.filter(contactId => contactStateStore.isDirty(contactId));
     return provider.taskDataFor(dirtyContactIds, contactStateStore.currentUser())
-      .then(freshData => refreshTasksFor(freshData, calculationTimestamp))
-      .then(docsToCommit => provider.commitTaskDocs(docsToCommit))
+      .then(refreshAndHandleRulesEmissions)
       .then(() => {
         contactStateStore.markFresh(calculationTimestamp, dirtyContactIds);
       });
   };
 
   if (contactIds) {
-    return refreshTasksForKnownContacts(calculationTimestamp, contactIds);
+    return refreshForKnownContacts(calculationTimestamp, contactIds);
   }
 
   // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in reports/tasks)
   if (!contactStateStore.hasAllContacts()) {
-    return refreshTasksForAllContacts(calculationTimestamp);
+    return refreshForAllContacts(calculationTimestamp);
   }
 
   // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-  return refreshTasksForKnownContacts(calculationTimestamp, contactStateStore.getContactIds());
+  return refreshForKnownContacts(calculationTimestamp, contactStateStore.getContactIds());
 };

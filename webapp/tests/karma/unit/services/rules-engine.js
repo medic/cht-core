@@ -49,7 +49,7 @@ describe(`RulesEngine service`, () => {
       initialize: sinon.stub().resolves(true),
       isEnabled: sinon.stub().returns(true),
       fetchTasksFor: sinon.stub().resolves([]),
-      updateTasksFor: sinon.stub(),
+      updateEmissionsFor: sinon.stub(),
       rulesConfigChange: sinon.stub().returns(true),
     };
 
@@ -150,8 +150,8 @@ describe(`RulesEngine service`, () => {
           const change = Changes.args[0][0];
           expect(change.filter(changeFeedFormat(scenario.doc))).to.be.true;
           change.callback(changeFeedFormat(scenario.doc));
-          expect(RulesEngineCore.updateTasksFor.callCount).to.eq(1);
-          expect(RulesEngineCore.updateTasksFor.args[0][1]).to.deep.eq(scenario.expected);
+          expect(RulesEngineCore.updateEmissionsFor.callCount).to.eq(1);
+          expect(RulesEngineCore.updateEmissionsFor.args[0][1]).to.deep.eq(scenario.expected);
         });
       }
 
