@@ -4,6 +4,8 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $log,
     $ngRedux,
     $scope,
+    $state,
+    $timeout,
     $translate,
     $window,
     DB,
@@ -53,6 +55,19 @@ angular.module('inboxControllers').controller('AboutCtrl',
       })
       .then(rev => ctrl.remoteRev = rev);
 
+    ctrl.knockCount = 0;
+    ctrl.secretDoor = () => {
+      if (ctrl.doorTimeout) {
+        $timeout.cancel(ctrl.doorTimeout);
+      }
+      if (ctrl.knockCount++ >= 5) {
+        $state.go('testing');
+      } else {
+        ctrl.doorTimeout = $timeout(() => {
+          ctrl.knockCount = 0;
+        }, 1000);
+      }
+    };
     ctrl.reload = function() {
       $window.location.reload(false);
     };
