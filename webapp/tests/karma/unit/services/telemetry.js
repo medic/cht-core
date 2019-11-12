@@ -173,19 +173,6 @@ describe('Telemetry service', () => {
         availHeight: 1024,
       };
 
-      const deviceInfo = {
-        software: {
-          androidVersion: '7.0',
-          osApiLevel: 24,
-          osVersion: '3.18.35(1560398223)'
-        }
-      };
-      $window.medicmobile_android = {
-        getDeviceInfo: () => {
-          return JSON.stringify(deviceInfo);
-        }
-      };
-
       return service.record('test', 1).then(() => {
         chai.expect($log.error.callCount).to.equal(0);
         chai.expect(pouchDb.post.callCount).to.equal(1);
@@ -211,15 +198,15 @@ describe('Telemetry service', () => {
           }
         });
         chai.expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
-        chai.expect(aggregatedDoc.deviceStats).to.deep.equal({
+        chai.expect(aggregatedDoc.device).to.deep.equal({
           userAgent: 'Agent Smith',
           hardwareConcurrency: 4,
           screen: {
             width: 768,
             height: 1024,
           },
+          deviceInfo: {}
         });
-        chai.expect(aggregatedDoc.deviceInfo).to.deep.equal(deviceInfo);
         chai.expect(DB.query.callCount).to.equal(1);
         chai.expect(DB.query.args[0][0]).to.equal('medic-client/doc_by_type');
         chai.expect(DB.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
@@ -265,19 +252,6 @@ describe('Telemetry service', () => {
       $window.screen = {
         availWidth: 768,
         availHeight: 1024,
-      };
-
-      const deviceInfo = {
-        software: {
-          androidVersion: '7.0',
-          osApiLevel: 24,
-          osVersion: '3.18.35(1560398223)'
-        }
-      };
-      $window.medicmobile_android = {
-        getDeviceInfo: () => {
-          return JSON.stringify(deviceInfo);
-        }
       };
 
       return service.record('test', 1).then(() => {
