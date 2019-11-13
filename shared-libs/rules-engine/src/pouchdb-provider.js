@@ -6,17 +6,13 @@
 
 const registrationUtils = require('@medic/registration-utils');
 
-const CONTACT_STATE_DOCID = '_local/taskState';
-
-// previousStateChangeResult helps avoid conflict errors since these changes are handled asynchronously
-let previousStateChangeResult = Promise.resolve();
+const CONTACT_STATE_DOCID = '_local/contactStateStore';
+const TARGET_EMISSION_DOCID = '_local/targetEmissionStore';
 
 const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
 
 const medicPouchProvider = db => {
   const self = {
-    CONTACT_STATE_DOCID,
-
     /*
     PouchDB.query slows down when provided with a large keys array.
     For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
@@ -46,6 +42,8 @@ const medicPouchProvider = db => {
         })
     ),
 
+    contactStateChangeCallback: stateDocUpdateClosure(db),
+
     commitTaskDocs: taskDocs => {
       if (!taskDocs || taskDocs.length === 0) {
         return Promise.resolve([]);
@@ -56,22 +54,11 @@ const medicPouchProvider = db => {
         .catch(err => console.error('Error committing task documents', err));
     },
 
-    existingContactStateStore: () => db.get(CONTACT_STATE_DOCID).catch(() => undefined),
+    existingContactStateStore: () => db.get(CONTACT_STATE_DOCID).catch(() => ({ _id: CONTACT_STATE_DOCID })),
 
-    stateChangeCallback: (stateDoc, updatedState) => {
-      Object.assign(stateDoc, { contactStateStore: updatedState });
+    existingTargetEmissionStore: () => db.get(TARGET_EMISSION_DOCID).catch(() => ({ _id: TARGET_EMISSION_DOCID })),
 
-      previousStateChangeResult = previousStateChangeResult
-        .then(() => db.put(stateDoc))
-        .then(updatedDoc => { stateDoc._rev = updatedDoc.rev; })
-        .catch(err => console.error(`Error updating contactStateStore: ${err}`))
-        .then(() => {
-          // unsure of how browsers handle long promise chains, so break the chain when possible
-          previousStateChangeResult = Promise.resolve();
-        });
-
-      return previousStateChangeResult;
-    },
+    targetEmissionChangeCallback: stateDocUpdateClosure(db),
 
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
@@ -106,6 +93,28 @@ const medicPouchProvider = db => {
   };
 
   return self;
+};
+
+medicPouchProvider.CONTACT_STATE_DOCID = CONTACT_STATE_DOCID;
+medicPouchProvider.TARGET_EMISSION_DOCID = TARGET_EMISSION_DOCID;
+
+const stateDocUpdateClosure = db => {
+  // previousResult helps avoid conflict errors if these functions are called asynchronously
+  let previousResult = Promise.resolve();
+  return (stateDoc, assigned) => {
+    Object.assign(stateDoc, assigned);
+
+    previousResult = previousResult
+      .then(() => db.put(stateDoc))
+      .then(updatedDoc => { stateDoc._rev = updatedDoc.rev; })
+      .catch(err => console.error(`Error updating state store: ${err}`))
+      .then(() => {
+        // unsure of how browsers handle long promise chains, so break the chain when possible
+        previousResult = Promise.resolve();
+      });
+
+    return previousResult;
+  };
 };
 
 module.exports = medicPouchProvider;

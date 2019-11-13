@@ -84,23 +84,38 @@ describe('pouchdb provider', () => {
   });
 
   describe('contactStateStore', () => {
-    it('contactStateStore is undefined by default', async () => {
-      expect(await pouchdbProvider(db).existingContactStateStore()).to.be.undefined;
+    it('contactStateStore is empty by default', async () => {
+      expect(await pouchdbProvider(db).existingContactStateStore()).to.not.have.property('contactStateStore');
     });
 
     it('fake contactStateStore can be fetched', async () => {
-      const expected = { _id: '_local/taskState', details: 'stuff' };
+      const expected = { _id: pouchdbProvider.CONTACT_STATE_DOCID, details: 'stuff' };
       await db.put(expected);
 
       const actual = await pouchdbProvider(db).existingContactStateStore();
       expect(actual).excluding('_rev').to.deep.eq(expected);
 
-      await pouchdbProvider(db).stateChangeCallback(actual, { updated: true });
+      await pouchdbProvider(db).contactStateChangeCallback(actual, { updated: true });
       expect(await pouchdbProvider(db).existingContactStateStore()).excluding('_rev').to.deep.eq({
-        _id: '_local/taskState',
-        contactStateStore: {
-          updated: true,
-        },
+        _id: pouchdbProvider.CONTACT_STATE_DOCID,
+        updated: true,
+        details: 'stuff'
+      });
+    });
+  });
+
+  describe('targetEmissionChangeCallback', () => {
+    it('fake targetEmission doc can be fetched', async () => {
+      const expected = { _id: pouchdbProvider.TARGET_EMISSION_DOCID, details: 'stuff' };
+      await db.put(expected);
+
+      const actual = await pouchdbProvider(db).existingTargetEmissionStore();
+      expect(actual).excluding('_rev').to.deep.eq(expected);
+
+      await pouchdbProvider(db).targetEmissionChangeCallback(actual, { updated: true });
+      expect(await pouchdbProvider(db).existingTargetEmissionStore()).excluding('_rev').to.deep.eq({
+        _id: pouchdbProvider.TARGET_EMISSION_DOCID,
+        updated: true,
         details: 'stuff'
       });
     });

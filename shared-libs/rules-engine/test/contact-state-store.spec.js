@@ -24,7 +24,7 @@ describe('contact-state-store', () => {
   });
 
   it('throw if not initialized', async () => {
-    expect(() => contactStateStore.isDirty('a').to.throw('before call to'));
+    expect(() => contactStateStore.isDirty('a')).to.throw('before call to');
   });
 
   it('load a dirty contact', async () => {

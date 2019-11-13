@@ -98,7 +98,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(nools.getFlow('medic')).to.not.be.undefined;
   });
 
-  it('unknown contact yields zero tasks', async () => {
+  it('unknown contact yields zero tasks and empty targets', async () => {
     await db.bulkDocs([patientContact, pregnancyFollowupReport]);
     sinon.spy(db, 'query');
     sinon.spy(rulesEmitter, 'getEmissionsFor');
@@ -109,9 +109,15 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length);
 
     expect(await RulesEngine.fetchTasksFor(db, ['abc'])).to.deep.eq([]);
+
     // Additional calls only fetch the calculated tasks
     expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
     expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);
+
+    // TODO: move to its own test
+    const targets = await RulesEngine.fetchTargets(db);
+    expect(targets.length).to.eq(settingsDoc.tasks.targets.items.length);
+    expect(targets.some(t => t.total > 0)).to.be.false;
   });
 
   it('fail facility_reminder due to time window', async () => {
@@ -191,7 +197,7 @@ describe('Rules Engine Integration Tests', () => {
     });
 
     // changes feed marks contact for updates
-    await RulesEngine.updateTasksFor(db, 'patient');
+    await RulesEngine.updateEmissionsFor(db, 'patient');
     expect(db.bulkDocs.callCount).to.eq(2);
 
     // requery via 'tasks tab' interface instead of 'contacts tab' interface
@@ -214,6 +220,9 @@ describe('Rules Engine Integration Tests', () => {
         },
       ]
     });
+
+    await RulesEngine.fetchTargets(db);
+    expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1 + expectedQueriesForAllFreshData.length);
   });
 
   it('cancel facility_reminder due to "purged" report', async () => {
@@ -227,7 +236,7 @@ describe('Rules Engine Integration Tests', () => {
     });
 
     // changes feed marks contact for updates
-    await RulesEngine.updateTasksFor(db, 'patient');
+    await RulesEngine.updateEmissionsFor(db, 'patient');
     expect(db.bulkDocs.callCount).to.eq(2);
 
     const completedTask = await RulesEngine.fetchTasksFor(db, ['patient']);
@@ -255,7 +264,7 @@ describe('Rules Engine Integration Tests', () => {
     // new pregnancy report causes new task
     const secondPregnancyReport = Object.assign({}, pregnancyFollowupReport, { _id: 'newPregnancy' });
     await db.put(secondPregnancyReport);
-    await RulesEngine.updateTasksFor(db, 'patient');
+    await RulesEngine.updateEmissionsFor(db, 'patient');
     const secondReadyTasks = await RulesEngine.fetchTasksFor(db, ['patient']);
     expect(secondReadyTasks).to.have.property('length', 1);
     expect(secondReadyTasks[0].state).to.eq('Ready');
@@ -312,7 +321,7 @@ describe('Rules Engine Integration Tests', () => {
       []
     ]);
 
-    await RulesEngine.updateTasksFor(db, reportByPatientIdOnly.patient_id);
+    await RulesEngine.updateEmissionsFor(db, reportByPatientIdOnly.patient_id);
     const secondTasks = await RulesEngine.fetchTasksFor(db);
     expect(rulesEmitter.getEmissionsFor.callCount).to.eq(2);
     expect(rulesEmitter.getEmissionsFor.args[1]).excludingEvery('_rev').to.deep.eq([
@@ -335,7 +344,7 @@ describe('Rules Engine Integration Tests', () => {
       []
     ]);
 
-    await RulesEngine.updateTasksFor(db, reportByPatientIdOnly.patient_id);
+    await RulesEngine.updateEmissionsFor(db, reportByPatientIdOnly.patient_id);
     const secondTasks = await RulesEngine.fetchTasksFor(db, [patientContact._id]);
     expect(rulesEmitter.getEmissionsFor.callCount).to.eq(2);
     expect(rulesEmitter.getEmissionsFor.args[1]).excludingEvery('_rev').to.deep.eq([
@@ -364,7 +373,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(firstResult).excludingEvery('_rev').to.deep.eq([taskOwnedByHeadless]);
     expect(db.bulkDocs.callCount).to.eq(1); // taskEmittedByHeadless2 gets cancelled
 
-    await RulesEngine.updateTasksFor(db, 'headless');
+    await RulesEngine.updateEmissionsFor(db, 'headless');
     const secondResult = await RulesEngine.fetchTasksFor(db);
     expect(secondResult).to.deep.eq(firstResult);
     expect(db.query.args.map(args => args[0]).length).to.deep.eq(expectedQueriesForAllFreshData.length + 1 + expectedQueriesForFreshData.length);

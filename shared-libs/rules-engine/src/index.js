@@ -6,8 +6,9 @@
 
 const contactStateStore = require('./contact-state-store');
 const pouchdbProvider = require('./pouchdb-provider');
+const targetEmissionStore = require('./target-emission-store');
 const rulesEmitter = require('./rules-emitter');
-const taskFetcher = require('./task-fetcher');
+const wireupToProvider = require('./wireup');
 
 module.exports = {
   /**
@@ -17,7 +18,7 @@ module.exports = {
    */
   initialize: (db, settingsDoc, userDoc) => {
     const provider = pouchdbProvider(db);
-    return taskFetcher.initialize(provider, settingsDoc, userDoc);
+    return wireupToProvider.initialize(provider, settingsDoc, userDoc);
   },
 
   /**
@@ -34,7 +35,18 @@ module.exports = {
    */
   fetchTasksFor: (db, contactIds) => {
     const provider = pouchdbProvider(db);
-    return taskFetcher.fetchTasksFor(provider, contactIds);
+    return wireupToProvider.fetchTasksFor(provider, contactIds);
+  },
+
+  /**
+   * Refreshes all rules documents and returns the latest target document
+   * 
+   * @param {Object} db Medic pouchdb database
+   * @returns {Promise<Object} All of the fresh targets
+   */
+  fetchTargets: (db) => {
+    const provider = pouchdbProvider(db);
+    return wireupToProvider.fetchTargets(provider);
   },
 
   /**
@@ -45,9 +57,9 @@ module.exports = {
    * 
    * @returns {Promise} To mark the subjectIds as dirty
    */
-  updateTasksFor: (db, subjectIds) => {
+  updateEmissionsFor: (db, subjectIds) => {
     const provider = pouchdbProvider(db);
-    return taskFetcher.updateTasksFor(provider, subjectIds);
+    return wireupToProvider.updateEmissionsFor(provider, subjectIds);
   },
 
   /**
@@ -61,6 +73,7 @@ module.exports = {
   rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
     const cacheIsReset = contactStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
     if (cacheIsReset) {
+      targetEmissionStore.reset(settingsDoc);
       rulesEmitter.shutdown();
     }
   },

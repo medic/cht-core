@@ -8,7 +8,6 @@ const registrationUtils = require('@medic/registration-utils');
 
 const contactStateStore = require('./contact-state-store');
 const targetEmissionStore = require('./target-emission-store');
-const targetAggregator = require('./target-aggregator');
 const refreshRulesEmissions = require('./refresh-rules-emissions');
 const updateTemporalStates = require('./update-temporal-states');
 const rulesEmitter = require('./rules-emitter');
@@ -19,23 +18,25 @@ module.exports = {
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (provider, settingsDoc, userDoc) => (
-    Promise.all([provider.existingContactStateStore(), provider.existingTargetEmissionStore()])
+  initialize: (provider, settingsDoc, userDoc) => {
+    const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
+    if (!isEnabled) {
+      return Promise.resolve();
+    }
+          
+    return Promise.all([provider.existingContactStateStore(), provider.existingTargetEmissionStore()])
       .then(([existingStateDoc, existingTargetEmissionStore]) => {
-        const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
-        if (isEnabled) {
-          if (!rulesEmitter.isLatestNoolsSchema()) {
-            throw Error('Rules engine: Updates to the nools schema are required');
-          }
-
-          const contactClosure = updatedState => provider.contactStateChangeCallback(existingStateDoc, updatedState);
-          contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, contactClosure);
-
-          const targetClosure = updatedState => provider.targetChangeCallback(existingTargetEmissionStore, updatedState);
-          targetEmissionStore.load(existingTargetEmissionStore.targetEmissions, settingsDoc, targetClosure);
+        if (!rulesEmitter.isLatestNoolsSchema()) {
+          throw Error('Rules Engine: Updates to the nools schema are required');
         }
-      })
-  ),
+
+        const contactClosure = updatedState => provider.contactStateChangeCallback(existingStateDoc, { contactStateStore: updatedState });
+        contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, contactClosure);
+
+        const targetClosure = updatedState => provider.targetEmissionChangeCallback(existingTargetEmissionStore, { targetEmissions: updatedState });
+        targetEmissionStore.load(existingTargetEmissionStore.targetEmissions, settingsDoc, targetClosure);
+      });
+  },
 
   /**
    * Refreshes the rules emissions for all contacts
@@ -68,18 +69,17 @@ module.exports = {
    * @param {DataProvider} provider A data provider
    * @returns {Promise<Object>} The fresh aggregate target doc
    */
-  fetchTargets: provider => {
+  fetchTargets: (provider, targetEmissionFilter) => {
     if (!rulesEmitter.isEnabled()) {
       return Promise.resolve([]);
     }
 
     const calculationTimestamp = Date.now();
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
-      .then(() => targetEmissionStore.getEmissions())
-      .then(emissions => {
-        const aggregated = targetAggregator(emissions);
-        provider.commitAggregatedTargets(aggregated, calculationTimestamp);
-        return aggregated;
+      .then(() => {
+        const targetModels = targetEmissionStore.getTargets(targetEmissionFilter);
+        // provider.commitAggregatedTargets(aggregated, calculationTimestamp);
+        return targetModels;
       });
   },
 
@@ -110,10 +110,10 @@ module.exports = {
  * Marks the dirty contacts as fresh (async)
  */
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
-  const refreshAndHandleRulesEmissions = freshData => (
+  const refreshAndHandleRulesEmissions = (freshData, contactIds) => (
     refreshRulesEmissions(freshData, calculationTimestamp)
       .then(refreshed => Promise.all([
-        targetEmissionStore.updateEmissionsFor(contactIds, refreshed.targetEmissions),
+        targetEmissionStore.storeTargetEmissions(contactIds, refreshed.targetEmissions),
         provider.commitTaskDocs(refreshed.updatedTaskDocs),
       ]))
   );
@@ -141,7 +141,7 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   const refreshForKnownContacts = (calculationTimestamp, contactIds) => {
     const dirtyContactIds = contactIds.filter(contactId => contactStateStore.isDirty(contactId));
     return provider.taskDataFor(dirtyContactIds, contactStateStore.currentUser())
-      .then(refreshAndHandleRulesEmissions)
+      .then(freshData => refreshAndHandleRulesEmissions(freshData, contactIds))
       .then(() => {
         contactStateStore.markFresh(calculationTimestamp, dirtyContactIds);
       });
