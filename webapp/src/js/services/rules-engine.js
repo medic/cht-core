@@ -112,6 +112,11 @@ angular.module('inboxServices').factory('RulesEngine', function(
         .then(translateTaskDocs)
     ),
 
+    fetchTargets: () => (
+      initialized
+        .then(() => RulesEngineCore.fetchTargets(DB()))
+    ),
+
     // testing only - allows karma to test initialization logic
     _initialize: () => { initialized = initialize(); },
   };
