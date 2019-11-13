@@ -32,6 +32,7 @@ angular.module('controllers').controller('SmsSettingsCtrl',
           default_country_code: $('#default-country-code').val(),
           phone_validation: 'none'
         };
+        
         if (!phoneNumber.validate(info, gatewayNumber)) {
           $scope.model.error.gateway_number = $translate.instant('Phone number not valid');
           return false;
