@@ -66,7 +66,7 @@
       }
 
       $scope.$on('$destroy', () => {
-        LiveList.tasks.unsetSelected();
+        LiveList.tasks.clearSelected();
         delete LiveList.tasks.notifyChange;
         delete LiveList.tasks.notifyError;
         unsubscribe();
