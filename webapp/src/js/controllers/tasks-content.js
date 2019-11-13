@@ -8,6 +8,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     Enketo,
     Geolocation,
     GlobalActions,
+    LiveList,
     Selectors,
     Snackbar,
     TasksActions,
@@ -44,9 +45,43 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         setEnketoError: globalActions.setEnketoError,
         setTitle: globalActions.setTitle,
         setSelectedTask: tasksActions.setSelectedTask,
+        selectAction: tasksActions.selectAction,
+        settingSelected: globalActions.settingSelected,
+        setShowContent: globalActions.setShowContent,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+    var setSelectedTask = function(task) {
+      LiveList.tasks.setSelected(task._id);
+      ctrl.setSelectedTask(task);
+      if (typeof task.title === 'string') {
+        // new translation key style
+        task.title = $translate.instant(task.title, task);
+      } else {
+        // old message array style
+        task.title = TranslateFrom(task.title, task);
+      }
+      ctrl.setTitle(TranslateFrom(task.title, task));
+      ctrl.setShowContent(true);
+      if (hasOneActionAndNoFields(task)) {
+        ctrl.performAction(task.actions[0], true);
+      }
+    };
+
+    const setSelected = function(id) {
+      if (!id) {
+        LiveList.tasks.clearSelected();
+        ctrl.unsetSelected();
+        return;
+      }
+      const task = LiveList.tasks.getList().find(task => task._id === id);
+      if (task) {
+        var refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
+        ctrl.settingSelected(refreshing);
+        setSelectedTask(task);
+      }
+    };
 
     var geolocation;
     Geolocation()
@@ -55,7 +90,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       })
       .catch($log.warn);
 
-    var hasOneFormAndNoFields = function(task) {
+    var hasOneActionAndNoFields = function(task) {
       return Boolean(
         task &&
         task.actions &&
@@ -165,21 +200,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         });
     };
 
-    // Wait for `selected` to be set during tasks generation and load the
-    // form if we have no other description or instructions in the task.
-    let loadingSelected = false;
-    $ngRedux.subscribe(() => {
-      if (!loadingSelected && ctrl.selectedTask) {
-        loadingSelected = true;
-        if (hasOneFormAndNoFields(ctrl.selectedTask)) {
-          ctrl.performAction(ctrl.selectedTask.actions[0], true);
-        }
-      }
-    });
-
     ctrl.form = null;
     ctrl.formId = null;
-    $scope.setSelected($state.params.id);
+    setSelected($state.params.id);
 
     $scope.$on('$destroy', unsubscribe);
   }
