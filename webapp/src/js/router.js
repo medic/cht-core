@@ -263,6 +263,7 @@
       .state('testing', {
         url: '/testing',
         controller: 'TestingCtrl',
+        controllerAs: 'testingCtrl',
         templateUrl: 'templates/partials/testing.html'
       });
   };

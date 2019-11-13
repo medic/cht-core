@@ -95,7 +95,7 @@ module.exports.purge = (localDb, userCtx) => {
       .then(response => {
         const { purged_ids: ids, last_seq: lastSeq } = response;
 
-        if (!ids.length) {
+        if (!ids || !ids.length) {
           return;
         }
 

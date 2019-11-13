@@ -79,17 +79,6 @@
       </dl>
     </div>
 
-    <div ng-if="aboutCtrl.debugOptionEnabled">
-      <h3 translate>debug.mode</h3>
-      <p translate>debug.mode.description</p>
-      <form>
-        <label>
-          <input ng-model="enableDebugModel.val" type="checkbox" />
-          <span translate>debug.mode.title</span>
-        </label>
-      </form>
-    </div>
-
     <div ng-if="aboutCtrl.partners && aboutCtrl.partners.length" class="partners">
       <h3 translate>partner.supporting</h3>
       <ul class="list-inline">
