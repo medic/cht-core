@@ -537,7 +537,7 @@ angular.module('inboxServices').service('Tour',
             order: 3,
             id: 'contacts',
             icon: 'fa-user',
-            name: 'People'
+            name: 'Contacts'
           };
         })
         .catch(function() {});
