@@ -31,13 +31,6 @@ const doExtend = (target, source) => {
 };
 
 module.exports = {
-  getSchema: () => {
-    return db.medic.get('_design/medic-schema')
-      .then(doc => JSON.parse(doc.schema.app_settings))
-      .catch(err => {
-        throw err;
-      });
-  },
   get: () => {
     return getDoc()
       .then(doc => doc.settings)
@@ -53,10 +46,10 @@ module.exports = {
       });
   },
   /**
-   * Process a request to either replace, overwrite or extend existing settings. 
-   * If both replace and overwite are set, then it is assumed that only overwite 
+   * Process a request to either replace, overwrite or extend existing settings.
+   * If both replace and overwite are set, then it is assumed that only overwite
    * is set.
-   * @param replace If true, recursively merges the properties leaving existing 
+   * @param replace If true, recursively merges the properties leaving existing
    *                properties not in the input document intact.
    * @param overwrite If true, replace the settings document with input document.
    */
@@ -69,7 +62,7 @@ module.exports = {
         if (err.status === 404) {
           return { _id: 'settings' };
         }
-        // throw err;
+        throw err;
       })
       .then(doc => {
         if (!doc.settings) {
@@ -95,8 +88,8 @@ module.exports = {
         if (JSON.stringify(doc.settings) !== original) {
           info('Updating settings with new defaults');
           return db.medic.put(doc);
-        } 
-        
+        }
+
         return Promise.resolve();
       });
   }

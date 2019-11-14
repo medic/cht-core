@@ -1,14 +1,18 @@
 {
+  "$schema": "http://json-schema.org/schema#",
+  "title": "Community Health Toolkit Settings Schema",
   "references": {
     "roles": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "enum": [
           "national_admin",
           "district_admin",
           "analytics",
-          "gateway"
+          "gateway",
+          "data_entry"
         ]
       }
     }
@@ -33,35 +37,57 @@
       }
     },
     "locale": {
-      "type": "string"
+      "title": "Default Locale For Website",
+      "description": "The code of the default locale for users logging in to the website. Can be overridden in user settings. Must be one of the codes specified in Locales above.",
+      "type": "string",
+      "default": "en"
     },
     "locale_outgoing": {
-      "type": "string"
+      "title": "Default Locale For Outgoing Messages",
+      "description": "The code of the default locale for outgoing messages. Must be one of the codes specified in Locales above.",
+      "type": "string",
+      "default": "en"
     },
     "date_format": {
-      "type": "string"
+      "title": "Date Format",
+      "description": "Format used to display dates using Moment.js format.",
+      "type": "string",
+      "default": "DD-MMM-YYYY"
     },
     "reported_date_format": {
-      "type": "string"
+      "title": "DateTime Format For Reported Timestamp",
+      "description": "Format used to display dates and times using Moment.js format.",
+      "type": "string",
+      "default": "DD-MMM-YYYY HH:mm:ss"
     },
     "forms_only_mode": {
-      "type": "boolean"
+      "title": "Only Expect Forms",
+      "description": "All incoming messages will be parsed as forms. Unstractured messages will be rejected.",
+      "type": "boolean",
+      "default": false
     },
     "default_responses": {
+      "title": "Auto-replies",
+      "description": "When an empty message or badly formatted report is received, an error auto-reply message is sent out. When forms_only_mode is off, received messages will trigger a confirmation auto-reply message. All reply messages are generated based on translation and locale settings.",
       "type": "object",
       "properties": {
         "start_date": {
+          "title": "Start Date",
+          "description": "Auto-replies are added to messages received after this date.  If left empty auto-replies are not added.  Use the format YYYY-MM-DD to define the date, for example 2014-03-27.",
+          "pattern": "(^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}\\s*$|^\\s*$)",
           "type": "string"
         }
       }
     },
     "district_admins_access_unallocated_messages": {
-      "type": "boolean"
-    },
-    "public_access": {
-      "type": "boolean"
+      "title": "Allow District Admins To View Unallocated Messages",
+      "description": "If true, district administrators will be able to view messages with no allocated facility as well as messages from their district. If unchecked/false, only admins will see unallocated messages.",
+      "type": "boolean",
+      "default": false
     },
     "default_country_code": {
+      "title": "Default Country Code",
+      "description": "Messages without a country code will be assigned this country code.",
       "oneOf": [
         {
           "type": "string"
@@ -72,29 +98,41 @@
       ]
     },
     "gateway_number": {
+      "title": "Gateway Number",
+      "description": "This is the number where mobile reporters should send their reports. It is also the number they will receive messages from.  Auto-replies will not be sent to this number to avoid message loops.",
       "type": "string"
     },
     "schedule_morning_hours": {
+      "title": "Scheduled Message Morning Hours",
+      "description": "Only send messages on or after this hour.",
       "type": "number",
       "minimum": 0,
       "exclusiveMaximum": 24
     },
     "schedule_morning_minutes": {
+      "title": "Scheduled Message Morning Minutes",
+      "description": "Only send messages on or after this minute.",
       "type": "number",
       "minimum": 0,
       "exclusiveMaximum": 60
     },
     "schedule_evening_hours": {
+      "title": "Scheduled Message Evening Hours",
+      "description": "Only send messages on or before this hour.",
       "type": "number",
       "minimum": 0,
       "exclusiveMaximum": 24
     },
     "schedule_evening_minutes": {
+      "title": "Scheduled Message Evening Minutes",
+      "description": "Only send messages on or before this minute.",
       "type": "number",
       "minimum": 0,
       "exclusiveMaximum": 60
     },
     "permissions": {
+      "title": "Permissions",
+      "description": "Defines which user roles can access which features of the webapp.",
       "type": "object",
       "properties": {
         "can_export_messages": {
@@ -208,6 +246,8 @@
       }
     },
     "roles": {
+      "title": "Custom Roles",
+      "description": "Defines custom roles that can be used in permissions and replication settings",
       "type": "object",
       "propertyNames": {
         "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
@@ -227,6 +267,8 @@
       }
     },
     "replications": {
+      "title": "Database Replication Settings",
+      "description": "Defines databases that should be consolidated",
       "type": "array",
       "items": {
         "type": "object",
@@ -247,6 +289,8 @@
       }
     },
     "replication_depth": {
+      "title": "Replication Depth",
+      "description": "Defines how many levels of contacts and their reports to replicate to users with the given role. 1 = they can see their reports and children, 2 = they can see their children's reports and children, etc.",
       "type": "array",
       "items": {
         "type": "object",
@@ -261,6 +305,8 @@
       }
     },
     "changes_controller": {
+      "title": "Couch Changes Feed Settings",
+      "description": "Defines how document changes will be processed",
       "type": "object",
       "properties": {
         "reiterate_changes": {
@@ -275,6 +321,8 @@
       }
     },
     "muting": {
+      "title": "Muting",
+      "description": "Contact muting settings",
       "type": "object",
       "properties": {
         "mute_forms": {
@@ -350,6 +398,8 @@
       }
     },
     "purging": {
+      "title": "Document Purging",
+      "description": "A function that controls which documents are purged",
       "type": "object",
       "properties": {
         "fn": {
@@ -358,6 +408,8 @@
       }
     },
     "registrations": {
+      "title": "Registration Actions",
+      "description": "Actions that should be taken when a registration report is recieved",
       "type": "array",
       "items": {
         "type": "object",
@@ -461,22 +513,32 @@
       }
     },
     "patient_reports": {
+      "title": "Patient Reports",
+      "description": "Actions that should be taken when a patient report is received",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "form": {
+            "title": "Form ID",
+            "description": "Form ID of the report",
             "type": "string"
           },
           "events": {
+            "title": "Triggered Actions",
+            "description": "Actions triggered by incoming reports",
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
                 "name": {
+                  "title": "Event Name",
+                  "description": "Name of the event",
                   "type": "string"
                 },
                 "trigger": {
+                  "title": "Triggered Action",
+                  "description": "Action triggered when form is received, e.g. enrolling in a schedule.",
                   "type": "string",
                   "enum": [
                     "add_birth_date",
@@ -487,32 +549,47 @@
                   ]
                 },
                 "params": {
+                  "title": "Parameters",
+                  "description": "Relevant parameters for the triggered action",
                   "type": "string"
                 },
                 "bool_expr": {
+                  "title": "Boolean Expression",
+                  "description": "Boolean expression for triggering this action.",
                   "type": "string"
                 }
               }
             }
           },
           "validations": {
+            "title": "Validations",
+            "description": "Specify constraints for form fields",
             "type": "object",
             "properties": {
               "join_responses": {
+                "title": "Join Validation Responses",
+                "description": "By default we send only the first validation response.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters.",
                 "type": "boolean"
               },
               "list": {
+                "title": "Response Messages",
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "property": {
+                      "title": "Property",
+                      "description": "The property on the JSON form to validate.",
                       "type": "string"
                     },
                     "rule": {
+                      "title": "Validation Rule",
+                      "description": "Custom rules and pupil.js rules for validating report properties. More information can be found here https://github.com/medic/medic-docs/blob/master/configuration/app-settings-validations.md#rules",
                       "type": "string"
                     },
                     "translation_key": {
+                      "title": "Translation key",
+                      "description": "Key to look up in translation files",
                       "type": "string"
                     }
                   }
@@ -521,14 +598,20 @@
             }
           },
           "messages": {
+            "title": "Response Messages",
+            "description": "Messages to be sent when a report is valid. Messages for invalid reports are in validations",
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
                 "translation_key": {
+                  "title": "Translation key",
+                  "description": "Key to look up in translation files",
                   "type": "string"
                 },
                 "event_type": {
+                  "title": "Event Type",
+                  "description": "What should trigger this message?",
                   "type": "string",
                   "enum": [
                     "report_accepted",
@@ -536,6 +619,8 @@
                   ]
                 },
                 "recipient": {
+                  "title": "Message Recipient",
+                  "description": "Contact to recieve the message. Use a field name on registration form or one of the options below",
                   "type": "string",
                   "enum": [
                     "reporting_unit",
@@ -545,6 +630,8 @@
                   ]
                 },
                 "bool_expr": {
+                  "title": "Boolean Expression",
+                  "description": "Boolean expression for triggering this message.",
                   "type": "string"
                 }
               }
@@ -554,46 +641,74 @@
       }
     },
     "schedules": {
+      "title": "Scheduled Messages",
+      "description": "Schedules are lists of messages that will be sent out periodically. You can trigger them when specific reports come in, see 'Form Actions'. When a schedule is attached to a report, you will see the list of messages at the bottom of the report in Medic Mobile. Within the schedule, messages are organized in groups. E.g. in a schedule of ANC visit reminders, there is a group of messages for each visit: one message 1 week before, one message on the due date, one message 1 week after. The message groups are cleared by visit reports that are configured in the previous section.",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "name": {
+            "title": "Name",
+            "description": "A unique name to define this schedule.",
             "type": "string"
           },
           "translation_key": {
+            "title": "Translation key",
+            "description": "Key to look up in translation files",
             "type": "string"
           },
           "summary": {
+            "title": "Summary",
+            "description": "A brief description of this schedule",
             "type": "string"
           },
           "description": {
+            "title": "Description",
+            "description": "A complete description of this schedule in markdown format.",
             "type": "string"
           },
           "start_from": {
+            "title": "Start Date",
+            "description": "A timestamp or date property on the report that is used to calculate when messages are sent. e.g. lmp_date.  Use reported_date if you want to reference the date and time the report was received.",
             "type": "string"
           },
           "messages": {
+            "title": "Scheduled Messages",
+            "description": "Defines messages to be sent out. Mustache templating is supported.",
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
                 "translation_key": {
+                  "title": "Translation key",
+                  "description": "Key to look up in translation files",
                   "type": "string"
                 },
                 "group": {
-                  "type": "number"
+                  "title": "Message Group Number",
+                  "description": "Messages can be grouped by assigning a group number. Messages in the same group will be cleared together.",
+                  "type": "number",
+                  "default": 1
                 },
                 "offset": {
+                  "title": "Time Offset",
+                  "description": "This value is added to the timestamp property value to determine when to send the message. Supported units: years, months, weeks, days, hours, or minutes.",
                   "type": "string"
                 },
                 "send_day": {
-                  "type": "string"
+                  "title": "Send Day",
+                  "description": "Optionally specify the nearest day to offset.",
+                  "type": "string",
+                  "default": "monday"
                 },
                 "send_time": {
+                  "title": "Send Time",
+                  "description": "Specify time of day at which the message is to be sent. Ignored if blank. If timezone offset is not specfiied GMT will be used.",
                   "type": "string"
                 },
                 "recipient": {
+                  "title": "Recipient",
+                  "description": "Contact to recieve the message. Use a field name on registration form or one of the options below.",
                   "type": "string",
                   "enum": [
                     "reporting_unit",
@@ -609,21 +724,31 @@
       }
     },
     "notifications": {
+      "title": "Notifications",
+      "description": "Define the forms that are used to enable or disable all scheduled messages for a reporter/recipient.",
       "type": "object",
       "properties": {
         "off_form": {
+          "title": "Stop Notifications Form",
+          "description": "When receiving a form of this type, stop sending notifications. e.g. OFF",
           "type": "string"
         },
         "on_form": {
+          "title": "Resume Notifications Form",
+          "description": "When receiving a form of this type, resume sending notifications. e.g. ON",
           "type": "string"
         },
         "confirm_deactivation": {
+          "title": "Confirm Muting Notifications?",
+          "description": "Disable stopping of notification based on form submission, administrators are notified instead.",
           "type": "boolean"
         },
         "validations": {
           "type": "object",
           "properties": {
             "join_responses": {
+              "title": "Join Validation Responses",
+              "description": "By default we send only the first validation response.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters.",
               "type": "boolean"
             },
             "list": {
@@ -632,12 +757,18 @@
                 "type": "object",
                 "properties": {
                   "property": {
+                    "title": "Property",
+                    "description": "The property on the JSON form to validate.",
                     "type": "string"
                   },
                   "rule": {
+                    "title": "Validation Rule",
+                    "description": "Custom rules and pupil.js rules for validating report properties. More information can be found here https://github.com/medic/medic-docs/blob/master/configuration/app-settings-validations.md#rules",
                     "type": "string"
                   },
                   "translation_key": {
+                    "title": "Translation key",
+                    "description": "Key to look up in translation files",
                     "type": "string"
                   }
                 }
@@ -651,9 +782,13 @@
             "type": "object",
             "properties": {
               "translation_key": {
+                "title": "Translation key",
+                "description": "Key to look up in translation files",
                 "type": "string"
               },
               "event_type": {
+                "title": "Event Type",
+                "description": "What should trigger this message?",
                 "type": "string",
                 "enum": [
                   "on_mute",
@@ -662,6 +797,8 @@
                 ]
               },
               "recipient": {
+                "title": "Message Recipient",
+                "description": "Contact to recieve the message. Use a field name on registration form or one of the options below",
                 "type": "string",
                 "enum": [
                   "reporting_unit",
@@ -671,6 +808,8 @@
                 ]
               },
               "bool_expr": {
+                "title": "Boolean Expression",
+                "description": "Boolean expression for triggering this message.",
                 "type": "string"
               }
             }
@@ -679,6 +818,8 @@
       }
     },
     "transitions": {
+      "title": "Report Transitions",
+      "description": "Defines activated transitions. More information can be found here https://github.com/medic/medic-docs/blob/master/configuration/transitions.md",
       "type": "object",
       "properties": {
         "default_responses": {
@@ -864,20 +1005,28 @@
       }
     },
     "death_reporting": {
+      "title": "Death Reporting",
+      "description": "Settings for handling death reports",
       "type": "object",
       "properties": {
         "mark_deceased_forms": {
+          "title": "Mark Deceased Forms",
+          "description": "Forms that will mark a contact as deceased.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "date_field": {
+          "title": "Date",
+          "description": "Date that a contact became deceased.",
           "type": "string"
         }
       }
     },
     "forms": {
+      "title": "Forms",
+      "description": "Form definitions for SMS forms.",
       "type": "object",
       "propertyNames": {
         "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
@@ -890,12 +1039,16 @@
               "type": "object",
               "properties": {
                 "code": {
+                  "title": "Form Code",
                   "type": "string"
                 },
                 "icon": {
+                  "title": "Icon",
                   "type": "string"
                 },
                 "translation_key": {
+                  "title": "Translation key",
+                  "description": "Key to look up in translation files",
                   "type": "string"
                 }
               }
@@ -971,26 +1124,34 @@
       }
     },
     "tasks": {
+      "title": "Tasks and Targets",
       "type": "object",
       "properties": {
         "rules": {
+          "title": "Rules",
+          "description": "Rules for generating tasks and targets.",
           "type": "string"
         },
         "targets": {
+          "title": "Targets",
+          "description": "Target definitions",
           "type": "object",
           "properties": {
             "enabled": {
               "type": "boolean"
             },
             "items": {
+              "title": "Target Items",
               "type": "array",
               "items": {
                 "type": "object",
                 "properties": {
                   "id": {
+                    "title": "Unique identifier",
                     "type": "string"
                   },
                   "type": {
+                    "title": "Type of target",
                     "type": "string",
                     "enum": [
                       "count",
@@ -998,6 +1159,8 @@
                     ]
                   },
                   "goal": {
+                    "title": "Goal value",
+                    "description": "E.g. for a goal of 5 new patients, enter 5. For 75% of safe deliveries, enter 75. To have no goal, enter -1.",
                     "oneOf": [
                       {
                         "type": "number",
@@ -1013,15 +1176,23 @@
                     ]
                   },
                   "translation_key": {
+                    "title": "Translation key",
+                    "description": "Key to look up in translation files",
                     "type": "string"
                   },
                   "icon": {
+                    "title": "Icon",
+                    "description": "The id of the icon to show to the user. You can upload icons in Medic Mobile's configuration pages.",
                     "type": "string"
                   },
                   "context": {
+                    "title": "Context",
+                    "description": "Context expression for showing target",
                     "type": "string"
                   },
                   "subtitle_translation_key": {
+                    "title": "Subtitle Translation key",
+                    "description": "Key to look up in translation files",
                     "type": "string"
                   }
                 }
@@ -1032,47 +1203,73 @@
       }
     },
     "outgoing_deny_list": {
+      "title": "Outgoing Deny List",
+      "description": "Numbers that the app is barred from sending messages.",
       "type": "string"
     },
     "outgoing_deny_with_alphas": {
+      "title": "Outgoing Deny With Alphas",
+      "description": "Avoid sending messages to alphanumeric numbers.",
       "type": "boolean"
     },
     "outgoing_deny_shorter_than": {
+      "title": "Outgoing Deny Shorter Than",
+      "description": "Avoid sending messages to short codes.",
       "type": "number"
     },
     "multipart_sms_limit": {
+      "title": "Multipart SMS Limit",
+      "description": "Maximum parts that an SMS can be split into",
       "type": "number"
     },
     "contact_summary": {
+      "title": "Contact Summary",
+      "description": "A function to generate contact summaries, cards, and context objects. More information https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#contact-summaries",
       "type": "string"
     },
     "multi_report_alerts": {
+      "title": "Multi-report Alerts",
+      "description": "Send alert messages by SMS when specific conditions are received through reports. More information https://github.com/medic/medic-docs/blob/master/configuration/transitions.md#multi_report_alerts",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "name": {
+            "title": "Name",
+            "description": "Name of the alert, e.g. suspected_cholera.",
             "type": "string"
           },
           "is_report_counted": {
+            "title": "is_report_counted test function",
+            "description": "Javascript function to test recent reports to know whether they should be counted for the alert. It should take two (optional) arguments : the report from the time window being tested, and the latest report that triggered the transition. It should return true if the report should be counted.",
             "type": "string"
           },
           "num_reports_threshold": {
+            "title": "Report Threshold",
+            "description": "Number of counted reports that will trigger the message sending. Should be less than 100.",
             "type": "number"
           },
           "message": {
+            "title": "Message",
+            "description": "Text that will be sent out in the alert. You can refer to alert_name, num_reports_threshold, time_window_in_days, num_counted_reports (total number of reports within the time window) and new_reports (the counted reports which haven't been messaged about yet). Refer to the latest report as new_reports.0 (not new_reports[0] as in usual javascript! This is specific to the templates we use.), the previous report as new_reports.1, etc.",
             "type": "string"
           },
           "recipients": {
+            "title": "Alert Message Recipients",
+            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in each new_report (e.g. \"new_report.contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender, for each report in new_reports.)",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "time_window_in_days": {
+            "title": "Days Time Window",
+            "description": "How far back through reports the transition should look when counting reports, in number of days.",
             "type": "number"
           },
           "forms": {
+            "title": "Forms",
+            "description": "Optional. Only reports from these forms will be considered.",
             "type": "array",
             "items": {
               "type": "string"
@@ -1082,6 +1279,8 @@
       }
     },
     "outbound": {
+      "title": "Outbound Services",
+      "description": "Endpoints for pushing data.",
       "type": "object",
       "propertyNames": {
         "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
@@ -1090,33 +1289,43 @@
         "^[A-Za-z][A-Za-z0-9_-]*$": {
           "type": "object",
           "relevant_to": {
+            "title": "Relevant Documents",
+            "description": "Expression that filters outbound documents.",
             "type": "string"
           },
           "destination": {
+            "title": "Outbound destination",
             "type": "object",
             "properties": {
               "base_url": {
+                "title": "URL",
                 "type": "string",
                 "format": "uri"
               },
               "auth": {
+                "title": "Authentication Details",
                 "type": "object",
                 "properties": {
                   "type": {
+                    "title": "Type",
                     "type": "string"
                   },
                   "usename": {
+                    "title": "Username",
                     "type": "string"
                   },
                   "password-key": {
+                    "title": "Password Key",
                     "type": "string"
                   },
                   "path": {
+                    "title": "URL Path",
                     "type": "string"
                   }
                 }
               },
               "path": {
+                "title": "URL Path",
                 "type": "string"
               }
             }
@@ -1160,28 +1369,41 @@
       }
     },
     "sms": {
+      "title": "Outgoing SMS Services",
       "type": "object",
       "properties": {
         "outgoing_service": {
+          "title": "Outgoing Service Name",
           "type": "string"
         }
       }
     },
     "uhc": {
+      "title": "Universal Health Coverage",
       "type": "object",
       "properties": {
         "contacts_default_sort": {
-          "type": "string"
+          "title": "Contact Default Sort",
+          "description": "How contacts should be sorted",
+          "type": "string",
+          "enum": [
+            "alpha",
+            "last_visited_date"
+          ]
         },
         "visit_count": {
           "type": "object",
           "properties": {
             "month_start_date": {
+              "title": "Month Start Date",
+              "description": "The date of each month when the visit count is reset to 0.",
               "type": "integer",
               "minimum": 1,
               "maximum": 31
             },
             "visit_count_goal": {
+              "title": "Visit Count Goal",
+              "description": "The monthly visit count goal.",
               "type": "integer"
             }
           }

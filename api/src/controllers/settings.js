@@ -1,9 +1,10 @@
-const auth = require('../auth'),
+const _ = require('underscore'),
+      Ajv = require('ajv'),
+      auth = require('../auth'),
+      schema = require('./settings-schema'),
       serverUtils = require('../server-utils'),
       settingsService = require('../services/settings'),
-      objectPath = require('object-path'),
-      Ajv = require('ajv'),
-      _ = require('underscore');
+      objectPath = require('object-path');
 
 const ajv = new Ajv({ allErrors: true });
 const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
@@ -35,7 +36,7 @@ module.exports = {
   },
   put: (req, res) => {
     auth.getUserCtx(req)
-      .then( userCtx => {
+      .then(userCtx => {
         if (!auth.hasAllPermissions(userCtx, 'can_configure')) {
           throw {
             code: 403,
@@ -43,9 +44,10 @@ module.exports = {
           };
         }
       })
-      .then(() => settingsService.getSchema())
-      .then(schema => {
+      .then(() => {
         if ('roles' in req.body){
+          // add custom roles to the schema so that permissions using these
+          // roles can be validated together with other static fields
           schema.references.roles.items.enum = _.union(Object.keys(req.body.roles), schema.references.roles.items.enum);
         }
         const valid = ajv.validate(schema, req.body);
@@ -64,7 +66,7 @@ module.exports = {
       .then(() => {
         res.json({ success: true });
       })
-      .catch( err => {
+      .catch(err => {
         serverUtils.error(err, req, res, true);
       });
   }

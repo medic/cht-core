@@ -163,12 +163,17 @@ describe('Settings API', () => {
     });
 
 
-    it('should validate app_settings against schema', () => {
-      return update({ locale: [] })
+    it('should reject invalid settings updates', () => {
+      return getDoc()
+        .then(settings => {
+          settings.gateway_number = '+1234567890';
+          settings.permissions = [];
+          return update(settings);
+        })
         .catch(e => {
           e = e.error;
           expect(e.code).toEqual(400);
-          expect(JSON.parse(e.error)[0].message).toEqual('should be string');
+          expect(JSON.parse(e.error)[0].message).toEqual('should be object');
         })
         .then(() => {
           return utils.request({
@@ -177,8 +182,41 @@ describe('Settings API', () => {
           });
         })
         .then(response => {
-          expect(response.locale).not.toEqual([]);
+          expect(response.permissions).not.toEqual([]);
+          expect(response.gateway_number).not.toEqual('+1234567890');
         });
+    });
+
+    it('should validate custom roles', () => {
+      let settings = {
+        roles: {
+          e2e_test: {
+            name: 'usertype.e2e_test'
+          }
+        },
+        permissions: {
+          can_export_messages: [
+            "national_admin",
+            "e2e_test",
+            "non_existent_role"
+          ]
+        }
+      };
+      return update(settings)
+        .catch(e => {
+          e = e.error;
+          expect(e.code).toEqual(400);
+          expect(JSON.parse(e.error)[0].message).toEqual('should be equal to one of the allowed values');
+        })
+        .then(() => {
+          settings.roles.non_existent_role = {
+            name: 'usertype.non_existent_role'
+          }
+          return update(settings);
+        })
+        .then(response => {
+          expect(response).toEqual({ success: true });
+        })
     });
 
   });
