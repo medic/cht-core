@@ -20,7 +20,6 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
         return isEnabled ? RulesEngine.fetchTargets() : [];
       })
       .then(targets => {
-        console.log('Rendering Targets', targets);
         ctrl.loading = false;
         ctrl.targets = targets;
       })
