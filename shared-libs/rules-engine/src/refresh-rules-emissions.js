@@ -22,16 +22,18 @@ const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
  * @returns {Object[]} result.targetEmissions Array of raw target emissions
  * @returns {Object[]} result.updatedTaskDocs Array of updated task documents
  */
-module.exports = (freshData = {}, calculationTimestamp = Date.now()) => calculateFreshTaskDocs(freshData, calculationTimestamp)
-  .then(freshResults => {
-    const freshTaskDocs = freshResults.taskTransforms.map(doc => doc.taskDoc);
-    const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
-    const updatedTaskDocs = freshResults.taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-    return {
-      targetEmissions: freshResults.targetEmissions,
-      updatedTaskDocs: [...updatedTaskDocs, ...cancelledDocs],
-    };
-  });
+module.exports = (freshData = {}, calculationTimestamp = Date.now()) => (
+  calculateFreshTaskDocs(freshData, calculationTimestamp)
+    .then(freshResults => {
+      const freshTaskDocs = freshResults.taskTransforms.map(doc => doc.taskDoc);
+      const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
+      const updatedTaskDocs = freshResults.taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
+      return {
+        targetEmissions: freshResults.targetEmissions,
+        updatedTaskDocs: [...updatedTaskDocs, ...cancelledDocs],
+      };
+    })
+);
 
 const calculateFreshTaskDocs = (freshData, calculationTimestamp) => {
   const { contactDocs = [], reportDocs = [], taskDocs = [], userContactId } = freshData;

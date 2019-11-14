@@ -6,8 +6,7 @@
 
 const registrationUtils = require('@medic/registration-utils');
 
-const CONTACT_STATE_DOCID = '_local/contactStateStore';
-const TARGET_EMISSION_DOCID = '_local/targetEmissionStore';
+const RULES_STATE_DOCID = '_local/rulesStateStore';
 
 const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
 
@@ -42,7 +41,7 @@ const medicPouchProvider = db => {
         })
     ),
 
-    contactStateChangeCallback: stateDocUpdateClosure(db),
+    stateChangeCallback: stateDocUpdateClosure(db),
 
     commitTaskDocs: taskDocs => {
       if (!taskDocs || taskDocs.length === 0) {
@@ -54,9 +53,7 @@ const medicPouchProvider = db => {
         .catch(err => console.error('Error committing task documents', err));
     },
 
-    existingContactStateStore: () => db.get(CONTACT_STATE_DOCID).catch(() => ({ _id: CONTACT_STATE_DOCID })),
-
-    existingTargetEmissionStore: () => db.get(TARGET_EMISSION_DOCID).catch(() => ({ _id: TARGET_EMISSION_DOCID })),
+    existingRulesStateStore: () => db.get(RULES_STATE_DOCID).catch(() => ({ _id: RULES_STATE_DOCID })),
 
     targetEmissionChangeCallback: stateDocUpdateClosure(db),
 
@@ -95,8 +92,7 @@ const medicPouchProvider = db => {
   return self;
 };
 
-medicPouchProvider.CONTACT_STATE_DOCID = CONTACT_STATE_DOCID;
-medicPouchProvider.TARGET_EMISSION_DOCID = TARGET_EMISSION_DOCID;
+medicPouchProvider.RULES_STATE_DOCID = RULES_STATE_DOCID;
 
 const stateDocUpdateClosure = db => {
   // previousResult helps avoid conflict errors if these functions are called asynchronously

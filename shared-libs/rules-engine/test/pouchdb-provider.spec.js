@@ -83,38 +83,21 @@ describe('pouchdb provider', () => {
     it('uuid and patient_id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient', 'patient_id'])).to.deep.eq(['patient', 'patient'])); // dupes don't matter here
   });
 
-  describe('contactStateStore', () => {
-    it('contactStateStore is empty by default', async () => {
-      expect(await pouchdbProvider(db).existingContactStateStore()).to.not.have.property('contactStateStore');
+  describe('rulesStateStore', () => {
+    it('rulesStateStore is empty by default', async () => {
+      expect(await pouchdbProvider(db).existingRulesStateStore()).to.not.have.property('rulesStateStore');
     });
 
-    it('fake contactStateStore can be fetched', async () => {
-      const expected = { _id: pouchdbProvider.CONTACT_STATE_DOCID, details: 'stuff' };
+    it('fake rulesStateStore can be fetched', async () => {
+      const expected = { _id: pouchdbProvider.RULES_STATE_DOCID, details: 'stuff' };
       await db.put(expected);
 
-      const actual = await pouchdbProvider(db).existingContactStateStore();
+      const actual = await pouchdbProvider(db).existingRulesStateStore();
       expect(actual).excluding('_rev').to.deep.eq(expected);
 
-      await pouchdbProvider(db).contactStateChangeCallback(actual, { updated: true });
-      expect(await pouchdbProvider(db).existingContactStateStore()).excluding('_rev').to.deep.eq({
-        _id: pouchdbProvider.CONTACT_STATE_DOCID,
-        updated: true,
-        details: 'stuff'
-      });
-    });
-  });
-
-  describe('targetEmissionChangeCallback', () => {
-    it('fake targetEmission doc can be fetched', async () => {
-      const expected = { _id: pouchdbProvider.TARGET_EMISSION_DOCID, details: 'stuff' };
-      await db.put(expected);
-
-      const actual = await pouchdbProvider(db).existingTargetEmissionStore();
-      expect(actual).excluding('_rev').to.deep.eq(expected);
-
-      await pouchdbProvider(db).targetEmissionChangeCallback(actual, { updated: true });
-      expect(await pouchdbProvider(db).existingTargetEmissionStore()).excluding('_rev').to.deep.eq({
-        _id: pouchdbProvider.TARGET_EMISSION_DOCID,
+      await pouchdbProvider(db).stateChangeCallback(actual, { updated: true });
+      expect(await pouchdbProvider(db).existingRulesStateStore()).excluding('_rev').to.deep.eq({
+        _id: pouchdbProvider.RULES_STATE_DOCID,
         updated: true,
         details: 'stuff'
       });

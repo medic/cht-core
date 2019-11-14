@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
-const { chtDocs, RestorableContactStateStore, RestorableTargetEmissionStore, noolsPartnerTemplate } = require('./mocks');
+const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate } = require('./mocks');
 const memdownMedic = require('@medic/memdown');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -9,13 +9,12 @@ const rewire = require('rewire');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
-const wireup = rewire('../src/wireup');
+const wireup = rewire('../src/provider-wireup');
 const settingsDoc = require('../../../config/default/app_settings.json');
 const { assert, expect } = chai;
 chai.use(chaiExclude);
 
-const contactStateStore = RestorableContactStateStore();
-const targetEmissionStore = RestorableTargetEmissionStore();
+const rulesStateStore = RestorableRulesStateStore();
 const NOW = 50000;
 
 const reportConnectedByPlace = {
@@ -61,14 +60,13 @@ const fixtures = [
   headlessTask,
 ];
 
-describe('wireup integration tests', () => {
+describe('provider-wireup integration tests', () => {
   let provider;
   let db;
   beforeEach(async () => {
     sinon.useFakeTimers(NOW);
-    sinon.stub(contactStateStore, 'currentUser').returns({ _id: 'mock_user_id' });
-    wireup.__set__('contactStateStore', contactStateStore);
-    wireup.__set__('targetEmissionStore', targetEmissionStore);
+    sinon.stub(rulesStateStore, 'currentUser').returns({ _id: 'mock_user_id' });
+    wireup.__set__('rulesStateStore', rulesStateStore);
     
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
@@ -79,43 +77,41 @@ describe('wireup integration tests', () => {
     provider = pouchdbProvider(db);
   });
   afterEach(() => {
-    contactStateStore.restore();
-    targetEmissionStore.restore();
+    rulesStateStore.restore();
     sinon.restore();
     rulesEmitter.shutdown();
   });
 
-  describe('contactStateChangeCallback', () => {
+  describe('stateChangeCallback', () => {
     it('wireup of contactTaskState to pouch', async () => {
-      sinon.spy(provider, 'contactStateChangeCallback');
+      sinon.spy(provider, 'stateChangeCallback');
 
       const userDoc = {};
       await wireup.initialize(provider, settingsDoc, userDoc);
-      expect(db.put.args[0]).excludingEvery('rulesConfigHash').to.deep.eq([{
-        _id: pouchdbProvider.CONTACT_STATE_DOCID,
-        contactStateStore: {
-          contactStates: {},
+      expect(db.put.args[0]).excludingEvery(['rulesConfigHash', 'targetState']).to.deep.eq([{
+        _id: pouchdbProvider.RULES_STATE_DOCID,
+        rulesStateStore: {
+          contactState: {},
         },
       }]);
 
       await wireup.fetchTasksFor(provider, ['abc']);
-      await provider.contactStateChangeCallback.returnValues[0];
-      expect(db.put.args[db.put.callCount - 1]).excludingEvery('rulesConfigHash').excluding('_rev').to.deep.eq([{
-        _id: pouchdbProvider.CONTACT_STATE_DOCID,
-        contactStateStore: {
-          contactStates: {
+      await provider.stateChangeCallback.returnValues[0];
+      expect(db.put.args[db.put.callCount - 1]).excludingEvery(['rulesConfigHash', 'targetState']).excluding('_rev').to.deep.eq([{
+        _id: pouchdbProvider.RULES_STATE_DOCID,
+        rulesStateStore: {
+          contactState: {
             'abc': {
               calculatedAt: NOW,
             },
           },
         },
       }]);
-      expect(db.put.args[0][0].contactStateStore.rulesConfigHash).to.eq(db.put.args[db.put.callCount - 1][0].contactStateStore.rulesConfigHash);
+      expect(db.put.args[0][0].rulesStateStore.rulesConfigHash).to.eq(db.put.args[db.put.callCount - 1][0].rulesStateStore.rulesConfigHash);
 
       // simulate restarting the app. the database is the same, but the taskFetcher is uninitialized
       rulesEmitter.shutdown();
-      contactStateStore.__set__('state', undefined);
-      targetEmissionStore.__set__('state', undefined);
+      rulesStateStore.__set__('state', undefined);
 
       const putCountBeforeInit = db.put.callCount;
       await wireup.initialize(provider, settingsDoc, userDoc);
@@ -138,33 +134,33 @@ describe('wireup integration tests', () => {
 
   describe('updateEmissionsFor', () => {
     it('empty array', async () => {
-      sinon.stub(contactStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, []);
-      expect(contactStateStore.markDirty.args).to.deep.eq([[[]]]);
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
     });
   
     it('contact id', async () => {
-      sinon.stub(contactStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
-      expect(contactStateStore.markDirty.args).to.deep.eq([[['patient']]]);
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient']]]);
     });
 
     it('patient id', async () => {
-      sinon.stub(contactStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, [chtDocs.contact.patient_id]);
-      expect(contactStateStore.markDirty.args).to.deep.eq([[['patient']]]);
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient']]]);
     });
 
     it('unknown subject id still gets marked (headless scenario)', async () => {
-      sinon.stub(contactStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, 'headless');
-      expect(contactStateStore.markDirty.args).to.deep.eq([[['headless']]]);
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[['headless']]]);
     });
 
     it('many', async () => {
-      sinon.stub(contactStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, ['headless', 'patient', 'patient_id']);
-      expect(contactStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]); // dupes don't matter here
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]); // dupes don't matter here
     });
   });
 
@@ -218,12 +214,12 @@ describe('wireup integration tests', () => {
         userContactId: 'mock_user_id',
       });
 
-      expect(contactStateStore.hasAllContacts()).to.be.true;
+      expect(rulesStateStore.hasAllContacts()).to.be.true;
       await withMockRefresher(() => wireup.fetchTasksFor(provider));
       expect(refreshRulesEmissions.callCount).to.eq(2);
       expect(refreshRulesEmissions.args[1][0]).excludingEvery('_rev').to.deep.eq({});
 
-      contactStateStore.markDirty(['headless']);
+      rulesStateStore.markDirty(['headless']);
       await withMockRefresher(() => wireup.fetchTasksFor(provider));
       expect(refreshRulesEmissions.callCount).to.eq(3);
       expect(refreshRulesEmissions.args[2][0]).excludingEvery('_rev').to.deep.eq({
@@ -251,7 +247,7 @@ describe('wireup integration tests', () => {
       const rules = noolsPartnerTemplate('', { });
       const settings = { tasks: { rules }};
       await wireup.initialize(provider, settings, {});
-      await contactStateStore.markFresh(Date.now(), 'fresh');
+      await rulesStateStore.markFresh(Date.now(), 'fresh');
     
       const actual = await wireup.fetchTasksFor(provider, ['fresh']);
       expect(actual).to.be.empty;
@@ -269,8 +265,8 @@ describe('wireup integration tests', () => {
       const rules = noolsPartnerTemplate('', { });
       const settings = { tasks: { rules }};
       await wireup.initialize(provider, settings, {});
-      await contactStateStore.markAllFresh(Date.now(), ['dirty']);
-      await contactStateStore.markDirty(Date.now(), ['dirty']);
+      await rulesStateStore.markAllFresh(Date.now(), ['dirty']);
+      await rulesStateStore.markDirty(Date.now(), ['dirty']);
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);

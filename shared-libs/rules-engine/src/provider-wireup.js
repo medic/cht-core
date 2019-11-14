@@ -6,8 +6,7 @@
 
 const registrationUtils = require('@medic/registration-utils');
 
-const contactStateStore = require('./contact-state-store');
-const targetEmissionStore = require('./target-emission-store');
+const rulesStateStore = require('./rules-state-store');
 const refreshRulesEmissions = require('./refresh-rules-emissions');
 const updateTemporalStates = require('./update-temporal-states');
 const rulesEmitter = require('./rules-emitter');
@@ -24,17 +23,14 @@ module.exports = {
       return Promise.resolve();
     }
           
-    return Promise.all([provider.existingContactStateStore(), provider.existingTargetEmissionStore()])
-      .then(([existingStateDoc, existingTargetEmissionStore]) => {
+    return provider.existingRulesStateStore()
+      .then(existingStateDoc => {
         if (!rulesEmitter.isLatestNoolsSchema()) {
           throw Error('Rules Engine: Updates to the nools schema are required');
         }
 
-        const contactClosure = updatedState => provider.contactStateChangeCallback(existingStateDoc, { contactStateStore: updatedState });
-        contactStateStore.load(existingStateDoc.contactStateStore, settingsDoc, userDoc, contactClosure);
-
-        const targetClosure = updatedState => provider.targetEmissionChangeCallback(existingTargetEmissionStore, { targetEmissions: updatedState });
-        targetEmissionStore.load(existingTargetEmissionStore.targetEmissions, settingsDoc, targetClosure);
+        const contactClosure = updatedState => provider.stateChangeCallback(existingStateDoc, { rulesStateStore: updatedState });
+        rulesStateStore.load(existingStateDoc.rulesStateStore, settingsDoc, userDoc, contactClosure);
       });
   },
 
@@ -67,6 +63,8 @@ module.exports = {
    * Refreshes the rules emissions for all contacts
    * 
    * @param {DataProvider} provider A data provider
+   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
+   * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
    * @returns {Promise<Object>} The fresh aggregate target doc
    */
   fetchTargets: (provider, targetEmissionFilter) => {
@@ -77,7 +75,7 @@ module.exports = {
     const calculationTimestamp = Date.now();
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
       .then(() => {
-        const targetModels = targetEmissionStore.getTargets(targetEmissionFilter);
+        const targetModels = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
         // provider.commitAggregatedTargets(aggregated, calculationTimestamp);
         return targetModels;
       });
@@ -96,32 +94,25 @@ module.exports = {
       subjectIds = [subjectIds];
     }
 
-    // this function accepts subject ids, but contactStateStore accepts a contact id. attempt to lookup contact by reference
+    // this function accepts subject ids, but rulesStateStore accepts a contact id. attempt to lookup contact by reference
     return provider.contactsBySubjectId(subjectIds)
-      .then(contactIds => contactStateStore.markDirty(contactIds));
+      .then(contactIds => rulesStateStore.markDirty(contactIds));
   },
 };
 
-/**
- * Identifies the contacts whose task docs are not fresh
- * Fetches the needed data to refresh those contacts
- * Makes necessary updates to task documents (or new task documents)
- * Commits those document changes
- * Marks the dirty contacts as fresh (async)
- */
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
-  const refreshAndHandleRulesEmissions = (freshData, contactIds) => (
+  const refreshAndSave = (freshData, updatedContactIds) => (
     refreshRulesEmissions(freshData, calculationTimestamp)
       .then(refreshed => Promise.all([
-        targetEmissionStore.storeTargetEmissions(contactIds, refreshed.targetEmissions),
+        rulesStateStore.storeTargetEmissions(updatedContactIds, refreshed.targetEmissions),
         provider.commitTaskDocs(refreshed.updatedTaskDocs),
       ]))
   );
 
   const refreshForAllContacts = (calculationTimestamp) => (
-    provider.allTaskData(contactStateStore.currentUser())
+    provider.allTaskData(rulesStateStore.currentUser())
       .then(freshData => (
-        refreshAndHandleRulesEmissions(freshData)
+        refreshAndSave(freshData)
           .then(() => {
             const contactIds = freshData.contactDocs.map(doc => doc._id);
 
@@ -133,17 +124,17 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
               .map(doc => registrationUtils.getPatientId(doc))
               .filter(patientId => !subjectIds.has(patientId));
 
-            contactStateStore.markAllFresh(calculationTimestamp, [...contactIds, ...headlessSubjectIds]);
+            rulesStateStore.markAllFresh(calculationTimestamp, [...contactIds, ...headlessSubjectIds]);
           })
       ))
   );
 
   const refreshForKnownContacts = (calculationTimestamp, contactIds) => {
-    const dirtyContactIds = contactIds.filter(contactId => contactStateStore.isDirty(contactId));
-    return provider.taskDataFor(dirtyContactIds, contactStateStore.currentUser())
-      .then(freshData => refreshAndHandleRulesEmissions(freshData, contactIds))
+    const dirtyContactIds = contactIds.filter(contactId => rulesStateStore.isDirty(contactId));
+    return provider.taskDataFor(dirtyContactIds, rulesStateStore.currentUser())
+      .then(freshData => refreshAndSave(freshData, dirtyContactIds))
       .then(() => {
-        contactStateStore.markFresh(calculationTimestamp, dirtyContactIds);
+        rulesStateStore.markFresh(calculationTimestamp, dirtyContactIds);
       });
   };
 
@@ -152,10 +143,10 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   }
 
   // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in reports/tasks)
-  if (!contactStateStore.hasAllContacts()) {
+  if (!rulesStateStore.hasAllContacts()) {
     return refreshForAllContacts(calculationTimestamp);
   }
 
   // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-  return refreshForKnownContacts(calculationTimestamp, contactStateStore.getContactIds());
+  return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
 };

@@ -4,11 +4,10 @@
  * Business logic for interacting with rules documents
  */
 
-const contactStateStore = require('./contact-state-store');
 const pouchdbProvider = require('./pouchdb-provider');
-const targetEmissionStore = require('./target-emission-store');
 const rulesEmitter = require('./rules-emitter');
-const wireupToProvider = require('./wireup');
+const rulesStateStore = require('./rules-state-store');
+const wireupToProvider = require('./provider-wireup');
 
 module.exports = {
   /**
@@ -42,11 +41,13 @@ module.exports = {
    * Refreshes all rules documents and returns the latest target document
    * 
    * @param {Object} db Medic pouchdb database
+   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
+   * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
    * @returns {Promise<Object} All of the fresh targets
    */
-  fetchTargets: (db) => {
+  fetchTargets: (db, targetEmissionFilter) => {
     const provider = pouchdbProvider(db);
-    return wireupToProvider.fetchTargets(provider);
+    return wireupToProvider.fetchTargets(provider, targetEmissionFilter);
   },
 
   /**
@@ -71,9 +72,8 @@ module.exports = {
    * @param {Object} salt=1 Salt to add into the configuration hash. Changing this value invalidates the cache.
    */
   rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
-    const cacheIsReset = contactStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
+    const cacheIsReset = rulesStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
     if (cacheIsReset) {
-      targetEmissionStore.reset(settingsDoc);
       rulesEmitter.shutdown();
     }
   },

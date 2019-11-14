@@ -1,5 +1,6 @@
 'use strict';
 
+const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
@@ -8,6 +9,7 @@ const MAX_LINEAGE_DEPTH = 50;
 angular.module('inboxServices').factory('RulesEngine', function(
   $translate,
   Auth,
+  CalendarInterval,
   Changes,
   ContactTypes,
   DB,
@@ -15,9 +17,12 @@ angular.module('inboxServices').factory('RulesEngine', function(
   Session,
   Settings,
   TranslateFrom,
+  UHCSettings,
   UserContact
 ) {
   'ngInject';
+
+  let uhcMonthStartDate;
 
   const initialize = () => (
     Auth.any([['can_view_tasks'], ['can_view_analytics']]).then(() => true).catch(() => false)
@@ -32,6 +37,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
+                  assignMonthStartDate(settingsDoc);
                   monitorChanges(settingsDoc, userContactDoc);
                 }
 
@@ -64,7 +70,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
       callback: change => {
         if (change.id === 'settings') {
           settingsDoc = change.doc;
-          RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);  
+          RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);
+          assignMonthStartDate(settingsDoc);
         } else {
           return UserContact()
             .then(updatedUser => {
@@ -97,6 +104,10 @@ angular.module('inboxServices').factory('RulesEngine', function(
     return taskDocs;
   };
 
+  const assignMonthStartDate = settingsDoc => {
+    uhcMonthStartDate = UHCSettings.getMonthStartDate(settingsDoc);
+  };
+
   return {
     isEnabled: () => initialized,
 
@@ -114,7 +125,15 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
     fetchTargets: () => (
       initialized
-        .then(() => RulesEngineCore.fetchTargets(DB()))
+        .then(() => {
+          const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
+          const filterForTargetEmissions = emission => {
+            const emissionDate = moment(emission.date);	
+            return emissionDate.isAfter(relevantInterval.start) && emissionDate.isBefore(relevantInterval.end);
+          };
+
+          return RulesEngineCore.fetchTargets(DB(), filterForTargetEmissions);
+        })
     ),
 
     // testing only - allows karma to test initialization logic
