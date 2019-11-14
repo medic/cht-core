@@ -541,7 +541,6 @@ module.exports = function(grunt) {
         cmd: function() {
           const modulesToPatch = [
             'bootstrap-daterangepicker',
-            // 'enketo-core',
             'font-awesome',
             'moment',
           ];
@@ -618,13 +617,6 @@ module.exports = function(grunt) {
 
             // patch moment.js to use western arabic (european) numerals in Hindi
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
-
-            // patch enketo to always mark the /inputs group as relevant
-            // 'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
-
-            // patch enketo so forms with no active pages are considered valid
-            // https://github.com/medic/medic/issues/5484
-            // 'patch webapp/node_modules/enketo-core/src/js/page.js < webapp/patches/enketo-handle-no-active-pages.patch',
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
