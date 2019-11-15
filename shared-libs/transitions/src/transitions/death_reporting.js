@@ -39,7 +39,7 @@ module.exports = {
   init: () => {
     const forms = getConfirmFormCodes();
     if (!forms || !_.isArray(forms) || !forms.length) {
-      throw new Error(`Configuration error. Config must define have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`);
+      throw new Error(`Configuration error. Config must have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`);
     }
   },
   filter: (doc, info = {}) => {

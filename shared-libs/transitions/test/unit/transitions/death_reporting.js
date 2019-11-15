@@ -31,7 +31,7 @@ describe('death_reporting', () => {
       });
 
       const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
-      const get = sinon.stub(db.medic, 'get').resolves(patient);
+      const get = sinon.stub(db.medic, 'get').withArgs(patient._id).resolves(patient);
       return transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         get.callCount.should.equal(1);
@@ -63,7 +63,7 @@ describe('death_reporting', () => {
         date_field: 'death.date',
       });
       const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
-      sinon.stub(db.medic, 'get').resolves(patient);
+      sinon.stub(db.medic, 'get').withArgs(patient._id).resolves(patient);
       return transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         db.medic.get.callCount.should.equal(1);
@@ -96,7 +96,7 @@ describe('death_reporting', () => {
         date_field: 'death.date',
       });
       const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
-      sinon.stub(db.medic, 'get').resolves(patient);
+      sinon.stub(db.medic, 'get').withArgs(patient._id).resolves(patient);
       return transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         db.medic.get.callCount.should.equal(1);
@@ -132,7 +132,7 @@ describe('death_reporting', () => {
         date_field: 'fields.death.date',
       });
       const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
-      sinon.stub(db.medic, 'get').resolves(patient);
+      sinon.stub(db.medic, 'get').withArgs(patient._id).resolves(patient);
       return transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         saveDoc.callCount.should.equal(1);
@@ -159,7 +159,7 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo'],
       });
       const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
-      sinon.stub(db.medic, 'get').resolves(patient);
+      sinon.stub(db.medic, 'get').withArgs(patient._id).resolves(patient);
       return transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         saveDoc.callCount.should.equal(1);
@@ -182,7 +182,7 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo'],
       });
       const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
-      sinon.stub(db.medic, 'get').resolves(patient);
+      sinon.stub(db.medic, 'get').withArgs(patient._id).resolves(patient);
       return transition.onMatch(change).then(changed => {
         changed.should.equal(false);
         saveDoc.callCount.should.equal(0);

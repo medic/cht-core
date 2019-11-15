@@ -947,10 +947,9 @@ describe('transitions', () => {
       .then(() => sentinelUtils.getInfoDoc(docId))
       .then(info => {
         expectTransitions(info, 'update_clinics', 'registration', 'death_reporting');
-        // all transitions executed in the same "pass" in API
-        chai.expect(info.transitions.death_reporting.rev).to.equal(info.transitions.registration.rev);
-        chai.expect(info.transitions.update_clinics.rev).to.equal(info.transitions.registration.rev);
-        chai.expect(info.transitions.update_clinics.rev).to.equal(undefined);
+        chai.expect(info.transitions.death_reporting.seq).not.to.equal(info.transitions.registration.seq);
+        chai.expect(info.transitions.update_clinics.seq).to.equal(info.transitions.registration.seq);
+        chai.expect(info.transitions.update_clinics.seq).to.equal(null);
       })
       .then(() => utils.getDoc(docId))
       .then(updated => {
