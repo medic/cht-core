@@ -196,9 +196,9 @@ describe('Settings API', () => {
         },
         permissions: {
           can_export_messages: [
-            "national_admin",
-            "e2e_test",
-            "non_existent_role"
+            'national_admin',
+            'e2e_test',
+            'non_existent_role'
           ]
         }
       };
@@ -211,12 +211,12 @@ describe('Settings API', () => {
         .then(() => {
           settings.roles.non_existent_role = {
             name: 'usertype.non_existent_role'
-          }
+          };
           return update(settings);
         })
         .then(response => {
           expect(response).toEqual({ success: true });
-        })
+        });
     });
 
   });
