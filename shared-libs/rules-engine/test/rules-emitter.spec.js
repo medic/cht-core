@@ -88,7 +88,7 @@ describe('rules-emitter', () => {
     };
     const initialized = rulesEmitter.initialize(settingsDoc, {});
     expect(initialized).to.be.true;
-  
+ 
     const actual = await rulesEmitter.getEmissionsFor([contact], [], [taskDoc]);
     expect(actual.tasks).to.have.property('length', 1);
     expect(actual.tasks[0].data).to.deep.eq([taskDoc]);

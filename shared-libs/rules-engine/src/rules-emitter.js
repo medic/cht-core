@@ -58,7 +58,7 @@ module.exports = {
   /**
    * When upgrading to version 3.8, partners are required to make schema changes in their partner code
    * TODO: Add link to documentation
-   * 
+   *
    * @returns True if the schema changes are in place
    */
   isLatestNoolsSchema: () => {

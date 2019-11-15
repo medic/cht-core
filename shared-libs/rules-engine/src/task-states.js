@@ -78,12 +78,12 @@ module.exports = {
     }
 
     // invalid data yields falsey
-    if (!taskEmission.date && !taskEmission.dueDate) {
+    if (!taskEmission.date && !Number.isInteger(taskEmission.dueDate)) {
       return false;
     }
 
     const { startTime, endTime } = getDisplayWindow(taskEmission);
-    if (!startTime || !endTime || startTime > endTime || endTime < startTime) {
+    if (!Number.isInteger(startTime) || !Number.isInteger(endTime) || startTime > endTime || endTime < startTime) {
       return false;
     }
 

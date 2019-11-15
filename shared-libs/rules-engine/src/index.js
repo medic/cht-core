@@ -39,7 +39,7 @@ module.exports = {
 
   /**
    * Refreshes all rules documents and returns the latest target document
-   * 
+   *
    * @param {Object} db Medic pouchdb database
    * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
    * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
@@ -52,10 +52,10 @@ module.exports = {
 
   /**
    * Indicate that the task documents associated with a given subjectId are dirty.
-   * 
+   *
    * @param {Object} db Medic pouchdb database
    * @param {string[]} subjectIds An array of subject ids
-   * 
+   *
    * @returns {Promise} To mark the subjectIds as dirty
    */
   updateEmissionsFor: (db, subjectIds) => {

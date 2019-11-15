@@ -9,7 +9,7 @@ const refreshRulesEmissionsContact = rewire('../src/refresh-rules-emissions');
 
 describe('refresh-rules-emissions', () => {
   describe('with mock emitter', () => {
-    const NOW = 1000000;
+    const NOW = 100000;
     let rulesEmitter;
 
     beforeEach(() => {

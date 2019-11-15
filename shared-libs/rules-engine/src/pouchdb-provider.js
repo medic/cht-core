@@ -47,7 +47,7 @@ const medicPouchProvider = db => {
       if (!taskDocs || taskDocs.length === 0) {
         return Promise.resolve([]);
       }
-    
+   
       console.debug(`Committing ${taskDocs.length} task document updates`);
       return db.bulkDocs(taskDocs)
         .catch(err => console.error('Error committing task documents', err));
@@ -73,7 +73,7 @@ const medicPouchProvider = db => {
             registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
             return agg;
           }, new Set(contactIds));
-          
+         
           const keys = Array.from(subjectIds).map(key => [key]);
           return Promise.all([
               docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),

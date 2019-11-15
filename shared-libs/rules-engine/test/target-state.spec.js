@@ -27,7 +27,7 @@ describe('target-state', () => {
 
   it('add and update a single emission', () => {
     let state = targetState.empty(mockSettingsDoc());
-    
+   
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
@@ -41,7 +41,7 @@ describe('target-state', () => {
       value: { pass: 0, total: 1 },
     }]);
   });
-  
+ 
   it('emission for unknown target id is ignored', () => {
     let state = targetState.empty(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ type: 'foo' })]);
@@ -80,7 +80,7 @@ describe('target-state', () => {
     let state = targetState.empty(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
     targetState.storeTargetEmissions(state, ['b'], [mockEmission({ pass: false, contact: { _id: 'b', reported_date: 2 } })]);
-    
+   
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
       value: { pass: 0, total: 1 },
@@ -97,7 +97,7 @@ describe('target-state', () => {
     let state = targetState.empty(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a', 'b'], [mockEmission({ pass: false, contact: { _id: 'b', reported_date: 2 } }), mockEmission({ contact: { _id: 'a', reported_date: 1 } })]);
     targetState.storeTargetEmissions(state, ['c'], [mockEmission({ contact: { _id: 'c', reported_date: 3 } })]);
-    
+   
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
       value: { pass: 1, total: 1 },
@@ -113,10 +113,10 @@ describe('target-state', () => {
   it('two contacts add and remove emission', () => {
     const settingsDoc = mockSettingsDoc();
     settingsDoc.tasks.targets.items[0].type = 'percent';
-    
+   
     let state = targetState.empty(settingsDoc);
     targetState.storeTargetEmissions(state, [], [mockEmission({ pass: false }), mockEmission({ pass: true, _id: 'other' }), mockEmission({ pass: true, contact: { _id: 'b', reported_date: 2 } })]);
-    
+   
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
       type: 'percent',
@@ -146,7 +146,7 @@ describe('target-state', () => {
       mockEmission({ pass: true, date: 2000, _id: 'other' }),
       mockEmission({ pass: true, date: 3000, _id: 'another' })
     ]);
-    
+   
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
       value: { pass: 2, total: 3 },

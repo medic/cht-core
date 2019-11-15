@@ -18,6 +18,7 @@ chai.use(chaiExclude);
 let db;
 const userDoc = { _id: 'user' };
 
+const THE_FUTURE = 1500000000000;
 const patientContact = {
   _id: 'patient',
   name: 'chw',
@@ -42,10 +43,10 @@ const pregnancyRegistrationReport = {
   type: 'data_record',
   form: 'pregnancy',
   fields: {
-    lmp_date_8601: 1000,
+    lmp_date_8601: THE_FUTURE,
     patient_id: patientContact._id,
   },
-  reported_date: 1,
+  reported_date: THE_FUTURE,
 };
 
 const reportByPatientIdOnly = {
@@ -70,7 +71,6 @@ const expectedQueriesForFreshData = [
   'medic-client/tasks',
 ];
 
-const THE_FUTURE = Date.now();
 const fetchTasks = async (db, targetEmissionFilter) => {
   const targets = await RulesEngine.fetchTargets(db, targetEmissionFilter);
   return targets.reduce((agg, target) => {
@@ -97,7 +97,7 @@ describe('Rules Engine Integration Tests', () => {
     library is created. In this case, that is the time of RulesEngine.initialize or RulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
     */
     sinon.useFakeTimers(THE_FUTURE);
-    
+   
     settingsDoc.tasks.rules += ' '; // bust cache with fresh rules
     await RulesEngine.rulesConfigChange(settingsDoc, userDoc);
     await rulesEmitter.initialize(settingsDoc, userDoc);
@@ -401,7 +401,7 @@ describe('Rules Engine Integration Tests', () => {
 
   it('targets for two pregnancy registrations', async () => {
     const patientContact2 = Object.assign({}, patientContact, { _id: 'patient2', patient_id: 'patient_id2', });
-    const pregnancyRegistrationReport2 = Object.assign({}, pregnancyRegistrationReport, { _id: 'pregReg2', fields: { lmp_date_8601: 2000, patient_id: patientContact2.patient_id }, reported_date: 2000 });
+    const pregnancyRegistrationReport2 = Object.assign({}, pregnancyRegistrationReport, { _id: 'pregReg2', fields: { lmp_date_8601: THE_FUTURE, patient_id: patientContact2.patient_id }, reported_date: THE_FUTURE+1 });
     await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
 
     sinon.spy(db, 'bulkDocs');
@@ -419,7 +419,7 @@ describe('Rules Engine Integration Tests', () => {
 
     const filter = emission => {
       var emissionDate = moment(emission.date);
-      return emissionDate.isAfter(0) && emissionDate.isBefore(1000); // based on report.reported_date
+      return emissionDate.valueOf() === THE_FUTURE; // based on report.reported_date
     };
     const filteredTargets = await fetchTasks(db, filter);
     expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);

@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha test/*.spec.js test/**/*.spec.js"
+    "test": "TZ=Canada/Pacific npm run unit && TZ=Africa/Monrovia npm run unit && TZ=Pacific/Auckland npm run unit",
+    "unit": "mocha test/*.spec.js test/**/*.spec.js"
   },
   "repository": {
     "type": "git",

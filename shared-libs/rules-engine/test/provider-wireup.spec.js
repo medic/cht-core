@@ -67,7 +67,7 @@ describe('provider-wireup integration tests', () => {
     sinon.useFakeTimers(NOW);
     sinon.stub(rulesStateStore, 'currentUser').returns({ _id: 'mock_user_id' });
     wireup.__set__('rulesStateStore', rulesStateStore);
-    
+   
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
@@ -138,7 +138,7 @@ describe('provider-wireup integration tests', () => {
       await wireup.updateEmissionsFor(provider, []);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
     });
-  
+ 
     it('contact id', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
@@ -171,7 +171,7 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       sinon.spy(db, 'bulkDocs');
       await wireup.initialize(provider, settings, {});
-    
+   
       const refreshRulesEmissions = sinon.stub().resolves({
         targetEmissions: [],
         taskTransforms: [],
@@ -198,13 +198,13 @@ describe('provider-wireup integration tests', () => {
       const rules = noolsPartnerTemplate('', { });
       const settings = { tasks: { rules }};
       await wireup.initialize(provider, settings, {});
-    
+   
       const refreshRulesEmissions = sinon.stub().resolves({
         targetEmissions: [],
         taskTransforms: [],
       });
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
-    
+   
       await withMockRefresher(() => wireup.fetchTasksFor(provider));
       expect(refreshRulesEmissions.callCount).to.eq(1);
       expect(refreshRulesEmissions.args[0][0]).excludingEvery('_rev').to.deep.eq({
@@ -248,7 +248,7 @@ describe('provider-wireup integration tests', () => {
       const settings = { tasks: { rules }};
       await wireup.initialize(provider, settings, {});
       await rulesStateStore.markFresh(Date.now(), 'fresh');
-    
+   
       const actual = await wireup.fetchTasksFor(provider, ['fresh']);
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);

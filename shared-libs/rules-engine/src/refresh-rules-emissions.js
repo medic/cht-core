@@ -53,7 +53,7 @@ const calculateFreshTaskDocs = (freshData, calculationTimestamp) => {
           const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
           return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
         });
-      
+     
       return {
         targetEmissions: emissions.targets || [],
         taskTransforms,

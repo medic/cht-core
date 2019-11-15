@@ -1,6 +1,6 @@
 /**
  * @module target-state
- * 
+ *
  * Stores raw target-emissions in a minified, efficient, ordered (deterministic) structure
  * Allows for automatic deletion of "cancelled" target emissions
  * Aggregates target emissions into targets
@@ -9,7 +9,7 @@
 module.exports = {
   /**
    * Builds an empty target-state.
-   * 
+   *
    * @param {Object} settingsDoc Settings document
    */
   empty: (settingsDoc) => {

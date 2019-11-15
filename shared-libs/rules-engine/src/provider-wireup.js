@@ -22,7 +22,7 @@ module.exports = {
     if (!isEnabled) {
       return Promise.resolve();
     }
-          
+         
     return provider.existingRulesStateStore()
       .then(existingStateDoc => {
         if (!rulesEmitter.isLatestNoolsSchema()) {
@@ -61,7 +61,7 @@ module.exports = {
 
   /**
    * Refreshes the rules emissions for all contacts
-   * 
+   *
    * @param {DataProvider} provider A data provider
    * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
    * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
@@ -83,10 +83,10 @@ module.exports = {
 
   /**
    * Indicate that the rules emissions associated with a given subjectId are dirty
-   * 
+   *
    * @param {DataProvider} provider A data provider
    * @param {string[]} subjectIds An array of subject ids
-   * 
+   *
    * @returns {Promise} To complete the transaction marking the subjectIds as dirty
    */
   updateEmissionsFor: (provider, subjectIds) => {

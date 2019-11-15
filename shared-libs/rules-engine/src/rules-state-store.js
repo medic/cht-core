@@ -159,12 +159,12 @@ const self = {
 
   /**
    * The rules system supports the concept of "headless" reports and "headless" task documents. In these scenarios, a report exists on a user's device while the associated
-   * contact document of that report is not on the device. A common scenario associated with this case is during supervisor workflows where supervisors sync reports with the 
+   * contact document of that report is not on the device. A common scenario associated with this case is during supervisor workflows where supervisors sync reports with the
    * needs_signoff attribute but not the associated patient.
-   * 
-   * In these cases, getting a list of "all the contacts with rules" requires us to look not just through contact docs, but also through reports. To avoid this costly operation, 
+   *
+   * In these cases, getting a list of "all the contacts with rules" requires us to look not just through contact docs, but also through reports. To avoid this costly operation,
    * the rules-state-store maintains a flag which indicates if the contact ids in the store can serve as a trustworthy authority.
-   * 
+   *
    * markAllFresh should be called when the list of contact ids within the store is the complete set of contacts with rules
    */
   markAllFresh: (calculatedAt, contactIds) => {
@@ -184,7 +184,7 @@ const self = {
 
   /**
    * Store a set of target emissions which were emitted by refreshing a set of contacts
-   * 
+   *
    * @param {string[]} contactIds An array of contact ids which produced these targetEmissions by being refreshed. If undefined, all contacts are updated.
    * @param {Object[]} targetEmissions An array of target emissions (the result of the rules-emitter).
    */
@@ -197,10 +197,10 @@ const self = {
 
   /**
    * Aggregates the stored target emissions into target models
-   * 
+   *
    * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
    * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
-   * 
+   *
    * @returns {Object[]} result
    * @returns {string} result[n].* All attributes of the target as defined in the settings doc
    * @returns {Integer} result[n].total The total number of unique target emission ids matching instanceFilter
