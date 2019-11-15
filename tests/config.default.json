@@ -132,7 +132,7 @@
   },
   "uhc": {
     "month_start_date": 1,
-    "contacts_default_sort": "",
+    "contacts_default_sort": "alpha",
     "visit_count": {
       "visit_count_goal": 0
     }
