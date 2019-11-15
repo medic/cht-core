@@ -796,7 +796,7 @@ describe('Lineage', function() {
     });
 
     it('should not recurse more than needed', () => {
-      const copy = (doc) => JSON.parse(JSON.stringify(doc));
+      const copy = (doc) => cloneDeep(doc);
       return Promise
         .all([
           lineage.hydrateDocs([circular_report]),
@@ -804,6 +804,7 @@ describe('Lineage', function() {
         ])
         .then(results => {
           expect(results[0][0]).to.deep.equal(results[1][0]);
+          expect(results[0][0]).to.deep.equal(results[1][1]);
         });
     });
 
