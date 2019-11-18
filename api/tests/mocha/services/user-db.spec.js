@@ -36,12 +36,15 @@ describe('User DB service', () => {
   describe('create', () => {
 
     it('does nothing if the db already exists', () => {
-      sinon.stub(db, 'exists').resolves(true);
-      return service.create('gareth');
+      const userDb = { close: sinon.stub() };
+      sinon.stub(db, 'exists').resolves(userDb);
+      return service.create('gareth').then(() => {
+        chai.expect(userDb.close.callCount).to.equal(1);
+      });
     });
 
     it('creates the db if it does not exist', () => {
-      const userDb = { put: function() {} };
+      const userDb = { put: function() {}, close: sinon.stub() };
       const create = sinon.stub(db, 'exists').resolves(false);
       const get = sinon.stub(db, 'get').returns(userDb);
       const dbPut = sinon.stub(userDb, 'put').resolves();
@@ -65,6 +68,7 @@ describe('User DB service', () => {
         chai.expect(ddoc._id).to.equal('_design/medic-user');
         chai.expect(ddoc.views.read.map).to.equal('function (doc) {\n  var parts = doc._id.split(\':\');\n  if (parts[0] === \'read\') {\n    emit(parts[1]);\n  }\n}');
         chai.expect(ddoc.views.read.reduce).to.equal('_count');
+        chai.expect(userDb.close.callCount).to.equal(1);
       });
     });
   });

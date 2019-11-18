@@ -146,11 +146,12 @@ const info = (roles) => {
   return getPurgeDb(roles)
     .then(db => purgeDb = db)
     .then(() => purgeDb.info())
+    .catch(err => catchDbNotFoundError(err, purgeDb))
+    // finally would be nice but it doesn't work in node 8 :(
     .then(info => {
       purgeDb && purgeDb.close();
-      return info;
-    })
-    .catch(err => catchDbNotFoundError(err, purgeDb));
+      return info || false; // fetch needs valid JSON.
+    });
 };
 
 const listen = (seq = 'now') => {

@@ -25,6 +25,7 @@ if (UNIT_TEST_ENV) {
     'getAttachment',
     'changes',
     'info',
+    'close'
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',
@@ -75,9 +76,9 @@ if (UNIT_TEST_ENV) {
     const db = new PouchDB(getDbUrl(name), { skip_setup: true });
     return db.info()
       .then(result => {
-        // In at least PouchDB 7.0.0, info() on a non-existant db doesn't throw,
+        // In at least PouchDB 7.0.0, info() on a non-existent db doesn't throw,
         // instead it returns the error structure
-        return  !result.error ? result : false;
+        return  !result.error ? db : false;
       })
       .catch(() => false);
   };

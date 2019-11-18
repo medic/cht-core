@@ -39,7 +39,8 @@ describe('separate-audit-db migration', () => {
 
     const auditDb = {
       get: () => {},
-      put: () => {}
+      put: () => {},
+      close: sinon.stub(),
     };
 
     const wrappedDbDbCreate = sinon.stub(db, 'get').returns(auditDb);
@@ -78,6 +79,7 @@ describe('separate-audit-db migration', () => {
       chai.expect(wrappedMedicAllDocs.callCount).to.equal(1);
 
       chai.expect(wrappedMedicBulk.callCount).to.equal(1);
+      chai.expect(auditDb.close.callCount).to.equal(1);
     });
 
     setTimeout(() => {

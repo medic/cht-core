@@ -219,6 +219,7 @@ describe('transitions', () => {
           { key: 'read:report:abc', error: 'notfound' }
         ]
       }),
+      close: sinon.stub(),
     };
     sinon.stub(db, 'allDbs').resolves([`${db.medicDbName}-user-gareth-meta`]);
     sinon.stub(db, 'get').returns(metaDb);
@@ -231,6 +232,7 @@ describe('transitions', () => {
         assert.equal(metaDb.allDocs.callCount, 1);
         assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
         assert.equal(metaDb.remove.callCount, 0);
+        assert.equal(metaDb.close.callCount, 1);
       });
   });
 
@@ -244,7 +246,8 @@ describe('transitions', () => {
           { key: 'read:report:abc', id: 'read:report:abc', value: { rev: '1-rev' } }
         ]
       }),
-      remove: sinon.stub().resolves()
+      remove: sinon.stub().resolves(),
+      close: sinon.stub(),
     };
     const list = sinon.stub(db, 'allDbs').resolves([
       `${db.medicDbName}-user-gareth-meta`,
@@ -267,6 +270,7 @@ describe('transitions', () => {
       assert.equal(metaDb.remove.callCount, 2);
       assert.deepEqual(metaDb.remove.args[0], ['read:report:abc', '1-rev']);
       assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
+      assert.equal(metaDb.close.callCount, 2);
     });
   });
 

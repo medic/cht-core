@@ -83,12 +83,14 @@ module.exports = {
           return;
         }
 
+        metaDb = db.get(dbName);
         return metaDb
           .put(ddoc)
           .then(() => {
             metaDb.close();
             return module.exports.setSecurity(dbName, username);
           })
+          // finally would be nice but it doesn't work in node 8 :(
           .catch(err => {
             metaDb.close();
             throw err;
