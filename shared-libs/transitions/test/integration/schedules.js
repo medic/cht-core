@@ -1,10 +1,12 @@
-const transition = require('../../src/transitions/registration'),
-      schedules = require('../../src/lib/schedules'),
-      sinon = require('sinon'),
-      assert = require('chai').assert,
-      moment = require('moment'),
-      utils = require('../../src/lib/utils'),
-      contact = {
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const moment = require('moment');
+const utils = require('../../src/lib/utils');
+const transition = require('../../src/transitions/registration');
+const schedules = require('../../src/lib/schedules');
+const config = require('../../src/config');
+
+const contact = {
         phone: '+1234',
         name: 'Julie',
         parent: {
@@ -37,8 +39,7 @@ describe('functional schedules', () => {
   afterEach(() => sinon.restore());
 
   it('registration sets up schedule', () => {
-
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [
         {
@@ -59,7 +60,7 @@ describe('functional schedules', () => {
         }
       ]
     }]);
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -111,7 +112,7 @@ describe('functional schedules', () => {
 
   it('registration sets up schedule using translation_key', () => {
 
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').withArgs('registrations').returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -137,8 +138,7 @@ describe('functional schedules', () => {
         recipient: 'reporting_unit'
       }]
     });
-    sinon.stub(utils, 'getPatientContact').callsArgWith(1, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(utils, 'translate')
       .withArgs('thanks', 'en').returns('thanks {{contact.name}}')
       .withArgs('facial.hair', 'en').returns('Mustaches.  Overrated or underrated?');
@@ -170,8 +170,7 @@ describe('functional schedules', () => {
   });
 
   it('registration sets up schedule using bool_expr', () => {
-
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [
         {
@@ -192,8 +191,7 @@ describe('functional schedules', () => {
         }
       ]
     }]);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(1, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -244,7 +242,7 @@ describe('functional schedules', () => {
   });
 
   it('patients chp is resolved correctly as recipient', () => {
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [],
       validations: [],
@@ -254,8 +252,8 @@ describe('functional schedules', () => {
       }]
     }]);
     sinon.stub(schedules, 'getScheduleConfig').returns({});
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('Thanks');
 
     const doc = {
@@ -281,7 +279,7 @@ describe('functional schedules', () => {
 
   it('two phase registration sets up schedule using bool_expr', () => {
 
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [
         {
@@ -302,7 +300,7 @@ describe('functional schedules', () => {
         }
       ]
     }]);
-    const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { fields: { patient_name: 'barry' } } ]);
+    const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([ { fields: { patient_name: 'barry' } } ]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -321,7 +319,7 @@ describe('functional schedules', () => {
       ]
     });
 
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -362,7 +360,7 @@ describe('functional schedules', () => {
 
   it('no schedule using false bool_expr', () => {
 
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [
         {
@@ -383,8 +381,7 @@ describe('functional schedules', () => {
         }
       ]
     }]);
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(1, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -424,7 +421,7 @@ describe('functional schedules', () => {
   });
 
   it('sets correct task state when patient is muted', () => {
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -441,7 +438,7 @@ describe('functional schedules', () => {
         recipient: 'reporting_unit'
       }]
     }]);
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -467,8 +464,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(utils, 'getPatientContact').callsArgWith(1, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, 'uuid');
+    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
 
     return transition.onMatch({ doc: doc })
       .then(complete => {
@@ -482,7 +478,7 @@ describe('functional schedules', () => {
   });
 
   it('sets correct task state when patient is not muted', () => {
-    sinon.stub(transition, 'getConfig').returns([{
+    sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -499,7 +495,7 @@ describe('functional schedules', () => {
         recipient: 'reporting_unit'
       }]
     }]);
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -525,8 +521,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(utils, 'getPatientContact').callsArgWith(1, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, 'uuid');
+    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
 
     return transition.onMatch({ doc: doc })
       .then(complete => {

@@ -41,18 +41,15 @@ module.exports = {
   addRegistrationNotFoundError: (doc, reportConfig) => {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');
   },
-  isIdUnique: (id, callback) => {
-    db.medic.query('medic-client/contacts_by_reference', {
-      key: [ 'shortcode', id ]
-    }, (err, results) => {
-      callback(err, !(results && results.rows && results.rows.length));
-    });
+  isIdUnique: (id) => {
+    return db.medic
+      .query('medic-client/contacts_by_reference', { key: [ 'shortcode', id ]})
+      .then(results => !(results && results.rows && results.rows.length));
   },
-  addUniqueId: (doc, callback) => {
-    idGenerator.next().value.then(patientId => {
+  addUniqueId: (doc) => {
+    return idGenerator.next().value.then(patientId => {
       doc.patient_id = patientId;
-      callback();
-    }).catch(callback);
+    });
   },
   hasRun: (doc, transition) => {
     return !!(doc.transitions && doc.transitions[transition]);
