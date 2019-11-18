@@ -282,9 +282,15 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.isMobile = function() {
-      return $('#mobile-detection').css('display') === 'inline';
-    };
+    $scope.$on('HideContent', function() {
+      $timeout(function() {
+        if (ctrl.cancelCallback) {
+          $scope.navigationCancel();
+        } else {
+          ctrl.navigateBack();
+        }
+      });
+    });
 
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {

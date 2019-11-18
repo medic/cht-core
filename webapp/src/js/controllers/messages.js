@@ -1,4 +1,5 @@
-var _ = require('underscore');
+const _ = require('underscore');
+const responsive = require('../modules/responsive');
 
 angular
   .module('inboxControllers')
@@ -88,7 +89,7 @@ angular
         if (
           !$state.params.id &&
           ctrl.messages.length &&
-          !$scope.isMobile() &&
+          !responsive.isMobile() &&
           $state.is('messages.detail')
         ) {
           $timeout(function() {

@@ -1,4 +1,5 @@
 const moment = require('moment');
+const responsive = require('../modules/responsive');
 
 angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
@@ -108,7 +109,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         return selectContact($stateParams.id);
       }
       ctrl.unsetSelected();
-      if ($scope.isMobile()) {
+      if (responsive.isMobile()) {
         return;
       }
       if (id) {

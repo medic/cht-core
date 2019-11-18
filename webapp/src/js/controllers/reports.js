@@ -1,5 +1,6 @@
-const _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+const _ = require('underscore');
+const responsive = require('../modules/responsive');
+const scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
 
@@ -186,7 +187,7 @@ angular
         ctrl.error = false;
         ctrl.errorSyntax = false;
         ctrl.loading = true;
-        if (ctrl.selectedReports.length && $scope.isMobile()) {
+        if (ctrl.selectedReports.length && responsive.isMobile()) {
           ctrl.unsetSelected();
         }
       }
@@ -207,7 +208,7 @@ angular
           ctrl.errorSyntax = false;
           if (
             !$state.params.id &&
-            !$scope.isMobile() &&
+            !responsive.isMobile() &&
             !ctrl.selectedReports &&
             !ctrl.selectMode &&
             $state.is('reports.detail')
@@ -244,7 +245,7 @@ angular
         $state.go('reports.detail', { id: null }, { notify: false });
         ctrl.clearSelection();
       }
-      if ($scope.isMobile() && ctrl.showContent) {
+      if (responsive.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }
