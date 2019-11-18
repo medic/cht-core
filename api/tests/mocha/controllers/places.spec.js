@@ -65,7 +65,7 @@ describe('places controller', () => {
       name: 'St. Paul',
       parent: 'x'
     };
-    sinon.stub(config, 'get').withArgs().returns({ contact_types: contactTypes });
+    sinon.stub(config, 'get').returns({ contact_types: contactTypes });
   });
 
   afterEach(() => {

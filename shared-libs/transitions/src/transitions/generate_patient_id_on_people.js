@@ -2,6 +2,7 @@ const config = require('../config');
 const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
+// As of 3.8.0, generates a shortcode for every configured contact type.
 module.exports = {
   filter: doc => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
@@ -10,11 +11,11 @@ module.exports = {
     }
 
     if (contactTypeUtils.isPersonType(contactType) && doc.patient_id) {
-      return;
+      return; // person type that already had patient_id
     }
 
     if (contactTypeUtils.isPlaceType(contactType) && doc.place_id) {
-      return;
+      return; // contact type that already has place_id
     }
 
     return true;

@@ -126,9 +126,7 @@ const getContact = (shortCodeId, includeDocs) => {
     }
 
     if (results.rows.length > 1) {
-      logger.warn(
-        `More than one contact document for shortcode ${shortCodeId}`
-      );
+      logger.warn(`More than one contact document for shortcode ${shortCodeId}`);
     }
 
     const contact = results.rows[0];

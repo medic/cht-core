@@ -59,7 +59,7 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      const getPatientContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
+      const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       const view = sinon.stub(db.medic, 'query').resolves({
         rows: [
@@ -89,7 +89,7 @@ describe('registration', () => {
       });
 
       return transition.onMatch(change).then(() => {
-        getPatientContactUuid.callCount.should.equal(1);
+        getContactUuid.callCount.should.equal(1);
         view.callCount.should.equal(1);
         view.args[0][0].should.equal('medic-client/contacts_by_phone');
         view.args[0][1].key.should.equal(senderPhoneNumber);

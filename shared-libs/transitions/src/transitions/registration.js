@@ -27,7 +27,7 @@ const findFirstDefinedValue = (doc, fields) => {
 
 const getRegistrations = (patientId) => {
   if (!patientId) {
-    return Promise.resolve();
+    return Promise.resolve([]);
   }
   return utils.getRegistrations({ id: patientId });
 };
@@ -342,12 +342,12 @@ const setPatientId = (options) => {
     return transitionUtils
       .isIdUnique(providedId)
       .then(isUnique => {
-        if (!isUnique) {
-          transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
+        if (isUnique) {
+          doc.patient_id = providedId;
           return;
         }
 
-        doc.patient_id = providedId;
+        transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
       });
   } else {
     return transitionUtils.getUniqueId().then(id => doc.patient_id = id);
@@ -368,12 +368,16 @@ const getParentByPhone = options => {
     });
 };
 
+// returns the parent of the contact to be created (place or patient)
 const getParent = options => {
+  // if the `parent_id` fields name is not specified in the trigger, default to the submitter's parent
   if (!options.params.parent_id) {
+    // if `update_clinics` runs, the `contact` property already exists
     if (options.doc.contact && options.doc.contact.parent) {
       return Promise.resolve(JSON.parse(JSON.stringify(options.doc.contact.parent)));
     }
 
+    // when `update_clinics` is not enabled (for some reason), fallback to getting contact by phone
     return getParentByPhone(options).then(parent => {
       if (!parent) {
         transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_NOT_FOUND);
@@ -384,6 +388,7 @@ const getParent = options => {
     });
   }
 
+  // if the `parent_id` field name is specified in the trigger, but is not defined in the doc, add an error
   if (!options.doc.fields[options.params.parent_id]) {
     transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_FIELD_NOT_PROVIDED);
     return Promise.resolve();
@@ -399,7 +404,7 @@ const getParent = options => {
   });
 };
 
-const validateParent = (parent, child) => {
+const isValidParent = (parent, child) => {
   const parentType = contactTypesUtils.getContactType(config.getAll(), parent);
   const childType = contactTypesUtils.getContactType(config.getAll(), child);
   return contactTypesUtils.isParentOf(parentType, childType);
@@ -438,7 +443,7 @@ const addPatient = (options) => {
           return;
         }
 
-        if (!validateParent(parent, patient)) {
+        if (!isValidParent(parent, patient)) {
           transitionUtils.addRejectionMessage(
             options.doc,
             options.registrationConfig,
@@ -482,6 +487,7 @@ const addPlace = (options) => {
     .getContactUuid(placeShortcode)
     .then(placeContactId => {
       if (placeContactId) {
+        doc.place_id = placeShortcode;
         return;
       }
 
@@ -490,7 +496,7 @@ const addPlace = (options) => {
           return;
         }
 
-        if (!validateParent(parent, place)) {
+        if (!isValidParent(parent, place)) {
           transitionUtils.addRejectionMessage(
             options.doc,
             options.registrationConfig,
@@ -500,7 +506,7 @@ const addPlace = (options) => {
           return;
         }
 
-        // assign patient in doc with full parent doc - to be used in messages
+        // assign place in doc with full parent doc - to be used in messages
         doc.place = Object.assign({ parent }, place);
         place.parent = lineage.minifyLineage(parent);
         place.created_by = doc.contact && doc.contact._id;

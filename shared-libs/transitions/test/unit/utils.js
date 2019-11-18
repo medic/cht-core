@@ -53,7 +53,7 @@ describe('utils', () => {
     assert.equal(utils.translate('sms_received'), 'sms_received');
   });
 
-  describe('getPatientContactUuid', () => {
+  describe('getContactUuid', () => {
 
     it('returns the ID for the given short code', () => {
       const expected = 'abc123';
@@ -90,7 +90,7 @@ describe('utils', () => {
 
   });
 
-  describe('getPatientContact', () => {
+  describe('getContact', () => {
 
     it('returns the patient for the given short code', () => {
       const expected = 'abc123';
