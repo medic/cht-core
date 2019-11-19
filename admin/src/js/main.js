@@ -168,6 +168,37 @@ angular.module('adminApp').config(function(
   $ngReduxProvider.createStoreWith(RootReducer, []);
 
   $stateProvider
+    .state('display', {
+      url: '/display',
+      templateUrl: 'templates/display.html'
+    })
+    .state('display.date-time', {
+      url: '/date-time',
+      views: {
+        tab: {
+          controller: 'SettingsBasicCtrl',
+          templateUrl: 'templates/settings_basic.html'
+        }
+      }
+    })
+    .state('display.languages', {
+      url: '/languages',
+      views: {
+        tab: {
+          controller: 'TranslationLanguagesCtrl',
+          templateUrl: 'templates/translation_languages.html'
+        }
+      }
+    })
+    .state('display.translations', {
+      url: '/translations',
+      views: {
+        tab: {
+          controller: 'TranslationApplicationCtrl',
+          templateUrl: 'templates/translation_application.html'
+        }
+      }
+    })
     .state('settings', {
       url: '/settings',
       templateUrl: 'templates/settings.html'
