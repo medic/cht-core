@@ -457,7 +457,6 @@ const purge = () => {
         .then(() => batchedContactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
         .then(() => {
-          closePurgeDbs();
           const duration = (performance.now() - start);
           logger.info(`Server Side Purge completed successfully in ${duration / 1000 / 60} minutes`);
           return writePurgeLog(roles, duration);
@@ -466,7 +465,10 @@ const purge = () => {
     .catch(err => {
       logger.error('Error while running Server Side Purge: %o', err);
     })
-    .then(() => currentlyPurging = false);
+    .then(() => {
+      currentlyPurging = false;
+      closePurgeDbs();
+    });
 };
 
 module.exports = {

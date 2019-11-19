@@ -164,8 +164,7 @@ module.exports = {
     };
     dropView(auditDb, function(err) {
       if (err) {
-        auditDb.close();
-        return callback(err);
+        return closeCallback(err);
       }
       changeDocIds(auditDb, closeCallback);
     });

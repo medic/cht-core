@@ -71,6 +71,23 @@ describe('User DB service', () => {
         chai.expect(userDb.close.callCount).to.equal(1);
       });
     });
+
+    it('should close the db even with errors', () => {
+      sinon.stub(db, 'exists').resolves(false);
+      const userDb = {
+        close: sinon.stub(),
+        put: sinon.stub().rejects({ err: 'boom' }),
+      };
+      sinon.stub(db, 'get').returns(userDb);
+      return service
+        .create('gareth')
+        .then(r => chai.expect(r).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ err: 'boom' });
+          chai.expect(userDb.close.callCount).to.equal(1);
+          chai.expect(userDb.put.callCount).to.equal(1);
+        });
+    });
   });
 
 });

@@ -189,6 +189,29 @@ describe('ServerSidePurge', () => {
     });
   });
 
+  describe('closePurgeDbs', () => {
+    it('should not crash when no purge DBs are cached', () => {
+      service.__get__('closePurgeDbs')();
+    });
+
+    it('should not crash for falsy dbs', () => {
+      service.__set__('purgeDbs', { one: false, two: undefined, three: null });
+      service.__get__('closePurgeDbs')();
+    });
+
+    it('should call close function for every db', () => {
+      const genDb = () => ({ close: sinon.stub() });
+      const dbs = { one: genDb(), two: genDb(), three: genDb(), four: false };
+      const purgeDbs = Object.assign({}, dbs);
+      service.__set__('purgeDbs', purgeDbs);
+      service.__get__('closePurgeDbs')();
+      chai.expect(dbs.one.close.callCount).to.equal(1);
+      chai.expect(dbs.two.close.callCount).to.equal(1);
+      chai.expect(dbs.three.close.callCount).to.equal(1);
+      chai.expect(Object.keys(purgeDbs)).to.deep.equal([]);
+    });
+  });
+
   describe('getAlreadyPurgedDocs', () => {
     let purgeDbChanges;
 
@@ -1575,6 +1598,7 @@ describe('ServerSidePurge', () => {
     let getPurgeFn;
     let getRoles;
     let initPurgeDbs;
+    let closePurgeDbs;
     let batchedContactsPurge;
     let batchedUnallocatedPurge;
     let purgeFn;
@@ -1583,6 +1607,7 @@ describe('ServerSidePurge', () => {
       getPurgeFn = sinon.stub();
       getRoles = sinon.stub();
       initPurgeDbs = sinon.stub();
+      closePurgeDbs = sinon.stub();
       batchedContactsPurge = sinon.stub();
       batchedUnallocatedPurge = sinon.stub();
       purgeFn = sinon.stub();
@@ -1625,6 +1650,7 @@ describe('ServerSidePurge', () => {
       service.__set__('initPurgeDbs', initPurgeDbs);
       service.__set__('batchedContactsPurge', batchedContactsPurge);
       service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -1635,6 +1661,7 @@ describe('ServerSidePurge', () => {
         chai.expect(batchedUnallocatedPurge.callCount).to.equal(1);
         chai.expect(batchedUnallocatedPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
         chai.expect(db.sentinel.put.callCount).to.equal(1);
+        chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
 
@@ -1647,6 +1674,7 @@ describe('ServerSidePurge', () => {
       service.__set__('initPurgeDbs', initPurgeDbs);
       service.__set__('batchedContactsPurge', batchedContactsPurge);
       service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -1654,6 +1682,7 @@ describe('ServerSidePurge', () => {
         chai.expect(initPurgeDbs.callCount).to.equal(0);
         chai.expect(batchedContactsPurge.callCount).to.equal(0);
         chai.expect(batchedUnallocatedPurge.callCount).to.equal(0);
+        chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
 
@@ -1668,6 +1697,7 @@ describe('ServerSidePurge', () => {
       service.__set__('initPurgeDbs', initPurgeDbs);
       service.__set__('batchedContactsPurge', batchedContactsPurge);
       service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -1675,6 +1705,7 @@ describe('ServerSidePurge', () => {
         chai.expect(initPurgeDbs.callCount).to.equal(1);
         chai.expect(batchedContactsPurge.callCount).to.equal(0);
         chai.expect(batchedUnallocatedPurge.callCount).to.equal(0);
+        chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
 
@@ -1690,6 +1721,7 @@ describe('ServerSidePurge', () => {
       service.__set__('initPurgeDbs', initPurgeDbs);
       service.__set__('batchedContactsPurge', batchedContactsPurge);
       service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -1698,6 +1730,7 @@ describe('ServerSidePurge', () => {
         chai.expect(batchedContactsPurge.callCount).to.equal(1);
         chai.expect(batchedContactsPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
         chai.expect(batchedUnallocatedPurge.callCount).to.equal(0);
+        chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
 
@@ -1708,6 +1741,7 @@ describe('ServerSidePurge', () => {
       initPurgeDbs.resolves();
       batchedContactsPurge.resolves();
       batchedUnallocatedPurge.rejects({});
+      service.__set__('closePurgeDbs', closePurgeDbs);
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -1723,6 +1757,7 @@ describe('ServerSidePurge', () => {
         chai.expect(batchedContactsPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
         chai.expect(batchedUnallocatedPurge.callCount).to.equal(1);
         chai.expect(batchedUnallocatedPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
   });

@@ -12,12 +12,10 @@ const saveReadStatusDocs = (username, docs) => {
   const userDbName = userDb.getDbName(username);
   return userDb.create(userDbName).then(() => {
     const userDb = db.get(userDbName);
-    return userDb
-      .bulkDocs(docs)
-      .then(result => {
-        userDb.close();
-        return result;
-      });
+    return userDb.bulkDocs(docs).then(result => {
+      userDb.close();
+      return result;
+    });
   });
 };
 
