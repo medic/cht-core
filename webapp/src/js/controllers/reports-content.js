@@ -23,6 +23,7 @@ var _ = require('underscore');
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          forms: Selectors.getForms(state),
           loadingContent: Selectors.getLoadingContent(state),
           selectMode: Selectors.getSelectMode(state),
           selectedReports: Selectors.getSelectedReports(state),
@@ -135,15 +136,6 @@ var _ = require('underscore');
       $scope.$on('$destroy', function() {
         unsubscribe();
         changeListener.unsubscribe();
-      });
-
-      $scope.$on('VerifiedReport', function(e, valid) {
-        var oldVerified = ctrl.selectedReports[0].formatted.verified;
-        var newVerified = oldVerified === valid ? undefined : valid;
-
-        ctrl.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
-
-        ctrl.setRightActionBarVerified(newVerified);
       });
     }
   );

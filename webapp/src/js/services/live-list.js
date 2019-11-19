@@ -5,6 +5,7 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('LiveListConfig',
   function(
     $log,
+    $ngRedux,
     $parse,
     $templateCache,
     $timeout,
@@ -12,11 +13,15 @@ angular.module('inboxServices').factory('LiveListConfig',
     ContactTypes,
     LiveList,
     RulesEngine,
+    Selectors,
     TranslateFrom,
     relativeDayFilter
   ) {
     'use strict';
     'ngInject';
+
+    const ctrl = this;
+    $ngRedux.connect(state => ({ forms: Selectors.getForms(state) }))(ctrl);
 
     var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
     var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
@@ -174,7 +179,7 @@ angular.module('inboxServices').factory('LiveListConfig',
 
           var scope = this.scope.$new(true);
           scope.id = report._id;
-          var form = _.findWhere($scope.forms, { code: report.form });
+          var form = _.findWhere(ctrl.forms, { code: report.form });
           scope.route = 'reports';
           scope.icon = form && form.icon;
           scope.heading = getHeading(report);

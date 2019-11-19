@@ -34,6 +34,7 @@ describe('Message list utils', () => {
   });
 
   describe('mergeUpdated', () => {
+
     it('Adds new messages to allMessages', () => {
       const allMessages = [
         {key: 'a', message: {inAllMessages: true}},
@@ -43,8 +44,7 @@ describe('Message list utils', () => {
         {key: 'b', message: {fromUpdatedMessages: true}}
       ];
 
-      const changed = service.mergeUpdated(allMessages, updatedMessages);
-      chai.expect(changed).to.equal(false);
+      service.mergeUpdated(allMessages, updatedMessages);
 
       chai.expect(allMessages).to.deep.equal([
         {key: 'a', message: {inAllMessages: true}},
@@ -52,6 +52,7 @@ describe('Message list utils', () => {
         {key: 'b', message: {fromUpdatedMessages: true}}
       ]);
     });
+
     it('Replaces updated messages in allMessages', () => {
       const allMessages = [
         {key: 'a', message: {inAllMessages: true}},
@@ -62,8 +63,7 @@ describe('Message list utils', () => {
         {key: 'b', message: {fromUpdatedMessages: true}}
       ];
 
-      const changed = service.mergeUpdated(allMessages, updatedMessages);
-      chai.expect(changed).to.equal(false);
+      service.mergeUpdated(allMessages, updatedMessages);
 
       chai.expect(allMessages).to.deep.equal([
         {key: 'a', message: {inAllMessages: true}},
@@ -71,18 +71,6 @@ describe('Message list utils', () => {
         {key: 'c', message: {inAllMessages: true}}
       ]);
     });
-    it('Returns true if the currently selected message changes', () => {
-      const allMessages = [
-        {key: 'a', message: {inAllMessages: true}},
-        {key: 'b', message: {inAllMessages: true}},
-        {key: 'c', message: {inAllMessages: true}}
-      ];
-      const updatedMessages = [
-        {key: 'b', message: {fromUpdatedMessages: true}}
-      ];
 
-      const changed = service.mergeUpdated(allMessages, updatedMessages, 'b');
-      chai.expect(changed).to.equal(true);
-    });
   });
 });

@@ -2,8 +2,6 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
-    $state,
-    $stateParams,
     $timeout,
     ActionUtils,
     LiveList,
@@ -171,24 +169,10 @@ angular.module('inboxServices').factory('GlobalActions',
         $('#reports-list input[type="checkbox"]').prop('checked', false);
       }
 
-      /**
-       * Navigate back to the previous view
-       */
-      function navigateBack() {
-        if ($state.current.name === 'contacts.deceased') {
-          $state.go('contacts.detail', { id: $stateParams.id });
-        } else if ($stateParams.id) {
-          $state.go($state.current.name, { id: null });
-        } else {
-          unsetSelected();
-        }
-      }
-
       return {
         clearCancelCallback,
         clearFilters,
         clearRightActionBar,
-        navigateBack,
         setAndroidAppVersion,
         setCancelCallback,
         setCurrentTab,

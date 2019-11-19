@@ -7,8 +7,8 @@
 angular.module('inboxServices').factory('AndroidApi',
   function(
     $log,
-    $rootScope,
     $state,
+    $stateParams,
     $window,
     Feedback,
     MRDT,
@@ -130,9 +130,13 @@ angular.module('inboxServices').factory('AndroidApi',
             return true;
           }
 
-          // If viewing RHS content, do as the filter-bar X/< button does
-          if ($('body').is('.show-content')) {
-            $rootScope.$broadcast('HideContent');
+          if ($state.current.name === 'contacts.deceased') {
+            $state.go('contacts.detail', { id: $stateParams.id });
+            return true;
+          }
+
+          if ($stateParams.id) {
+            $state.go($state.current.name, { id: null }, { reload: true });
             return true;
           }
 

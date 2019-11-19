@@ -286,16 +286,6 @@ var _ = require('underscore'),
       return $('#mobile-detection').css('display') === 'inline';
     };
 
-    $scope.$on('HideContent', function() {
-      $timeout(function() {
-        if (ctrl.cancelCallback) {
-          $scope.navigationCancel();
-        } else {
-          ctrl.navigateBack();
-        }
-      });
-    });
-
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {
         $scope.navigationCancel({ to: trans.to(), params: trans.params() });
@@ -394,9 +384,7 @@ var _ = require('underscore'),
                 };
               });
               const forms = xFormSummaries.concat(jsonFormSummaries);
-              $scope.forms = forms;
               ctrl.setForms(forms);
-              $rootScope.$broadcast('formLoadingComplete');
             }
           );
           // get the forms for the Add Report menu
@@ -413,10 +401,7 @@ var _ = require('underscore'),
             });
           });
         })
-        .catch(function(err) {
-          $rootScope.$broadcast('formLoadingComplete');
-          $log.error('Failed to retrieve forms', err);
-        });
+        .catch(err => $log.error('Failed to retrieve forms', err));
     };
 
     const initTours = () => {
@@ -550,10 +535,6 @@ var _ = require('underscore'),
         },
       });
     });
-
-    $scope.emit = function() {
-      $rootScope.$broadcast.apply($rootScope, arguments);
-    };
 
     $scope.deleteDoc = function(doc) {
       Modal({

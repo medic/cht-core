@@ -2,7 +2,6 @@ describe('TasksContentCtrl', () => {
   const { expect } = chai;
 
   let $scope,
-      subscribe,
       tasksActions,
       getEnketoEditedStatus,
       task,
@@ -24,28 +23,34 @@ describe('TasksContentCtrl', () => {
       $on: () => {},
       setSelected: () => tasksActions.setSelectedTask(task)
     };
-    subscribe = sinon.stub($ngRedux, 'subscribe');
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
     render.resolves();
     createController = () => {
       ctrl = $controller('TasksContentCtrl', {
         $scope: $scope,
         $ngRedux: $ngRedux,
+        $state: { params: { id: '123' } },
         $q: Q,
         Enketo: { render: render },
         DB: sinon.stub(),
         XmlForms: XmlForms,
-        Telemetry: { record: sinon.stub() }
+        Telemetry: { record: sinon.stub() },
+        LiveList: { tasks: {
+          clearSelected: sinon.stub(),
+          setSelected: sinon.stub(),
+          getList: sinon.stub().returns([ task ])
+        } }
       });
     };
   }));
 
   afterEach(() => {
-    KarmaUtils.restore(render, XmlForms, subscribe);
+    KarmaUtils.restore(render, XmlForms);
   });
 
   it('loads form when task has one action and no fields', done => {
     task = {
+      _id: '123',
       actions: [{
         type: 'report',
         form: 'A',
@@ -55,7 +60,6 @@ describe('TasksContentCtrl', () => {
     const form = { _id: 'myform', title: 'My Form' };
     XmlForms.get.resolves(form);
     createController();
-    subscribe.args[0][0](); // invoke the subscribe callback
     expect(ctrl.formId).to.equal('A');
     setTimeout(() => {
       expect(render.callCount).to.equal(1);
@@ -106,6 +110,7 @@ describe('TasksContentCtrl', () => {
   it('displays error if enketo fails to render', done => {
     render.rejects('foo');
     task = {
+      _id: '123',
       actions: [{
         type: 'report',
         form: 'A',
@@ -114,7 +119,6 @@ describe('TasksContentCtrl', () => {
     };
     XmlForms.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
     createController();
-    subscribe.args[0][0](); // invoke the subscribe callback
     setTimeout(() => {
       expect(ctrl.loadingForm).to.equal(false);
       expect(ctrl.contentError).to.equal(true);

@@ -404,11 +404,15 @@ describe('Send message', () => {
       enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
       element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
       sendMessage();
-      clickLhsEntry(ALICE._id, ALICE.name);
-
       browser.wait(() => {
         return utils.deleteDocs(CONTACTS.map(contact => contact._id));
       });
+
+      common.goToMessages();
+
+      const liIdentifier = messageInList(ALICE._id);
+      helper.waitUntilReady(element(by.css(liIdentifier)));
+      element(by.css(liIdentifier + ' a')).click();
 
       helper.waitForAngularComplete();
 

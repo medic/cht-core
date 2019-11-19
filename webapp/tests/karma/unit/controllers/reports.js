@@ -28,7 +28,7 @@ describe('ReportsCtrl controller', () => {
 
     get = sinon.stub();
     post = sinon.stub();
-    const DB = KarmaUtils.mockDB({ get, post })();
+    const DB = KarmaUtils.mockDB({ get, post, info: sinon.stub() })();
 
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
@@ -227,22 +227,24 @@ describe('ReportsCtrl controller', () => {
 
     it('removes deleted reports from the list', () => {
       createController();
+      const searchBaseline = Search.callCount;
 
       return Promise.resolve().then(() => {
         changesCallback({ deleted: true, id: 'id' });
         chai.expect(LiveList.reports.remove.callCount).to.equal(1);
         chai.expect(LiveList.reports.remove.args[0]).to.deep.equal(['id']);
-        chai.expect(Search.callCount).to.equal(0);
+        chai.expect(Search.callCount).to.equal(searchBaseline);
       });
     });
 
     it('refreshes list', () => {
       createController();
+      const searchBaseline = Search.callCount;
 
       return Promise.resolve().then(() => {
         changesCallback({ doc: { _id: 'id' } });
         chai.expect(LiveList.reports.remove.callCount).to.equal(0);
-        chai.expect(Search.callCount).to.equal(1);
+        chai.expect(Search.callCount).to.equal(searchBaseline + 1);
       });
     });
   });
