@@ -11,7 +11,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $translate,
     Changes,
     ContactChangeFilter,
-    ContactViewModelGenerator,
     ContactsActions,
     Debounce,
     GlobalActions,
@@ -40,8 +39,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       return {
         unsetSelected: globalActions.unsetSelected,
         setLoadingShowContent: globalActions.setLoadingShowContent,
-        settingSelected: globalActions.settingSelected,
-        updateSelectedContact: contactsActions.updateSelectedContact
+        setSelectedContact: contactsActions.setSelectedContact,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -85,20 +83,14 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         ctrl.setLoadingShowContent(id);
       }
 
-      var options = { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id };
-      return ContactViewModelGenerator.getContact(id, options)
-        .then(function(model) {
-          var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
-          $scope.setSelected(model, options);
-          ctrl.settingSelected(refreshing);
-        })
-        .catch(function(err) {
-          if (err.code === 404 && !silent) {
-            $translate('error.404.title').then(Snackbar);
-          }
-          ctrl.unsetSelected();
-          $log.error('Error generating contact view model', err, err.message);
-        });
+      const getChildPlaces = !usersHomePlaceId || usersHomePlaceId !== id;
+      ctrl.setSelectedContact(id, { getChildPlaces }).catch(err => {
+        if (err.code === 404 && !silent) {
+          $translate('error.404.title').then(Snackbar);
+        }
+        ctrl.unsetSelected();
+        $log.error('Error generating contact view model', err, err.message);
+      });
     };
 
     // exposed solely for testing purposes

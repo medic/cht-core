@@ -13,10 +13,8 @@ const PAGE_SIZE = 50;
     $scope,
     $state,
     $stateParams,
-    $translate,
     Auth,
     Changes,
-    ContactSummary,
     ContactTypes,
     ContactsActions,
     Export,
@@ -29,12 +27,9 @@ const PAGE_SIZE = 50;
     Session,
     Settings,
     Simprints,
-    TasksForContact,
     Tour,
-    TranslateFrom,
     UHCSettings,
-    UserSettings,
-    XmlForms
+    UserSettings
   ) {
     'ngInject';
 
@@ -60,7 +55,7 @@ const PAGE_SIZE = 50;
     ctrl.appending = false;
     ctrl.error = false;
     ctrl.loading = true;
-    ctrl.setSelectedContact(null);
+    ctrl.clearSelection();
     ctrl.clearFilters();
     var defaultTypeFilter = {};
     var usersHomePlace;
@@ -191,158 +186,6 @@ const PAGE_SIZE = 50;
           ctrl.loading = false;
           ctrl.appending = false;
           $log.error('Error searching for contacts', err);
-        });
-    };
-
-    const getChildTypes = function(model) {
-      if (!model.type) {
-        $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
-        return [];
-      }
-      return ContactTypes.getChildren(model.type.id).then(childTypes => {
-        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
-        const models = [];
-        if (grouped.places) {
-          models.push({
-            menu_key: 'Add place',
-            menu_icon: 'fa-building',
-            permission: 'can_create_places',
-            types: grouped.places
-          });
-        }
-        if (grouped.persons) {
-          models.push({
-            menu_key: 'Add person',
-            menu_icon: 'fa-user',
-            permission: 'can_create_people',
-            types: grouped.persons
-          });
-        }
-        return models;
-      });
-    };
-
-    // only admins can edit their own place
-    var getCanEdit = function(selectedDoc) {
-      if (Session.isAdmin()) {
-        return true;
-      }
-      return setupPromise
-        .then(() => usersHomePlace._id !== selectedDoc._id)
-        .catch(() => false);
-    };
-
-    var translateTitle = function(key, label) {
-      return key ? $translate.instant(key) : TranslateFrom(label);
-    };
-
-    var isUnmuteForm = function(settings, formId) {
-      return Boolean(settings &&
-                     formId &&
-                     settings.muting &&
-                     settings.muting.unmute_forms &&
-                     settings.muting.unmute_forms.includes(formId));
-    };
-
-    const getTasks = () => {
-      return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selectedContact, 'ContactsCtrl', receiveTasks))
-        .catch(() => $log.debug('Not authorized to view tasks'));
-    };
-
-    const receiveTasks = (tasks) => {
-      const tasksByContact = {};
-      tasks.forEach(task => {
-        if (task.doc && task.doc.contact) {
-          const contactId = task.doc.contact._id;
-          tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
-        }
-      });
-      ctrl.updateSelectedContact({ tasks });
-      ctrl.updateSelectedContact({ tasksByContact });
-    };
-
-    const getTitle = selected => {
-      const title = (selected.type && selected.type.name_key) ||
-                    'contact.profile';
-      return $translate(title).catch(() => title);
-    };
-
-    // Don't allow deletion if this contact has any children
-    const canDelete = selected => {
-      return !selected.children ||
-             selected.children.every(group => !group.contacts || !group.contacts.length);
-    };
-
-    $scope.setSelected = function(selected, contactViewModelOptions) {
-      liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedContact();
-      ctrl.setSelectedContact(selected);
-      ctrl.clearCancelCallback();
-      const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
-
-      ctrl.setContactsLoadingSummary(true);
-      return $q
-        .all([
-          getTitle(ctrl.selectedContact),
-          getCanEdit(ctrl.selectedContact.doc),
-          getChildTypes(ctrl.selectedContact)
-        ])
-        .then(([ title, canEdit, childTypes ]) => {
-          ctrl.setTitle(title);
-
-          ctrl.setRightActionBar({
-            relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
-            canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit: canEdit,
-            childTypes: childTypes
-          });
-
-          return lazyLoadedContactData
-            .then(function() {
-              return $q.all([
-                ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
-                Settings(),
-                getTasks()
-              ])
-              .then(([ summary, settings ]) => {
-                ctrl.setContactsLoadingSummary(false);
-                ctrl.updateSelectedContact({ summary: summary });
-                const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
-                XmlForms.listen('ContactsCtrl', options, function(err, forms) {
-                  if (err) {
-                    $log.error('Error fetching relevant forms', err);
-                  }
-                  const showUnmuteModal = function(formId) {
-                    return ctrl.selectedContact.doc &&
-                          ctrl.selectedContact.doc.muted &&
-                          !isUnmuteForm(settings, formId);
-                  };
-                  const formSummaries = forms && forms.map(function(xForm) {
-                    return {
-                      code: xForm.internalId,
-                      title: translateTitle(xForm.translation_key, xForm.title),
-                      icon: xForm.icon,
-                      showUnmuteModal: showUnmuteModal(xForm.internalId)
-                    };
-                  });
-                  ctrl.setRightActionBar({
-                    relevantForms: formSummaries,
-                    sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
-                    canEdit,
-                    canDelete: canDelete(ctrl.selectedContact),
-                    childTypes,
-                  });
-                });
-              });
-            });
-        })
-        .catch(function(e) {
-          $log.error('Error setting selected contact');
-          $log.error(e);
-          ctrl.updateSelectedContact({ error: true });
-          ctrl.clearRightActionBar();
         });
     };
 
