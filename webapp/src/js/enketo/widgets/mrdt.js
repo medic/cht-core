@@ -100,7 +100,7 @@ define( function( require, exports, module ) {
   };
 
   Mrdtwidget.selector = `${mainSelector} input`;
-  Mrdtwidget.condition = Widget.condition;
+  Mrdtwidget.condition = function() { return true; };
 
   module.exports = Mrdtwidget;
 } );

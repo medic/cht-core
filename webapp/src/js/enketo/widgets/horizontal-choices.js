@@ -8,12 +8,8 @@ define( function( require, exports, module ) {
     'use strict';
     var Columns = require( 'enketo-core/src/widget/columns/columns' ).default;
 
-    var pluginName = 'horizontalchoices';
-
     function HorizontalChoices( element, options ) {
-        this.namespace = pluginName;
         Object.assign(this, new Columns(element, options));
-        this._init();
     }
 
     //copy the prototype functions from the Columns super class
@@ -21,7 +17,7 @@ define( function( require, exports, module ) {
 
     HorizontalChoices.selector =
       '.or-appearance-horizontal, .or-appearance-horizontal-compact';
-    HorizontalChoices.condition = Columns.condition;
+    HorizontalChoices.condition = function() { return true; };
 
     module.exports = HorizontalChoices;
 

@@ -62,5 +62,4 @@ define( function( require, exports, module ) {
   Unselectableradios.selector = 'input[type=radio][data-required="true()"]';
   Unselectableradios.condition = Widget.condition;
 
-  module.exports = Unselectableradios;
 } );
