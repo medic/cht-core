@@ -175,6 +175,7 @@ module.exports = function(grunt) {
           alias: {
             'enketo-config': './webapp/src/js/enketo/config.json',
             'enketo/widgets': './webapp/src/js/enketo/widgets',
+            'enketo/file-manager': './webapp/src/js/enketo/file-manager',
             './xpath-evaluator-binding': './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',

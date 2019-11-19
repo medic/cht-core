@@ -5,18 +5,14 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 }
 
 define( function( require, exports, module ) {
-  const fileManager = require( 'enketo-core/src/js/file-manager' );
-  fileManager.isTooLarge = function( file ) {
-    return file && file.size > 32 * 1024;
-  };
 
   const widgets = [
     require( 'enketo-core/src/widget/geo/geopicker' ),
     require( 'enketo-core/src/widget/table/tablewidget' ),
     require( 'enketo-core/src/widget/radio/radiopicker' ),
     require( 'enketo-core/src/widget/time/timepicker-extended' ),
-    require( 'enketo-core/src/widget/file/filepicker' ),
     require( 'enketo-core/src/widget/columns/columns' ),
+    require( './widgets/filepicker-widget' ),
     require( './widgets/datepicker-widget' ),
     require( './widgets/horizontal-choices' ),
     require( './widgets/notewidget' ),

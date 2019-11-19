@@ -42,11 +42,7 @@ describe('Submit Photo Upload form', () => {
     );
     helper.waitElementToPresent(addButton);
     helper.clickElement(addButton);
-    element(
-      by.css(
-        '.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'
-      )
-    ).click();
+    element(by.xpath("//a[@href='#/reports/add/photo-upload']")).click();
     helper.waitElementToPresent(
       element(by.css('#photo-upload input[type=file]'))
     );
