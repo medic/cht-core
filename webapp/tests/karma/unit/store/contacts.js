@@ -76,7 +76,6 @@ describe('Contacts store', () => {
   describe('setSelectedContact', () => {
 
     beforeEach(() => {
-      setupStore(createContactsState({ selected: null }));
       getContact.resolves({
         doc: { _id: '123' },
         type: { person: true, name_key: 'label.peeps' }
@@ -90,6 +89,7 @@ describe('Contacts store', () => {
       settings.resolves({});
       auth.resolves();
       tasksForContact.resolves();
+      setupStore(createContactsState({ selected: null }));
     });
 
     it('sets selected contact', () => {
