@@ -63,13 +63,13 @@ angular.module('inboxControllers').controller('TestingCtrl',
       return $q
         .all([
           DB({ remote: false }).destroy(),
-          DB({ remote: false, meta: false }).destroy()
+          DB({ remote: false, meta: true }).destroy()
         ])
         .catch(err => $log.error('Error wiping databases', err));
     };
 
     const wipeCookies = () => {
-      [ 'locale', 'userCtx', 'medic-webapp-debug' ].forEach(name => {
+      Object.keys(ipCookie()).forEach(name => {
         ipCookie.remove(name, { path: '/' });
       });
       return $q.resolve();
