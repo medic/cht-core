@@ -1,9 +1,33 @@
 /**
  * @module target-state
  *
- * Stores raw target-emissions in a minified, efficient, ordered (deterministic) structure
- * Allows for automatic deletion of "cancelled" target emissions
+ * Stores raw target-emissions in a minified, efficient, deterministic structure
+ * Handles removal of "cancelled" target emissions
  * Aggregates target emissions into targets
+ */
+
+/** @summary state
+ * Functions in this module all accept a "state" parameter or return a "state" object. This state has the following structure:
+ * 
+ * @example 
+ * target_id: {
+ *   id: 'target_id',
+ *   type: 'count',
+ *   goal: 0,
+ *   ..
+ *   
+ *   emissions: {
+ *     emitted_id: {
+ *       requestor_id: {
+ *         pass: boolean,
+ *         date: timestamp,
+ *         order: timestamp,
+ *       },
+ *       ..
+ *     },
+ *     ..
+ *   }
+ * }
  */
 
 module.exports = {

@@ -35,7 +35,7 @@ describe('refresh-rules-emissions', () => {
     });
 
     it('no emissions yields empty results', async () => {
-      rulesEmitter.getEmissionsFor.resolves({ tasks: [] });
+      rulesEmitter.getEmissionsFor.resolves({ tasks: [], targets: [] });
       const actual = await refreshRulesEmissionsContact({ contactDocs: [{}] });
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(actual).to.deep.eq({

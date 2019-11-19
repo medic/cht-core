@@ -42,8 +42,8 @@ module.exports = {
    *
    * @param {Object} db Medic pouchdb database
    * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
-   * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
-   * @returns {Promise<Object} All of the fresh targets
+   * @example fetchTargets(db, emission => emission.date > moment().startOf('month'))
+   * @returns {Promise<Object[]>} Array of fresh targets
    */
   fetchTargets: (db, targetEmissionFilter) => {
     const provider = pouchdbProvider(db);

@@ -48,14 +48,13 @@ const calculateFreshTaskDocs = (freshData, calculationTimestamp) => {
   return rulesEmitter.getEmissionsFor(contactDocs, reportDocs, taskDocs)
     .then(emissions => {
       const taskTransforms = disambiguateEmissions(emissions.tasks, calculationTimestamp)
-        // Reviewer: Should the webapp also filter task emissions is some way? Or leave it completely up to Utils.IsTimely?
         .map(taskEmission => {
           const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
           return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
         });
      
       return {
-        targetEmissions: emissions.targets || [],
+        targetEmissions: emissions.targets,
         taskTransforms,
       };
     });
@@ -96,7 +95,7 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
 };
 
 const mapEmissionIdToLatestTaskDoc = taskDocs => taskDocs
-    .reduce((agg, doc) => {
+  .reduce((agg, doc) => {
     const emissionId = doc.emission._id;
     if (!agg[emissionId] || agg[emissionId].authoredOn < doc.authoredOn) {
       agg[emissionId] = doc;

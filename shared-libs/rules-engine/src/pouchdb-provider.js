@@ -55,8 +55,6 @@ const medicPouchProvider = db => {
 
     existingRulesStateStore: () => db.get(RULES_STATE_DOCID).catch(() => ({ _id: RULES_STATE_DOCID })),
 
-    targetEmissionChangeCallback: stateDocUpdateClosure(db),
-
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
       return docsOf(db.query('medic-client/tasks', { keys, include_docs: true }));
@@ -95,7 +93,7 @@ const medicPouchProvider = db => {
 medicPouchProvider.RULES_STATE_DOCID = RULES_STATE_DOCID;
 
 const stateDocUpdateClosure = db => {
-  // previousResult helps avoid conflict errors if these functions are called asynchronously
+  // previousResult helps avoid conflict errors if this functions is used asynchronously
   let previousResult = Promise.resolve();
   return (stateDoc, assigned) => {
     Object.assign(stateDoc, assigned);

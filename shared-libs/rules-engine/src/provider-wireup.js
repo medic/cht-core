@@ -13,7 +13,7 @@ const rulesEmitter = require('./rules-emitter');
 
 module.exports = {
   /**
-   * @param {DataProvider} provider A data provider
+   * @param {Object} provider A data provider
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
    */
@@ -40,7 +40,7 @@ module.exports = {
    * Updates the temporal states of the task documents
    * Commits those changes (async)
    *
-   * @param {DataProvider} provider A data provider
+   * @param {Object} provider A data provider
    * @param {string[]} contactIds An array of contact ids. If undefined, all task documents
    * @returns {Promise<Object[]>} All the fresh task docs owned by contacts
    */
@@ -62,7 +62,7 @@ module.exports = {
   /**
    * Refreshes the rules emissions for all contacts
    *
-   * @param {DataProvider} provider A data provider
+   * @param {Object} provider A data provider
    * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
    * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
    * @returns {Promise<Object>} The fresh aggregate target doc
@@ -84,7 +84,7 @@ module.exports = {
   /**
    * Indicate that the rules emissions associated with a given subjectId are dirty
    *
-   * @param {DataProvider} provider A data provider
+   * @param {Object} provider A data provider
    * @param {string[]} subjectIds An array of subject ids
    *
    * @returns {Promise} To complete the transaction marking the subjectIds as dirty

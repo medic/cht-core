@@ -1,6 +1,8 @@
 /**
  * @module rules-state-store
- * In-memory datastore containing details on the state of each contact's rules calculations and some intermediate target data
+ * In-memory datastore containing 
+ * 1. Details on the state of each contact's rules calculations
+ * 2. Target emissions @see target-state
  */
 const md5 = require('md5');
 
