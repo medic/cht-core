@@ -106,7 +106,7 @@ describe('refresh-rules-emissions', () => {
     it('no new doc if the initial state is Cancelled', async () => {
       const contactDoc = { _id: 'contact' };
       const emission = mockEmission(MS_IN_DAY, { doc: { contact: contactDoc } });
-      emission.displayDaysAfter = -1; // invalid
+      emission.readyEnd = -1; // invalid
       rulesEmitter.getEmissionsFor.resolves({ tasks: [emission] });
 
       const noNewTasks = await refreshRulesEmissionsContact({ contactDocs: [contactDoc] });

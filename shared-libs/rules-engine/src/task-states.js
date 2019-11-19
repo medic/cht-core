@@ -46,8 +46,8 @@ const getDisplayWindow = (taskEmission) => {
   const dueDate = moment(taskEmission.date);
   return {
     dueDate: dueDate.valueOf(),
-    startTime: dueDate.clone().startOf('day').subtract(taskEmission.displayDaysBefore || 0, 'days').valueOf(),
-    endTime: dueDate.clone().startOf('day').add(taskEmission.displayDaysAfter || 0, 'days').add(1, 'day').valueOf() - 1,
+    startTime: dueDate.clone().startOf('day').subtract(taskEmission.readyStart || 0, 'days').valueOf(),
+    endTime: dueDate.clone().startOf('day').add(taskEmission.readyEnd || 0, 'days').add(1, 'day').valueOf() - 1,
   };
 };
 

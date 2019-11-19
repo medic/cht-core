@@ -112,7 +112,7 @@ describe('transform-task-emission-to-doc', () => {
 
   it('no new docs for cancelled state', () => {
     const invalidEmission = mockEmission(MS_IN_DAY);
-    invalidEmission.displayDaysBefore = -1;
+    invalidEmission.readyStart = -1;
     const docForCancelledEmission = transformTaskEmissionToDoc(deepCopy(invalidEmission), Date.now(), 'username');
     expect(docForCancelledEmission).to.nested.include({
       isUpdated: false,

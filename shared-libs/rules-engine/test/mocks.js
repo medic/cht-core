@@ -43,8 +43,8 @@ rule GenerateEvents {
     resolved: false,
     delete: false,
     date: new Date(Date.now() + msOffset),
-    displayDaysBefore: 0,
-    displayDaysAfter: 0,
+    readyStart: 0,
+    readyEnd: 0,
   }, assigned),
 
   chtDocs,
