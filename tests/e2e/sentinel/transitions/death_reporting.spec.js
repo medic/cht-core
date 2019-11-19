@@ -1,6 +1,7 @@
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
+const chai = require('chai');
 
 const contacts = [{
   _id: 'person',
@@ -51,11 +52,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        chai.expect(info.transitions).to.deep.equal({});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).not.toBeDefined();
+        chai.expect(person.date_of_death).to.equal(undefined);
       });
   });
 
@@ -87,11 +88,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        chai.expect(info.transitions).to.deep.equal({});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).not.toBeDefined();
+        chai.expect(person.date_of_death).to.equal(undefined);
       });
   });
 
@@ -123,11 +124,48 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        chai.expect(info.transitions).to.deep.equal({});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).not.toBeDefined();
+        chai.expect(person.date_of_death).to.equal(undefined);
+      });
+  });
+
+  it('should work with patient_uuid field', () => {
+    const settings = {
+      transitions: { death_reporting: true },
+      death_reporting: {
+        mark_deceased_forms: ['DEAD'],
+        undo_deceased_forms: ['UNDEAD'],
+        date_field: 'date'
+      },
+      forms: { DEAD: { } }
+    };
+
+    const doc = {
+      _id: uuid(),
+      form: 'DEAD',
+      type: 'data_record',
+      reported_date: new Date().getTime(),
+      fields: {
+        patient_id: '',
+        patient_uuid: 'person',
+      },
+      contact: { _id: 'person2' }
+    };
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
+      .then(info => {
+        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
+      })
+      .then(() => utils.getDoc('person'))
+      .then(person => {
+        chai.expect(person.date_of_death).to.equal(doc.reported_date);
       });
   });
 
@@ -159,17 +197,15 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.death_reporting).toBeDefined();
-        expect(info.transitions.death_reporting.ok).toEqual(true);
+        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(doc.reported_date);
+        chai.expect(person.date_of_death).to.equal(doc.reported_date);
       })
       .then(() => utils.getDoc('person2'))
       .then(person2 => {
-        expect(person2.date_of_death).not.toBeDefined();
+        chai.expect(person2.date_of_death).to.equal(undefined);
       });
   });
 
@@ -225,36 +261,31 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.death_reporting).toBeDefined();
-        expect(info.transitions.death_reporting.ok).toEqual(true);
+        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(doc.fields.time_of_death);
+        chai.expect(person.date_of_death).to.equal(doc.fields.time_of_death);
       })
       .then(() => utils.saveDoc(doc2))
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        chai.expect(info.transitions).to.deep.equal({});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(doc.fields.time_of_death);
+        chai.expect(person.date_of_death).to.equal(doc.fields.time_of_death);
       })
       .then(() => utils.saveDoc(doc3))
       .then(() => sentinelUtils.waitForSentinel(doc3._id))
       .then(() => sentinelUtils.getInfoDoc(doc3._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.death_reporting).toBeDefined();
-        expect(info.transitions.death_reporting.ok).toEqual(true);
+        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).not.toBeDefined();
+        chai.expect(person.date_of_death).to.equal(undefined);
       });
   });
-
 });
