@@ -76,6 +76,53 @@ describe('pouchdb provider', () => {
     });
   });
 
+  describe('commitTargetDoc', () => {
+    const targets = [{ id: 'target' }];
+    const userDoc = { _id: 'user' };
+
+    it('create and update a doc', async () => {
+      const docTag = '2019-07';
+      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, docTag);
+
+      expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
+        _id: 'target-2019-07-user',
+        type: 'target',
+        user: 'user',
+        targets,
+      });
+
+      const nextTargets = [{ id: 'target', score: 1 }];
+      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
+      expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
+        _id: 'target-2019-07-user',
+        type: 'target',
+        user: 'user',
+        targets: nextTargets,
+      });
+    });
+
+    it('create two docs', async () => {
+      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, '2018-07');
+      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, '2018-08');
+
+      expect(await db.get('target-2018-07-user')).to.not.be.undefined;
+      expect(await db.get('target-2018-08-user')).to.not.be.undefined;
+    });
+
+    it('can run async without dropped writes', async () => {
+      const docTag = '2017-07';
+      const provider = pouchdbProvider(db);
+      
+      await provider.commitTargetDoc({ targets }, userDoc, docTag);
+      provider.commitTargetDoc({ targets }, userDoc, docTag);
+      provider.commitTargetDoc({ targets }, userDoc, docTag);
+      await provider.commitTargetDoc({ targets }, userDoc, docTag);
+
+      const actual = await db.get('target-2017-07-user');
+      expect(actual._rev.startsWith('4-')).to.be.true;
+    });
+  });
+
   describe('contactsBySubjectId', () => {
     it('empty yields empty', async () => expect(await pouchdbProvider(db).contactsBySubjectId([])).to.be.empty);
     it('patient_id yields id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient_id'])).to.deep.eq(['patient']));

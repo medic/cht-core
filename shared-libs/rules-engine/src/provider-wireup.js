@@ -4,6 +4,7 @@
  * Wireup a data provider to the rules-engine
  */
 
+const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 
 const rulesStateStore = require('./rules-state-store');
@@ -73,21 +74,27 @@ module.exports = {
    * Refreshes the rules emissions for all contacts
    *
    * @param {Object} provider A data provider
-   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
-   * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
+   * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the target scores
+   * @param {Integer} filterInterval.start Start timestamp of interval
+   * @param {Integer} filterInterval.end End timestamp of interval
    * @returns {Promise<Object>} The fresh aggregate target doc
    */
-  fetchTargets: (provider, targetEmissionFilter) => {
+  fetchTargets: (provider, filterInterval) => {
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTargets) {
       return Promise.resolve([]);
     }
 
     const calculationTimestamp = Date.now();
+    const targetEmissionFilter = filterInterval && (emission => {
+      const emissionDate = moment(emission.date);	
+      return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
+    });
+
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
       .then(() => {
-        const targetModels = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-        // provider.commitAggregatedTargets(aggregated, calculationTimestamp);
-        return targetModels;
+        const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
+        storeTargetsDoc(provider, targets, filterInterval);
+        return targets;
       });
   },
 
@@ -159,4 +166,14 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
 
   // Once the contact state store has all contacts, trust it and only refresh those marked dirty
   return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+};
+
+const storeTargetsDoc = (provider, targets, filterInterval) => {
+  const targetDocTag = filterInterval ? moment(filterInterval.end).format('YYYY-MM') : 'latest';
+  const minifyTarget = target => ({ id: target.id, value: target.value });
+  const content = {
+    updated_date: Date.now(),
+    targets: targets.map(minifyTarget),
+  };
+  return provider.commitTargetDoc(content, rulesStateStore.currentUser(), targetDocTag);
 };

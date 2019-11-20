@@ -9,75 +9,66 @@ const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const wireupToProvider = require('./provider-wireup');
 
-module.exports = {
-  /**
-   * @param {Object} db Medic pouchdb database
-   * @param {Object} settingsDoc Settings document
-   * @param {Object} userDoc User's hydrated contact document
-   * @param {Object=} options Options for the behavior of the rules engine
-   * @param {Boolean} options.enableTasks Flag to enable tasks
-   * @param {Boolean} options.enableTargets Flag to enable targets
-   */
-  initialize: (db, settingsDoc, userDoc, options) => {
-    const provider = pouchdbProvider(db);
-    return wireupToProvider.initialize(provider, settingsDoc, userDoc, options);
-  },
+/**
+ * @param {Object} db Medic pouchdb database
+ */
+module.exports = db => {
+  const provider = pouchdbProvider(db);
+  return {
+    /**
+     * @param {Object} settingsDoc Settings document
+     * @param {Object} userDoc User's hydrated contact document
+     * @param {Object=} options Options for the behavior of the rules engine
+     * @param {Boolean} options.enableTasks Flag to enable tasks
+     * @param {Boolean} options.enableTargets Flag to enable targets
+     */
+    initialize: (settingsDoc, userDoc, options) => wireupToProvider.initialize(provider, settingsDoc, userDoc, options),
 
-  /**
-   * @returns {Boolean} True if the rules engine is enabled and ready for use
-   */
-  isEnabled: () => rulesEmitter.isEnabled() && rulesEmitter.isLatestNoolsSchema(),
+    /**
+     * @returns {Boolean} True if the rules engine is enabled and ready for use
+     */
+    isEnabled: () => rulesEmitter.isEnabled() && rulesEmitter.isLatestNoolsSchema(),
 
-  /**
-   * Refreshes all rules documents for a set of contacts and returns their task documents
-   *
-   * @param {Object} db Medic pouchdb database
-   * @param {string[]} contactIds An array of contact ids. If undefined, all contacts are
-   * @returns {Promise<Object[]>} All the fresh task docs owned by contactIds
-   */
-  fetchTasksFor: (db, contactIds) => {
-    const provider = pouchdbProvider(db);
-    return wireupToProvider.fetchTasksFor(provider, contactIds);
-  },
+    /**
+     * Refreshes all rules documents for a set of contacts and returns their task documents
+     *
+     * @param {string[]} contactIds An array of contact ids. If undefined, all contacts are
+     * @returns {Promise<Object[]>} All the fresh task docs owned by contactIds
+     */
+    fetchTasksFor: contactIds => wireupToProvider.fetchTasksFor(provider, contactIds),
 
-  /**
-   * Refreshes all rules documents and returns the latest target document
-   *
-   * @param {Object} db Medic pouchdb database
-   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
-   * @example fetchTargets(db, emission => emission.date > moment().startOf('month'))
-   * @returns {Promise<Object[]>} Array of fresh targets
-   */
-  fetchTargets: (db, targetEmissionFilter) => {
-    const provider = pouchdbProvider(db);
-    return wireupToProvider.fetchTargets(provider, targetEmissionFilter);
-  },
+    /**
+     * Refreshes all rules documents and returns the latest target document
+     *
+     * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the target scores
+     * @param {Integer} filterInterval.start Start timestamp of interval
+     * @param {Integer} filterInterval.end End timestamp of interval
+     * @returns {Promise<Object[]>} Array of fresh targets
+     */
+    fetchTargets: filterInterval => wireupToProvider.fetchTargets(provider, filterInterval),
 
-  /**
-   * Indicate that the task documents associated with a given subjectId are dirty.
-   *
-   * @param {Object} db Medic pouchdb database
-   * @param {string[]} subjectIds An array of subject ids
-   *
-   * @returns {Promise} To mark the subjectIds as dirty
-   */
-  updateEmissionsFor: (db, subjectIds) => {
-    const provider = pouchdbProvider(db);
-    return wireupToProvider.updateEmissionsFor(provider, subjectIds);
-  },
+    /**
+     * Indicate that the task documents associated with a given subjectId are dirty.
+     *
+     * @param {string[]} subjectIds An array of subject ids
+     *
+     * @returns {Promise} To mark the subjectIds as dirty
+     */
+    updateEmissionsFor: subjectIds => wireupToProvider.updateEmissionsFor(provider, subjectIds),
 
-  /**
-   * Determines if either the settings document or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
-   * If they have changed in a meaningful way, the calculation state of all contacts is reset
-   *
-   * @param {Object} settingsDoc Settings document
-   * @param {Object} userDoc User's hydrated contact document
-   * @param {Object} salt=1 Salt to add into the configuration hash. Changing this value invalidates the cache.
-   */
-  rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
-    const cacheIsReset = rulesStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
-    if (cacheIsReset) {
-      rulesEmitter.shutdown();
-    }
-  },
+    /**
+     * Determines if either the settings document or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
+     * If they have changed in a meaningful way, the calculation state of all contacts is reset
+     *
+     * @param {Object} settingsDoc Settings document
+     * @param {Object} userDoc User's hydrated contact document
+     * @param {Object} salt=1 Salt to add into the configuration hash. Changing this value invalidates the cache.
+     */
+    rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
+      const cacheIsReset = rulesStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
+      if (cacheIsReset) {
+        rulesEmitter.shutdown();
+      }
+    },
+  };
 };

@@ -1,6 +1,5 @@
 'use strict';
 
-const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
@@ -12,7 +11,6 @@ angular.module('inboxServices').factory('RulesEngine', function(
   CalendarInterval,
   Changes,
   ContactTypes,
-  DB,
   RulesEngineCore,
   Session,
   Settings,
@@ -40,7 +38,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
               enableTargets: canViewTargets,
             };
 
-            return RulesEngineCore.initialize(DB(), settingsDoc, userContactDoc, options)
+            return RulesEngineCore.initialize(settingsDoc, userContactDoc, options)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
@@ -62,7 +60,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
       callback: change => {
         const subjectId = isReport(change.doc) ? registrationUtils.getPatientId(change.doc) : change.id;
-        RulesEngineCore.updateEmissionsFor(DB(), subjectId);
+        RulesEngineCore.updateEmissionsFor(subjectId);
       },
     });
 
@@ -120,13 +118,13 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
     fetchTaskDocsForAllContacts: () => (
       initialized
-        .then(() => RulesEngineCore.fetchTasksFor(DB()))
+        .then(() => RulesEngineCore.fetchTasksFor())
         .then(translateTaskDocs)
     ),
 
     fetchTaskDocsFor: contactIds => (
       initialized
-        .then(() => RulesEngineCore.fetchTasksFor(DB(), contactIds))
+        .then(() => RulesEngineCore.fetchTasksFor(contactIds))
         .then(translateTaskDocs)
     ),
 
@@ -134,16 +132,11 @@ angular.module('inboxServices').factory('RulesEngine', function(
       initialized
         .then(() => {
           const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
-          const filterForTargetEmissions = emission => {
-            const emissionDate = moment(emission.date);	
-            return emissionDate.isAfter(relevantInterval.start) && emissionDate.isBefore(relevantInterval.end);
-          };
-
-          return RulesEngineCore.fetchTargets(DB(), filterForTargetEmissions);
+          return RulesEngineCore.fetchTargets(relevantInterval);
         })
     ),
   };
 });
 
 // RulesEngineCore allows for karma to test using a mock shared-lib
-angular.module('inboxServices').factory('RulesEngineCore', function() { return rulesEngineCore; });
+angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });

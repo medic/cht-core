@@ -7,10 +7,12 @@
 const registrationUtils = require('@medic/registration-utils');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
-
 const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
 
 const medicPouchProvider = db => {
+
+  // commitTargetDocClosuers avoids conflict errors when used asynchronously
+  const commitTargetDocClosuers = {};
   const self = {
     /*
     PouchDB.query slows down when provided with a large keys array.
@@ -41,7 +43,29 @@ const medicPouchProvider = db => {
         })
     ),
 
-    stateChangeCallback: stateDocUpdateClosure(db),
+    stateChangeCallback: docUpdateClosure(db),
+
+    commitTargetDoc: (assign, userDoc, docTag) => {
+      const userContactId = userDoc && userDoc._id;
+      const _id = `target-${docTag}-${userContactId}`;
+      if (!commitTargetDocClosuers[_id]) {
+        const createNew = () => ({
+          _id,
+          type: 'target',
+          user: userContactId,
+        });
+
+        return db.get(_id)
+          .catch(createNew)
+          .then(existingDoc => {
+            const closure = docUpdateClosure(db);
+            commitTargetDocClosuers[_id] = doc => closure(existingDoc, doc);
+            return commitTargetDocClosuers[_id](assign);
+          });
+      }
+
+      return commitTargetDocClosuers[_id](assign);
+    },
 
     commitTaskDocs: taskDocs => {
       if (!taskDocs || taskDocs.length === 0) {
@@ -92,16 +116,16 @@ const medicPouchProvider = db => {
 
 medicPouchProvider.RULES_STATE_DOCID = RULES_STATE_DOCID;
 
-const stateDocUpdateClosure = db => {
+const docUpdateClosure = db => {
   // previousResult helps avoid conflict errors if this functions is used asynchronously
   let previousResult = Promise.resolve();
-  return (stateDoc, assigned) => {
-    Object.assign(stateDoc, assigned);
+  return (baseDoc, assigned) => {
+    Object.assign(baseDoc, assigned);
 
     previousResult = previousResult
-      .then(() => db.put(stateDoc))
-      .then(updatedDoc => { stateDoc._rev = updatedDoc.rev; })
-      .catch(err => console.error(`Error updating state store: ${err}`))
+      .then(() => db.put(baseDoc))
+      .then(updatedDoc => { baseDoc._rev = updatedDoc.rev; })
+      .catch(err => console.error(`Error updating ${baseDoc._id}: ${err}`))
       .then(() => {
         // unsure of how browsers handle long promise chains, so break the chain when possible
         previousResult = Promise.resolve();

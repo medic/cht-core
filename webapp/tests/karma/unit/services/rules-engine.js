@@ -97,14 +97,14 @@ describe(`RulesEngine service`, () => {
         Auth.withArgs('can_view_tasks').rejects();
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][3]).to.deep.eq({ enableTasks: false, enableTargets: true });
+        expect(RulesEngineCore.initialize.args[0][2]).to.deep.eq({ enableTasks: false, enableTargets: true });
       });
 
       it('targets disabled', async () => {
         Auth.withArgs('can_view_analytics').rejects();
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][3]).to.deep.eq({ enableTasks: true, enableTargets: false });
+        expect(RulesEngineCore.initialize.args[0][2]).to.deep.eq({ enableTasks: true, enableTargets: false });
       });
 
       it('disabled for online users', async () => {
@@ -120,10 +120,9 @@ describe(`RulesEngine service`, () => {
       it('parameters to shared-lib', async () => {
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][0]).to.have.property('get');
-        expect(RulesEngineCore.initialize.args[0][1]).to.eq(settingsDoc);
-        expect(RulesEngineCore.initialize.args[0][2]).to.eq(userContactDoc);
-        expect(RulesEngineCore.initialize.args[0][3]).to.deep.eq({ enableTasks: true, enableTargets: true });
+        expect(RulesEngineCore.initialize.args[0][0]).to.eq(settingsDoc);
+        expect(RulesEngineCore.initialize.args[0][1]).to.eq(userContactDoc);
+        expect(RulesEngineCore.initialize.args[0][2]).to.deep.eq({ enableTasks: true, enableTargets: true });
       });
     });
 
@@ -154,7 +153,7 @@ describe(`RulesEngine service`, () => {
           expect(change.filter(changeFeedFormat(scenario.doc))).to.be.true;
           change.callback(changeFeedFormat(scenario.doc));
           expect(RulesEngineCore.updateEmissionsFor.callCount).to.eq(1);
-          expect(RulesEngineCore.updateEmissionsFor.args[0][1]).to.deep.eq(scenario.expected);
+          expect(RulesEngineCore.updateEmissionsFor.args[0][0]).to.deep.eq(scenario.expected);
         });
       }
 
@@ -197,8 +196,7 @@ describe(`RulesEngine service`, () => {
       RulesEngineCore.fetchTasksFor.resolves([deepCopy(sampleTaskDoc)]);
       const actual = await getService().fetchTaskDocsForAllContacts();
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.args[0][0]).to.have.property('get');
-      expect(RulesEngineCore.fetchTasksFor.args[0][1]).to.be.undefined;
+      expect(RulesEngineCore.fetchTasksFor.args[0][0]).to.be.undefined;
 
       expect(actual.length).to.eq(1);
       expect(actual[0]).to.nested.include({
@@ -214,8 +212,7 @@ describe(`RulesEngine service`, () => {
       RulesEngineCore.fetchTasksFor.resolves([deepCopy(sampleTaskDoc)]);
       const actual = await getService().fetchTaskDocsFor(contactIds);
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.args[0][0]).to.have.property('get');
-      expect(RulesEngineCore.fetchTasksFor.args[0][1]).to.eq(contactIds);
+      expect(RulesEngineCore.fetchTasksFor.args[0][0]).to.eq(contactIds);
 
       expect(actual.length).to.eq(1);
       expect(actual[0]).to.nested.include({

@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiExclude = require('chai-exclude');
 const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate } = require('./mocks');
 const memdownMedic = require('@medic/memdown');
+const moment = require('moment');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
@@ -307,6 +308,58 @@ describe('provider-wireup integration tests', () => {
       await wireup.initialize(provider, settingsDoc, {}, { enableTasks: true, enableTargets: false });
       const actual = await wireup.fetchTargets(provider);
       expect(actual).to.be.empty;
+    });
+
+    it('aggregate target doc is written (latest)', async () => {
+      sinon.spy(provider, 'commitTargetDoc');
+      await wireup.initialize(provider, settingsDoc, {});
+      const actual = await wireup.fetchTargets(provider);
+      expect(actual.length).to.be.gt(1);
+
+      expect(provider.commitTargetDoc.callCount).to.eq(1);
+      await provider.commitTargetDoc.returnValues[0];
+
+      const writtenDoc = await db.get('target-latest-mock_user_id');
+      expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
+        _id: 'target-latest-mock_user_id',
+        type: 'target',
+        updated_date: NOW,
+        user: 'mock_user_id',
+      });
+      expect(writtenDoc.targets[0]).to.deep.eq({
+        id: 'deaths-this-month',
+        value: {
+          pass: 0,
+          total: 0,
+        },
+      });
+    });
+
+    it('aggregate target doc is written (date)', async () => {
+      sinon.spy(provider, 'commitTargetDoc');
+      await wireup.initialize(provider, settingsDoc, {});
+      const interval = { start: 1, end: 1000 };
+      const actual = await wireup.fetchTargets(provider, interval);
+      expect(actual.length).to.be.gt(1);
+
+      expect(provider.commitTargetDoc.callCount).to.eq(1);
+      await provider.commitTargetDoc.returnValues[0];
+
+      const expectedId = `target-${moment(1000).format('YYYY-MM')}-mock_user_id`;
+      const writtenDoc = await db.get(expectedId);
+      expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
+        _id: expectedId,
+        type: 'target',
+        updated_date: NOW,
+        user: 'mock_user_id',
+      });
+      expect(writtenDoc.targets[0]).to.deep.eq({
+        id: 'deaths-this-month',
+        value: {
+          pass: 0,
+          total: 0,
+        },
+      });
     });
   });
 });
