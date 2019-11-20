@@ -53,7 +53,7 @@ angular.module('inboxServices').factory('ContactsActions',
         }
         return UserSettings().then(userSettings => {
           return userSettings.facility_id &&
-                 userSettings.facility_id !== selected._id;
+                 userSettings.facility_id !== selected.doc._id;
         });
       };
 
@@ -80,12 +80,12 @@ angular.module('inboxServices').factory('ContactsActions',
           .catch(() => $log.debug('Not authorized to view tasks'));
       };
 
-      const getChildTypes = model => {
-        if (!model.type) {
-          $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
+      const getChildTypes = selected => {
+        if (!selected.type) {
+          $log.error(`Unknown contact type "${selected.doc.contact_type || selected.doc.type}" for contact "${selected.doc._id}"`);
           return [];
         }
-        return ContactTypes.getChildren(model.type.id).then(childTypes => {
+        return ContactTypes.getChildren(selected.type.id).then(childTypes => {
           const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
           const models = [];
           if (grouped.places) {
@@ -157,7 +157,7 @@ angular.module('inboxServices').factory('ContactsActions',
               return $q
                 .all([
                   getTitle(selected),
-                  canEdit(selected.doc),
+                  canEdit(selected),
                   getChildTypes(selected)
                 ])
                 .then(([ title, canEdit, childTypes ]) => {
