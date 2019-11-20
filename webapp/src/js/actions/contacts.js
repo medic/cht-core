@@ -112,7 +112,7 @@ angular.module('inboxServices').factory('ContactsActions',
         return dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedContact(getState());
           return ContactViewModelGenerator.loadChildren(selected, options).then(children => {
-            dispatch(ActionUtils.createSingleValueAction(actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN, 'children', children));
+            return dispatch(ActionUtils.createSingleValueAction(actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN, 'children', children));
           });
         });
       }
@@ -121,7 +121,7 @@ angular.module('inboxServices').factory('ContactsActions',
         return dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedContact(getState());
           return ContactViewModelGenerator.loadReports(selected).then(reports => {
-            dispatch(ActionUtils.createSingleValueAction(actionTypes.RECEIVE_SELECTED_CONTACT_REPORTS, 'reports', reports));
+            return dispatch(ActionUtils.createSingleValueAction(actionTypes.RECEIVE_SELECTED_CONTACT_REPORTS, 'reports', reports));
           });
         });
       }
@@ -171,6 +171,7 @@ angular.module('inboxServices').factory('ContactsActions',
                   });
                   return lazyLoadedContactData
                     .then(() => {
+                      selected = Selectors.getSelectedContact(getState());
                       return $q.all([
                         ContactSummary(selected.doc, selected.reports, selected.lineage),
                         Settings(),
