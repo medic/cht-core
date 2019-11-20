@@ -127,6 +127,18 @@ describe('task-states', () => {
     });
   });
 
+  describe('isTimely', () => {
+    it('old emission is not timely', () => {
+      const emission = mockEmission(-MS_IN_DAY * 90);
+      expect(TaskStates.isTimely(emission)).to.be.false;
+    });
+
+    it('new emission is timely', () => {
+      const emission = mockEmission(-MS_IN_DAY);
+      expect(TaskStates.isTimely(emission)).to.be.true;
+    });
+  });
+
   describe('mostReadyComparator', () => {
     it('all defined states better than undefined', () => {
       const actual = definedStates.some(state => !TaskStates.isMoreReadyThan(state, undefined));

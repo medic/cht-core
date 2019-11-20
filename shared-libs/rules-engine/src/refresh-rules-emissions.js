@@ -21,9 +21,9 @@ const DEFAULT_OPTIONS = { enableTasks: true, enableTargets: true };
  * 
  * @param {int} calculationTimestamp Timestamp for the round of rules calculations
  * 
- * @param {Object=} options Options for the behavior when refreshing rules
- * @param {Boolean=true} options.enableTasks Flag to enable tasks
- * @param {Boolean=true} options.enableTargets Flag to enable targets
+ * @param {Object=} [options] Options for the behavior when refreshing rules
+ * @param {Boolean} [options.enableTasks=true] Flag to enable tasks
+ * @param {Boolean} [options.enableTargets=true] Flag to enable targets
  *
  * @returns {Object} result
  * @returns {Object[]} result.targetEmissions Array of raw target emissions
@@ -47,7 +47,9 @@ const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp, opti
 
   const { taskDocs = [], userContactId } = freshData;
   const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs);
-  const taskTransforms = disambiguateEmissions(taskEmissions, calculationTimestamp)
+
+  const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
+  const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
     .map(taskEmission => {
       const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
       return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);

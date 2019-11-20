@@ -104,7 +104,7 @@ module.exports = {
       subjectIds = [subjectIds];
     }
 
-    // this function accepts subject ids, but rulesStateStore accepts a contact id. attempt to lookup contact by reference
+    // this function accepts subject ids, but rulesStateStore accepts a contact id, so a conversion is required
     return provider.contactsBySubjectId(subjectIds)
       .then(contactIds => rulesStateStore.markDirty(contactIds));
   },

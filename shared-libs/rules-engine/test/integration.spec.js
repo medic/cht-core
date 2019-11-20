@@ -325,6 +325,26 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
   });
 
+  it('purged doc will not be recreated due to isTimely window', async () => {
+    await db.bulkDocs([patientContact, pregnancyFollowupReport]);
+    const tasks = await RulesEngine.fetchTasksFor(db);
+    expect(tasks).to.have.property('length', 1);
+
+    sinon.useFakeTimers(moment().add(90, 'days').valueOf());
+    const purgedTask = {
+      _id: tasks[0]._id,
+      _rev: tasks[0]._rev,
+      purged: true,
+    };
+    await db.bulkDocs([purgedTask]);
+
+    const tasksAfterPurge = await RulesEngine.fetchTasksFor(db);
+    expect(tasksAfterPurge).to.have.property('length', 0);
+
+    const allTasks = await db.query('medic-client/tasks');
+    expect(allTasks.total_rows).to.eq(0);
+  });
+
   it('mark dirty by subject id (tasks tab scenario)', async () => {
     sinon.spy(rulesEmitter, 'getEmissionsFor');
     const firstTasks = await triggerFacilityReminderInReadyState(undefined, [patientContact, reportByPatientIdOnly]);
