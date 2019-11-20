@@ -12,10 +12,8 @@
       <div class="body container">
         <div class="navigation">
           <ul>
-            <li ng-class="{'active-nav': checkActive('display')}" mm-auth="can_configure"><a ui-sref="display.date-time" translate>Display</a></li>
-            <li ng-class="{'active-nav': checkActive('settings')}" mm-auth="can_configure"><a ui-sref="settings.basic" translate>Settings</a></li>
+            <li ng-class="{'active-nav': checkActive('display')}" mm-auth="can_configure"><a ui-sref="display.date-time" translate>admin.display</a></li>
             <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="backup" translate>settings.backuprestore</a></li>
-            <li ng-class="{'active-nav': checkActive('translation')}" mm-auth="can_configure"><a ui-sref="translation.languages" translate>Languages</a></li>
             <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="forms" translate>Forms</a></li>
             <li ng-class="{'active-nav': checkActive('sms')}" mm-auth="can_configure"><a ui-sref="sms.settings" translate>configuration.sms</a></li>
             <li ng-class="{'active-nav': checkActive('export')}" mm-auth="can_export_all"><a ui-sref="export.messages" translate>import.export</a></li>

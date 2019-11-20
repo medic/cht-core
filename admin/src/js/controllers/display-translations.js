@@ -3,7 +3,7 @@ var _ = require('underscore');
 var TRANSLATION_KEYS_OPTION = { doc: {code: 'keys', name: 'Translation Keys'} };
 var DEFAULT_LANGUAGE = 'en';
 
-angular.module('controllers').controller('TranslationApplicationCtrl',
+angular.module('controllers').controller('DisplayTranslationsCtrl',
   function (
     $log,
     $scope,

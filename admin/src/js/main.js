@@ -21,6 +21,9 @@ require('./controllers/authorization-permissions');
 require('./controllers/authorization-roles');
 require('./controllers/delete-doc-confirm');
 require('./controllers/delete-user');
+require('./controllers/display-date-time');
+require('./controllers/display-languages');
+require('./controllers/display-translations');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
 require('./controllers/edit-user');
@@ -34,7 +37,6 @@ require('./controllers/images-branding');
 require('./controllers/images-partners');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
-require('./controllers/settings-advanced');
 require('./controllers/settings-basic');
 require('./controllers/sms-forms');
 require('./controllers/sms-settings');
@@ -42,8 +44,6 @@ require('./controllers/sms-test');
 require('./controllers/backup');
 require('./controllers/targets');
 require('./controllers/targets-edit');
-require('./controllers/translation-application');
-require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
@@ -176,8 +176,8 @@ angular.module('adminApp').config(function(
       url: '/date-time',
       views: {
         tab: {
-          controller: 'SettingsBasicCtrl',
-          templateUrl: 'templates/settings_basic.html'
+          controller: 'DisplayDateTimeCtrl',
+          templateUrl: 'templates/display_date_time.html'
         }
       }
     })
@@ -185,8 +185,8 @@ angular.module('adminApp').config(function(
       url: '/languages',
       views: {
         tab: {
-          controller: 'TranslationLanguagesCtrl',
-          templateUrl: 'templates/translation_languages.html'
+          controller: 'DisplayLanguagesCtrl',
+          templateUrl: 'templates/display_languages.html'
         }
       }
     })
@@ -194,8 +194,8 @@ angular.module('adminApp').config(function(
       url: '/translations',
       views: {
         tab: {
-          controller: 'TranslationApplicationCtrl',
-          templateUrl: 'templates/translation_application.html'
+          controller: 'DisplayTranslationsCtrl',
+          templateUrl: 'templates/display_translations.html'
         }
       }
     })
@@ -209,15 +209,6 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'SettingsBasicCtrl',
           templateUrl: 'templates/settings_basic.html'
-        }
-      }
-    })
-    .state('settings.advanced', {
-      url: '/advanced',
-      views: {
-        tab: {
-          controller: 'SettingsAdvancedCtrl',
-          templateUrl: 'templates/settings_advanced.html'
         }
       }
     })
@@ -372,28 +363,6 @@ angular.module('adminApp').config(function(
       params: {
         id: null
       },
-    })
-    .state('translation', {
-      url: '/translation',
-      templateUrl: 'templates/translation.html'
-    })
-    .state('translation.languages', {
-      url: '/languages',
-      views: {
-        tab: {
-          controller: 'TranslationLanguagesCtrl',
-          templateUrl: 'templates/translation_languages.html'
-        }
-      }
-    })
-    .state('translation.application', {
-      url: '/application',
-      views: {
-        tab: {
-          controller: 'TranslationApplicationCtrl',
-          templateUrl: 'templates/translation_application.html'
-        }
-      }
     })
     .state('upgrade', {
       url: '/upgrade',

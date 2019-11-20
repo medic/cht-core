@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-angular.module('controllers').controller('TranslationLanguagesCtrl',
+angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
     $log,
     $q,
