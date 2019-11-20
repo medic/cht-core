@@ -26,8 +26,9 @@ describe('refresh-rules-emissions', () => {
 
 
     it('no input yields empty results', async () => {
+      rulesEmitter.getEmissionsFor.resolves({ tasks: [], targets: [] });
       const actual = await refreshRulesEmissionsContact();
-      expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);
+      expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(actual).to.deep.eq({
         updatedTaskDocs: [],
         targetEmissions: [],
@@ -177,7 +178,7 @@ describe('refresh-rules-emissions', () => {
       expect(firstResult.updatedTaskDocs[0]).to.nested.include({
         type: 'task',
         state: 'Ready',
-        'emission._id': 'report~pregnancy-facility-visit-reminder~2',
+        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~2',
       });
 
       // one second later, it gets cancelled because the pregnancy report is gone
@@ -193,7 +194,7 @@ describe('refresh-rules-emissions', () => {
       expect(secondResult.updatedTaskDocs[0]).to.nested.include({
         type: 'task',
         state: 'Cancelled',
-        'emission._id': 'report~pregnancy-facility-visit-reminder~2',
+        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~2',
         'stateHistory[0].state': 'Ready',
         'stateHistory[1].state': 'Cancelled',
       });
@@ -216,7 +217,7 @@ describe('refresh-rules-emissions', () => {
       expect(thirdResult.updatedTaskDocs[0]).to.nested.include({
         type: 'task',
         state: 'Ready',
-        'emission._id': 'report~pregnancy-facility-visit-reminder~2',
+        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~2',
       });
     });
   });

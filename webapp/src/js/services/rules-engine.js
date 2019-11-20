@@ -24,16 +24,23 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
   let uhcMonthStartDate;
 
+  const hasRole = role => Auth(role).then(() => true).catch(() => false);
   const initialize = () => (
-    Auth.any([['can_view_tasks'], ['can_view_analytics']]).then(() => true).catch(() => false)
-      .then(hasPermission => {
+    Promise.all([hasRole('can_view_tasks'), hasRole('can_view_analytics')])
+      .then(([canViewTasks, canViewTargets]) => {
+        const hasPermission = canViewTargets || canViewTasks;
         if (!hasPermission || Session.isOnlineOnly()) {
           return false;
         }
 
         return Promise.all([ Settings(), UserContact() ])
           .then(([settingsDoc, userContactDoc]) => {
-            return RulesEngineCore.initialize(DB(), settingsDoc, userContactDoc)
+            const options = {
+              enableTasks: canViewTasks,
+              enableTargets: canViewTargets,
+            };
+
+            return RulesEngineCore.initialize(DB(), settingsDoc, userContactDoc, options)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
@@ -135,9 +142,6 @@ angular.module('inboxServices').factory('RulesEngine', function(
           return RulesEngineCore.fetchTargets(DB(), filterForTargetEmissions);
         })
     ),
-
-    // testing only - allows karma to test initialization logic
-    _initialize: () => { initialized = initialize(); },
   };
 });
 

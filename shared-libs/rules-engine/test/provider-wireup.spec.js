@@ -35,17 +35,20 @@ const taskOwnedByChtContact = {
   _id: 'taskOwnedBy',
   type: 'task',
   owner: 'patient',
+  emission: {},
 };
 const taskRequestedByChtContact = {
   _id: 'taskRequestedBy',
   type: 'task',
   requester: 'patient',
+  emission: {},
 };
 const headlessTask = {
   _id: 'headlessTask',
   type: 'task',
   requester: 'headless',
   owner: 'headless',
+  emission: {},
 };
 
 const fixtures = [
@@ -232,6 +235,7 @@ describe('provider-wireup integration tests', () => {
           requester: 'headless',
           state: 'Cancelled',
           stateReason: 'invalid',
+          emission: {},
           stateHistory: [{
             state: 'Cancelled',
             timestamp: 50000,
@@ -251,7 +255,7 @@ describe('provider-wireup integration tests', () => {
    
       const actual = await wireup.fetchTasksFor(provider, ['fresh']);
       expect(actual).to.be.empty;
-      expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);
+      expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(db.query.callCount).to.eq(1);
     });
 
@@ -269,10 +273,40 @@ describe('provider-wireup integration tests', () => {
       await rulesStateStore.markDirty(Date.now(), ['dirty']);
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual).to.be.empty;
-      expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);
+      expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(db.query.callCount).to.eq(3);
       expect(db.query.args[2][0]).to.eq('medic-client/tasks');
       expect(db.query.args[2][1]).to.not.have.property('keys');
+    });
+
+    it('cht yields task when targets disabled', async () => {
+      sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
+      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: true, enableTargets: false });
+      const actual = await wireup.fetchTasksFor(provider);
+      expect(actual.length).to.eq(1);
+    });
+
+    it('cht yields nothing when tasks disabled', async () => {
+      sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
+      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: false, enableTargets: true });
+      const actual = await wireup.fetchTasksFor(provider);
+      expect(actual).to.be.empty;
+    });
+  });
+
+  describe('fetchTargets', () => {
+    it('cht yields targets when tasks disabled', async () => {
+      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: false, enableTargets: true });
+      const targets = await wireup.fetchTargets(provider);
+      expect(targets.length).to.be.gt(1);
+      const target = targets.find(target => target.id === 'active-pregnancies-1+-visits');
+      expect(target.value).to.deep.eq({ pass: 1, total: 1 });
+    });
+
+    it('cht yields nothing when tasks disabled', async () => {
+      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: true, enableTargets: false });
+      const actual = await wireup.fetchTargets(provider);
+      expect(actual).to.be.empty;
     });
   });
 });

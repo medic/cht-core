@@ -216,6 +216,8 @@ const hashRulesConfig = (settingsDoc, userDoc) => {
   const rulesConfig = {
     rules: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.rules,
     targets: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.targets,
+    can_view_tasks: settingsDoc && settingsDoc.permissions && settingsDoc.permissions.can_view_tasks,
+    can_view_analytics: settingsDoc && settingsDoc.permissions && settingsDoc.permissions.can_view_analytics,
     userDoc,
   };
 

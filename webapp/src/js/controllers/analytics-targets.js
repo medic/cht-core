@@ -26,7 +26,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
       .catch(err => {
         $log.error('Error getting targets', err);
         ctrl.loading = false;
-        ctrl.targets = []; // TODO: error state?
+        ctrl.targets = [];
       });
   }
 );

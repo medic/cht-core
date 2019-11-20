@@ -11,17 +11,27 @@ const refreshRulesEmissions = require('./refresh-rules-emissions');
 const updateTemporalStates = require('./update-temporal-states');
 const rulesEmitter = require('./rules-emitter');
 
+let wireupOptions;
+
 module.exports = {
   /**
    * @param {Object} provider A data provider
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
+   * @param {Object=} options Options for behavior of the rules-engine
+   * @param {Boolean=true} options.enableTasks Flag to enable tasks
+   * @param {Boolean=true} options.enableTargets Flag to enable targets
    */
-  initialize: (provider, settingsDoc, userDoc) => {
+  initialize: (provider, settingsDoc, userDoc, options) => {
     const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
     if (!isEnabled) {
       return Promise.resolve();
     }
+
+    wireupOptions = Object.assign({
+      enableTasks: true,
+      enableTargets: true,
+    }, options);
          
     return provider.existingRulesStateStore()
       .then(existingStateDoc => {
@@ -45,7 +55,7 @@ module.exports = {
    * @returns {Promise<Object[]>} All the fresh task docs owned by contacts
    */
   fetchTasksFor: (provider, contactIds) => {
-    if (!rulesEmitter.isEnabled()) {
+    if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
       return Promise.resolve([]);
     }
 
@@ -68,7 +78,7 @@ module.exports = {
    * @returns {Promise<Object>} The fresh aggregate target doc
    */
   fetchTargets: (provider, targetEmissionFilter) => {
-    if (!rulesEmitter.isEnabled()) {
+    if (!rulesEmitter.isEnabled() || !wireupOptions.enableTargets) {
       return Promise.resolve([]);
     }
 
@@ -102,7 +112,7 @@ module.exports = {
 
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
   const refreshAndSave = (freshData, updatedContactIds) => (
-    refreshRulesEmissions(freshData, calculationTimestamp)
+    refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions)
       .then(refreshed => Promise.all([
         rulesStateStore.storeTargetEmissions(updatedContactIds, refreshed.targetEmissions),
         provider.commitTaskDocs(refreshed.updatedTaskDocs),

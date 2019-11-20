@@ -12,16 +12,23 @@ const chtDocs = {
   },
 
   pregnancyReport: {
-    _id: 'report',
+    _id: 'pregReport',
     type: 'data_record',
     form: 'pregnancy',
     fields: {
       t_pregnancy_follow_up_date: '2000-01-01',
       patient_uuid: 'patient',
       patient_id: 'patient_id',
+      anc_visits_hf: {
+        anc_visits_hf_past: {
+          last_visit_attended: 'yes',
+          report_other_visits: 'yes',
+          visited_hf_count: 3,
+        },
+      },
     },
     patient_id: 'patient_id',
-    reported_date: 0,
+    reported_date: 1,
   },
 };
 

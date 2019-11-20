@@ -220,7 +220,7 @@ describe('transform-task-emission-to-doc', () => {
       expect(actual).to.deep.eq({
         isUpdated: true,
         taskDoc: {
-          _id: `task~user~report~pregnancy-facility-visit-reminder~2~${Date.now()}`,
+          _id: `task~user~pregReport~pregnancy-facility-visit-reminder~2~${Date.now()}`,
           type: 'task',
           authoredOn: NOW.valueOf(),
           user: 'user',
@@ -228,14 +228,14 @@ describe('transform-task-emission-to-doc', () => {
           owner: 'patient',
           state: 'Ready',
           emission: {
-            _id: 'report~pregnancy-facility-visit-reminder~2',
+            _id: 'pregReport~pregnancy-facility-visit-reminder~2',
             title: 'task.anc.facility_reminder.title',
             icon: 'icon-pregnancy',
             forId: 'patient',
             actions: [{
               content: {
                 source: 'task',
-                source_id: 'report',
+                source_id: 'pregReport',
                 source_visit_date: '2000-01-01',
               },
               form: 'pregnancy_facility_visit_reminder',

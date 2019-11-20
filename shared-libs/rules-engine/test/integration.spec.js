@@ -119,10 +119,8 @@ describe('Rules Engine Integration Tests', () => {
   it('unknown contact yields zero tasks and empty targets', async () => {
     await db.bulkDocs([patientContact, pregnancyFollowupReport]);
     sinon.spy(db, 'query');
-    sinon.spy(rulesEmitter, 'getEmissionsFor');
 
     expect(await RulesEngine.fetchTasksFor(db, ['abc'])).to.deep.eq([]);
-    expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);
     // First call fetches fresh data
     expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length);
 
@@ -130,7 +128,6 @@ describe('Rules Engine Integration Tests', () => {
 
     // Additional calls only fetch the calculated tasks
     expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
-    expect(rulesEmitter.getEmissionsFor.callCount).to.eq(0);
 
     const targets = await RulesEngine.fetchTargets(db);
     expect(targets.length).to.eq(settingsDoc.tasks.targets.items.length);
@@ -418,7 +415,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(sameTargets).to.deep.eq(targets);
 
     const filter = emission => {
-      var emissionDate = moment(emission.date);
+      const emissionDate = moment(emission.date);
       return emissionDate.valueOf() === THE_FUTURE; // based on report.reported_date
     };
     const filteredTargets = await fetchTasks(db, filter);

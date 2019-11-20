@@ -5,8 +5,7 @@ describe(`RulesEngine service`, () => {
   'use strict';
 
   let
-    service,
-    $translate,
+    getService,
     Auth,
     Changes,
     RulesEngineCore,
@@ -36,9 +35,7 @@ describe(`RulesEngine service`, () => {
   };
       
   beforeEach(async () => {
-    Auth = {
-      any: sinon.stub().resolves(true),
-    };
+    Auth = sinon.stub().resolves(true);
     Changes = sinon.stub();
     Session = { isOnlineOnly: sinon.stub().returns(false) };
     Settings = sinon.stub().resolves(settingsDoc);
@@ -69,19 +66,15 @@ describe(`RulesEngine service`, () => {
       $provide.value('UserContact', UserContact);
     });
 
-    inject((_RulesEngine_, _$translate_) => {
-      service = _RulesEngine_;
+    inject(($injector, _$translate_) => {
       sinon.stub(_$translate_, 'instant').returns('$translated');
-      $translate = _$translate_;
+      getService = () => $injector.get('RulesEngine');
     });
   });
 
   const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
-  afterEach(() => {
-    sinon.restore();
-    KarmaUtils.restore($translate, Auth, Changes, Session, Settings, TranslateFrom, UserContact);
-  });
+  afterEach(() => { sinon.restore(); });
 
   describe('mock shared-lib', () => {
     describe('initialization', () => {
@@ -91,37 +84,46 @@ describe(`RulesEngine service`, () => {
           await func();
           assert.fail('Should throw');
         } catch (err) {
-          console.log(JSON.stringify(err));
           expect(err.name).to.include(include);
         }
       };
 
       it('disabled when user has no permissions', async () => {
-        Auth.any.rejects();
+        Auth.rejects();
+        expectAsyncToThrow(getService().isEnabled, 'permission');
+      });
 
-        await service._initialize();
-        expectAsyncToThrow(service.isEnabled, 'permission');
+      it('tasks disabled', async () => {
+        Auth.withArgs('can_view_tasks').rejects();
+        expect(await getService().isEnabled()).to.be.true;
+        expect(RulesEngineCore.initialize.callCount).to.eq(1);
+        expect(RulesEngineCore.initialize.args[0][3]).to.deep.eq({ enableTasks: false, enableTargets: true });
+      });
+
+      it('targets disabled', async () => {
+        Auth.withArgs('can_view_analytics').rejects();
+        expect(await getService().isEnabled()).to.be.true;
+        expect(RulesEngineCore.initialize.callCount).to.eq(1);
+        expect(RulesEngineCore.initialize.args[0][3]).to.deep.eq({ enableTasks: true, enableTargets: false });
       });
 
       it('disabled for online users', async () => {
         Session.isOnlineOnly.returns(true);
-        await service._initialize();
-        expectAsyncToThrow(service.isEnabled, 'permission');
+        expectAsyncToThrow(getService().isEnabled, 'permission');
       });
 
       it('disabled if initialize throws', async () => {
         RulesEngineCore.initialize.rejects('error');
-        await service._initialize();
-        expectAsyncToThrow(service.isEnabled, 'error');
+        expectAsyncToThrow(getService().isEnabled, 'error');
       });
 
       it('parameters to shared-lib', async () => {
-        expect(await service.isEnabled()).to.be.true;
+        expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
         expect(RulesEngineCore.initialize.args[0][0]).to.have.property('get');
         expect(RulesEngineCore.initialize.args[0][1]).to.eq(settingsDoc);
         expect(RulesEngineCore.initialize.args[0][2]).to.eq(userContactDoc);
-        expect(RulesEngineCore.initialize.args[0][3]).to.eq(undefined);
+        expect(RulesEngineCore.initialize.args[0][3]).to.deep.eq({ enableTasks: true, enableTargets: true });
       });
     });
 
@@ -147,6 +149,7 @@ describe(`RulesEngine service`, () => {
 
       for (let scenario of scenarios) {
         it(`trigger update for ${scenario.doc._id}`, async () => {
+          expect(await getService().isEnabled()).to.be.true;
           const change = Changes.args[0][0];
           expect(change.filter(changeFeedFormat(scenario.doc))).to.be.true;
           change.callback(changeFeedFormat(scenario.doc));
@@ -156,6 +159,7 @@ describe(`RulesEngine service`, () => {
       }
 
       it(`does not trigger`, async () => {
+        expect(await getService().isEnabled()).to.be.true;
         const changeFeed = Changes.args[0][0];
         expect(changeFeed.filter({ id: 'id' })).to.be.false;
         expect(changeFeed.filter({ id: 'id', doc: { _id: 'task', type: 'task', requester: 'requester' } })).to.be.false;
@@ -171,6 +175,7 @@ describe(`RulesEngine service`, () => {
 
       for (let scenarioDoc of cachebustScenarios) {
         it(`bust cache for settings ${scenarioDoc._id}`, async () => {
+          expect(await getService().isEnabled()).to.be.true;
           const change = changeFeedFormat(scenarioDoc);
           const changeFeed = Changes.args[1][0];
           expect(changeFeed.filter(change)).to.be.true;
@@ -181,6 +186,7 @@ describe(`RulesEngine service`, () => {
       }
 
       it('no bust cache for unknown id', async () => {
+        expect(await getService().isEnabled()).to.be.true;
         const changeFeed = Changes.args[1][0];
         expect(changeFeed.filter({ id: 'id' })).to.be.false;
         expect(changeFeed.filter(changeFeedFormat({ _id: 'task', type: 'task' }))).to.be.false;
@@ -189,7 +195,7 @@ describe(`RulesEngine service`, () => {
 
     it('fetchTaskDocsForAllContacts', async () => {
       RulesEngineCore.fetchTasksFor.resolves([deepCopy(sampleTaskDoc)]);
-      const actual = await service.fetchTaskDocsForAllContacts();
+      const actual = await getService().fetchTaskDocsForAllContacts();
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
       expect(RulesEngineCore.fetchTasksFor.args[0][0]).to.have.property('get');
       expect(RulesEngineCore.fetchTasksFor.args[0][1]).to.be.undefined;
@@ -206,7 +212,7 @@ describe(`RulesEngine service`, () => {
     it('fetchTaskDocsFor', async () => {
       const contactIds = ['a', 'b', 'c'];
       RulesEngineCore.fetchTasksFor.resolves([deepCopy(sampleTaskDoc)]);
-      const actual = await service.fetchTaskDocsFor(contactIds);
+      const actual = await getService().fetchTaskDocsFor(contactIds);
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
       expect(RulesEngineCore.fetchTasksFor.args[0][0]).to.have.property('get');
       expect(RulesEngineCore.fetchTasksFor.args[0][1]).to.eq(contactIds);

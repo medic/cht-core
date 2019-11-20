@@ -14,10 +14,13 @@ module.exports = {
    * @param {Object} db Medic pouchdb database
    * @param {Object} settingsDoc Settings document
    * @param {Object} userDoc User's hydrated contact document
+   * @param {Object=} options Options for the behavior of the rules engine
+   * @param {Boolean} options.enableTasks Flag to enable tasks
+   * @param {Boolean} options.enableTargets Flag to enable targets
    */
-  initialize: (db, settingsDoc, userDoc) => {
+  initialize: (db, settingsDoc, userDoc, options) => {
     const provider = pouchdbProvider(db);
-    return wireupToProvider.initialize(provider, settingsDoc, userDoc);
+    return wireupToProvider.initialize(provider, settingsDoc, userDoc, options);
   },
 
   /**

@@ -11,53 +11,52 @@ const rulesEmitter = require('./rules-emitter');
 const TaskStates = require('./task-states');
 const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
 
+const DEFAULT_OPTIONS = { enableTasks: true, enableTargets: true };
+
 /**
  * @param {Object[]} freshData.contactDocs A set of contact documents
  * @param {Object[]} freshData.reportDocs All of the contacts' reports
  * @param {Object[]} freshData.taskDocs All of the contacts' task documents (must be linked by requester to a contact)
  * @param {Object[]} freshData.userContactId The id of the user's contact document
+ * 
  * @param {int} calculationTimestamp Timestamp for the round of rules calculations
+ * 
+ * @param {Object=} options Options for the behavior when refreshing rules
+ * @param {Boolean=true} options.enableTasks Flag to enable tasks
+ * @param {Boolean=true} options.enableTargets Flag to enable targets
  *
  * @returns {Object} result
  * @returns {Object[]} result.targetEmissions Array of raw target emissions
  * @returns {Object[]} result.updatedTaskDocs Array of updated task documents
  */
-module.exports = (freshData = {}, calculationTimestamp = Date.now()) => (
-  calculateFreshTaskDocs(freshData, calculationTimestamp)
-    .then(freshResults => {
-      const freshTaskDocs = freshResults.taskTransforms.map(doc => doc.taskDoc);
-      const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
-      const updatedTaskDocs = freshResults.taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-      return {
-        targetEmissions: freshResults.targetEmissions,
-        updatedTaskDocs: [...updatedTaskDocs, ...cancelledDocs],
-      };
-    })
-);
+module.exports = (freshData = {}, calculationTimestamp = Date.now(), options = DEFAULT_OPTIONS) => {
+  const { contactDocs = [], reportDocs = [], taskDocs = [] } = freshData;
+  const permittedTargetEmissions = emissions => options.enableTargets ? emissions : [];
+  return rulesEmitter.getEmissionsFor(contactDocs, reportDocs, taskDocs)
+    .then(emissions => Promise.all([
+      getUpdatedTaskDocs(emissions.tasks, freshData, calculationTimestamp, options),
+      permittedTargetEmissions(emissions.targets),
+    ]))
+    .then(([updatedTaskDocs, targetEmissions]) => ({ updatedTaskDocs, targetEmissions }));
+};
 
-const calculateFreshTaskDocs = (freshData, calculationTimestamp) => {
-  const { contactDocs = [], reportDocs = [], taskDocs = [], userContactId } = freshData;
-  if (contactDocs.length === 0 && reportDocs.length === 0 && taskDocs.length === 0) {
-    return Promise.resolve({
-      targetEmissions: [],
-      taskTransforms: [],
-    });
+const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp, options) => {
+  if (!options.enableTasks) {
+    return [];
   }
 
+  const { taskDocs = [], userContactId } = freshData;
   const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs);
-  return rulesEmitter.getEmissionsFor(contactDocs, reportDocs, taskDocs)
-    .then(emissions => {
-      const taskTransforms = disambiguateEmissions(emissions.tasks, calculationTimestamp)
-        .map(taskEmission => {
-          const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
-          return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
-        });
-     
-      return {
-        targetEmissions: emissions.targets,
-        taskTransforms,
-      };
+  const taskTransforms = disambiguateEmissions(taskEmissions, calculationTimestamp)
+    .map(taskEmission => {
+      const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
+      return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
     });
+
+  const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
+  const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
+  const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
+  return [...updatedTaskDocs, ...cancelledDocs];
 };
 
 /**
