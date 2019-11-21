@@ -37,7 +37,7 @@ require('./controllers/images-branding');
 require('./controllers/images-partners');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
-require('./controllers/settings-basic');
+require('./controllers/settings');
 require('./controllers/sms-forms');
 require('./controllers/sms-settings');
 require('./controllers/sms-test');
@@ -201,16 +201,8 @@ angular.module('adminApp').config(function(
     })
     .state('settings', {
       url: '/settings',
+      controller: 'SettingsCtrl',
       templateUrl: 'templates/settings.html'
-    })
-    .state('settings.basic', {
-      url: '/basic',
-      views: {
-        tab: {
-          controller: 'SettingsBasicCtrl',
-          templateUrl: 'templates/settings_basic.html'
-        }
-      }
     })
     .state('backup', {
       url: '/backup',

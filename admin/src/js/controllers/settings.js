@@ -1,4 +1,4 @@
-angular.module('controllers').controller('SettingsBasicCtrl',
+angular.module('controllers').controller('SettingsCtrl',
   function (
     $log,
     $scope,

@@ -12,6 +12,7 @@
       <div class="body container">
         <div class="navigation">
           <ul>
+            <li ng-class="active-nav" mm-auth="can_configure"><a ui-sref="settings" translate>Settings</a></li>
             <li ng-class="{'active-nav': checkActive('display')}" mm-auth="can_configure"><a ui-sref="display.date-time" translate>admin.display</a></li>
             <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="backup" translate>settings.backuprestore</a></li>
             <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="forms" translate>Forms</a></li>
