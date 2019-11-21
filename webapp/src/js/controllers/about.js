@@ -4,10 +4,11 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $log,
     $ngRedux,
     $scope,
+    $state,
+    $timeout,
     $translate,
     $window,
     DB,
-    Debug,
     ResourceIcons,
     Selectors,
     Session,
@@ -24,10 +25,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
 
     const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
-    ctrl.url = $window.location.hostname;
     ctrl.userCtx = Session.userCtx();
-
-    ctrl.debugOptionEnabled = ctrl.url.indexOf('localhost') >= 0;
 
     ResourceIcons.getDocResources('partners').then(partners => {
       ctrl.partners = partners;
@@ -53,13 +51,22 @@ angular.module('inboxControllers').controller('AboutCtrl',
       })
       .then(rev => ctrl.remoteRev = rev);
 
+    ctrl.knockCount = 0;
+    ctrl.secretDoor = () => {
+      if (ctrl.doorTimeout) {
+        $timeout.cancel(ctrl.doorTimeout);
+      }
+      if (ctrl.knockCount++ >= 5) {
+        $state.go('testing');
+      } else {
+        ctrl.doorTimeout = $timeout(() => {
+          ctrl.knockCount = 0;
+        }, 1000);
+      }
+    };
     ctrl.reload = function() {
       $window.location.reload(false);
     };
-    $scope.enableDebugModel = {
-      val: Debug.get()
-    };
-    $scope.$watch('enableDebugModel.val', Debug.set);
 
     if ($window.medicmobile_android && typeof $window.medicmobile_android.getDataUsage === 'function') {
       updateAndroidDataUsage();

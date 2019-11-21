@@ -18,8 +18,6 @@ const medicLogo = element(by.className('logo-full')),
   finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)')),
   // Tour
   tourBtns = element.all(by.css('.btn.tour-option')),
-  // About
-  debugMode = element(by.css('label')),
   // User settings
   settings = element.all(by.css('.configuration a>span')),
   // Report bug
@@ -38,7 +36,6 @@ module.exports = {
   checkAbout: () => {
     openSubmenu('about');
     expect(genericSubmitButton.getText()).toEqual('Reload');
-    expect(debugMode.getText()).toEqual('Enable debug mode');
   },
 
   checkConfigurationWizard: () => {

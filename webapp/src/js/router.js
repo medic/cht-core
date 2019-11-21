@@ -257,6 +257,14 @@
         url: '/theme',
         controller: 'ThemeCtrl',
         templateUrl: 'templates/partials/theme.html'
+      })
+
+      // various functionality for testing purposes only
+      .state('testing', {
+        url: '/testing',
+        controller: 'TestingCtrl',
+        controllerAs: 'testingCtrl',
+        templateUrl: 'templates/partials/testing.html'
       });
   };
 }());
