@@ -18,7 +18,7 @@ describe('Translation Languages controller', function() {
       query: sinon.stub()
     };
     createController = function() {
-      return $controller('TranslationLanguagesCtrl', {
+      return $controller('DisplayLanguagesCtrl', {
         '$scope': scope,
         'Settings': settings,
         'DB': () => db,
