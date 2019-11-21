@@ -4,6 +4,7 @@ const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
 const MAX_LINEAGE_DEPTH = 50;
+const ENSURE_FRESHNESS_SECS = 120;
 
 angular.module('inboxServices').factory('RulesEngine', function(
   $translate,
@@ -11,6 +12,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
   CalendarInterval,
   Changes,
   ContactTypes,
+  Debounce,
   RulesEngineCore,
   Session,
   Settings,
@@ -21,6 +23,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
   'ngInject';
 
   let uhcMonthStartDate;
+  let ensureTaskFreshness;
+  let ensureTargetFreshness;
 
   const hasRole = role => Auth(role).then(() => true).catch(() => false);
   const initialize = () => (
@@ -44,6 +48,12 @@ angular.module('inboxServices').factory('RulesEngine', function(
                 if (isEnabled) {
                   assignMonthStartDate(settingsDoc);
                   monitorChanges(settingsDoc, userContactDoc);
+
+                  ensureTaskFreshness = Debounce(result.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTaskFreshness();
+                  
+                  ensureTargetFreshness = Debounce(result.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTargetFreshness();
                 }
 
                 return isEnabled;
@@ -52,6 +62,12 @@ angular.module('inboxServices').factory('RulesEngine', function(
       })
   );
   let initialized = initialize();
+
+  const cancelDebounce = debounce => {
+    if (debounce) {
+      debounce.cancel();
+    }
+  };
 
   const monitorChanges = function (settingsDoc, userContactDoc) {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
@@ -113,12 +129,15 @@ angular.module('inboxServices').factory('RulesEngine', function(
     uhcMonthStartDate = UHCSettings.getMonthStartDate(settingsDoc);
   };
 
-  return {
+  const result = {
     isEnabled: () => initialized,
 
     fetchTaskDocsForAllContacts: () => (
       initialized
-        .then(() => RulesEngineCore.fetchTasksFor())
+        .then(() => {
+          cancelDebounce(ensureTaskFreshness);
+          return RulesEngineCore.fetchTasksFor();
+        })
         .then(translateTaskDocs)
     ),
 
@@ -131,11 +150,14 @@ angular.module('inboxServices').factory('RulesEngine', function(
     fetchTargets: () => (
       initialized
         .then(() => {
+          cancelDebounce(ensureTargetFreshness);
           const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
           return RulesEngineCore.fetchTargets(relevantInterval);
         })
     ),
   };
+
+  return result;
 });
 
 // RulesEngineCore allows for karma to test using a mock shared-lib

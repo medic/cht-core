@@ -5,6 +5,7 @@ describe(`RulesEngine service`, () => {
   'use strict';
 
   let
+    $timeout,
     getService,
     Auth,
     Changes,
@@ -46,6 +47,7 @@ describe(`RulesEngine service`, () => {
       initialize: sinon.stub().resolves(true),
       isEnabled: sinon.stub().returns(true),
       fetchTasksFor: sinon.stub().resolves([]),
+      fetchTargets: sinon.stub().resolves([]),
       updateEmissionsFor: sinon.stub(),
       rulesConfigChange: sinon.stub().returns(true),
     };
@@ -66,8 +68,9 @@ describe(`RulesEngine service`, () => {
       $provide.value('UserContact', UserContact);
     });
 
-    inject(($injector, _$translate_) => {
+    inject(($injector, _$timeout_, _$translate_) => {
       sinon.stub(_$translate_, 'instant').returns('$translated');
+      $timeout = _$timeout_;
       getService = () => $injector.get('RulesEngine');
     });
   });
@@ -221,6 +224,49 @@ describe(`RulesEngine service`, () => {
         'emission.priorityLabel': '$translated',
         'emission.other': true,
       });
+    });
+
+    it('correct range is passed when getting targets', async () => {
+      const actual = await getService().fetchTargets();
+      expect(actual).to.deep.eq([]);
+
+      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
+      expect(RulesEngineCore.fetchTargets.args[0][0]).to.have.keys('start', 'end');
+    });
+
+    it('ensure freshness of tasks and targets', async () => {
+      const service = getService();
+      await service.isEnabled();
+      $timeout.flush(500 * 1000);
+
+      await service.isEnabled(); // to resolve promises
+      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
+      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
+    });
+
+    it('ensure freshness of tasks only', async () => {
+      const service = getService();
+      await service.isEnabled();
+      
+      await service.fetchTargets();
+      $timeout.flush(500 * 1000);
+      
+      await service.isEnabled(); // to resolve promises
+      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
+      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
+    });
+
+    it('cancel all ensure freshness threads', async () => {
+      const service = getService();
+      await service.isEnabled();
+      
+      await service.fetchTargets();
+      await service.fetchTaskDocsForAllContacts();
+      $timeout.flush(500 * 1000);
+
+      await service.isEnabled(); // to resolve promises
+      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
+      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
     });
   });
 });

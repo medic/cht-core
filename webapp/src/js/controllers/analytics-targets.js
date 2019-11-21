@@ -1,5 +1,4 @@
-angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
-  function (
+angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
     $log,
     RulesEngine
   ) {
