@@ -72,7 +72,7 @@ describe('refresh-rules-emissions', () => {
       const invalidEmission = { _id: 'abc' };
       rulesEmitter.getEmissionsFor.resolves({ tasks: [invalidEmission] });
       const contactDoc = { _id: 'contact' };
-      const taskDoc = { _id: 'abc-123', requester: contactDoc._id, emission: { _id: invalidEmission._id } };
+      const taskDoc = { _id: 'abc-123', authoredOn: NOW, requester: contactDoc._id, emission: { _id: invalidEmission._id } };
       const actual = await refreshRulesEmissionsContact({ contactDocs: [contactDoc], taskDocs: [taskDoc] });
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(actual.updatedTaskDocs[0]).to.nested.include({
@@ -80,6 +80,25 @@ describe('refresh-rules-emissions', () => {
         'stateReason': 'invalid',
         'stateHistory[0].state': 'Cancelled',
       });
+    });
+
+    it('user rewinds system clock', async () => {
+      const contactDoc = { _id: 'contact' };
+      
+      sinon.useFakeTimers(moment('2000-01-01').valueOf());
+      const emission = mockEmission(0);
+      rulesEmitter.getEmissionsFor.resolves({ tasks: [emission], targets: [] });
+      const actual = await refreshRulesEmissionsContact({ contactDocs: [contactDoc] });
+      expect(actual.updatedTaskDocs.length).to.eq(1);
+      expect(actual.updatedTaskDocs[0].authoredOn).to.eq(Date.now());
+
+      // rewind one year
+      sinon.useFakeTimers(moment('1999-01-01').valueOf());
+      const earlierEmission = mockEmission(0);
+      rulesEmitter.getEmissionsFor.resolves({ tasks: [earlierEmission], targets: [] });
+      const earlierActual = await refreshRulesEmissionsContact({ contactDocs: [contactDoc], taskDocs: actual.updatedTaskDocs });
+      expect(earlierActual.updatedTaskDocs.length).to.eq(1);
+      expect(earlierActual.updatedTaskDocs[0].authoredOn).to.eq(Date.now());
     });
 
     it('tasks age from draft to ready state', async () => {

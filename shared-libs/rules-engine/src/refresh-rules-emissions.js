@@ -39,7 +39,7 @@ module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTas
 
 const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const { taskDocs = [], userContactId } = freshData;
-  const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs);
+  const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs, calculationTimestamp);
 
   const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
   const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
@@ -88,7 +88,10 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
   return Object.keys(winners).map(key => winners[key]); // Object.values()
 };
 
-const mapEmissionIdToLatestTaskDoc = taskDocs => taskDocs
+const mapEmissionIdToLatestTaskDoc = (taskDocs, maxTimestamp) => taskDocs
+  // mitigate the fallout of a user who rewinds their system-clock after creating task docs
+  .filter(doc => doc.authoredOn <= maxTimestamp)
+  
   .reduce((agg, doc) => {
     const emissionId = doc.emission._id;
     if (!agg[emissionId] || agg[emissionId].authoredOn < doc.authoredOn) {
