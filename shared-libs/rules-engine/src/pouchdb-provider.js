@@ -11,8 +11,8 @@ const docsOf = query => query.then(result => result.rows.map(row => row.doc).fil
 
 const medicPouchProvider = db => {
 
-  // commitTargetDocClosuers avoids conflict errors when used asynchronously
-  const commitTargetDocClosuers = {};
+  // commitTargetDocClosures avoids conflict errors when used asynchronously
+  const commitTargetDocClosures = {};
   const self = {
     /*
     PouchDB.query slows down when provided with a large keys array.
@@ -48,7 +48,7 @@ const medicPouchProvider = db => {
     commitTargetDoc: (assign, userDoc, docTag) => {
       const userContactId = userDoc && userDoc._id;
       const _id = `target-${docTag}-${userContactId}`;
-      if (!commitTargetDocClosuers[_id]) {
+      if (!commitTargetDocClosures[_id]) {
         const createNew = () => ({
           _id,
           type: 'target',
@@ -59,12 +59,12 @@ const medicPouchProvider = db => {
           .catch(createNew)
           .then(existingDoc => {
             const closure = docUpdateClosure(db);
-            commitTargetDocClosuers[_id] = doc => closure(existingDoc, doc);
-            return commitTargetDocClosuers[_id](assign);
+            commitTargetDocClosures[_id] = doc => closure(existingDoc, doc);
+            return commitTargetDocClosures[_id](assign);
           });
       }
 
-      return commitTargetDocClosuers[_id](assign);
+      return commitTargetDocClosures[_id](assign);
     },
 
     commitTaskDocs: taskDocs => {

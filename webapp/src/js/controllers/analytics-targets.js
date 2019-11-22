@@ -15,17 +15,15 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
     RulesEngine.isEnabled()
       .then(isEnabled => {
         ctrl.targetsDisabled = !isEnabled;
-        ctrl.loading = isEnabled;
         return isEnabled ? RulesEngine.fetchTargets() : [];
+      })
+      .catch(err => {
+        $log.error('Error getting targets', err);
+        return [];
       })
       .then(targets => {
         ctrl.loading = false;
         ctrl.targets = targets;
-      })
-      .catch(err => {
-        $log.error('Error getting targets', err);
-        ctrl.loading = false;
-        ctrl.targets = [];
       });
   }
 );

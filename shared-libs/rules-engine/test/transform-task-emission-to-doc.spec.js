@@ -64,17 +64,16 @@ describe('transform-task-emission-to-doc', () => {
     expect(firstDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
       state: 'Ready',
-      'emission.dueDate': Date.now(),
     });
 
-    const slightlyDifferentReadyEmission = mockEmission(1000);
+    const slightlyDifferentReadyEmission = mockEmission(0, { readyEnd: 2 });
     const updatedDoc = transformTaskEmissionToDoc(deepCopy(slightlyDifferentReadyEmission), Date.now() + 1000, 'username', deepCopy(firstDoc.taskDoc));
     expect(updatedDoc.isUpdated).to.eq(true);
     expect(updatedDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
       state: 'Ready',
-      'emission.dueDate': Date.now() + 1000,
     });
+    expect(firstDoc.taskDoc.emission.endTime).to.not.eq(updatedDoc.taskDoc.emission.endTime);
     expect(updatedDoc.taskDoc.stateHistory).to.deep.eq([{
       state: 'Ready',
       timestamp: Date.now(),

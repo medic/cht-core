@@ -53,7 +53,7 @@ const self = {
     state = {
       rulesConfigHash: hashRulesConfig(settingsDoc, userDoc),
       contactState: {},
-      targetState: targetState.empty(settingsDoc),
+      targetState: targetState.createEmptyState(settingsDoc),
     };
     currentUser = userDoc;
 
@@ -98,7 +98,7 @@ const self = {
       state = {
         rulesConfigHash,
         contactState: {},
-        targetState: targetState.empty(settingsDoc),
+        targetState: targetState.createEmptyState(settingsDoc),
       };
       currentUser = userDoc;
 
@@ -213,11 +213,13 @@ const self = {
 };
 
 const hashRulesConfig = (settingsDoc, userDoc) => {
+  const settingsTasks = settingsDoc && settingsDoc.tasks || {};
+  const settingsPermissions = settingsDoc && settingsDoc.permissions || {};
   const rulesConfig = {
-    rules: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.rules,
-    targets: settingsDoc && settingsDoc.tasks && settingsDoc.tasks.targets,
-    can_view_tasks: settingsDoc && settingsDoc.permissions && settingsDoc.permissions.can_view_tasks,
-    can_view_analytics: settingsDoc && settingsDoc.permissions && settingsDoc.permissions.can_view_analytics,
+    rules: settingsTasks.rules,
+    targets: settingsTasks.targets,
+    can_view_tasks: settingsPermissions.can_view_tasks,
+    can_view_analytics: settingsPermissions.can_view_analytics,
     userDoc,
   };
 

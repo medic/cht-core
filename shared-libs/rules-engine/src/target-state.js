@@ -36,7 +36,7 @@ module.exports = {
    *
    * @param {Object} settingsDoc Settings document
    */
-  empty: (settingsDoc) => {
+  createEmptyState: (settingsDoc) => {
     const targetDefinitions = settingsDoc.tasks && settingsDoc.tasks.targets && settingsDoc.tasks.targets.items || [];
     return targetDefinitions.reduce((agg, definition) => {
       agg[definition.id] = Object.assign({}, definition, { emissions: {} });

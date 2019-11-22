@@ -11,8 +11,6 @@ const rulesEmitter = require('./rules-emitter');
 const TaskStates = require('./task-states');
 const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
 
-const DEFAULT_OPTIONS = { enableTasks: true, enableTargets: true };
-
 /**
  * @param {Object[]} freshData.contactDocs A set of contact documents
  * @param {Object[]} freshData.reportDocs All of the contacts' reports
@@ -29,22 +27,17 @@ const DEFAULT_OPTIONS = { enableTasks: true, enableTargets: true };
  * @returns {Object[]} result.targetEmissions Array of raw target emissions
  * @returns {Object[]} result.updatedTaskDocs Array of updated task documents
  */
-module.exports = (freshData = {}, calculationTimestamp = Date.now(), options = DEFAULT_OPTIONS) => {
+module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTasks=true, enableTargets=true }={}) => {
   const { contactDocs = [], reportDocs = [], taskDocs = [] } = freshData;
-  const permittedTargetEmissions = emissions => options.enableTargets ? emissions : [];
   return rulesEmitter.getEmissionsFor(contactDocs, reportDocs, taskDocs)
     .then(emissions => Promise.all([
-      getUpdatedTaskDocs(emissions.tasks, freshData, calculationTimestamp, options),
-      permittedTargetEmissions(emissions.targets),
+      enableTasks ? getUpdatedTaskDocs(emissions.tasks, freshData, calculationTimestamp, enableTasks) : [],
+      enableTargets ? emissions.targets : [],
     ]))
     .then(([updatedTaskDocs, targetEmissions]) => ({ updatedTaskDocs, targetEmissions }));
 };
 
-const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp, options) => {
-  if (!options.enableTasks) {
-    return [];
-  }
-
+const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const { taskDocs = [], userContactId } = freshData;
   const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs);
 

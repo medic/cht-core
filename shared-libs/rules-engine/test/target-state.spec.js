@@ -11,12 +11,12 @@ describe('target-state', () => {
   afterEach(() => sinon.restore());
 
   it('empty settings doc yields empty state', () => {
-    const state = targetState.empty({});
+    const state = targetState.createEmptyState({});
     expect(state).to.deep.eq({});
   });
 
   it('an empty state', () => {
-    const state = targetState.empty(mockSettingsDoc());
+    const state = targetState.createEmptyState(mockSettingsDoc());
     expect(state).to.deep.eq({
       target: {
         emissions: {},
@@ -26,7 +26,7 @@ describe('target-state', () => {
   });
 
   it('add and update a single emission', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
    
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
@@ -43,13 +43,13 @@ describe('target-state', () => {
   });
  
   it('emission for unknown target id is ignored', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ type: 'foo' })]);
-    expect(state).to.deep.eq(targetState.empty(mockSettingsDoc()));
+    expect(state).to.deep.eq(targetState.createEmptyState(mockSettingsDoc()));
   });
 
   it('emission without contact is ignored', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ contact: undefined })]);
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
@@ -58,7 +58,7 @@ describe('target-state', () => {
   });
 
   it('deleted emission is ignored', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ deleted: true })]);
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
       id: 'target',
@@ -67,7 +67,7 @@ describe('target-state', () => {
   });
 
   it('add and remove an emission', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
     targetState.storeTargetEmissions(state, ['a'], []);
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
@@ -77,7 +77,7 @@ describe('target-state', () => {
   });
 
   it('two contacts add emission and one removes (state change)', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
     targetState.storeTargetEmissions(state, ['b'], [mockEmission({ pass: false, contact: { _id: 'b', reported_date: 2 } })]);
    
@@ -94,7 +94,7 @@ describe('target-state', () => {
   });
 
   it('three contacts add emission and two remove (no state change)', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a', 'b'], [mockEmission({ pass: false, contact: { _id: 'b', reported_date: 2 } }), mockEmission({ contact: { _id: 'a', reported_date: 1 } })]);
     targetState.storeTargetEmissions(state, ['c'], [mockEmission({ contact: { _id: 'c', reported_date: 3 } })]);
    
@@ -114,7 +114,7 @@ describe('target-state', () => {
     const settingsDoc = mockSettingsDoc();
     settingsDoc.tasks.targets.items[0].type = 'percent';
    
-    let state = targetState.empty(settingsDoc);
+    let state = targetState.createEmptyState(settingsDoc);
     targetState.storeTargetEmissions(state, [], [mockEmission({ pass: false }), mockEmission({ pass: true, _id: 'other' }), mockEmission({ pass: true, contact: { _id: 'b', reported_date: 2 } })]);
    
     expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
@@ -140,7 +140,7 @@ describe('target-state', () => {
   });
 
   it('instanceFilter isRelevant', () => {
-    let state = targetState.empty(mockSettingsDoc());
+    let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, [], [
       mockEmission({ pass: false, date: 1000, }),
       mockEmission({ pass: true, date: 2000, _id: 'other' }),

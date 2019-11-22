@@ -7,10 +7,11 @@
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 
-const rulesStateStore = require('./rules-state-store');
+const TaskStates = require('./task-states');
 const refreshRulesEmissions = require('./refresh-rules-emissions');
-const updateTemporalStates = require('./update-temporal-states');
 const rulesEmitter = require('./rules-emitter');
+const rulesStateStore = require('./rules-state-store');
+const updateTemporalStates = require('./update-temporal-states');
 
 let wireupOptions;
 
@@ -23,16 +24,13 @@ module.exports = {
    * @param {Boolean=true} options.enableTasks Flag to enable tasks
    * @param {Boolean=true} options.enableTargets Flag to enable targets
    */
-  initialize: (provider, settingsDoc, userDoc, options) => {
+  initialize: (provider, settingsDoc, userDoc, { enableTasks=true, enableTargets=true }={}) => {
     const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
     if (!isEnabled) {
       return Promise.resolve();
     }
 
-    wireupOptions = Object.assign({
-      enableTasks: true,
-      enableTargets: true,
-    }, options);
+   wireupOptions = { enableTasks, enableTargets };
          
     return provider.existingRulesStateStore()
       .then(existingStateDoc => {
@@ -66,7 +64,7 @@ module.exports = {
       .then(tasksToDisplay => {
         const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
         provider.commitTaskDocs(docsToCommit);
-        return tasksToDisplay.filter(taskDoc => taskDoc.state === 'Ready');
+        return tasksToDisplay.filter(taskDoc => taskDoc.state === TaskStates.Ready);
       });
   },
 

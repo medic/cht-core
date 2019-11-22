@@ -69,7 +69,9 @@ module.exports = {
     const Task = flow.getDefined('task');
     const Target = flow.getDefined('target');
     const hasProperty = (obj, attr) => Object.hasOwnProperty.call(obj, attr);
-    return hasProperty(Task.prototype, 'readyStart') && hasProperty(Task.prototype, 'readyEnd') && hasProperty(Target.prototype, 'contact');
+    return hasProperty(Task.prototype, 'readyStart') &&
+      hasProperty(Task.prototype, 'readyEnd') &&
+      hasProperty(Target.prototype, 'contact');
   },
 
   /**
