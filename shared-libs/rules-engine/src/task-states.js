@@ -17,6 +17,9 @@ const moment = require('moment');
  */
 const TIMELY_WHEN_NEWER_THAN_DAYS = 60;
 
+// This must be a comparable string format to avoid a bunch of parsing. For example, "2000-01-01" < "2010-11-31"
+const formatString = 'YYYY-MM-DD';
+
 const States = {
   /**
    * Task has been calculated but it is scheduled in the future
@@ -46,22 +49,24 @@ const States = {
 };
 
 const getDisplayWindow = (taskEmission) => {
-  const hasExistingDisplayWindow = taskEmission.startTime || taskEmission.endTime;
+  const hasExistingDisplayWindow = taskEmission.startDate || taskEmission.endDate;
   if (hasExistingDisplayWindow) {
     return {
       dueDate: taskEmission.dueDate,
-      startTime: taskEmission.startTime,
-      endTime: taskEmission.endTime,
+      startDate: taskEmission.startDate,
+      endDate: taskEmission.endDate,
     };
   }
 
-  const dueDate = moment(taskEmission.date).startOf('day');
-  const readyStart = taskEmission.readyStart || 0;
-  const readyEnd = taskEmission.readyEnd || 0;
+  const dueDate = moment(taskEmission.date);
+  if (!dueDate.isValid()) {
+    return { dueDate: NaN, startDate: NaN, endDate: NaN };
+  }
+
   return {
-    dueDate: dueDate.valueOf(),
-    startTime: dueDate.clone().subtract(readyStart, 'days').valueOf(),
-    endTime: dueDate.clone().add(readyEnd, 'days').endOf('day').valueOf(),
+    dueDate: dueDate.format(formatString),
+    startDate: dueDate.clone().subtract(taskEmission.readyStart || 0, 'days').format(formatString),
+    endDate: dueDate.clone().add(taskEmission.readyEnd || 0, 'days').format(formatString),
   };
 };
 
@@ -78,7 +83,7 @@ module.exports = {
     return orderOf(stateA) < orderOf(stateB);
   },
 
-  calculateState: (taskEmission, time) => {
+  calculateState: (taskEmission, timestamp) => {
     if (!taskEmission) {
       return false;
     }
@@ -92,20 +97,21 @@ module.exports = {
     }
 
     // invalid data yields falsey
-    if (!taskEmission.date && !Number.isInteger(taskEmission.dueDate)) {
+    if (!taskEmission.date && !taskEmission.dueDate) {
       return false;
     }
 
-    const { startTime, endTime } = getDisplayWindow(taskEmission);
-    if (!Number.isInteger(startTime) || !Number.isInteger(endTime) || startTime > endTime || endTime < startTime) {
+    const { startDate, endDate } = getDisplayWindow(taskEmission);
+    if (!startDate || !endDate || startDate > endDate || endDate < startDate) {
       return false;
     }
 
-    if (startTime > time) {
+    const timestampAsDate = moment(timestamp).format(formatString);
+    if (startDate > timestampAsDate) {
       return States.Draft;
     }
 
-    if (endTime < time) {
+    if (endDate < timestampAsDate) {
       return States.Failed;
     }
 
@@ -115,8 +121,8 @@ module.exports = {
   getDisplayWindow,
 
   isTimely: (taskEmission, timestamp) => {
-    const { endTime } = getDisplayWindow(taskEmission);
-    return endTime > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').valueOf();
+    const { endDate } = getDisplayWindow(taskEmission);
+    return endDate > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').format(formatString);
   },
 
   setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now()) => {

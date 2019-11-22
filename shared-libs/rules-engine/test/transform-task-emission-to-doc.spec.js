@@ -73,7 +73,7 @@ describe('transform-task-emission-to-doc', () => {
       _id: `task~username~abc~${Date.now()}`,
       state: 'Ready',
     });
-    expect(firstDoc.taskDoc.emission.endTime).to.not.eq(updatedDoc.taskDoc.emission.endTime);
+    expect(firstDoc.taskDoc.emission.endDate).to.not.eq(updatedDoc.taskDoc.emission.endDate);
     expect(updatedDoc.taskDoc.stateHistory).to.deep.eq([{
       state: 'Ready',
       timestamp: Date.now(),
@@ -147,7 +147,7 @@ describe('transform-task-emission-to-doc', () => {
 
     it('invalid duedate', () => {
       const actual = minifyEmission({}, { date: 'foo' });
-      expect(actual).to.deep.eq({ emission: { dueDate: NaN, startTime: NaN, endTime: NaN } });
+      expect(actual).to.deep.eq({ emission: { dueDate: NaN, startDate: NaN, endDate: NaN } });
     });
 
     it('action without contact', () => {
@@ -246,9 +246,9 @@ describe('transform-task-emission-to-doc', () => {
             },
             deleted: false,
             resolved: false,
-            startTime: NOW.clone().subtract(3, 'day').valueOf(),
-            dueDate: NOW.valueOf(),
-            endTime: NOW.clone().add(8, 'day').valueOf() - 1,
+            dueDate: '2000-01-01',
+            startDate: '1999-12-29',
+            endDate: '2000-01-08',
           },
           stateHistory: [{
             state: 'Ready',

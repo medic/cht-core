@@ -163,8 +163,8 @@ describe('refresh-rules-emissions', () => {
     });
 
     it('cht scenario', async () => {
-      const startTime = moment('2000-01-01');
-      sinon.useFakeTimers(startTime.valueOf());
+      const startDate = moment('2000-01-01');
+      sinon.useFakeTimers(startDate.valueOf());
 
       const refreshData = {
         contactDocs: [chtDocs.contact],
@@ -188,7 +188,7 @@ describe('refresh-rules-emissions', () => {
         taskDocs: firstResult.updatedTaskDocs,
       };
       firstResult.updatedTaskDocs[0]._rev = '1_';
-      sinon.useFakeTimers(startTime.valueOf() + 1000);
+      sinon.useFakeTimers(startDate.valueOf() + 1000);
       const secondResult = await refreshRulesEmissionsContact(secondData);
       expect(secondResult.updatedTaskDocs.length).to.eq(1);
       expect(secondResult.updatedTaskDocs[0]).to.nested.include({
@@ -209,7 +209,7 @@ describe('refresh-rules-emissions', () => {
         })],
         taskDocs: secondResult.updatedTaskDocs,
       };
-      sinon.useFakeTimers(startTime.clone().add(1, 'year').valueOf());
+      sinon.useFakeTimers(startDate.clone().add(1, 'year').valueOf());
       const thirdResult = await refreshRulesEmissionsContact(thirdData);
       expect(firstResult.updatedTaskDocs[0]._id).to.not.eq(thirdResult.updatedTaskDocs[0]._id);
       expect(thirdResult.updatedTaskDocs[0]._rev).to.be.undefined;

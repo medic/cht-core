@@ -396,8 +396,8 @@ describe('Rules Engine Integration Tests', () => {
   it('headless scenario (tasks tab)', async () => {
     const headlessReport = { _id: 'report', type: 'data_record', form: 'form', patient_id: 'headless' };
     const headlessReport2 = { _id: 'report2', type: 'data_record', form: 'form', patient_id: 'headless2' };
-    const taskOwnedByHeadless = { _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: { _id: 'emitted', dueDate: Date.now(), startTime: Date.now(), endTime: Date.now(), } };
-    const taskEmittedByHeadless2 = { _id: 'task2', type: 'task', state: 'Ready', requester: 'headless2', emission: { _id: 'emitted', dueDate: Date.now(), startTime: Date.now(), endTime: Date.now(), } };
+    const taskOwnedByHeadless = { _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: { _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(), } };
+    const taskEmittedByHeadless2 = { _id: 'task2', type: 'task', state: 'Ready', requester: 'headless2', emission: { _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(), } };
     await db.bulkDocs([headlessReport, headlessReport2, taskOwnedByHeadless, taskEmittedByHeadless2]);
 
     sinon.spy(db, 'bulkDocs');
