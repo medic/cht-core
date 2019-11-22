@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
-const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate } = require('./mocks');
+const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate, mockEmission } = require('./mocks');
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const PouchDB = require('pouchdb');
@@ -278,6 +278,54 @@ describe('provider-wireup integration tests', () => {
       expect(db.query.callCount).to.eq(3);
       expect(db.query.args[2][0]).to.eq('medic-client/tasks');
       expect(db.query.args[2][1]).to.not.have.property('keys');
+    });
+
+    it('user rewinds system clock', async () => {
+      const getWrittenTaskDoc = () => {
+        const expectedId = `task~mock_user_id~${emission._id}~${Date.now()}`;
+        const committedDocs = db.bulkDocs.args.reduce((agg, arg) => [...agg, ...arg[0]], []);
+        const doc = committedDocs.find(doc => doc._id === expectedId);
+        expect(doc).to.not.be.undefined;
+        return doc;
+      };
+
+      const mockChtEmission = () => mockEmission(0, {
+        contact: { _id: chtDocs.contact._id },
+        doc: {
+          contact: { _id: chtDocs.contact._id },
+        },
+      });
+
+      sinon.spy(db, 'bulkDocs');
+      sinon.useFakeTimers(moment('2000-01-01').valueOf());
+      const emission = mockChtEmission();
+      sinon.stub(rulesEmitter, 'getEmissionsFor').resolves({ tasks: [emission], targets: [] });
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+
+      const rules = noolsPartnerTemplate('', { });
+      const settings = { tasks: { rules }};
+      await wireup.initialize(provider, settings, {});
+      await wireup.fetchTasksFor(provider);
+
+      const firstDoc = getWrittenTaskDoc();
+      expect(firstDoc.state).to.eq('Ready');
+
+      // rewind one year
+      sinon.useFakeTimers(moment('1999-01-01').valueOf());
+      db.bulkDocs.restore();
+      sinon.spy(db, 'bulkDocs');
+      const earlierEmission = mockChtEmission();
+      rulesEmitter.getEmissionsFor.resolves({ tasks: [earlierEmission], targets: [] });
+      await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
+      const displayed = await wireup.fetchTasksFor(provider);
+
+      const secondDoc = getWrittenTaskDoc();
+      expect(firstDoc._id).to.not.eq(secondDoc._id); // a new doc is created, the "future" doc is not used
+      expect(secondDoc.state).to.eq('Ready'); // that doc is the only thing displayed
+      expect(displayed).excludingEvery(['_rev', 'name']).to.deep.eq([secondDoc]);
+
+      const updatedFirstDoc = await db.get(firstDoc._id);
+      expect(updatedFirstDoc.state).to.eq('Cancelled'); // the "future" doc gets moved to a cancelled state
     });
 
     it('cht yields task when targets disabled', async () => {
