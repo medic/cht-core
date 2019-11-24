@@ -132,6 +132,11 @@ angular
     };
 
     var generateDeviceStats = function() {
+      let deviceInfo = {};
+      if ($window.medicmobile_android && typeof $window.medicmobile_android.getDeviceInfo === 'function') {
+        deviceInfo = JSON.parse($window.medicmobile_android.getDeviceInfo());
+      }
+
       return {
         userAgent: $window.navigator.userAgent,
         hardwareConcurrency: $window.navigator.hardwareConcurrency,
@@ -139,10 +144,7 @@ angular
           width: $window.screen.availWidth,
           height: $window.screen.availHeight,
         },
-        // TODO: expose some device information in the medic-android wrapper
-        // and pull it in here. Device memory, phone type, stuff like that
-        //
-        // https://github.com/medic/medic/issues/4882
+        deviceInfo
       };
     };
 
