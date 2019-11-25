@@ -257,7 +257,8 @@ angular
           })
           .catch(function(err) {
             $log.error('Error in telemetry service', err);
-          });
+          })
+          .finally(() => db && !db._destroyed && db.close());
 
         return queue;
       },
