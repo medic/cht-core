@@ -48,7 +48,7 @@ module.exports = function(Promise, DB) {
     if (!contacts || !contacts.length) {
       return;
     }
-    
+
     docs.forEach(function(doc) {
       const id = doc && doc.contact && doc.contact._id;
       const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
@@ -90,14 +90,10 @@ module.exports = function(Promise, DB) {
   };
 
   const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage) {
-    patientLineage = patientLineage || [];
-    const lineages = lineage.concat(patientLineage);
-    fillContactsInDocs(lineages, contacts);
-
     const doc = lineage.shift();
     fillParentsInDocs(doc, lineage);
 
-    if (patientLineage.length) {
+    if (patientLineage && patientLineage.length) {
       const patientDoc = patientLineage.shift();
       fillParentsInDocs(patientDoc, patientLineage);
       doc.patient = patientDoc;
@@ -220,6 +216,7 @@ module.exports = function(Promise, DB) {
             return fetchContacts(lineage.concat(patientLineage));
           })
           .then(function(contacts) {
+            fillContactsInDocs(lineage, contacts);
             return mergeLineagesIntoDoc(lineage, contacts, patientLineage);
           });
       })
@@ -297,7 +294,7 @@ module.exports = function(Promise, DB) {
     if (!docs.length) {
       return Promise.resolve([]);
     }
-    
+
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
@@ -310,11 +307,11 @@ module.exports = function(Promise, DB) {
       .then(function(patients) {
         patientDocs = patients;
         knownDocs.push(...patients);
-        
+
         const firstRoundIdsToFetch = _.uniq([
           ...collectParentIds(hydratedDocs),
           ...collectLeafContactIds(hydratedDocs),
-          
+
           ...collectParentIds(patientDocs),
           ...collectLeafContactIds(patientDocs),
         ]);
@@ -328,7 +325,8 @@ module.exports = function(Promise, DB) {
       })
       .then(function(secondRoundFetched) {
         knownDocs.push(...secondRoundFetched);
-        
+
+        fillContactsInDocs(knownDocs, knownDocs);
         hydratedDocs.forEach((doc, i) => {
           const reconstructLineage = (docWithLineage, parents) => {
             const parentIds = extractParentIds(docWithLineage);
