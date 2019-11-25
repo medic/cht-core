@@ -7,6 +7,7 @@ var phonenumber = require('google-libphonenumber'),
 
 var _init = function(settings, phone) {
   var instance = phonenumber.PhoneNumberUtil.getInstance();
+  var shortInfo = phonenumber.ShortNumberInfo.getInstance();
   var countryCode = settings && settings.default_country_code;
   var regionCode = instance.getRegionCodeForCountryCode(countryCode);
   var parsed = instance.parseAndKeepRawInput(phone, regionCode);
@@ -33,6 +34,9 @@ var _init = function(settings, phone) {
         } else {
           scheme = phonenumber.PhoneNumberFormat.INTERNATIONAL;
         }
+      }
+      if (shortInfo.isValidShortNumber(parsed)) {
+        scheme = phonenumber.PhoneNumberFormat.NATIONAL;
       }
       return instance.format(parsed, scheme).toString();
     },
