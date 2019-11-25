@@ -282,16 +282,6 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.$on('HideContent', function() {
-      $timeout(function() {
-        if (ctrl.cancelCallback) {
-          $scope.navigationCancel();
-        } else {
-          ctrl.navigateBack();
-        }
-      });
-    });
-
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {
         $scope.navigationCancel({ to: trans.to(), params: trans.params() });
