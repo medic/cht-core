@@ -92,6 +92,7 @@ module.exports = {
   },
 
   search: async query => {
+    helper.waitUntilReady(searchBox);
     searchBox.clear();
     searchBox.sendKeys(query);
     await seachButton.click();
