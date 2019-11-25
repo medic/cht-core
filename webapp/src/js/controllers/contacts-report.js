@@ -36,6 +36,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       const globalActions = GlobalActions(dispatch);
       return {
         clearRightActionBar: globalActions.clearRightActionBar,
+        navigationCancel: globalActions.navigationCancel,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
@@ -99,7 +100,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
     ctrl.save = function() {
       if (ctrl.enketoSaving) {
-        $log.debug('Attempted to call contacts-report:$scope.save more than once');
+        $log.debug('Attempted to call "contacts-report.save" more than once');
         return;
       }
 

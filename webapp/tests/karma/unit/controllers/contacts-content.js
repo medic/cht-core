@@ -33,7 +33,8 @@ describe('ContactsContentCtrl', () => {
         getLoadingContent: () => {},
         getLoadingSelectedContactChildren: () => {},
         getLoadingSelectedContactReports: () => {},
-        getContactsLoadingSummary: () => {}
+        getContactsLoadingSummary: () => {},
+        getForms: () => {}
       }
     });
   };

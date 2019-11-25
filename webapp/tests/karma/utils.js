@@ -42,7 +42,8 @@ window.KarmaUtils = {
 
     const DB = () => ({
       get: () => Promise.resolve(),
-      post: () => Promise.resolve()
+      post: () => Promise.resolve(),
+      info: () => Promise.resolve()
     });
     const mockDB = mocks.DB || DB;
     const liveListStub = { clearSelected: () => {} };

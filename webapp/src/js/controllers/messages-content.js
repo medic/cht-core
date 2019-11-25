@@ -42,6 +42,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       const messagesActions = MessagesActions(dispatch);
       return {
         addSelectedMessage: messagesActions.addSelectedMessage,
+        deleteDoc: globalActions.deleteDoc,
         unsetSelected: globalActions.unsetSelected,
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,

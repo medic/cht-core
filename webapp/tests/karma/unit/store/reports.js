@@ -1,9 +1,6 @@
 describe('Reports store', () => {
   'use strict';
 
-  const loadChildren = sinon.stub();
-  const loadReports = sinon.stub();
-
   let reportsActions;
   let getState;
   let selectors;
@@ -12,10 +9,6 @@ describe('Reports store', () => {
 
   const setupStore = initialState => {
     KarmaUtils.setupMockStore(initialState);
-    module($provide => {
-      'ngInject';
-      $provide.value('ContactViewModelGenerator', { loadChildren, loadReports });
-    });
     inject(($ngRedux, ReportsActions, Selectors) => {
       reportsActions = ReportsActions($ngRedux.dispatch);
       getState = $ngRedux.getState;

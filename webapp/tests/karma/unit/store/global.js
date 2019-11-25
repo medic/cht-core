@@ -4,16 +4,40 @@ describe('Global store', () => {
   let globalActions;
   let getState;
   let selectors;
+  let stubModal;
+  let spyState;
+
+  const dummyId = 'dummydummy';
 
   beforeEach(module('inboxApp'));
 
   const setupStore = initialState => {
     KarmaUtils.setupMockStore(initialState);
+    module($provide => {
+      $provide.value('$q', Q);
+      $provide.factory('Modal', () => {
+        stubModal = sinon.stub();
+        // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
+        // altogether. The calling of the processingFunction is tested in
+        // modal.js, not here.
+        stubModal.returns(Promise.resolve());
+        return stubModal;
+      });
+      $provide.factory('$state', () => {
+        spyState = {
+          go: sinon.spy(),
+          current: { name: 'my.state.is.great' },
+          includes: () => true,
+        };
+        return spyState;
+      });
+    });
     inject(($ngRedux, GlobalActions, Selectors) => {
       globalActions = GlobalActions($ngRedux.dispatch);
       getState = $ngRedux.getState;
       selectors = Selectors;
     });
+    spyState.go.resetHistory();
   };
 
   const createGlobalState = state => ({ global: state });
@@ -127,6 +151,38 @@ describe('Global store', () => {
     const globalState = selectors.getGlobalState(state);
     chai.expect(state).to.not.equal(initialState);
     chai.expect(globalState).to.deep.equal({ showContent: true });
+  });
+
+  describe('deleteDoc', () => {
+
+    beforeEach(() => {
+      const initialState = createGlobalState({ showContent: false });
+      setupStore(initialState);
+    });
+
+    it('navigates back to contacts state after deleting contact', () => {
+      return globalActions.deleteDoc(dummyId).then(() => {
+        chai.assert(spyState.go.called, 'Should change state');
+        chai.expect(spyState.go.args[0][0]).to.equal(spyState.current.name);
+        chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
+      });
+    });
+
+    it('does not change state after deleting message', () => {
+      spyState.includes = state => state === 'messages';
+      return globalActions.deleteDoc(dummyId).then(() => {
+        chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+      });
+    });
+
+    it('does not deleteContact if user cancels modal', () => {
+      stubModal.reset();
+      stubModal.returns(Promise.reject({ err: 'user cancelled' }));
+      return globalActions.deleteDoc(dummyId).then(() => {
+        chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+      });
+    });
+
   });
 
 });

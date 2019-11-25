@@ -41,6 +41,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       const reportsActions = ReportsActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        navigationCancel: globalActions.navigationCancel,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,

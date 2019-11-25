@@ -38,6 +38,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       const tasksActions = TasksActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        navigationCancel: globalActions.navigationCancel,
         unsetSelected: globalActions.unsetSelected,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
