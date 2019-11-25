@@ -1,6 +1,6 @@
 {
   "name": "@medic/phone-number",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Our phone number validation and formatting utilities",
   "main": "src/phone-number.js",
   "author": "",

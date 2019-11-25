@@ -23,22 +23,25 @@ var _init = function(settings, phone) {
     return instance.isValidNumber(parsed);
   }
 
+  function getScheme(given) {
+    if (shortInfo.isValidShortNumber(parsed)) {
+      return phonenumber.PhoneNumberFormat.NATIONAL;
+    }
+    if (typeof(given) !== 'undefined') {
+      return given;
+    }
+    if (parsed.getCountryCode() + '' === countryCode) {
+      return phonenumber.PhoneNumberFormat.NATIONAL;
+    }
+    return phonenumber.PhoneNumberFormat.INTERNATIONAL;
+  }
+
   return {
     format: function(scheme) {
       if (!this.validate()) {
         return false;
       }
-      if (typeof scheme === 'undefined') {
-        if (parsed.getCountryCode() + '' === countryCode) {
-          scheme = phonenumber.PhoneNumberFormat.NATIONAL;
-        } else {
-          scheme = phonenumber.PhoneNumberFormat.INTERNATIONAL;
-        }
-      }
-      if (shortInfo.isValidShortNumber(parsed)) {
-        scheme = phonenumber.PhoneNumberFormat.NATIONAL;
-      }
-      return instance.format(parsed, scheme).toString();
+      return instance.format(parsed, getScheme(scheme)).toString();
     },
     validate: function() {
       return validPhone() &&
