@@ -476,12 +476,17 @@ const addPlace = (options) => {
   // create a new place with this place_id
   const place = {
     name: doc.fields[placeNameField],
-    type: 'contact',
-    contact_type: options.params.contact_type,
     reported_date: doc.reported_date,
     place_id: placeShortcode,
     source_id: doc._id,
   };
+
+  if (contactTypesUtils.isHardcodedType(options.params.contact_type)) {
+    place.type = options.params.contact_type;
+  } else {
+    place.type = 'contact';
+    place.contact_type = options.params.contact_type;
+  }
 
   return utils
     .getContactUuid(placeShortcode)

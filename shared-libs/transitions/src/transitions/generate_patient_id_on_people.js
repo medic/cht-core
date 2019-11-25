@@ -21,10 +21,10 @@ module.exports = {
     return true;
   },
   onMatch: change => {
-    const isPerson = contactTypeUtils.isPerson(config.getAll(), change.doc);
     return transitionUtils
       .getUniqueId()
       .then(id => {
+        const isPerson = contactTypeUtils.isPerson(config.getAll(), change.doc);
         const prop = isPerson ? 'patient_id' : 'place_id';
         change.doc[prop] = id;
         return true;

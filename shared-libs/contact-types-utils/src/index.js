@@ -1,7 +1,13 @@
 const HARDCODED_PERSON_TYPE = 'person';
+const HARDCODED_TYPES = [
+  'district_hospital',
+  'health_center',
+  'clinic',
+  'person'
+];
 
 const getContactTypes = config => {
-  return config && config['contact_types'] || [];
+  return config && Array.isArray(config.contact_types) && config.contact_types || [];
 };
 
 const getTypeId = (doc) => {
@@ -61,6 +67,21 @@ const isPlace = (config, contact) => {
   return isPlaceType(type);
 };
 
+const isHardcodedType = type => HARDCODED_TYPES.includes(type);
+
+const isOrphan = (type) => !type.parents || !type.parents.length;
+/**
+ * Returns an array of child types for the given type id.
+ * If parent is falsey, returns the types with no parent.
+ */
+const getChildren = (config, parentType) => {
+  const types = getContactTypes(config);
+  return types.filter(type => (!parentType && isOrphan(type)) || isParentOf(parentType, type));
+};
+
+const getPlaceTypes = (config) => getContactTypes(config).filter(isPlaceType);
+const getPersonTypes = (config) => getContactTypes(config).filter(isPersonType);
+
 module.exports = {
   getTypeId,
   getTypeById,
@@ -72,4 +93,10 @@ module.exports = {
   getContactType,
   isPerson,
   isPlace,
+  isHardcodedType,
+  HARDCODED_TYPES,
+  getContactTypes,
+  getChildren,
+  getPlaceTypes,
+  getPersonTypes,
 };

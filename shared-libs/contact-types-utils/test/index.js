@@ -326,4 +326,112 @@ describe('ContactType Utils', () => {
       chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: healthCenterType.id })).to.equal(true);
     });
   });
+
+  describe('isHardcodedType', () => {
+    it('should return true for hardcoded types', () => {
+      chai.expect(utils.isHardcodedType('district_hospital')).to.equal(true);
+      chai.expect(utils.isHardcodedType('clinic')).to.equal(true);
+      chai.expect(utils.isHardcodedType('health_center')).to.equal(true);
+      chai.expect(utils.isHardcodedType('person')).to.equal(true);
+    });
+
+    it('should return false for non-hardcoded types', () => {
+      chai.expect(utils.isHardcodedType('district_hospital_what?')).to.equal(false);
+      chai.expect(utils.isHardcodedType('not_a_clinic')).to.equal(false);
+      chai.expect(utils.isHardcodedType('healthier_center')).to.equal(false);
+      chai.expect(utils.isHardcodedType('patient')).to.equal(false);
+    });
+  });
+
+  describe('getContactTypes', () => {
+    it('should not crash with empty config', () => {
+      chai.expect(utils.getContactTypes()).to.deep.equal([]);
+      chai.expect(utils.getContactTypes(false)).to.deep.equal([]);
+      chai.expect(utils.getContactTypes({})).to.deep.equal([]);
+      chai.expect(utils.getContactTypes({ other: true })).to.deep.equal([]);
+      chai.expect(utils.getContactTypes({ contact_types: 'something' })).to.deep.equal([]);
+    });
+
+    it('should return contact_types property', () => {
+      chai.expect(utils.getContactTypes({ contact_types: [{ id: 'a' }] })).to.deep.equal([{ id: 'a' }]);
+    });
+  });
+
+  describe('getChildren', () => {
+    it('should not crash with empty config', () => {
+      chai.expect(utils.getChildren()).to.deep.equal([]);
+      chai.expect(utils.getChildren(null)).to.deep.equal([]);
+      chai.expect(utils.getChildren(false)).to.deep.equal([]);
+    });
+
+    it('should return children of place', () => {
+      const contactTypes = [
+        { id: 'root' },
+        { id: 'parent1', parents: ['root'] },
+        { id: 'parent2', parents: ['root'] },
+        { id: 'child1', parents: ['root', 'parent1', 'parent2'] },
+        { id: 'child2', parents: ['root', 'parent2'] },
+        { id: 'child3', parents: ['parent1', 'parent2'] },
+        { id: 'child4', parents: ['root', 'parent1'], person: true },
+      ];
+      const config = { contact_types: contactTypes };
+
+      chai.expect(utils.getChildren(config, 'parent1')).to.deep.equal([
+        { id: 'child1', parents: ['root', 'parent1', 'parent2'] },
+        { id: 'child3', parents: ['parent1', 'parent2'] },
+        { id: 'child4', parents: ['root', 'parent1'], person: true },
+      ]);
+      chai.expect(utils.getChildren(config, 'parent2')).to.deep.equal([
+        { id: 'child1', parents: ['root', 'parent1', 'parent2'] },
+        { id: 'child2', parents: ['root', 'parent2'] },
+        { id: 'child3', parents: ['parent1', 'parent2'] },
+      ]);
+    });
+
+    it('should return orphans for empty type', () => {
+      const contactTypes = [
+        { id: 'root' },
+        { id: 'parent1', parents: ['root'] },
+        { id: 'parent2', parents: ['root'] },
+        { id: 'child1', parents: ['root', 'parent1', 'parent2'] },
+        { id: 'child2', parents: ['root', 'parent2'] },
+        { id: 'orphan1', parents: [] },
+        { id: 'orphan2', parents: [], person: true },
+      ];
+      const config = { contact_types: contactTypes };
+      chai.expect(utils.getChildren(config)).to.deep.equal([
+        { id: 'root' },
+        { id: 'orphan1', parents: [] },
+        { id: 'orphan2', parents: [], person: true },
+      ]);
+    });
+  });
+
+  describe('getPlaceTypes', () => {
+    it('should return empty array for empty config', () => {
+      chai.expect(utils.getPlaceTypes()).to.deep.equal([]);
+    });
+
+    it('should return all place types', () => {
+      chai.expect(utils.getPlaceTypes(settings)).to.deep.equal([
+        districtHospitalType,
+        healthCenterType,
+        clinicType,
+      ]);
+    });
+  });
+
+  describe('getPersonTypes', () => {
+    it('should return empty array for empty config', () => {
+      chai.expect(utils.getPersonTypes()).to.deep.equal([]);
+    });
+
+    it('should return all person types', () => {
+      chai.expect(utils.getPersonTypes(settings)).to.deep.equal([
+        chwType,
+        patientType,
+        personType,
+      ]);
+    });
+  });
 });

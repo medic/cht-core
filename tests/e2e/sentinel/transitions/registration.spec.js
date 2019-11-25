@@ -78,6 +78,11 @@ const nurseContactType = {
   person: true
 };
 
+const nursingHomeType = {
+  id: 'nursing_home',
+  parents: ['health_center'],
+};
+
 const getContactsByReference = shortcodes => {
   const keys = shortcodes.map(shortcode => ['shortcode', shortcode]);
   const qs = { keys: JSON.stringify(keys), include_docs: true };
@@ -1299,11 +1304,11 @@ describe('registration', () => {
           }],
         }],
       }, {
-        form: 'FORM-CLINIC',
+        form: 'FORM-NURSING_HOME',
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: { contact_type: 'clinic', parent_id: 'parent' },
+          params: { contact_type: 'nursing_home', parent_id: 'parent' },
           bool_expr: ''
         }],
         messages: [{
@@ -1319,7 +1324,7 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a place type "nursing_home" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -1368,7 +1373,11 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: { 'FORM-CLINIC_NO_PARENT': { }, 'FORM-CLINIC': { }, 'FORM-HEALTH_CENTER': {} },
+      forms: { 'FORM-CLINIC_NO_PARENT': { }, 'FORM-NURSING_HOME': { }, 'FORM-HEALTH_CENTER': {} },
+      contact_types: [
+        ...defaultSettings.contact_types,
+        nursingHomeType,
+      ]
     };
 
     const clinicNoParent = {
@@ -1383,10 +1392,10 @@ describe('registration', () => {
       contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
-    const clinic = {
-      _id: 'justAClinic',
+    const nursingHome = {
+      _id: 'justANursingHome',
       type: 'data_record',
-      form: 'FORM-CLINIC',
+      form: 'FORM-NURSING_HOME',
       from: '+00000000',
       fields: {
         place_name: 'Ford',
@@ -1409,7 +1418,7 @@ describe('registration', () => {
       contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
-    const docs = [ clinicNoParent, clinic, healthCenter ];
+    const docs = [ clinicNoParent, nursingHome, healthCenter ];
     const ids = docs.map(doc => doc._id);
     let updatedDocs;
 
@@ -1458,8 +1467,7 @@ describe('registration', () => {
 
         chai.expect(places.rows[0].doc).to.deep.include({
           name: 'Toyota',
-          type: 'contact',
-          contact_type: 'clinic',
+          type: 'clinic',
           place_id: updatedDocs[0].place_id,
           source_id: updatedDocs[0]._id,
           created_by: updatedDocs[0].contact._id,
@@ -1468,7 +1476,7 @@ describe('registration', () => {
         chai.expect(places.rows[1].doc).to.deep.include({
           name: 'Ford',
           type: 'contact',
-          contact_type: 'clinic',
+          contact_type: 'nursing_home',
           place_id: updatedDocs[1].place_id,
           source_id: updatedDocs[1]._id,
           created_by: updatedDocs[1].contact._id,
@@ -1476,8 +1484,7 @@ describe('registration', () => {
         });
         chai.expect(places.rows[2].doc).to.deep.include({
           name: 'Mazda',
-          type: 'contact',
-          contact_type: 'health_center',
+          type: 'health_center',
           place_id: updatedDocs[2].place_id,
           source_id: updatedDocs[2]._id,
           created_by: updatedDocs[2].contact._id,
@@ -1619,8 +1626,7 @@ describe('registration', () => {
 
         chai.expect(contacts.rows[0].doc).to.deep.include({
           name: 'Orbit',
-          type: 'contact',
-          contact_type: 'clinic',
+          type: 'clinic',
           place_id: updatedDocs[0].place_id,
           source_id: updatedDocs[0]._id,
           created_by: updatedDocs[0].contact._id,

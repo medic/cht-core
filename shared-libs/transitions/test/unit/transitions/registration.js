@@ -11,8 +11,17 @@ const acceptPatientReports = require('../../../src/transitions/accept_patient_re
 const validation = require('../../../src/lib/validation');
 
 let transition = rewire('../../../src/transitions/registration');
+let settings;
 
 describe('registration', () => {
+  beforeEach(() => {
+    settings = {
+      contact_types: [
+        { id: 'place' },
+        { id: 'person', person: true, parents: ['place'] },
+      ]
+    };
+  });
   afterEach(done => {
     sinon.restore();
     transition = rewire('../../../src/transitions/registration');
@@ -81,12 +90,7 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] },
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
       return transition.onMatch(change).then(() => {
         getContactUuid.callCount.should.equal(1);
@@ -129,12 +133,7 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] }
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(0);
@@ -174,12 +173,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
       sinon.stub(transitionUtils, 'isIdUnique').resolves(true);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] }
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
       return transition.onMatch(change).then(() => {
         saveDoc.args[0][0].patient_id.should.equal(patientId);
@@ -273,12 +267,7 @@ describe('registration', () => {
       const configGet = sinon.stub(config, 'get');
       configGet.withArgs('outgoing_deny_list').returns('');
       configGet.returns([eventConfig]);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] },
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
 
@@ -330,12 +319,7 @@ describe('registration', () => {
       sinon.stub(transitionUtils, 'isIdUnique').resolves(false);
 
       sinon.stub(validation, 'validate').callsArgWith(2, null);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] }
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
       return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.be.equal('undefined');
@@ -382,12 +366,7 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] }
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -435,12 +414,7 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] },
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
@@ -485,12 +459,7 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
-      sinon.stub(config, 'getAll').returns({
-        contact_types: [
-          { id: 'place' },
-          { id: 'person', person: true, parents: ['place'] },
-        ]
-      });
+      sinon.stub(config, 'getAll').returns(settings);
 
 
       return transition.onMatch(change).then(() => {
@@ -933,7 +902,7 @@ describe('registration', () => {
   });
 
   describe('addPlace', () => {
-    it('should add place with correct type under correct parent', () => {
+    it('should add place with correct hardcoded type under correct parent', () => {
       const change = {
         doc: {
           _id: 'reportID',
@@ -984,7 +953,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place_name}} with type {{place.contact_type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place_name}} with type {{place.type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -1012,8 +981,7 @@ describe('registration', () => {
           name: 'new clinic',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'contact',
-          contact_type: 'clinic',
+          type: 'clinic',
           parent: { _id: 'north_hc' },
           created_by: 'pete',
           reported_date: change.doc.reported_date,
@@ -1027,7 +995,7 @@ describe('registration', () => {
       });
     });
 
-    it('should default to submitter parent when parent_id param not specified', () => {
+    it('should add place with correct configurable type and submitter parent when parent_id param not specified', () => {
       const change = {
         doc: {
           _id: 'reportID',
@@ -1244,7 +1212,7 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'parent_id', place_name_field: 'doodle' } }],
+        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1', parent_id: 'parent_id', place_name_field: 'doodle' } }],
         messages: [ {
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
@@ -1259,8 +1227,8 @@ describe('registration', () => {
       };
       const contactTypes = [
         { id: 'health_center' },
-        { id: 'clinic', parents: ['health_center'] },
-        { id: 'patient', parents: ['clinic'], person: true },
+        { id: 'clinic_1', parents: ['health_center'] },
+        { id: 'patient', parents: ['clinic_1'], person: true },
       ];
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
@@ -1281,7 +1249,7 @@ describe('registration', () => {
           place_id: placeId,
           source_id: change.doc._id,
           type: 'contact',
-          contact_type: 'clinic',
+          contact_type: 'clinic_1',
           parent: { _id: 'north_hc' },
           created_by: 'pete',
           reported_date: change.doc.reported_date,
@@ -1290,7 +1258,7 @@ describe('registration', () => {
         change.doc.tasks.length.should.equal(1);
         change.doc.tasks[0].messages[0].should.include({
           to: change.doc.from,
-          message: 'Place newest place with type clinic was added to north hc(health_center)'
+          message: 'Place newest place with type clinic_1 was added to north hc(health_center)'
         });
       });
     });
@@ -1346,7 +1314,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place.name}} with type {{place.contact_type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place.name}} with type {{place.type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -1374,8 +1342,7 @@ describe('registration', () => {
           name: 'newest place',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'contact',
-          contact_type: 'clinic',
+          type: 'clinic',
           parent: { _id: 'north_hc' },
           created_by: 'pete',
           reported_date: change.doc.reported_date,
@@ -1996,10 +1963,9 @@ describe('registration', () => {
           params: { contact_type: 'person' }
         }],
       }];
-      const contactTypes = [{ id: 'place' }, { id: 'person', person: true }];
 
       sinon.stub(config, 'get').returns(eventConfig);
-      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+      sinon.stub(config, 'getAll').returns(settings);
 
       transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with a person contact type "person"');
     });
@@ -2013,10 +1979,9 @@ describe('registration', () => {
           params: { contact_type: 'place' }
         }],
       }];
-      const contactTypes = [{ id: 'place' }, { id: 'person', person: true }];
 
       sinon.stub(config, 'get').returns(eventConfig);
-      sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
+      sinon.stub(config, 'getAll').returns(settings);
 
       transition.init();
     });
