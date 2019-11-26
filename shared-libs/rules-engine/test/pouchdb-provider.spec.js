@@ -1,5 +1,6 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
+const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
 
@@ -89,7 +90,7 @@ describe('pouchdb provider', () => {
 
       expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
         _id: 'target-2019-07-user',
-        updated_date: 25200000,
+        updated_date: moment().startOf('day').valueOf(),
         type: 'target',
         user: 'user',
         targets,
@@ -104,7 +105,7 @@ describe('pouchdb provider', () => {
       await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
       expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
         _id: 'target-2019-07-user',
-        updated_date: 111600000,
+        updated_date: moment().startOf('day').valueOf(),
         type: 'target',
         user: 'user',
         targets: nextTargets,

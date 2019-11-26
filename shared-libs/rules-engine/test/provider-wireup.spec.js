@@ -370,7 +370,7 @@ describe('provider-wireup integration tests', () => {
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
         _id: 'target-latest-mock_user_id',
         type: 'target',
-        updated_date: NOW,
+        updated_date: moment(NOW).startOf('day').valueOf(),
         user: 'mock_user_id',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
@@ -397,7 +397,7 @@ describe('provider-wireup integration tests', () => {
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
         _id: expectedId,
         type: 'target',
-        updated_date: NOW,
+        updated_date: moment(NOW).startOf('day').valueOf(),
         user: 'mock_user_id',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
