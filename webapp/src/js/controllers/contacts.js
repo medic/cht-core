@@ -50,8 +50,6 @@ const PAGE_SIZE = 50;
 
     var liveList = LiveList.contacts;
 
-    LiveList.$init($scope, 'contacts', 'contact-search');
-
     ctrl.appending = false;
     ctrl.error = false;
     ctrl.loading = true;

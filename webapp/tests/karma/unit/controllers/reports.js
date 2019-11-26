@@ -2,26 +2,25 @@ describe('ReportsCtrl controller', () => {
 
   'use strict';
 
-  let createController,
-      scope,
-      globalActions,
-      reportsActions,
-      report,
-      get,
-      post,
-      auth,
-      modal,
-      LiveList,
-      MarkRead,
-      PlaceHierarchy,
-      Search,
-      Changes,
-      FormatDataRecord,
-      changesCallback,
-      changesFilter,
-      searchFilters,
-      liveListInit,
-      liveListReset;
+  let createController;
+  let scope;
+  let globalActions;
+  let reportsActions;
+  let report;
+  let get;
+  let post;
+  let auth;
+  let modal;
+  let LiveList;
+  let MarkRead;
+  let PlaceHierarchy;
+  let Search;
+  let Changes;
+  let FormatDataRecord;
+  let changesCallback;
+  let changesFilter;
+  let searchFilters;
+  let liveListReset;
 
   beforeEach(() => {
     module('inboxApp');
@@ -30,7 +29,6 @@ describe('ReportsCtrl controller', () => {
     post = sinon.stub();
     const DB = KarmaUtils.mockDB({ get, post, info: sinon.stub() })();
 
-    liveListInit = sinon.stub();
     liveListReset = sinon.stub();
     LiveList = {
       reports: {
@@ -44,7 +42,6 @@ describe('ReportsCtrl controller', () => {
       'report-search': {
         set: sinon.stub()
       },
-      $init: liveListInit,
       $reset: liveListReset
     };
     KarmaUtils.setupMockStore(null, { DB, LiveList });
@@ -132,12 +129,6 @@ describe('ReportsCtrl controller', () => {
   }));
 
   afterEach(() => sinon.restore());
-
-  it('set up controller', () => {
-    createController();
-    chai.expect(liveListInit.called, true);
-    chai.expect(liveListInit.args[0]).to.deep.equal([scope, 'reports', 'report-search']);
-  });
 
   describe('verifying reports', () => {
     const scenarios = [

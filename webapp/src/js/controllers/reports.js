@@ -64,7 +64,6 @@ angular
     ctrl.verifyingReport = false;
 
     var liveList = LiveList.reports;
-    LiveList.$init($scope, 'reports', 'report-search');
 
     var updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {

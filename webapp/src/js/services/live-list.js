@@ -505,10 +505,6 @@ angular.module('inboxServices').factory('LiveList',
       delete idx.selected;
     }
 
-    function _setScope(listName, scope) {
-      indexes[listName].scope = scope;
-    }
-
     function refreshAll() {
       const now = new Date();
 
@@ -569,27 +565,16 @@ angular.module('inboxServices').factory('LiveList',
         contains: _.partial(_contains, name),
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
-        clearSelected: _.partial(_clearSelected, name),
-        setScope: _.partial(_setScope, name)
+        clearSelected: _.partial(_clearSelected, name)
       };
 
       return api[name];
-    };
-
-    api.$init = function(scope) {
-      for (var i = 1; i < arguments.length; i++) {
-        var listName = arguments[i];
-        if (api[listName]) {
-          api[listName].setScope(scope);
-        }
-      }
     };
 
     api.$reset = function() {
       for (var i = 0; i < arguments.length; i++) {
         var listName = arguments[i];
         if (api[listName]) {
-          api[listName].setScope();
           api[listName].set([]);
         }
       }
