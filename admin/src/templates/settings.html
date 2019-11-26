@@ -1,26 +1,24 @@
 <div class="tab-content">
-    <form role="form">
+  <form role="form">
 
-        <div class="form-group">
-          <label for="locale" translate>Default Application Language</label>
-          <select id="locale" class="form-control small" ng-model="basicSettingsModel.locale" ng-options="locale.code as locale.name for locale in enabledLocales">
-          </select>
-          <p class="help-block" translate>setup.language.subtitle</p>
-        </div>
+    <div class="form-group">
+      <label for="locale" translate>Default Application Language</label>
+      <select id="locale" class="form-control small" ng-model="basicSettingsModel.locale" ng-options="locale.code as locale.name for locale in enabledLocales"></select>
+      <p class="help-block" translate>setup.language.subtitle</p>
+    </div>
       
-        <div class="form-group">
-          <label for="locale-outgoing" translate>Language For Outgoing Messages</label>
-          <select id="locale-outgoing" class="form-control small" ng-model="basicSettingsModel.locale_outgoing" ng-options="locale.code as locale.name for locale in enabledLocales">
-          </select>
-          <p class="help-block" translate>setup.language.outgoing.subtitle</p>
-        </div>
+    <div class="form-group">
+      <label for="locale-outgoing" translate>Language For Outgoing Messages</label>
+      <select id="locale-outgoing" class="form-control small" ng-model="basicSettingsModel.locale_outgoing" ng-options="locale.code as locale.name for locale in enabledLocales"></select>
+      <p class="help-block" translate>setup.language.outgoing.subtitle</p>
+    </div>
       
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" ng-click="submitBasicSettings()" ng-disabled="status.loading" translate>Submit</button>
-          <span ng-if="status.success" class="success">{{status.msg}}</span>
-          <span ng-if="status.error" class="error">{{status.msg}}</span>
-          <div class="loader inline" ng-show="status.loading"></div>
-        </div>
-      
-      </form>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" ng-click="submitBasicSettings()" ng-disabled="status.loading" translate>Submit</button>
+      <span ng-if="status.success" class="success">{{status.msg}}</span>
+      <span ng-if="status.error" class="error">{{status.msg}}</span>
+      <div class="loader inline" ng-show="status.loading"></div>
+    </div>
+    
+  </form>
 </div>
