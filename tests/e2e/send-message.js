@@ -190,12 +190,14 @@ describe('Send message', () => {
 
   const clickLhsEntry = (entryId, entryName) => {
     entryName = entryName || entryId;
+
     const liIdentifier = messageInList(entryId);
-
     helper.waitUntilReady(element(by.css(liIdentifier)));
-
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
-    element(by.css(liIdentifier + ' a')).click();
+
+    const aIdentifier = `${liIdentifier} a`;
+    helper.waitUntilReady(element(by.css(aIdentifier)));
+    element(by.css(aIdentifier)).click();
 
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));
