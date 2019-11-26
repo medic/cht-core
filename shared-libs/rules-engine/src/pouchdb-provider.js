@@ -52,13 +52,13 @@ const medicPouchProvider = db => {
         user: userContactId,
       });
 
-      const updateTimestamp = moment().startOf('day').valueOf();
+      const today = moment().startOf('day').valueOf();
       return db.get(_id)
         .catch(createNew)
         .then(existingDoc => {
-          if (existingDoc.updated_date !== updateTimestamp) {
+          if (existingDoc.updated_date !== today) {
             Object.assign(existingDoc, assign);
-            existingDoc.updated_date = updateTimestamp;
+            existingDoc.updated_date = today;
             return db.put(existingDoc);
           }
         });
