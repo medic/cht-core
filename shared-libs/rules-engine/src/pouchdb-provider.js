@@ -4,15 +4,13 @@
  * Wireup for accessing rules document data via medic pouch db
  */
 
+const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
 const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
 
 const medicPouchProvider = db => {
-
-  // commitTargetDocClosures avoids conflict errors when used asynchronously
-  const commitTargetDocClosures = {};
   const self = {
     /*
     PouchDB.query slows down when provided with a large keys array.
@@ -48,23 +46,22 @@ const medicPouchProvider = db => {
     commitTargetDoc: (assign, userDoc, docTag) => {
       const userContactId = userDoc && userDoc._id;
       const _id = `target-${docTag}-${userContactId}`;
-      if (!commitTargetDocClosures[_id]) {
-        const createNew = () => ({
-          _id,
-          type: 'target',
-          user: userContactId,
+      const createNew = () => ({
+        _id,
+        type: 'target',
+        user: userContactId,
+      });
+
+      const updateTimestamp = moment().startOf('day').valueOf();
+      return db.get(_id)
+        .catch(createNew)
+        .then(existingDoc => {
+          if (existingDoc.updated_date !== updateTimestamp) {
+            Object.assign(existingDoc, assign);
+            existingDoc.updated_date = updateTimestamp;
+            return db.put(existingDoc);
+          }
         });
-
-        return db.get(_id)
-          .catch(createNew)
-          .then(existingDoc => {
-            const closure = docUpdateClosure(db);
-            commitTargetDocClosures[_id] = doc => closure(existingDoc, doc);
-            return commitTargetDocClosures[_id](assign);
-          });
-      }
-
-      return commitTargetDocClosures[_id](assign);
     },
 
     commitTaskDocs: taskDocs => {

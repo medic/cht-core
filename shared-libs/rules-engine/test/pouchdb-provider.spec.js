@@ -3,7 +3,7 @@ const chaiExclude = require('chai-exclude');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
 
-const { chtDocs } = require('./mocks');
+const { chtDocs, MS_IN_DAY } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -58,9 +58,12 @@ describe('pouchdb provider', () => {
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
+    sinon.useFakeTimers(100000000);
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
   });
+
+  afterEach(() => sinon.restore());
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev').to.deep.eq([headlessTask, taskOwnedByChtContact]));
@@ -86,6 +89,7 @@ describe('pouchdb provider', () => {
 
       expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
         _id: 'target-2019-07-user',
+        updated_date: 25200000,
         type: 'target',
         user: 'user',
         targets,
@@ -93,33 +97,18 @@ describe('pouchdb provider', () => {
 
       const nextTargets = [{ id: 'target', score: 1 }];
       await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
+      const ignoredUpdate = await db.get('target-2019-07-user');
+      expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
+
+      sinon.useFakeTimers(Date.now() + MS_IN_DAY);
+      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
       expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
         _id: 'target-2019-07-user',
+        updated_date: 111600000,
         type: 'target',
         user: 'user',
         targets: nextTargets,
       });
-    });
-
-    it('create two docs', async () => {
-      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, '2018-07');
-      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, '2018-08');
-
-      expect(await db.get('target-2018-07-user')).to.not.be.undefined;
-      expect(await db.get('target-2018-08-user')).to.not.be.undefined;
-    });
-
-    it('can run async without dropped writes', async () => {
-      const docTag = '2017-07';
-      const provider = pouchdbProvider(db);
-      
-      await provider.commitTargetDoc({ targets }, userDoc, docTag);
-      provider.commitTargetDoc({ targets }, userDoc, docTag);
-      provider.commitTargetDoc({ targets }, userDoc, docTag);
-      await provider.commitTargetDoc({ targets }, userDoc, docTag);
-
-      const actual = await db.get('target-2017-07-user');
-      expect(actual._rev.startsWith('4-')).to.be.true;
     });
   });
 
