@@ -251,7 +251,7 @@ var _ = require('underscore'),
 
     Feedback.init();
 
-    LiveListConfig($scope);
+    LiveListConfig();
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
