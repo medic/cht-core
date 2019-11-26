@@ -1,10 +1,13 @@
-const { expect } = require('chai');
+const chai = require('chai');
+const chaiExclude = require('chai-exclude');
 const sinon = require('sinon');
 
 const targetState = require('../src/target-state');
+const { expect } = chai;
+chai.use(chaiExclude);
 
 const mockTargetDefinition = () => ({ id: 'target' });
-const mockSettingsDoc = () => ({ tasks: { targets: { items: [mockTargetDefinition()] } } });
+const mockSettingsDoc = (items = [mockTargetDefinition()]) => ({ tasks: { targets: { items } } });
 const mockEmission = assigned => Object.assign({ _id: '123', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1 } }, assigned);
 
 describe('target-state', () => {
@@ -22,6 +25,19 @@ describe('target-state', () => {
         emissions: {},
         id: 'target',
       },
+    });
+  });
+
+  it('filter out target by context', () => {
+    const match = { id: 'match', context: 'user.prop' };
+    const noContext = { id: 'no-context', context: '' };
+    const noMatch = { id: 'no-match', context: 'user.dne' };
+
+    const settingsDoc = mockSettingsDoc([match, noContext, noMatch]);
+    const state = targetState.createEmptyState(settingsDoc, { prop: 'hi' });
+    expect(state).excludingEvery('emissions').to.deep.eq({
+      match,
+      'no-context': noContext,
     });
   });
 

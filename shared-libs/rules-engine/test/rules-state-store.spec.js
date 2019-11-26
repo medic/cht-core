@@ -153,9 +153,15 @@ describe('rules-state-store', () => {
     const mockSettingsDoc = {
       tasks: {
         targets: {
-          items: [{
-            id: 'target',
-          }],
+          items: [
+            {
+              id: 'target',
+            },
+            {
+              id: 'not-applicable',
+              context: 'user.prop',
+            },
+          ],
         },
       },
     };
