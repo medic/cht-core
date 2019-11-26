@@ -36,6 +36,7 @@ var _ = require('underscore');
         const reportsActions = ReportsActions(dispatch);
         return {
           clearCancelCallback: globalActions.clearCancelCallback,
+          removeSelectedReport: reportsActions.removeSelectedReport,
           setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
           setRightActionBarVerified: globalActions.setRightActionBarVerified,
@@ -98,7 +99,7 @@ var _ = require('underscore');
       ctrl.deselect = function(report, $event) {
         if (ctrl.selectMode) {
           $event.stopPropagation();
-          $scope.deselectReport(report);
+          ctrl.removeSelectedReport(report._id);
         }
       };
 
@@ -113,9 +114,7 @@ var _ = require('underscore');
         },
         callback: function(change) {
           if (change.deleted) {
-            $scope.$apply(function() {
-              $scope.deselectReport(change.id);
-            });
+            ctrl.removeSelectedReport(change.id);
           } else {
             var selectedReports = ctrl.selectedReports;
             $scope.refreshReportSilently(change.id)

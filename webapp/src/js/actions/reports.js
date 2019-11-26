@@ -12,6 +12,7 @@ angular.module('inboxServices').factory('ReportsActions',
     DB,
     GlobalActions,
     LiveList,
+    MarkRead,
     Modal,
     Search,
     Selectors,
@@ -31,6 +32,9 @@ angular.module('inboxServices').factory('ReportsActions',
 
       function removeSelectedReport(id) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_REPORT, 'id', id));
+        setRightActionBar();
+        globalActions.settingSelected(true);
+        $(`#reports-list li[data-record-id="${id}"] input[type="checkbox"]`).prop('checked', false);
       }
 
       function setFirstSelectedReportDocProperty(doc) {
@@ -129,6 +133,16 @@ angular.module('inboxServices').factory('ReportsActions',
             model.expanded = true;
             setSelectedReports([model]);
             setTitle(model);
+
+            const listModel = liveList.getList().find(item => item._id === model._id);
+            if (listModel && !listModel.read) {
+              const unreadCount = Selectors.getUnreadCount(getState());
+              globalActions.updateUnreadCount({ report: unreadCount.report - 1 });
+              listModel.read = true;
+              LiveList.reports.update(listModel);
+              LiveList['report-search'].update(listModel);
+                MarkRead([model.doc]).catch(err => $log.error('Error marking read', err));
+            }
           }
           setRightActionBar();
           globalActions.settingSelected(refreshing);

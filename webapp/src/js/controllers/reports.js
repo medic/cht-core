@@ -18,7 +18,6 @@ angular
     Export,
     GlobalActions,
     LiveList,
-    MarkRead,
     Modal,
     PlaceHierarchy,
     ReportViewModelGenerator,
@@ -108,24 +107,6 @@ angular
       });
     };
 
-    var setSelected = function(model) {
-      ctrl.setSelected(model);
-      if (ctrl.selectMode) {
-        return;
-      }
-      var listModel = _.findWhere(liveList.getList(), { _id: model._id });
-      if (listModel && !listModel.read) {
-        ctrl.updateUnreadCount({ report: ctrl.unreadCount.report - 1 });
-        listModel.read = true;
-        LiveList.reports.update(listModel);
-        LiveList['report-search'].update(listModel);
-      }
-      MarkRead([model.doc])
-        .catch(function(err) {
-          $log.error('Error marking read', err);
-        });
-    };
-
     var fetchFormattedReport = function(report) {
       var id = _.isString(report) ? report : report._id;
       return ReportViewModelGenerator(id);
@@ -133,29 +114,8 @@ angular
 
     $scope.refreshReportSilently = function(report) {
       return fetchFormattedReport(report)
-        .then(function(model) {
-          setSelected(model);
-        })
-        .catch(function(err) {
-          $log.error('Error fetching formatted report', err);
-        });
-    };
-
-    var removeSelectedReport = function(id) {
-      ctrl.removeSelectedReport(id);
-      var index = _.findIndex(ctrl.selectedReports, function(s) {
-        return s._id === id;
-      });
-      if (index !== -1) {
-        ctrl.setRightActionBar();
-      }
-    };
-
-    $scope.deselectReport = function(report) {
-      const reportId = report._id || report;
-      removeSelectedReport(reportId);
-      $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
-      ctrl.settingSelected(true);
+        .then(model => ctrl.setSelected(model))
+        .catch(err => $log.error('Error fetching formatted report', err));
     };
 
     $scope.selectReport = function(report) {
@@ -167,7 +127,7 @@ angular
         .then(function(model) {
           if (model) {
             $timeout(function() {
-              setSelected(model);
+              ctrl.setSelected(model);
               initScroll();
             });
           }
@@ -327,7 +287,7 @@ angular
           if (!alreadySelected) {
             $scope.selectReport(reportId);
           } else {
-            removeSelectedReport(reportId);
+            ctrl.removeSelectedReport(reportId);
           }
         });
       }
