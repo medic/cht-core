@@ -18,7 +18,6 @@ angular
     Export,
     GlobalActions,
     LiveList,
-    Modal,
     ReportViewModelGenerator,
     ReportsActions,
     Search,
@@ -220,18 +219,6 @@ angular
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);
     }
-
-    $scope.edit = function(report, group) {
-      Modal({
-        templateUrl: 'templates/modals/edit_message_group.html',
-        controller: 'EditMessageGroupCtrl',
-        controllerAs: 'editMessageGroupCtrl',
-        model: {
-          report: report,
-          group: angular.copy(group),
-        },
-      });
-    };
 
     ctrl.resetFilterModel = function() {
       if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {

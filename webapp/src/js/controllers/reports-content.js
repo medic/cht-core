@@ -14,6 +14,7 @@ var _ = require('underscore');
       Changes,
       GlobalActions,
       MessageState,
+      Modal,
       ReportsActions,
       Selectors
     ) {
@@ -101,6 +102,18 @@ var _ = require('underscore');
           $event.stopPropagation();
           ctrl.removeSelectedReport(report._id);
         }
+      };
+
+      ctrl.edit = (report, group) => {
+        Modal({
+          templateUrl: 'templates/modals/edit_message_group.html',
+          controller: 'EditMessageGroupCtrl',
+          controllerAs: 'editMessageGroupCtrl',
+          model: {
+            report: report,
+            group: angular.copy(group),
+          },
+        }).catch(() => {}); // dismissed
       };
 
       var changeListener = Changes({
