@@ -18,7 +18,6 @@ angular
     Export,
     GlobalActions,
     LiveList,
-    ReportViewModelGenerator,
     ReportsActions,
     Search,
     SearchFilters,
@@ -77,37 +76,6 @@ angular
         setActionBarData();
         return updated;
       });
-    };
-
-    var fetchFormattedReport = function(report) {
-      var id = _.isString(report) ? report : report._id;
-      return ReportViewModelGenerator(id);
-    };
-
-    $scope.refreshReportSilently = function(report) {
-      return fetchFormattedReport(report)
-        .then(model => ctrl.setSelected(model))
-        .catch(err => $log.error('Error fetching formatted report', err));
-    };
-
-    $scope.selectReport = function(report) {
-      if (!report) {
-        return;
-      }
-      ctrl.setLoadingShowContent(report);
-      fetchFormattedReport(report)
-        .then(function(model) {
-          if (model) {
-            $timeout(function() {
-              ctrl.setSelected(model);
-              initScroll();
-            });
-          }
-        })
-        .catch(function(err) {
-          ctrl.unsetSelected();
-          $log.error('Error selecting report', err);
-        });
     };
 
     var query = function(opts) {
@@ -245,7 +213,7 @@ angular
         $timeout(function() {
           checkbox.prop('checked', !alreadySelected);
           if (!alreadySelected) {
-            $scope.selectReport(reportId);
+            ctrl.selectReport(reportId);
           } else {
             ctrl.removeSelectedReport(reportId);
           }

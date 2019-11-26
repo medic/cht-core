@@ -179,7 +179,6 @@ describe('ReportsCtrl controller', () => {
     });
   });
 
-
   describe('Changes listener', () => {
     it('subscribes to changes', () => {
       createController();

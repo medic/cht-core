@@ -38,6 +38,7 @@ var _ = require('underscore');
         return {
           clearCancelCallback: globalActions.clearCancelCallback,
           removeSelectedReport: reportsActions.removeSelectedReport,
+          selectReport: reportsActions.selectReport,
           setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
           setRightActionBarVerified: globalActions.setRightActionBarVerified,
@@ -46,7 +47,7 @@ var _ = require('underscore');
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-      $scope.selectReport($stateParams.id);
+      ctrl.selectReport($stateParams.id);
       ctrl.clearCancelCallback();
       $('.tooltip').remove();
 
@@ -86,7 +87,7 @@ var _ = require('underscore');
           ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
         } else {
           ctrl.updateSelectedReportItem(id, { loading: true });
-          $scope.refreshReportSilently(id)
+          ctrl.selectReport(id, { silent: true })
             .then(function() {
               ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
             })
@@ -130,7 +131,7 @@ var _ = require('underscore');
             ctrl.removeSelectedReport(change.id);
           } else {
             var selectedReports = ctrl.selectedReports;
-            $scope.refreshReportSilently(change.id)
+            ctrl.selectReport(change.id, { silent: true })
               .then(function() {
                 if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
                    (change.doc && ('oldVerified' in selectedReports[0].formatted &&

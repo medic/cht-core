@@ -14,6 +14,7 @@ angular.module('inboxServices').factory('ReportsActions',
     LiveList,
     MarkRead,
     Modal,
+    ReportViewModelGenerator,
     Search,
     Selectors,
     ServicesActions
@@ -148,6 +149,25 @@ angular.module('inboxServices').factory('ReportsActions',
           globalActions.settingSelected(refreshing);
         });
       }
+
+      const selectReport = (id, { silent=false }={}) => {
+        if (!id) {
+          return Promise.resolve();
+        }
+        if (!silent) {
+          globalActions.setLoadingShowContent(id);
+        }
+        return ReportViewModelGenerator(id)
+          .then(model => {
+            if (model) {
+              setSelected(model);
+            }
+          })
+          .catch(err => {
+            globalActions.unsetSelected();
+            $log.error('Error selecting report', err);
+          });
+      };
 
       function deselectAll() {
         dispatch(() => {
@@ -316,6 +336,7 @@ angular.module('inboxServices').factory('ReportsActions',
         removeSelectedReport,
         launchEditFacilityDialog,
         selectAll,
+        selectReport,
         setFirstSelectedReportDocProperty,
         setFirstSelectedReportFormattedProperty,
         setRightActionBar,
