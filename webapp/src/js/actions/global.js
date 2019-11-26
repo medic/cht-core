@@ -70,10 +70,6 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetEnketoStatusAction({ saving }));
       }
 
-      function setFacilities(facilities) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
-      }
-
       function setForms(forms) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FORMS, 'forms', forms));
       }
@@ -261,7 +257,6 @@ angular.module('inboxServices').factory('GlobalActions',
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
-        setFacilities,
         setFilter,
         setFilters,
         setForms,

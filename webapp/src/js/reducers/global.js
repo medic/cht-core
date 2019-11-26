@@ -61,8 +61,6 @@ module.exports = function(state, action) {
       return Object.assign({}, state, {
         enketoStatus: Object.assign({}, state.enketoStatus, action.payload.enketoStatus)
       });
-    case actionTypes.SET_FACILITIES:
-      return Object.assign({}, state, { facilities: action.payload.facilities });
     case actionTypes.SET_FILTER:
       return Object.assign({}, state, {
         filters: Object.assign({}, state.filters, action.payload.filter)
