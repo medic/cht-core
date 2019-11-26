@@ -18,6 +18,6 @@ angular.module('inboxDirectives').component('mmMessagesList', {
   controllerAs: 'messagesListCtrl',
   bindings: {
     loading: '<',
-    messages: '<'
+    conversations: '<'
   }
 });

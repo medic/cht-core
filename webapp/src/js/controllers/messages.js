@@ -1,4 +1,3 @@
-const _ = require('underscore');
 const responsive = require('../modules/responsive');
 
 angular
@@ -26,7 +25,8 @@ angular
     const mapStateToTarget = function(state) {
       return {
         currentTab: Selectors.getCurrentTab(state),
-        selectedMessage: Selectors.getSelectedMessage(state)
+        selectedMessage: Selectors.getSelectedMessage(state),
+        conversations: Selectors.getConversations(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
@@ -37,64 +37,64 @@ angular
         setSelectedMessage: messagesActions.setSelectedMessage,
         settingSelected: globalActions.settingSelected,
         updateSelectedMessage: messagesActions.updateSelectedMessage,
+        setConversations: messagesActions.setConversations
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    ctrl.messages = [];
     ctrl.setSelectedMessage(null);
     ctrl.loading = true;
 
-    var setMessages = function(options) {
-      options = options || {};
-      if (options.changes) {
-        MessageListUtils.removeDeleted(ctrl.messages, options.messages);
-        MessageListUtils.mergeUpdated(ctrl.messages, options.messages);
-        const found = ctrl.messages.some(message => message.key === ctrl.selectedMessage.id);
+    const updateActionBar = () => {
+      ctrl.setLeftActionBar({
+        hasResults: ctrl.conversations.length > 0,
+        exportFn: () => Export('messages', {}, { humanReadable: true })
+      });
+    };
+
+    const updateSelected = () => {
+      const selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
+      if (selectedId) {
+        const found = ctrl.conversations.some(conversation => conversation.key === selectedId);
         if (found) {
-          MessageContacts.conversation(ctrl.selectedMessage.id).then(conversation => {
+          MessageContacts.conversation(selectedId).then(conversation => {
             ctrl.updateSelectedMessage({ messages: conversation });
           });
         }
-      } else {
-        ctrl.messages = options.messages || [];
       }
-      setActionBarData();
     };
 
-    var updateConversations = function(options) {
-      options = options || {};
-      if (!options.changes) {
-        ctrl.loading = true;
+    const setConversations = (conversations=[], { merge=false }={}) => {
+      if (merge) {
+        MessageListUtils.removeDeleted(ctrl.conversations, conversations);
+        MessageListUtils.mergeUpdated(ctrl.conversations, conversations);
+        ctrl.setConversations(conversations);
+        updateSelected();
+      } else {
+        ctrl.setConversations(conversations);
       }
-      return MessageContacts.list().then(function(messages) {
-        options.messages = messages;
-        setMessages(options);
+      updateActionBar();
+    };
+
+    const updateConversations = ({ merge=false }={}) => {
+      return MessageContacts.list().then(conversations => {
+        setConversations(conversations, { merge });
         ctrl.loading = false;
       });
     };
 
-    $scope.markConversationRead = function(docs) {
-      var ids = _.pluck(docs, '_id');
-      var conversation = _.find(ctrl.messages, function(message) {
-        return ids.indexOf(message.id) !== -1;
-      });
-      if (conversation) {
-        conversation.read = true;
-      }
-    };
-
+    // updateActionBar();
     updateConversations()
-      .then(function() {
+      .then(() => {
         if (
           !$state.params.id &&
-          ctrl.messages.length &&
+          ctrl.conversations.length &&
           !responsive.isMobile() &&
           $state.is('messages.detail')
         ) {
-          $timeout(function() {
-            var first = $('.inbox-items li').first();
-            var state = {
+          $timeout(() => {
+            const first = $('.inbox-items li').first();
+            const state = {
               id: first.attr('data-record-id'),
               type: first.attr('data-record-type'),
             };
@@ -102,37 +102,18 @@ angular
           });
         }
       })
-      .catch(function(err) {
-        $log.error('Error fetching contact', err);
-      });
+      .catch(err =>$log.error('Error fetching contact', err));
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'messages-list',
-      callback: function() {
-        updateConversations({ changes: true });
-      },
-      filter: function(change) {
-        if (ctrl.currentTab !== 'messages') {
-          return false;
-        }
-        return (
+      callback: () => updateConversations({ merge: true }),
+      filter: change => {
+        return ctrl.currentTab === 'messages' &&
           (change.doc && change.doc.kujua_message) ||
           (change.doc && change.doc.sms_message) ||
-          change.deleted
-        );
+          change.deleted;
       },
     });
-
-    var setActionBarData = function() {
-      ctrl.setLeftActionBar({
-        hasResults: ctrl.messages.length > 0,
-        exportFn: function() {
-          Export('messages', {}, { humanReadable: true });
-        },
-      });
-    };
-
-    setActionBarData();
 
     $scope.$on('$destroy', function() {
       unsubscribe();

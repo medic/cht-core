@@ -17,7 +17,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $timeout,
     GlobalActions,
     LineageModelGenerator,
-    MarkRead,
     MessageContacts,
     MessagesActions,
     Modal,
@@ -43,6 +42,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       return {
         addSelectedMessage: messagesActions.addSelectedMessage,
         deleteDoc: globalActions.deleteDoc,
+        markConversationRead: messagesActions.markConversationRead,
         unsetSelected: globalActions.unsetSelected,
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
@@ -81,28 +81,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       $('.message-content-wrapper').on('scroll', checkScroll);
     };
 
-    var markAllRead = function() {
-      var docs = _.pluck(ctrl.selectedMessage.messages, 'doc');
-      if (docs.length) {
-        $scope.markConversationRead(docs);
-        MarkRead(docs)
-          .catch(function(err) {
-            return $log.error('Error marking all as read', err);
-          });
-      }
-    };
-
     // See $stateParams.id note at top of file
     var getContactable = function(id, type) {
       if (type === 'contact') {
-        return LineageModelGenerator.contact(id)
-                                    .catch(err => {
-                                      if (err.code === 404) {
-                                        return Promise.resolve();
-                                      }
-
-                                      throw err;
-                                    });
+        return LineageModelGenerator.contact(id).catch(err => {
+          if (err.code === 404) {
+            return Promise.resolve();
+          }
+          throw err;
+        });
       } else if (type === 'phone') {
         return {name: id};
       } else {
@@ -110,8 +97,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
-    var selectContact = function(id, type, options) {
-      options = options || {};
+    const selectContact = function(id, type) {
       if (!id) {
         ctrl.setMessagesError(false);
         ctrl.setLoadingContent(false);
@@ -120,10 +106,9 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
       $('.message-content-wrapper').off('scroll', checkScroll);
       ctrl.setSelected({ id: id, messages: [] });
-      if (!options.silent) {
-        ctrl.setLoadingShowContent(id);
-      }
-      $q.all([
+      ctrl.setLoadingShowContent(id);
+
+      return $q.all([
         getContactable(id, type),
         MessageContacts.conversation(id)
       ])
@@ -156,15 +141,11 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
           ctrl.setLoadingShowContent(false);
           ctrl.setMessagesError(false);
-          var unread = _.filter(conversation, function(message) {
-            return !message.read;
-          });
-          ctrl.firstUnread = _.min(unread, function(message) {
-            return message.doc.reported_date;
-          });
+          const unread = conversation.filter(message => !message.read);
+          ctrl.firstUnread = _.min(unread, message => message.doc.reported_date);
           ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
           ctrl.setTitle((contactModel.doc && contactModel.doc.name) || id);
-          markAllRead();
+          ctrl.markConversationRead();
           $timeout(scrollToUnread);
         })
         .catch(function(err) {
@@ -205,7 +186,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               ctrl.allLoaded = conversation.length < 50;
               delete ctrl.firstUnread;
             }
-            markAllRead();
+            ctrl.markConversationRead();
             $timeout(function() {
               var scroll = false;
               if (options.skip) {
@@ -267,7 +248,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $('.tooltip').remove();
 
     // See $stateParams.id note at top of file
-    selectContact($stateParams.id, $stateParams.type);
+    // Promise exposed solely for testing purposes
+    ctrl._testSelect = selectContact($stateParams.id, $stateParams.type);
 
     $('body')
       .on('focus', '#message-footer textarea', function() {

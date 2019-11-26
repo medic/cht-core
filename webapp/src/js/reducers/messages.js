@@ -34,6 +34,8 @@ module.exports = function(state, action) {
       return Object.assign({}, state, {
         selected: merge({}, state.selected, action.payload.selected)
       });
+    case actionTypes.SET_CONVERSATIONS:
+      return Object.assign({}, state, { conversations: action.payload.conversations });
     default:
       return state;
   }

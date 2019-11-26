@@ -1,17 +1,16 @@
 describe('MessagesContentCtrl', () => {
   'use strict';
 
-  let controller,
-      scope,
-      state,
-      stateParams,
-      changes,
-      contact,
-      markRead,
-      conversation,
-      stubbedMessagesActions,
-      messagesActions,
-      sendMessage;
+  let controller;
+  let scope;
+  let state;
+  let stateParams;
+  let changes;
+  let contact;
+  let conversation;
+  let stubbedMessagesActions;
+  let messagesActions;
+  let sendMessage;
 
   const createController = () => {
     return controller('MessagesContentCtrl', {
@@ -21,7 +20,6 @@ describe('MessagesContentCtrl', () => {
       '$stateParams': stateParams,
       'Changes': changes,
       'LineageModelGenerator': { contact },
-      'MarkRead': markRead,
       'MessageContacts': { conversation },
       'MessagesActions': () => messagesActions,
       'SendMessage': sendMessage
@@ -34,15 +32,15 @@ describe('MessagesContentCtrl', () => {
   });
 
   beforeEach(inject((_$rootScope_, $controller, $ngRedux, MessagesActions) => {
-    stubbedMessagesActions = { updateSelectedMessage: sinon.stub() };
+    stubbedMessagesActions = {
+      markConversationRead: sinon.stub(),
+      updateSelectedMessage: sinon.stub()
+    };
     messagesActions = Object.assign({}, MessagesActions($ngRedux.dispatch), stubbedMessagesActions);
 
     scope = _$rootScope_.$new();
-
     scope.setLoadingContent = sinon.stub();
-
     scope.setSelected = selected => messagesActions.setSelectedMessage(selected);
-
     scope.setTitle = sinon.stub();
 
     state = {
@@ -53,11 +51,7 @@ describe('MessagesContentCtrl', () => {
     };
 
     changes = sinon.stub();
-
-    markRead = sinon.stub();
-
     sendMessage = sinon.stub();
-
     controller = $controller;
   }));
 
@@ -74,17 +68,15 @@ describe('MessagesContentCtrl', () => {
       }
     };
 
-    it('pulls the contact phone number from the first message and shows empty user name', done => {
+    it('pulls the contact phone number from the first message and shows empty user name', () => {
       stateParams = { id, type };
 
-      const error404 = { code: 404};
+      const error404 = { code: 404 };
       contact = sinon.stub().rejects(error404);
 
       conversation = sinon.stub().resolves([res]);
 
-      createController();
-      
-      setTimeout(() => { // timeout to let the DB query finish
+      return createController()._testSelect.then(() => {
         chai.assert.equal(contact.callCount, 1);
         chai.assert.equal(contact.getCall(0).args[0], id);
         chai.assert.equal(conversation.callCount, 1);
@@ -92,7 +84,6 @@ describe('MessagesContentCtrl', () => {
         chai.assert.equal(stubbedMessagesActions.updateSelectedMessage.callCount, 1);
         chai.assert.equal(stubbedMessagesActions.updateSelectedMessage.getCall(0).args[0].contact.doc.name, '');
         chai.assert.equal(stubbedMessagesActions.updateSelectedMessage.getCall(0).args[0].contact.doc.phone, phone);
-        done();
       });
     });    
   });
