@@ -142,7 +142,7 @@ angular.module('inboxServices').factory('ReportsActions',
               listModel.read = true;
               LiveList.reports.update(listModel);
               LiveList['report-search'].update(listModel);
-                MarkRead([model.doc]).catch(err => $log.error('Error marking read', err));
+              MarkRead([model.doc]).catch(err => $log.error('Error marking read', err));
             }
           }
           setRightActionBar();

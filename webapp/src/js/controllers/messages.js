@@ -83,7 +83,6 @@ angular
       });
     };
 
-    // updateActionBar();
     updateConversations()
       .then(() => {
         if (
