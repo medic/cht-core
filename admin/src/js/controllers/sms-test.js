@@ -1,4 +1,4 @@
-angular.module('controllers').controller('MessageTestCtrl',
+angular.module('controllers').controller('SmsTestCtrl',
   function(
     $http,
     $log,
@@ -15,7 +15,7 @@ angular.module('controllers').controller('MessageTestCtrl',
     $scope.success = false;
     $scope.failure = false;
 
-    var validate = function() {
+    const validate = () => {
       $scope.errors = {};
       if (!$scope.message) {
         $scope.errors.message = 'validate.required';
@@ -26,23 +26,23 @@ angular.module('controllers').controller('MessageTestCtrl',
       return !$scope.errors.message && !$scope.errors.from;
     };
 
-    var send = function() {
-      var body = { message: $scope.message, from: $scope.from };
-      var headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    const send = () => {
+      const body = { message: $scope.message, from: $scope.from };
+      const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
       return $http.post('/api/v2/records', $.param(body), { headers: headers });
     };
 
-    $scope.submit = function() {
+    $scope.submit = () => {
       $scope.success = false;
       $scope.failure = false;
       if (validate()) {
         $scope.saving = true;
         send()
-          .then(function() {
+          .then(() => {
             $scope.success = true;
             $scope.saving = false;
           })
-          .catch(function(err) {
+          .catch(err => {
             $scope.failure = true;
             $scope.saving = false;
             $log.error(new Error('Error submitting message'), err);

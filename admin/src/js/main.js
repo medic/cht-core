@@ -28,16 +28,17 @@ require('./controllers/export-contacts');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
-require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/images-branding');
 require('./controllers/images-partners');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
-require('./controllers/message-test');
 require('./controllers/settings-advanced');
 require('./controllers/settings-basic');
+require('./controllers/sms-forms');
+require('./controllers/sms-settings');
+require('./controllers/sms-test');
 require('./controllers/backup');
 require('./controllers/targets');
 require('./controllers/targets-edit');
@@ -241,23 +242,37 @@ angular.module('adminApp').config(function(
     })
     .state('forms', {
       url: '/forms',
-      templateUrl: 'templates/forms.html'
+      controller: 'FormsXmlCtrl',
+      templateUrl: 'templates/forms_xml.html'
     })
-    .state('forms.json', {
-      url: '/json',
+    .state('sms', {
+      url: '/sms',
+      templateUrl: 'templates/sms.html'
+    })
+    .state('sms.settings', {
+      url: '/settings',
       views: {
         tab: {
-          controller: 'FormsJsonCtrl',
-          templateUrl: 'templates/forms_json.html'
+          controller: 'SmsSettingsCtrl',
+          templateUrl: 'templates/sms_settings.html'
         }
       }
     })
-    .state('forms.xml', {
-      url: '/xml',
+    .state('sms.forms', {
+      url: '/forms',
       views: {
         tab: {
-          controller: 'FormsXmlCtrl',
-          templateUrl: 'templates/forms_xml.html'
+          controller: 'SmsFormsCtrl',
+          templateUrl: 'templates/sms_forms.html'
+        }
+      }
+    })
+    .state('sms.test', {
+      url: '/test',
+      views: {
+        tab: {
+          controller: 'SmsTestCtrl',
+          templateUrl: 'templates/sms_test.html'
         }
       }
     })
@@ -353,11 +368,6 @@ angular.module('adminApp').config(function(
       url: '/upgrade',
       controller: 'UpgradeCtrl',
       templateUrl: 'templates/upgrade.html'
-    })
-    .state('messagetest', {
-      url: '/message-test',
-      controller: 'MessageTestCtrl',
-      templateUrl: 'templates/message_test.html'
     })
     .state('message-queue', {
       url: '/message-queue',

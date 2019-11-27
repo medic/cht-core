@@ -15,7 +15,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
-    Changes,
     GlobalActions,
     LineageModelGenerator,
     MarkRead,
@@ -174,7 +173,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         });
     };
 
-    var updateConversation = function(options) {
+    var updateConversation = (options={}) => {
       var selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
       if (selectedId) {
         var skip = options.skip && ctrl.selectedMessage.messages.length;
@@ -201,8 +200,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
                 }
               }
             });
-            ctrl.allLoaded = conversation.length < 50;
             if (options.skip) {
+              ctrl.allLoaded = conversation.length < 50;
               delete ctrl.firstUnread;
             }
             markAllRead();
@@ -219,9 +218,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               }
             });
           })
-          .catch(function(err) {
-            $log.error('Error fetching contact conversation', err);
-          });
+          .catch(err => $log.error('Error fetching contact conversation', err));
       }
     };
 
@@ -258,25 +255,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       ctrl.send.message = '';
     };
 
-    var changeListener = Changes({
-      key: 'messages-content',
-      callback: function(change) {
-        if (change.deleted) {
-          ctrl.removeSelectedMessage(change.id);
-        } else {
-          updateConversation({ changes: true });
-        }
-      },
-      filter: function(change) {
-        return ctrl.currentTab === 'messages' &&
-          ctrl.selectedMessage &&
-          _.findWhere(ctrl.selectedMessage.messages, { id: change.id });
-      }
-    });
-
     $scope.$on('$destroy', function() {
       unsubscribe();
-      changeListener.unsubscribe();
       if (!$state.includes('messages.detail')) {
         $('body').off('focus', '#message-footer textarea');
         $('body').off('blur', '#message-footer textarea');
@@ -287,9 +267,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
     // See $stateParams.id note at top of file
     selectContact($stateParams.id, $stateParams.type);
-    $scope.$on('UpdateContactConversation', function(e, options) {
-      selectContact($stateParams.id, $stateParams.type, options);
-    });
 
     $('body')
       .on('focus', '#message-footer textarea', function() {

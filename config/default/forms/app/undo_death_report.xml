@@ -44,7 +44,7 @@
         </translation>
       </itext>
       <instance>
-        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-10-17 04:59:48">
+        <undo_death_report delimiter="#" id="undo_death_report" prefix="J1!undo_death_report!" version="2019-11-04 13:14:07">
           <inputs>
             <meta>
               <location>
@@ -80,7 +80,7 @@
           <patient_id tag="hidden"/>
           <patient_name tag="hidden"/>
           <patient_short_name tag="hidden"/>
-          <patient_display_name/>
+          <patient_display_name tag="hidden"/>
           <undo>
             <undo_information/>
           </undo>
@@ -115,7 +115,7 @@
       <bind calculate="difference-in-months(  /undo_death_report/inputs/contact/date_of_birth , today() )" nodeset="/undo_death_report/patient_age_in_months" type="string"/>
       <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /undo_death_report/inputs/contact/date_of_birth ) )" nodeset="/undo_death_report/patient_age_in_days" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/undo_death_report/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/undo_death_report/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/undo_death_report/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/undo_death_report/patient_name" type="string"/>
       <bind calculate="../inputs/contact/short_name" nodeset="/undo_death_report/patient_short_name" type="string"/>
       <bind calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))" nodeset="/undo_death_report/patient_display_name" type="string"/>

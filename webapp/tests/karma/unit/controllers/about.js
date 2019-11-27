@@ -8,7 +8,6 @@ describe('AboutCtrl controller', () => {
   let scope;
   let $interval;
   let DB;
-  let Debug;
   let Session;
   let Version;
   let ResourceIcons;
@@ -28,7 +27,6 @@ describe('AboutCtrl controller', () => {
       get: sinon.stub().resolves(),
       info: sinon.stub().resolves(),
     };
-    Debug = { get: sinon.stub() };
     Version = {
       getLocal: sinon.stub(),
       getRemoteRev: sinon.stub()
@@ -40,7 +38,6 @@ describe('AboutCtrl controller', () => {
         $log: { error: sinon.stub() },
         $scope: scope,
         DB: sinon.stub().returns(DB),
-        Debug,
         Session,
         ResourceIcons,
         Version
@@ -51,7 +48,6 @@ describe('AboutCtrl controller', () => {
   it('initializes data', () => {
     DB.info.resolves({ some: 'info' });
     Session.userCtx.returns('session info');
-    Debug.get.returns('debug stuff');
     Version.getLocal.resolves({ version: '3.5.0', rev: '12' });
     Version.getRemoteRev.resolves('15');
 
@@ -61,7 +57,6 @@ describe('AboutCtrl controller', () => {
       return Promise.resolve().then(() => {
         chai.expect(ctrl.dbInfo).to.deep.equal({ some: 'info' });
         chai.expect(ctrl.userCtx).to.equal('session info');
-        chai.expect(scope.enableDebugModel).to.deep.equal({ val: 'debug stuff' });
         chai.expect(ctrl.version).to.equal('3.5.0');
         chai.expect(ctrl.localRev).to.equal('12');
         chai.expect(ctrl.remoteRev).to.equal('15');

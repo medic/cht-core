@@ -128,7 +128,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-10-17 04:59:29">
+        <pnc_danger_sign_follow_up_mother delimiter="#" id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" version="2019-11-04 14:08:55">
           <inputs>
             <meta>
               <location>
@@ -226,7 +226,7 @@
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pnc_danger_sign_follow_up_mother/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/pnc_danger_sign_follow_up_mother/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_mother/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/pnc_danger_sign_follow_up_mother/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/pnc_danger_sign_follow_up_mother/patient_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_label)" nodeset="/pnc_danger_sign_follow_up_mother/patient_short_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_start_label)" nodeset="/pnc_danger_sign_follow_up_mother/patient_short_name_start" type="string"/>

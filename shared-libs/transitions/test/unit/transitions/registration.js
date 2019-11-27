@@ -1,42 +1,46 @@
-const should = require('chai').should(),
-  sinon = require('sinon'),
-  db = require('../../../src/db'),
-  transition = require('../../../src/transitions/registration'),
-  schedules = require('../../../src/lib/schedules'),
-  messages = require('../../../src/lib/messages'),
-  utils = require('../../../src/lib/utils'),
-  config = require('../../../src/config'),
-  transitionUtils = require('../../../src/transitions/utils'),
-  acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
+require('chai').should();
+const sinon = require('sinon');
+const rewire = require('rewire');
+const db = require('../../../src/db');
+const schedules = require('../../../src/lib/schedules');
+const messages = require('../../../src/lib/messages');
+const utils = require('../../../src/lib/utils');
+const config = require('../../../src/config');
+const transitionUtils = require('../../../src/transitions/utils');
+const acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
+const validation = require('../../../src/lib/validation');
+
+let transition = rewire('../../../src/transitions/registration');
 
 describe('registration', () => {
   afterEach(done => {
     sinon.restore();
+    transition = rewire('../../../src/transitions/registration');
     done();
   });
 
   describe('booleanExpressionFails', () => {
+    beforeEach(() => {
+      transition.booleanExpressionFails = transition.__get__('booleanExpressionFails');
+    });
+
     it('is false if there is no valid expression', () => {
-      transition._booleanExpressionFails({}, '').should.equal(false);
+      transition.booleanExpressionFails({}, '').should.equal(false);
     });
 
     it('is true if the expresison fails', () => {
-      transition
-        ._booleanExpressionFails({ foo: 'bar' }, `doc.foo !== 'bar'`)
-        .should.equal(true);
+      transition.booleanExpressionFails({ foo: 'bar' }, `doc.foo !== 'bar'`).should.equal(true);
     });
 
     it('is true if the expression is invalid', () => {
       // TODO: should this error instead of just returning false?
       //       If there is a typo we're not going to know about it
-      transition
-        ._booleanExpressionFails({}, `doc.foo.bar === 'smang'`)
-        .should.equal(true);
+      transition.booleanExpressionFails({}, `doc.foo.bar === 'smang'`).should.equal(true);
     });
   });
 
   describe('addPatient', () => {
-    it('trigger creates a new patient', done => {
+    it('trigger creates a new patient', () => {
       const patientName = 'jack';
       const submitterId = 'abc';
       const parentId = 'papa';
@@ -55,11 +59,9 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      const getPatientContactUuid = sinon
-        .stub(utils, 'getPatientContactUuid')
-        .callsArgWith(1);
+      const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
-      const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+      const view = sinon.stub(db.medic, 'query').resolves({
         rows: [
           {
             doc: {
@@ -69,20 +71,20 @@ describe('registration', () => {
           },
         ],
       });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
         doc.patient_id = patientId;
-        callback();
+        return Promise.resolve();
       });
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         getPatientContactUuid.callCount.should.equal(1);
         view.callCount.should.equal(1);
         view.args[0][0].should.equal('medic-client/contacts_by_phone');
@@ -97,11 +99,10 @@ describe('registration', () => {
         saveDoc.args[0][0].date_of_birth.should.equal(dob);
         saveDoc.args[0][0].source_id.should.equal(reportId);
         saveDoc.args[0][0].created_by.should.equal(submitterId);
-        done();
       });
     });
 
-    it('does nothing when patient already added', done => {
+    it('does nothing when patient already added', () => {
       const patientId = '05649';
       const change = {
         doc: {
@@ -115,19 +116,18 @@ describe('registration', () => {
       };
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      transition.onMatch(change).then(() => {
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(0);
-        done();
       });
     });
 
@@ -142,14 +142,14 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -161,8 +161,8 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(1, null, true);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(transitionUtils, 'isIdUnique').resolves(true);
 
       return transition.onMatch(change).then(() => {
         saveDoc.args[0][0].patient_id.should.equal(patientId);
@@ -171,7 +171,7 @@ describe('registration', () => {
       });
     });
 
-    it('trigger creates a new contact with the given type', done => {
+    it('trigger creates a new contact with the given type', () => {
       const change = {
         doc: {
           _id: 'def',
@@ -183,9 +183,9 @@ describe('registration', () => {
           birth_date: '2017-03-31T01:15:09.000Z',
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+      sinon.stub(db.medic, 'query').resolves({
         rows: [
           {
             doc: {
@@ -195,7 +195,7 @@ describe('registration', () => {
           },
         ],
       });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{
@@ -205,18 +205,17 @@ describe('registration', () => {
         }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
         doc.patient_id = '05649';
-        callback();
+        return Promise.resolve();
       });
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].type.should.equal('contact');
         saveDoc.args[0][0].contact_type.should.equal('patient');
-        done();
       });
     });
 
@@ -231,14 +230,14 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(db.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -253,7 +252,7 @@ describe('registration', () => {
       configGet.withArgs('outgoing_deny_list').returns('');
       configGet.returns([eventConfig]);
 
-      sinon.stub(transition, 'validate').callsArgWith(2);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
 
       return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.equal('undefined');
@@ -277,14 +276,14 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(db.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -299,9 +298,9 @@ describe('registration', () => {
       configGet.withArgs('outgoing_deny_list').returns('');
       configGet.returns([eventConfig]);
 
-      sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(1, null, false);
+      sinon.stub(transitionUtils, 'isIdUnique').resolves(false);
 
-      sinon.stub(transition, 'validate').callsArgWith(2);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
 
       return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.be.equal('undefined');
@@ -314,7 +313,7 @@ describe('registration', () => {
       });
     });
 
-    it('event parameter overwrites the default property for the name of the patient', done => {
+    it('event parameter overwrites the default property for the name of the patient', () => {
       const patientName = 'jack';
       const submitterId = 'papa';
       const patientId = '05649';
@@ -330,35 +329,34 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient', params: 'name' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
         doc.patient_id = patientId;
-        callback();
+        return Promise.resolve();
       });
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
-        done();
       });
     });
 
-    it('event parameter overwrites the default property for the name of the patient using JSON config', done => {
+    it('event parameter overwrites the default property for the name of the patient using JSON config', () => {
       const patientName = 'jack';
       const submitterId = 'papa';
       const patientId = '05649';
@@ -374,14 +372,14 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -393,22 +391,21 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
         doc.patient_id = patientId;
-        callback();
+        return Promise.resolve();
       });
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
-        done();
       });
     });
 
-    it('add_patient and add_patient_id triggers are idempotent', done => {
+    it('add_patient and add_patient_id triggers are idempotent', () => {
       const patientName = 'jack';
       const submitterId = 'papa';
       const patientId = '05649';
@@ -424,14 +421,14 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
+      sinon.stub(utils, 'getPatientContactUuid').resolves();
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -440,18 +437,18 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
 
-      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc) => {
         doc.patient_id = patientId;
-        callback();
+        return Promise.resolve();
       });
 
-      transition.onMatch(change).then(() => {
+
+      return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
-        done();
       });
     });
 
@@ -484,7 +481,7 @@ describe('registration', () => {
   });
 
   describe('assign_schedule', () => {
-    it('event creates the named schedule', done => {
+    it('event creates the named schedule', () => {
       const change = {
         doc: {
           type: 'data_record',
@@ -496,10 +493,10 @@ describe('registration', () => {
       };
       sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, {
+        .resolves(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(db.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').resolves(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -511,36 +508,34 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(transition, 'validate').callsArgWith(2);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
       const getRegistrations = sinon
         .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, [{ _id: 'xyz' }]);
+        .resolves([{ _id: 'xyz' }]);
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
       sinon
         .stub(utils, 'getPatientContactUuid')
-        .callsArgWith(1, null, { _id: 'uuid' });
+        .resolves({ _id: 'uuid' });
       const assignSchedule = sinon
         .stub(schedules, 'assignSchedule')
         .returns(true);
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         assignSchedule.callCount.should.equal(1);
         assignSchedule.args[0][1].should.equal('someschedule');
         assignSchedule.args[0][2][0]._id.should.equal('xyz');
         getRegistrations.callCount.should.equal(1);
-        done();
       });
     });
   });
 
   describe('filter', () => {
-    it('returns false for reports with no registration configured', done => {
+    it('returns false for reports with no registration configured', () => {
       const doc = { form: 'R', type: 'data_record' };
       const configGet = sinon.stub(config, 'get').returns([{ form: 'XYZ' }]);
       const actual = transition.filter(doc);
       configGet.callCount.should.equal(1);
       configGet.args[0][0].should.equal('registrations');
       actual.should.equal(false);
-      done();
     });
 
     it('returns false for reports that are not valid submissions', () => {
@@ -555,7 +550,7 @@ describe('registration', () => {
       actual.should.equal(false);
     });
 
-    it('returns true for reports that are valid submissions', done => {
+    it('returns true for reports that are valid submissions', () => {
       const doc = { form: 'R', type: 'data_record' };
       sinon.stub(utils, 'isValidSubmission').returns(true);
       sinon.stub(config, 'get').returns([{ form: 'R' }]);
@@ -565,12 +560,16 @@ describe('registration', () => {
       utils.isValidSubmission.callCount.should.equal(1);
       utils.isValidSubmission.args[0].should.deep.equal([doc]);
       actual.should.equal(true);
-      done();
     });
   });
 
   describe('trigger param configuration', () => {
-    it('supports strings', done => {
+    beforeEach(() => {
+      transition.fireConfiguredTriggers = transition.__get__('fireConfiguredTriggers');
+      transition.triggers = transition.__get__('triggers');
+    });
+
+    it('supports strings', () => {
       const eventConfig = {
         form: 'R',
         events: [
@@ -578,17 +577,15 @@ describe('registration', () => {
         ],
       };
 
-      transition.triggers.testparamparsing = (options, cb) => {
-        cb(options);
-      };
+      transition.triggers.testparamparsing = sinon.stub();
 
-      transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal(['foo']);
-        done();
+      return transition.fireConfiguredTriggers(eventConfig, {}).then(() => {
+        transition.triggers.testparamparsing.callCount.should.equal(1);
+        transition.triggers.testparamparsing.args[0][0].params.should.deep.equal(['foo']);
       });
     });
 
-    it('supports comma-delimited strings as array', done => {
+    it('supports comma-delimited strings as array', () => {
       const eventConfig = {
         form: 'R',
         events: [
@@ -596,17 +593,15 @@ describe('registration', () => {
         ],
       };
 
-      transition.triggers.testparamparsing = (options, cb) => {
-        cb(options);
-      };
+      transition.triggers.testparamparsing = sinon.stub();
 
-      transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal(['foo', 'bar']);
-        done();
+      return transition.fireConfiguredTriggers(eventConfig, {}).then(() => {
+        transition.triggers.testparamparsing.callCount.should.equal(1);
+        transition.triggers.testparamparsing.args[0][0].params.should.deep.equal(['foo', 'bar']);
       });
     });
 
-    it('supports arrays as a string', done => {
+    it('supports arrays as a string', () => {
       const eventConfig = {
         form: 'R',
         events: [
@@ -618,17 +613,15 @@ describe('registration', () => {
         ],
       };
 
-      transition.triggers.testparamparsing = (options, cb) => {
-        cb(options);
-      };
+      transition.triggers.testparamparsing = sinon.stub();
 
-      transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal(['foo', 'bar', 3]);
-        done();
+      return transition.fireConfiguredTriggers(eventConfig, {}).then(() => {
+        transition.triggers.testparamparsing.callCount.should.equal(1);
+        transition.triggers.testparamparsing.args[0][0].params.should.deep.equal(['foo', 'bar', 3]);
       });
     });
 
-    it('supports JSON as a string', done => {
+    it('supports JSON as a string', () => {
       const eventConfig = {
         form: 'R',
         events: [
@@ -640,17 +633,15 @@ describe('registration', () => {
         ],
       };
 
-      transition.triggers.testparamparsing = (options, cb) => {
-        cb(options);
-      };
+      transition.triggers.testparamparsing = sinon.stub();
 
-      transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal({ foo: 'bar' });
-        done();
+      return transition.fireConfiguredTriggers(eventConfig, {}).then(() => {
+        transition.triggers.testparamparsing.callCount.should.equal(1);
+        transition.triggers.testparamparsing.args[0][0].params.should.deep.equal({ foo: 'bar' });
       });
     });
 
-    it('supports direct JSON', done => {
+    it('supports direct JSON', () => {
       const eventConfig = {
         form: 'R',
         events: [
@@ -662,13 +653,11 @@ describe('registration', () => {
         ],
       };
 
-      transition.triggers.testparamparsing = (options, cb) => {
-        cb(options);
-      };
+      transition.triggers.testparamparsing = sinon.stub();
 
-      transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal({ foo: 'bar' });
-        done();
+      return transition.fireConfiguredTriggers(eventConfig, {}).then(() => {
+        transition.triggers.testparamparsing.callCount.should.equal(1);
+        transition.triggers.testparamparsing.args[0][0].params.should.deep.equal({ foo: 'bar' });
       });
     });
 
@@ -864,7 +853,11 @@ describe('registration', () => {
   });
 
   describe('addMessages', () => {
-    it('prepops and passes the right information to messages.addMessage', done => {
+    beforeEach(() => {
+      transition.addMessages = transition.__get__('addMessages');
+    });
+
+    it('prepops and passes the right information to messages.addMessage', () => {
       const testPhone = '1234',
         testMessage1 = {
           message: 'A Test Message 1',
@@ -883,7 +876,7 @@ describe('registration', () => {
 
       sinon
         .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, testRegistration);
+        .resolves(testRegistration);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
@@ -893,8 +886,7 @@ describe('registration', () => {
         patient: testPatient,
       };
 
-      transition.addMessages(testConfig, testDoc, err => {
-        should.not.exist(err);
+      return transition.addMessages(testConfig, testDoc).then(() => {
         // Registration will send messages with no event_type
         addMessage.callCount.should.equal(2);
 
@@ -920,10 +912,10 @@ describe('registration', () => {
         addMessage.args[1][1].should.equal(testMessage2);
         addMessage.args[1][2].should.equal(testPhone);
         addMessage.args[1][3].should.deep.equal(expectedContext);
-        done();
       });
     });
-    it('supports ignoring messages based on bool_expr', done => {
+
+    it('supports ignoring messages based on bool_expr', () => {
       const testPhone = '1234',
         testMessage1 = {
           message: 'A Test Message 1',
@@ -943,7 +935,7 @@ describe('registration', () => {
 
       sinon
         .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, testRegistration);
+        .resolves(testRegistration);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
@@ -953,8 +945,7 @@ describe('registration', () => {
         patient: testPatient,
       };
 
-      transition.addMessages(testConfig, testDoc, err => {
-        should.not.exist(err);
+      return transition.addMessages(testConfig, testDoc).then( () => {
         addMessage.callCount.should.equal(1);
         const expectedContext = {
           patient: testPatient,
@@ -974,29 +965,27 @@ describe('registration', () => {
         addMessage.args[0][1].should.equal(testMessage1);
         addMessage.args[0][2].should.equal(testPhone);
         addMessage.args[0][3].should.deep.equal(expectedContext);
-        done();
       });
     });
   });
 
   describe('clear_schedule', () => {
-    it('should work when doc has no patient', done => {
-      sinon.stub(utils, 'getReportsBySubject').resolves([]);
-
-      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
-        (!!err).should.equal(false);
-        done();
-      });
+    beforeEach(() => {
+      transition.triggers = transition.__get__('triggers');
     });
 
-    it('should query utils.getReportsBySubject with correct params', done => {
+    it('should work when doc has no patient', () => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      return transition.triggers.clear_schedule({ doc: {}, params: [] });
+    });
+
+    it('should query utils.getReportsBySubject with correct params', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
       sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
       const doc = { patient: { _id: 'uuid', patient_id: 'patient_id' } };
       sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
 
-      transition.triggers.clear_schedule({ doc, params: [] }, err => {
-        (!!err).should.equal(false);
+      return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
         utils.getSubjectIds.callCount.should.equal(1);
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         utils.getReportsBySubject.callCount.should.equal(1);
@@ -1004,11 +993,10 @@ describe('registration', () => {
           ids: ['uuid', 'patient_id'],
           registrations: true
         } ]);
-        done();
       });
     });
 
-    it('should call silenceRegistrations with correct params', done => {
+    it('should call silenceRegistrations with correct params', () => {
       const doc = { _id: 'uuid', patient_id: 'patient_id' },
             params = ['1', '2', '3', '4'],
             registrations = ['a', 'b', 'c'];
@@ -1016,8 +1004,7 @@ describe('registration', () => {
       sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
       sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
 
-      transition.triggers.clear_schedule({ doc, params }, err => {
-        (!!err).should.equal(false);
+      return transition.triggers.clear_schedule({ doc, params }).then(() => {
         acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
         acceptPatientReports.silenceRegistrations.args[0][0].should.deep.equal({
           silence_type: '1,2,3,4',
@@ -1025,35 +1012,38 @@ describe('registration', () => {
         });
         acceptPatientReports.silenceRegistrations.args[0][1].should.deep.equal(doc);
         acceptPatientReports.silenceRegistrations.args[0][2].should.deep.equal(registrations);
-        done();
       });
     });
 
-    it('should catch getReportsBySubject errors', done => {
+    it('should catch getReportsBySubject errors', () => {
       sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
       sinon.stub(utils, 'getSubjectIds').returns([]);
       sinon.stub(acceptPatientReports, 'silenceRegistrations');
 
-      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
-        err.should.deep.equal({ some: 'error' });
-        utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getSubjectIds.callCount.should.equal(1);
-        acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
-        done();
+      return transition.triggers
+        .clear_schedule({ doc: {}, params: [] })
+        .then(r => r.should.deep.equal('Should have thrown'))
+        .catch((err) => {
+          err.should.deep.equal({ some: 'error' });
+          utils.getReportsBySubject.callCount.should.equal(1);
+          utils.getSubjectIds.callCount.should.equal(1);
+          acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
       });
     });
 
-    it('should catch silenceRegistrations errors', done => {
+    it('should catch silenceRegistrations errors', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
       sinon.stub(utils, 'getSubjectIds').returns([]);
       sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, { some: 'err' });
-      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
-        err.should.deep.equal({ some: 'err' });
-        utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getSubjectIds.callCount.should.equal(1);
-        acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
-        done();
-      });
+      return transition.triggers
+        .clear_schedule({ doc: {}, params: [] })
+        .then(r => r.should.deep.equal('Should have thrown'))
+        .catch(err => {
+          err.should.deep.equal({ some: 'err' });
+          utils.getReportsBySubject.callCount.should.equal(1);
+          utils.getSubjectIds.callCount.should.equal(1);
+          acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
+        });
     });
   });
 });

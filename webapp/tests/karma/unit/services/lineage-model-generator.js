@@ -189,7 +189,6 @@ describe('LineageModelGenerator service', () => {
         lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, { _id: 'd', name: '4' }]
       };
       return service.contact('a', { merge: true }).then(actual => {
-        console.log(JSON.stringify(actual, null, 2));
         chai.expect(actual).to.deep.equal(expected);
       });
     });

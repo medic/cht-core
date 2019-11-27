@@ -7,40 +7,39 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
     controller: function(
       $ngRedux,
       $scope,
-      $state,
-      GlobalActions,
+      ReportsActions,
       Selectors
     ) {
       'ngInject';
 
       const ctrl = this;
-      const mapStateToTarget = function(state) {
+      const mapStateToTarget = state => {
         return {
           actionBar: Selectors.getActionBar(state),
           currentTab: Selectors.getCurrentTab(state),
+          filters: Selectors.getFilters(state),
           isAdmin: Selectors.getIsAdmin(state),
           loadingContent: Selectors.getLoadingContent(state),
           loadingSubActionBar: Selectors.getLoadingSubActionBar(state),
           selectMode: Selectors.getSelectMode(state),
           selectedContactDoc: Selectors.getSelectedContactDoc(state),
+          selectedReports: Selectors.getSelectedReports(state),
           selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
-          showActionBar: Selectors.getShowActionBar(state)
+          showActionBar: Selectors.getShowActionBar(state),
         };
       };
-      const mapDispatchToTarget = function(dispatch) {
-        const globalActions = GlobalActions(dispatch);
+      const mapDispatchToTarget = dispatch => {
+        const reportsActions = ReportsActions(dispatch);
         return {
-          setSelectMode: globalActions.setSelectMode,
-          unsetSelected: globalActions.unsetSelected
+          deselectAll: reportsActions.deselectAll,
+          launchEditFacilityDialog: reportsActions.launchEditFacilityDialog,
+          selectAll: reportsActions.selectAll,
+          setSelect: reportsActions.setSelect,
+          toggleVerifyingReport: reportsActions.toggleVerifyingReport,
+          verifyReport: reportsActions.verifyReport,
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-      ctrl.setSelect = value => {
-        ctrl.setSelectMode(value);
-        ctrl.unsetSelected();
-        $state.go('reports.detail', { id: null });
-      };
 
       $scope.$on('$destroy', unsubscribe);
     },

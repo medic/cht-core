@@ -205,6 +205,7 @@ describe('Telemetry service', () => {
             width: 768,
             height: 1024,
           },
+          deviceInfo: {}
         });
         chai.expect(DB.query.callCount).to.equal(1);
         chai.expect(DB.query.args[0][0]).to.equal('medic-client/doc_by_type');

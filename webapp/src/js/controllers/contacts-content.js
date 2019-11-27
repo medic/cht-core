@@ -25,6 +25,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        forms: Selectors.getForms(state),
         selectedContact: Selectors.getSelectedContact(state),
         loadingContent: Selectors.getLoadingContent(state),
         loadingSelectedContactChildren: Selectors.getLoadingSelectedContactChildren(state),

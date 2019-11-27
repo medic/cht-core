@@ -1,0 +1,33 @@
+<div class="row filters"></div>
+
+<div class="inner" ng-cloak>
+  <div class="col-sm-12 page testing" ui-view="content">
+
+    <div>
+      <h3 translate>testing.title</h3>
+      <p translate>testing.description</p>
+    </div>
+
+    <div>
+      <h3 translate>debug.mode</h3>
+      <p translate>debug.mode.description</p>
+      <a ng-show="!testingCtrl.debugEnabled" ng-click="testingCtrl.enableDebug()" class="btn btn-primary" translate>Enable</a>
+      <a ng-show="testingCtrl.debugEnabled" ng-click="testingCtrl.disableDebug()" class="btn btn-primary" translate>Disable</a>
+    </div>
+
+    <div>
+      <h3 translate>purge.title</h3>
+      <p translate>purge.description</p>
+      <a ng-click="testingCtrl.purge()" class="btn btn-primary" translate>Start</a>
+      <div class="loader inline small" ng-show="testingCtrl.purging"></div>
+    </div>
+
+    <div>
+      <h3 translate>wipe.device.title</h3>
+      <p translate>wipe.device.description</p>
+      <a ng-click="testingCtrl.wipe()" class="btn btn-danger" translate>Start</a>
+      <div class="loader inline small" ng-show="testingCtrl.wiping"></div>
+    </div>
+
+  </div>
+</div>

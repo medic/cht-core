@@ -755,7 +755,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-10-17 04:59:44">
+        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-11-04 14:18:58">
           <inputs>
             <meta>
               <location>
@@ -805,7 +805,7 @@
           <hiv_status_known tag="hidden"/>
           <tt_received tag="hidden"/>
           <deworming_med_received tag="hidden"/>
-          <context_vars>
+          <context_vars tag="hidden">
             <lmp_date_8601_ctx/>
             <lmp_method_approx_ctx/>
             <pregnancy_follow_up_date_recent_ctx/>
@@ -819,16 +819,16 @@
             <pregnancy_uuid_ctx/>
           </context_vars>
           <pregnancy_summary>
-            <current_weeks_pregnant/>
-            <current_weeks_pregnant_unknown/>
-            <current_edd/>
-            <current_edd_unknown/>
+            <current_weeks_pregnant tag="hidden"/>
+            <current_weeks_pregnant_unknown tag="hidden"/>
+            <current_edd tag="hidden"/>
+            <current_edd_unknown tag="hidden"/>
             <visit_option/>
             <g_age_correct/>
           </pregnancy_summary>
           <pregnancy_ended>
             <miscarriage_note tag="hidden"/>
-            <miscarriage_date tag="hidden"/>
+            <miscarriage_date/>
             <abortion_note tag="hidden"/>
             <abortion_date tag="hidden"/>
             <refusing_note tag="hidden"/>
@@ -857,10 +857,10 @@
               <new_edd/>
               <edd_check_note/>
             </update_summary>
-            <lmp_date_8601_new/>
-            <lmp_date_new/>
-            <edd_8601_new/>
-            <edd_new/>
+            <lmp_date_8601_new tag="hidden"/>
+            <lmp_date_new tag="hidden"/>
+            <edd_8601_new tag="hidden"/>
+            <edd_new tag="hidden"/>
           </update_g_age>
           <anc_visits_hf>
             <anc_visits_hf_past>
@@ -870,8 +870,8 @@
               <visited_hf_count/>
               <visited_date_ask_single/>
               <visited_date_single/>
-              <visited_dates_multiple_note/>
-              <visited_dates_multiple_note_section/>
+              <visited_dates_multiple_note tag="hidden"/>
+              <visited_dates_multiple_note_section tag="hidden"/>
               <visited_dates_count/>
               <visited_dates jr:template="">
                 <visited_date_ask_multiple/>
@@ -879,18 +879,18 @@
               </visited_dates>
             </anc_visits_hf_past>
             <risk_factors>
-              <previous_risk_factors_note/>
-              <no_previous_risks_note/>
-              <first_pregnancy_note/>
-              <previous_miscarriage_note/>
-              <previous_difficulties_note/>
-              <more_than_4_children_note/>
-              <last_baby_born_less_than_1_year_ago_note/>
-              <heart_condition_note/>
-              <asthma_note/>
-              <high_blood_pressure_note/>
-              <diabetes_note/>
-              <extra_risk_note/>
+              <previous_risk_factors_note tag="hidden"/>
+              <no_previous_risks_note tag="hidden"/>
+              <first_pregnancy_note tag="hidden"/>
+              <previous_miscarriage_note tag="hidden"/>
+              <previous_difficulties_note tag="hidden"/>
+              <more_than_4_children_note tag="hidden"/>
+              <last_baby_born_less_than_1_year_ago_note tag="hidden"/>
+              <heart_condition_note tag="hidden"/>
+              <asthma_note tag="hidden"/>
+              <high_blood_pressure_note tag="hidden"/>
+              <diabetes_note tag="hidden"/>
+              <extra_risk_note tag="hidden"/>
               <new_risks/>
               <additional_risk_check/>
               <additional_risk/>
@@ -930,7 +930,7 @@
           <safe_pregnancy_practices>
             <malaria>
               <llin_use/>
-              <llin_advice_note/>
+              <llin_advice_note tag="hidden"/>
               <malaria_prophylaxis_note tag="hidden"/>
             </malaria>
             <iron_folate>
@@ -1235,7 +1235,7 @@
       <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_home_visit/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_home_visit/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_home_visit/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_home_visit/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/pregnancy_home_visit/patient_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)" nodeset="/pregnancy_home_visit/patient_short_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)" nodeset="/pregnancy_home_visit/patient_short_name_start" type="string"/>

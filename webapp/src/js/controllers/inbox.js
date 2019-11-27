@@ -269,16 +269,6 @@ const moment = require('moment');
       return $('#mobile-detection').css('display') === 'inline';
     };
 
-    $scope.$on('HideContent', function() {
-      $timeout(function() {
-        if (ctrl.cancelCallback) {
-          $scope.navigationCancel();
-        } else {
-          ctrl.navigateBack();
-        }
-      });
-    });
-
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {
         $scope.navigationCancel({ to: trans.to(), params: trans.params() });
@@ -381,9 +371,7 @@ const moment = require('moment');
                 };
               });
               const forms = xFormSummaries.concat(jsonFormSummaries);
-              $scope.forms = forms;
               ctrl.setForms(forms);
-              $rootScope.$broadcast('formLoadingComplete');
             }
           );
           // get the forms for the Add Report menu
@@ -400,10 +388,7 @@ const moment = require('moment');
             });
           });
         })
-        .catch(function(err) {
-          $rootScope.$broadcast('formLoadingComplete');
-          $log.error('Failed to retrieve forms', err);
-        });
+        .catch(err => $log.error('Failed to retrieve forms', err));
     };
 
     const initTours = () => {
@@ -537,10 +522,6 @@ const moment = require('moment');
         },
       });
     });
-
-    $scope.emit = function() {
-      $rootScope.$broadcast.apply($rootScope, arguments);
-    };
 
     $scope.deleteDoc = function(doc) {
       Modal({

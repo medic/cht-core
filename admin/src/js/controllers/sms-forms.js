@@ -1,8 +1,8 @@
-var moment = require('moment'),
-    _ = require('underscore');
+const moment = require('moment');
+const _ = require('underscore');
 
-angular.module('controllers').controller('FormsJsonCtrl',
-  function (
+angular.module('controllers').controller('SmsFormsCtrl',
+  function(
     $log,
     $scope,
     $timeout,
@@ -16,7 +16,7 @@ angular.module('controllers').controller('FormsJsonCtrl',
     'use strict';
     'ngInject';
 
-    var generateDownload = function(forms) {
+    const generateDownload = forms => {
       return {
         name: 'forms_' + moment().format('YYYY-MM-DD') + '.json',
         url: Blob.json(_.values(forms))
@@ -25,7 +25,7 @@ angular.module('controllers').controller('FormsJsonCtrl',
 
     $scope.status = { uploading: false };
 
-    var uploadFinished = function(err) {
+    const uploadFinished = err => {
       if (err) {
         $log.error('Upload failed', err);
       } else {
@@ -43,30 +43,28 @@ angular.module('controllers').controller('FormsJsonCtrl',
       });
     };
 
-    var upload = function() {
+    const upload = () => {
       $scope.status = {
         uploading: true,
         error: false,
         success: false,
       };
-      var files = $('#forms-upload-json .uploader')[0].files;
+      const files = $('#forms-upload-json .uploader')[0].files;
       if (!files || files.length === 0) {
         uploadFinished(new Error('File not found'));
       }
-      var settings = { forms: {} };
+      const settings = { forms: {} };
       FileReader.utf8(files[0])
         .then(JsonParse)
-        .then(function(json) {
-          json.forEach(function(form) {
+        .then(json => {
+          json.forEach(form => {
             if (form.meta && form.meta.code) {
               settings.forms[form.meta.code.toUpperCase()] = form;
             }
           });
         })
-        .then(function() {
-          return UpdateSettings(settings, { replace: true });
-        })
-        .then(function() {
+        .then(() => UpdateSettings(settings, { replace: true }))
+        .then(() => {
           $scope.forms = settings.forms;
           uploadFinished();
         })
@@ -74,20 +72,18 @@ angular.module('controllers').controller('FormsJsonCtrl',
     };
 
     $('#forms-upload-json .uploader').on('change', upload);
-    $('#forms-upload-json .choose').on('click', function(e) {
+    $('#forms-upload-json .choose').on('click', e => {
       e.preventDefault();
       $('#forms-upload-json .uploader').click();
     });
 
-    var loadForms = function() {
+    const loadForms = () => {
       Settings()
-        .then(function(settings) {
+        .then(settings => {
           $scope.forms = settings.forms;
           $scope.download = generateDownload(settings.forms);
         })
-        .catch(function(err) {
-          $log.error('Error fetching settings', err);
-        });
+        .catch(err => $log.error('Error fetching settings', err));
     };
 
     loadForms();

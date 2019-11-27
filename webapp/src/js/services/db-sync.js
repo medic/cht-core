@@ -57,7 +57,10 @@ angular
       },
       {
         name: 'from',
-        options: {},
+        options: {
+          heartbeat: 10000, // 10 seconds
+          timeout: 1000 * 60 * 10, // 10 minutes
+        },
         allowed: () => $q.resolve(true)
       }
     ];
