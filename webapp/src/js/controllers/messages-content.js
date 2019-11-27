@@ -97,6 +97,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
+    const markConversationReadIfNeeded = () => {
+      const hasUnreadDoc = ctrl.selectedMessage.messages.some(message => {
+        return !message.read && message.doc;
+      });
+      if (hasUnreadDoc) {
+        ctrl.markConversationRead();
+      }
+    };
+
     const selectContact = function(id, type) {
       if (!id) {
         ctrl.setMessagesError(false);
@@ -145,7 +154,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           ctrl.firstUnread = _.min(unread, message => message.doc.reported_date);
           ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
           ctrl.setTitle((contactModel.doc && contactModel.doc.name) || id);
-          ctrl.markConversationRead();
+          markConversationReadIfNeeded();
           $timeout(scrollToUnread);
         })
         .catch(function(err) {
@@ -186,7 +195,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               ctrl.allLoaded = conversation.length < 50;
               delete ctrl.firstUnread;
             }
-            ctrl.markConversationRead();
+            markConversationReadIfNeeded();
             $timeout(function() {
               var scroll = false;
               if (options.skip) {

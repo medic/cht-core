@@ -50,12 +50,10 @@ angular.module('inboxServices').factory('MessagesActions',
 
       function markConversationRead() {
         dispatch((dispatch, getState) => {
-          dispatch({ type: actionTypes.MARK_SELECTED_CONVERSATION_READ });
           const selected = Selectors.getSelectedMessage(getState());
+          dispatch({ type: actionTypes.MARK_SELECTED_CONVERSATION_READ });
           const docs = selected.messages.map(message => message.doc);
-          if (docs.length) {
-            MarkRead(docs).catch(err => $log.error('Error marking all as read', err));
-          }
+          MarkRead(docs).catch(err => $log.error('Error marking all as read', err));
         });
       }
 
