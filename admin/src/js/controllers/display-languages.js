@@ -5,10 +5,13 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     $log,
     $q,
     $scope,
+    $timeout,
+    $translate,
     Blob,
     Changes,
     DB,
     ExportProperties,
+    Languages,
     Modal,
     Settings,
     TranslationLoader,
@@ -140,5 +143,42 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     };
 
     getLanguages();
+
+    $scope.submitLanguageSettings = function() {
+      $scope.status = { loading: true };
+      var settings = {
+        locale: $scope.basicLanguagesModel.locale,
+        locale_outgoing: $scope.basicLanguagesModel.locale_outgoing
+      };
+      UpdateSettings(settings)
+        .then(function() {
+          $scope.status = { success: true, msg: $translate.instant('Saved') };
+          $timeout(function() {
+            if ($scope.status) {
+              $scope.status.success = false;
+            }
+          }, 3000);
+        })
+        .catch(function(err) {
+          $log.error('Error updating language settings', err);
+          $scope.status = { error: true, msg: $translate.instant('Error saving language settings') };
+        });
+    };
+
+    Languages().then(function(languages) {
+      $scope.enabledLocales = languages;
+    });
+
+    Settings()
+      .then(function(res) {
+        $scope.basicLanguagesModel = {
+          locale: res.locale,
+          locale_outgoing: res.locale_outgoing
+        };
+      })
+      .catch(function(err) {
+        $log.error('Error loading language settings', err);
+      });
+
   }
 );
