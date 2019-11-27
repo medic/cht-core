@@ -51,10 +51,7 @@ describe('Tasks controller', () => {
           RulesEngine,
           Tour,
         });
-        sinon.stub(result, 'settingSelected');
         sinon.stub(result, 'setSelectedTask');
-        sinon.stub(result, 'setTitle');
-        sinon.stub(result, 'setShowContent');
         
         return result;
       };
@@ -137,49 +134,6 @@ describe('Tasks controller', () => {
     expect(!!service.error).to.be.false;
     expect(RulesEngine.fetchTaskDocsForAllContacts.callCount).to.eq(1);
     expect(LiveList.tasks.set.args).to.deep.eq([[[]]]);
-  });
-
-  it('setSelected success without hydration', async () => {
-    const taskDocs = [
-      { _id: '1', emission: { _id: 'e1' }},
-      { _id: '2', emission: { _id: 'e2', title: 'foo' }},
-    ];
-    RulesEngine.fetchTaskDocsForAllContacts.resolves(deepCopy(taskDocs));
-    const service = getService();
-    await $scope.setSelected('e2');
-    expect(service.settingSelected.args).to.deep.eq([[false]]);
-    expect(service.setSelectedTask.args).to.deep.eq([[taskDocs[1].emission]]);
-    expect(service.setTitle.args).to.deep.eq([['foo']]);
-    expect(service.setShowContent.args).to.deep.eq([[true]]);
-  });
-
-  it('setSelected hydration success', async () => {
-    const taskDocs = [
-      { _id: '2', emission: { _id: 'e2', title: 'foo', actions: [{ content: {  }}], forId: 'contactId' }},
-    ];
-    RulesEngine.fetchTaskDocsForAllContacts.resolves(deepCopy(taskDocs));
-    const contact = { _id: 'contactId', foo: 'bar' };
-    db.get.resolves(contact);
-    const service = getService();
-    await $scope.setSelected('e2');
-    expect(service.settingSelected.args).to.deep.eq([[false]]);
-
-    expect(service.setSelectedTask.callCount).to.eq(1);
-    const [selected] = service.setSelectedTask.args[0];
-    expect(selected.actions).deep.eq([{ content: { contact } }]);
-  });
-
-  it('setSelected hydration failure', async () => {
-    const taskDocs = [
-      { _id: '2', emission: { _id: 'e2', title: 'foo', actions: [{}], forId: 'contactId' }},
-    ];
-    RulesEngine.fetchTaskDocsForAllContacts.resolves(deepCopy(taskDocs));
-    db.get.rejects('err');
-    
-    const service = getService();
-    await $scope.setSelected('e2');
-    expect(service.settingSelected.args).to.deep.eq([[false]]);
-    expect(service.setSelectedTask.args).to.deep.eq([[taskDocs[0].emission]]);
   });
 
   it('changes feed', async () => {
