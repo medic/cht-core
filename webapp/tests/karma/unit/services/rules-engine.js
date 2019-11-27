@@ -122,7 +122,7 @@ describe(`RulesEngine service`, () => {
 
       it('targets are filtered by context', async () => {
         const allContexts = { id: 'all' };
-        const emptyContext = { id: 'match', context: '' };
+        const emptyContext = { id: 'empty', context: '' };
         const matchingContext = { id: 'match', context: 'user.parent._id === "parent"' };
         const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
         const settingsDoc = {
@@ -141,10 +141,10 @@ describe(`RulesEngine service`, () => {
         expect(targets.some(t => !t.isContextual)).to.be.false;
         
         const contextual = targets.filter(target => target.isContextual(userContactDoc)).map(target => target.id);
-        expect(contextual).to.deep.eq([allContexts.id, matchingContext.id]);
+        expect(contextual).to.deep.eq([allContexts.id, emptyContext.id, matchingContext.id]);
 
         const notContextual = targets.filter(target => !target.isContextual(userContactDoc)).map(target => target.id);
-        expect(notContextual).to.deep.eq([emptyContext.id, noMatchingContext.id]);
+        expect(notContextual).to.deep.eq([noMatchingContext.id]);
       });
 
       it('parameters to shared-lib', async () => {

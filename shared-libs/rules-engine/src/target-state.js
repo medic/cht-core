@@ -43,6 +43,7 @@ module.exports = {
       .filter(targetDefinition => !targetDefinition.isContextual || targetDefinition.isContextual(userDoc))
       .reduce((agg, definition) => {
         agg[definition.id] = Object.assign({}, definition, { emissions: {} });
+        agg[definition.id].isContextual = undefined;
         return agg;
       }, {});
   },

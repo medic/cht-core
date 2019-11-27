@@ -74,7 +74,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
   const addContextualPropertyToTargets = settingsDoc => {
     const items = settingsDoc.tasks && settingsDoc.tasks.targets && settingsDoc.tasks.targets.items || [];
     items.forEach(item => {
-      item.isContextual = userDoc => item.context ? !!$parse(item.context)(userDoc) : true;
+      item.isContextual = userDoc => item.context ? !!$parse(item.context)({ user: userDoc }) : true;
     });
     return settingsDoc;
   };
