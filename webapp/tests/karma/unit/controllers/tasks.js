@@ -63,8 +63,6 @@ describe('Tasks controller', () => {
     KarmaUtils.restore(Changes, RulesEngine, Tour);
   });
 
-  const deepCopy = obj => JSON.parse(JSON.stringify(obj));
-
   it('initial state before resolving tasks', () => {
     RulesEngine.isEnabled = () => new Promise(() => {});
     const service = getService();
