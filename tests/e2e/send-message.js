@@ -410,6 +410,8 @@ describe('Send message', () => {
         return utils.deleteDocs(CONTACTS.map(contact => contact._id));
       });
 
+      // refresh
+      common.goToReports();
       common.goToMessages();
 
       clickLhsEntry(ALICE._id, 'Unknown sender');
