@@ -47,6 +47,25 @@ describe('update-temporal-states', () => {
     });
   });
 
+  it('draft doc is canceled when authoredOn is in future', () => {
+    const draftEmission = mockEmission(MS_IN_DAY + 10);
+    const { taskDoc } = transformToDoc(draftEmission, Date.now());
+    taskDoc.authoredOn = Date.now() + 1000;
+    expect(updateTemporalStates([taskDoc])).to.deep.eq([taskDoc]);
+    expect(taskDoc).to.nested.include({
+      state: 'Cancelled',
+      'stateHistory[0].state': 'Draft',
+      'stateHistory[1].state': 'Cancelled'
+    });
+  });
+
+  it('failed doc is not canceled when authoredOn is in future', () => {
+    const failedEmission = mockEmission(-MS_IN_DAY - 10);
+    const { taskDoc } = transformToDoc(failedEmission, Date.now());
+    taskDoc.authoredOn = Date.now() + 1000;
+    expect(updateTemporalStates([taskDoc])).to.deep.eq([]);
+  });
+
   it('cannot move from failed to ready', () => {
     const draftEmission = mockEmission(-MS_IN_DAY * 3);
     const { taskDoc } = transformToDoc(draftEmission, Date.now());

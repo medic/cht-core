@@ -1,5 +1,5 @@
 /**
- * @module refresh-tasks-for-contacts
+ * @module refresh-rules-emissions
  * Uses rules-emitter to calculate the fresh emissions for a set of contacts, their reports, and their tasks
  * Creates or updates one task document per unique emission id
  * Cancels task documents in non-terminal states if they were not emitted
@@ -16,34 +16,42 @@ const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
  * @param {Object[]} freshData.reportDocs All of the contacts' reports
  * @param {Object[]} freshData.taskDocs All of the contacts' task documents (must be linked by requester to a contact)
  * @param {Object[]} freshData.userContactId The id of the user's contact document
+ * 
  * @param {int} calculationTimestamp Timestamp for the round of rules calculations
+ * 
+ * @param {Object=} [options] Options for the behavior when refreshing rules
+ * @param {Boolean} [options.enableTasks=true] Flag to enable tasks
+ * @param {Boolean} [options.enableTargets=true] Flag to enable targets
  *
- * @returns {Object[]} Array of updated task documents
+ * @returns {Object} result
+ * @returns {Object[]} result.targetEmissions Array of raw target emissions
+ * @returns {Object[]} result.updatedTaskDocs Array of updated task documents
  */
-module.exports = (freshData = {}, calculationTimestamp = Date.now()) => calculateFreshTaskDocs(freshData, calculationTimestamp)
-  .then(freshResults => {
-    const freshTaskDocs = freshResults.map(doc => doc.taskDoc);
-    const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
-    const updatedTaskDocs = freshResults.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-    return [...updatedTaskDocs, ...cancelledDocs];
-  });
-
-const calculateFreshTaskDocs = (freshData, calculationTimestamp) => {
-  const { contactDocs = [], reportDocs = [], taskDocs = [], userContactId } = freshData;
-  if (contactDocs.length === 0 && reportDocs.length === 0 && taskDocs.length === 0) {
-    return Promise.resolve([]);
-  }
-
-  const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs);
+module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTasks=true, enableTargets=true }={}) => {
+  const { contactDocs = [], reportDocs = [], taskDocs = [] } = freshData;
   return rulesEmitter.getEmissionsFor(contactDocs, reportDocs, taskDocs)
-    // TODO: Handle targets also
-    .then(emissions => disambiguateEmissions(emissions.tasks, calculationTimestamp)
-      // Reviewer: Should the webapp also filter task emissions is some way? Or leave it completely up to Utils.IsTimely?
-      .map(taskEmission => {
-        const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
-        return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
-      })
-    );
+    .then(emissions => Promise.all([
+      enableTasks ? getUpdatedTaskDocs(emissions.tasks, freshData, calculationTimestamp, enableTasks) : [],
+      enableTargets ? emissions.targets : [],
+    ]))
+    .then(([updatedTaskDocs, targetEmissions]) => ({ updatedTaskDocs, targetEmissions }));
+};
+
+const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
+  const { taskDocs = [], userContactId } = freshData;
+  const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs, calculationTimestamp);
+
+  const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
+  const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
+    .map(taskEmission => {
+      const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
+      return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
+    });
+
+  const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
+  const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
+  const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
+  return [...updatedTaskDocs, ...cancelledDocs];
 };
 
 /**
@@ -80,7 +88,10 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
   return Object.keys(winners).map(key => winners[key]); // Object.values()
 };
 
-const mapEmissionIdToLatestTaskDoc = taskDocs => taskDocs
+const mapEmissionIdToLatestTaskDoc = (taskDocs, maxTimestamp) => taskDocs
+  // mitigate the fallout of a user who rewinds their system-clock after creating task docs
+  .filter(doc => doc.authoredOn <= maxTimestamp)
+  
   .reduce((agg, doc) => {
     const emissionId = doc.emission._id;
     if (!agg[emissionId] || agg[emissionId].authoredOn < doc.authoredOn) {

@@ -1,4 +1,5 @@
 const rewire = require('rewire');
+const chtSettingsDoc = require('../../../config/default/app_settings.json');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
@@ -12,16 +13,23 @@ const chtDocs = {
   },
 
   pregnancyReport: {
-    _id: 'report',
+    _id: 'pregReport',
     type: 'data_record',
     form: 'pregnancy',
     fields: {
       t_pregnancy_follow_up_date: '2000-01-01',
       patient_uuid: 'patient',
       patient_id: 'patient_id',
+      anc_visits_hf: {
+        anc_visits_hf_past: {
+          last_visit_attended: 'yes',
+          report_other_visits: 'yes',
+          visited_hf_count: 3,
+        },
+      },
     },
     patient_id: 'patient_id',
-    reported_date: 0,
+    reported_date: 1,
   },
 };
 
@@ -43,13 +51,24 @@ rule GenerateEvents {
     resolved: false,
     delete: false,
     date: new Date(Date.now() + msOffset),
-    startTime: Date.now() + msOffset - MS_IN_DAY,
-    endTime: Date.now() + msOffset + MS_IN_DAY,
+    readyStart: 0,
+    readyEnd: 0,
   }, assigned),
 
+  chtSettingsDoc,
   chtDocs,
 
-  RestorableContactStateStore: () => restorable('../src/contact-state-store', ['state', 'currentUser', 'onStateChange']),
+  chtRulesSettings: assign => {
+    return Object.assign({
+      rules: chtSettingsDoc.tasks.rules,
+      targets: chtSettingsDoc.tasks.targets.items,
+      taskScedules: chtSettingsDoc.tasks.schedules,
+      enableTasks: true,
+      enableTargets: true,
+    }, assign);
+  },
+
+  RestorableRulesStateStore: () => restorable('../src/rules-state-store', ['state', 'currentUser', 'onStateChange']),
 };
 
 const restorable = (path, attributes = []) => {

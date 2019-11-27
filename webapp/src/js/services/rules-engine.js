@@ -4,35 +4,53 @@ const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
 const MAX_LINEAGE_DEPTH = 50;
+const ENSURE_FRESHNESS_SECS = 120;
 
 angular.module('inboxServices').factory('RulesEngine', function(
+  $parse,
   $translate,
   Auth,
+  CalendarInterval,
   Changes,
   ContactTypes,
-  DB,
+  Debounce,
   RulesEngineCore,
   Session,
   Settings,
   TranslateFrom,
+  UHCSettings,
   UserContact
 ) {
   'ngInject';
 
+  let uhcMonthStartDate;
+  let ensureTaskFreshness;
+  let ensureTargetFreshness;
+
+  const hasRole = role => Auth(role).then(() => true).catch(() => false);
   const initialize = () => (
-    Auth.any([['can_view_tasks'], ['can_view_analytics']]).then(() => true).catch(() => false)
-      .then(hasPermission => {
+    Promise.all([hasRole('can_view_tasks'), hasRole('can_view_analytics')])
+      .then(([canViewTasks, canViewTargets]) => {
+        const hasPermission = canViewTargets || canViewTasks;
         if (!hasPermission || Session.isOnlineOnly()) {
           return false;
         }
 
         return Promise.all([ Settings(), UserContact() ])
           .then(([settingsDoc, userContactDoc]) => {
-            return RulesEngineCore.initialize(DB(), settingsDoc, userContactDoc)
+            const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
+            return RulesEngineCore.initialize(rulesSettings, userContactDoc)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
-                  monitorChanges(settingsDoc, userContactDoc);
+                  assignMonthStartDate(settingsDoc);
+                  monitorChanges(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
+
+                  ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTaskFreshness();
+                  
+                  ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTargetFreshness();
                 }
 
                 return isEnabled;
@@ -42,14 +60,34 @@ angular.module('inboxServices').factory('RulesEngine', function(
   );
   let initialized = initialize();
 
-  const monitorChanges = function (settingsDoc, userContactDoc) {
+  const cancelDebounce = debounce => {
+    if (debounce) {
+      debounce.cancel();
+    }
+  };
+
+  const getRulesSettings = (settingsDoc, userContactDoc, enableTasks, enableTargets) => {
+    const settingsTasks = settingsDoc && settingsDoc.tasks || {};
+    const filterTargetByContext = target => target.context ? !!$parse(target.context)({ user: userContactDoc }) : true;
+    const targets = settingsTasks.targets && settingsTasks.targets.items || [];
+
+    return {
+      rules: settingsTasks.rules,
+      taskSchedules: settingsTasks.schedules,
+      targets: targets.filter(filterTargetByContext),
+      enableTasks,
+      enableTargets,
+    };
+  };
+
+  const monitorChanges = (settingsDoc, userContactDoc, canViewTasks, canViewTargets) => {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     Changes({
       key: 'mark-contacts-dirty',
       filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
       callback: change => {
         const subjectId = isReport(change.doc) ? registrationUtils.getPatientId(change.doc) : change.id;
-        RulesEngineCore.updateTasksFor(DB(), subjectId);
+        RulesEngineCore.updateEmissionsFor(subjectId);
       },
     });
 
@@ -58,20 +96,26 @@ angular.module('inboxServices').factory('RulesEngine', function(
       userLineage.push(current._id);
     }
 
+    const rulesConfigChange = () => {
+      const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
+      RulesEngineCore.rulesConfigChange(rulesSettings, userContactDoc);
+      assignMonthStartDate(settingsDoc);
+    };
+
     Changes({
       key: 'rules-config-update',
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
       callback: change => {
-        if (change.id === 'settings') {
-          settingsDoc = change.doc;
-          RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);  
-        } else {
+        if (change.id !== 'settings') {
           return UserContact()
             .then(updatedUser => {
               userContactDoc = updatedUser;
-              RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);
+              rulesConfigChange();
             });
         }
+
+        settingsDoc = change.doc;
+        rulesConfigChange();
       },
     });
   };
@@ -97,25 +141,40 @@ angular.module('inboxServices').factory('RulesEngine', function(
     return taskDocs;
   };
 
-  return {
+  const assignMonthStartDate = settingsDoc => {
+    uhcMonthStartDate = UHCSettings.getMonthStartDate(settingsDoc);
+  };
+
+  const self = {
     isEnabled: () => initialized,
 
     fetchTaskDocsForAllContacts: () => (
       initialized
-        .then(() => RulesEngineCore.fetchTasksFor(DB()))
+        .then(() => {
+          cancelDebounce(ensureTaskFreshness);
+          return RulesEngineCore.fetchTasksFor();
+        })
         .then(translateTaskDocs)
     ),
 
     fetchTaskDocsFor: contactIds => (
       initialized
-        .then(() => RulesEngineCore.fetchTasksFor(DB(), contactIds))
+        .then(() => RulesEngineCore.fetchTasksFor(contactIds))
         .then(translateTaskDocs)
     ),
 
-    // testing only - allows karma to test initialization logic
-    _initialize: () => { initialized = initialize(); },
+    fetchTargets: () => (
+      initialized
+        .then(() => {
+          cancelDebounce(ensureTargetFreshness);
+          const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
+          return RulesEngineCore.fetchTargets(relevantInterval);
+        })
+    ),
   };
+
+  return self;
 });
 
 // RulesEngineCore allows for karma to test using a mock shared-lib
-angular.module('inboxServices').factory('RulesEngineCore', function() { return rulesEngineCore; });
+angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });

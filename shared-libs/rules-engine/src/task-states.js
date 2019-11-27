@@ -3,6 +3,23 @@
  * As defined by the FHIR task standard https://www.hl7.org/fhir/task.html#statemachine
  */
 
+const moment = require('moment');
+
+/**
+ * Problems:
+ * If all emissions are converted to documents, heavy users will create thousands of legacy task docs after upgrading to this rules-engine.
+ * In order to purge task documents, we need to guarantee that they won't just be recreated after they are purged.
+ * The two scenarios above are important for maintaining the client-side performance of the app.
+ * 
+ * Therefore, we only consider task emissions "timely" if they end within a fixed time period.
+ * However, if this window is too short then users who don't login frequently may fail to create a task document at all.
+ * Looking at time-between-reports for active projects, a time window of 60 days will ensure that 99.9% of tasks are recorded as docs.
+ */
+const TIMELY_WHEN_NEWER_THAN_DAYS = 60;
+
+// This must be a comparable string format to avoid a bunch of parsing. For example, "2000-01-01" < "2010-11-31"
+const formatString = 'YYYY-MM-DD';
+
 const States = {
   /**
    * Task has been calculated but it is scheduled in the future
@@ -31,6 +48,29 @@ const States = {
   Failed: 'Failed',
 };
 
+const getDisplayWindow = (taskEmission) => {
+  const hasExistingDisplayWindow = taskEmission.startDate || taskEmission.endDate;
+  if (hasExistingDisplayWindow) {
+    return {
+      dueDate: taskEmission.dueDate,
+      startDate: taskEmission.startDate,
+      endDate: taskEmission.endDate,
+    };
+  }
+
+  const dueDate = moment(taskEmission.date);
+  if (!dueDate.isValid()) {
+    return { dueDate: NaN, startDate: NaN, endDate: NaN };
+  }
+
+  return {
+    dueDate: dueDate.format(formatString),
+    startDate: dueDate.clone().subtract(taskEmission.readyStart || 0, 'days').format(formatString),
+    endDate: dueDate.clone().add(taskEmission.readyEnd || 0, 'days').format(formatString),
+  };
+};
+
+
 module.exports = {
   isTerminal: state => [States.Cancelled, States.Completed, States.Failed].includes(state),
 
@@ -43,7 +83,7 @@ module.exports = {
     return orderOf(stateA) < orderOf(stateB);
   },
 
-  calculateState: (taskEmission, time) => {
+  calculateState: (taskEmission, timestamp) => {
     if (!taskEmission) {
       return false;
     }
@@ -57,19 +97,32 @@ module.exports = {
     }
 
     // invalid data yields falsey
-    if (!taskEmission.startTime || !taskEmission.endTime || taskEmission.startTime > taskEmission.endTime || taskEmission.endTime < taskEmission.startTime) {
+    if (!taskEmission.date && !taskEmission.dueDate) {
       return false;
     }
 
-    if (taskEmission.startTime > time) {
+    const { startDate, endDate } = getDisplayWindow(taskEmission);
+    if (!startDate || !endDate || startDate > endDate || endDate < startDate) {
+      return false;
+    }
+
+    const timestampAsDate = moment(timestamp).format(formatString);
+    if (startDate > timestampAsDate) {
       return States.Draft;
     }
 
-    if (taskEmission.endTime < time) {
+    if (endDate < timestampAsDate) {
       return States.Failed;
     }
 
     return States.Ready;
+  },
+
+  getDisplayWindow,
+
+  isTimely: (taskEmission, timestamp) => {
+    const { endDate } = getDisplayWindow(taskEmission);
+    return endDate > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').format(formatString);
   },
 
   setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now()) => {

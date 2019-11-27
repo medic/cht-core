@@ -1,7 +1,10 @@
 const { expect } = require('chai');
-const { MS_IN_DAY, mockEmission } = require('./mocks');
+const moment = require('moment');
+const rewire = require('rewire');
 const sinon = require('sinon');
-const TaskStates = require('../src/task-states');
+
+const { MS_IN_DAY, mockEmission } = require('./mocks');
+const TaskStates = rewire('../src/task-states');
 
 const definedStates = Object.keys(TaskStates).filter(key => typeof TaskStates[key] === 'string');
 
@@ -32,10 +35,10 @@ describe('task-states', () => {
     });
 
     it('invalid data yields falsey', () => {
-      const first = mockEmission(0, { startTime: 2, endTime: 1 });
+      const first = mockEmission(0, { readyStart: 0, readyEnd: -5 });
       expect(TaskStates.calculateState(first, Date.now())).to.eq(false);
 
-      const second = mockEmission(0, { startTime: undefined });
+      const second = mockEmission(0, { readyStart: undefined, readyEnd: undefined, date: undefined, startDate: undefined });
       expect(TaskStates.calculateState(second, Date.now())).to.eq(false);
     });
 
@@ -127,6 +130,18 @@ describe('task-states', () => {
     });
   });
 
+  describe('isTimely', () => {
+    it('old emission is not timely', () => {
+      const emission = mockEmission(-MS_IN_DAY * 90);
+      expect(TaskStates.isTimely(emission)).to.be.false;
+    });
+
+    it('new emission is timely', () => {
+      const emission = mockEmission(-MS_IN_DAY);
+      expect(TaskStates.isTimely(emission)).to.be.true;
+    });
+  });
+
   describe('mostReadyComparator', () => {
     it('all defined states better than undefined', () => {
       const actual = definedStates.some(state => !TaskStates.isMoreReadyThan(state, undefined));
@@ -137,5 +152,19 @@ describe('task-states', () => {
     it('ready is more ready than draft', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, TaskStates.Draft)).to.be.true);
     it('ready is not more ready than ready', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, TaskStates.Ready)).to.be.false);
     it('draft is less ready than ready', () => expect(TaskStates.isMoreReadyThan(TaskStates.Draft, TaskStates.Ready)).to.be.false);
+  });
+
+  it('formatString is comparable', () => {
+    const formatString = TaskStates.__get__('formatString');
+    expect(formatString).to.not.be.undefined;
+    
+    const larger = moment('20000101', 'YYYYMMDD');
+    const smaller = larger.clone().subtract(1, 'day');
+    for (let i = 0; i < 367; i++) {
+      expect(larger.format(formatString) > smaller.format(formatString)).to.be.true;
+      expect(smaller.format(formatString) < larger.format(formatString)).to.be.true;
+      larger.add(1, 'day');
+      smaller.add(1, 'day');
+    }
   });
 });

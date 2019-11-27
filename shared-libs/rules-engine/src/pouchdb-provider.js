@@ -1,22 +1,17 @@
 /**
- * @module task-fetcher
+ * @module pouchdb-provider
  *
- * A concrete "data provider" accessing data via medic pouch db
+ * Wireup for accessing rules document data via medic pouch db
  */
 
+const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 
-const CONTACT_STATE_DOCID = '_local/taskState';
-
-// previousStateChangeResult helps avoid conflict errors since these changes are handled asynchronously
-let previousStateChangeResult = Promise.resolve();
-
+const RULES_STATE_DOCID = '_local/rulesStateStore';
 const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
 
 const medicPouchProvider = db => {
   const self = {
-    CONTACT_STATE_DOCID,
-
     /*
     PouchDB.query slows down when provided with a large keys array.
     For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
@@ -46,32 +41,40 @@ const medicPouchProvider = db => {
         })
     ),
 
+    stateChangeCallback: docUpdateClosure(db),
+
+    commitTargetDoc: (assign, userDoc, docTag) => {
+      const userContactId = userDoc && userDoc._id;
+      const _id = `target-${docTag}-${userContactId}`;
+      const createNew = () => ({
+        _id,
+        type: 'target',
+        user: userContactId,
+      });
+
+      const today = moment().startOf('day').valueOf();
+      return db.get(_id)
+        .catch(createNew)
+        .then(existingDoc => {
+          if (existingDoc.updated_date !== today) {
+            Object.assign(existingDoc, assign);
+            existingDoc.updated_date = today;
+            return db.put(existingDoc);
+          }
+        });
+    },
+
     commitTaskDocs: taskDocs => {
       if (!taskDocs || taskDocs.length === 0) {
         return Promise.resolve([]);
       }
-    
-      console.debug(`Committing ${taskDocs.length} task documents updates`);
+   
+      console.debug(`Committing ${taskDocs.length} task document updates`);
       return db.bulkDocs(taskDocs)
         .catch(err => console.error('Error committing task documents', err));
     },
 
-    existingContactStateStore: () => db.get(CONTACT_STATE_DOCID).catch(() => undefined),
-
-    stateChangeCallback: (stateDoc, updatedState) => {
-      Object.assign(stateDoc, { contactStateStore: updatedState });
-
-      previousStateChangeResult = previousStateChangeResult
-        .then(() => db.put(stateDoc))
-        .then(updatedDoc => { stateDoc._rev = updatedDoc.rev; })
-        .catch(err => console.error(`Error updating contactStateStore: ${err}`))
-        .then(() => {
-          // unsure of how browsers handle long promise chains, so break the chain when possible
-          previousStateChangeResult = Promise.resolve();
-        });
-
-      return previousStateChangeResult;
-    },
+    existingRulesStateStore: () => db.get(RULES_STATE_DOCID).catch(() => ({ _id: RULES_STATE_DOCID })),
 
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
@@ -89,7 +92,7 @@ const medicPouchProvider = db => {
             registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
             return agg;
           }, new Set(contactIds));
-          
+         
           const keys = Array.from(subjectIds).map(key => [key]);
           return Promise.all([
               docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
@@ -106,6 +109,27 @@ const medicPouchProvider = db => {
   };
 
   return self;
+};
+
+medicPouchProvider.RULES_STATE_DOCID = RULES_STATE_DOCID;
+
+const docUpdateClosure = db => {
+  // previousResult helps avoid conflict errors if this functions is used asynchronously
+  let previousResult = Promise.resolve();
+  return (baseDoc, assigned) => {
+    Object.assign(baseDoc, assigned);
+
+    previousResult = previousResult
+      .then(() => db.put(baseDoc))
+      .then(updatedDoc => { baseDoc._rev = updatedDoc.rev; })
+      .catch(err => console.error(`Error updating ${baseDoc._id}: ${err}`))
+      .then(() => {
+        // unsure of how browsers handle long promise chains, so break the chain when possible
+        previousResult = Promise.resolve();
+      });
+
+    return previousResult;
+  };
 };
 
 module.exports = medicPouchProvider;

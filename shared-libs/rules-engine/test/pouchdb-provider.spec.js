@@ -1,9 +1,10 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
+const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
 
-const { chtDocs } = require('./mocks');
+const { chtDocs, MS_IN_DAY } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -58,9 +59,12 @@ describe('pouchdb provider', () => {
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
+    sinon.useFakeTimers(100000000);
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
   });
+
+  afterEach(() => sinon.restore());
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev').to.deep.eq([headlessTask, taskOwnedByChtContact]));
@@ -76,6 +80,39 @@ describe('pouchdb provider', () => {
     });
   });
 
+  describe('commitTargetDoc', () => {
+    const targets = [{ id: 'target' }];
+    const userDoc = { _id: 'user' };
+
+    it('create and update a doc', async () => {
+      const docTag = '2019-07';
+      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, docTag);
+
+      expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
+        _id: 'target-2019-07-user',
+        updated_date: moment().startOf('day').valueOf(),
+        type: 'target',
+        user: 'user',
+        targets,
+      });
+
+      const nextTargets = [{ id: 'target', score: 1 }];
+      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
+      const ignoredUpdate = await db.get('target-2019-07-user');
+      expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
+
+      sinon.useFakeTimers(Date.now() + MS_IN_DAY);
+      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
+      expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
+        _id: 'target-2019-07-user',
+        updated_date: moment().startOf('day').valueOf(),
+        type: 'target',
+        user: 'user',
+        targets: nextTargets,
+      });
+    });
+  });
+
   describe('contactsBySubjectId', () => {
     it('empty yields empty', async () => expect(await pouchdbProvider(db).contactsBySubjectId([])).to.be.empty);
     it('patient_id yields id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient_id'])).to.deep.eq(['patient']));
@@ -83,24 +120,22 @@ describe('pouchdb provider', () => {
     it('uuid and patient_id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient', 'patient_id'])).to.deep.eq(['patient', 'patient'])); // dupes don't matter here
   });
 
-  describe('contactStateStore', () => {
-    it('contactStateStore is undefined by default', async () => {
-      expect(await pouchdbProvider(db).existingContactStateStore()).to.be.undefined;
+  describe('rulesStateStore', () => {
+    it('rulesStateStore is empty by default', async () => {
+      expect(await pouchdbProvider(db).existingRulesStateStore()).to.not.have.property('rulesStateStore');
     });
 
-    it('fake contactStateStore can be fetched', async () => {
-      const expected = { _id: '_local/taskState', details: 'stuff' };
+    it('fake rulesStateStore can be fetched', async () => {
+      const expected = { _id: pouchdbProvider.RULES_STATE_DOCID, details: 'stuff' };
       await db.put(expected);
 
-      const actual = await pouchdbProvider(db).existingContactStateStore();
+      const actual = await pouchdbProvider(db).existingRulesStateStore();
       expect(actual).excluding('_rev').to.deep.eq(expected);
 
       await pouchdbProvider(db).stateChangeCallback(actual, { updated: true });
-      expect(await pouchdbProvider(db).existingContactStateStore()).excluding('_rev').to.deep.eq({
-        _id: '_local/taskState',
-        contactStateStore: {
-          updated: true,
-        },
+      expect(await pouchdbProvider(db).existingRulesStateStore()).excluding('_rev').to.deep.eq({
+        _id: pouchdbProvider.RULES_STATE_DOCID,
+        updated: true,
         details: 'stuff'
       });
     });

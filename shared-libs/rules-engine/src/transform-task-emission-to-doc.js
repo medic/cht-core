@@ -45,7 +45,7 @@ module.exports = (taskEmission, calculatedAt, userContactId, existingDoc) => {
 };
 
 const minifyEmission = (taskDoc, emission) => {
-  const minified = ['_id', 'title', 'icon', 'startTime', 'endTime', 'deleted', 'resolved', 'actions']
+  const minified = ['_id', 'title', 'icon', 'deleted', 'resolved', 'actions']
     .reduce((agg, attr) => {
       if (Object.hasOwnProperty.call(emission, attr)) {
         agg[attr] = emission[attr];
@@ -61,7 +61,10 @@ const minifyEmission = (taskDoc, emission) => {
     minified.contact = { name: emission.contact.name };
   }
 
-  minified.dueDate = emission.date && new Date(emission.date).getTime();
+  if (emission.date || emission.dueDate) {
+    const timeWindow = TaskStates.getDisplayWindow(emission);
+    Object.assign(minified, timeWindow);
+  }
   minified.actions && minified.actions
     .filter(action => action && action.content)
     .forEach(action => {

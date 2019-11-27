@@ -23,24 +23,27 @@ module.exports = {
   /**
    * Initializes the rules emitter
    *
-   * @param {Object} settingsDoc The settings document
+   * @param {Object} settings Settings for the behavior of the rules emitter
+   * @param {Object} settings.rules Rules code from settings doc
+   * @param {Object[]} settings.taskSchedules Task schedules from settings doc
    * @param {Object} userDoc The logged in user's contact document
    * @returns {Boolean} Success
    */
-  initialize: (settingsDoc, userDoc) => {
+  initialize: (settings, userDoc) => {
     if (flow) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
 
-    if (!settingsDoc || !settingsDoc.tasks || !settingsDoc.tasks.rules) {
+    if (!settings.rules) {
       return false;
     }
 
     shutdown();
 
     try {
+      const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
       const nootilsInstance = nootils(settingsDoc);
-      flow = nools.compile(settingsDoc.tasks.rules, {
+      flow = nools.compile(settings.rules, {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,
@@ -58,7 +61,7 @@ module.exports = {
   /**
    * When upgrading to version 3.8, partners are required to make schema changes in their partner code
    * TODO: Add link to documentation
-   * 
+   *
    * @returns True if the schema changes are in place
    */
   isLatestNoolsSchema: () => {
@@ -67,7 +70,11 @@ module.exports = {
     }
 
     const Task = flow.getDefined('task');
-    return ['startTime', 'endTime'].every(attr => Object.hasOwnProperty.call(Task.prototype, attr));
+    const Target = flow.getDefined('target');
+    const hasProperty = (obj, attr) => Object.hasOwnProperty.call(obj, attr);
+    return hasProperty(Task.prototype, 'readyStart') &&
+      hasProperty(Task.prototype, 'readyEnd') &&
+      hasProperty(Target.prototype, 'contact');
   },
 
   /**

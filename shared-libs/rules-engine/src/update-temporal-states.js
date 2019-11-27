@@ -12,7 +12,11 @@ const TaskStates = require('./task-states');
 module.exports = (taskDocs, timestamp = Date.now()) => {
   const docsToCommit = [];
   for (let taskDoc of taskDocs) {
-    const updatedState = TaskStates.calculateState(taskDoc.emission, timestamp);
+    let updatedState = TaskStates.calculateState(taskDoc.emission, timestamp);
+    if (taskDoc.authoredOn > timestamp) {
+      updatedState = TaskStates.Cancelled;
+    }
+
     if (!TaskStates.isTerminal(taskDoc.state) && taskDoc.state !== updatedState) {
       TaskStates.setStateOnTaskDoc(taskDoc, updatedState, timestamp);
       docsToCommit.push(taskDoc);

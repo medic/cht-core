@@ -3,7 +3,7 @@ const moment = require('moment');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
-const { chtDocs, mockEmission, MS_IN_DAY } = require('./mocks');
+const { chtRulesSettings, chtDocs, mockEmission, MS_IN_DAY } = require('./mocks');
 const rulesEmitter = require('../src/rules-emitter');
 const transformTaskEmissionToDoc = rewire('../src/transform-task-emission-to-doc');
 
@@ -64,17 +64,16 @@ describe('transform-task-emission-to-doc', () => {
     expect(firstDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
       state: 'Ready',
-      'emission.dueDate': Date.now(),
     });
 
-    const slightlyDifferentReadyEmission = mockEmission(1000);
+    const slightlyDifferentReadyEmission = mockEmission(0, { readyEnd: 2 });
     const updatedDoc = transformTaskEmissionToDoc(deepCopy(slightlyDifferentReadyEmission), Date.now() + 1000, 'username', deepCopy(firstDoc.taskDoc));
     expect(updatedDoc.isUpdated).to.eq(true);
     expect(updatedDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
       state: 'Ready',
-      'emission.dueDate': Date.now() + 1000,
     });
+    expect(firstDoc.taskDoc.emission.endDate).to.not.eq(updatedDoc.taskDoc.emission.endDate);
     expect(updatedDoc.taskDoc.stateHistory).to.deep.eq([{
       state: 'Ready',
       timestamp: Date.now(),
@@ -112,7 +111,7 @@ describe('transform-task-emission-to-doc', () => {
 
   it('no new docs for cancelled state', () => {
     const invalidEmission = mockEmission(MS_IN_DAY);
-    invalidEmission.endTime = 0;
+    invalidEmission.readyStart = -1;
     const docForCancelledEmission = transformTaskEmissionToDoc(deepCopy(invalidEmission), Date.now(), 'username');
     expect(docForCancelledEmission).to.nested.include({
       isUpdated: false,
@@ -143,11 +142,12 @@ describe('transform-task-emission-to-doc', () => {
     const minifyEmission = transformTaskEmissionToDoc.__get__('minifyEmission');
 
     it('empty emission', () => {
-      expect(minifyEmission({}, {})).to.deep.eq({ emission: { dueDate: undefined } });
+      expect(minifyEmission({}, {})).to.deep.eq({ emission: {} });
     });
 
     it('invalid duedate', () => {
-      expect(minifyEmission({}, { date: 'foo' })).to.deep.eq({ emission: { dueDate: NaN } });
+      const actual = minifyEmission({}, { date: 'foo' });
+      expect(actual).to.deep.eq({ emission: { dueDate: NaN, startDate: NaN, endDate: NaN } });
     });
 
     it('action without contact', () => {
@@ -156,7 +156,6 @@ describe('transform-task-emission-to-doc', () => {
         emission: {
           actions: [{ content: {} }],
           forId: undefined,
-          dueDate: undefined
         }
       });
     });
@@ -164,34 +163,49 @@ describe('transform-task-emission-to-doc', () => {
     it('action without content', () => {
       const actual = minifyEmission({}, { actions: [{ }] });
       expect(actual).to.deep.eq({
-        emission: {
-          actions: [{ }],
-          dueDate: undefined
-        }
+        emission: { actions: [{ }] }
       });
     });
 
     it('contact without id', () => {
       const actual = minifyEmission({}, { contact: { name: 'foo' } });
       expect(actual).to.deep.eq({
-        emission: {
-          contact: { name: 'foo' },
-          dueDate: undefined
-        }
+        emission: { contact: { name: 'foo' } }
       });
     });
   });
 
   describe('integration', () => {
-    const settingsDoc = require('../../../config/default/app_settings.json');
     const user = {};
 
     afterEach(() => {
       rulesEmitter.shutdown();
     });
 
+    it('calculateState is the same before and after transform (Ready)', () => {
+      const TaskStates = require('../src/task-states');
+      const emission = mockEmission(0);
+      const stateOfRaw = TaskStates.calculateState(emission, Date.now());
+      expect(stateOfRaw).to.eq('Ready');
+      const transformed = transformTaskEmissionToDoc(emission, Date.now(), 'user');
+      const stateOfTransformed = TaskStates.calculateState(transformed.taskDoc.emission, Date.now());
+
+      expect(stateOfRaw).to.eq(stateOfTransformed);
+    });
+
+    it('calculateState is the same before and after transform (Draft)', () => {
+      const TaskStates = require('../src/task-states');
+      const emission = mockEmission(MS_IN_DAY * 2);
+      const stateOfRaw = TaskStates.calculateState(emission, Date.now());
+      expect(stateOfRaw).to.eq('Draft');
+      const transformed = transformTaskEmissionToDoc(emission, Date.now(), 'user');
+      const stateOfTransformed = TaskStates.calculateState(transformed.taskDoc.emission, Date.now());
+
+      expect(stateOfRaw).to.eq(stateOfTransformed);
+    });
+
     it('transform task.anc.facility_reminder.title', async () => {
-      const initialized = rulesEmitter.initialize(settingsDoc, user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
       expect(initialized).to.be.true;
 
       const { tasks } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
@@ -204,7 +218,7 @@ describe('transform-task-emission-to-doc', () => {
       expect(actual).to.deep.eq({
         isUpdated: true,
         taskDoc: {
-          _id: `task~user~report~pregnancy-facility-visit-reminder~2~${Date.now()}`,
+          _id: `task~user~pregReport~pregnancy-facility-visit-reminder~2~${Date.now()}`,
           type: 'task',
           authoredOn: NOW.valueOf(),
           user: 'user',
@@ -212,14 +226,14 @@ describe('transform-task-emission-to-doc', () => {
           owner: 'patient',
           state: 'Ready',
           emission: {
-            _id: 'report~pregnancy-facility-visit-reminder~2',
+            _id: 'pregReport~pregnancy-facility-visit-reminder~2',
             title: 'task.anc.facility_reminder.title',
             icon: 'icon-pregnancy',
             forId: 'patient',
             actions: [{
               content: {
                 source: 'task',
-                source_id: 'report',
+                source_id: 'pregReport',
                 source_visit_date: '2000-01-01',
               },
               form: 'pregnancy_facility_visit_reminder',
@@ -231,9 +245,9 @@ describe('transform-task-emission-to-doc', () => {
             },
             deleted: false,
             resolved: false,
-            startTime: NOW.clone().subtract(3, 'day').valueOf(),
-            dueDate: NOW.valueOf(),
-            endTime: NOW.clone().add(8, 'day').valueOf(),
+            dueDate: '2000-01-01',
+            startDate: '1999-12-29',
+            endDate: '2000-01-08',
           },
           stateHistory: [{
             state: 'Ready',
