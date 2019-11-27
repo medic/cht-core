@@ -106,7 +106,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       key: 'rules-config-update',
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
       callback: change => {
-        if (change.id !== 'settings') {1
+        if (change.id !== 'settings') {
           return UserContact()
             .then(updatedUser => {
               userContactDoc = updatedUser;
