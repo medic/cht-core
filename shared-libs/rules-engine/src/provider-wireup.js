@@ -18,19 +18,22 @@ let wireupOptions;
 module.exports = {
   /**
    * @param {Object} provider A data provider
-   * @param {Object} settingsDoc Settings document
+   * @param {Object} settings Settings for the behavior of the provider
+   * @param {Object} settings.rules Rules code from settings doc
+   * @param {Object[]} settings.taskSchedules Task schedules from settings doc
+   * @param {Object[]} settings.targets Target definitions from settings doc
+   * @param {Boolean} settings.enableTasks Flag to enable tasks
+   * @param {Boolean} settings.enableTargets Flag to enable targets
    * @param {Object} userDoc User's hydrated contact document
-   * @param {Object=} options Options for behavior of the rules-engine
-   * @param {Boolean=true} options.enableTasks Flag to enable tasks
-   * @param {Boolean=true} options.enableTargets Flag to enable targets
    */
-  initialize: (provider, settingsDoc, userDoc, { enableTasks=true, enableTargets=true }={}) => {
-    const isEnabled = rulesEmitter.initialize(settingsDoc, userDoc);
+  initialize: (provider, settings, userDoc) => {
+    const isEnabled = rulesEmitter.initialize(settings, userDoc);
     if (!isEnabled) {
       return Promise.resolve();
     }
 
-   wireupOptions = { enableTasks, enableTargets };
+    const { enableTasks=true, enableTargets=true } = settings;
+    wireupOptions = { enableTasks, enableTargets };
          
     return provider.existingRulesStateStore()
       .then(existingStateDoc => {
@@ -39,7 +42,7 @@ module.exports = {
         }
 
         const contactClosure = updatedState => provider.stateChangeCallback(existingStateDoc, { rulesStateStore: updatedState });
-        rulesStateStore.load(existingStateDoc.rulesStateStore, settingsDoc, userDoc, contactClosure);
+        rulesStateStore.load(existingStateDoc.rulesStateStore, settings, userDoc, contactClosure);
       });
   },
 

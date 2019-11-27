@@ -16,13 +16,15 @@ module.exports = db => {
   const provider = pouchdbProvider(db);
   return {
     /**
-     * @param {Object} settingsDoc Settings document
+     * @param {Object} settings Settings for the behavior of the rules engine
+     * @param {Object} settings.rules Rules code from settings doc
+     * @param {Object[]} settings.taskSchedules Task schedules from settings doc
+     * @param {Object[]} settings.targets Target definitions from settings doc
+     * @param {Boolean} settings.enableTasks Flag to enable tasks
+     * @param {Boolean} settings.enableTargets Flag to enable targets
      * @param {Object} userDoc User's hydrated contact document
-     * @param {Object=} options Options for the behavior of the rules engine
-     * @param {Boolean} options.enableTasks Flag to enable tasks
-     * @param {Boolean} options.enableTargets Flag to enable targets
      */
-    initialize: (settingsDoc, userDoc, options) => wireupToProvider.initialize(provider, settingsDoc, userDoc, options),
+    initialize: (settings, userDoc) => wireupToProvider.initialize(provider, settings, userDoc),
 
     /**
      * @returns {Boolean} True if the rules engine is enabled and ready for use
@@ -57,15 +59,19 @@ module.exports = db => {
     updateEmissionsFor: subjectIds => wireupToProvider.updateEmissionsFor(provider, subjectIds),
 
     /**
-     * Determines if either the settings document or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
+     * Determines if either the settings or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
      * If they have changed in a meaningful way, the calculation state of all contacts is reset
      *
-     * @param {Object} settingsDoc Settings document
+     * @param {Object} settings Updated settings
+     * @param {Object} settings.rules Rules code from settings doc
+     * @param {Object[]} settings.taskSchedules Task schedules from settings doc
+     * @param {Object[]} settings.targets Target definitions from settings doc
+     * @param {Boolean} settings.enableTasks Flag to enable tasks
+     * @param {Boolean} settings.enableTargets Flag to enable targets
      * @param {Object} userDoc User's hydrated contact document
-     * @param {Object} salt=1 Salt to add into the configuration hash. Changing this value invalidates the cache.
      */
-    rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
-      const cacheIsReset = rulesStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
+    rulesConfigChange: (settings, userDoc) => {
+      const cacheIsReset = rulesStateStore.rulesConfigChange(settings, userDoc);
       if (cacheIsReset) {
         rulesEmitter.shutdown();
       }

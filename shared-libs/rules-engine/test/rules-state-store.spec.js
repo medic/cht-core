@@ -66,7 +66,7 @@ describe('rules-state-store', () => {
     expect(onStateChange.callCount).to.eq(1);
     expect(rulesStateStore.isDirty('b')).to.be.true;
 
-    rulesStateStore.rulesConfigChange({ targets: {} });
+    rulesStateStore.rulesConfigChange({ });
     expect(onStateChange.callCount).to.eq(2);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -92,7 +92,7 @@ describe('rules-state-store', () => {
     expect(onStateChange.callCount).to.eq(3);
     expect(rulesStateStore.isDirty('b')).to.be.true;
 
-    rulesStateStore.rulesConfigChange({ targets: {} });
+    rulesStateStore.rulesConfigChange({ });
     expect(onStateChange.callCount).to.eq(4);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -120,7 +120,7 @@ describe('rules-state-store', () => {
     expect(rulesStateStore.isDirty('b')).to.be.true;
     expect(rulesStateStore.hasAllContacts()).to.be.true;
 
-    rulesStateStore.rulesConfigChange({ targets: {} });
+    rulesStateStore.rulesConfigChange({});
     expect(onStateChange.callCount).to.eq(4);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -150,17 +150,14 @@ describe('rules-state-store', () => {
   });
 
   it('target scenario', async () => {
-    const mockSettingsDoc = {
-      tasks: {
-        targets: {
-          items: [{
-            id: 'target',
-          }],
-        },
-      },
+    const mockSettings = {
+      targets: [{
+        id: 'target',
+      }],
     };
+
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build(mockSettingsDoc, {}, onStateChange);
+    await rulesStateStore.build(mockSettings, {}, onStateChange);
     rulesStateStore.storeTargetEmissions([], [{ id: 'abc', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1000 } }]);
     const initialTargets = rulesStateStore.aggregateStoredTargetEmissions();
     expect(initialTargets).to.deep.eq([{

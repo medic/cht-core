@@ -1,8 +1,7 @@
 const chai = require('chai');
 const moment = require('moment');
 const chaiExclude = require('chai-exclude');
-const { MS_IN_DAY, noolsPartnerTemplate } = require('./mocks');
-const cloneDeep = require('lodash/cloneDeep');
+const { MS_IN_DAY, noolsPartnerTemplate, chtRulesSettings, chtSettingsDoc } = require('./mocks');
 
 const memdownMedic = require('@medic/memdown');
 const nools = require('nools');
@@ -10,7 +9,6 @@ const sinon = require('sinon');
 
 const RulesEngine = require('../src');
 const rulesEmitter = require('../src/rules-emitter');
-const settingsDoc = require('../../../config/default/app_settings.json');
 
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -85,7 +83,7 @@ describe('Rules Engine Integration Tests', () => {
     sinon.useFakeTimers(THE_FUTURE);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
-    await rulesEngine.initialize(settingsDoc, userDoc);
+    await rulesEngine.initialize(chtRulesSettings(), userDoc);
   });
 
   after(() => {
@@ -100,11 +98,13 @@ describe('Rules Engine Integration Tests', () => {
     */
     sinon.useFakeTimers(THE_FUTURE);
    
-    settingsDoc.tasks.rules += ' '; // bust cache with fresh rules
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
-    await rulesEngine.rulesConfigChange(settingsDoc, userDoc);
-    await rulesEmitter.initialize(settingsDoc, userDoc);
+
+    configHashSalt++;
+    const rulesSettings = chtRulesSettings({ configHashSalt });
+    await rulesEngine.rulesConfigChange(rulesSettings, userDoc);
+    await rulesEmitter.initialize(rulesSettings, userDoc);
     sinon.useFakeTimers(1);
   });
 
@@ -132,7 +132,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
 
     const targets = await rulesEngine.fetchTargets();
-    expect(targets.length).to.eq(settingsDoc.tasks.targets.items.length);
+    expect(targets.length).to.eq(chtSettingsDoc.tasks.targets.items.length);
     expect(targets.some(t => t.total > 0)).to.be.false;
   });
 
@@ -290,8 +290,7 @@ describe('Rules Engine Integration Tests', () => {
   it('config change disables rules engine, causes no cancelations or errors', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
-    const updatedSettings = cloneDeep(settingsDoc);
-    updatedSettings.tasks.rules = noolsPartnerTemplate('const nothing = [];');
+    const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('const nothing = [];') });
     await rulesEngine.rulesConfigChange(updatedSettings, userDoc);
     expect(db.bulkDocs.callCount).to.eq(1);
 
@@ -303,8 +302,7 @@ describe('Rules Engine Integration Tests', () => {
   it('settings update to invalid config yields no tasks displayed or updated', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
-    const updatedSettings = cloneDeep(settingsDoc);
-    updatedSettings.tasks.rules = noolsPartnerTemplate('not javascript');
+    const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('not javascript') });
     await rulesEngine.rulesConfigChange(updatedSettings, userDoc);
     const successfulRecompile = rulesEmitter.isEnabled();
     expect(successfulRecompile).to.be.false;
@@ -317,7 +315,7 @@ describe('Rules Engine Integration Tests', () => {
   it('reloading same config does not bust cache', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
-    await rulesEngine.rulesConfigChange(settingsDoc, userDoc, configHashSalt);
+    await rulesEngine.rulesConfigChange(chtRulesSettings({ configHashSalt }), userDoc);
     const successfulRecompile = rulesEmitter.isEnabled();
     expect(successfulRecompile).to.be.true;
     expect(rulesEngine.isEnabled()).to.be.true;

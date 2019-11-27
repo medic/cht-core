@@ -23,24 +23,27 @@ module.exports = {
   /**
    * Initializes the rules emitter
    *
-   * @param {Object} settingsDoc The settings document
+   * @param {Object} settings Settings for the behavior of the rules emitter
+   * @param {Object} settings.rules Rules code from settings doc
+   * @param {Object[]} settings.taskSchedules Task schedules from settings doc
    * @param {Object} userDoc The logged in user's contact document
    * @returns {Boolean} Success
    */
-  initialize: (settingsDoc, userDoc) => {
+  initialize: (settings, userDoc) => {
     if (flow) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
 
-    if (!settingsDoc || !settingsDoc.tasks || !settingsDoc.tasks.rules) {
+    if (!settings.rules) {
       return false;
     }
 
     shutdown();
 
     try {
+      const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
       const nootilsInstance = nootils(settingsDoc);
-      flow = nools.compile(settingsDoc.tasks.rules, {
+      flow = nools.compile(settings.rules, {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,

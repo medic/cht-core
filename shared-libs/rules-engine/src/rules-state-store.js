@@ -18,19 +18,19 @@ const self = {
    * Initializes the rules-state-store from an existing state. If existing state is invalid, builds an empty state.
    *
    * @param {Object} existingState State object previously passed to the stateChangeCallback
-   * @param {Object} settingsDoc Settings document
+   * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} userDoc User's hydrated contact document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
    */
-  load: (existingState, settingsDoc, userDoc, stateChangeCallback) => {
+  load: (existingState, settings, userDoc, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
-    const rulesConfigHash = hashRulesConfig(settingsDoc, userDoc);
+    const rulesConfigHash = hashRulesConfig(settings, userDoc);
     const useState = existingState && existingState.rulesConfigHash === rulesConfigHash;
     if (!useState) {
-      return self.build(settingsDoc, userDoc, stateChangeCallback);
+      return self.build(settings, userDoc, stateChangeCallback);
     }
 
     state = existingState;
@@ -41,19 +41,19 @@ const self = {
   /**
    * Initializes an empty rules-state-store.
    *
-   * @param {Object} settingsDoc Settings document
+   * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} userDoc User's hydrated contact document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
    */
-  build: (settingsDoc, userDoc, stateChangeCallback) => {
+  build: (settings, userDoc, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
     state = {
-      rulesConfigHash: hashRulesConfig(settingsDoc, userDoc),
+      rulesConfigHash: hashRulesConfig(settings, userDoc),
       contactState: {},
-      targetState: targetState.createEmptyState(settingsDoc),
+      targetState: targetState.createEmptyState(settings.targets),
     };
     currentUser = userDoc;
 
@@ -90,17 +90,17 @@ const self = {
    * Determines if either the settings document or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
    * If they have changed in a meaningful way, the calculation state of all contacts is reset
    *
-   * @param {Object} settingsDoc Settings document
+   * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} userDoc User's hydrated contact document
    * @returns {Boolean} True if the state of all contacts has been reset
    */
-  rulesConfigChange: (settingsDoc, userDoc) => {
-    const rulesConfigHash = hashRulesConfig(settingsDoc, userDoc);
+  rulesConfigChange: (settings, userDoc) => {
+    const rulesConfigHash = hashRulesConfig(settings, userDoc);
     if (state.rulesConfigHash !== rulesConfigHash) {
       state = {
         rulesConfigHash,
         contactState: {},
-        targetState: targetState.createEmptyState(settingsDoc),
+        targetState: targetState.createEmptyState(settings.targets),
       };
       currentUser = userDoc;
 
@@ -214,14 +214,9 @@ const self = {
   aggregateStoredTargetEmissions: targetEmissionFilter => targetState.aggregateStoredTargetEmissions(state.targetState, targetEmissionFilter),
 };
 
-const hashRulesConfig = (settingsDoc, userDoc) => {
-  const settingsTasks = settingsDoc && settingsDoc.tasks || {};
-  const settingsPermissions = settingsDoc && settingsDoc.permissions || {};
+const hashRulesConfig = (settings, userDoc) => {
   const rulesConfig = {
-    rules: settingsTasks.rules,
-    targets: settingsTasks.targets,
-    can_view_tasks: settingsPermissions.can_view_tasks,
-    can_view_analytics: settingsPermissions.can_view_analytics,
+    settings,
     userDoc,
   };
 

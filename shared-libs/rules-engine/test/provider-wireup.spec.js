@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
-const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate, mockEmission } = require('./mocks');
+const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate, mockEmission, chtRulesSettings } = require('./mocks');
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const PouchDB = require('pouchdb');
@@ -11,7 +11,6 @@ const rewire = require('rewire');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
 const wireup = rewire('../src/provider-wireup');
-const settingsDoc = require('../../../config/default/app_settings.json');
 const { assert, expect } = chai;
 chai.use(chaiExclude);
 
@@ -91,7 +90,7 @@ describe('provider-wireup integration tests', () => {
       sinon.spy(provider, 'stateChangeCallback');
 
       const userDoc = {};
-      await wireup.initialize(provider, settingsDoc, userDoc);
+      await wireup.initialize(provider, chtRulesSettings(), userDoc);
       expect(db.put.args[0]).excludingEvery(['rulesConfigHash', 'targetState']).to.deep.eq([{
         _id: pouchdbProvider.RULES_STATE_DOCID,
         rulesStateStore: {
@@ -118,7 +117,7 @@ describe('provider-wireup integration tests', () => {
       rulesStateStore.__set__('state', undefined);
 
       const putCountBeforeInit = db.put.callCount;
-      await wireup.initialize(provider, settingsDoc, userDoc);
+      await wireup.initialize(provider, chtRulesSettings(), userDoc);
       expect(db.put.callCount).to.eq(putCountBeforeInit);
       await wireup.fetchTasksFor(provider, ['abc']);
       expect(db.put.callCount).to.eq(putCountBeforeInit);
@@ -127,7 +126,7 @@ describe('provider-wireup integration tests', () => {
 
   it('latest schema rules are required when rules are provided', async () => {
     const rules = noolsPartnerTemplate('');
-    const settings = { tasks: { rules }};
+    const settings = { rules };
     try {
       await wireup.initialize(provider, settings, {});
       assert.fail('should throw');
@@ -171,7 +170,7 @@ describe('provider-wireup integration tests', () => {
   describe('fetchTasksFor', () => {
     it('refresh headless', async () => {
       const rules = noolsPartnerTemplate('', { });
-      const settings = { tasks: { rules }};
+      const settings = { rules };
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       sinon.spy(db, 'bulkDocs');
       await wireup.initialize(provider, settings, {});
@@ -200,7 +199,7 @@ describe('provider-wireup integration tests', () => {
     it('tasks tab includes headless reports and tasks', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       const rules = noolsPartnerTemplate('', { });
-      const settings = { tasks: { rules }};
+      const settings = { rules };
       await wireup.initialize(provider, settings, {});
    
       const refreshRulesEmissions = sinon.stub().resolves({
@@ -250,7 +249,7 @@ describe('provider-wireup integration tests', () => {
       sinon.spy(rulesEmitter, 'getEmissionsFor');
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       const rules = noolsPartnerTemplate('', { });
-      const settings = { tasks: { rules }};
+      const settings = { rules };
       await wireup.initialize(provider, settings, {});
       await rulesStateStore.markFresh(Date.now(), 'fresh');
    
@@ -268,7 +267,7 @@ describe('provider-wireup integration tests', () => {
       sinon.spy(rulesEmitter, 'getEmissionsFor');
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       const rules = noolsPartnerTemplate('', { });
-      const settings = { tasks: { rules }};
+      const settings = { rules };
       await wireup.initialize(provider, settings, {});
       await rulesStateStore.markAllFresh(Date.now(), ['dirty']);
       await rulesStateStore.markDirty(Date.now(), ['dirty']);
@@ -303,7 +302,7 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
 
       const rules = noolsPartnerTemplate('', { });
-      const settings = { tasks: { rules }};
+      const settings = { rules };
       await wireup.initialize(provider, settings, {});
       await wireup.fetchTasksFor(provider);
 
@@ -329,14 +328,14 @@ describe('provider-wireup integration tests', () => {
 
     it('cht yields task when targets disabled', async () => {
       sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
-      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: true, enableTargets: false });
+      await wireup.initialize(provider, chtRulesSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual.length).to.eq(1);
     });
 
     it('cht yields nothing when tasks disabled', async () => {
       sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
-      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: false, enableTargets: true });
+      await wireup.initialize(provider, chtRulesSettings({ enableTasks: false, enableTargets: true }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual).to.be.empty;
     });
@@ -344,7 +343,7 @@ describe('provider-wireup integration tests', () => {
 
   describe('fetchTargets', () => {
     it('cht yields targets when tasks disabled', async () => {
-      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: false, enableTargets: true });
+      await wireup.initialize(provider, chtRulesSettings({ enableTasks: false, enableTargets: true }), {});
       const targets = await wireup.fetchTargets(provider);
       expect(targets.length).to.be.gt(1);
       const target = targets.find(target => target.id === 'active-pregnancies-1+-visits');
@@ -352,14 +351,14 @@ describe('provider-wireup integration tests', () => {
     });
 
     it('cht yields nothing when tasks disabled', async () => {
-      await wireup.initialize(provider, settingsDoc, {}, { enableTasks: true, enableTargets: false });
+      await wireup.initialize(provider, chtRulesSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTargets(provider);
       expect(actual).to.be.empty;
     });
 
     it('aggregate target doc is written (latest)', async () => {
       sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, settingsDoc, {});
+      await wireup.initialize(provider, chtRulesSettings(), {});
       const actual = await wireup.fetchTargets(provider);
       expect(actual.length).to.be.gt(1);
 
@@ -384,7 +383,7 @@ describe('provider-wireup integration tests', () => {
 
     it('aggregate target doc is written (date)', async () => {
       sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, settingsDoc, {});
+      await wireup.initialize(provider, chtRulesSettings(), {});
       const interval = { start: 1, end: 1000 };
       const actual = await wireup.fetchTargets(provider, interval);
       expect(actual.length).to.be.gt(1);

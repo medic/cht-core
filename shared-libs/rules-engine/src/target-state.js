@@ -34,14 +34,14 @@ module.exports = {
   /**
    * Builds an empty target-state.
    *
-   * @param {Object} settingsDoc Settings document
+   * @param {Object[]} targets An array of target definitions
    */
-  createEmptyState: (settingsDoc) => {
-    const targetDefinitions = settingsDoc.tasks && settingsDoc.tasks.targets && settingsDoc.tasks.targets.items || [];
-    return targetDefinitions.reduce((agg, definition) => {
-      agg[definition.id] = Object.assign({}, definition, { emissions: {} });
-      return agg;
-    }, {});
+  createEmptyState: (targets=[]) => {
+    return targets
+      .reduce((agg, definition) => {
+        agg[definition.id] = Object.assign({}, definition, { emissions: {} });
+        return agg;
+      }, {});
   },
 
   storeTargetEmissions: (state, contactIds, targetEmissions) => {

@@ -7,6 +7,7 @@ const MAX_LINEAGE_DEPTH = 50;
 const ENSURE_FRESHNESS_SECS = 120;
 
 angular.module('inboxServices').factory('RulesEngine', function(
+  $parse,
   $translate,
   Auth,
   CalendarInterval,
@@ -37,22 +38,18 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
         return Promise.all([ Settings(), UserContact() ])
           .then(([settingsDoc, userContactDoc]) => {
-            const options = {
-              enableTasks: canViewTasks,
-              enableTargets: canViewTargets,
-            };
-
-            return RulesEngineCore.initialize(settingsDoc, userContactDoc, options)
+            const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
+            return RulesEngineCore.initialize(rulesSettings, userContactDoc)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
                   assignMonthStartDate(settingsDoc);
-                  monitorChanges(settingsDoc, userContactDoc);
+                  monitorChanges(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
 
-                  ensureTaskFreshness = Debounce(result.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTaskFreshness();
                   
-                  ensureTargetFreshness = Debounce(result.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTargetFreshness();
                 }
 
@@ -69,7 +66,21 @@ angular.module('inboxServices').factory('RulesEngine', function(
     }
   };
 
-  const monitorChanges = function (settingsDoc, userContactDoc) {
+  const getRulesSettings = (settingsDoc, userContactDoc, enableTasks, enableTargets) => {
+    const settingsTasks = settingsDoc && settingsDoc.tasks || {};
+    const filterTargetByContext = target => target.context ? !!$parse(target.context)({ user: userContactDoc }) : true;
+    const targets = settingsTasks.targets && settingsTasks.targets.items || [];
+
+    return {
+      rules: settingsTasks.rules,
+      taskSchedules: settingsTasks.schedules,
+      targets: targets.filter(filterTargetByContext),
+      enableTasks,
+      enableTargets,
+    };
+  };
+
+  const monitorChanges = (settingsDoc, userContactDoc, canViewTasks, canViewTargets) => {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     Changes({
       key: 'mark-contacts-dirty',
@@ -85,21 +96,26 @@ angular.module('inboxServices').factory('RulesEngine', function(
       userLineage.push(current._id);
     }
 
+    const rulesConfigChange = () => {
+      const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
+      RulesEngineCore.rulesConfigChange(rulesSettings, userContactDoc);
+      assignMonthStartDate(settingsDoc);
+    };
+
     Changes({
       key: 'rules-config-update',
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
       callback: change => {
-        if (change.id === 'settings') {
-          settingsDoc = change.doc;
-          RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);
-          assignMonthStartDate(settingsDoc);
-        } else {
+        if (change.id !== 'settings') {1
           return UserContact()
             .then(updatedUser => {
               userContactDoc = updatedUser;
-              RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);
+              rulesConfigChange();
             });
         }
+
+        settingsDoc = change.doc;
+        rulesConfigChange();
       },
     });
   };
@@ -129,7 +145,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
     uhcMonthStartDate = UHCSettings.getMonthStartDate(settingsDoc);
   };
 
-  const result = {
+  const self = {
     isEnabled: () => initialized,
 
     fetchTaskDocsForAllContacts: () => (
@@ -157,7 +173,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
     ),
   };
 
-  return result;
+  return self;
 });
 
 // RulesEngineCore allows for karma to test using a mock shared-lib

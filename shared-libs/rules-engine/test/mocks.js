@@ -1,4 +1,5 @@
 const rewire = require('rewire');
+const chtSettingsDoc = require('../../../config/default/app_settings.json');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
@@ -54,7 +55,18 @@ rule GenerateEvents {
     readyEnd: 0,
   }, assigned),
 
+  chtSettingsDoc,
   chtDocs,
+
+  chtRulesSettings: assign => {
+    return Object.assign({
+      rules: chtSettingsDoc.tasks.rules,
+      targets: chtSettingsDoc.tasks.targets.items,
+      taskScedules: chtSettingsDoc.tasks.schedules,
+      enableTasks: true,
+      enableTargets: true,
+    }, assign);
+  },
 
   RestorableRulesStateStore: () => restorable('../src/rules-state-store', ['state', 'currentUser', 'onStateChange']),
 };

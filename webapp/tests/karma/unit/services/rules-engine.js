@@ -15,7 +15,25 @@ describe(`RulesEngine service`, () => {
     TranslateFrom,
     UserContact;
 
-  const settingsDoc = { _id: 'settings' };
+  const settingsDoc = {
+    _id: 'settings',
+    tasks: {
+      rules: 'rules',
+      schedules: ['schedules'],
+      targets: {
+        items: [
+          { id: 'target' }
+        ]
+      },
+    },
+  };
+  const expectedRulesConfig = {
+    rules: 'rules',
+    taskSchedules: ['schedules'],
+    targets: [{ id: 'target' }],
+    enableTasks: true,
+    enableTargets: true,
+  };
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
     _id: 'user',
@@ -100,14 +118,14 @@ describe(`RulesEngine service`, () => {
         Auth.withArgs('can_view_tasks').rejects();
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][2]).to.deep.eq({ enableTasks: false, enableTargets: true });
+        expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({ enableTasks: false, enableTargets: true });
       });
 
       it('targets disabled', async () => {
         Auth.withArgs('can_view_analytics').rejects();
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][2]).to.deep.eq({ enableTasks: true, enableTargets: false });
+        expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({ enableTasks: true, enableTargets: false });
       });
 
       it('disabled for online users', async () => {
@@ -120,18 +138,37 @@ describe(`RulesEngine service`, () => {
         expectAsyncToThrow(getService().isEnabled, 'error');
       });
 
+      it('targets are filtered by context', async () => {
+        const allContexts = { id: 'all' };
+        const emptyContext = { id: 'empty', context: '' };
+        const matchingContext = { id: 'match', context: 'user.parent._id === "parent"' };
+        const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
+        const settingsDoc = {
+          _id: 'settings',
+          tasks: {
+            targets: {
+              items: [ allContexts, emptyContext, matchingContext, noMatchingContext ]
+            }
+          }
+        };
+
+        Settings.resolves(settingsDoc);
+        expect(await getService().isEnabled()).to.be.true;
+        
+        const { targets } = RulesEngineCore.initialize.args[0][0];
+        expect(targets.map(target => target.id)).to.deep.eq([allContexts.id, emptyContext.id, matchingContext.id]);
+      });
+
       it('parameters to shared-lib', async () => {
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][0]).to.eq(settingsDoc);
+        expect(RulesEngineCore.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
         expect(RulesEngineCore.initialize.args[0][1]).to.eq(userContactDoc);
-        expect(RulesEngineCore.initialize.args[0][2]).to.deep.eq({ enableTasks: true, enableTargets: true });
       });
     });
 
     describe('changes feeds', () => {
       const changeFeedFormat = doc => ({ id: doc._id, doc });
-      const settingsDoc = { _id: 'settings' };
       const scenarios = [
         {
           doc: { _id: 'person', type: 'person' },
@@ -183,7 +220,7 @@ describe(`RulesEngine service`, () => {
           expect(changeFeed.filter(change)).to.be.true;
           await changeFeed.callback(change);
           expect(RulesEngineCore.rulesConfigChange.callCount).to.eq(1);
-          expect(RulesEngineCore.rulesConfigChange.args[0]).to.deep.eq([settingsDoc, userContactDoc]);
+          expect(RulesEngineCore.rulesConfigChange.args[0]).to.deep.eq([expectedRulesConfig, userContactDoc]);
         });
       }
 

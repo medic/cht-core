@@ -4,7 +4,7 @@ const moment = require('moment');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const { chtDocs, noolsPartnerTemplate } = require('./mocks');
+const { chtDocs, noolsPartnerTemplate, chtRulesSettings } = require('./mocks');
 const rulesEmitter = rewire('../src/rules-emitter');
 
 describe('rules-emitter', () => {
@@ -12,7 +12,7 @@ describe('rules-emitter', () => {
     rulesEmitter.shutdown();
   });
 
-  const settingsWithRules = rules => ({ tasks: { rules }});
+  const settingsWithRules = rules => ({ rules });
 
   describe('initialize', () => {
     it('throw on initialized twice', () => {
@@ -154,17 +154,16 @@ describe('rules-emitter', () => {
   });
 
   describe('integration', () => {
-    const settingsDoc = require('../../../config/default/app_settings.json');
     const user = {};
 
     it('isLatestNoolsSchema as true', () => {
-      const initialized = rulesEmitter.initialize(settingsDoc, user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
       expect(initialized).to.be.true;
       expect(rulesEmitter.isLatestNoolsSchema()).to.be.true;
     });
 
     it('no reports yields no tasks', async () => {
-      const initialized = rulesEmitter.initialize(settingsDoc, user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
       expect(initialized).to.be.true;
 
       const { tasks, targets } = await rulesEmitter.getEmissionsFor([], []);
@@ -176,7 +175,7 @@ describe('rules-emitter', () => {
       const time = moment('2000-01-01');
       sinon.useFakeTimers(time.valueOf());
 
-      const initialized = rulesEmitter.initialize(settingsDoc, user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
       expect(initialized).to.be.true;
 
       const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
