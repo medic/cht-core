@@ -21,6 +21,7 @@ describe('target-state', () => {
       target: {
         emissions: {},
         id: 'target',
+        isContextual: undefined,
       },
     });
   });
@@ -32,7 +33,7 @@ describe('target-state', () => {
 
     const settingsDoc = mockSettingsDoc([noContext, match, noMatch]);
     const state = targetState.createEmptyState(settingsDoc, { prop: 'hi' });
-    expect(state).excludingEvery('emissions').to.deep.eq({
+    expect(state).excludingEvery(['emissions', 'isContextual']).to.deep.eq({
       match,
       undef: noContext,
     });
