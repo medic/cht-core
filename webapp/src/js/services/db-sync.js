@@ -4,7 +4,6 @@ const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-const MAX_REPLICATION_RETRY_COUNT = 3;
 
 angular
   .module('inboxServices')
@@ -15,6 +14,7 @@ angular
     $window,
     Auth,
     DB,
+    DBSyncRetry,
     Session
   ) {
     'use strict';
@@ -47,58 +47,6 @@ angular
       );
     };
 
-    // Retry replication for every "real" rev X times
-    // we enable retrying by "touching" the doc, pushing it to the end of the changes feed
-    // we store the rev of the doc we touch and we only increase the replication_retry if the calculated previous
-    // rev matches the previous retry rev. This ensures that external updates (for example user updates) would reset
-    // the retry counter.
-    const retryForbiddenFailure = err => {
-      if (!err || !err.id) {
-        return;
-      }
-
-      const getPreviousRev = doc => {
-        const revisions = doc._revisions;
-        if (!revisions) {
-          return;
-        }
-
-        if (revisions.start <= 1 || revisions.ids.length <= 1) {
-          return;
-        }
-
-        return `${revisions.start - 1}-${revisions.ids[1]}`;
-      };
-
-      return DB()
-        .get(err.id, { revs: true })
-        .then(doc => {
-          doc.replication_retry = doc.replication_retry || {};
-          doc.replication_retry.count = doc.replication_retry.count || 1;
-
-          if (doc.replication_retry.rev) {
-            const previousRev = getPreviousRev(doc);
-            const consecutiveAttempts = previousRev && previousRev === doc.replication_retry.rev;
-            if (!consecutiveAttempts) {
-              doc.replication_retry.count = 1;
-            } else {
-              doc.replication_retry.count += 1;
-            }
-          }
-
-          if (doc.replication_retry.count > MAX_REPLICATION_RETRY_COUNT) {
-            return;
-          }
-
-          doc.replication_retry.rev = doc._rev;
-          delete doc._revisions;
-          return DB().put(doc);
-        })
-        .catch(err => {
-          $log.error(`Error when retrying replication for forbidden doc`, err);
-        });
-    };
-
     const DIRECTIONS = [
       {
         name: 'to',
@@ -107,7 +55,7 @@ angular
           filter: readOnlyFilter
         },
         allowed: () => Auth('can_edit').then(() => true).catch(() => false),
-        onDenied: retryForbiddenFailure
+        onDenied: DBSyncRetry,
       },
       {
         name: 'from',
