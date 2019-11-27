@@ -221,18 +221,6 @@ describe('Send message', () => {
     return name + ' - all contacts';
   };
 
-  const getElementText = (css, attempt=0) => {
-    return helper.getTextFromElement(element(by.css(css)))
-      .then((text) => {
-        return text;
-      }, (err) => {
-        if (attempt < 2) {
-          return getElementText(css, attempt+1);
-        }
-        throw err;
-      });
-  };
-
   describe('Send message modal', () => {
     it('can send messages to raw phone numbers', () => {
       common.goToMessages();
@@ -398,26 +386,4 @@ describe('Send message', () => {
     });
   });
 
-  describe('Display message without contact', () => {
-    it('can display messages without contact', () => {
-      common.goToMessages();
-
-      openSendMessageModal();
-      enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
-      sendMessage();
-      browser.wait(() => {
-        return utils.deleteDocs(CONTACTS.map(contact => contact._id));
-      });
-
-      // refresh
-      common.goToReports();
-      common.goToMessages();
-
-      clickLhsEntry(ALICE._id, 'Unknown sender');
-
-      expect(getElementText('#message-header .phone')).toBe(ALICE.phone);
-      expect(getElementText('#message-header .name')).toBe('Unknown sender');
-    });
-  });
 });
