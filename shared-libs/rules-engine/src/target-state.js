@@ -35,13 +35,16 @@ module.exports = {
    * Builds an empty target-state.
    *
    * @param {Object} settingsDoc Settings document
+   * @param {Object} userDoc User's hydrated contact document
    */
-  createEmptyState: (settingsDoc) => {
+  createEmptyState: (settingsDoc, userDoc) => {
     const targetDefinitions = settingsDoc.tasks && settingsDoc.tasks.targets && settingsDoc.tasks.targets.items || [];
-    return targetDefinitions.reduce((agg, definition) => {
-      agg[definition.id] = Object.assign({}, definition, { emissions: {} });
-      return agg;
-    }, {});
+    return targetDefinitions
+      .filter(targetDefinition => !targetDefinition.isContextual || targetDefinition.isContextual(userDoc))
+      .reduce((agg, definition) => {
+        agg[definition.id] = Object.assign({}, definition, { emissions: {} });
+        return agg;
+      }, {});
   },
 
   storeTargetEmissions: (state, contactIds, targetEmissions) => {

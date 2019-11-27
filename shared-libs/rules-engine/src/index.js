@@ -62,10 +62,9 @@ module.exports = db => {
      *
      * @param {Object} settingsDoc Settings document
      * @param {Object} userDoc User's hydrated contact document
-     * @param {Object} salt=1 Salt to add into the configuration hash. Changing this value invalidates the cache.
      */
-    rulesConfigChange: (settingsDoc, userDoc, salt = 1) => {
-      const cacheIsReset = rulesStateStore.rulesConfigChange(settingsDoc, userDoc, salt);
+    rulesConfigChange: (settingsDoc, userDoc) => {
+      const cacheIsReset = rulesStateStore.rulesConfigChange(settingsDoc, userDoc);
       if (cacheIsReset) {
         rulesEmitter.shutdown();
       }

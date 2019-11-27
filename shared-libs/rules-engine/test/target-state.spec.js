@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const targetState = require('../src/target-state');
 
 const mockTargetDefinition = () => ({ id: 'target' });
-const mockSettingsDoc = () => ({ tasks: { targets: { items: [mockTargetDefinition()] } } });
+const mockSettingsDoc = (items = [mockTargetDefinition()]) => ({ tasks: { targets: { items } } });
 const mockEmission = assigned => Object.assign({ _id: '123', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1 } }, assigned);
 
 describe('target-state', () => {
@@ -22,6 +22,19 @@ describe('target-state', () => {
         emissions: {},
         id: 'target',
       },
+    });
+  });
+
+  it('filter targets by context', () => {
+    const noContext = { id: 'undef' };
+    const match = { id: 'match', isContextual: () => true };
+    const noMatch = { id: 'no', isContextual: () => false };
+
+    const settingsDoc = mockSettingsDoc([noContext, match, noMatch]);
+    const state = targetState.createEmptyState(settingsDoc, { prop: 'hi' });
+    expect(state).excludingEvery('emissions').to.deep.eq({
+      match,
+      undef: noContext,
     });
   });
 
@@ -46,6 +59,13 @@ describe('target-state', () => {
     let state = targetState.createEmptyState(mockSettingsDoc());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ type: 'foo' })]);
     expect(state).to.deep.eq(targetState.createEmptyState(mockSettingsDoc()));
+  });
+
+  it('emission for filtered target id is ignored', () => {
+    const notContextual = { id: 'target', isContextual: () => false };
+    const state = targetState.createEmptyState(mockSettingsDoc([notContextual]));
+    targetState.storeTargetEmissions(state, ['a'], [mockEmission({ type: 'foo' })]);
+    expect(state).to.deep.eq({});
   });
 
   it('emission without contact is ignored', () => {

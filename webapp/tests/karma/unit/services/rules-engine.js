@@ -120,6 +120,33 @@ describe(`RulesEngine service`, () => {
         expectAsyncToThrow(getService().isEnabled, 'error');
       });
 
+      it('targets are filtered by context', async () => {
+        const allContexts = { id: 'all' };
+        const emptyContext = { id: 'match', context: '' };
+        const matchingContext = { id: 'match', context: 'user.parent._id === "parent"' };
+        const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
+        const settingsDoc = {
+          _id: 'settings',
+          tasks: {
+            targets: {
+              items: [ allContexts, emptyContext, matchingContext, noMatchingContext ]
+            }
+          }
+        };
+
+        Settings.resolves(settingsDoc);
+        expect(await getService().isEnabled()).to.be.true;
+        
+        const { items: targets } = settingsDoc.tasks.targets;
+        expect(targets.some(t => !t.isContextual)).to.be.false;
+        
+        const contextual = targets.filter(target => target.isContextual(userContactDoc)).map(target => target.id);
+        expect(contextual).to.deep.eq([allContexts.id, matchingContext.id]);
+
+        const notContextual = targets.filter(target => !target.isContextual(userContactDoc)).map(target => target.id);
+        expect(notContextual).to.deep.eq([emptyContext.id, noMatchingContext.id]);
+      });
+
       it('parameters to shared-lib', async () => {
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);

@@ -7,6 +7,7 @@ const MAX_LINEAGE_DEPTH = 50;
 const ENSURE_FRESHNESS_SECS = 120;
 
 angular.module('inboxServices').factory('RulesEngine', function(
+  $parse,
   $translate,
   Auth,
   CalendarInterval,
@@ -42,6 +43,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
               enableTargets: canViewTargets,
             };
 
+            addContextualPropertyToTargets(settingsDoc);
             return RulesEngineCore.initialize(settingsDoc, userContactDoc, options)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
@@ -69,6 +71,14 @@ angular.module('inboxServices').factory('RulesEngine', function(
     }
   };
 
+  const addContextualPropertyToTargets = settingsDoc => {
+    const items = settingsDoc.tasks && settingsDoc.tasks.targets && settingsDoc.tasks.targets.items || [];
+    items.forEach(item => {
+      item.isContextual = userDoc => item.context ? !!$parse(item.context)(userDoc) : true;
+    });
+    return settingsDoc;
+  };
+
   const monitorChanges = function (settingsDoc, userContactDoc) {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     Changes({
@@ -90,7 +100,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
       callback: change => {
         if (change.id === 'settings') {
-          settingsDoc = change.doc;
+          settingsDoc = addContextualPropertyToTargets(change.doc);
           RulesEngineCore.rulesConfigChange(settingsDoc, userContactDoc);
           assignMonthStartDate(settingsDoc);
         } else {

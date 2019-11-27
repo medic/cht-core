@@ -53,7 +53,7 @@ const self = {
     state = {
       rulesConfigHash: hashRulesConfig(settingsDoc, userDoc),
       contactState: {},
-      targetState: targetState.createEmptyState(settingsDoc),
+      targetState: targetState.createEmptyState(settingsDoc, userDoc),
     };
     currentUser = userDoc;
 
@@ -100,7 +100,7 @@ const self = {
       state = {
         rulesConfigHash,
         contactState: {},
-        targetState: targetState.createEmptyState(settingsDoc),
+        targetState: targetState.createEmptyState(settingsDoc, userDoc),
       };
       currentUser = userDoc;
 
