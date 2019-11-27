@@ -13,24 +13,36 @@ describe('DBSync service', () => {
   let userCtx;
   let sync;
   let Auth;
-  let recursiveOn;
+  let recursiveOnTo;
+  let recursiveOnFrom;
   let $interval;
   let replicationResult;
   let getItem;
   let setItem;
+  let dbSyncRetry;
 
   beforeEach(() => {
     replicationResult = Q.resolve;
-    recursiveOn = sinon.stub();
-    recursiveOn.callsFake(() => {
+    to = sinon.stub();
+    to.events = {};
+    recursiveOnTo = sinon.stub();
+    recursiveOnTo.callsFake((event, fn) => {
+      to.events[event] = fn;
       const promise = replicationResult();
-      promise.on = recursiveOn;
+      promise.on = recursiveOnTo;
       return promise;
     });
-    to = sinon.stub();
-    to.returns({ on: recursiveOn });
+    to.returns({ on: recursiveOnTo });
     from = sinon.stub();
-    from.returns({ on: recursiveOn });
+    from.events = {};
+    recursiveOnFrom = sinon.stub();
+    recursiveOnFrom.callsFake((event, fn) => {
+      from.events[event] = fn;
+      const promise = replicationResult();
+      promise.on = recursiveOnFrom;
+      return promise;
+    });
+    from.returns({ on: recursiveOnFrom });
     allDocs = sinon.stub();
     info = sinon.stub();
     info.returns(Q.resolve({ update_seq: 99 }));
@@ -40,6 +52,7 @@ describe('DBSync service', () => {
     Auth = sinon.stub();
     setItem = sinon.stub();
     getItem = sinon.stub();
+    dbSyncRetry = sinon.stub();
 
     module('inboxApp');
     module($provide => {
@@ -56,6 +69,7 @@ describe('DBSync service', () => {
       } );
       $provide.value('Auth', Auth);
       $provide.value('$window', { localStorage: { setItem, getItem } });
+      $provide.value('DBSyncRetry', dbSyncRetry);
     });
     inject((_DBSync_, _$interval_) => {
       service = _DBSync_;
@@ -308,6 +322,37 @@ describe('DBSync service', () => {
 
     });
 
+
+    describe('on denied', () => {
+      it('should have "denied" handles for every direction', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        return service.sync().then(() => {
+          expect(to.events.denied).to.be.a('function');
+          expect(from.events.denied).to.be.a('function');
+        });
+      });
+
+      it('"denied" from handle does nothing', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        return service.sync().then(() => {
+          from.events.denied();
+          expect(dbSyncRetry.callCount).to.equal(0);
+        });
+      });
+
+      it('"denied" to handle calls DBSyncRetry', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        return service.sync().then(() => {
+          console.log(to.events.denied.toString());
+          to.events.denied({ some: 'err' });
+          expect(dbSyncRetry.callCount).to.equal(1);
+          expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
+        });
+      });
+    });
   });
 
   describe('replicateTo filter', () => {
@@ -320,8 +365,8 @@ describe('DBSync service', () => {
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
       allDocs.returns(Q.resolve({ rows: [] }));
       info.returns(Q.resolve({update_seq: -99}));
-      to.returns({ on: recursiveOn });
-      from.returns({ on: recursiveOn });
+      to.returns({ on: recursiveOnTo });
+      from.returns({ on: recursiveOnFrom });
       return service.sync().then(() => {
         expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;
