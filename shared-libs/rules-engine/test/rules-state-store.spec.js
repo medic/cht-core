@@ -155,7 +155,6 @@ describe('rules-state-store', () => {
         id: 'target',
       }],
     };
-
     const onStateChange = sinon.stub().resolves();
     await rulesStateStore.build(mockSettings, {}, onStateChange);
     rulesStateStore.storeTargetEmissions([], [{ id: 'abc', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1000 } }]);
