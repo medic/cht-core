@@ -274,10 +274,73 @@ describe('DBSync service', () => {
         isOnlineOnly.returns(false);
         Auth.returns(Q.resolve());
         return service.sync().then(() => {
-          console.log(to.events.denied.toString());
           to.events.denied({ some: 'err' });
           expect(dbSyncRetry.callCount).to.equal(1);
           expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
+          expect(to.callCount).to.equal(1);
+          expect(from.callCount).to.equal(1);
+        });
+      });
+
+      it('DBSyncRetry restarts replication', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        dbSyncRetry.withArgs({ id: 'a' }).resolves({ ok: true });
+        dbSyncRetry.withArgs({ err: 'something' }).returns();
+        dbSyncRetry.withArgs({ id: 'b' }).resolves();
+        dbSyncRetry.withArgs({ id: 'c' }).resolves({ ok: true });
+
+        const deniedErrors = [
+          [{ id: 'a' }, { err: 'something' }, { id: 'b' }, { id: 'c' }],
+        ];
+
+        let iteration = 0;
+        recursiveOnTo.callsFake((event, fn) => {
+          if (event === 'denied') {
+            deniedErrors[iteration] && deniedErrors[iteration].forEach(error => fn(error));
+            iteration++;
+          }
+          const promise = replicationResult();
+          promise.on = recursiveOnTo;
+          return promise;
+        });
+
+        return service.sync().then(() => {
+          expect(to.callCount).to.equal(2);
+          expect(from.callCount).to.equal(1);
+          expect(dbSyncRetry.callCount).to.equal(4);
+        });
+      });
+
+      it('DBSyncRetry restarts replication as many times as needed', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        dbSyncRetry.withArgs({ id: 'a' }).resolves({ ok: true });
+        dbSyncRetry.withArgs({ err: 'something' }).returns();
+        dbSyncRetry.withArgs({ id: 'b' }).resolves();
+        dbSyncRetry.withArgs({ id: 'c' }).resolves({ ok: true });
+
+        const deniedErrors = [
+          [{ id: 'a' }, { err: 'something' }],
+          [{ id: 'b' }, { id: 'c' }],
+          [{ err: 'whatever' }],
+        ];
+
+        let iteration = 0;
+        recursiveOnTo.callsFake((event, fn) => {
+          if (event === 'denied') {
+            deniedErrors[iteration] && deniedErrors[iteration].forEach(error => fn(error));
+            iteration++;
+          }
+          const promise = replicationResult();
+          promise.on = recursiveOnTo;
+          return promise;
+        });
+
+        return service.sync().then(() => {
+          expect(to.callCount).to.equal(3);
+          expect(from.callCount).to.equal(1);
+          expect(dbSyncRetry.callCount).to.equal(5);
         });
       });
     });

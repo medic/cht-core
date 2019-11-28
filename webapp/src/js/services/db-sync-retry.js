@@ -70,7 +70,7 @@ angular
       return $q
         .all([
           getMedicDoc(err),
-          getLocalDoc(err)
+          getLocalDoc(err),
         ])
         .then(([ doc, local ]) => {
           if (local.replication_retry.rev) {

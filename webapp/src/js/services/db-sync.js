@@ -72,23 +72,34 @@ angular
             return;
           }
           const remote = DB({ remote: true });
+          const onDeniedPromises = [];
           return DB()
             .replicate[direction.name](remote, direction.options)
             .on('denied', function(err) {
-              // In theory this could be caused by 401s
-              // TODO: work out what `err` looks like and navigate to login
-              // when we detect it's a 401
               $log.error(`Denied replicating ${direction.name} remote server`, err);
               if (direction.onDenied) {
-                direction.onDenied(err);
+                onDeniedPromises.push(direction.onDenied(err));
               }
             })
             .on('error', function(err) {
               $log.error(`Error replicating ${direction.name} remote server`, err);
             })
             .then(info => {
-              $log.debug(`Replication ${direction.name} successful`, info);
-              return;
+              // no failures to update
+              if (!onDeniedPromises.length) {
+                $log.debug(`Replication ${direction.name} successful`, info);
+                return;
+              }
+
+              // if any of the denied docs were touched, restart replication so they get re-uploaded
+              return $q.all(onDeniedPromises).then(results => {
+                if (results.some(result => result)) {
+                  return replicate(direction);
+                }
+
+                $log.debug(`Replication ${direction.name} successful`, info);
+                return;
+              });
             })
             .catch(err => {
               $log.error(`Error replicating ${direction.name} remote server`, err);
