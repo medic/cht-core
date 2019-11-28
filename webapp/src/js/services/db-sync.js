@@ -74,9 +74,6 @@ angular
       return DB()
         .replicate[direction.name](remote, options)
         .on('denied', function(err) {
-          // In theory this could be caused by 401s
-          // TODO: work out what `err` looks like and navigate to login
-          // when we detect it's a 401
           $log.error(`Denied replicating ${direction.name} remote server`, err);
           if (direction.onDenied) {
             direction.onDenied(err);
