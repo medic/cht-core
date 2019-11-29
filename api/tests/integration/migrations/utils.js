@@ -64,24 +64,25 @@ const matches = (expected, actual) => {
 };
 
 const assertDb = expected => {
-  return db.get('medic-test', medicTestDb => {
-    return medicTestDb.allDocs({ include_docs: true })
-      .then(results => {
-        var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
-        expected.sort(byId);
-        actual.sort(byId);
+  return db.get('medic-test')
+    .then(medicTestDb => {
+      return medicTestDb.allDocs({ include_docs: true })
+        .then(results => {
+          var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
+          expected.sort(byId);
+          actual.sort(byId);
 
-        // remove standard ddocs from actual
-        actual = actual.filter(function(doc) {
-          return (
-            doc._id !== '_design/medic' &&
-            doc._id !== '_design/medic-client' &&
-            doc._id !== 'settings'
-          );
+          // remove standard ddocs from actual
+          actual = actual.filter(function(doc) {
+            return (
+              doc._id !== '_design/medic' &&
+              doc._id !== '_design/medic-client' &&
+              doc._id !== 'settings'
+            );
+          });
+
+          matchDbs(expected, actual);
         });
-
-        matchDbs(expected, actual);
-      });
   });
 };
 
@@ -194,11 +195,12 @@ const _resetDb = (attempts = 0) => {
   return db.exists('medic-test')
     .then(exists => {
       if (exists) {
-        return db.get('medic-test', (medicTest) => medicTest.destroy());
+        return db.get('medic-test').then(medicTest => medicTest.destroy());
       }
     })
     .then(() => {
-      return db.get('medic-test');
+      // Force an open and close to init
+      return db.get('medic-test').then(() => null);
     })
     .catch(err => {
       logger.error('Could not create "medic-test" directly after deleting, pausing and trying again');

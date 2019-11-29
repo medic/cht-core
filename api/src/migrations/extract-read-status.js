@@ -11,7 +11,8 @@ const createReadStatusDoc = record => {
 const saveReadStatusDocs = (username, docs) => {
   const userDbName = userDb.getDbName(username);
   return userDb.create(userDbName).then(() => {
-    return db.get(userDbName, { skip_setup: true }, (userDb) => userDb.bulkDocs(docs));
+    return db.get(userDbName, { skip_setup: true })
+      .then(userDb => userDb.bulkDocs(docs));
   });
 };
 

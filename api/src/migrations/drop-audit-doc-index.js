@@ -147,8 +147,9 @@ module.exports = {
   name: 'drop-audit-doc-index',
   created: new Date(2016, 11, 1),
   run: () => {
-    return db.get(environment.db + '-audit', (auditDb) => {
-      return dropView(auditDb).then(() => changeDocIds(auditDb));
-    });
+    return db.get(environment.db + '-audit')
+      .then(auditDb =>
+        dropView(auditDb)
+          .then(() => changeDocIds(auditDb)));
   },
 };

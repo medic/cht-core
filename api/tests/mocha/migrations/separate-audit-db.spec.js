@@ -42,7 +42,7 @@ describe('separate-audit-db migration', () => {
       put: () => {}
     };
 
-    const wrappedDbDbCreate = sinon.stub(db, 'get').callsFake((name, fn) => fn(auditDb));
+    const wrappedDbDbCreate = sinon.stub(db, 'get').resolves(auditDb);
 
     const wrappedAuditDbGet = sinon.stub(auditDb, 'get').callsArgWith(1, ERR_404);
     const wrappedAuditDbPut = sinon.stub(auditDb, 'put').callsArg(1);

@@ -88,7 +88,8 @@ module.exports = {
     };
 
     return db
-      .get(environment.db + '-audit', withDb)
+      .get(environment.db + '-audit')
+      .then(withDb)
       .then(result => callback(null, result))
       .catch(callback);
   })

@@ -69,20 +69,14 @@ if (UNIT_TEST_ENV) {
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name
-  module.exports.get = (name, options, withDb) => {
-    if (!withDb) {
-      withDb = options;
+  module.exports.get = (name, options) => {
+    if (!options) {
       options = {};
     }
 
     const tempDb = new PouchDB(getDbUrl(name), options);
     const closeDb = () => tempDb && !tempDb._destroyed && tempDb.close();
-    if (!withDb) {
-      closeDb();
-      return Promise.resolve();
-    }
-
-    return withDb(tempDb)
+    const thenHandler = next => next(tempDb)
       .then(result => {
         closeDb();
         return result;
@@ -91,6 +85,11 @@ if (UNIT_TEST_ENV) {
         closeDb();
         throw err;
       });
+
+    return {
+        catch: next => next(),
+        then: thenHandler
+    };
   };
 
   // Resolves true if the DB with the given name exists

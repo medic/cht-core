@@ -170,7 +170,7 @@ describe('Purged Docs service', () => {
       };
       sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub().resolves({ results: [{ id: 'purged:1' }] }) };
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
 
       return service
         .getPurgedIds(['a', 'b'], ['1', '2', '3'])
@@ -201,7 +201,7 @@ describe('Purged Docs service', () => {
       };
       sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub().rejects({ status: 500 }) };
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
 
       return service
         .getPurgedIds(['a', 'b'], ['1', '2', '3'])
@@ -226,7 +226,7 @@ describe('Purged Docs service', () => {
       sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       purgeDb.changes.resolves({
         last_seq: '111-seq',
         results: [
@@ -272,7 +272,7 @@ describe('Purged Docs service', () => {
       sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       purgeDb.changes.resolves({
         last_seq: '111-seq',
         results: [
@@ -305,7 +305,7 @@ describe('Purged Docs service', () => {
       sinon.stub(cacheService, 'instance').returns(cache);
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       purgeDb.changes.rejects({ some: 'err' });
 
       return service.getPurgedIds(['a', 'b'], ids).catch(err => {
@@ -365,7 +365,7 @@ describe('Purged Docs service', () => {
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
       const purgeDb = { changes: sinon.stub(), get: sinon.stub() };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       purgeDb.changes.resolves({
         last_seq: '112-seq',
         results: [
@@ -404,7 +404,7 @@ describe('Purged Docs service', () => {
         get: sinon.stub().rejects({ error: 'bad_request', code: 400 }),
       };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       const ids = ['1', '2', '3', '4', '5', '6'];
       return service.getPurgedIdsSince(['a', 'b'], ids).then(result => {
         chai.expect(result).to.deep.equal({ purgedDocIds: [], lastSeq: '122-seq' });
@@ -424,7 +424,7 @@ describe('Purged Docs service', () => {
     it('should request changes with since from checkpoint and provided limit', () => {
       const purgeDb = { changes: sinon.stub(), get: sinon.stub() };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       purgeDb.get.resolves({ _id: '_local/check_id', last_seq: '5000-seq' });
       purgeDb.changes.resolves({
         last_seq: '5010-seq',
@@ -453,7 +453,7 @@ describe('Purged Docs service', () => {
       const info = { name: 'purge', update_seq: '111-222', doc_del_count: 23 };
       const purgeDb = { info: sinon.stub().resolves(info) };
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
 
       return service.info().then(result => {
@@ -476,7 +476,7 @@ describe('Purged Docs service', () => {
     it('should throw errors', () => {
       sinon.stub(db, 'exists').resolves(true);
       const purgeDb = { info: sinon.stub().rejects({ some: 'err' }) };
-      sinon.stub(db, 'get').callsFake((name, opts, fn) => fn(purgeDb));
+      sinon.stub(db, 'get').resolves(purgeDb);
 
       return service.info().catch(err => {
         chai.expect(err).to.deep.equal({ some: 'err' });
@@ -510,7 +510,7 @@ describe('Purged Docs service', () => {
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
       sinon.stub(db, 'exists').resolves(true);
-      sinon.stub(db, 'get').callsFake(() => 'my db object');
+      sinon.stub(db, 'get').resolves('my db object');
 
       return service
         .__get__('getPurgeDb')(['role1', 'role2'])
