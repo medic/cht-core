@@ -2,6 +2,7 @@ const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
+const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
@@ -125,6 +126,9 @@ angular
                 errs.forEach(err => {
                   update[err] = 'required';
                 });
+              }
+              if (update.to === 'success') {
+                $window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now());
               }
               sendUpdate(update);
             });

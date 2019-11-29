@@ -108,14 +108,15 @@ var _ = require('underscore'),
       },
       unknown: {
         icon: 'fa-question-circle',
-        key: 'sync.status.unknown'
+        key: 'sync.status.unknown',
+        className: 'required'
       }
     };
 
     ctrl.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
-      current: SYNC_STATUS.unknown,
+      lastSuccessTo: parseInt($window.localStorage.getItem('medic-last-replicated-date'))
     });
 
     DBSync.addUpdateListener(({ state, to, from }) => {
@@ -131,24 +132,28 @@ var _ = require('underscore'),
       const lastTrigger = ctrl.replicationStatus.lastTrigger;
       const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
       if (state === 'inProgress') {
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.inProgress });
-        ctrl.updateReplicationStatus({ lastTrigger: now });
-        $log.info(`Replication started after ${delay} seconds since previous attempt`);
+        ctrl.updateReplicationStatus({
+          current: SYNC_STATUS.inProgress,
+          lastTrigger: now
+        });
+        $log.info(`Replication started after ${Math.round(delay)} seconds since previous attempt`);
         return;
       }
+      const statusUpdates = {};
       if (to === 'success') {
-        ctrl.updateReplicationStatus({ lastSuccessTo: now });
+        statusUpdates.lastSuccessTo = now;
       }
       if (from === 'success') {
-        ctrl.updateReplicationStatus({ lastSuccessFrom: now });
+        statusUpdates.lastSuccessFrom = now;
       }
       if (to === 'success' && from === 'success') {
         $log.info(`Replication succeeded after ${delay} seconds`);
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.success });
+        statusUpdates.current = SYNC_STATUS.success;
       } else {
         $log.info(`Replication failed after ${delay} seconds`);
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
+        statusUpdates.current = SYNC_STATUS.required;
       }
+      ctrl.updateReplicationStatus(statusUpdates);
     });
 
     // Set this first because if there are any bugs in configuration
