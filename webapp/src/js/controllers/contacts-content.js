@@ -50,7 +50,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         usersHomePlaceId;
 
     ctrl.filterTasks = function(task) {
-      return !taskEndDate || taskEndDate.isAfter(task.dueDate);
+      return !taskEndDate || task.dueDate <= taskEndDate;
     };
     ctrl.filterReports = function(report) {
       return !reportStartDate || reportStartDate.isBefore(report.reported_date);
@@ -63,7 +63,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
     ctrl.setTasksTimeWindowWeeks = function(weeks) {
       ctrl.tasksTimeWindowWeeks = weeks;
-      taskEndDate = weeks ? moment().add(weeks, 'weeks') : null;
+      taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
     };
 
     ctrl.setTasksTimeWindowWeeks(1);

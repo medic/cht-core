@@ -1,4 +1,5 @@
-var _ = require('underscore');
+const _ = require('underscore');
+const moment = require('moment');
 
 // medic specific config for LiveList.
 // This service should be invoked once at startup.
@@ -21,7 +22,6 @@ angular.module('inboxServices').factory('LiveListConfig',
 
     var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
     var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
-    var TASK_DUE_PERIOD = 24 * 60 * 60 * 1000; // 1 day in millis
 
     var parse = function(expr, scope) {
       return $parse(expr)(scope) || '';
@@ -226,16 +226,17 @@ angular.module('inboxServices').factory('LiveListConfig',
             return -1;
           }
 
-          return lhs - rhs;
+          return lhs < rhs ? -1 : 1;
         },
         listItem: function(task) {
           const scope = $scope.$new();
-          const startOfToday = (new Date()).setHours(0, 0, 0, 0);
+          const startOfToday = moment().startOf('day');
+          const dueDate = moment(task.dueDate, 'YYYY-MM-DD');
           scope.id = task._id;
           scope.route = 'tasks';
-          scope.date = new Date(task.dueDate);
-          scope.overdue = task.dueDate < startOfToday;
-          scope.due = !scope.overdue && (task.dueDate - startOfToday) < TASK_DUE_PERIOD;
+          scope.date = new Date(dueDate.valueOf());
+          scope.overdue = dueDate.isBefore(startOfToday);
+          scope.due = !scope.overdue && dueDate.isSame(new Date(), 'day');
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = task.title;
