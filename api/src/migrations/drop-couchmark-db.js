@@ -5,7 +5,8 @@ module.exports = {
   created: new Date(2000, 1, 1), // really early so it runs first
   run: () => {
     return db
-      .get('couchmark', couchmarkDb => couchmarkDb.destroy())
+      .get('couchmark')
+      .then(couchmarkDb => couchmarkDb.destroy())
       .catch(err => {
         if (err.status === 404) {
           // couchmark db not found - all good
