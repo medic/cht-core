@@ -200,7 +200,7 @@ const _resetDb = (attempts = 0) => {
     })
     .then(() => {
       // Force an open and close to init
-      return db.get('medic-test').then(() => null);
+      return db.get('medic-test').then(() => Promise.resolve());
     })
     .catch(err => {
       logger.error('Could not create "medic-test" directly after deleting, pausing and trying again');
