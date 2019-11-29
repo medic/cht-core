@@ -14,6 +14,7 @@ const asyncOnlyTransitions = [
   'update_notifications',
   'multi_report_alerts',
   'generate_patient_id_on_people',
+  'generate_shortcode_on_contacts',
   'update_sent_forms'
 ];
 

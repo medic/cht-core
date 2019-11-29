@@ -2,15 +2,14 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../src/config');
 const transitionUtils = require('../../src/transitions/utils');
-const transition = require('../../src/transitions/generate_patient_id_on_people');
-const generateShortcodeOnContacts = require('../../src/transitions/generate_shortcode_on_contacts');
+const transition = require('../../src/transitions/generate_shortcode_on_contacts');
 
 const types = [
   { id: 'person', person: true },
   { id: 'place' }
 ];
 
-describe('generate_patient_id_on_people transition', () => {
+describe('generate_shortcode_on_contacts transition', () => {
   beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: types }));
   afterEach(() => sinon.restore());
 
@@ -46,14 +45,6 @@ describe('generate_patient_id_on_people transition', () => {
       const doc = { };
       assert.equal(!!transition.filter(doc), false);
     });
-
-    it('should call generate_shortcode_on_contacts.filter', () => {
-      sinon.stub(generateShortcodeOnContacts, 'filter').returns('something');
-      const result = transition.filter({ the: 'doc' });
-      assert.equal(generateShortcodeOnContacts.filter.callCount, 1);
-      assert.deepEqual(generateShortcodeOnContacts.filter.args[0], [{ the: 'doc' }]);
-      assert.equal(result, 'something');
-    });
   });
 
   describe('onMatch', () => {
@@ -73,14 +64,6 @@ describe('generate_patient_id_on_people transition', () => {
         assert.equal(result, true);
         assert.deepEqual(doc, { type: 'contact', contact_type: 'place', place_id: 'the_unique_id' });
       });
-    });
-
-    it('should call generate_shortcode_on_contacts.onMatch', () => {
-      sinon.stub(generateShortcodeOnContacts, 'onMatch').returns('the result');
-      const result = transition.onMatch({ my: 'object' });
-      assert.equal(generateShortcodeOnContacts.onMatch.callCount, 1);
-      assert.deepEqual(generateShortcodeOnContacts.onMatch.args[0], [{ my: 'object' }]);
-      assert.equal(result, 'the result');
     });
   });
 
