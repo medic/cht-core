@@ -236,7 +236,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.route = 'tasks';
           scope.date = new Date(dueDate.valueOf());
           scope.overdue = dueDate.isBefore(startOfToday);
-          scope.due = !scope.overdue && dueDate.isSame(new Date(), 'day');
+          scope.due = dueDate.isSame(new Date(), 'day');
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = task.title;
