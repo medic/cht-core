@@ -185,6 +185,7 @@ const moment = require('moment');
       'boot_time:3:to_angular_bootstrap',
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
+    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
     delete $window.startupTimes;
 
     if ($window.location.href.indexOf('localhost') !== -1) {
