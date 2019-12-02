@@ -157,6 +157,11 @@ const createReduxLoggerConfig = Selectors => ({
     $ngReduxProvider.createStoreWith(RootReducer, middlewares);
   });
 
+  // 16 million characters is gauranteed to be less than the API JSON
+  // parser limit of 32MB. It's possible to work out the exact size of
+  // the body based on the number of two byte characters but this is
+  // expensive.
+  const BODY_LENGTH_LIMIT = 16000000; // 16 million
   const POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
     remote: {
@@ -166,6 +171,12 @@ const createReduxLoggerConfig = Selectors => ({
         if (parsedUrl.pathname === '/') {
           parsedUrl.pathname = '/dbinfo';
           url = parsedUrl.toString();
+        }
+        if (opts.body && opts.body.length > BODY_LENGTH_LIMIT) {
+          return Promise.reject({
+            message: 'Payload Too Large',
+            code: 413
+          });
         }
         Object.keys(POUCHDB_OPTIONS.remote_headers).forEach(header => {
           opts.headers.set(header, POUCHDB_OPTIONS.remote_headers[header]);
