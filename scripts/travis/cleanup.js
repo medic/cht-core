@@ -1,7 +1,7 @@
 /**
- * Delete old artefacts from the testing db
+ * Delete old artefacts from the testing and staging dbs
  */
-const { UPLOAD_URL, BUILDS_SERVER, TRAVIS_BUILD_NUMBER } = process.env;
+const { UPLOAD_URL, BUILDS_SERVER, STAGING_SERVER, TRAVIS_BUILD_NUMBER } = process.env;
 const BUILDS_TO_KEEP = 50;
 const END_BUILD_TO_DELETE = TRAVIS_BUILD_NUMBER - BUILDS_TO_KEEP;
 const END_KEY = `medic:medic:test-${END_BUILD_TO_DELETE}`;
@@ -12,18 +12,19 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const db = new PouchDB(`${UPLOAD_URL}/${BUILDS_SERVER}`);
+const testingDb = new PouchDB(`${UPLOAD_URL}/${BUILDS_SERVER}`);
+const stagingDb = new PouchDB(`${UPLOAD_URL}/${STAGING_SERVER}`);
 
 process.on('unhandledRejection', error => {
   console.error('unhandledRejection', error);
 });
 
-const getTestingBuilds = () => {
+const getTestingBuilds = db => {
   console.log('Getting old testing builds...');
   return db.allDocs({ endkey: END_KEY, limit: MAX_BUILDS_TO_DELETE });
 };
 
-const remove = response => {
+const remove = (db, response) => {
   const docs = response.rows
     .filter(row => row.id.startsWith('medic:medic:'))
     .map(row => {
@@ -33,8 +34,8 @@ const remove = response => {
         _deleted: true
       };
     });
+  console.log(`Deleting ${docs.length} builds...`);
   if (docs.length) {
-    console.log(`Deleting ${docs.length} builds...`);
     return db.bulkDocs(docs).then(results => {
       const failed = results.filter(result => !result.ok);
       if (failed.length) {
@@ -52,7 +53,7 @@ const getEndDate = () => {
   return d.toISOString();
 };
 
-const getBranchBuilds = () => {
+const getBranchBuilds = db => {
   console.log('Querying for old branches...');
   return db.query('builds/releases', {
     startkey: [ 'branch', 'medic', 'medic' ],
@@ -61,18 +62,18 @@ const getBranchBuilds = () => {
   });
 };
 
-const getBetaBuilds = () => {
+const getBetaBuilds = db => {
   console.log('Querying for old beta releases...');
   return db.query('builds/releases', {
     startkey: [ 'beta', 'medic', 'medic', 10000 ],
     endkey: [ 'beta', 'medic', 'medic', 0 ],
-    descending: true,
     limit: MAX_BUILDS_TO_DELETE,
+    descending: true,
     skip: 5 // leave the last 5 beta releases
   });
 };
 
-const getRevs = response => {
+const getRevs = (db, response) => {
   console.log('Getting revs...');
   const ids = response.rows
     .filter(row => row.id.startsWith('medic:medic:'))
@@ -81,20 +82,20 @@ const getRevs = response => {
 };
 
 const testingBuilds = () => {
-  return getTestingBuilds()
-    .then(remove);
+  return getTestingBuilds(testingDb)
+    .then(response => remove(testingDb, response));
 };
 
 const branchBuilds = () => {
-  return getBranchBuilds()
-    .then(getRevs)
-    .then(remove);
+  return getBranchBuilds(stagingDb)
+    .then(response => getRevs(stagingDb, response))
+    .then(response => remove(stagingDb, response));
 };
 
 const betaBuilds = () => {
-  return getBetaBuilds()
-    .then(getRevs)
-    .then(remove);
+  return getBetaBuilds(stagingDb)
+    .then(response => getRevs(stagingDb, response))
+    .then(response => remove(stagingDb, response));
 };
 
 testingBuilds()
