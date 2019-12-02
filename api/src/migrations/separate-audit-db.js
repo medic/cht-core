@@ -65,7 +65,7 @@ module.exports = {
   run: promisify(function(callback) {
     const auditDb = db.get(environment.db + '-audit');
     const closeCallback = (err, result) => {
-      auditDb.close();
+      db.close(auditDb);
       callback(err, result);
     };
     ensureViewDdocExists(auditDb, err => {

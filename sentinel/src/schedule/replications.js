@@ -85,9 +85,9 @@ module.exports = {
         const sourceDb = db.get(fromDb);
         return p
           .then(() => replicateDb(sourceDb, targetDb))
-          .then(() => sourceDb.close());
+          .then(() => db.close(sourceDb));
         }, Promise.resolve()
       )
-      .then(() => targetDb.close());
+      .then(() => db.close(targetDb));
   },
 };

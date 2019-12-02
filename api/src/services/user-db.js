@@ -79,7 +79,7 @@ module.exports = {
       .exists(dbName)
       .then(metaDb => {
         if (metaDb) {
-          metaDb.close();
+          db.close(metaDb);
           return;
         }
 
@@ -88,11 +88,11 @@ module.exports = {
           .put(ddoc)
           .catch(err => {
             // finally would be nice but it doesn't work in node 8 :(
-            metaDb.close();
+            db.close(metaDb);
             throw err;
           })
           .then(() => {
-            metaDb.close();
+            db.close(metaDb);
             return module.exports.setSecurity(dbName, username);
           });
     });

@@ -32,7 +32,7 @@ const initPurgeDbs = (roles) => {
 
 const closePurgeDbs = () => {
   Object.keys(purgeDbs).forEach(hash => {
-    purgeDbs[hash] && purgeDbs[hash].close();
+    db.close(purgeDbs[hash]);
     delete purgeDbs[hash];
   });
 };

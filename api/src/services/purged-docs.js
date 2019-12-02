@@ -19,9 +19,9 @@ const getPurgeDb = (roles) => {
   });
 };
 
-const catchDbNotFoundError = (err, db) => {
+const catchDbNotFoundError = (err, purgeDb) => {
   if (err !== DB_NOT_FOUND_ERROR) {
-    db && db.close();
+    db.close(purgeDb);
     throw err;
   }
 };
@@ -68,12 +68,12 @@ const getPurgedIds = (roles, docIds) => {
   let purgeDb;
   // requesting _changes instead of _all_docs because it's roughly twice faster
   return getPurgeDb(roles)
-    .then(db => purgeDb = db)
+    .then(result => purgeDb = result)
     .then(() => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
     .then(result => {
       purgeIds = getPurgedIdsFromChanges(result);
       cache.set(cacheKey, purgeIds);
-      purgeDb.close();
+      db.close(purgeDb);
     })
     .catch(err => catchDbNotFoundError(err, purgeDb))
     .then(() => purgeIds);
@@ -93,7 +93,7 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
   const ids = docIds.map(purgingUtils.getPurgedId);
 
   return getPurgeDb(roles)
-    .then(db => purgeDb = db)
+    .then(result => purgeDb = result)
     .then(() => getCheckPointer(purgeDb, checkPointerId))
     .then(checkPointer => {
       const opts = {
@@ -109,7 +109,7 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
     .then(result => {
       const purgedDocIds = getPurgedIdsFromChanges(result);
       purgeIds = { purgedDocIds,  lastSeq: result.last_seq };
-      purgeDb.close();
+      db.close(purgeDb);
     })
     .catch(err => catchDbNotFoundError(err, purgeDb))
     .then(() => purgeIds);
@@ -125,7 +125,7 @@ const getCheckPointer = (db, checkPointerId) => db
 const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
   let purgeDb;
   return getPurgeDb(roles)
-    .then(db => purgeDb = db)
+    .then(result => purgeDb = result)
     .then(() => Promise.all([
       getCheckPointer(purgeDb, checkPointerId),
       purgeDb.info()
@@ -135,7 +135,7 @@ const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
       return purgeDb.put(checkPointer);
     })
     .then(result => {
-      purgeDb.close();
+      db.close(purgeDb);
       return result;
     })
     .catch(err => catchDbNotFoundError(err, purgeDb));
@@ -144,12 +144,12 @@ const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
 const info = (roles) => {
   let purgeDb;
   return getPurgeDb(roles)
-    .then(db => purgeDb = db)
+    .then(result => purgeDb = result)
     .then(() => purgeDb.info())
     .catch(err => catchDbNotFoundError(err, purgeDb))
     // finally would be nice but it doesn't work in node 8 :(
     .then(info => {
-      purgeDb && purgeDb.close();
+      db.close(purgeDb);
       return info || false; // fetch needs valid JSON.
     });
 };

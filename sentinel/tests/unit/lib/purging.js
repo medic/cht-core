@@ -195,19 +195,21 @@ describe('ServerSidePurge', () => {
     });
 
     it('should not crash for falsy dbs', () => {
+      sinon.stub(db, 'close');
       service.__set__('purgeDbs', { one: false, two: undefined, three: null });
       service.__get__('closePurgeDbs')();
+      chai.expect(db.close.callCount).to.equal(3);
+      chai.expect(db.close.args).to.deep.equal([[false], [undefined], [null]]);
     });
 
     it('should call close function for every db', () => {
-      const genDb = () => ({ close: sinon.stub() });
-      const dbs = { one: genDb(), two: genDb(), three: genDb(), four: false };
+      sinon.stub(db, 'close');
+      const dbs = { one: 'one', two: 'two', three: 'three', four: false };
       const purgeDbs = Object.assign({}, dbs);
       service.__set__('purgeDbs', purgeDbs);
       service.__get__('closePurgeDbs')();
-      chai.expect(dbs.one.close.callCount).to.equal(1);
-      chai.expect(dbs.two.close.callCount).to.equal(1);
-      chai.expect(dbs.three.close.callCount).to.equal(1);
+      chai.expect(db.close.callCount).to.equal(4);
+      chai.expect(db.close.args).to.deep.equal([['one'], ['two'], ['three'], [false]]);
       chai.expect(Object.keys(purgeDbs)).to.deep.equal([]);
     });
   });

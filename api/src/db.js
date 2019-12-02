@@ -29,7 +29,8 @@ if (UNIT_TEST_ENV) {
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',
-    'exists'
+    'exists',
+    'close',
   ];
 
   const notStubbed = (first, second) => {
@@ -70,6 +71,13 @@ if (UNIT_TEST_ENV) {
 
   // Get the DB with the given name
   module.exports.get = name => new PouchDB(getDbUrl(name));
+  module.exports.close = db => {
+    try {
+      db && !db._destroyed && db.close();
+    } catch (err) {
+      logger.error('Error when closing db: %o', err);
+    }
+  };
 
   // Resolves with the PouchDB object if the DB with the given name exists
   module.exports.exists = name => {

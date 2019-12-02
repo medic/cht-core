@@ -13,7 +13,7 @@ const saveReadStatusDocs = (username, docs) => {
   return userDb.create(userDbName).then(() => {
     const userDb = db.get(userDbName);
     return userDb.bulkDocs(docs).then(result => {
-      userDb.close();
+      db.close(userDb);
       return result;
     });
   });
