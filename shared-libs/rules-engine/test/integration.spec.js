@@ -286,7 +286,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(secondReadyTasks[0]._id).to.not.eq(taskDoc._id);
   });
 
-  it('config change disables rules engine, causes no cancelations or errors', async () => {
+  it('config change causes reload with no cancelations or errors', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
     const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('const nothing = [];') });
@@ -295,14 +295,20 @@ describe('Rules Engine Integration Tests', () => {
 
     const completedTask = await rulesEngine.fetchTasksFor(['patient']);
     expect(completedTask).to.have.property('length', 0);
-    expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length);
+    expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length * 2);
   });
 
   it('settings update to invalid config yields no tasks displayed or updated', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
-    const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('not javascript') });
-    await rulesEngine.rulesConfigChange(updatedSettings, userDoc);
+    try {
+      const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('not javascript') });
+      await rulesEngine.rulesConfigChange(updatedSettings, userDoc);
+      expect('throw').to.throw;
+    } catch (err) {
+      expect(err.message).to.include('not javascript');
+    }
+    
     const successfulRecompile = rulesEmitter.isEnabled();
     expect(successfulRecompile).to.be.false;
     expect(rulesEngine.isEnabled()).to.be.false;

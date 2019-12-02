@@ -74,6 +74,7 @@ module.exports = db => {
       const cacheIsReset = rulesStateStore.rulesConfigChange(settings, userDoc);
       if (cacheIsReset) {
         rulesEmitter.shutdown();
+        rulesEmitter.initialize(settings, userDoc);
       }
     },
   };

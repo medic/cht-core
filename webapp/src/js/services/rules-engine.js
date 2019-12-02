@@ -52,8 +52,6 @@ angular.module('inboxServices').factory('RulesEngine', function(
                   ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTargetFreshness();
                 }
-
-                return isEnabled;
               });
           });
       })
@@ -114,7 +112,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
             });
         }
 
-        settingsDoc = change.doc;
+        settingsDoc = change.doc.settings;
         rulesConfigChange();
       },
     });
@@ -146,7 +144,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
   };
 
   const self = {
-    isEnabled: () => initialized,
+    isEnabled: () => initialized.then(RulesEngineCore.isEnabled),
 
     fetchTaskDocsForAllContacts: () => (
       initialized
