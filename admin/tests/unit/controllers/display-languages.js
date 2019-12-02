@@ -23,6 +23,7 @@ describe('Translation Languages controller', function() {
         'Settings': settings,
         'DB': () => db,
         'Changes': sinon.stub().returns({ unsubscribe: sinon.stub() }),
+        'Languages': sinon.stub(),
         'Modal': sinon.stub(),
         'TranslationLoader': { test: sinon.stub() },
         'UpdateSettings': sinon.stub()
