@@ -9,9 +9,15 @@ const COUNTRY_CODES = {
   new_zealand: 64,
   uganda: 256
 };
+const NZ_SHORT_NUMBER = '4234'; // Three or four digits. They cannot begin with '0' or '1'
 
 const settings = {
   default_country_code: COUNTRY_CODES.new_zealand
+};
+
+const settingsWithNoPhoneValidation = { 
+  ...settings, 
+  phone_validation: 'none'
 };
 
 describe('libphonenumber', () => {
@@ -38,6 +44,11 @@ describe('libphonenumber', () => {
   it('normalize adds country code when missing', () => {
     var actual = phonenumber.normalize(settings, NZ_DOMESTIC_VALID);
     assert.equal(actual, NZ_INTERNATIONAL_VALID);
+  });
+
+  it('normalize returns short number when phone validation is set to none', () => {
+    var actual = phonenumber.normalize(settingsWithNoPhoneValidation, NZ_SHORT_NUMBER);
+    assert.equal(actual, NZ_SHORT_NUMBER);
   });
 
   it('normalize returns false when domestic number and no country code in settings', () => {
