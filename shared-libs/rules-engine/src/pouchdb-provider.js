@@ -18,7 +18,7 @@ const medicPouchProvider = db => {
     */
     allTasks: prefix => {
       const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
-      return docsOf(db.query('medic-client/tasks', options));
+      return docsOf(db.query('medic-client/tasks_by_contact', options));
     },
 
     allTaskData: userDoc => {
@@ -78,7 +78,7 @@ const medicPouchProvider = db => {
 
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
-      return docsOf(db.query('medic-client/tasks', { keys, include_docs: true }));
+      return docsOf(db.query('medic-client/tasks_by_contact', { keys, include_docs: true }));
     },
 
     taskDataFor: (contactIds, userDoc) => {
