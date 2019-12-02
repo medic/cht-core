@@ -1,7 +1,6 @@
 /**
  * @module user-db
  */
-
 const request = require('request-promise-native');
 const url = require('url');
 const db = require('../db');
@@ -76,12 +75,26 @@ module.exports = {
    */
   create: username => {
     const dbName = module.exports.getDbName(username);
-    return db.exists(dbName).then(found => {
-      if (!found) {
-        return db.get(dbName, (database) => {
-          return database.put(ddoc).then(() => module.exports.setSecurity(dbName, username));
-        });
-      }
+    return db
+      .exists(dbName)
+      .then(metaDb => {
+        if (metaDb) {
+          metaDb.close();
+          return;
+        }
+
+        metaDb = db.get(dbName);
+        return metaDb
+          .put(ddoc)
+          .catch(err => {
+            // finally would be nice but it doesn't work in node 8 :(
+            metaDb.close();
+            throw err;
+          })
+          .then(() => {
+            metaDb.close();
+            return module.exports.setSecurity(dbName, username);
+          });
     });
   }
 };

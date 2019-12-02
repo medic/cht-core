@@ -63,33 +63,28 @@ module.exports = {
   name: 'separate-audit-db',
   created: new Date(2016, 2, 18),
   run: promisify(function(callback) {
-    const withDb = (auditDb) => {
-      return new Promise((resolve, reject) => {
-        ensureViewDdocExists(auditDb, err => {
-          if (err) {
-            logger.info(`An error occurred creating audit db: ${err}`);
-            return resolve();
-          }
-
-          var lastLength;
-          async.doWhilst(
-            function(callback) {
-              batchMoveAuditDocs(auditDb, function(err, changed) {
-                lastLength = changed;
-                return callback(err);
-              });
-            },
-            function(cb) {
-              return cb(null, lastLength > 0);
-            },
-            (err, result) => err ? reject(err) : resolve(result));
-        });
-      });
+    const auditDb = db.get(environment.db + '-audit');
+    const closeCallback = (err, result) => {
+      auditDb.close();
+      callback(err, result);
     };
+    ensureViewDdocExists(auditDb, err => {
+      if (err) {
+        return logger.info(`An error occurred creating audit db: ${err}`);
+      }
 
-    return db
-      .get(environment.db + '-audit', withDb)
-      .then(result => callback(null, result))
-      .catch(callback);
+      var lastLength;
+      async.doWhilst(
+        function(callback) {
+          batchMoveAuditDocs(auditDb, function(err, changed) {
+            lastLength = changed;
+            return callback(err);
+          });
+        },
+        function(cb) {
+          return cb(null, lastLength > 0);
+        },
+        closeCallback);
+    });
   })
 };

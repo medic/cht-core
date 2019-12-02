@@ -64,25 +64,23 @@ const matches = (expected, actual) => {
 };
 
 const assertDb = expected => {
-  return db.get('medic-test', medicTestDb => {
-    return medicTestDb.allDocs({ include_docs: true })
-      .then(results => {
-        var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
-        expected.sort(byId);
-        actual.sort(byId);
+  return db.get('medic-test').allDocs({ include_docs: true })
+    .then(results => {
+      var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
+      expected.sort(byId);
+      actual.sort(byId);
 
-        // remove standard ddocs from actual
-        actual = actual.filter(function(doc) {
-          return (
-            doc._id !== '_design/medic' &&
-            doc._id !== '_design/medic-client' &&
-            doc._id !== 'settings'
-          );
-        });
-
-        matchDbs(expected, actual);
+      // remove standard ddocs from actual
+      actual = actual.filter(function(doc) {
+        return (
+          doc._id !== '_design/medic' &&
+          doc._id !== '_design/medic-client' &&
+          doc._id !== 'settings'
+        );
       });
-  });
+
+      matchDbs(expected, actual);
+    });
 };
 
 const matchDbs = (expected, actual) => {
@@ -194,7 +192,7 @@ const _resetDb = (attempts = 0) => {
   return db.exists('medic-test')
     .then(exists => {
       if (exists) {
-        return db.get('medic-test', (medicTest) => medicTest.destroy());
+        return db.get('medic-test').destroy();
       }
     })
     .then(() => {

@@ -69,43 +69,17 @@ if (UNIT_TEST_ENV) {
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name
-  module.exports.get = (name, options, withDb) => {
-    if (!withDb) {
-      withDb = options;
-      options = {};
-    }
+  module.exports.get = name => new PouchDB(getDbUrl(name));
 
-    const tempDb = new PouchDB(getDbUrl(name), options);
-    const closeDb = () => tempDb && !tempDb._destroyed && tempDb.close();
-    if (!withDb) {
-      closeDb();
-      return Promise.resolve();
-    }
-
-    return withDb(tempDb)
-      .then(result => {
-        closeDb();
-        return result;
-      })
-      .catch(err => {
-        closeDb();
-        throw err;
-      });
-  };
-
-  // Resolves true if the DB with the given name exists
+  // Resolves with the PouchDB object if the DB with the given name exists
   module.exports.exists = name => {
     const db = new PouchDB(getDbUrl(name), { skip_setup: true });
     return db.info()
       .then(result => {
         // In at least PouchDB 7.0.0, info() on a non-existent db doesn't throw,
         // instead it returns the error structure
-        db.close();
-        return  !result.error;
+        return  !result.error ? db : false;
       })
-      .catch(() => {
-        db.close();
-        return false;
-      });
+      .catch(() => false);
   };
 }

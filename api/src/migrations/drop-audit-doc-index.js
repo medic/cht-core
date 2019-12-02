@@ -1,4 +1,5 @@
 var db = require('../db'),
+  { promisify } = require('util'),
   async = require('async'),
   logger = require('../logger'),
   _ = require('underscore'),
@@ -7,10 +8,13 @@ var db = require('../db'),
   BATCH_SIZE = 100,
   AUDIT_ID_SUFFIX = '-audit';
 
-const dropView = (auditDb) => {
-  return auditDb.get(DDOC_ID).then(ddoc => {
+var dropView = function(auditDb, callback) {
+  auditDb.get(DDOC_ID, function(err, ddoc) {
+    if (err) {
+      return callback(err);
+    }
     delete ddoc.views;
-    return auditDb.put(ddoc);
+    auditDb.put(ddoc, callback);
   });
 };
 
@@ -51,10 +55,13 @@ var mergeDupes = function(oldDocs) {
   });
 };
 
-const createNewDocs = (auditDb, oldDocs) => {
+var createNewDocs = function(auditDb, oldDocs, callback) {
   var merged = mergeDupes(oldDocs);
   var ids = merged.map(getAuditId);
-  return auditDb.allDocs({ keys: ids, include_docs: true }).then(results => {
+  auditDb.allDocs({ keys: ids, include_docs: true }, function(err, results) {
+    if (err) {
+      return callback(err);
+    }
     var found = results.rows.filter(function(row) {
       return row.doc;
     });
@@ -71,18 +78,18 @@ const createNewDocs = (auditDb, oldDocs) => {
         history: doc.history,
       };
     });
-    return auditDb.bulkDocs(newDocs);
+    auditDb.bulkDocs(newDocs, callback);
   });
 };
 
-const deleteOldDocs = (auditDb, oldDocs) => {
+var deleteOldDocs = function(auditDb, oldDocs, callback) {
   oldDocs.forEach(function(doc) {
     doc._deleted = true;
   });
-  return auditDb.bulkDocs(oldDocs);
+  auditDb.bulkDocs(oldDocs, callback);
 };
 
-const changeDocIdsBatch = (auditDb, skip, callback) => {
+var changeDocIdsBatch = function(auditDb, skip, callback) {
   var options = {
     include_docs: true,
     limit: BATCH_SIZE,
@@ -104,10 +111,14 @@ const changeDocIdsBatch = (auditDb, skip, callback) => {
       // no old docs in this batch
       return callback(null, skip + BATCH_SIZE, true);
     }
-
-    return createNewDocs(auditDb, oldDocs)
-      .then(() => deleteOldDocs(auditDb, oldDocs))
-      .then(() => {
+    createNewDocs(auditDb, oldDocs, function(err) {
+      if (err) {
+        return callback(err);
+      }
+      deleteOldDocs(auditDb, oldDocs, function(err) {
+        if (err) {
+          return callback(err);
+        }
         // The newSkip is based on the old skip, plus the number of
         // unchanged docs. Changed docs can't be included because
         // they have just been deleted so will not be included in the
@@ -117,38 +128,45 @@ const changeDocIdsBatch = (auditDb, skip, callback) => {
         var newSkip = skip + BATCH_SIZE - oldDocs.length;
         callback(null, newSkip, true);
       });
+    });
   });
 };
 
-const changeDocIds = (auditDb) => {
+var changeDocIds = function(auditDb, callback) {
   var skip = 0;
   var again = true;
-  return new Promise((resolve, reject) => {
-    async.doWhilst(
-      function(callback) {
-        changeDocIdsBatch(auditDb, skip, function(err, _skip, _again) {
-          if (err) {
-            return callback(err);
-          }
-          skip = _skip;
-          again = _again;
-          callback();
-        });
-      },
-      function(cb) {
-        return cb(null, again);
-      },
-      (err, result) => err ? reject(err) : resolve(result)
-    );
-  });
+  async.doWhilst(
+    function(callback) {
+      changeDocIdsBatch(auditDb, skip, function(err, _skip, _again) {
+        if (err) {
+          return callback(err);
+        }
+        skip = _skip;
+        again = _again;
+        callback();
+      });
+    },
+    function(cb) {
+      return cb(null, again);
+    },
+    callback
+  );
 };
 
 module.exports = {
   name: 'drop-audit-doc-index',
   created: new Date(2016, 11, 1),
-  run: () => {
-    return db.get(environment.db + '-audit', (auditDb) => {
-      return dropView(auditDb).then(() => changeDocIds(auditDb));
+  run: promisify(function(callback) {
+    const auditDb = db.get(environment.db + '-audit');
+    const closeCallback = (err, result) => {
+      auditDb.close();
+      callback(err, result);
+    };
+    dropView(auditDb, function(err) {
+      if (err) {
+        return closeCallback(err);
+      }
+      changeDocIds(auditDb, closeCallback);
     });
-  },
+  }),
 };
