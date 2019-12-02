@@ -17,9 +17,14 @@ describe('Translation Languages controller', function() {
     db = {
       query: sinon.stub()
     };
+    const $translate = key => Promise.resolve(key + 'translated');
+    $translate.instant = key => key + 'translated';
+    
     createController = function() {
       return $controller('DisplayLanguagesCtrl', {
         '$scope': scope,
+        '$timeout': work => work(),
+        '$translate': $translate,
         'Settings': settings,
         'DB': () => db,
         'Changes': sinon.stub().returns({ unsubscribe: sinon.stub() }),
