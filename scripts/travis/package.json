@@ -7,7 +7,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "pouchdb-adapter-http": "^7.0.0",
-    "pouchdb-core": "^7.0.0"
+    "pouchdb-adapter-http": "^7.1.1",
+    "pouchdb-core": "^7.1.1",
+    "pouchdb-mapreduce": "^7.1.1"
   }
 }
