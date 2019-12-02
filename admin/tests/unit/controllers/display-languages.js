@@ -19,9 +19,10 @@ describe('Translation Languages controller', function() {
     };
     const $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
-    
+
     createController = function() {
       return $controller('DisplayLanguagesCtrl', {
+        '$log': { error: sinon.stub() },
         '$scope': scope,
         '$timeout': work => work(),
         '$translate': $translate,
