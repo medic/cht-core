@@ -214,6 +214,21 @@ describe('Server utils', () => {
       chai.expect(json.args[0][0].error).to.equal('Server error');
     });
 
+    it('handles uncaught payload size exceptions', () => {
+      const status = sinon.stub(res, 'status');
+      const json = sinon.stub(res, 'json');
+      const get = sinon.stub(req, 'get');
+      get.returns('application/json');
+      serverUtils.serverError({ foo: 'bar', type: 'entity.too.large' }, req, res);
+      chai.expect(get.callCount).to.equal(1);
+      chai.expect(get.args[0][0]).to.equal('Accept');
+      chai.expect(status.callCount).to.equal(1);
+      chai.expect(status.args[0][0]).to.equal(413);
+      chai.expect(json.callCount).to.equal(1);
+      chai.expect(json.args[0][0].code).to.equal(413);
+      chai.expect(json.args[0][0].error).to.equal('Payload Too Large');
+    });
+
   });
 
 });

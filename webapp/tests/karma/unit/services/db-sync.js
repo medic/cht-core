@@ -82,6 +82,7 @@ describe('DBSync service', () => {
         expect(Auth.callCount).to.equal(1);
         expect(Auth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
+        expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(1);
         expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');

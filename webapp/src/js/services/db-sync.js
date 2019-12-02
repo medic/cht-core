@@ -49,8 +49,8 @@ angular
     const DIRECTIONS = [
       {
         name: 'to',
-        filter: true,
         options: {
+          filter: readOnlyFilter,
           checkpoint: 'source',
         },
         allowed: () => Auth('can_edit').then(() => true).catch(() => false)
@@ -68,9 +68,6 @@ angular
     const replicate = (direction, { batchSize=100 }={}) => {
       const remote = DB({ remote: true });
       const options = Object.assign({}, direction.options, { batch_size: batchSize });
-      if (direction.filter) {
-        options.filter = readOnlyFilter;
-      }
       return DB()
         .replicate[direction.name](remote, options)
         .on('denied', function(err) {
