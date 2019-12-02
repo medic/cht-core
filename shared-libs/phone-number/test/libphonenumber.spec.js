@@ -16,7 +16,7 @@ const settings = {
 };
 
 const settingsWithNoPhoneValidation = { 
-  ...settings, 
+  default_country_code: COUNTRY_CODES.new_zealand,
   phone_validation: 'none'
 };
 
