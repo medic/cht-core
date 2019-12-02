@@ -207,7 +207,7 @@ describe(`RulesEngine service`, () => {
       });
 
       const cachebustScenarios = [
-        settingsDoc,
+        { _id: 'settings', settings: settingsDoc },
         userContactDoc,
         userContactGrandparent,
       ];
