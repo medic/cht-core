@@ -302,7 +302,6 @@ describe('DBSync service', () => {
           expect(to.args[4][1].batch_size).to.equal(6);
           expect(to.args[5][1].batch_size).to.equal(3);
           expect(to.args[6][1].batch_size).to.equal(1);
-          console.log('finishing up');
         });
       });
 
