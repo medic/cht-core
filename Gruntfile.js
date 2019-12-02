@@ -500,7 +500,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: `cd api && npm ci && ${copySharedLibs}`,
+        cmd: 'cd api && npm ci',
       },
       'npm-ci-shared-libs': {
         cmd: () => {
