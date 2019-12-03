@@ -407,9 +407,6 @@ angular.module('inboxServices').service('Enketo',
         return docToStore;
       }).get();
 
-      record = getOuterHTML($record[0]);
-
-      AddAttachment(doc, GetReportContent.REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc._id = getId('/*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
@@ -433,9 +430,14 @@ angular.module('inboxServices').service('Enketo',
       $record.find('[type=binary]').each(function() {
         var file = $(this).text();
         if (file) {
+          $(this).text('');
           attach(this, file, 'image/png', true);
         }
       });
+
+      record = getOuterHTML($record[0]);
+
+      AddAttachment(doc, GetReportContent.REPORT_ATTACHMENT_NAME, record, 'application/xml');
 
       docsToStore.unshift(doc);
 
