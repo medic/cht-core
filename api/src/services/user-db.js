@@ -79,8 +79,8 @@ module.exports = {
     return db
       .exists(dbName)
       .then(result => {
-        database = result;
-        if (database) {
+        if (result) {
+          database = result;
           return;
         }
 
