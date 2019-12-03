@@ -79,7 +79,17 @@ if (UNIT_TEST_ENV) {
     });
   });
   module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
-  module.exports.close = db => db && !db._destroyed && db.close();
+  module.exports.close = db => {
+    if (!db || db._destroyed || db._closed) {
+      return;
+    }
+
+    try {
+      db.close();
+    } catch (err) {
+      logger.error('Error when closing db: %o', err);
+    }
+  };
   module.exports.couchUrl = couchUrl;
   module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
 } else {

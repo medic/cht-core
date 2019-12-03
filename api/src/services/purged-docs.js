@@ -68,7 +68,7 @@ const getPurgedIds = (roles, docIds) => {
   let purgeDb;
   // requesting _changes instead of _all_docs because it's roughly twice faster
   return getPurgeDb(roles)
-    .then(result => purgeDb = result)
+    .then(tempDb => purgeDb = tempDb)
     .then(() => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
     .then(result => {
       purgeIds = getPurgedIdsFromChanges(result);
@@ -93,7 +93,7 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
   const ids = docIds.map(purgingUtils.getPurgedId);
 
   return getPurgeDb(roles)
-    .then(result => purgeDb = result)
+    .then(tempDb => purgeDb = tempDb)
     .then(() => getCheckPointer(purgeDb, checkPointerId))
     .then(checkPointer => {
       const opts = {
@@ -125,7 +125,7 @@ const getCheckPointer = (db, checkPointerId) => db
 const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
   let purgeDb;
   return getPurgeDb(roles)
-    .then(result => purgeDb = result)
+    .then(tempDb => purgeDb = tempDb)
     .then(() => Promise.all([
       getCheckPointer(purgeDb, checkPointerId),
       purgeDb.info()
@@ -144,7 +144,7 @@ const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
 const info = (roles) => {
   let purgeDb;
   return getPurgeDb(roles)
-    .then(result => purgeDb = result)
+    .then(tempDb => purgeDb = tempDb)
     .then(() => purgeDb.info())
     .catch(err => catchDbNotFoundError(err, purgeDb))
     // finally would be nice but it doesn't work in node 8 :(

@@ -75,26 +75,25 @@ module.exports = {
    */
   create: username => {
     const dbName = module.exports.getDbName(username);
+    let database;
     return db
       .exists(dbName)
-      .then(metaDb => {
-        if (metaDb) {
-          db.close(metaDb);
+      .then(result => {
+        database = result;
+        if (database) {
           return;
         }
 
-        metaDb = db.get(dbName);
-        return metaDb
-          .put(ddoc)
-          .catch(err => {
-            // finally would be nice but it doesn't work in node 8 :(
-            db.close(metaDb);
-            throw err;
-          })
-          .then(() => {
-            db.close(metaDb);
-            return module.exports.setSecurity(dbName, username);
-          });
-    });
-  }
+        database = db.get(dbName);
+        return database.put(ddoc).then(() => module.exports.setSecurity(dbName, username));
+      })
+      .then(result => {
+        db.close(database);
+        return result;
+      })
+      .catch(err => {
+        db.close(database);
+        throw err;
+      });
+  },
 };

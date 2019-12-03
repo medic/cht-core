@@ -117,7 +117,9 @@ const deleteReadDocs = change => {
               }
             });
           })
-          .then(() => db.close(metaDb))
+          .then(() => {
+            db.close(metaDb);
+          })
           .catch(err => {
             db.close(metaDb);
             throw err;
