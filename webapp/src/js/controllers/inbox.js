@@ -263,6 +263,16 @@ var _ = require('underscore'),
       ctrl.setAndroidAppVersion($window.medicmobile_android.getAppVersion());
     }
 
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(granted => {
+        if (granted) {
+          $log.info('Persistent storage granted: storage will not be cleared except by explicit user action');
+        } else {
+          $log.info('Persistent storage denied: storage may be cleared by the UA under storage pressure.');
+        }
+      });
+    }
+
     ctrl.canLogOut = false;
     if (ctrl.androidAppVersion) {
       Auth('can_log_out_on_android')
