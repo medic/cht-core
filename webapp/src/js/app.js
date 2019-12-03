@@ -157,7 +157,7 @@ const createReduxLoggerConfig = Selectors => ({
     $ngReduxProvider.createStoreWith(RootReducer, middlewares);
   });
 
-  // 32 million characters is gauranteed to be rejected by the API JSON
+  // 32 million characters is guaranteed to be rejected by the API JSON
   // parser limit of 32MB so don't even bother POSTing. If there are many
   // 2 byte characters then a smaller body may also fail. Detecting the
   // exact byte length of a string is too expensive so we let the request
