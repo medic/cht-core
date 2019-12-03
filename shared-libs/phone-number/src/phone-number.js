@@ -7,6 +7,7 @@ var phonenumber = require('google-libphonenumber'),
 
 var _init = function(settings, phone) {
   var instance = phonenumber.PhoneNumberUtil.getInstance();
+  var shortInfo = phonenumber.ShortNumberInfo.getInstance();
   var countryCode = settings && settings.default_country_code;
   var regionCode = instance.getRegionCodeForCountryCode(countryCode);
   var parsed = instance.parseAndKeepRawInput(phone, regionCode);
@@ -22,19 +23,25 @@ var _init = function(settings, phone) {
     return instance.isValidNumber(parsed);
   }
 
+  function getScheme(given) {
+    if (shortInfo.isValidShortNumber(parsed)) {
+      return phonenumber.PhoneNumberFormat.NATIONAL;
+    }
+    if (typeof(given) !== 'undefined') {
+      return given;
+    }
+    if (parsed.getCountryCode() + '' === countryCode) {
+      return phonenumber.PhoneNumberFormat.NATIONAL;
+    }
+    return phonenumber.PhoneNumberFormat.INTERNATIONAL;
+  }
+
   return {
     format: function(scheme) {
       if (!this.validate()) {
         return false;
       }
-      if (typeof scheme === 'undefined') {
-        if (parsed.getCountryCode() + '' === countryCode) {
-          scheme = phonenumber.PhoneNumberFormat.NATIONAL;
-        } else {
-          scheme = phonenumber.PhoneNumberFormat.INTERNATIONAL;
-        }
-      }
-      return instance.format(parsed, scheme).toString();
+      return instance.format(parsed, getScheme(scheme)).toString();
     },
     validate: function() {
       return validPhone() &&
