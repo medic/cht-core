@@ -107,10 +107,11 @@ angular
       key: 'messages-list',
       callback: () => updateConversations({ merge: true }),
       filter: change => {
-        return ctrl.currentTab === 'messages' &&
+        return ctrl.currentTab === 'messages' && (
           (change.doc && change.doc.kujua_message) ||
           (change.doc && change.doc.sms_message) ||
-          change.deleted;
+          change.deleted
+        );
       },
     });
 

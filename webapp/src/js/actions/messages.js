@@ -48,7 +48,7 @@ angular.module('inboxServices').factory('MessagesActions',
         });
       }
 
-      function markConversationRead() {
+      function markSelectedConversationRead() {
         dispatch((dispatch, getState) => {
           const selected = Selectors.getSelectedMessage(getState());
           dispatch({ type: actionTypes.MARK_SELECTED_CONVERSATION_READ });
@@ -59,7 +59,7 @@ angular.module('inboxServices').factory('MessagesActions',
 
       return {
         addSelectedMessage,
-        markConversationRead,
+        markSelectedConversationRead,
         removeSelectedMessage,
         setMessagesError,
         setSelectedMessage,

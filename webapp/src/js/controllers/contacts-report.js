@@ -65,11 +65,11 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       });
     };
 
-    const render = function(id) {
-      ctrl.setSelectedContact(id, { merge: true })
+    const render = function(contactId, formId) {
+      ctrl.setSelectedContact(contactId, { merge: true })
         .then(() => {
           setCancelCallback();
-          return XmlForms.get($state.params.formId);
+          return XmlForms.get(formId);
         })
         .then(function(form) {
           const instanceData = {
@@ -84,7 +84,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           ctrl.form = formInstance;
           ctrl.loadingForm = false;
           telemetryData.postRender = Date.now();
-          telemetryData.form = $state.params.formId;
+          telemetryData.form = formId;
 
           Telemetry.record(
             `enketo:contacts:${telemetryData.form}:add:render`,
@@ -141,7 +141,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     ctrl.setShowContent(true);
     setCancelCallback();
 
-    render($state.params.id);
+    render($state.params.id, $state.params.formId);
 
     $scope.$on('$destroy', function() {
       unsubscribe();

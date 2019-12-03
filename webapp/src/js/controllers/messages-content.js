@@ -42,7 +42,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       return {
         addSelectedMessage: messagesActions.addSelectedMessage,
         deleteDoc: globalActions.deleteDoc,
-        markConversationRead: messagesActions.markConversationRead,
+        markSelectedConversationRead: messagesActions.markSelectedConversationRead,
         unsetSelected: globalActions.unsetSelected,
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
@@ -86,15 +86,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       if (type === 'contact') {
         return LineageModelGenerator.contact(id).catch(err => {
           if (err.code === 404) {
-            return Promise.resolve();
+            return;
           }
           throw err;
         });
-      } else if (type === 'phone') {
-        return {name: id};
-      } else {
-        return {};
       }
+      if (type === 'phone') {
+        return { name: id };
+      }
+      return {};
     };
 
     const markConversationReadIfNeeded = () => {
@@ -102,7 +102,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         return !message.read && message.doc;
       });
       if (hasUnreadDoc) {
-        ctrl.markConversationRead();
+        ctrl.markSelectedConversationRead();
       }
     };
 

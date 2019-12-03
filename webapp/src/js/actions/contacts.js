@@ -74,8 +74,8 @@ angular.module('inboxServices').factory('ContactsActions',
         updateSelectedContact({ tasksByContact });
       };
 
-      const getTasks = selected => {
-        return Auth('can_view_tasks')
+      const registerTasksListener = selected => {
+        Auth('can_view_tasks')
           .then(() => TasksForContact(selected, 'ContactsCtrl', receiveTasks))
           .catch(() => $log.debug('Not authorized to view tasks'));
       };
@@ -172,10 +172,10 @@ angular.module('inboxServices').factory('ContactsActions',
                   return lazyLoadedContactData
                     .then(() => {
                       selected = Selectors.getSelectedContact(getState());
+                      registerTasksListener();
                       return $q.all([
                         ContactSummary(selected.doc, selected.reports, selected.lineage),
-                        Settings(),
-                        getTasks()
+                        Settings()
                       ]);
                     })
                     .then(([ summary, settings ]) => {

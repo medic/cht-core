@@ -89,7 +89,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           $translate('error.404.title').then(Snackbar);
         }
         ctrl.unsetSelected();
-        $log.error('Error generating contact view model', err, err.message);
+        $log.error('Error selecting contact', err);
       });
     };
 
