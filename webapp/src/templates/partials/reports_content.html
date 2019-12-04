@@ -110,7 +110,7 @@
               <h3>{{group.name}}</h3>
               <p>
                 <span ng-hide="group.loading">
-                  <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.edit(selection, group)" translate>Edit</a>
                   <a class="btn btn-link" ng-click="reportsContentCtrl.mute(selection, group)" ng-show="reportsContentCtrl.canMute(group)" translate>Mute</a>
                   <a class="btn btn-link" ng-click="reportsContentCtrl.schedule(selection, group)" ng-show="reportsContentCtrl.canSchedule(group)" translate>Schedule</a>
                 </span>

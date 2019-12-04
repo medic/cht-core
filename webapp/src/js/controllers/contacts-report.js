@@ -5,7 +5,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope,
     $state,
     $translate,
-    ContactViewModelGenerator,
+    ContactsActions,
     Enketo,
     Geolocation,
     GlobalActions,
@@ -32,14 +32,17 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       };
     };
     const mapDispatchToTarget = function(dispatch) {
+      const contactsActions = ContactsActions(dispatch);
       const globalActions = GlobalActions(dispatch);
       return {
         clearRightActionBar: globalActions.clearRightActionBar,
+        navigationCancel: globalActions.navigationCancel,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
         setShowContent: globalActions.setShowContent,
+        setSelectedContact: contactsActions.setSelectedContact,
         setTitle: globalActions.setTitle
       };
     };
@@ -62,37 +65,42 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       });
     };
 
-    var render = function(contact, options) {
-      $scope.setSelected(contact, options);
-      setCancelCallback();
-      return XmlForms.get($state.params.formId)
+    const render = function(contactId, formId) {
+      ctrl.setSelectedContact(contactId, { merge: true })
+        .then(() => {
+          setCancelCallback();
+          return XmlForms.get(formId);
+        })
         .then(function(form) {
-          var instanceData = {
+          const instanceData = {
             source: 'contact',
-            contact: contact.doc,
+            contact: ctrl.selectedContact.doc,
           };
           ctrl.setEnketoEditedStatus(false);
-          return Enketo
-            .render('#contact-report', form, instanceData, markFormEdited)
-            .then(function(formInstance) {
-              ctrl.setTitle(TranslateFrom(form.title));
-              ctrl.form = formInstance;
-              ctrl.loadingForm = false;
-            })
-            .then(() => {
-              telemetryData.postRender = Date.now();
-              telemetryData.form = $state.params.formId;
+          ctrl.setTitle(TranslateFrom(form.title));
+          return Enketo.render('#contact-report', form, instanceData, markFormEdited);
+        })
+        .then(function(formInstance) {
+          ctrl.form = formInstance;
+          ctrl.loadingForm = false;
+          telemetryData.postRender = Date.now();
+          telemetryData.form = formId;
 
-              Telemetry.record(
-                `enketo:contacts:${telemetryData.form}:add:render`,
-                telemetryData.postRender - telemetryData.preRender);
-            });
+          Telemetry.record(
+            `enketo:contacts:${telemetryData.form}:add:render`,
+            telemetryData.postRender - telemetryData.preRender);
+        })
+        .catch(err => {
+          $log.error('Error loading form', err);
+          ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
+          ctrl.contentError = true;
+          ctrl.loadingForm = false;
         });
     };
 
     ctrl.save = function() {
       if (ctrl.enketoSaving) {
-        $log.debug('Attempted to call contacts-report:$scope.save more than once');
+        $log.debug('Attempted to call "contacts-report.save" more than once');
         return;
       }
 
@@ -132,17 +140,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     ctrl.clearRightActionBar();
     ctrl.setShowContent(true);
     setCancelCallback();
-    var options = { merge: true };
-    ContactViewModelGenerator.getContact($state.params.id, options)
-      .then(function(contact) {
-        return render(contact, options);
-      })
-      .catch(function(err) {
-        $log.error('Error loading form', err);
-        ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
-        ctrl.contentError = true;
-        ctrl.loadingForm = false;
-      });
+
+    render($state.params.id, $state.params.formId);
 
     $scope.$on('$destroy', function() {
       unsubscribe();

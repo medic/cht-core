@@ -1,4 +1,4 @@
-<span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-class="{ 'disabled': facilityFilterCtrl.selectMode && facilityFilterCtrl.selected.length }" ng-click="monitorFacilityDropdown()">
+<span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-class="{ 'disabled': facilityFilterCtrl.selectMode && facilityFilterCtrl.selected.length }" ng-click="facilityFilterCtrl.monitorFacilityDropdown()">
   <span id="facility" class="mm-button" data-toggle="dropdown">
     <span class="mm-button-icon">
       <span class="fa fa-hospital-o"></span>
@@ -11,7 +11,7 @@
   <span role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
     <div class="loader" ng-show="!facilityFilterCtrl.facilities.length"></div>
     <ul>
-      <li role="presentation" ng-repeat="facility in facilityFilterCtrl.facilities | orderBy:'doc.name' | limitTo:totalFacilitiesDisplayed track by facility.doc._id" ng-include="::'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = 0"></li>
+      <li role="presentation" ng-repeat="facility in facilityFilterCtrl.facilities | orderBy:'doc.name' | limitTo:facilityFilterCtrl.totalFacilitiesDisplayed track by facility.doc._id" ng-include="::'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = 0"></li>
     </ul>
   </span>
 </span>

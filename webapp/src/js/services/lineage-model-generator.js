@@ -42,11 +42,10 @@ angular.module('inboxServices').factory('LineageModelGenerator',
     return {
       /**
        * Fetch a contact and its lineage by the given uuid. Returns a
-       * contact model, or if options.merge is true the doc with the
+       * contact model, or if merge is true the doc with the
        * lineage inline.
        */
-      contact: function(id, options) {
-        options = options || {};
+      contact: (id, { merge=false }={}) => {
         return get(id)
           .then(function(docs) {
             return hydrate(docs);
@@ -59,7 +58,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               _id: id,
               lineage: docs
             };
-            if (options.merge) {
+            if (merge) {
               result.doc = lineageLib.fillParentsInDocs(doc, docs);
 
               // The lineage should also be hydrated when merge is true

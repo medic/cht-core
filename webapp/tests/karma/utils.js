@@ -42,7 +42,8 @@ window.KarmaUtils = {
 
     const DB = () => ({
       get: () => Promise.resolve(),
-      post: () => Promise.resolve()
+      post: () => Promise.resolve(),
+      info: () => Promise.resolve()
     });
     const mockDB = mocks.DB || DB;
     const liveListStub = { clearSelected: () => {} };
@@ -57,7 +58,8 @@ window.KarmaUtils = {
       'ngInject';
       // If actual DB is run it causes a full page refresh which causes karma to error
       $provide.value('DB', mockDB);
-      $provide.value('ContactViewModelGenerator', function() {});
+      $provide.value('ContactViewModelGenerator', () => {});
+      $provide.value('ReportViewModelGenerator', () => {});
       $provide.value('LiveList', mockLiveList);
       $provide.value('Session', {
         userCtx: () => { return {}; }

@@ -71,10 +71,12 @@ var _ = require('underscore'),
       const globalActions = GlobalActions(dispatch);
       return {
         navigateBack: globalActions.navigateBack,
+        navigationCancel: globalActions.navigationCancel,
+        openGuidedSetup: globalActions.openGuidedSetup,
+        openTourSelect: globalActions.openTourSelect,
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setFacilities: globalActions.setFacilities,
         setForms: globalActions.setForms,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
@@ -248,7 +250,7 @@ var _ = require('underscore'),
 
     Feedback.init();
 
-    LiveListConfig($scope);
+    LiveListConfig();
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
@@ -283,22 +285,10 @@ var _ = require('underscore'),
     } else {
       ctrl.canLogOut = true;
     }
-    $scope.logout = function() {
-      Modal({
-        templateUrl: 'templates/modals/logout_confirm.html',
-        controller: 'LogoutConfirmCtrl',
-        controllerAs: 'logoutConfirmCtrl',
-        singleton: true,
-      });
-    };
-
-    $scope.isMobile = function() {
-      return $('#mobile-detection').css('display') === 'inline';
-    };
 
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {
-        $scope.navigationCancel({ to: trans.to(), params: trans.params() });
+        ctrl.navigationCancel({ to: trans.to(), params: trans.params() });
         return false;
       }
     });
@@ -311,36 +301,6 @@ var _ = require('underscore'),
         ctrl.unsetSelected();
       }
     });
-
-    // User wants to cancel current flow, or pressed back button, etc.
-    $scope.navigationCancel = function(trans) {
-      if (ctrl.enketoSaving) {
-        // wait for save to finish
-        return;
-      }
-      if (!ctrl.enketoEdited) {
-        // form hasn't been modified - return immediately
-        if (ctrl.cancelCallback) {
-          ctrl.cancelCallback();
-        }
-        return;
-      }
-      // otherwise data will be discarded so confirm navigation
-      Modal({
-        templateUrl: 'templates/modals/navigation_confirm.html',
-        controller: 'NavigationConfirmCtrl',
-        controllerAs: 'navigationConfirmCtrl',
-        singleton: true,
-      }).then(function() {
-        ctrl.setEnketoEditedStatus(false);
-        if (trans) {
-          return $state.go(trans.to, trans.params);
-        }
-        if (ctrl.cancelCallback) {
-          ctrl.cancelCallback();
-        }
-      });
-    };
 
     $transitions.onSuccess({}, function(trans) {
       ctrl.setCurrentTab(trans.to().name.split('.')[0]);
@@ -420,82 +380,46 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.openTourSelect = function() {
-      return Modal({
-        templateUrl: 'templates/modals/tour_select.html',
-        controller: 'TourSelectCtrl',
-        controllerAs: 'tourSelectCtrl',
-        singleton: true,
-      }).catch(function() {}); // modal dismissed is ok
-    };
-
-    $scope.openGuidedSetup = function() {
-      return Modal({
-        templateUrl: 'templates/modals/guided_setup.html',
-        controller: 'GuidedSetupModalCtrl',
-        controllerAs: 'guidedSetupModalCtrl',
-        size: 'lg',
-      }).catch(function() {}); // modal dismissed is ok
-    };
-
     var startupModals = [
       // select language
       {
-        required: function(settings, user) {
-          return !user.language;
-        },
-        render: function() {
+        required: (settings, user) => !user.language,
+        render: () => {
           return Modal({
             templateUrl: 'templates/modals/user_language.html',
             controller: 'UserLanguageModalCtrl',
             controllerAs: 'userLanguageModalCtrl'
-          }).catch(function() {});
+          }).catch(() => {});
         },
       },
       // welcome screen
       {
-        required: function(settings) {
-          return !settings.setup_complete;
-        },
-        render: function() {
+        required: settings => !settings.setup_complete,
+        render: () => {
           return Modal({
             templateUrl: 'templates/modals/welcome.html',
             controller: 'WelcomeModalCtrl',
             controllerAs: 'welcomeModalCtrl',
             size: 'lg',
-          }).catch(function() {});
+          }).catch(() => {});
         },
       },
       // guided setup
       {
-        required: function(settings) {
-          return !settings.setup_complete;
-        },
-        render: function() {
-          return $scope
-            .openGuidedSetup()
-            .then(function() {
-              return UpdateSettings({ setup_complete: true });
-            })
-            .catch(function(err) {
-              $log.error('Error marking setup_complete', err);
-            });
+        required: settings => !settings.setup_complete,
+        render: () => {
+          return ctrl.openGuidedSetup()
+            .then(() => UpdateSettings({ setup_complete: true }))
+            .catch(err => $log.error('Error marking setup_complete', err));
         },
       },
       // tour
       {
-        required: function(settings, user) {
-          return !user.known;
-        },
-        render: function() {
-          return $scope
-            .openTourSelect()
-            .then(function() {
-              return UpdateUser(Session.userCtx().name, { known: true });
-            })
-            .catch(function(err) {
-              $log.error('Error updating user', err);
-            });
+        required: (settings, user) => !user.known,
+        render: () => {
+          return ctrl.openTourSelect()
+            .then(() => UpdateUser(Session.userCtx().name, { known: true }))
+            .catch(err => $log.error('Error updating user', err));
         },
       },
     ];
@@ -546,39 +470,6 @@ var _ = require('underscore'),
       });
     });
 
-    $scope.deleteDoc = function(doc) {
-      Modal({
-        templateUrl: 'templates/modals/delete_doc_confirm.html',
-        controller: 'DeleteDocConfirm',
-        controllerAs: 'deleteDocConfirmCtrl',
-        model: { doc: doc },
-      }).then(function() {
-        if (
-          !ctrl.selectMode &&
-          ($state.includes('contacts') || $state.includes('reports'))
-        ) {
-          $state.go($state.current.name, { id: null });
-        }
-      });
-    };
-
-    $scope.bulkDelete = function(docs) {
-      if (!docs) {
-        $log.warn('Trying to delete empty object', docs);
-        return;
-      }
-      if (!docs.length) {
-        $log.warn('Trying to delete empty array', docs);
-        return;
-      }
-      Modal({
-        templateUrl: 'templates/modals/bulk_delete_confirm.html',
-        controller: 'BulkDeleteConfirm',
-        controllerAs: 'bulkDeleteConfirmCtrl',
-        model: { docs: docs },
-      });
-    };
-
     $('body').on('mouseenter', '.relative-date, .autoreply', function() {
       if ($(this).data('tooltipLoaded') !== true) {
         $(this)
@@ -606,18 +497,6 @@ var _ = require('underscore'),
         elem.addClass('selected');
       }
     });
-
-    $scope.openFeedback = function() {
-      Modal({
-        templateUrl: 'templates/modals/feedback.html',
-        controller: 'FeedbackCtrl',
-        controllerAs: 'feedbackCtrl'
-      });
-    };
-
-    $scope.replicate = function() {
-      DBSync.sync(true);
-    };
 
     CountMessages.init();
 

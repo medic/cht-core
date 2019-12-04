@@ -5,8 +5,11 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
     restrict: 'E',
     templateUrl: 'templates/directives/actionbar.html',
     controller: function(
+      $log,
       $ngRedux,
       $scope,
+      GlobalActions,
+      Modal,
       ReportsActions,
       Selectors
     ) {
@@ -29,8 +32,10 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
         };
       };
       const mapDispatchToTarget = dispatch => {
+        const globalActions = GlobalActions(dispatch);
         const reportsActions = ReportsActions(dispatch);
         return {
+          deleteDoc: globalActions.deleteDoc,
           deselectAll: reportsActions.deselectAll,
           launchEditFacilityDialog: reportsActions.launchEditFacilityDialog,
           selectAll: reportsActions.selectAll,
@@ -40,6 +45,23 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+      ctrl.bulkDelete = docs => {
+        if (!docs) {
+          $log.warn('Trying to delete empty object', docs);
+          return;
+        }
+        if (!docs.length) {
+          $log.warn('Trying to delete empty array', docs);
+          return;
+        }
+        Modal({
+          templateUrl: 'templates/modals/bulk_delete_confirm.html',
+          controller: 'BulkDeleteConfirm',
+          controllerAs: 'bulkDeleteConfirmCtrl',
+          model: { docs },
+        }).catch(() => {}); // modal dismissed is ok
+      };
 
       $scope.$on('$destroy', unsubscribe);
     },

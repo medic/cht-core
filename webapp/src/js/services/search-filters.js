@@ -1,5 +1,6 @@
-var _ = require('underscore'),
-    moment = require('moment');
+const _ = require('underscore');
+const moment = require('moment');
+const responsive = require('../modules/responsive');
 
 (function () {
 
@@ -167,10 +168,6 @@ var _ = require('underscore'),
         });
       };
 
-      var isMobile = function() {
-        return $('#mobile-detection').css('display') === 'inline';
-      };
-
       var initDate = function(callback) {
         $('#date-filter').daterangepicker({
           startDate: moment().subtract(1, 'months'),
@@ -198,7 +195,7 @@ var _ = require('underscore'),
           });
         })
         .on('mm.dateSelected.daterangepicker', function(e, picker) {
-          if (isMobile()) {
+          if (responsive.isMobile()) {
             // mobile version - only show one calendar at a time
             if (picker.container.is('.show-from')) {
               picker.container.removeClass('show-from').addClass('show-to');

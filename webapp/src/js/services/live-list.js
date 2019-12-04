@@ -57,7 +57,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     };
 
     // Configure LiveList service
-    return function($scope) {
+    return function() {
 
       var contacts_config = {
         orderBy: function(c1, c2) {
@@ -90,12 +90,9 @@ angular.module('inboxServices').factory('LiveListConfig',
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact, contactTypes) {
-          if (!this.scope) {
-            return;
-          }
           const typeId = contact.contact_type || contact.type;
           const type = contactTypes.find(type => type.id === typeId);
-          var scope = this.scope.$new(true);
+          var scope = {};
           scope.id = contact._id;
           scope.route = 'contacts';
           scope.icon = type && type.icon;
@@ -173,11 +170,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, contactTypes, removedDomElement) {
-          if (!this.scope) {
-            return;
-          }
-
-          var scope = this.scope.$new(true);
+          var scope = {};
           scope.id = report._id;
           var form = _.findWhere(ctrl.forms, { code: report.form });
           scope.route = 'reports';
@@ -244,7 +237,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           return Date.parse(lhs) - Date.parse(rhs);
         },
         listItem: function(task) {
-          var scope = $scope.$new();
+          var scope = {};
           var dueDate = Date.parse(task.date);
           var startOfToday = (new Date()).setHours(0, 0, 0, 0);
           scope.id = task._id;
@@ -512,10 +505,6 @@ angular.module('inboxServices').factory('LiveList',
       delete idx.selected;
     }
 
-    function _setScope(listName, scope) {
-      indexes[listName].scope = scope;
-    }
-
     function refreshAll() {
       const now = new Date();
 
@@ -576,27 +565,16 @@ angular.module('inboxServices').factory('LiveList',
         contains: _.partial(_contains, name),
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
-        clearSelected: _.partial(_clearSelected, name),
-        setScope: _.partial(_setScope, name)
+        clearSelected: _.partial(_clearSelected, name)
       };
 
       return api[name];
-    };
-
-    api.$init = function(scope) {
-      for (var i = 1; i < arguments.length; i++) {
-        var listName = arguments[i];
-        if (api[listName]) {
-          api[listName].setScope(scope);
-        }
-      }
     };
 
     api.$reset = function() {
       for (var i = 0; i < arguments.length; i++) {
         var listName = arguments[i];
         if (api[listName]) {
-          api[listName].setScope();
           api[listName].set([]);
         }
       }

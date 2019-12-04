@@ -24,7 +24,10 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
       };
       const mapDispatchToTarget = function(dispatch) {
         const globalActions = GlobalActions(dispatch);
-        return { unsetSelected: globalActions.unsetSelected };
+        return {
+          navigationCancel: globalActions.navigationCancel,
+          unsetSelected: globalActions.unsetSelected
+        };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 

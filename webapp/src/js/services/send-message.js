@@ -1,7 +1,7 @@
-var _ = require('underscore'),
-  uuid = require('uuid/v4'),
-  taskUtils = require('@medic/task-utils'),
-  phoneNumber = require('@medic/phone-number');
+const _ = require('underscore');
+const uuid = require('uuid/v4');
+const taskUtils = require('@medic/task-utils');
+const phoneNumber = require('@medic/phone-number');
 
 angular
   .module('inboxServices')
@@ -10,6 +10,7 @@ angular
     $q,
     DB,
     ExtractLineage,
+    MarkRead,
     ServicesActions,
     Settings,
     UserSettings
@@ -162,25 +163,25 @@ angular
       return task;
     };
 
-    return function(recipients, message) {
-      if (!_.isArray(recipients)) {
+    return (recipients, message) => {
+      if (!Array.isArray(recipients)) {
         recipients = [recipients];
       }
       return $q
         .all([UserSettings(), Settings(), formatRecipients(recipients)])
-        .then(function(results) {
-          var user = results[0];
-          var settings = results[1];
-          var explodedRecipients = results[2];
-          var doc = createMessageDoc(user);
-          doc.tasks = explodedRecipients.map(function(recipient) {
+        .then(([ user, settings, explodedRecipients ]) => {
+          const doc = createMessageDoc(user);
+          doc.tasks = explodedRecipients.map(recipient => {
             return createTask(settings, recipient, message, user);
           });
           self.setLastChangedDoc(doc);
           return doc;
         })
-        .then(function(doc) {
-          return DB().post(doc);
+        .then(doc => {
+          return $q.all([
+            DB().post(doc),
+            MarkRead([ doc ])
+          ]);
         });
     };
   });

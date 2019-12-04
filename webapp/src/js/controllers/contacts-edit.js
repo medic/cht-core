@@ -32,6 +32,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
+        navigationCancel: globalActions.navigationCancel,
         unsetSelected: globalActions.unsetSelected,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
@@ -204,8 +205,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         .catch(function() {
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
-          ctrl.setEnketoSavingStatus(false);
-          $scope.$apply();
+          $timeout(() => ctrl.setEnketoSavingStatus(false));
         });
     };
 

@@ -1,5 +1,6 @@
-var _ = require('underscore'),
-    Tour = require('bootstrap-tour');
+const _ = require('underscore');
+const responsive = require('../modules/responsive');
+const Tour = require('bootstrap-tour');
 
 $.fn.tooltip.Constructor.DEFAULTS.whiteList.button = ['data-role'];
 
@@ -27,10 +28,6 @@ angular.module('inboxServices').service('Tour',
           container.scrollTop(container.scrollTop() + elem.offset().top - 300);
         }
       }
-    };
-
-    var isMobile = function() {
-      return $('#mobile-detection').css('display') === 'inline';
     };
 
     var mmShowMessageList = function() {
@@ -70,14 +67,14 @@ angular.module('inboxServices').service('Tour',
       if (showContent !== showingContent) {
         if (showContent) {
           $(list).find('li').filter(':first').find('a').trigger('click');
-        } else if (isMobile()) {
+        } else if (responsive.isMobile()) {
           $('.navigation .filter-bar-back a').trigger('click');
         }
       }
     };
 
     var mmOpenDropdown = function(elem) {
-      if (!isMobile()) {
+      if (!responsive.isMobile()) {
         $timeout(function() {
           $(elem).addClass('open');
         }, 1);
@@ -254,7 +251,7 @@ angular.module('inboxServices').service('Tour',
             content: 'tour.reports.date-filter.description',
             onShow: mmShowReportList,
             onShown: function() {
-              if (!isMobile()) {
+              if (!responsive.isMobile()) {
                 $('#date-filter').trigger('click');
               }
             },
@@ -442,7 +439,7 @@ angular.module('inboxServices').service('Tour',
 
         settings.template = createTemplate();
 
-        var mobile = isMobile();
+        var mobile = responsive.isMobile();
         _.each(settings.steps, function(step) {
           step.title = $translate.instant(step.title);
           step.content = $translate.instant(step.content);
