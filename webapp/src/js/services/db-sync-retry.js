@@ -23,8 +23,8 @@ angular
       return `${revisions.start - 1}-${revisions.ids[1]}`;
     };
 
-    const getMedicDoc = (replicationError) => {
-      return DB().get(replicationError.id, { revs: true });
+    const getMedicDoc = (id) => {
+      return DB().get(id, { revs: true });
     };
 
     const saveMedicDoc = (doc) => {
@@ -36,19 +36,18 @@ angular
       });
     };
 
-    const getLocalDoc = (replicationError) => {
+    const getLocalDoc = (id) => {
       return DB({ meta: true })
-        .get(`_local/${replicationError.id}`)
+        .get(`_local/${id}`)
         .catch(err => {
           if (err.status !== 404) {
             throw err;
           }
 
-          return { _id: `_local/${replicationError.id}` };
+          return { _id: `_local/${id}` };
         })
         .then(doc => {
           doc.replication_retry = doc.replication_retry || {};
-          doc.replication_retry.rev = doc.replication_retry.rev || null;
           doc.replication_retry.count = doc.replication_retry.count || 1;
 
           return doc;
@@ -69,8 +68,8 @@ angular
 
       return $q
         .all([
-          getMedicDoc(err),
-          getLocalDoc(err),
+          getMedicDoc(err.id),
+          getLocalDoc(err.id),
         ])
         .then(([ doc, local ]) => {
           if (local.replication_retry.rev) {

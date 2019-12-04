@@ -302,8 +302,6 @@ module.exports = {
   // and forbidden docs stubs must be added
   formatResults: (requestDocs, filteredDocs, response) => {
     if (_.isArray(response)) {
-      // CouchDB doesn't return results when `new_edits` parameter is `false`
-      // The consensus is that the response array sequence should reflect the request array sequence.
       response = stubSkipped(requestDocs, filteredDocs, response);
     }
 
