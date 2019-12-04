@@ -33,10 +33,11 @@ module.exports = [
 
     appliesTo: 'reports',
     appliesIf: function(c, r) {
-      if (!isNewestPregnancy(c, r)) return false;
+      if (!isNewestPregnancy(c, r)) { return false; }
 
-      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c))
+      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c)) {
         return true;
+      }
 
       var lmp = new Date(r.lmp_date);
       var maxEDD = new Date(now);
@@ -212,14 +213,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isWomanInActivePncPeriod,
-    passesIf: function(c) {
-      return !isFormSubmittedInWindow(
-        c.reports,
-        postnatalForms,
-        getNewestDeliveryTimestamp(c),
-        now.getTime()
-      );
-    },
   },
 
   // PNC: HOMEBIRTHS WITH 1+ PNC VISITS, ALL TIME
@@ -387,15 +380,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c) {
-      var visits = countReportsSubmittedInWindow(
-        c.reports,
-        immunizationForms,
-        now.getTime() - 92 * MS_IN_DAY,
-        now.getTime()
-      );
-      return visits >= 1;
-    },
   },
 
   // IMM: CHILDREN WITH NO VISITS
@@ -412,15 +396,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c) {
-      var i;
-      for (i = 0; i < c.reports.length; ++i) {
-        if (immunizationForms.indexOf(c.reports[i].form !== -1)) {
-          return false;
-        }
-      }
-      return true;
-    },
   },
 
   // IMM: CHILDREN WITH BCG REPORTED
@@ -470,11 +445,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c){
-      return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && r.fields.measurements.wfa < -2;
-      });
-    },
     date: 'reported',
   },
 
@@ -490,11 +460,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c){
-      return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && r.fields.measurements.hfa < -2;
-      });
-    },
     date: 'reported',
   },
 
@@ -509,11 +474,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c){
-      return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && ( (r.fields.measurements.wfh >= -3 && r.fields.measurements.wfh < -2) || (r.fields.measurements.muac >= 11.5 && r.fields.measurements.muac < 12.4) );
-      });
-    },
     date: 'reported',
   },
 
@@ -528,11 +488,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c){
-      return c.reports.some(function(r){
-        return r.form === 'nutrition_screening' && (r.fields.measurements.wfh < -3 || r.fields.measurements.muac < 11.5);
-      });
-    },
     date: 'reported',
   },
 
@@ -547,21 +502,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c){
-      var otp = false;
-      var death = false;
-      var off = false;
-      c.reports.forEach(function(r){
-        if (r.form === 'nutrition_screening'){
-          otp = r.fields.treatment.program && r.fields.treatment.program === 'OTP';
-        } else if (r.form === 'off'){
-          off = r.fields.off && r.fields.off.reason === 'defaulter';
-        } else if (r.form === 'death_confirmation'){
-          death = r.fields.death_report.death === 'yes';
-        }
-      });
-      return otp && !off && !death;
-    },
     date: 'reported',
   },
 
@@ -576,21 +516,6 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    passesIf: function(c){
-      var sfp = false;
-      var death = false;
-      var off = false;
-      c.reports.forEach(function(r){
-        if (r.form === 'nutrition_screening'){
-          sfp = r.fields.treatment.program && r.fields.treatment.program === 'SFP';
-        } else if (r.form === 'off'){
-          off = r.fields.off && r.fields.off.reason === 'defaulter';
-        } else if (r.form === 'death_confirmation'){
-          death = r.fields.death_report.death === 'yes';
-        }
-      });
-      return sfp && !off && !death;
-    },
     date: 'reported',
   },
 ];

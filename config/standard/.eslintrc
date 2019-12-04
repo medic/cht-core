@@ -15,6 +15,9 @@
     "Utils": true,
     "no-global-assign": true,
   },
+  "rules": {
+    "quotes": ["error", "single", { "avoidEscape": true } ]
+  },
   "overrides": [
     {
       "files": [
