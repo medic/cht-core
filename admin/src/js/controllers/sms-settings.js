@@ -59,7 +59,6 @@ angular.module('controllers').controller('SmsSettingsCtrl',
     $scope.submit = () => {
       $scope.model.error = {};
       if (validate()) {
-        $scope.status = { loading: true };
         const settings = {
           gateway_number: $scope.model.gateway_number,
           default_country_code: $('#default-country-code').val(),
@@ -70,9 +69,10 @@ angular.module('controllers').controller('SmsSettingsCtrl',
           schedule_evening_minutes: $scope.model.schedule_evening_minutes,
           outgoing_phone_replace: {
             match: $('#outgoing-phone-replace-match').val(),
-            replace:  $scope.model.outgoing_phone_replace.replace
+            replace: $scope.model.outgoing_phone_replace.replace
           }
         };
+        $scope.status = { loading: true };
         UpdateSettings(settings)
           .then(() => {
             $scope.status = { success: true, msg: $translate.instant('Saved') };
@@ -97,7 +97,7 @@ angular.module('controllers').controller('SmsSettingsCtrl',
           schedule_morning_minutes: res.schedule_morning_minutes,
           schedule_evening_hours: res.schedule_evening_hours,
           schedule_evening_minutes: res.schedule_evening_minutes,
-          outgoing_phone_replace: res.outgoing_phone_replace,
+          outgoing_phone_replace: res.outgoing_phone_replace || {},
           accept_messages: !res.forms_only_mode,
         };
         $('#default-country-code').select2({ width: '20em', data: countries.list });
@@ -110,7 +110,7 @@ angular.module('controllers').controller('SmsSettingsCtrl',
           placeholder: ' ',
           allowClear: true
         });
-        if (res.outgoing_phone_replace) {
+        if (res.outgoing_phone_replace.match) {
           $('#outgoing-phone-replace-match').val(res.outgoing_phone_replace.match).trigger('change');
         }
       })
