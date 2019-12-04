@@ -169,12 +169,9 @@ module.exports = function(grunt) {
             '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            'moment': './webapp/node_modules/moment/moment',
-            'google-libphonenumber': './webapp/node_modules/google-libphonenumber',
-            'gsm': './webapp/node_modules/gsm',
-            'object-path': './webapp/node_modules/object-path',
             'bikram-sambat': './webapp/node_modules/bikram-sambat',
-            '@medic/phone-number': './webapp/node_modules/@medic/phone-number'
+            'moment': './webapp/node_modules/moment',
+            'underscore': './webapp/node_modules/underscore'
           },
         },
       },
@@ -1119,7 +1116,6 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'exec:blank-link-check',
     'eslint',
-    // 'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', [
