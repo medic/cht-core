@@ -4,8 +4,8 @@
 const { UPLOAD_URL, BUILDS_SERVER, STAGING_SERVER, TRAVIS_BUILD_NUMBER } = process.env;
 const BUILDS_TO_KEEP = 50;
 const END_BUILD_TO_DELETE = TRAVIS_BUILD_NUMBER - BUILDS_TO_KEEP;
-const END_KEY = `medic:medic:test-${END_BUILD_TO_DELETE}`;
 const MAX_BUILDS_TO_DELETE = 50;
+const BETAS_TO_KEEP = 5;
 const DAYS_TO_KEEP = 100;
 
 const PouchDB = require('pouchdb-core');
@@ -21,7 +21,10 @@ process.on('unhandledRejection', error => {
 
 const getTestingBuilds = db => {
   console.log('Getting old testing builds...');
-  return db.allDocs({ endkey: END_KEY, limit: MAX_BUILDS_TO_DELETE });
+  return db.allDocs({
+    endkey: `medic:medic:test-${END_BUILD_TO_DELETE}`,
+    limit: MAX_BUILDS_TO_DELETE
+  });
 };
 
 const remove = (db, response) => {
@@ -69,11 +72,11 @@ const getBetaBuilds = db => {
     endkey: [ 'beta', 'medic', 'medic', 0 ],
     limit: MAX_BUILDS_TO_DELETE,
     descending: true,
-    skip: 5 // leave the last 5 beta releases
+    skip: BETAS_TO_KEEP // leave the last n beta releases
   });
 };
 
-const getRevs = (db, response) => {
+const getCurrentRevs = (db, response) => {
   console.log('Getting revs...');
   const ids = response.rows
     .filter(row => row.id.startsWith('medic:medic:'))
@@ -88,13 +91,13 @@ const testingBuilds = () => {
 
 const branchBuilds = () => {
   return getBranchBuilds(stagingDb)
-    .then(response => getRevs(stagingDb, response))
+    .then(response => getCurrentRevs(stagingDb, response))
     .then(response => remove(stagingDb, response));
 };
 
 const betaBuilds = () => {
   return getBetaBuilds(stagingDb)
-    .then(response => getRevs(stagingDb, response))
+    .then(response => getCurrentRevs(stagingDb, response))
     .then(response => remove(stagingDb, response));
 };
 
