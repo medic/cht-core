@@ -36,6 +36,7 @@ var _ = require('underscore');
         const globalActions = GlobalActions(dispatch);
         const reportsActions = ReportsActions(dispatch);
         return {
+          unsetSelected: globalActions.unsetSelected,
           clearCancelCallback: globalActions.clearCancelCallback,
           removeSelectedReport: reportsActions.removeSelectedReport,
           selectReport: reportsActions.selectReport,
@@ -47,9 +48,13 @@ var _ = require('underscore');
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-      ctrl.selectReport($stateParams.id);
-      ctrl.clearCancelCallback();
-      $('.tooltip').remove();
+      if ($stateParams.id) {
+        ctrl.selectReport($stateParams.id);
+        ctrl.clearCancelCallback();
+        $('.tooltip').remove();
+      } else {
+        ctrl.unsetSelected();
+      }
 
       ctrl.canMute = function(group) {
         return MessageState.any(group, 'scheduled');
