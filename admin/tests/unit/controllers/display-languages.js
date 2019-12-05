@@ -1,4 +1,4 @@
-describe('Translation Languages controller', function() {
+describe('Display Languages controller', function() {
 
   'use strict';
 
@@ -7,6 +7,7 @@ describe('Translation Languages controller', function() {
   let rootScope;
   let settings;
   let db;
+  let stubLanguages;
 
   beforeEach(module('adminApp'));
 
@@ -17,6 +18,11 @@ describe('Translation Languages controller', function() {
     db = {
       query: sinon.stub()
     };
+    stubLanguages = sinon.stub();
+    stubLanguages.returns(Promise.resolve([
+      { code: 'en', name: 'English' },
+      { code: 'sw', name: 'Swahili' }
+    ]));
 
     createController = function() {
       return $controller('DisplayLanguagesCtrl', {
@@ -27,7 +33,7 @@ describe('Translation Languages controller', function() {
         'Settings': settings,
         'DB': () => db,
         'Changes': sinon.stub().returns({ unsubscribe: sinon.stub() }),
-        'Languages': sinon.stub(),
+        'Languages': stubLanguages,
         'Modal': sinon.stub(),
         'TranslationLoader': { test: sinon.stub() },
         'UpdateSettings': sinon.stub()
