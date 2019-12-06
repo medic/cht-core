@@ -821,7 +821,13 @@ describe('Authorization service', () => {
       ];
 
       db.medic.query.resolves({ rows: [] });
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs');
+
+      // no tombstones
+      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
+      db.medic.allDocs
+        .withArgs(sinon.match({ keys: sinon.match.array }))
+        .resolves({ rows: [
           { id: 'c1', doc: c1 },
           { id: 'c2', doc: c2 },
           { id: 'c3', doc: c3 },
@@ -851,10 +857,19 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
-            { keys: [['shortcode', 'c1'], ['shortcode', 'c2'], ['shortcode', 'c3'], ['shortcode', 'c4'], ['shortcode', 'c5']] }
+            { keys: [
+                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
+                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
+                ['shortcode', 'c3'], ['tombstone-shortcode', 'c3'],
+                ['shortcode', 'c4'], ['tombstone-shortcode', 'c4'],
+                ['shortcode', 'c5'], ['tombstone-shortcode', 'c5'],
+              ] }
           ]);
-          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.callCount.should.equal(6);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['c1', 'c2', 'c3', 'c4', 'c5'], include_docs: true }]);
+          ['c1', 'c2', 'c3', 'c4', 'c5'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
 
           contactsByDepth.callCount.should.equal(5);
           contactsByDepth.args.should.deep.equal([ [c1], [c2], [c3], [c4], [c5]]);
@@ -910,7 +925,10 @@ describe('Authorization service', () => {
           { id: 'patient2doc', key: ['shortcode', 'patient2'] },
         ] });
       sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.resolves({ rows: [
+      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
+      db.medic.allDocs
+        .withArgs(sinon.match({ keys: sinon.match.array }))
+        .resolves({ rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           { id: 'patient1doc', doc: { _id: 'patient1doc', type: 'person', patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           { id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } },
@@ -922,12 +940,12 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([[['c1'], null], [['p1'], null], [['facility_id'], null]]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([[['p1'], 'patient1'], [['facility_id'], 'patient1']]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([[['patient1doc'], 'patient1'], [['p1'], 'patient1'], [['facility_id'], 'patient1']]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([[['c2'], null], [['p2'], null], [['p3'], null]]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([[['p2'], 'patient2'], [['p3'], 'patient2']]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'c3' })).returns([[['p2'], null], [['p3'], null]]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient3doc' })).returns([[['facility_id'], null]]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient4doc' })).returns([[['p3'], null]]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([[['patient2doc'], 'patient1'], [['p2'], 'patient2'], [['p3'], 'patient2']]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'c3' })).returns([[['c3'], null], [['p2'], null], [['p3'], null]]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient3doc' })).returns([[['patient3doc'], null], [['facility_id'], null]]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient4doc' })).returns([[['patient4doc'], null], [['p3'], null]]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([['c1', {}]]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc' })).returns([['patient1doc', {}]]);
@@ -947,17 +965,20 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-                ['shortcode', 'patient1'],
-                ['shortcode', 'c1'],
-                ['shortcode', 'patient2'],
-                ['shortcode', 'c2'],
-                ['shortcode', 'patient3doc'],
-                ['shortcode', 'patient4doc'],
-                ['shortcode', 'c3'],
+                ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
+                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
+                ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
+                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
+                ['shortcode', 'patient3doc'], ['tombstone-shortcode', 'patient3doc'],
+                ['shortcode', 'patient4doc'], ['tombstone-shortcode', 'patient4doc'],
+                ['shortcode', 'c3'], ['tombstone-shortcode', 'c3'],
               ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.callCount.should.equal(8);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: [ 'patient1doc', 'c1', 'patient2doc', 'c2', 'patient3doc', 'patient4doc', 'c3'], include_docs: true }]);
+          [ 'patient1doc', 'c1', 'patient2doc', 'c2', 'patient3doc', 'patient4doc', 'c3'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
 
           contactsByDepth.callCount.should.equal(7);
           docsByReplicationKey.callCount.should.equal(7);
@@ -989,7 +1010,10 @@ describe('Authorization service', () => {
           { id: 'patient2doc', key: ['shortcode', 'patient2'] },
         ] });
       sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.resolves({ rows: [
+      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
+      db.medic.allDocs
+        .withArgs(sinon.match({ keys: sinon.match.array }))
+        .resolves({ rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           { id: 'patient1doc', doc: { _id: 'patient1doc', type: 'person', patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           { id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } },
@@ -998,9 +1022,9 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([[['c1'], null], [['p1'], null], [['facility_id'], null]]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([[['p1'], 'patient1'], [['facility_id'], 'patient1']]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([[['patient1doc'], 'patient1'], [['p1'], 'patient1'], [['facility_id'], 'patient1']]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([[['c2'], null], [['p2'], null], [['p3'], null]]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([[['p2'], 'patient2'], [['p3'], 'patient2']]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([[['patient2doc'], 'patient2'], [['p2'], 'patient2'], [['p3'], 'patient2']]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([['c1', {}]]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc' })).returns([['patient1doc', {}]]);
@@ -1017,18 +1041,21 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-                ['shortcode', 'patient1'],
-                ['shortcode', 'c1'],
-                ['shortcode', 'p1'],
-                ['shortcode', 'facility_id'],
-                ['shortcode', 'patient2'],
-                ['shortcode', 'c2'],
-                ['shortcode', 'p2'],
-                ['shortcode', 'p3'],
+                ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
+                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
+                ['shortcode', 'p1'], ['tombstone-shortcode', 'p1'],
+                ['shortcode', 'facility_id'], ['tombstone-shortcode', 'facility_id'],
+                ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
+                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
+                ['shortcode', 'p2'], ['tombstone-shortcode', 'p2'],
+                ['shortcode', 'p3'], ['tombstone-shortcode', 'p3'],
               ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.callCount.should.equal(9);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['patient1doc','c1', 'p1','facility_id', 'patient2doc', 'c2', 'p2', 'p3'], include_docs: true }]);
+          ['patient1doc','c1', 'p1','facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
 
           contactsByDepth.callCount.should.equal(4);
           docsByReplicationKey.callCount.should.equal(4);
@@ -1074,7 +1101,10 @@ describe('Authorization service', () => {
           { id: 'patient2doc', key: ['shortcode', 'patient2'] },
         ] });
       sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.resolves({ rows: [
+      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
+      db.medic.allDocs
+        .withArgs(sinon.match({ keys: sinon.match.array }))
+        .resolves({ rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } }, patient_id: 'contact1' } },
           { id: 'patient1doc', doc: { _id: 'patient1doc', type: 'person', patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           { id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } }, patient_id: 'contact2' } },
@@ -1083,9 +1113,9 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([[['c1'], 'contact1'], [['p1'], 'contact1'], [['facility_id'], 'contact1']]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([[['p1'], 'patient1'], [['facility_id'], 'patient1']]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([[['patient1doc'], 'patient1'], [['p1'], 'patient1'], [['facility_id'], 'patient1']]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([[['c2'], 'contact2'], [['p2'], 'contact2'], [['p3'], 'contact2']]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([[['p2'], 'patient2'], [['p3'], 'patient2']]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([[['patient2doc'], 'patient2'], [['p2'], 'patient2'], [['p3'], 'patient2']]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([['c1', {}]]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc' })).returns([['patient1doc', {}]]);
@@ -1102,14 +1132,17 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-                ['shortcode', 'c1'],
-                ['shortcode', 'c2'],
-                ['shortcode', 'patient1'],
-                ['shortcode', 'patient2'],
+                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
+                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
+                ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
+                ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
               ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.callCount.should.equal(5);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['c1', 'c2', 'patient1doc', 'patient2doc'], include_docs: true }]);
+          ['c1', 'c2', 'patient1doc', 'patient2doc'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
 
           contactsByDepth.callCount.should.equal(4);
           docsByReplicationKey.callCount.should.equal(4);
@@ -1117,6 +1150,8 @@ describe('Authorization service', () => {
           result.subjectIds.should.deep.equal(['c1', 'contact1', 'patient1doc', 'patient1']);
         });
     });
+
+
 
     describe('getReplicationKeys', () => {
       const getReplicationKeys = service.__get__('getReplicationKeys');
@@ -1158,7 +1193,9 @@ describe('Authorization service', () => {
 
       it('should execute query with unique subject ids', () => {
         db.medic.query.resolves({ rows: [] });
-        sinon.stub(db.medic, 'allDocs').resolves({
+        sinon.stub(db.medic, 'allDocs');
+        db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
+        db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({
           rows: [
             { id: 'a', doc: { _id: 'a' } },
             { id: 'b', doc: { _id: 'b' } }
@@ -1167,9 +1204,15 @@ describe('Authorization service', () => {
         return findContactsByReplicationKeys(['a', 'b', 'b', 'a', 'a']).then(result => {
           result.should.deep.equal([{ _id: 'a' }, { _id: 'b' }]);
           db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', { keys: [['shortcode', 'a'], ['shortcode', 'b']] }]);
-          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.query.args[0].should.deep.equal([
+            'medic-client/contacts_by_reference',
+            { keys: [['shortcode', 'a'], ['tombstone-shortcode', 'a'], ['shortcode', 'b'], ['tombstone-shortcode', 'b']] }
+          ]);
+          db.medic.allDocs.callCount.should.equal(3);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['a', 'b'], include_docs: true }]);
+          ['a', 'b'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
         });
       });
 
@@ -1178,7 +1221,9 @@ describe('Authorization service', () => {
             { id: 'person1', key: ['shortcode', 'patient_1'] },
             { id: 'person2', key: ['shortcode', 'patient_2'] },
           ] });
-        sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        sinon.stub(db.medic, 'allDocs');
+        db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
+        db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
             { id: 'contact1', key: 'contact1', doc: { _id: 'contact1' } },
             { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
             { id: 'contact2', key: 'contact2', doc: { _id: 'contact2' } },
@@ -1191,15 +1236,78 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
             keys: [
-              ['shortcode', 'contact1'], ['shortcode', 'patient_1'], ['shortcode', 'contact2'],
-              ['shortcode', 'patient_2'], ['shortcode', 'patient_3']
+              ['shortcode', 'contact1'], ['tombstone-shortcode', 'contact1'],
+              ['shortcode', 'patient_1'], ['tombstone-shortcode', 'patient_1'],
+              ['shortcode', 'contact2'], ['tombstone-shortcode', 'contact2'],
+              ['shortcode', 'patient_2'], ['tombstone-shortcode', 'patient_2'],
+              ['shortcode', 'patient_3'], ['tombstone-shortcode', 'patient_3'],
             ]
           }]);
-          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.callCount.should.equal(6);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['contact1', 'person1', 'contact2', 'person2', 'patient_3'],
             include_docs: true,
           }]);
+          ['contact1', 'person1', 'contact2', 'person2', 'patient_3'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
+        });
+      });
+
+      it('should request tombstones with and without shortcodes', () => {
+        db.medic.query.resolves({ rows: [
+            { id: 'person1', key: ['shortcode', 'patient1'] },
+            { id: 'person2____rev____tombstone', key: ['tombstone-shortcode', 'patient2'] },
+            { id: 'person3____rev____tombstone', key: ['tombstone-shortcode', 'patient3'] },
+          ] });
+        sinon.stub(db.medic, 'allDocs');
+        db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
+            { id: 'contact1', key: 'contact1', doc: { _id: 'contact1' } },
+            { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
+            { id: 'contact2', key: 'contact2', value: { deleted: true } },
+            { id: 'person2____rev____tombstone', key: 'person2____rev____tombstone', doc: { _id: 'person2____rev____tombstone', tombstone: { _id: 'person2' } } },
+            { id: 'person3____rev____tombstone', key: 'person3____rev____tombstone', doc: { _id: 'person3____rev____tombstone', tombstone: { _id: 'person3' } } },
+            { id: 'contact3', key: 'contact3', value: { deleted: true } },
+          ] });
+        db.medic.allDocs.withArgs(sinon.match({ start_key: 'contact1____' })).resolves({ rows: [] });
+        db.medic.allDocs.withArgs(sinon.match({ start_key: 'person1____' })).resolves({ rows: [] });
+        db.medic.allDocs.withArgs(sinon.match({ start_key: 'contact2____' })).resolves({ rows: [
+            { id: 'contact2____rev____tombstone', key: 'contact2____rev____tombstone', doc: { _id: 'contact2____rev____tombstone', tombstone: { _id: 'contact2' } }}
+          ]});
+        db.medic.allDocs.withArgs(sinon.match({ start_key: 'contact3____' })).resolves({ rows: [
+            { id: 'contact3____rev____tombstone', key: 'contact3____rev____tombstone', doc: { _id: 'contact3____rev____tombstone', tombstone: { _id: 'contact3' } }}
+          ]});
+        tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
+
+        return findContactsByReplicationKeys(['contact1', 'patient1', 'contact2', 'patient2', 'patient3', 'contact3']).then(result => {
+          result.should.deep.equal([
+            { _id: 'contact1' },
+            { _id: 'person1' },
+            { _id: 'person2____rev____tombstone', tombstone: { _id: 'person2' } },
+            { _id: 'person3____rev____tombstone', tombstone: { _id: 'person3' } },
+            { _id: 'contact2____rev____tombstone', tombstone: { _id: 'contact2' } },
+            { _id: 'contact3____rev____tombstone', tombstone: { _id: 'contact3' } },
+          ]);
+
+          db.medic.query.callCount.should.equal(1);
+          db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
+            keys: [
+              ['shortcode', 'contact1'], ['tombstone-shortcode', 'contact1'],
+              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
+              ['shortcode', 'contact2'], ['tombstone-shortcode', 'contact2'],
+              ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
+              ['shortcode', 'patient3'], ['tombstone-shortcode', 'patient3'],
+              ['shortcode', 'contact3'], ['tombstone-shortcode', 'contact3'],
+            ]
+          }]);
+          db.medic.allDocs.callCount.should.equal(5);
+          db.medic.allDocs.args[0].should.deep.equal([{
+            keys: ['contact1', 'person1', 'contact2', 'person2____rev____tombstone', 'person3____rev____tombstone', 'contact3'],
+            include_docs: true,
+          }]);
+          ['contact1', 'person1', 'contact2', 'contact3'].forEach((id, idx) => {
+            db.medic.allDocs.args[idx + 1].should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
+          });
         });
       });
     });
