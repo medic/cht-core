@@ -1,5 +1,5 @@
 <form id="forms-upload-xform">
-  <legend translate>Upload Forms</legend>
+  <legend translate>upload.app.forms</legend>
 
   <div class="form-group">
     <label translate>upload.xform.xml</label>
@@ -16,7 +16,7 @@
   <div class="form-actions">
     <a class="btn btn-primary upload" ng-disabled="status.uploading" ng-click="upload()">
       <i class="fa fa-arrow-up"></i>
-      <span translate>Import</span>
+      <span translate>upload</span>
     </a>
     <div class="error" ng-show="status.error" translate>Upload failed</div>
     <div class="loader" ng-show="status.uploading"></div>
@@ -25,7 +25,12 @@
 
 <div class="section">
   <fieldset>
-    <legend translate>Installed Forms</legend>
+    <legend translate>installed.app.forms</legend>
+    <div class="row selection-heading">
+      <div class="col-sm-2" translate>form.icon</div>
+      <div class="col-sm-5" translate>form.id</div>
+      <div class="col-sm-5" translate>form.title</div>
+    </div>
     <div class="container-fluid">
       <ul>
         <li ng-repeat="form in xForms | orderBy:'_id' track by form._id" class="row">
