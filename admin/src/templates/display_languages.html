@@ -1,3 +1,28 @@
+<div class="tab-content">
+  <form role="form">
+
+    <div class="form-group">
+      <label for="locale" translate>Default Application Language</label>
+      <select id="locale" class="form-control small" ng-model="basicLanguagesModel.locale" ng-options="locale.code as locale.name for locale in enabledLocales"></select>
+      <p class="help-block" translate>setup.language.subtitle</p>
+    </div>
+      
+    <div class="form-group">
+      <label for="locale-outgoing" translate>Language For Outgoing Messages</label>
+      <select id="locale-outgoing" class="form-control small" ng-model="basicLanguagesModel.locale_outgoing" ng-options="locale.code as locale.name for locale in enabledLocales"></select>
+      <p class="help-block" translate>setup.language.outgoing.subtitle</p>
+    </div>
+      
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" ng-click="submitLanguageSettings()" ng-disabled="status.loading" translate>Submit</button>
+      <span ng-if="status.success" class="success">{{status.msg}}</span>
+      <span ng-if="status.error" class="error">{{status.msg}}</span>
+      <div class="loader inline" ng-show="status.loading"></div>
+    </div>
+    
+  </form>
+</div>
+
 <div class="btn-bottom-spacing">
   <button type="button" class="btn btn-primary" ng-click="editLanguage()">
     <i class="fa fa-plus"></i>
@@ -42,22 +67,6 @@
             <i class="fa fa-circle-o"></i><span translate>Enable</span>
           </button>
         </div>
-        <div ng-if="localeModel.doc.enabled">
-          <button type="button" class="btn btn-link" ng-click="setLocale(localeModel.doc)" ng-disabled="localeModel.doc.code === languagesModel.default.locale">
-            <span class="fa-stack default">
-              <i class="fa fa-file-o fa-stack-2x"></i>
-              <i class="fa fa-star fa-stack-1x"></i>
-            </span><span translate>Set as default application language</span>
-          </button>
-        </div>
-        <div ng-if="localeModel.doc.enabled">
-          <button type="button" class="btn btn-link" ng-click="setLocaleOutgoing(localeModel.doc)" ng-disabled="localeModel.doc.code === languagesModel.default.outgoing">
-            <span class="fa-stack default">
-              <i class="fa fa-envelope-o fa-stack-2x"></i>
-              <i class="fa fa-star fa-stack-1x"></i>
-            </span><span translate>Set as language for outgoing messages</span>
-          </button>
-        </div>
         <div>
           <a class="btn btn-link" ng-attr-download="{{localeModel.export.name}}" ng-href="{{localeModel.export.url}}">
             <i class="fa fa-arrow-down"></i><span translate>Export</span>
@@ -76,29 +85,4 @@
       </div>
     </div>
   </div>
-</div>
-
-<div class="tab-content">
-  <form role="form">
-
-    <div class="form-group">
-      <label for="locale" translate>Default Application Language</label>
-      <select id="locale" class="form-control small" ng-model="basicLanguagesModel.locale" ng-options="locale.code as locale.name for locale in enabledLocales"></select>
-      <p class="help-block" translate>setup.language.subtitle</p>
-    </div>
-      
-    <div class="form-group">
-      <label for="locale-outgoing" translate>Language For Outgoing Messages</label>
-      <select id="locale-outgoing" class="form-control small" ng-model="basicLanguagesModel.locale_outgoing" ng-options="locale.code as locale.name for locale in enabledLocales"></select>
-      <p class="help-block" translate>setup.language.outgoing.subtitle</p>
-    </div>
-      
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" ng-click="submitLanguageSettings()" ng-disabled="status.loading" translate>Submit</button>
-      <span ng-if="status.success" class="success">{{status.msg}}</span>
-      <span ng-if="status.error" class="error">{{status.msg}}</span>
-      <div class="loader inline" ng-show="status.loading"></div>
-    </div>
-    
-  </form>
 </div>
