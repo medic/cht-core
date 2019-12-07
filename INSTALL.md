@@ -14,7 +14,7 @@ In **MacOS**: Open finder, click "Applications" and navigate to "Utilities" then
 
 In **Windows**: Press `Windows+r`, type `cmd` then `enter`.
 
-Now that you have a terminal, type:
+Now that you have a terminal, navigate to the directory with the `docker-compose.yml` file, and type:
 
 ```sh
 docker-compose up
@@ -30,4 +30,4 @@ By default the Core Framework will have the reference application installed. If 
  - Install [medic-conf](https://github.com/medic/medic-conf)
  - Check out the [cht-core](https://github.com/medic/cht-core) respository to your local machine, either by using the [Github Desktop app](https://desktop.github.com/) or by running the following command in the directory you want to check the code out into: `git clone https://github.com/medic/cht-core.git`. This will create a `cht-core` directory.
  - Navigate your terminal to the `config/default` directory of the `cht-core` directory. This is where the reference application is stored.
- - Run the following `medic-conf` command: `medic-conf --url=https://medic:pass@localhost csv-to-docs upload-docs`. This first compiles and then uploads the shipped default test data to your local instance
+ - Run the following `medic-conf` command: `medic-conf --url=https://medic:password@localhost --accept-self-signed-certs csv-to-docs upload-docs`. This first compiles and then uploads the shipped default test data to your local instance
