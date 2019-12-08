@@ -1,5 +1,6 @@
 <form id="forms-upload-json">
-  <legend translate>Upload Forms</legend>
+  <p translate>configuration.sms.forms.title</p>
+  <legend translate>upload.sms.forms</legend>
 
   <div class="form-actions">
     <a class="btn btn-primary choose" ng-disabled="status.uploading">
@@ -18,13 +19,18 @@
 <div class="section">
   <fieldset>
     <legend translate>Installed Forms</legend>
+    <div class="row selection-heading">
+      <div class="col-sm-2" translate>form.icon</div>
+      <div class="col-sm-5" translate>form.id</div>
+      <div class="col-sm-5" translate>form.title</div>
+    </div>
     <div class=" container-fluid">
       <ul>
         <li ng-repeat="form in forms" class="row">
-          <div class="col-sm-1" ng-bind-html="form.meta.icon | resourceIcon"></div>
-          <div class="col-sm-1">{{form.meta.code}}</div>
-          <div class="col-sm-10" ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</div>
-          <div class="col-sm-10" ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</div>
+          <div class="col-sm-2" ng-bind-html="form.meta.icon | resourceIcon"></div>
+          <div class="col-sm-5">{{form.meta.code}}</div>
+          <div class="col-sm-5" ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</div>
+          <div class="col-sm-5" ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</div>
         </li>
       </ul>
     </div>
