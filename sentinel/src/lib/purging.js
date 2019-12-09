@@ -7,7 +7,7 @@ const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 
-let purgeDbs = {};
+const purgeDbs = {};
 let currentlyPurging = false;
 const getPurgeDb = (hash, refresh) => {
   if (!purgeDbs[hash] || refresh) {
@@ -28,6 +28,13 @@ const initPurgeDbs = (roles) => {
         }
       });
   }));
+};
+
+const closePurgeDbs = () => {
+  Object.keys(purgeDbs).forEach(hash => {
+    db.close(purgeDbs[hash]);
+    delete purgeDbs[hash];
+  });
 };
 
 const BATCH_SIZE = 1000;
@@ -458,7 +465,10 @@ const purge = () => {
     .catch(err => {
       logger.error('Error while running Server Side Purge: %o', err);
     })
-    .then(() => currentlyPurging = false);
+    .then(() => {
+      currentlyPurging = false;
+      closePurgeDbs();
+    });
 };
 
 module.exports = {

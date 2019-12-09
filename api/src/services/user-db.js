@@ -1,7 +1,6 @@
 /**
  * @module user-db
  */
-
 const request = require('request-promise-native');
 const url = require('url');
 const db = require('../db');
@@ -44,7 +43,7 @@ module.exports = {
    * @returns {String} The name of the user db
    */
   getDbName: username => `${environment.db}-user-${escapeUsername(username)}-meta`,
-  
+
   /**
    * @param {String} dbName
    * @param {String} username
@@ -76,14 +75,25 @@ module.exports = {
    */
   create: username => {
     const dbName = module.exports.getDbName(username);
-    return db.exists(dbName).then(found => {
-      if (!found) {
-        const database = db.get(dbName);
-        return database.put(ddoc)
-          .then(() => {
-            return module.exports.setSecurity(dbName, username);
-          });
-      }
-    });
-  }
+    let database;
+    return db
+      .exists(dbName)
+      .then(result => {
+        if (result) {
+          database = result;
+          return;
+        }
+
+        database = db.get(dbName);
+        return database.put(ddoc).then(() => module.exports.setSecurity(dbName, username));
+      })
+      .then(result => {
+        db.close(database);
+        return result;
+      })
+      .catch(err => {
+        db.close(database);
+        throw err;
+      });
+  },
 };

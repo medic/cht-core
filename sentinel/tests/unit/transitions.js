@@ -222,6 +222,7 @@ describe('transitions', () => {
     };
     sinon.stub(db, 'allDbs').resolves([`${db.medicDbName}-user-gareth-meta`]);
     sinon.stub(db, 'get').returns(metaDb);
+    sinon.stub(db, 'close');
     return transitions
       ._deleteReadDocs(given)
       .then(() => {
@@ -231,6 +232,8 @@ describe('transitions', () => {
         assert.equal(metaDb.allDocs.callCount, 1);
         assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
         assert.equal(metaDb.remove.callCount, 0);
+        assert.equal(db.close.callCount, 1);
+        assert.deepEqual(db.close.args[0], [metaDb]);
       });
   });
 
@@ -244,7 +247,7 @@ describe('transitions', () => {
           { key: 'read:report:abc', id: 'read:report:abc', value: { rev: '1-rev' } }
         ]
       }),
-      remove: sinon.stub().resolves()
+      remove: sinon.stub().resolves(),
     };
     const list = sinon.stub(db, 'allDbs').resolves([
       `${db.medicDbName}-user-gareth-meta`,
@@ -252,6 +255,7 @@ describe('transitions', () => {
       db.medicDbName, // not a user db - must be ignored
     ]);
     const use = sinon.stub(db, 'get').returns(metaDb);
+    sinon.stub(db, 'close');
     return transitions._deleteReadDocs(given).then(() => {
       assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
@@ -267,6 +271,8 @@ describe('transitions', () => {
       assert.equal(metaDb.remove.callCount, 2);
       assert.deepEqual(metaDb.remove.args[0], ['read:report:abc', '1-rev']);
       assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
+      assert.equal(db.close.callCount, 2);
+      assert.deepEqual(db.close.args, [[metaDb], [metaDb]]);
     });
   });
 
