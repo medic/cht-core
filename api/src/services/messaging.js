@@ -60,7 +60,7 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
 };
 
 const getOutgoingMessageService = () => {
-  const settings = config.get('sms');
+  const settings = config.get('sms') || { sms: { outgoing_service: 'medic-gateway' } };
   return settings &&
          settings.outgoing_service &&
          SMS_SENDING_SERVICES[settings.outgoing_service];
