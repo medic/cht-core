@@ -1,52 +1,28 @@
 /**
  * @module transitions
  */
-const async = require('async'),
-      feed = require('./lib/feed'),
-      db = require('./db'),
-      logger = require('./lib/logger'),
-      metadata = require('./lib/metadata'),
-      tombstoneUtils = require('@medic/tombstone-utils'),
-      transitionsLib = require('./config').getTransitionsLib(),
-      PROGRESS_REPORT_INTERVAL = 500; // items
+const async = require('async');
+const feed = require('./lib/feed');
+const db = require('./db');
+const logger = require('./lib/logger');
+const metadata = require('./lib/metadata');
+const tombstoneUtils = require('@medic/tombstone-utils');
+const transitionsLib = require('./config').getTransitionsLib();
+const PROGRESS_REPORT_INTERVAL = 500; // items
 
-let changesFeed,
-    processed = 0;
+let processed = 0;
 
 const loadTransitions = () => {
   try {
     transitionsLib.loadTransitions();
-    module.exports._attach();
+    feed.listen(change => changeQueue.push(change));
   } catch (e) {
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
-    module.exports._detach();
+    feed.cancel();
   }
 };
 
-const detach = () => {
-  if (changesFeed) {
-    changesFeed.cancel();
-    changesFeed = null;
-  }
-};
-
-// Setup changes feed listener.
-const attach = () => {
-  if (!changesFeed) {
-    logger.info('transitions: processing enabled');
-    return metadata
-      .getProcessedSeq()
-      .catch(err => {
-        logger.error('transitions: error fetching processed seq: %o', err);
-      })
-      .then(seq => {
-        logger.info(`transitions: fetching changes feed, starting from ${seq}`);
-        changesFeed = feed.followFeed(seq, changeQueue);
-      });
-  }
-};
-
-const processChange = (change, callback) => {
+const changeQueue = async.queue((change, callback) => {
   if (!change) {
     return callback();
   }
@@ -78,9 +54,7 @@ const processChange = (change, callback) => {
 
     updateMetadata(change, callback);
   });
-};
-
-const changeQueue = async.queue(processChange);
+});
 
 const updateMetadata = (change, callback) => {
   processed++;
@@ -131,13 +105,14 @@ const deleteReadDocs = change => {
 };
 
 module.exports = {
-  _changeQueue: changeQueue,
-  _attach: attach,
-  _detach: detach,
-  _deleteReadDocs: deleteReadDocs,
+
   /**
    * Loads the transitions and starts watching for db changes.
    */
   loadTransitions: loadTransitions,
-  _transitionsLib: transitionsLib
+
+  // exposed for testing
+  _changeQueue: changeQueue,
+  _deleteReadDocs: deleteReadDocs,
+  _transitionsLib: transitionsLib,
 };
