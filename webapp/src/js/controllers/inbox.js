@@ -107,9 +107,8 @@ var _ = require('underscore'),
         className: 'required'
       },
       unknown: {
-        icon: 'fa-question-circle',
-        key: 'sync.status.unknown',
-        className: 'required'
+        icon: 'fa-info-circle',
+        key: 'sync.status.unknown'
       }
     };
 
