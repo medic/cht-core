@@ -102,24 +102,6 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         model: doc
       });
     };
-    $scope.setLocale = function(locale) {
-      UpdateSettings({ locale: locale.code })
-        .then(function() {
-          $scope.languagesModel.default.locale = locale.code;
-        })
-        .catch(function(err) {
-          $log.error('Error updating settings', err);
-        });
-    };
-    $scope.setLocaleOutgoing = function(locale) {
-      UpdateSettings({ locale_outgoing: locale.code })
-        .then(function() {
-          $scope.languagesModel.default.outgoing = locale.code;
-        })
-        .catch(function(err) {
-          $log.error('Error updating settings', err);
-        });
-    };
     $scope.disableLanguage = function(doc) {
       setLanguageStatus(doc, false);
     };
