@@ -42,12 +42,7 @@ module.exports = [
         end: 6,
         dueDate: function(event, c) {
           return new Date(
-            Utils.addDate(
-              new Date(
-                Utils.getMostRecentTimestamp(c.reports, 'F')
-              ),
-              event.days
-            )
+              Utils.getMostRecentTimestamp(c.reports, 'F')
           );
         },
       },
