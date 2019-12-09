@@ -11,7 +11,8 @@ describe('feed', () => {
 
   beforeEach(() => {
     handler = {
-      cancel: sinon.stub()
+      cancel: sinon.stub(),
+      catch: sinon.stub()
     };
     handler.on = sinon.stub().returns(handler);
     sinon.stub(db.medic, 'changes').returns(handler);
@@ -78,7 +79,6 @@ describe('feed', () => {
         })
         .then(() => {
           // the feed is cleaned up
-          chai.expect(handler.cancel.callCount).to.equal(1);
           chai.expect(feed._handler()).to.equal(null);
         })
         .then(() => {
