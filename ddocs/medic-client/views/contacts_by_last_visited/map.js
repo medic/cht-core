@@ -4,10 +4,12 @@ function(doc) {
       doc.fields &&
       doc.fields.visited_contact_uuid) {
 
-    var visited_date = doc.fields.visited_date ? Date.parse(doc.fields.visited_date) : doc.reported_date;
-
+    var date = doc.fields.visited_date ? Date.parse(doc.fields.visited_date) : doc.reported_date;
+    if (typeof date !== 'number' || isNaN(date)) {
+      date = 0;
+    }
     // Is a visit report about a family
-    emit(doc.fields.visited_contact_uuid, visited_date);
+    emit(doc.fields.visited_contact_uuid, date);
   } else if (doc.type === 'contact' ||
              doc.type === 'clinic' ||
              doc.type === 'health_center' ||
