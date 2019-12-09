@@ -18,7 +18,7 @@ describe('transitions', () => {
 
   describe('loadTransitions', () => {
 
-    it('detach is called when load throws', () => {
+    it('cancel is called when load throws', () => {
       const load = sinon.stub(transitions._transitionsLib, 'loadTransitions').throws();
       const listen = sinon.stub(feed, 'listen');
       const cancel = sinon.stub(feed, 'cancel');

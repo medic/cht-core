@@ -12,7 +12,7 @@ describe('metadata', () => {
     it('handles missing metadata doc', () => {
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
-      return metadata.getProcessedSeq(seq => {
+      return metadata.getProcessedSeq().then(seq => {
         chai.expect(db.sentinel.get.callCount).to.equal(1);
         chai.expect(db.sentinel.get.args[0][0]).to.equal('_local/sentinel-meta-data');
         chai.expect(db.medic.get.callCount).to.equal(2);
@@ -32,11 +32,11 @@ describe('metadata', () => {
           processed_seq: '12'
         });
       sinon.stub(db.medic, 'put').resolves();
-      return metadata.getProcessedSeq(seq => {
+      return metadata.getProcessedSeq().then(seq => {
         chai.expect(db.medic.get.callCount).to.equal(2);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0]).to.deep.equal({
-          _id: '_local/sentinel-meta-data',
+          _id: 'sentinel-meta-data',
           _rev: '1',
           _deleted: true
         });
@@ -52,7 +52,7 @@ describe('metadata', () => {
         processed_seq: '12'
       });
       sinon.stub(db.medic, 'put').resolves();
-      return metadata.getProcessedSeq(seq => {
+      return metadata.getProcessedSeq().then(seq => {
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0]).to.deep.equal({
@@ -70,8 +70,9 @@ describe('metadata', () => {
         _rev: '1',
         processed_seq: '12'
       });
+      sinon.stub(db.medic, 'get').resolves();
       sinon.stub(db.medic, 'put').resolves();
-      return metadata.getProcessedSeq(seq => {
+      return metadata.getProcessedSeq().then(seq => {
         chai.expect(db.medic.get.callCount).to.equal(0);
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(seq).to.equal('12');
