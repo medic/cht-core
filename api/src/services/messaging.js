@@ -11,7 +11,7 @@ const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking
   // medic-gateway -- ignored because it's a pull not a push service
 };
-const DEFAULT_CONFIG = { sms: { outgoing_service: 'medic-gateway' } };
+const DEFAULT_CONFIG = { outgoing_service: 'medic-gateway' };
 
 const getTaskFromMessage = (tasks, uuid) => {
   return tasks && tasks.find(task => {
