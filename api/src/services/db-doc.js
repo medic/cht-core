@@ -68,7 +68,6 @@ module.exports = {
         }
 
         const stored = getDocCtx(storedDoc);
-        console.log(storedDoc);
         const requested = getDocCtx(requestDoc);
 
         return authorization

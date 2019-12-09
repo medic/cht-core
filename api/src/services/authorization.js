@@ -239,10 +239,12 @@ const findContactsByReplicationKeys = (replicationKeys) => {
   return db.medic
     .query('medic-client/contacts_by_reference', { keys })
     .then(result => {
-      const docIds = replicationKeys.map(replicationKey => {
-        const found = result.rows.find(row => row.key[1] === replicationKey);
-        return found && found.id || replicationKey;
+      let docIds = [];
+      replicationKeys.forEach(replicationKey => {
+        const found = result.rows.filter(row => row.key[1] === replicationKey);
+        docIds.push(...found.length ? found.map(row => row.id) : [replicationKey]);
       });
+      docIds = _.uniq(docIds);
 
       return Promise.all([
         db.medic.allDocs({ keys: docIds, include_docs: true }),
@@ -310,6 +312,8 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
         authorizationCtx.subjectIds.push(shortcode);
       }
     });
+
+    authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
 
     return authorizationCtx;
   });
