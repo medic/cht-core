@@ -35,9 +35,6 @@ const registerFeed = seq => {
       logger.error('transitions: error from changes feed: %o', err);
       init = null;
       setTimeout(() => listen(), RETRY_TIMEOUT);
-    })
-    .catch(() => {
-      // catch to avoid unhandled rejection - it's handled above
     });
 };
 
