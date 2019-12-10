@@ -11,7 +11,7 @@
 
   <div class="col-sm-8 item-content material" ng-show="contactsReportCtrl.selectedContact && contactsReportCtrl.form && !contactsReportCtrl.loadingForm">
     <div class="card">
-      <mm-enketo id="'contact-report'" status="contactsReportCtrl.enketoStatus" on-submit="contactsReportCtrl.save()" on-cancel="navigationCancel()" />
+      <mm-enketo id="'contact-report'" status="contactsReportCtrl.enketoStatus" on-submit="contactsReportCtrl.save()" on-cancel="contactsReportCtrl.navigationCancel()" />
     </div>
   </div>
 </div>

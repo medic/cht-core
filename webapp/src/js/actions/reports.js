@@ -12,7 +12,9 @@ angular.module('inboxServices').factory('ReportsActions',
     DB,
     GlobalActions,
     LiveList,
+    MarkRead,
     Modal,
+    ReportViewModelGenerator,
     Search,
     Selectors,
     ServicesActions
@@ -31,6 +33,9 @@ angular.module('inboxServices').factory('ReportsActions',
 
       function removeSelectedReport(id) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_REPORT, 'id', id));
+        setRightActionBar();
+        globalActions.settingSelected(true);
+        $(`#reports-list li[data-record-id="${id}"] input[type="checkbox"]`).prop('checked', false);
       }
 
       function setFirstSelectedReportDocProperty(doc) {
@@ -129,11 +134,40 @@ angular.module('inboxServices').factory('ReportsActions',
             model.expanded = true;
             setSelectedReports([model]);
             setTitle(model);
+
+            const listModel = liveList.getList().find(item => item._id === model._id);
+            if (listModel && !listModel.read) {
+              const unreadCount = Selectors.getUnreadCount(getState());
+              globalActions.updateUnreadCount({ report: unreadCount.report - 1 });
+              listModel.read = true;
+              LiveList.reports.update(listModel);
+              LiveList['report-search'].update(listModel);
+              MarkRead([model.doc]).catch(err => $log.error('Error marking read', err));
+            }
           }
           setRightActionBar();
           globalActions.settingSelected(refreshing);
         });
       }
+
+      const selectReport = (id, { silent=false }={}) => {
+        if (!id) {
+          return Promise.resolve();
+        }
+        if (!silent) {
+          globalActions.setLoadingShowContent(id);
+        }
+        return ReportViewModelGenerator(id)
+          .then(model => {
+            if (model) {
+              setSelected(model);
+            }
+          })
+          .catch(err => {
+            globalActions.unsetSelected();
+            $log.error('Error selecting report', err);
+          });
+      };
 
       function deselectAll() {
         dispatch(() => {
@@ -302,6 +336,7 @@ angular.module('inboxServices').factory('ReportsActions',
         removeSelectedReport,
         launchEditFacilityDialog,
         selectAll,
+        selectReport,
         setFirstSelectedReportDocProperty,
         setFirstSelectedReportFormattedProperty,
         setRightActionBar,

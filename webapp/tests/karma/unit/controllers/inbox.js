@@ -1,19 +1,14 @@
 describe('InboxCtrl controller', () => {
   'use strict';
 
-  let createController,
-    scope,
-    snackbar,
-    spyState,
-    stubModal,
-    dummyId = 'dummydummy',
-    RecurringProcessManager,
-    changes,
-    changesListener = {},
-    session;
+  let createController;
+  let scope;
+  let RecurringProcessManager;
+  let changes;
+  let changesListener = {};
+  let session;
 
   beforeEach(() => {
-    snackbar = sinon.stub();
     module('inboxApp');
 
     RecurringProcessManager = {
@@ -65,30 +60,11 @@ describe('InboxCtrl controller', () => {
       $provide.value('Language', () => Promise.resolve({}));
       $provide.value('LiveListConfig', sinon.stub());
       $provide.value('ResourceIcons', { getAppTitle: () => Promise.resolve({}) });
-      $provide.factory('Modal', () => {
-        stubModal = sinon.stub();
-        // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
-        // altogether. The calling of the processingFunction is tested in
-        // modal.js, not here.
-        stubModal.returns(Promise.resolve());
-        return stubModal;
-      });
       $provide.value('ReadMessages', sinon.stub());
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
       $provide.value('Settings', () => Promise.resolve());
-      $provide.value('Snackbar', () => snackbar);
-      $provide.factory('$state', () => {
-        spyState = {
-          go: sinon.spy(),
-          current: { name: 'my.state.is.great' },
-          includes: () => {
-            return true;
-          },
-        };
-        return spyState;
-      });
       $provide.value('$timeout', sinon.stub());
       $provide.value('UpdateUser', sinon.stub());
       $provide.value('UpdateSettings', sinon.stub());
@@ -121,53 +97,9 @@ describe('InboxCtrl controller', () => {
     });
 
     createController();
-    spyState.go.resetHistory();
   });
 
   afterEach(() => sinon.restore());
-
-  it('navigates back to contacts state after deleting contact', done => {
-    scope.deleteDoc(dummyId);
-
-    setTimeout(() => {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.assert(spyState.go.called, 'Should change state');
-      chai.expect(spyState.go.args[0][0]).to.equal(spyState.current.name);
-      chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
-      done();
-    });
-  });
-
-  it('does not change state after deleting message', done => {
-    spyState.includes = state => {
-      return state === 'messages';
-    };
-
-    scope.deleteDoc(dummyId);
-
-    setTimeout(() => {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.assert.isFalse(spyState.go.called, 'state change should not happen');
-      done();
-    });
-  });
-
-  it('does not deleteContact if user cancels modal', done => {
-    stubModal.reset();
-    stubModal.returns(Promise.reject({ err: 'user cancelled' }));
-
-    scope.deleteDoc(dummyId);
-
-    setTimeout(() => {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.assert.isFalse(spyState.go.called, 'state change should not happen');
-      chai.assert.isFalse(snackbar.called, 'toast should be shown');
-      done();
-    });
-  });
 
   it('should start the relative date update recurring process', done => {
     setTimeout(() => {

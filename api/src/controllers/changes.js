@@ -8,6 +8,7 @@ const uuid = require('uuid/v4');
 const config = require('../config');
 const logger = require('../logger');
 const serverChecks = require('@medic/server-checks');
+const serverUtils = require('../server-utils');
 const environment = require('../environment');
 const semver = require('semver');
 const usersService = require('../services/users');
@@ -307,7 +308,11 @@ const filterPurgedIds = feed => {
 };
 
 const processRequest = (req, res) => {
-  initFeed(req, res).then(getChanges);
+  return initFeed(req, res)
+    .then(feed => {
+      // don't return promise - could be a longpoll request
+      getChanges(feed);
+    });
 };
 
 // restarts the request, refreshing user-settings
@@ -317,7 +322,11 @@ const reauthorizeRequest = feed => {
     .getUserSettings(feed.req.userCtx)
     .then(userCtx => {
       feed.req.userCtx = userCtx;
-      processRequest(feed.req, feed.res);
+      processRequest(feed.req, feed.res).catch(err => {
+        feed.upstreamRequest.cancel();
+        feed.error = err;
+        endFeed(feed);
+      });
     });
 };
 
@@ -386,10 +395,11 @@ const initContinuousFeed = since => {
     });
 };
 
-const initServerChecks = () =>
-  serverChecks
-  .getCouchDbVersion(environment.serverUrl)
-  .then(shouldLimitChangesRequests);
+const initServerChecks = () => {
+  return serverChecks
+    .getCouchDbVersion(environment.serverUrl)
+    .then(shouldLimitChangesRequests);
+};
 
 const shouldLimitChangesRequests = couchDbVersion => {
   // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
@@ -416,10 +426,10 @@ const init = () => {
 };
 
 const request = (req, res) => {
-  init().then(() => {
-    res.type('json');
-    processRequest(req, res);
-  });
+  res.type('json');
+  return init()
+    .then(() => processRequest(req, res))
+    .catch(err => serverUtils.error(err, req, res));
 };
 
 const logWarnings = () => {

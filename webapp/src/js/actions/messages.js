@@ -2,8 +2,10 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('MessagesActions',
   function(
+    $log,
     ActionUtils,
     GlobalActions,
+    MarkRead,
     Selectors
   ) {
     'use strict';
@@ -33,6 +35,10 @@ angular.module('inboxServices').factory('MessagesActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_MESSAGE, 'selected', selected));
       }
 
+      function setConversations(conversations) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_CONVERSATIONS, 'conversations', conversations));
+      }
+
       function setSelected(doc) {
         dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedMessage(getState());
@@ -42,13 +48,24 @@ angular.module('inboxServices').factory('MessagesActions',
         });
       }
 
+      function markSelectedConversationRead() {
+        dispatch((dispatch, getState) => {
+          const selected = Selectors.getSelectedMessage(getState());
+          dispatch({ type: actionTypes.MARK_SELECTED_CONVERSATION_READ });
+          const docs = selected.messages.map(message => message.doc);
+          MarkRead(docs).catch(err => $log.error('Error marking all as read', err));
+        });
+      }
+
       return {
         addSelectedMessage,
+        markSelectedConversationRead,
         removeSelectedMessage,
         setMessagesError,
         setSelectedMessage,
         updateSelectedMessage,
 
+        setConversations,
         setSelected
       };
     };

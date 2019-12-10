@@ -22,7 +22,7 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
       var countryCode = $('#guided-setup [name=default-country-code]').val();
       var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
       if (gatewayNumber &&
-          !phoneNumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
+          !phoneNumber.validate({ default_country_code: countryCode, phone_validation: 'none' }, gatewayNumber)) {
         return {
           valid: false,
           error: 'Phone number not valid'
@@ -45,7 +45,13 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
 
       val = $('#guided-setup [name=gateway-number]').val();
       if (val) {
-        settings.gateway_number = val;
+        // normalise value        
+        const info = { 
+          default_country_code: $('#guided-setup [name=default-country-code]').val(),
+          phone_validation: 'none'
+        };
+        
+        settings.gateway_number = phoneNumber.normalize(info, val);
       }
       val = $('#guided-setup [name=default-country-code]').val();
       if (val) {

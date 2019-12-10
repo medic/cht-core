@@ -1,5 +1,6 @@
-const _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+const _ = require('underscore');
+const responsive = require('../modules/responsive');
+const scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
 
@@ -17,10 +18,6 @@ angular
     Export,
     GlobalActions,
     LiveList,
-    MarkRead,
-    Modal,
-    PlaceHierarchy,
-    ReportViewModelGenerator,
     ReportsActions,
     Search,
     SearchFilters,
@@ -51,31 +48,6 @@ angular
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    // Render the facilities hierarchy as the user is scrolling through the list
-    // Initially, don't load/render any
-    $scope.totalFacilitiesDisplayed = 0;
-    ctrl.setFacilities([]);
-
-    // Load the facilities hierarchy and render one district hospital
-    // when the user clicks on the filter dropdown
-    $scope.monitorFacilityDropdown = () => {
-      PlaceHierarchy()
-        .then(function(hierarchy) {
-          ctrl.setFacilities(hierarchy);
-          $scope.totalFacilitiesDisplayed += 1;
-        })
-        .catch(function(err) {
-          $log.error('Error loading facilities', err);
-        });
-
-      $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
-        // visible height + pixel scrolled >= total height - 100
-        if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
-          $timeout(() => $scope.totalFacilitiesDisplayed += 1);
-        }
-      });
-    };
-
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
     // where the summary is the data required for the collapsed view,
@@ -90,7 +62,6 @@ angular
     ctrl.verifyingReport = false;
 
     var liveList = LiveList.reports;
-    LiveList.$init($scope, 'reports', 'report-search');
 
     var updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
@@ -107,76 +78,6 @@ angular
       });
     };
 
-    var setSelected = function(model) {
-      ctrl.setSelected(model);
-      if (ctrl.selectMode) {
-        return;
-      }
-      var listModel = _.findWhere(liveList.getList(), { _id: model._id });
-      if (listModel && !listModel.read) {
-        ctrl.updateUnreadCount({ report: ctrl.unreadCount.report - 1 });
-        listModel.read = true;
-        LiveList.reports.update(listModel);
-        LiveList['report-search'].update(listModel);
-      }
-      MarkRead([model.doc])
-        .catch(function(err) {
-          $log.error('Error marking read', err);
-        });
-    };
-
-    var fetchFormattedReport = function(report) {
-      var id = _.isString(report) ? report : report._id;
-      return ReportViewModelGenerator(id);
-    };
-
-    $scope.refreshReportSilently = function(report) {
-      return fetchFormattedReport(report)
-        .then(function(model) {
-          setSelected(model);
-        })
-        .catch(function(err) {
-          $log.error('Error fetching formatted report', err);
-        });
-    };
-
-    var removeSelectedReport = function(id) {
-      ctrl.removeSelectedReport(id);
-      var index = _.findIndex(ctrl.selectedReports, function(s) {
-        return s._id === id;
-      });
-      if (index !== -1) {
-        ctrl.setRightActionBar();
-      }
-    };
-
-    $scope.deselectReport = function(report) {
-      const reportId = report._id || report;
-      removeSelectedReport(reportId);
-      $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
-      ctrl.settingSelected(true);
-    };
-
-    $scope.selectReport = function(report) {
-      if (!report) {
-        return;
-      }
-      ctrl.setLoadingShowContent(report);
-      fetchFormattedReport(report)
-        .then(function(model) {
-          if (model) {
-            $timeout(function() {
-              setSelected(model);
-              initScroll();
-            });
-          }
-        })
-        .catch(function(err) {
-          ctrl.unsetSelected();
-          $log.error('Error selecting report', err);
-        });
-    };
-
     var query = function(opts) {
       const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
       if (options.limit < PAGE_SIZE) {
@@ -186,7 +87,7 @@ angular
         ctrl.error = false;
         ctrl.errorSyntax = false;
         ctrl.loading = true;
-        if (ctrl.selectedReports.length && $scope.isMobile()) {
+        if (ctrl.selectedReports.length && responsive.isMobile()) {
           ctrl.unsetSelected();
         }
       }
@@ -207,7 +108,7 @@ angular
           ctrl.errorSyntax = false;
           if (
             !$state.params.id &&
-            !$scope.isMobile() &&
+            !responsive.isMobile() &&
             !ctrl.selectedReports &&
             !ctrl.selectMode &&
             $state.is('reports.detail')
@@ -244,7 +145,7 @@ angular
         $state.go('reports.detail', { id: null }, { notify: false });
         ctrl.clearSelection();
       }
-      if ($scope.isMobile() && ctrl.showContent) {
+      if (responsive.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }
@@ -287,18 +188,6 @@ angular
       Tour.start($stateParams.tour);
     }
 
-    $scope.edit = function(report, group) {
-      Modal({
-        templateUrl: 'templates/modals/edit_message_group.html',
-        controller: 'EditMessageGroupCtrl',
-        controllerAs: 'editMessageGroupCtrl',
-        model: {
-          report: report,
-          group: angular.copy(group),
-        },
-      });
-    };
-
     ctrl.resetFilterModel = function() {
       if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {
         // can't filter when in select mode
@@ -324,9 +213,9 @@ angular
         $timeout(function() {
           checkbox.prop('checked', !alreadySelected);
           if (!alreadySelected) {
-            $scope.selectReport(reportId);
+            ctrl.selectReport(reportId);
           } else {
-            removeSelectedReport(reportId);
+            ctrl.removeSelectedReport(reportId);
           }
         });
       }

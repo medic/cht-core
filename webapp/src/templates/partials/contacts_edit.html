@@ -9,7 +9,7 @@
   </div>
   <div class="col-sm-8 item-content material" ng-show="!contactsEditCtrl.loadingContent && !contactsEditCtrl.contentError">
     <div class="card">
-      <mm-enketo id="'contact-form'" editing="contactsEditCtrl.enketoContact.docId" status="contactsEditCtrl.enketoStatus" on-submit="contactsEditCtrl.save()" on-cancel="navigationCancel()" />
+      <mm-enketo id="'contact-form'" editing="contactsEditCtrl.enketoContact.docId" status="contactsEditCtrl.enketoStatus" on-submit="contactsEditCtrl.save()" on-cancel="contactsEditCtrl.navigationCancel()" />
     </div>
   </div>
 </div>

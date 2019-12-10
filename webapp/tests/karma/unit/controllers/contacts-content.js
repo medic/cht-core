@@ -1,35 +1,20 @@
 describe('ContactsContentCtrl', () => {
   'use strict';
 
-  let contactsActions,
-      controller,
-      ctrl,
-      globalActions,
-      stateParams,
-      scope,
-      state,
-      getContact,
-      changes,
-      changesCallback,
-      changesFilter,
-      contactChangeFilter = sinon.stub(),
-      debounce;
-
-  const stubGetContact = (doc, childArray) => {
-    const childRows = childArray.map(child => {
-      return { id: child._id, doc: child };
-    });
-    const model = {
-      doc: doc,
-      children: [{
-        type: { id: 'person', person: true },
-        contacts: childRows
-      }]
-    };
-
-    getContact.resolves();
-    getContact.withArgs(doc._id).resolves(model);
-  };
+  const contactChangeFilter = sinon.stub();
+  let contactsActions;
+  let controller;
+  let ctrl;
+  let globalActions;
+  let stateParams;
+  let scope;
+  let state;
+  let changes;
+  let changesCallback;
+  let changesFilter;
+  let debounce;
+  let setSelectedContact;
+  let getSelectedContact;
 
   const createController = () => {
     return controller('ContactsContentCtrl', {
@@ -38,11 +23,19 @@ describe('ContactsContentCtrl', () => {
       '$state': state,
       '$stateParams': stateParams,
       'Changes': changes,
-      'ContactViewModelGenerator': { getContact: getContact },
       'UserSettings': KarmaUtils.promiseService(null, ''),
       'ContactChangeFilter': contactChangeFilter,
       'Debounce': debounce,
-      'GlobalActions': () => globalActions
+      'GlobalActions': () => globalActions,
+      'ContactsActions': () => contactsActions,
+      'Selectors': {
+        getSelectedContact,
+        getLoadingContent: () => {},
+        getLoadingSelectedContactChildren: () => {},
+        getLoadingSelectedContactReports: () => {},
+        getContactsLoadingSummary: () => {},
+        getForms: () => {}
+      }
     });
   };
 
@@ -51,15 +44,17 @@ describe('ContactsContentCtrl', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, GlobalActions) => {
-    contactsActions = ContactsActions($ngRedux.dispatch);
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, GlobalActions) => {
+    getSelectedContact = sinon.stub();
+    setSelectedContact = sinon.stub().resolves();
+    
+    contactsActions = { setSelectedContact };
     globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), {
       unsetSelected: sinon.stub()
     });
 
     scope = _$rootScope_.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = selected => contactsActions.setSelectedContact(selected);
 
     state = {
       current: {
@@ -70,7 +65,6 @@ describe('ContactsContentCtrl', () => {
 
     controller = $controller;
 
-    getContact = sinon.stub();
     changes = (options) => {
       changesFilter = options.filter;
       changesCallback = options.callback;
@@ -101,7 +95,7 @@ describe('ContactsContentCtrl', () => {
 
     const runChangeFeedProcessTest = () => {
       stateParams = { id: doc._id };
-      stubGetContact(doc,  []);
+      getSelectedContact.returns({ doc });
       ctrl = createController();
       return ctrl.setupPromise;
     };
@@ -123,12 +117,9 @@ describe('ContactsContentCtrl', () => {
       return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: false });
         chai.assert.equal(changesFilter(change), true);
-        return changesCallback(change).then(() => {
-          chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-          chai.assert.equal(getContact.callCount, 2);
-          chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
-        });
+        changesCallback(change);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
+        chai.assert.equal(ctrl.setSelectedContact.callCount, 2);
       });
     });
 
@@ -140,7 +131,6 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(changesFilter(change), true);
         changesCallback(change);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-        chai.assert.equal(getContact.callCount, 1);
         chai.assert.equal(state.go.callCount, 1);
         chai.assert.equal(state.go.getCall(0).args[1].id, doc.parent._id);
       });
@@ -152,7 +142,6 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(changesFilter(change), true);
         changesCallback(changes);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-        chai.assert.equal(getContact.callCount, 1);
         chai.assert.equal(state.go.callCount, 1);
       });
     });
@@ -161,13 +150,10 @@ describe('ContactsContentCtrl', () => {
       return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantContact: true });
         chai.assert.equal(changesFilter(change), true);
-        return changesCallback(change).then(() => {
-          chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-          chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
-          chai.assert.equal(getContact.callCount, 2);
-          chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
-        });
+        changesCallback(change);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
+        chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
+        chai.assert.equal(ctrl.setSelectedContact.callCount, 2);
       });
     });
 
@@ -175,14 +161,11 @@ describe('ContactsContentCtrl', () => {
       return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantReport: true, isRelevantContact: false });
         chai.assert.equal(changesFilter(change), true);
-        return changesCallback(change).then(() => {
-          chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
-          chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
-          chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
-          chai.assert.equal(getContact.callCount, 2);
-          chai.assert.equal(getContact.getCall(1).args[0], doc._id);
-          chai.assert.equal(ctrl.unsetSelected.callCount, 0);
-        });
+        changesCallback(change);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
+        chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
+        chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
+        chai.assert.equal(ctrl.setSelectedContact.callCount, 2);
       });
     });
 
@@ -193,8 +176,7 @@ describe('ContactsContentCtrl', () => {
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
         chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
         chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
-        chai.assert.equal(getContact.callCount, 1);
-        chai.assert.equal(ctrl.unsetSelected.callCount, 0);
+        chai.assert.equal(ctrl.setSelectedContact.callCount, 1);
       });
     });
   });

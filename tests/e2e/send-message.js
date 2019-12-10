@@ -76,11 +76,11 @@ describe('Send message', () => {
   });
 
   const messageInList = identifier => {
-    return '#message-list li[data-record-id="' + identifier + '"]';
+    return `#message-list li[data-record-id="${identifier}"]`;
   };
 
   const smsMsg = key => {
-    return 'Hello ' + key + ' this is a test SMS';
+    return `Hello ${key} this is a test SMS`;
   };
 
   const openSendMessageModal = () => {
@@ -190,12 +190,14 @@ describe('Send message', () => {
 
   const clickLhsEntry = (entryId, entryName) => {
     entryName = entryName || entryId;
+
     const liIdentifier = messageInList(entryId);
-
     helper.waitUntilReady(element(by.css(liIdentifier)));
-
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
-    element(by.css(liIdentifier + ' a')).click();
+
+    const aIdentifier = `${liIdentifier} a`;
+    helper.waitUntilReady(element(by.css(aIdentifier)));
+    element(by.css(aIdentifier)).click();
 
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));
@@ -217,18 +219,6 @@ describe('Send message', () => {
   const contactNameSelector = ' .sender .name';
   const everyoneAtText = name => {
     return name + ' - all contacts';
-  };
-
-  const getElementText = (css, attempt=0) => {
-    return helper.getTextFromElement(element(by.css(css)))
-      .then((text) => {
-        return text;
-      }, (err) => {
-        if (attempt < 2) {
-          return getElementText(css, attempt+1);
-        }
-        throw err;
-      });
   };
 
   describe('Send message modal', () => {
@@ -396,39 +386,4 @@ describe('Send message', () => {
     });
   });
 
-  describe('Display message without contact', () => {
-    it('can display messages without contact', () => {
-      common.goToMessages();
-
-      openSendMessageModal();
-      enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
-      sendMessage();
-      browser.wait(() => {
-        return utils.deleteDocs(CONTACTS.map(contact => contact._id));
-      });
-
-      common.goToMessages();
-
-      const liIdentifier = messageInList(ALICE._id);
-      helper.waitUntilReady(element(by.css(liIdentifier)));
-      element(by.css(liIdentifier + ' a')).click();
-
-      helper.waitForAngularComplete();
-
-      browser.wait(() => {
-        const el = element(by.css('#message-header .name'));
-        return helper
-          .getTextFromElement(el)
-          .then(text => text === 'Unknown sender')
-          .catch(err => {
-            // item may have been removed from the page when the RHS is refreshed
-            console.log('Caught and ignoring an error trying to getText', err);
-          });
-      }, 12000);
-
-      expect(getElementText('#message-header .phone')).toBe(ALICE.phone);
-      expect(getElementText('#message-header .name')).toBe('Unknown sender');
-    });
-  });
 });

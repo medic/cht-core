@@ -24,7 +24,10 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
       };
       const mapDispatchToTarget = function(dispatch) {
         const globalActions = GlobalActions(dispatch);
-        return { unsetSelected: globalActions.unsetSelected };
+        return {
+          navigationCancel: globalActions.navigationCancel,
+          unsetSelected: globalActions.unsetSelected
+        };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
@@ -34,6 +37,8 @@ angular.module('inboxDirectives').directive('mmNavigation', function() {
       ctrl.navigateBack = () => {
         if ($state.current.name === 'contacts.deceased') {
           $state.go('contacts.detail', { id: $stateParams.id });
+        } else if ($stateParams.id) {
+          $state.go($state.current.name, { id: null });
         } else {
           ctrl.unsetSelected();
         }

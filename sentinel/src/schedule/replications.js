@@ -79,10 +79,15 @@ module.exports = {
   },
   replicateDbs: (fromDbs, toDb) => {
     const targetDb = db.get(toDb);
-    return fromDbs.reduce((p, fromDb) => {
-      logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`);
-      const sourceDb = db.get(fromDb);
-      return p.then(() => replicateDb(sourceDb, targetDb));
-    }, Promise.resolve());
+    return fromDbs
+      .reduce((p, fromDb) => {
+        logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`);
+        const sourceDb = db.get(fromDb);
+        return p
+          .then(() => replicateDb(sourceDb, targetDb))
+          .then(() => db.close(sourceDb));
+        }, Promise.resolve()
+      )
+      .then(() => db.close(targetDb));
   },
 };
