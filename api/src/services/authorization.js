@@ -241,8 +241,12 @@ const findContactsByReplicationKeys = (replicationKeys) => {
     .then(result => {
       let docIds = [];
       replicationKeys.forEach(replicationKey => {
-        const found = result.rows.filter(row => row.key[1] === replicationKey);
-        docIds.push(...found.length ? found.map(row => row.id) : [replicationKey]);
+        const keys = result.rows.filter(row => row.key[1] === replicationKey).map(row => row.id);
+        if (keys.length) {
+          docIds.push(...keys);
+        } else {
+          docIds.push(replicationKey);
+        }
       });
       docIds = _.uniq(docIds);
 
