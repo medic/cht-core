@@ -82,9 +82,10 @@ describe('DBSync service', () => {
         expect(Auth.callCount).to.equal(1);
         expect(Auth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
+        expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(1);
-        expect(to.args[0][1]).to.have.keys('filter', 'checkpoint');
+        expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');
       });
     });
 
@@ -236,13 +237,84 @@ describe('DBSync service', () => {
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'success', from: 'success' });
       });
     });
+
+    describe('retries with smaller batch size', () => {
+
+      let count;
+      let retries;
+      const recursiveOnTo = sinon.stub();
+
+      const replicationResultTo = () => {
+        if (count <= retries) {
+          count++;
+          return Q.reject({ code: 413 });
+        } else {
+          return Q.resolve();
+        }
+      };
+
+      beforeEach(() => {
+        count = 0;
+
+        isOnlineOnly.returns(false);
+        Auth.resolves();
+
+        recursiveOnTo.callsFake(() => {
+          const promise = replicationResultTo();
+          promise.on = recursiveOnTo;
+          return promise;
+        });
+
+        to.callsFake(() => {
+          let promise;
+          if (count < retries) {
+            // Too big - retry
+            promise = Q.reject({ code: 413 });
+          } else {
+            // small enough - complete
+            promise = Q.resolve();
+          }
+          promise.on = recursiveOnTo;
+          return promise;
+        });
+      });
+
+      it('if request too large', () => {
+        retries = 3;
+        return service.sync().then(() => {
+          expect(Auth.callCount).to.equal(1);
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(3);
+          expect(to.args[0][1].batch_size).to.equal(100);
+          expect(to.args[1][1].batch_size).to.equal(50);
+          expect(to.args[2][1].batch_size).to.equal(25);
+        });
+      });
+
+      it('gives up once batch size is 1', () => {
+        retries = 100; // should not get this far...
+        return service.sync().then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(7);
+          expect(to.args[0][1].batch_size).to.equal(100);
+          expect(to.args[1][1].batch_size).to.equal(50);
+          expect(to.args[2][1].batch_size).to.equal(25);
+          expect(to.args[3][1].batch_size).to.equal(12);
+          expect(to.args[4][1].batch_size).to.equal(6);
+          expect(to.args[5][1].batch_size).to.equal(3);
+          expect(to.args[6][1].batch_size).to.equal(1);
+        });
+      });
+
+    });
+
   });
 
   describe('replicateTo filter', () => {
 
     let filterFunction;
 
-    before(() => {
+    beforeEach(() => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
