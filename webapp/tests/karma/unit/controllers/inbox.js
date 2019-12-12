@@ -89,6 +89,9 @@ describe('InboxCtrl controller', () => {
           $window: {
             addEventListener: () => {},
             location: { href: '' },
+            localStorage: {
+              getItem: sinon.stub(),
+            },
             startupTimes: {},
             PouchDB: {},
           },
