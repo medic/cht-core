@@ -540,14 +540,28 @@ describe('bulk-docs handler', () => {
   it('works with `new_edits`', () => {
     const docs = [
       {
-        _id: 'allowed',
+        _id: 'allowed1',
         _rev: '1-test',
         type: 'clinic',
         parent: { _id: 'fixture:offline' },
         name: 'allowed-1',
       },
       {
-        _id: 'denied',
+        _id: 'denied1',
+        _rev: '1-test',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'denied-1',
+      },
+      {
+        _id: 'allowed2',
+        _rev: '1-test',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'allowed-1',
+      },
+      {
+        _id: 'denied2',
         _rev: '1-test',
         type: 'clinic',
         parent: { _id: 'fixture:online' },
@@ -562,15 +576,19 @@ describe('bulk-docs handler', () => {
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
-        expect(result).toEqual([]);
+        expect(result).toEqual([{ id: 'denied1', error: 'forbidden' }, { id: 'denied2', error: 'forbidden' }]);
         return Promise.all([
-          utils.getDoc('allowed'),
-          utils.getDoc('denied').catch(err => err),
+          utils.getDoc('allowed1'),
+          utils.getDoc('denied1').catch(err => err),
+          utils.getDoc('allowed2'),
+          utils.getDoc('denied2').catch(err => err),
         ]);
       })
       .then(results => {
         expect(results[0]).toEqual(docs[0]);
         expect(results[1].statusCode).toEqual(404);
+        expect(results[2]).toEqual(docs[2]);
+        expect(results[3].statusCode).toEqual(404);
       });
   });
 
