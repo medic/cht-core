@@ -449,6 +449,15 @@ describe('messaging service', () => {
       });
     });
 
+    it('does nothing with default settings (medic-gateway)', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns();
+      sinon.stub(service, 'getOutgoingMessages');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(0);
+      });
+    });
+
     it('does nothing if there are no messages to send', () => {
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
       sinon.stub(service, 'getOutgoingMessages').resolves([]);
@@ -566,6 +575,25 @@ describe('messaging service', () => {
         ]]);
         chai.expect(actual).to.deep.equal({ saved: 3 });
       });
+    });
+
+  });
+
+  describe('isMedicGatewayEnabled', () => {
+
+    it('returns false when not configured', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
+      chai.expect(service.isMedicGatewayEnabled()).to.equal(false);
+    });
+
+    it('returns true when configured', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'medic-gateway' });
+      chai.expect(service.isMedicGatewayEnabled()).to.equal(true);
+    });
+
+    it('defaults to true', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns();
+      chai.expect(service.isMedicGatewayEnabled()).to.equal(true);
     });
 
   });

@@ -258,6 +258,13 @@ const getChanges = feed => {
 };
 
 const initFeed = (req, res) => {
+
+  const changesControllerConfig = config.get('changes_controller') || {
+    reiterate_changes: true,
+    changes_limit: 100,
+    debounce_interval: 200
+  };
+
   const feed = {
     id: req.id || uuid(),
     req: req,
@@ -267,13 +274,13 @@ const initFeed = (req, res) => {
     currentSeq: currentSeq,
     pendingChanges: [],
     results: [],
-    limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
-    reiterate_changes: config.get('changes_controller').reiterate_changes,
+    limit: req.query && req.query.limit || changesControllerConfig.changes_limit,
+    reiterate_changes: changesControllerConfig.reiterate_changes,
     initialReplication: req.query && req.query.initial_replication
   };
 
-  if (config.get('changes_controller').debounce_interval) {
-    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), config.get('changes_controller').debounce_interval);
+  if (changesControllerConfig.debounce_interval) {
+    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), changesControllerConfig.debounce_interval);
   }
 
   defibrillator(feed);
