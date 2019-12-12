@@ -209,6 +209,22 @@ const getReplicationKeys = (viewResults) => {
   return replicationKeys;
 };
 
+const getAllTombstones = (ids) => {
+  // collect all tombstones for the selected contacts
+  const tombstonePromises = ids
+    .filter(id => !tombstoneUtils.isTombstoneId(id))
+    .map(id => {
+      const opts = {
+        include_docs: true,
+        start_key: tombstoneUtils.getTombstonePrefix(id),
+        end_key: `${tombstoneUtils.getTombstonePrefix(id)}\ufff0`,
+      };
+    return db.medic.allDocs(opts);
+  });
+
+  return tombstonePromises;
+};
+
 // replication keys are either contact shortcodes (`patient_id` or `place_id`) or doc ids
 // returns a list of corresponding contact docs
 const findContactsByReplicationKeys = (replicationKeys) => {
@@ -217,26 +233,38 @@ const findContactsByReplicationKeys = (replicationKeys) => {
   }
 
   replicationKeys = _.uniq(replicationKeys);
-  const keys = replicationKeys.map(id => ['shortcode', id]);
+  const keys = [];
+  replicationKeys.forEach(id => keys.push(['shortcode', id], ['tombstone-shortcode', id]));
 
   return db.medic
     .query('medic-client/contacts_by_reference', { keys })
     .then(result => {
-      const docIds = replicationKeys.map(replicationKey => {
-        const found = result.rows.find(row => row.key[1] === replicationKey);
-        return found && found.id || replicationKey;
+      let docIds = [];
+      replicationKeys.forEach(replicationKey => {
+        const keys = result.rows.filter(row => row.key[1] === replicationKey).map(row => row.id);
+        if (keys.length) {
+          docIds.push(...keys);
+        } else {
+          docIds.push(replicationKey);
+        }
       });
+      docIds = _.uniq(docIds);
 
-      return db.medic.allDocs({ keys: docIds, include_docs: true });
+      return Promise.all([
+        db.medic.allDocs({ keys: docIds, include_docs: true }),
+        ...getAllTombstones(docIds),
+      ]);
     })
-    .then(result => {
-      if (!result.rows) {
-        return [];
-      }
+    .then(results => {
+      const contacts = results.reduce((acc, result) => {
+        if (!result || !result.rows || !result.rows.length) {
+          return acc;
+        }
 
-      return result.rows
-        .map(row => row.doc)
-        .filter(doc => doc);
+        acc.push(...result.rows.map(row => row.doc).filter(doc => doc));
+        return acc;
+      }, []);
+      return contacts;
     });
 };
 
@@ -244,6 +272,12 @@ const getContactShortcode = (viewResults) => viewResults &&
                                              viewResults.contactsByDepth &&
                                              viewResults.contactsByDepth[0] &&
                                              viewResults.contactsByDepth[0][1];
+
+const getContactUuid = (viewResults) => viewResults &&
+                                        viewResults.contactsByDepth &&
+                                        viewResults.contactsByDepth[0] &&
+                                        viewResults.contactsByDepth[0][0] &&
+                                        viewResults.contactsByDepth[0][0][0];
 
 // in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
@@ -276,12 +310,14 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
         return;
       }
 
-      authorizationCtx.subjectIds.push(contact._id);
+      authorizationCtx.subjectIds.push(getContactUuid(viewResults));
       const shortcode = getContactShortcode(viewResults);
       if (shortcode) {
         authorizationCtx.subjectIds.push(shortcode);
       }
     });
+
+    authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
 
     return authorizationCtx;
   });

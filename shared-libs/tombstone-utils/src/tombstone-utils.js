@@ -131,6 +131,9 @@ module.exports = {
   },
 
   generateTombstoneId: generateTombstoneId,
+
+  getTombstonePrefix: id => `${id}${TOMBSTONE_ID_SEPARATOR}`,
+
 };
 
 // exposed for testing

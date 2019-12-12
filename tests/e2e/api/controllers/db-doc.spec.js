@@ -111,13 +111,18 @@ const setReportContact = (report, username) => {
   if (!username) {
     return;
   }
-  const user = users.find(u => u.username === username);
-  report.contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
+  if (typeof username === 'string') {
+    const user = users.find(u => u.username === username);
+    report.contact = {_id: user.contact._id, parent: {_id: user.place._id, parent: {_id: 'PARENT_PLACE'}}};
+  } else {
+    report.contact = username;
+  }
   return report;
 };
 
-const setReportPatient = (report, patientUuid, fields) => {
-  const patient = patients.find(p => p._id === patientUuid);
+const setReportPatient = (report, patientUuid, fields, temporaryPatients) => {
+  const patientsToSearch = temporaryPatients || patients;
+  const patient = patientsToSearch.find(p => p._id === patientUuid);
   if (!patient) {
     return;
   }
@@ -128,11 +133,11 @@ const setReportPatient = (report, patientUuid, fields) => {
   return report;
 };
 
-const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false) => {
+const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false, temporaryPatients = false) => {
   const report = { _id: uuid(), type: 'data_record', form: 'some-form', content_type: 'xml', fields: {} };
 
   setReportContact(report, username);
-  setReportPatient(report, patientUuid, fields);
+  setReportPatient(report, patientUuid, fields, temporaryPatients);
   report.fields.needs_signoff = needs_signoff;
 
   return report;
@@ -432,6 +437,275 @@ describe('db-doc handler', () => {
             }
           });
         });
+    });
+
+    describe('GET with deletes', () => {
+      const patientsToDelete = [
+        {
+          _id: 'temp:offline:clinic:patient_to_delete_with_shortcode',
+          name: 'offline patient',
+          patient_id: 'del123456',
+          type: 'person',
+          parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          reported_date: 1
+        },
+        {
+          _id: 'temp:offline:clinic:patient_to_delete_no_shortcode',
+          name: 'offline patient',
+          type: 'person',
+          parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          reported_date: 1
+        },
+        {
+          _id: 'temp:online:clinic:patient_to_delete_with_shortcode',
+          name: 'offline patient',
+          patient_id: 'del654321',
+          type: 'person',
+          parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+          reported_date: 1
+        },
+        {
+          _id: 'temp:online:clinic:patient_to_delete_no_shortcode',
+          name: 'online patient',
+          type: 'person',
+          parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+          reported_date: 1
+        },
+      ];
+
+      const submittersToDelete = [
+        {
+          _id: 'temp:offline:clinic:contact',
+          name: 'offline submitter',
+          type: 'person',
+          parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          reported_date: 1
+        },
+        {
+          _id: 'temp:online:clinic:contact',
+          name: 'online submitter',
+          type: 'person',
+          parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+          reported_date: 1
+        },
+      ];
+      const patientsToDeleteIds = patientsToDelete.map(doc => doc._id);
+      const submittersToDeleteIds = submittersToDelete.map(doc => doc._id);
+
+      beforeAll(() => sUtils.waitForSentinel());
+
+      beforeEach(() => {
+        patientsToDelete.forEach(doc => delete doc._rev);
+      });
+
+      it('reports about deleted patients and deleted patients', () => {
+        const reportScenarios = [
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: false },
+        ];
+
+        const docs = reportScenarios.map(scenario => scenario.doc);
+        return utils
+          .saveDocs([...patientsToDelete, ...docs, ...submittersToDelete])
+          .then(() => utils.deleteDocs(patientsToDeleteIds)) // delete subjects
+          .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
+          .then(() => sUtils.waitForSentinel(patientsToDeleteIds))
+          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(_.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read deleted patients
+            results.forEach((result, idx) => {
+              if (patientsToDelete[idx]._id.startsWith('temp:offline')) {
+                chai.expect(result).to.deep.include(patientsToDelete[idx]);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          })
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read reports about deleted patients
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          })
+          .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
+          .then(() => sUtils.waitForSentinel(submittersToDeleteIds))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read reports about deleted patients and submitted by deleted contacts
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          })
+          .then(() => utils.deleteDocs(docs.map(doc => doc._id))) // delete reports
+          .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
+          .then(() => sUtils.waitForSentinel(docs.map(doc => doc._id)))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read deleted reports about deleted patients submitted by deleted contacts
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+                chai.expect(result._deleted).to.equal(true);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          });
+      });
+
+      it('reports about deleted patients and deleted patients with needs_signoff', () => {
+        const reportScenarios = [
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
+        ];
+
+        const docs = reportScenarios.map(scenario => scenario.doc);
+        return utils
+          .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+          .then(()=> utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
+          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(_.defaults({ path: `/${patient._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // cannot read patients
+            results.forEach(result => {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            });
+          })
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read reports about deleted patients
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          })
+          .then(() => utils.deleteDocs(patientsToDeleteIds)) // delete subjects
+          .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
+          .then(() => sUtils.waitForSentinel(patientsToDeleteIds))
+          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(_.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // cannot read deleted patients
+            results.forEach(result => {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            });
+          })
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read reports about deleted patients
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          })
+          .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
+          .then(() => sUtils.waitForSentinel(submittersToDeleteIds))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read reports about deleted patients and submitted by deleted contacts
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          })
+          .then(() => utils.deleteDocs(docs.map(doc => doc._id))) // delete reports
+          .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
+          .then(() => sUtils.waitForSentinel(docs.map(doc => doc._id)))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(results => {
+            // can read deleted reports about deleted patients submitted by deleted contacts
+            results.forEach((result, idx) => {
+              if (reportScenarios[idx].allowed) {
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+                chai.expect(result._deleted).to.equal(true);
+              } else {
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              }
+            });
+          });
+      });
     });
 
     it('GET delete stubs', () => {
