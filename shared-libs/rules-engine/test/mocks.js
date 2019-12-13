@@ -6,7 +6,7 @@ const MS_IN_DAY = 24 * 60 * 60 * 1000;
 const chtDocs = {
   contact: {
     _id: 'patient',
-    name: 'chw',
+    name: 'cht_mock_contact',
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient_id',

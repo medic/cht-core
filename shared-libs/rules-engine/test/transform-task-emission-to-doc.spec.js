@@ -241,7 +241,7 @@ describe('transform-task-emission-to-doc', () => {
               type: 'report',
             }],
             contact: {
-              name: 'chw',
+              name: chtDocs.contact.name,
             },
             deleted: false,
             resolved: false,
