@@ -97,7 +97,7 @@ module.exports = {
           return agg;
         }, {});
 
-      const minified = pick(target, ['id', 'type', 'goal', 'translation_key', 'icon', 'subtitle_translation_key']);
+      const minified = pick(target, ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key']);
 
       const emissionIds = Object.keys(target.emissions);
       const countEmissionClusterWith = emissionClusterFilter => emissionIds
