@@ -11,7 +11,6 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     Changes,
     DB,
     ExportProperties,
-    Languages,
     Modal,
     Settings,
     TranslationLoader,
@@ -66,9 +65,9 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         Settings()
       ])
         .then(function(results) {
-          var docs = results[0].rows;
+          var rows = results[0].rows;
           var settings = results[1];
-          var totalTranslations = countTotalTranslations(docs);
+          var totalTranslations = countTotalTranslations(rows);
           $scope.loading = false;
           $scope.languagesModel = {
             totalTranslations: totalTranslations,
@@ -76,9 +75,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
               locale: settings.locale,
               outgoing: settings.locale_outgoing
             },
-            locales: _.map(docs, function(row) {
-              return createLocaleModel(row.doc, totalTranslations);
-            })
+            locales: rows.map(row => createLocaleModel(row.doc, totalTranslations))
           };
         })
         .catch(function(err) {
@@ -146,10 +143,6 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
           $scope.status = { error: true, msg: $translate.instant('Error saving language settings') };
         });
     };
-
-    Languages().then(function(languages) {
-      $scope.enabledLocales = languages;
-    });
 
     Settings()
       .then(function(res) {

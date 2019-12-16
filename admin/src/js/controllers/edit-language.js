@@ -5,7 +5,6 @@ angular.module('controllers').controller('EditLanguageCtrl',
     $scope,
     $translate,
     $uibModalInstance,
-    $window,
     DB
   ) {
 
@@ -47,7 +46,6 @@ angular.module('controllers').controller('EditLanguageCtrl',
           .then(function() {
             $scope.setFinished();
             $uibModalInstance.close();
-            $window.location.reload();
           })
           .catch(function(err) {
             $scope.setError(err, 'Error saving settings');
