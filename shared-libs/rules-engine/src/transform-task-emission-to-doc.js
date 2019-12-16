@@ -45,7 +45,7 @@ module.exports = (taskEmission, calculatedAt, userContactId, existingDoc) => {
 };
 
 const minifyEmission = (taskDoc, emission) => {
-  const minified = ['_id', 'title', 'icon', 'deleted', 'resolved', 'actions']
+  const minified = ['_id', 'title', 'icon', 'deleted', 'resolved', 'actions', 'priority', 'priorityLabel' ]
     .reduce((agg, attr) => {
       if (Object.hasOwnProperty.call(emission, attr)) {
         agg[attr] = emission[attr];
