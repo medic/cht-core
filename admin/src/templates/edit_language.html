@@ -7,6 +7,7 @@
   on-cancel="cancel()"
   on-submit="submit()"
 >
+  <p translate>edit.language.description</p>
   <form action="" method="POST">
 
     <div class="form-group" ng-class="{'has-error': errors.code}">
@@ -14,6 +15,7 @@
       <input type="text" class="form-control tiny" ng-model="language.code" ng-disabled="language._id" />
       <span class="error" ng-show="errors.code">{{errors.code}}</span>
       <span class="help-block" translate>Language code help</span>
+      <span class="help-block" translate>edit.language.code.title</span>
     </div>
 
     <div class="form-group" ng-class="{'has-error': errors.name}">
