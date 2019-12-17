@@ -250,7 +250,7 @@ var _ = require('underscore'),
         .then(() => initTours())
         .then(() => initUnreadCount())
         .then(() => CheckDate())
-        .then(() => recurringProcesses());
+        .then(() => startRecurringProcesses());
     };
 
     Feedback.init();
@@ -574,7 +574,7 @@ var _ = require('underscore'),
       },
     });
 
-    const recurringProcesses = () => {
+    const startRecurringProcesses = () => {
       RecurringProcessManager.startUpdateRelativeDate();
       if (Session.isOnlineOnly()) {
         RecurringProcessManager.startUpdateReadDocsCount();
