@@ -249,7 +249,8 @@ var _ = require('underscore'),
         .then(() => initForms())
         .then(() => initTours())
         .then(() => initUnreadCount())
-        .then(() => CheckDate());
+        .then(() => CheckDate())
+        .then(() => startRecurringProcesses());
     };
 
     Feedback.init();
@@ -319,7 +320,7 @@ var _ = require('underscore'),
         if (err) {
           return $log.error('Error fetching read status', err);
         }
-        ctrl.unreadCount = data;
+        ctrl.setUnreadCount(data);
       });
     };
 
@@ -573,10 +574,13 @@ var _ = require('underscore'),
       },
     });
 
-    RecurringProcessManager.startUpdateRelativeDate();
-    if (Session.isOnlineOnly()) {
-      RecurringProcessManager.startUpdateReadDocsCount();
-    }
+    const startRecurringProcesses = () => {
+      RecurringProcessManager.startUpdateRelativeDate();
+      if (Session.isOnlineOnly()) {
+        RecurringProcessManager.startUpdateReadDocsCount();
+      }
+    };
+
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();
