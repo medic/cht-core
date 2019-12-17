@@ -13,24 +13,36 @@ describe('DBSync service', () => {
   let userCtx;
   let sync;
   let Auth;
-  let recursiveOn;
+  let recursiveOnTo;
+  let recursiveOnFrom;
   let $interval;
   let replicationResult;
   let getItem;
   let setItem;
+  let dbSyncRetry;
 
   beforeEach(() => {
     replicationResult = Q.resolve;
-    recursiveOn = sinon.stub();
-    recursiveOn.callsFake(() => {
+    to = sinon.stub();
+    to.events = {};
+    recursiveOnTo = sinon.stub();
+    recursiveOnTo.callsFake((event, fn) => {
+      to.events[event] = fn;
       const promise = replicationResult();
-      promise.on = recursiveOn;
+      promise.on = recursiveOnTo;
       return promise;
     });
-    to = sinon.stub();
-    to.returns({ on: recursiveOn });
+    to.returns({ on: recursiveOnTo });
     from = sinon.stub();
-    from.returns({ on: recursiveOn });
+    from.events = {};
+    recursiveOnFrom = sinon.stub();
+    recursiveOnFrom.callsFake((event, fn) => {
+      from.events[event] = fn;
+      const promise = replicationResult();
+      promise.on = recursiveOnFrom;
+      return promise;
+    });
+    from.returns({ on: recursiveOnFrom });
     allDocs = sinon.stub();
     info = sinon.stub();
     info.returns(Q.resolve({ update_seq: 99 }));
@@ -40,6 +52,7 @@ describe('DBSync service', () => {
     Auth = sinon.stub();
     setItem = sinon.stub();
     getItem = sinon.stub();
+    dbSyncRetry = sinon.stub();
 
     module('inboxApp');
     module($provide => {
@@ -56,6 +69,7 @@ describe('DBSync service', () => {
       } );
       $provide.value('Auth', Auth);
       $provide.value('$window', { localStorage: { setItem, getItem } });
+      $provide.value('DBSyncRetry', dbSyncRetry);
     });
     inject((_DBSync_, _$interval_) => {
       service = _DBSync_;
@@ -82,9 +96,10 @@ describe('DBSync service', () => {
         expect(Auth.callCount).to.equal(1);
         expect(Auth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
+        expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(1);
-        expect(to.args[0][1]).to.have.keys('filter', 'checkpoint');
+        expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');
       });
     });
 
@@ -236,20 +251,123 @@ describe('DBSync service', () => {
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'success', from: 'success' });
       });
     });
+
+    describe('retries with smaller batch size', () => {
+
+      let count;
+      let retries;
+      const recursiveOnTo = sinon.stub();
+
+      const replicationResultTo = () => {
+        if (count <= retries) {
+          count++;
+          return Q.reject({ code: 413 });
+        } else {
+          return Q.resolve();
+        }
+      };
+
+      beforeEach(() => {
+        count = 0;
+
+        isOnlineOnly.returns(false);
+        Auth.resolves();
+
+        recursiveOnTo.callsFake(() => {
+          const promise = replicationResultTo();
+          promise.on = recursiveOnTo;
+          return promise;
+        });
+
+        to.callsFake(() => {
+          let promise;
+          if (count < retries) {
+            // Too big - retry
+            promise = Q.reject({ code: 413 });
+          } else {
+            // small enough - complete
+            promise = Q.resolve();
+          }
+          promise.on = recursiveOnTo;
+          return promise;
+        });
+      });
+
+      it('if request too large', () => {
+        retries = 3;
+        return service.sync().then(() => {
+          expect(Auth.callCount).to.equal(1);
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(3);
+          expect(to.args[0][1].batch_size).to.equal(100);
+          expect(to.args[1][1].batch_size).to.equal(50);
+          expect(to.args[2][1].batch_size).to.equal(25);
+        });
+      });
+
+      it('gives up once batch size is 1', () => {
+        retries = 100; // should not get this far...
+        return service.sync().then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(7);
+          expect(to.args[0][1].batch_size).to.equal(100);
+          expect(to.args[1][1].batch_size).to.equal(50);
+          expect(to.args[2][1].batch_size).to.equal(25);
+          expect(to.args[3][1].batch_size).to.equal(12);
+          expect(to.args[4][1].batch_size).to.equal(6);
+          expect(to.args[5][1].batch_size).to.equal(3);
+          expect(to.args[6][1].batch_size).to.equal(1);
+        });
+      });
+
+    });
+
+
+    describe('on denied', () => {
+      it('should have "denied" handles for every direction', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        return service.sync().then(() => {
+          expect(to.events.denied).to.be.a('function');
+          expect(from.events.denied).to.be.a('function');
+        });
+      });
+
+      it('"denied" from handle does nothing', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        return service.sync().then(() => {
+          from.events.denied();
+          expect(dbSyncRetry.callCount).to.equal(0);
+        });
+      });
+
+      it('"denied" to handle calls DBSyncRetry', () => {
+        isOnlineOnly.returns(false);
+        Auth.returns(Q.resolve());
+        return service.sync().then(() => {
+          to.events.denied({ some: 'err' });
+          expect(dbSyncRetry.callCount).to.equal(1);
+          expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
+          expect(to.callCount).to.equal(1);
+          expect(from.callCount).to.equal(1);
+        });
+      });
+    });
   });
 
   describe('replicateTo filter', () => {
 
     let filterFunction;
 
-    before(() => {
+    beforeEach(() => {
       isOnlineOnly.returns(false);
       Auth.returns(Q.resolve());
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
       allDocs.returns(Q.resolve({ rows: [] }));
       info.returns(Q.resolve({update_seq: -99}));
-      to.returns({ on: recursiveOn });
-      from.returns({ on: recursiveOn });
+      to.returns({ on: recursiveOnTo });
+      from.returns({ on: recursiveOnFrom });
       return service.sync().then(() => {
         expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;

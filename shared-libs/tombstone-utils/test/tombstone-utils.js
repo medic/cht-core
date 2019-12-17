@@ -391,7 +391,13 @@ describe('Tombstone Utils Lib', function() {
       expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })).to.equal('9-2');
       expect(lib._getPreviousRev({ start: 500, ids: [500, 499, 498, 497, 496, 495, 494, 493] })).to.equal('499-499');
     });
+  });
 
-
+  describe('getTombstonePrefix', () => {
+    it('should return correct value', () => {
+      expect(lib.getTombstonePrefix('myid')).to.equal('myid____');
+      expect(lib.getTombstonePrefix()).to.equal('undefined____');
+      expect(lib.getTombstonePrefix(0)).to.equal('0____');
+    });
   });
 });

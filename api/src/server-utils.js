@@ -7,13 +7,9 @@ const MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
 const wantsJSON = req => req.get('Accept') === 'application/json';
 
-const writeJSON = (res, code, message, details) => {
+const writeJSON = (res, code, error, details) => {
   res.status(code);
-  res.json({
-    code: code,
-    error: message,
-    details: details,
-  });
+  res.json({ code, error, details });
 };
 
 const respond = (req, res, code, message, details) => {
@@ -102,6 +98,9 @@ module.exports = {
    */
   serverError: (err, req, res) => {
     logger.error('Server error: %o', err);
+    if (err.type === 'entity.too.large') {
+      return respond(req, res, 413, 'Payload Too Large');
+    }
     respond(req, res, 500, 'Server error', err.publicMessage);
   },
 

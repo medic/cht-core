@@ -78,7 +78,6 @@ describe('Bulk Docs controller', () => {
         controller._interceptResponse(['requestDocs'], testReq, testRes, JSON.stringify(['results']));
         service.formatResults.callCount.should.equal(1);
         service.formatResults.args[0].should.deep.equal([
-          'something',
           ['requestDocs'],
           ['filteredDocs'],
           ['results']

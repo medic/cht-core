@@ -259,6 +259,18 @@ angular
           })
           .catch(function(err) {
             $log.error('Error in telemetry service', err);
+          })
+          .finally(() => {
+            if (!db || db._destroyed || db._closed) {
+              return;
+            }
+
+            try {
+              db.close();
+            } catch (err) {
+              $log.error('Error closing telemetry DB', err);
+            }
+
           });
 
         return queue;

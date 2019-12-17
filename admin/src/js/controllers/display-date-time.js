@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment');
 
-angular.module('controllers').controller('SettingsAdvancedCtrl',
+angular.module('controllers').controller('DisplayDateTimeCtrl',
   function (
     $log,
     $scope,
@@ -28,7 +28,7 @@ angular.module('controllers').controller('SettingsAdvancedCtrl',
 
     $scope.submitAdvancedSettings = function() {
       $scope.status = { loading: true };
-      var changes = _.clone($scope.advancedSettingsModel);
+      var changes = _.clone($scope.displayDateTimeModel);
       UpdateSettings(changes)
         .then(function() {
           $scope.status = { success: true, msg: translateFilter('Saved') };
@@ -46,17 +46,17 @@ angular.module('controllers').controller('SettingsAdvancedCtrl',
 
     $scope.updateDateFormatExample = function() {
       $scope.dateFormatExample = moment()
-        .format($scope.advancedSettingsModel.date_format);
+        .format($scope.displayDateTimeModel.date_format);
     };
 
     $scope.updateDatetimeFormatExample = function() {
       $scope.datetimeFormatExample = moment()
-        .format($scope.advancedSettingsModel.reported_date_format);
+        .format($scope.displayDateTimeModel.reported_date_format);
     };
 
     Settings()
       .then(function(res) {
-        $scope.advancedSettingsModel = {
+        $scope.displayDateTimeModel = {
           date_format: res.date_format,
           reported_date_format: res.reported_date_format,
         };
@@ -74,7 +74,7 @@ angular.module('controllers').controller('SettingsAdvancedCtrl',
       })
       .catch(function(err) {
         $log.error('Error loading settings', err);
-      });
+    });
 
   }
 );

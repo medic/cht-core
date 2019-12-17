@@ -59,8 +59,8 @@ describe('Navigation tests : ', () => {
 
   it('should open Configuration app', () => {
     commonElements.goToConfiguration();
-    const settings = element(by.css('[ui-sref="settings.basic"]'));
-    expect(settings.isPresent()).toBeTruthy();
+    const display = element(by.css('[ui-sref="display.date-time"]'));
+    expect(display.isPresent()).toBeTruthy();
     browser.get(utils.getBaseUrl() + 'messages/');
   });
 });

@@ -24,6 +24,7 @@
   require('./database-connection-monitor');
   require('./db');
   require('./db-sync');
+  require('./db-sync-retry');
   require('./debounce');
   require('./debug');
   require('./delete-docs');

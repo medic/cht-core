@@ -3,6 +3,7 @@ function(doc) {
       doc.form &&
       doc.contact &&
       doc.contact.parent) {
-    emit([doc.form, doc.contact.parent._id], doc.reported_date);
+    var value = typeof doc.reported_date === 'number' ? doc.reported_date : 0;
+    emit([doc.form, doc.contact.parent._id], value);
   }
 }

@@ -64,6 +64,10 @@ module.exports = {
   created: new Date(2016, 2, 18),
   run: promisify(function(callback) {
     const auditDb = db.get(environment.db + '-audit');
+    const closeCallback = (err, result) => {
+      db.close(auditDb);
+      callback(err, result);
+    };
     ensureViewDdocExists(auditDb, err => {
       if (err) {
         return logger.info(`An error occurred creating audit db: ${err}`);
@@ -80,7 +84,7 @@ module.exports = {
         function(cb) {
           return cb(null, lastLength > 0);
         },
-        callback);
+        closeCallback);
     });
   })
 };
