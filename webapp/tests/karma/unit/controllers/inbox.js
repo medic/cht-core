@@ -7,9 +7,12 @@ describe('InboxCtrl controller', () => {
   let changes;
   let changesListener = {};
   let session;
+  let rulesEnginePromise;
+  let translate;
 
   beforeEach(() => {
     module('inboxApp');
+    window.startupTimes = {};
 
     RecurringProcessManager = {
       startUpdateRelativeDate: sinon.stub(),
@@ -28,6 +31,9 @@ describe('InboxCtrl controller', () => {
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };
+
+
+    rulesEnginePromise = Q.defer();
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
@@ -69,7 +75,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('UserSettings', sinon.stub());
       $provide.value('Telemetry', { record: sinon.stub() });
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
-      $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
+      $provide.value('RulesEngine', { init: rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
       $provide.constant('APP_CONFIG', {
@@ -78,52 +84,65 @@ describe('InboxCtrl controller', () => {
       });
     });
 
-    inject(($rootScope, $controller) => {
+    inject(($rootScope, $controller, _$translate_) => {
       scope = $rootScope.$new();
+      translate = _$translate_;
+      translate.onReady = sinon.stub().resolves();
+
       createController = () => {
         return $controller('InboxCtrl', {
           $scope: scope,
           $rootScope: $rootScope,
+          $translate: translate,
         });
       };
     });
-
-    createController();
   });
 
   afterEach(() => sinon.restore());
 
   it('should start the relative date update recurring process', done => {
+    createController();
+    scope.$apply();
+    rulesEnginePromise.resolve();
     setTimeout(() => {
-      scope.$apply();
-
-      chai
-        .expect(RecurringProcessManager.startUpdateRelativeDate.callCount)
-        .to.equal(1);
+      chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
       done();
     });
   });
 
   it('should cancel the relative date update recurring process when destroyed', () => {
+    createController();
     scope.$destroy();
-    chai
-      .expect(RecurringProcessManager.stopUpdateRelativeDate.callCount)
-      .to.equal(1);
+    chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
   });
 
-  it('should not start the UpdateUnreadDocsCount recurring process when not online', () => {
-    chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
-    scope.$destroy();
-    chai.expect(RecurringProcessManager.stopUpdateReadDocsCount.callCount).to.equal(1);
+  it('should not start the UpdateUnreadDocsCount recurring process when not online', done => {
+    createController();
+    scope.$apply();
+    rulesEnginePromise.resolve();
+    setTimeout(() => {
+      chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
+      scope.$destroy();
+      chai.expect(RecurringProcessManager.stopUpdateReadDocsCount.callCount).to.equal(1);
+      done();
+    });
   });
 
-  it('should start the UpdateUnreadDocsCount recurring process when online', () => {
+  it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', done => {
     session.isOnlineOnly.returns(true);
     createController();
-    chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
+    rulesEnginePromise.resolve();
+    setTimeout(() => {
+      chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
+      done();
+    });
   });
 
   it('should watch changes in translations, ddoc and user context', () => {
+    createController();
+    scope.$apply();
+
     chai.expect(changesListener['inbox-translations']).to.be.an('object');
     chai.expect(changesListener['inbox-ddoc']).to.be.an('object');
     chai.expect(changesListener['inbox-user-context']).to.be.an('object');
@@ -132,6 +151,7 @@ describe('InboxCtrl controller', () => {
   it('InboxUserContent Changes listener should filter only logged in user, if exists', () => {
     session.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
     createController();
+    scope.$apply();
     chai.expect(changesListener['inbox-user-context'].filter({ id: 'something' })).to.equal(false);
     chai.expect(changesListener['inbox-user-context'].filter({ id: 'someperson' })).to.equal(false);
     chai.expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
@@ -139,16 +159,12 @@ describe('InboxCtrl controller', () => {
 
     session.userCtx.returns(false);
     createController();
-    chai
-      .expect(
-        changesListener['inbox-user-context'].filter({
-          doc: { type: 'user-settings', name: 'a' },
-        })
-      )
-      .to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }})).to.equal(false);
   });
 
   it('InboxUserContent Changes listener callback should check current session', () => {
+    createController();
+    scope.$apply();
     changesListener['inbox-user-context'].callback();
     chai.expect(session.init.callCount).to.equal(1);
   });
