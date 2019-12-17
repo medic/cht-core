@@ -8,7 +8,6 @@ describe('InboxCtrl controller', () => {
   let changesListener = {};
   let session;
   let rulesEnginePromise;
-  let translate;
 
   beforeEach(() => {
     module('inboxApp');
@@ -86,14 +85,12 @@ describe('InboxCtrl controller', () => {
 
     inject(($rootScope, $controller, _$translate_) => {
       scope = $rootScope.$new();
-      translate = _$translate_;
-      translate.onReady = sinon.stub().resolves();
+      _$translate_.onReady = sinon.stub().resolves();
 
       createController = () => {
         return $controller('InboxCtrl', {
           $scope: scope,
           $rootScope: $rootScope,
-          $translate: translate,
         });
       };
     });
