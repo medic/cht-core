@@ -459,7 +459,7 @@ module.exports = function(grunt) {
       },
       'blank-link-check': {
         cmd: `echo "Checking for dangerous _blank links..." &&
-               ! (git grep -E  'target\\\\?="_blank"' -- webapp/src |
+               ! (git grep -E  'target\\\\?="_blank"' -- webapp/src admin/src |
                       grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,

@@ -32,6 +32,8 @@
 
 <div class="loader" ng-show="loading"></div>
 
+<p class="help-block" translate>display.language.accordion.title</p>
+
 <div id="language-accordion" ng-show="!loading" class="panel-group" role="tablist">
   <div class="panel panel-default" ng-repeat="localeModel in languagesModel.locales track by localeModel.doc._id" ng-class="{'disabled': !localeModel.doc.enabled}">
     <div class="panel-heading" role="tab" id="locale-{{localeModel.doc.code}}">
@@ -54,7 +56,7 @@
         <div class="alert alert-warning" role="alert" ng-show="{{localeModel.missing > 0}}" translate translate-values="localeModel">Missing translations</div>
         <div>
           <button type="button" class="btn btn-link" ng-click="editLanguage(localeModel.doc)">
-            <i class="fa fa-pencil"></i><span translate>Edit</span>
+            <i class="fa fa-pencil"></i><span translate>edit.name</span>
           </button>
         </div>
         <div ng-if="localeModel.doc.enabled">
@@ -69,12 +71,12 @@
         </div>
         <div>
           <a class="btn btn-link" ng-attr-download="{{localeModel.export.name}}" ng-href="{{localeModel.export.url}}">
-            <i class="fa fa-arrow-down"></i><span translate>Export</span>
+            <i class="fa fa-arrow-down"></i><span translate>Download</span>
           </a>
         </div>
         <div>
           <button type="button" class="btn btn-link" data-toggle="modal" ng-click="prepareImport(localeModel.doc)">
-            <i class="fa fa-arrow-up"></i><span translate>Import</span>
+            <i class="fa fa-arrow-up"></i><span translate>Upload</span>
           </button>
         </div>
         <div>
