@@ -75,7 +75,7 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant.svg',
       '/img/setup-wizard-demo.png',
       '/img/simprints.png',
-      // '/js/inbox.js',?????????????????
+      '/js/inbox.js',
       '/js/templates.js',
       '/login/script.js',
       '/login/style.css',

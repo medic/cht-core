@@ -353,15 +353,11 @@ angular.module('inboxServices').service('Enketo',
 
     const addPopStateHandler = function(form, $wrapper) {
       $($window).on('popstate.enketo-pagemode', function(event) {
-        if(event.originalEvent &&
+        if (event.originalEvent &&
             event.originalEvent.state &&
-            typeof event.originalEvent.state.enketo_page_number === 'number') {
-          const targetPage = event.originalEvent.state.enketo_page_number;
-
-          if ($wrapper.find('.container').not(':empty')) {
-            const pages = form.pages;
-            pages._flipTo(pages.$activePages[targetPage], targetPage);
-          }
+            typeof event.originalEvent.state.enketo_page_number === 'number' &&
+            $wrapper.find('.container').not(':empty')) {
+          form.pages._prev();
         }
       });
     };
@@ -379,7 +375,7 @@ angular.module('inboxServices').service('Enketo',
     };
 
     const replaceMarkup = function(doc) {
-      $('.question-label, .question > .or-hint', doc.html).each(function() {
+      $('.question :not(.note) > .question-label, .question > .or-hint', doc.html).each(function () {
         $(this).html(Markdown.basic($(this).html()));
       });
       return doc;
@@ -388,9 +384,7 @@ angular.module('inboxServices').service('Enketo',
     const renderForm = function(selector, formDoc, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
         return transformXml(formDoc, language)
-          .then(doc => {
-            return replaceMarkup(doc);
-          })
+          .then(doc => replaceMarkup(doc))
           .then(doc => {
             replaceJavarosaMediaWithLoaders(formDoc, doc.html);
             return renderFromXmls(doc, selector, instanceData, language);

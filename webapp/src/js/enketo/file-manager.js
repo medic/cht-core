@@ -16,7 +16,7 @@ define( function( require, exports, module ) {
       return '32KB';
     };
 
-
+    // Exposing to overwrite enketo's file-manager with these file size defaults
     module.exports = fileManager;
 
 } );
