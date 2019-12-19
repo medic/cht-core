@@ -2,9 +2,11 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
   function (
     $log,
     $ngRedux,
+    $q,
     $scope,
     $state,
     $translate,
+    DB,
     Enketo,
     Geolocation,
     GlobalActions,
@@ -53,22 +55,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var setSelectedTask = function(task) {
-      LiveList.tasks.setSelected(task._id);
-      ctrl.setSelectedTask(task);
-      if (typeof task.title === 'string') {
-        // new translation key style
-        task.title = $translate.instant(task.title, task);
-      } else {
-        // old message array style
-        task.title = TranslateFrom(task.title, task);
-      }
-      ctrl.setTitle(TranslateFrom(task.title, task));
-      ctrl.setShowContent(true);
-      if (hasOneActionAndNoFields(task)) {
-        ctrl.performAction(task.actions[0], true);
-      }
-    };
 
     const setSelected = function(id) {
       if (!id) {
@@ -78,20 +64,29 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
       const task = LiveList.tasks.getList().find(task => task._id === id);
       if (task) {
-        var refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
+        const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
         ctrl.settingSelected(refreshing);
-        setSelectedTask(task);
+        hydrateTaskEmission(task).then(hydratedTask => {
+          ctrl.setSelectedTask(hydratedTask);
+          LiveList.tasks.setSelected(hydratedTask._id);
+          ctrl.setTitle(hydratedTask.title);
+          ctrl.setShowContent(true);
+  
+          if (hasOneActionAndNoFields(hydratedTask)) {
+            ctrl.performAction(hydratedTask.actions[0], true);
+          }
+        });
       }
     };
 
-    var geolocation;
+    let geolocation;
     Geolocation()
       .then(function(position) {
         geolocation = position;
       })
       .catch($log.warn);
 
-    var hasOneActionAndNoFields = function(task) {
+    const hasOneActionAndNoFields = function(task) {
       return Boolean(
         task &&
         task.actions &&
@@ -105,7 +100,33 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       );
     };
 
-    var markFormEdited = function() {
+    const hydrateTaskEmission = function(task) {
+      if (!Array.isArray(task.actions) || task.actions.length === 0 || !task.forId) {
+        return $q.resolve(task);
+      }
+
+      return DB().get(task.forId)
+        .then(contactDoc => {
+          for (const action of task.actions) {
+            if (!action.content) {
+              action.content = {};
+            }
+
+            if (!action.content.contact) {
+              action.content.contact = contactDoc;
+            }
+          }
+
+
+          return task;
+        })
+        .catch(err => {
+          $log.error('Failed to hydrate contact information in task action', err);
+          return task;
+        });
+    };
+
+    const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
 

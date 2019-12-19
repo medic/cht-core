@@ -62,21 +62,13 @@ angular.module('inboxServices').factory('ContactsActions',
                 selected.children.every(group => !group.contacts || !group.contacts.length);
       };
 
-      const receiveTasks = (tasks) => {
-        const tasksByContact = {};
-        tasks.forEach(task => {
-          if (task.doc && task.doc.contact) {
-            const contactId = task.doc.contact._id;
-            tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
-          }
-        });
-        updateSelectedContact({ tasks });
-        updateSelectedContact({ tasksByContact });
-      };
-
       const registerTasksListener = selected => {
         Auth('can_view_tasks')
-          .then(() => TasksForContact(selected, 'ContactsCtrl', receiveTasks))
+          .then(() => (
+            TasksForContact(selected)
+              .then(taskDocs => updateSelectedContact({ tasks: taskDocs.map(doc => doc.emission) }))
+              .catch(err => $log.error('Failed to load tasks for contact', err))
+          ))
           .catch(() => $log.debug('Not authorized to view tasks'));
       };
 
@@ -172,7 +164,7 @@ angular.module('inboxServices').factory('ContactsActions',
                   return lazyLoadedContactData
                     .then(() => {
                       selected = Selectors.getSelectedContact(getState());
-                      registerTasksListener();
+                      registerTasksListener(selected);
                       return $q.all([
                         ContactSummary(selected.doc, selected.reports, selected.lineage),
                         Settings()

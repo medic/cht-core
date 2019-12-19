@@ -181,6 +181,7 @@ describe('Contacts controller', () => {
     };
   }));
 
+
   describe('sets left actionBar', () => {
     it('when user has facility_id', () => {
       const ctrl = createController();

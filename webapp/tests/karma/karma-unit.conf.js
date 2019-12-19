@@ -27,7 +27,7 @@ module.exports = function(config) {
       'node_modules/jquery/dist/jquery.js',
       'node_modules/underscore/underscore.js',
 
-      'node_modules/q/q.js',
+      '../node_modules/q/q.js',
 
       // application code
       '../build/ddocs/medic/_attachments/js/inbox.js',

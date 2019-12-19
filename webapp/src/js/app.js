@@ -146,7 +146,7 @@ const createReduxLoggerConfig = Selectors => ({
     $compileProvider.aHrefSanitizationWhitelist(
       /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
     );
-    var isDevelopment = window.location.hostname === 'localhost';
+    var isDevelopment = window.location.hostname === 'localhost' && window.location.port !== '9876'; // 9876 is port used for karma tests
     $compileProvider.debugInfoEnabled(isDevelopment);
 
     var middlewares = [reduxThunk];

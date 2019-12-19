@@ -1,20 +1,17 @@
-var _ = require('underscore');
+const _ = require('underscore');
+const moment = require('moment');
 
 // medic specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig',
   function(
-    $log,
     $ngRedux,
     $parse,
     $templateCache,
-    $timeout,
     $translate,
     ContactTypes,
     LiveList,
-    RulesEngine,
     Selectors,
-    TranslateFrom,
     relativeDayFilter
   ) {
     'use strict';
@@ -25,7 +22,6 @@ angular.module('inboxServices').factory('LiveListConfig',
 
     var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
     var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
-    var TASK_DUE_PERIOD = 24 * 60 * 60 * 1000; // 1 day in millis
 
     var parse = function(expr, scope) {
       return $parse(expr)(scope) || '';
@@ -208,20 +204,11 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: reports_config.listItem,
       });
 
-      var translateProperty = function(property, task) {
-        if (_.isString(property)) {
-          // new translation key style
-          return $translate.instant(property, task);
-        }
-        // old message array style
-        return TranslateFrom(property, task);
-      };
-
       LiveList.$listFor('tasks', {
         selector: '#tasks-list ul',
         orderBy: function(t1, t2) {
-          var lhs = t1 && t1.date,
-              rhs = t2 && t2.date;
+          const lhs = t1 && t1.dueDate,
+              rhs = t2 && t2.dueDate;
           if (!lhs && !rhs) {
             return 0;
           }
@@ -231,59 +218,28 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (!rhs) {
             return -1;
           }
-          // Currently some task dates are Strings while others are proper JS
-          // Date objects.  Simplest way to compare them is to parse all into
-          // instances of Date.
-          return Date.parse(lhs) - Date.parse(rhs);
+
+          return lhs < rhs ? -1 : 1;
         },
         listItem: function(task) {
-          var scope = {};
-          var dueDate = Date.parse(task.date);
-          var startOfToday = (new Date()).setHours(0, 0, 0, 0);
+          const scope = {};
+          const startOfToday = moment().startOf('day');
+          const dueDate = moment(task.dueDate, 'YYYY-MM-DD');
           scope.id = task._id;
           scope.route = 'tasks';
-          scope.date = task.date;
-          scope.overdue = dueDate < startOfToday;
-          scope.due = !scope.overdue && (dueDate - startOfToday) < TASK_DUE_PERIOD;
+          scope.date = new Date(dueDate.valueOf());
+          scope.overdue = dueDate.isBefore(startOfToday);
+          scope.due = dueDate.isSame(new Date(), 'day');
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
-          scope.summary = translateProperty(task.title, task);
-          scope.warning = translateProperty(task.priorityLabel, task);
+          scope.summary = task.title;
+          scope.warning = task.priorityLabel;
           scope.hideTime = true;
           return renderTemplate(scope);
         },
       });
 
       LiveList.tasks.set([]);
-
-      RulesEngine.listen('tasks-list', 'task', function(err, tasks) {
-        if (err) {
-          $log.error('Error getting tasks', err);
-
-          var notifyError = LiveList.tasks.notifyError;
-          if (notifyError) {
-            notifyError();
-          }
-
-          LiveList.tasks.set([]);
-          return;
-        }
-
-        $timeout(function() {
-          tasks.forEach(function(task) {
-            if (task.resolved || task.deleted) {
-              LiveList.tasks.remove(task);
-            } else {
-              LiveList.tasks.update(task);
-            }
-
-            var notifyChange = LiveList.tasks.notifyChange;
-            if (notifyChange) {
-              notifyChange(task);
-            }
-          });
-        });
-      });
 
     };
   }

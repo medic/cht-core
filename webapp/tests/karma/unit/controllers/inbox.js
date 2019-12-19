@@ -56,6 +56,8 @@ describe('InboxCtrl controller', () => {
       $provide.value('CheckDate', sinon.stub());
       $provide.value('Contact', sinon.stub());
       $provide.value('CountMessages', { init: sinon.stub() });
+      $provide.value('DeleteDocs', KarmaUtils.nullPromise());
+      $provide.value('Debug', { set: sinon.stub() });
       $provide.value('XmlForms', sinon.stub());
       $provide.value('Contacts', sinon.stub());
       $provide.value('PlaceHierarchy', () => Promise.resolve());
@@ -74,7 +76,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('UserSettings', sinon.stub());
       $provide.value('Telemetry', { record: sinon.stub() });
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
-      $provide.value('RulesEngine', { init: rulesEnginePromise.promise });
+      $provide.value('RulesEngine', { isEnabled: () => rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
       $provide.constant('APP_CONFIG', {
@@ -91,6 +93,15 @@ describe('InboxCtrl controller', () => {
         return $controller('InboxCtrl', {
           $scope: scope,
           $rootScope: $rootScope,
+          $window: {
+            addEventListener: () => {},
+            location: { href: '' },
+            localStorage: {
+              getItem: sinon.stub(),
+            },
+            startupTimes: {},
+            PouchDB: {},
+          },
         });
       };
     });
@@ -156,7 +167,8 @@ describe('InboxCtrl controller', () => {
 
   it('InboxUserContent Changes listener callback should check current session', () => {
     createController();
-    changesListener['inbox-user-context'].callback();
     chai.expect(session.init.callCount).to.equal(1);
+    changesListener['inbox-user-context'].callback();
+    chai.expect(session.init.callCount).to.equal(2);
   });
 });

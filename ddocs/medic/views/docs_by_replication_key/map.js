@@ -66,6 +66,9 @@ function (doc) {
         }
       }
       return;
+    case 'task':
+    case 'target':
+      return emit(doc.user, {});
     case 'contact':
     case 'clinic':
     case 'district_hospital':

@@ -8,6 +8,7 @@ describe('TasksContentCtrl', () => {
       ctrl,
       createController,
       render,
+      get,
       XmlForms;
 
   beforeEach(() => {
@@ -24,31 +25,34 @@ describe('TasksContentCtrl', () => {
       setSelected: () => tasksActions.setSelectedTask(task)
     };
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
+    get = sinon.stub().resolves({ _id: 'contact' });
     render.resolves();
     createController = () => {
       ctrl = $controller('TasksContentCtrl', {
-        $scope: $scope,
-        $ngRedux: $ngRedux,
+        $scope,
+        $ngRedux,
         $state: { params: { id: '123' } },
         $q: Q,
-        Enketo: { render: render },
-        DB: sinon.stub(),
-        XmlForms: XmlForms,
+        Enketo: { render },
+        DB: () => ({ get }),
+        XmlForms,
         Telemetry: { record: sinon.stub() },
-        LiveList: { tasks: {
-          clearSelected: sinon.stub(),
-          setSelected: sinon.stub(),
-          getList: sinon.stub().returns([ task ])
-        } }
+        LiveList: { 
+          tasks: {
+            clearSelected: sinon.stub(),
+            setSelected: sinon.stub(),
+            getList: sinon.stub().returns([ task ])
+          },
+        }
       });
     };
   }));
 
   afterEach(() => {
-    KarmaUtils.restore(render, XmlForms);
+    KarmaUtils.restore(render, get, XmlForms);
   });
 
-  it('loads form when task has one action and no fields', done => {
+  it('loads form when task has one action and no fields (without hydration)', done => {
     task = {
       _id: '123',
       actions: [{
@@ -60,14 +64,68 @@ describe('TasksContentCtrl', () => {
     const form = { _id: 'myform', title: 'My Form' };
     XmlForms.get.resolves(form);
     createController();
-    expect(ctrl.formId).to.equal('A');
     setTimeout(() => {
+      expect(ctrl.formId).to.equal('A');
+      
       expect(render.callCount).to.equal(1);
       expect(render.getCall(0).args.length).to.equal(4);
       expect(render.getCall(0).args[0]).to.equal('#task-report');
       expect(render.getCall(0).args[1]).to.deep.equal(form);
       expect(render.getCall(0).args[2]).to.equal('nothing');
+      expect(get.callCount).to.eq(0);
       expect(getEnketoEditedStatus()).to.equal(false);
+      done();
+    });
+  });
+
+  it('successful hydration', done => {
+    task = {
+      _id: '123',
+      forId: 'contact',
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: {
+          something: 'nothing',
+        },
+      }]
+    };
+    const form = { _id: 'myform', title: 'My Form' };
+    XmlForms.get.resolves(form);
+    createController();
+    setTimeout(() => {
+      expect(get.callCount).to.eq(1);
+      expect(get.args).to.deep.eq([['contact']]);
+      
+      expect(render.callCount).to.eq(1);
+      expect(render.args[0][2]).to.deep.eq({
+        contact: { _id: 'contact' },
+        something: 'nothing',
+      });
+      done();
+    });
+  });
+
+  it('unsuccessful hydration', done => {
+    get.rejects();
+    task = {
+      _id: '123',
+      forId: 'dne',
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: 'nothing',
+      }]
+    };
+    const form = { _id: 'myform', title: 'My Form' };
+    XmlForms.get.resolves(form);
+    createController();
+    setTimeout(() => {
+      expect(get.callCount).to.eq(1);
+      expect(get.args).to.deep.eq([['dne']]);
+      
+      expect(render.callCount).to.eq(1);
+      expect(render.args[0][2]).to.eq('nothing');
       done();
     });
   });
@@ -101,10 +159,12 @@ describe('TasksContentCtrl', () => {
       }]
     };
     createController();
-    expect(ctrl.formId).to.equal(null);
-    expect(ctrl.loadingForm).to.equal(undefined);
-    expect(render.callCount).to.equal(0);
-    done();
+    setTimeout(() => {
+      expect(ctrl.formId).to.equal(null);
+      expect(ctrl.loadingForm).to.equal(undefined);
+      expect(render.callCount).to.equal(0);
+      done();
+    });
   });
 
   it('displays error if enketo fails to render', done => {

@@ -1,6 +1,7 @@
 describe('Contacts store', () => {
   'use strict';
 
+  let { assert } = chai;
   let loadChildren;
   let loadReports;
   let getContact;
@@ -129,26 +130,18 @@ describe('Contacts store', () => {
       });
     });
 
-    it('should store tasks in redux store and count tasks by contact', () => {
+    it('should store tasks in redux store', () => {
+      const taskEmissions = [
+        { contact: { _id: 'contact1' } },
+        { contact: { _id: 'contact2' } },
+      ];
+      const taskDocs = taskEmissions.map(emission => ({ emission }));
+      tasksForContact.resolves(taskDocs);
       return contactsActions.setSelectedContact('123').then(() => {
         chai.expect(tasksForContact.callCount).to.equal(1);
-        const tasksForContactCallback = tasksForContact.args[0][2];
-        const tasks = [
-          { doc: { contact: { _id: 'contact1' } } },
-          { other: 4  },
-          { doc: { other: 3 } },
-          { doc: { contact: { _id: 'contact1' } } },
-          { doc: { contact: { _id: 'contact2' } } },
-          { doc: { contact: { _id: 'contact1' } } },
-        ];
-        tasksForContactCallback(tasks);
         const state = getState();
         const contactsState = selectors.getContactsState(state);
-        assert.deepEqual(contactsState.selected.tasks, tasks);
-        assert.deepEqual(contactsState.selected.tasksByContact, {
-          'contact1': 3,
-          'contact2': 1
-        });
+        assert.deepEqual(contactsState.selected.tasks, taskEmissions);
       });
     });
 

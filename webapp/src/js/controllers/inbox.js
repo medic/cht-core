@@ -1,6 +1,5 @@
-var _ = require('underscore'),
-  bootstrapTranslator = require('./../bootstrapper/translator'),
-  moment = require('moment');
+const _ = require('underscore');
+const moment = require('moment');
 
 (function() {
   'use strict';
@@ -192,6 +191,8 @@ var _ = require('underscore'),
       'boot_time:3:to_angular_bootstrap',
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
+    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
+    delete $window.startupTimes;
 
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
@@ -225,33 +226,16 @@ var _ = require('underscore'),
       },
     });
 
-    // BootstrapTranslator is used because $translator.onReady has not fired
-    $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
-
-    RulesEngine.init
-      .catch(function(err) {
-        $log.error('RuleEngine failed to Initialize', err);
-      })
-      .then(function() {
-        ctrl.dbWarmedUp = true;
-
-        const dbWarmed = performance.now();
-        Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
-        Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
-
-        delete $window.startupTimes;
-        lazyLoadTasks();
-      });
+    ctrl.dbWarmedUp = true;
 
     // initialisation tasks that can occur after the UI has been rendered
-    const lazyLoadTasks = () => {
-      Session.init()
-        .then(() => initForms())
-        .then(() => initTours())
-        .then(() => initUnreadCount())
-        .then(() => CheckDate())
-        .then(() => startRecurringProcesses());
-    };
+    Session.init()
+      .then(() => initRulesEngine())
+      .then(() => initForms())
+      .then(() => initTours())
+      .then(() => initUnreadCount())
+      .then(() => CheckDate())
+      .then(() => startRecurringProcesses());
 
     Feedback.init();
 
@@ -331,6 +315,10 @@ var _ = require('underscore'),
     var translateTitle = function(key, label) {
       return key ? $translate.instant(key) : TranslateFrom(label);
     };
+
+    const initRulesEngine = () => RulesEngine.isEnabled()
+      .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
+      .catch(err => $log.error('RuleEngine failed to initialize', err));
 
     // get the forms for the forms filter
     const initForms = () => {
