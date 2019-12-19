@@ -158,5 +158,60 @@ describe('target-state', () => {
       value: { pass: 1, total: 1 },
     }]);
   });
+
+  describe('groupBy', () => {
+    it('one passing, one failing', () => {
+      const targets = [{
+        id: 'target',
+        passesIfGroupCount: { gte: 2 },
+      }];
+      let state = targetState.createEmptyState(targets);
+      targetState.storeTargetEmissions(state, [], [
+        mockEmission({ _id: 'a', groupBy: '1', pass: true }),
+        mockEmission({ _id: 'b', groupBy: '2', pass: false }), // pass should have no effect
+        mockEmission({ _id: 'c', groupBy: '1' }),
+      ]);
+      expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+        id: 'target',
+        value: { pass: 1, total: 2 },
+      }]);
+    });
+
+    it('failing only because of contact ordering', () => {
+      const targets = [{
+        id: 'target',
+        passesIfGroupCount: { gte: 2 },
+      }];
+      let state = targetState.createEmptyState(targets);
+      targetState.storeTargetEmissions(state, [], [
+        mockEmission({ _id: 'a', groupBy: '1', contact: { _id: 'c1', reported_date: 1 } }),
+        mockEmission({ _id: 'a', groupBy: '3', contact: { _id: 'c2', reported_date: 2 } }),
+        mockEmission({ _id: 'b', groupBy: '2' }),
+        mockEmission({ _id: 'c', groupBy: '1' }),
+      ]);
+      expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+        id: 'target',
+        value: { pass: 0, total: 3 },
+      }]);
+    });
+
+    it('failing because of targetEmissionFilter', () => {
+      const targets = [{
+        id: 'target',
+        passesIfGroupCount: { gte: 2 },
+      }];
+      let state = targetState.createEmptyState(targets);
+      targetState.storeTargetEmissions(state, [], [
+        mockEmission({ _id: 'a', groupBy: '1', contact: { _id: 'c1', reported_date: 1 }, date: 2000 }),
+        mockEmission({ _id: 'a', groupBy: '3', contact: { _id: 'c2' }, date: 1000 }),
+        mockEmission({ _id: 'b', groupBy: '2', date: 3000 }),
+        mockEmission({ _id: 'c', groupBy: '1', date: 1000 }),
+      ]);
+      expect(targetState.aggregateStoredTargetEmissions(state, emission => emission.date === 1000)).to.deep.eq([{
+        id: 'target',
+        value: { pass: 0, total: 2 },
+      }]);
+    });
+  });
 });
 

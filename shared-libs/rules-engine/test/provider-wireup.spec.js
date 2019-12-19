@@ -407,5 +407,60 @@ describe('provider-wireup integration tests', () => {
         },
       });
     });
+
+    it('uhc - % families with 2 hh visits/month', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      const rules = noolsPartnerTemplate('', { });
+      const settings = {
+        rules,
+        targets: [{
+          id: 'uhc',
+          passesIfGroupCount: { gte: 2 },
+        }]
+      };
+      await wireup.initialize(provider, settings, {});
+   
+      const hhEmission = (day, family, patient) => {
+        const date = moment(`2000-01-${day}`);
+        return {
+          _id: `${family}~${date.format('YYYY-MM-DD')}`,
+          contact: { _id: patient },
+          type: 'uhc',
+          groupBy: family,
+          date: date.valueOf()
+        };
+      };
+      const refreshRulesEmissions = sinon.stub().resolves({
+        targetEmissions: [
+          hhEmission(1, 'family1', 'patient-1-1'),
+          hhEmission(1, 'family1', 'patient-1-2'), // redundant
+          hhEmission(3, 'family1', 'patient-1-1'),
+
+          hhEmission(3, 'family2', 'patient-2-1'),
+          hhEmission(28, 'family2', 'patient-2-1'),
+
+          hhEmission(4, 'family3', 'patient-3-1'),
+          hhEmission(35, 'family4', 'patient-4-1'), // outside filter
+
+          ...[1,2,3,4,5].map(day => hhEmission(day, 'family5', 'patient-5-1')),
+        ],
+      });
+      const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+   
+      const interval = {
+        start: moment('2000-01-01').valueOf(),
+        end: moment('2000-01-31').valueOf(),
+      };
+
+      const targets = await withMockRefresher(() => wireup.fetchTargets(provider, interval));
+      expect(refreshRulesEmissions.callCount).to.eq(1);
+      expect(targets).to.deep.eq([{
+        id: 'uhc',
+        value: {
+          pass: 2, // 1 and 5
+          total: 4, // not 4
+        },
+      }]);
+    });
   });
 });
