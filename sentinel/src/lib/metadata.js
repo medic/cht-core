@@ -10,7 +10,7 @@ const migrateOldMetaDoc = doc => {
     _rev: doc._rev,
     _deleted: true,
   };
-  logger.info(`Deleting old metadata document: ${doc}`);
+  logger.info('Deleting old metadata document: %o', doc);
   return db.medic
     .put(stub)
     .then(() => {
@@ -62,11 +62,9 @@ const getMetaData = () => {
 
 const getProcessedSeq = () => {
   return getMetaData()
-    .then(doc => {
-      return doc.processed_seq;
-    })
+    .then(doc => doc.processed_seq)
     .catch(err => {
-      logger.error('Error getting meta data: %o',err);
+      logger.error('Error getting meta data: %o', err);
       throw err;
     });
 };

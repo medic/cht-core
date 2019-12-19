@@ -25,7 +25,7 @@
         <td>
           <relative-date date="message.record.reportedDate" date-format="dateFormat"></relative-date>
           <div>
-            <a ng-if="message.link" ng-href="{{basePath}}#/reports/{{message.record.id}}" target="_blank" translate>
+            <a ng-if="message.link" ng-href="{{basePath}}#/reports/{{message.record.id}}" target="_blank" rel="noopener noreferrer" translate>
               admin.message.queue.view.report
             </a>
           </div>

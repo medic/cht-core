@@ -108,7 +108,7 @@ const moment = require('moment');
         className: 'required'
       },
       unknown: {
-        icon: 'fa-question-circle',
+        icon: 'fa-info-circle',
         key: 'sync.status.unknown'
       }
     };
@@ -116,7 +116,7 @@ const moment = require('moment');
     ctrl.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
-      current: SYNC_STATUS.unknown,
+      lastSuccessTo: parseInt($window.localStorage.getItem('medic-last-replicated-date'))
     });
 
     DBSync.addUpdateListener(({ state, to, from }) => {
@@ -132,24 +132,28 @@ const moment = require('moment');
       const lastTrigger = ctrl.replicationStatus.lastTrigger;
       const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
       if (state === 'inProgress') {
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.inProgress });
-        ctrl.updateReplicationStatus({ lastTrigger: now });
-        $log.info(`Replication started after ${delay} seconds since previous attempt`);
+        ctrl.updateReplicationStatus({
+          current: SYNC_STATUS.inProgress,
+          lastTrigger: now
+        });
+        $log.info(`Replication started after ${Math.round(delay)} seconds since previous attempt`);
         return;
       }
+      const statusUpdates = {};
       if (to === 'success') {
-        ctrl.updateReplicationStatus({ lastSuccessTo: now });
+        statusUpdates.lastSuccessTo = now;
       }
       if (from === 'success') {
-        ctrl.updateReplicationStatus({ lastSuccessFrom: now });
+        statusUpdates.lastSuccessFrom = now;
       }
       if (to === 'success' && from === 'success') {
         $log.info(`Replication succeeded after ${delay} seconds`);
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.success });
+        statusUpdates.current = SYNC_STATUS.success;
       } else {
         $log.info(`Replication failed after ${delay} seconds`);
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
+        statusUpdates.current = SYNC_STATUS.required;
       }
+      ctrl.updateReplicationStatus(statusUpdates);
     });
 
     // Set this first because if there are any bugs in configuration
@@ -226,11 +230,11 @@ const moment = require('moment');
 
     // initialisation tasks that can occur after the UI has been rendered
     Session.init()
-      .then(() => initRulesEngine())
       .then(() => initForms())
       .then(() => initTours())
       .then(() => initUnreadCount())
-      .then(() => CheckDate());
+      .then(() => CheckDate())
+      .then(() => startRecurringProcesses());
 
     Feedback.init();
 
@@ -299,7 +303,7 @@ const moment = require('moment');
         if (err) {
           return $log.error('Error fetching read status', err);
         }
-        ctrl.unreadCount = data;
+        ctrl.setUnreadCount(data);
       });
     };
 
@@ -557,10 +561,13 @@ const moment = require('moment');
       },
     });
 
-    RecurringProcessManager.startUpdateRelativeDate();
-    if (Session.isOnlineOnly()) {
-      RecurringProcessManager.startUpdateReadDocsCount();
-    }
+    const startRecurringProcesses = () => {
+      RecurringProcessManager.startUpdateRelativeDate();
+      if (Session.isOnlineOnly()) {
+        RecurringProcessManager.startUpdateReadDocsCount();
+      }
+    };
+
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();

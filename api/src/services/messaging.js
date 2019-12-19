@@ -11,6 +11,7 @@ const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking
   // medic-gateway -- ignored because it's a pull not a push service
 };
+const DEFAULT_CONFIG = { outgoing_service: 'medic-gateway' };
 
 const getTaskFromMessage = (tasks, uuid) => {
   return tasks && tasks.find(task => {
@@ -59,11 +60,12 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
   }, {});
 };
 
+const getConfig = () => config.get('sms') || DEFAULT_CONFIG;
+
 const getOutgoingMessageService = () => {
-  const settings = config.get('sms');
-  return settings &&
-         settings.outgoing_service &&
-         SMS_SENDING_SERVICES[settings.outgoing_service];
+  const config = getConfig();
+  return config.outgoing_service &&
+         SMS_SENDING_SERVICES[config.outgoing_service];
 };
 
 const checkDbForMessagesToSend = () => {
@@ -301,8 +303,7 @@ module.exports = {
    * two services sending the same message.
    */
   isMedicGatewayEnabled: () => {
-    const settings = config.get('sms') || {};
-    return settings.outgoing_service === 'medic-gateway';
+    return getConfig().outgoing_service === 'medic-gateway';
   }
   
 };
