@@ -10,23 +10,26 @@
  * Functions in this module all accept a "state" parameter or return a "state" object. This state has the following structure:
  * 
  * @example 
- * target_id: {
- *   id: 'target_id',
- *   type: 'count',
- *   goal: 0,
- *   ..
+ * {
+ *   target.id: {
+ *     id: 'target_id',
+ *     type: 'count',
+ *     goal: 0,
+ *     ..
  *   
- *   emissions: {
- *     emitted_id: {
- *       requestor_id: {
- *         pass: boolean,
- *         date: timestamp,
- *         order: timestamp,
+ *     emissions: {
+ *       emission.id: {
+ *         requestor.id: {
+ *           pass: boolean,
+ *           date: timestamp,
+ *           order: timestamp,
+ *         },
+ *         ..
  *       },
  *       ..
- *     },
- *     ..
- *   }
+ *     }
+ *   },
+ *   ..
  * }
  */
 
@@ -77,6 +80,7 @@ module.exports = {
         const targetRequestors = target.emissions[emission._id] = target.emissions[emission._id] || {};
         targetRequestors[requestor] = {
           pass: !!emission.pass,
+          groupBy: emission.groupBy,
           date: emission.date,
           order: emission.contact.reported_date || -1,
         };
@@ -88,52 +92,72 @@ module.exports = {
   },
 
   aggregateStoredTargetEmissions: (state, targetEmissionFilter) => {
-    const minifyTarget = target => {
-      const pick = (obj, attrs) => attrs
-        .reduce((agg, attr) => {
-          if (Object.hasOwnProperty.call(obj, attr)) {
-            agg[attr] = obj[attr];
+    const pick = (obj, attrs) => attrs
+      .reduce((agg, attr) => {
+        if (Object.hasOwnProperty.call(obj, attr)) {
+          agg[attr] = obj[attr];
+        }
+        return agg;
+      }, {});
+
+    const scoreTarget = target => {
+      const emissionIds = Object.keys(target.emissions);
+      const relevantEmissions = emissionIds
+        // emissions passing the "targetEmissionFilter"
+        .map(emissionId => {
+          const requestorIds = Object.keys(target.emissions[emissionId]);
+          const filteredInstanceIds = requestorIds.filter(requestorId => !targetEmissionFilter || targetEmissionFilter(target.emissions[emissionId][requestorId]));
+          return pick(target.emissions[emissionId], filteredInstanceIds);
+        })
+
+        // if there are multiple emissions with the same id emitted by different contacts, disambiguate them
+        .map(emissionsByRequestor => emissionOfLatestRequestor(emissionsByRequestor))
+        .filter(emission => emission);
+        
+      const passingThreshold = target.passesIfGroupCount && target.passesIfGroupCount.gte;
+      if (!passingThreshold) {
+        return {
+          pass: relevantEmissions.filter(emission => emission.pass).length,
+          total: relevantEmissions.length,
+        };
+      }
+
+      const countEmissionsByGroup = relevantEmissions
+        .filter(emission => emission.groupBy)
+        .reduce((agg, curr) => {
+          if (!agg[curr.groupBy]) {
+            agg[curr.groupBy] = 0;
           }
+
+          agg[curr.groupBy]++;
           return agg;
         }, {});
 
-      const minified = pick(target, ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key']);
-
-      const emissionIds = Object.keys(target.emissions);
-      const countEmissionClusterWith = emissionClusterFilter => emissionIds
-        .map(emissionId => {
-          const clusterIds = Object.keys(target.emissions[emissionId]);
-          const filteredInstanceIds = clusterIds.filter(clusterId => !targetEmissionFilter || targetEmissionFilter(target.emissions[emissionId][clusterId]));
-          return pick(target.emissions[emissionId], filteredInstanceIds);
-        })
-        .filter(emission => emissionClusterFilter(emission))
-        .length;
-
-      minified.value = {
-        pass: countEmissionClusterWith(isPassing),
-        total: countEmissionClusterWith(emission => Object.keys(emission).length > 0),
+      const groups = Object.keys(countEmissionsByGroup);
+      return {
+        pass: groups.filter(group => countEmissionsByGroup[group] >= passingThreshold).length,
+        total: groups.length,
       };
+    };
 
-      if (minified.type === 'percent') {
-        minified.value.percent = minified.value.total ? Math.round(minified.value.pass * 100 / minified.value.total) : 0;
+    const aggregateTarget = target => {
+      const aggregated = pick(target, ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key']);
+      aggregated.value = scoreTarget(target);
+
+      if (aggregated.type === 'percent') {
+        aggregated.value.percent = aggregated.value.total ? Math.round(aggregated.value.pass * 100 / aggregated.value.total) : 0;
       }
 
-      return minified;
+      return aggregated;
     };
 
-    const isPassing = emission => {
-      let currentOrder = -8640000000000000; // minimum date
-      return Object.keys(emission).reduce((agg, contactId) => {
-        const contactEmission = emission[contactId];
-        if (contactEmission.order > currentOrder) {
-          currentOrder = contactEmission.order;
-          return contactEmission.pass;
-        }
-
-        return agg;
-      }, false);
+    const emissionOfLatestRequestor = emissionsByRequestor => {
+      return Object.keys(emissionsByRequestor).reduce((previousValue, requestorId) => {
+        const current = emissionsByRequestor[requestorId];
+        return (!previousValue || !previousValue.order || current.order > previousValue.order) ? current : previousValue;
+      }, undefined);
     };
 
-    return Object.keys(state).reduce((agg, targetId) => [...agg, minifyTarget(state[targetId])], []);
+    return Object.keys(state).map(targetId => aggregateTarget(state[targetId]));
   },
 };
