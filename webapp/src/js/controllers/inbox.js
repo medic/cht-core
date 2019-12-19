@@ -230,6 +230,7 @@ const moment = require('moment');
 
     // initialisation tasks that can occur after the UI has been rendered
     Session.init()
+      .then(() => initRulesEngine())
       .then(() => initForms())
       .then(() => initTours())
       .then(() => initUnreadCount())
