@@ -76,7 +76,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('UserSettings', sinon.stub());
       $provide.value('Telemetry', { record: sinon.stub() });
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
-      $provide.value('RulesEngine', { init: rulesEnginePromise.promise });
+      $provide.value('RulesEngine', { isEnabled: () => rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
       $provide.constant('APP_CONFIG', {
