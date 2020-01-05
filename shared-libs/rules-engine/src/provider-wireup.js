@@ -138,9 +138,10 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
               registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
               return agg;
             }, new Set());
+
             const headlessSubjectIds = freshData.reportDocs
-              .map(doc => registrationUtils.getPatientId(doc))
-              .filter(patientId => !subjectIds.has(patientId));
+              .map(doc => registrationUtils.getSubjectId(doc))
+              .filter(subjectId => !subjectIds.has(subjectId));
 
             rulesStateStore.markAllFresh(calculationTimestamp, [...contactIds, ...headlessSubjectIds]);
           })
