@@ -13,6 +13,13 @@ const _ = require('underscore'),
   date = require('../date'),
   NAME = 'registration';
 
+const registrationUtils = require('@medic/registration-utils');
+const contactTypesUtils = require('@medic/contact-types-utils');
+
+const PARENT_NOT_FOUND = 'parent_not_found';
+const PARENT_FIELD_NOT_PROVIDED = 'parent_field_not_provided';
+const PARENT_INVALID = 'parent_invalid';
+
 const findFirstDefinedValue = (doc, fields) => {
   const definedField = fields.find(field => doc.fields[field] !== undefined && doc.fields[field] !== null);
   return definedField && doc.fields[definedField];
@@ -25,16 +32,21 @@ const getRegistrations = (patientId) => {
   return utils.getRegistrations({ id: patientId });
 };
 
-const getPatientNameField = params => {
+const getPatientNameField = (params) => getNameField(params, 'patient');
+const getPlaceNameField = (params) => getNameField(params, 'place');
+
+const getNameField = (params, prefix) => {
   if (Array.isArray(params) && params.length && params[0]) {
     return params[0];
   }
 
-  if (params && params.patient_name_field) {
-    return params.patient_name_field;
+  const nameField = `${prefix}_name_field`;
+  if (params && params[nameField]) {
+    return params[nameField];
   }
 
-  return 'patient_name';
+  const defaultNameField = `${prefix}_name`;
+  return defaultNameField;
 };
 
 const parseParams = params => {
@@ -181,7 +193,15 @@ const triggers = {
       return;
     }
 
-    return setId(options).then(() => addPatient(options));
+    return setPatientId(options).then(() => addPatient(options));
+  },
+  add_place: (options) => {
+    // if we already have a place id then return
+    if (options.doc.place_id) {
+      return;
+    }
+
+    return setPlaceId(options).then(() => addPlace(options));
   },
   add_patient_id: (options) => {
     // Deprecated name for add_patient
@@ -273,6 +293,7 @@ const addMessages = (config, doc) => {
   return getRegistrations(patientId).then(registrations => {
     const context = {
       patient: doc.patient,
+      place: doc.place,
       registrations: registrations,
       templateContext: {
         next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
@@ -302,9 +323,13 @@ const assignSchedule = (options) => {
   });
 };
 
-const setId = (options) => {
-  const doc = options.doc,
-      patientIdField = options.params.patient_id_field;
+const setPlaceId = (options) => {
+  return transitionUtils.getUniqueId().then(id => options.doc.place_id = id);
+};
+
+const setPatientId = (options) => {
+  const doc = options.doc;
+  const patientIdField = options.params.patient_id_field;
 
   if (patientIdField) {
     const providedId = doc.fields[options.params.patient_id_field];
@@ -325,50 +350,175 @@ const setId = (options) => {
         transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
       });
   } else {
-    return transitionUtils.addUniqueId(doc);
+    return transitionUtils.getUniqueId().then(id => doc.patient_id = id);
   }
 };
 
-const addPatient = (options) => {
-  const doc = options.doc,
-        patientShortcode = doc.patient_id,
-        patientNameField = getPatientNameField(options.params);
-
-  return utils
-    .getPatientContactUuid(patientShortcode)
-    .then(patientContactId => {
-      if (patientContactId) {
+const getParentByPhone = options => {
+  return db.medic
+    .query('medic-client/contacts_by_phone', { key: options.doc.from, include_docs: true })
+    .then(result => result && result.rows && result.rows.length && result.rows[0].doc)
+    .then(contact => {
+      if (!contact) {
         return;
       }
 
-      return db.medic
-        .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
-        .then(result => {
-          const contact = _.result(_.first(result.rows), 'doc');
-          lineage.minify(contact);
-          // create a new patient with this patient_id
-          const patient = {
-            name: doc.fields[patientNameField],
-            created_by: contact && contact._id,
-            parent: contact && contact.parent,
-            reported_date: doc.reported_date,
-            patient_id: patientShortcode,
-            source_id: doc._id,
-          };
-          if (options.params.contact_type) {
-            patient.type = 'contact';
-            patient.contact_type = options.params.contact_type;
-          } else {
-            patient.type = 'person';
-          }
-          // include the DOB if it was generated on report
-          if (doc.birth_date) {
-            patient.date_of_birth = doc.birth_date;
-          }
-          return db.medic.post(patient);
-        });
+      options.doc.contact = contact;
+      return contact.parent && db.medic.get(contact.parent._id);
     });
+};
 
+// returns the parent of the contact to be created (place or patient)
+const getParent = options => {
+  // if the `parent_id` fields name is not specified in the trigger, default to the submitter's parent
+  if (!options.params.parent_id) {
+    // if `update_clinics` runs, the `contact` property already exists
+    if (options.doc.contact && options.doc.contact.parent) {
+      return Promise.resolve(JSON.parse(JSON.stringify(options.doc.contact.parent)));
+    }
+
+    // when `update_clinics` is not enabled (for some reason), fallback to getting contact by phone
+    return getParentByPhone(options).then(parent => {
+      if (!parent) {
+        transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_NOT_FOUND);
+        return;
+      }
+
+      return parent;
+    });
+  }
+
+  // if the `parent_id` field name is specified in the trigger, but is not defined in the doc, add an error
+  if (!options.doc.fields[options.params.parent_id]) {
+    transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_FIELD_NOT_PROVIDED);
+    return Promise.resolve();
+  }
+
+  return utils.getContact(options.doc.fields[options.params.parent_id]).then(parent => {
+    if (!parent) {
+      transitionUtils.addRejectionMessage(options.doc, options.registrationConfig, PARENT_NOT_FOUND);
+      return;
+    }
+
+    return parent;
+  });
+};
+
+const isValidParent = (parent, child) => {
+  const parentType = contactTypesUtils.getContactType(config.getAll(), parent);
+  const childType = contactTypesUtils.getContactType(config.getAll(), child);
+  return contactTypesUtils.isParentOf(parentType, childType);
+};
+
+const addPatient = (options) => {
+  const doc = options.doc;
+  const patientShortcode = options.doc.patient_id;
+  const patientNameField = getPatientNameField(options.params);
+
+  // create a new patient with this patient_id
+  const patient = {
+    name: doc.fields[patientNameField],
+    reported_date: doc.reported_date,
+    patient_id: patientShortcode,
+    source_id: doc._id,
+  };
+
+  if (options.params.contact_type) {
+    patient.type = 'contact';
+    patient.contact_type = options.params.contact_type;
+  } else {
+    patient.type = 'person';
+  }
+
+  return utils
+    .getContactUuid(patientShortcode)
+    .then(patientContactId => {
+      if (patientContactId) {
+        doc.patient_id = patientShortcode;
+        return;
+      }
+
+      return getParent(options).then(parent => {
+        if (!parent) {
+          return;
+        }
+
+        if (!isValidParent(parent, patient)) {
+          transitionUtils.addRejectionMessage(
+            options.doc,
+            options.registrationConfig,
+            PARENT_INVALID,
+            { templateContext: { parent } }
+            );
+          return;
+        }
+
+        // include the DOB if it was generated on report
+        if (doc.birth_date) {
+          patient.date_of_birth = doc.birth_date;
+        }
+
+        // assign patient in doc with full parent doc - to be used in messages
+        doc.patient = Object.assign({ parent }, patient);
+        patient.parent = lineage.minifyLineage(parent);
+        patient.created_by = doc.contact && doc.contact._id;
+
+        return db.medic.post(patient);
+      });
+    });
+};
+
+const addPlace = (options) => {
+  const doc = options.doc;
+  const placeShortcode = doc.place_id;
+  const placeNameField = getPlaceNameField(options.params);
+
+  // create a new place with this place_id
+  const place = {
+    name: doc.fields[placeNameField],
+    reported_date: doc.reported_date,
+    place_id: placeShortcode,
+    source_id: doc._id,
+  };
+
+  if (contactTypesUtils.isHardcodedType(options.params.contact_type)) {
+    place.type = options.params.contact_type;
+  } else {
+    place.type = 'contact';
+    place.contact_type = options.params.contact_type;
+  }
+
+  return utils
+    .getContactUuid(placeShortcode)
+    .then(placeContactId => {
+      if (placeContactId) {
+        doc.place_id = placeShortcode;
+        return;
+      }
+
+      return getParent(options).then(parent => {
+        if (!parent) {
+          return;
+        }
+
+        if (!isValidParent(parent, place)) {
+          transitionUtils.addRejectionMessage(
+            options.doc,
+            options.registrationConfig,
+            PARENT_INVALID,
+            { templateContext: { parent } }
+          );
+          return;
+        }
+
+        // assign place in doc with full parent doc - to be used in messages
+        doc.place = Object.assign({ parent }, place);
+        place.parent = lineage.minifyLineage(parent);
+        place.created_by = doc.contact && doc.contact._id;
+
+        return db.medic.post(place);
+      });
+    });
 };
 
 module.exports = {
@@ -383,20 +533,21 @@ module.exports = {
           } catch (e) {
             throw new Error(`Configuration error. Unable to parse params for ${registration.form}.${event.trigger}: '${event.params}'. Error: ${e}`);
           }
+
           if (event.trigger === 'add_patient') {
             if (params.patient_id_field === 'patient_id') {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: patient_id_field cannot be set to patient_id`);
             }
-            const contactTypes = config.get('contact_types') || [];
             const typeId = params.contact_type || 'person';
-            const contactType = contactTypes.find(type => type.id === typeId);
+            const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
               throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with an unknown contact type "${typeId}"`);
             }
-            if (!contactType.person) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with a place contact type "${typeId}"`);
+            if (!contactTypesUtils.isPersonType(contactType)) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a person with a place contact type "${typeId}"`);
             }
           }
+
           if (
             event.trigger === 'assign_schedule' ||
             event.trigger === 'clear_schedule'
@@ -406,6 +557,20 @@ module.exports = {
             }
             if (!Array.isArray(params)) {
               throw new Error(`Configuration error. Expecting params to be a string, comma separated list, or an array for ${registration.form}.${event.trigger}: '${event.params}'`);
+            }
+          }
+
+          if (event.trigger === 'add_place') {
+            const typeId = params.contact_type;
+            if (!typeId) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an undefined contact type`);
+            }
+            const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
+            if (!contactType) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an unknown contact type "${typeId}"`);
+            }
+            if (!contactTypesUtils.isPlaceType(contactType)) {
+              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with a person contact type "${typeId}"`);
             }
           }
         });
@@ -431,16 +596,16 @@ module.exports = {
           return true;
         }
 
-        const patientId = doc.fields && doc.fields.patient_id;
+        const subjectId = registrationUtils.getSubjectId(doc);
 
-        if (!patientId) {
+        if (!subjectId) {
           return fireConfiguredTriggers(registrationConfig, doc);
         }
 
-        // We're attaching this registration to an existing patient, let's
+        // We're attaching this registration to an existing contact, let's
         // make sure it's valid
-        return utils.getPatientContactUuid(patientId).then(patientContactId => {
-          if (!patientContactId) {
+        return utils.getContactUuid(subjectId).then(contactId => {
+          if (!contactId) {
             transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
             return true;
           }

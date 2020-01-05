@@ -134,7 +134,7 @@ const updateAllAttachments = docs => {
 module.exports = {
 
   /**
-   * Updates the model and form attachments of the given form if necessary. 
+   * Updates the model and form attachments of the given form if necessary.
    * @param {string} docId - The db id of the doc defining the form.
    */
   update: docId => {

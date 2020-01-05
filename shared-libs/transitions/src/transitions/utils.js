@@ -16,7 +16,7 @@ module.exports = {
     Adds a "message" and "error" of the configured key to the report. This
     indicates something went wrong, and the key indicates what went wrong.
   */
-  addRejectionMessage: (doc, reportConfig, errorKey) => {
+  addRejectionMessage: (doc, reportConfig, errorKey, context = {}) => {
     const config = findFirstMatchingMessage(reportConfig, errorKey);
     let message;
     let errorMessage;
@@ -30,13 +30,13 @@ module.exports = {
     const recipient = config && config.recipient || 'from';
     // A "message" ends up being a doc.task, which is something that is sent to
     // the caller via SMS
-    messages.addMessage(doc, message, recipient);
+    messages.addMessage(doc, message, recipient, context);
     // An "error" ends up being a doc.error, which is something that is shown
     // on the screen when you view the error. We need both
     messages.addError(doc, {
       message: errorMessage,
       code: errorKey
-    });
+    }, context);
   },
   addRegistrationNotFoundError: (doc, reportConfig) => {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');
@@ -51,6 +51,8 @@ module.exports = {
       doc.patient_id = patientId;
     });
   },
+  getUniqueId: () => idGenerator.next().value,
+
   hasRun: (doc, transition) => {
     return !!(doc.transitions && doc.transitions[transition]);
   }

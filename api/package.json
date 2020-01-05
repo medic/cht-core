@@ -89,6 +89,7 @@
   ],
   "sharedLibs": [
     "bulk-docs-utils",
+    "contact-types-utils",
     "infodoc",
     "lineage",
     "message-utils",

@@ -5,7 +5,7 @@ const formCodeMatches = (conf, form) => {
 // Returns whether `doc` is a valid registration against a configuration
 // This is done by checks roughly similar to the `registration` transition filter function
 // Serves as a replacement for checking for `transitions` metadata within the doc itself
-exports.isValidRegistration = function(doc, settings) {
+exports.isValidRegistration = (doc, settings) => {
   if (!doc ||
       (doc.errors && doc.errors.length) ||
       !settings ||
@@ -16,7 +16,7 @@ exports.isValidRegistration = function(doc, settings) {
   }
 
   // Registration transition should be configured for this form
-  var registrationConfiguration = settings.registrations.find(function(conf) {
+  const registrationConfiguration = settings.registrations.find((conf) => {
     return conf &&
            conf.form &&
            formCodeMatches(conf.form, doc.form);
@@ -30,7 +30,7 @@ exports.isValidRegistration = function(doc, settings) {
   }
 
   // SMS forms need to be configured
-  var form = settings.forms && settings.forms[doc.form];
+  const form = settings.forms && settings.forms[doc.form];
   if (!form) {
     return false;
   }
@@ -41,15 +41,15 @@ exports.isValidRegistration = function(doc, settings) {
 
 exports._formCodeMatches = formCodeMatches;
 
-var SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
-exports.getSubjectIds = function(contact) {
-  var subjectIds = [];
+const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
+exports.getSubjectIds = (contact) => {
+  const subjectIds = [];
 
   if (!contact) {
     return subjectIds;
   }
 
-  SUBJECT_PROPERTIES.forEach(function(prop) {
+  SUBJECT_PROPERTIES.forEach((prop) => {
     if (contact[prop]) {
       subjectIds.push(contact[prop]);
     }
@@ -58,10 +58,15 @@ exports.getSubjectIds = function(contact) {
   return subjectIds;
 };
 
-exports.getPatientId = function(report) {
-  return report && (
-    report.patient_id ||
-    report.place_id ||
-    (report.fields && (report.fields.patient_id || report.fields.place_id || report.fields.patient_uuid))
-  );
+const getPatientId = report => report.patient_id ||
+                               (report.fields && (report.fields.patient_id || report.fields.patient_uuid));
+const getPlaceId   = report => report.place_id ||
+                               (report.fields && (report.fields.place_id));
+
+exports.getSubjectId = report => {
+  if (!report) {
+    return false;
+  }
+
+  return getPatientId(report) || getPlaceId(report);
 };

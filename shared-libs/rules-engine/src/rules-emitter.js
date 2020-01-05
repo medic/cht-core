@@ -180,8 +180,8 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
   };
 
   for (let report of reportDocs) {
-    const patientIdInReport = registrationUtils.getPatientId(report);
-    const factOfPatient = factBySubjectId[patientIdInReport] || addHeadlessContact(patientIdInReport);
+    const subjectIdInReport = registrationUtils.getSubjectId(report);
+    const factOfPatient = factBySubjectId[subjectIdInReport] || addHeadlessContact(subjectIdInReport);
     factOfPatient.reports.push(report);
   }
 

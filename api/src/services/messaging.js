@@ -184,7 +184,7 @@ const resolveMissingUuids = changes => {
 };
 
 module.exports = {
-  
+
   /**
    * Sends pending messages on the doc with the given ID using the
    * configured outgoing message service.
@@ -305,7 +305,7 @@ module.exports = {
   isMedicGatewayEnabled: () => {
     return getConfig().outgoing_service === 'medic-gateway';
   }
-  
+
 };
 
 if (process.env.UNIT_TEST_ENV) {

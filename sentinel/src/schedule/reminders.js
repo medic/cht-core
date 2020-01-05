@@ -9,6 +9,7 @@ const later = require('later');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('../lib/logger');
 const messages = config.getTransitionsLib().messages;
+const contactTypesUtils = require('@medic/contact-types-utils');
 
 const BATCH_SIZE = 1000;
 
@@ -90,17 +91,9 @@ const parseDuration = (format) => {
   return moment.duration(Number(tokens[0]), tokens[1]);
 };
 
-// A leaf place type is a contact type that does not have any child place types, but can have child person types
-const getLeafPlaceTypes = () => {
-  const types = config.get('contact_types') || [];
-  const placeTypes = types.filter(type => !type.person);
-  return placeTypes.filter(type => {
-    return placeTypes.every(inner => !inner.parents || !inner.parents.includes(type.id));
-  });
-};
 
 const getLeafPlaceIds = (startDocId) => {
-  const keys = getLeafPlaceTypes().map(type => [ type.id ]);
+  const keys = contactTypesUtils.getLeafPlaceTypes(config.getAll()).map(type => [ type.id ]);
   const query = {
     limit: BATCH_SIZE,
     keys: JSON.stringify(keys),

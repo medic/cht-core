@@ -973,4 +973,44 @@ describe('transitions', () => {
         });
       });
   });
+
+  it('should only run one shortcode generating transition', () => {
+    const settings = {
+      transitions: {
+        generate_patient_id_on_people: true,
+        generate_shortcode_on_contacts: true,
+      },
+    };
+
+    const place = {
+      _id: 'my_favorite_place',
+      name: 'My Favorite Place',
+      type: 'health_center',
+      reported_date: new Date().getTime(),
+      parent: { _id: 'district_hospital' },
+    };
+
+    const person = {
+      _id: 'my_favorite_person',
+      name: 'My Favorite Person',
+      type: 'person',
+      reported_date: new Date().getTime(),
+      parent: { _id: 'my_favorite_place', parent: { _id: 'district_hospital' } },
+    };
+
+    return utils
+      .updateSettings(settings, false)
+      .then(() => utils.saveDocs([place, person]))
+      .then(() => sentinelUtils.waitForSentinel([ place._id, person._id ]))
+      .then(() => sentinelUtils.getInfoDocs([ place._id, person._id ]))
+      .then(([ placeInfo, personInfo ]) => {
+        expectTransitions(placeInfo, 'generate_shortcode_on_contacts');
+        expectTransitions(personInfo, 'generate_shortcode_on_contacts');
+      })
+      .then(() => utils.getDocs([ place._id, person._id ]))
+      .then(([ updatedPlace, updatedPerson ]) => {
+        chai.expect(updatedPlace.place_id).to.be.ok;
+        chai.expect(updatedPerson.patient_id).to.be.ok;
+      });
+  });
 });

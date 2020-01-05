@@ -11,7 +11,7 @@ const async = require('async'),
 
 const getPatient = (patientShortcodeId) => {
   return utils
-    .getPatientContactUuid(patientShortcodeId)
+    .getContactUuid(patientShortcodeId)
     .then(uuid => {
       if (!uuid) {
         return;

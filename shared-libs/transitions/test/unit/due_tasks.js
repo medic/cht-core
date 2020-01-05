@@ -223,7 +223,7 @@ describe('due tasks', () => {
       .stub(utils, 'translate')
       .returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves(patientUuid);
+    const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves(patientUuid);
     const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
@@ -305,8 +305,8 @@ describe('due tasks', () => {
       assert.equal(translate.callCount, 1);
       assert.equal(translate.args[0][0], 'visit-1');
       assert.equal(getRegistrations.callCount, 1);
-      assert.equal(getPatientContactUuid.callCount, 1);
-      assert.equal(getPatientContactUuid.args[0][0], '123');
+      assert.equal(getContactUuid.callCount, 1);
+      assert.equal(getContactUuid.args[0][0], '123');
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
@@ -330,7 +330,7 @@ describe('due tasks', () => {
     const expectedPhone = '5556918';
     const expectedMessage = 'old message';
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').resolves(patientUuid);
+    const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves(patientUuid);
     const fetchHydratedDoc = sinon
       .stub(schedule._lineage, 'fetchHydratedDoc')
       .resolves({ name: 'jim' });
@@ -411,8 +411,8 @@ describe('due tasks', () => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(getRegistrations.callCount, 1);
-      assert.equal(getPatientContactUuid.callCount, 1);
-      assert.equal(getPatientContactUuid.args[0][0], '123');
+      assert.equal(getContactUuid.callCount, 1);
+      assert.equal(getContactUuid.args[0][0], '123');
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
@@ -434,7 +434,7 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').resolves(null);
+    sinon.stub(utils, 'getContactUuid').resolves(null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState');
 
@@ -500,8 +500,8 @@ describe('due tasks', () => {
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.args[0][0], '123');
+      assert.equal(utils.getContactUuid.callCount, 1);
+      assert.equal(utils.getContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 0);
       done();
@@ -514,7 +514,7 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').resolves(null);
+    sinon.stub(utils, 'getContactUuid').resolves(null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState').callsFake((task, state) => task.state = state);
 
@@ -590,8 +590,8 @@ describe('due tasks', () => {
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.args[0][0], '123');
+      assert.equal(utils.getContactUuid.callCount, 1);
+      assert.equal(utils.getContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 1);
       assert.deepEqual(utils.setTaskState.args[0], [

@@ -610,7 +610,7 @@ describe('ServerSidePurge', () => {
         ]});
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -733,7 +733,7 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -832,7 +832,7 @@ describe('ServerSidePurge', () => {
         ]});
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id || doc.place_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id || doc.place_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -920,7 +920,7 @@ describe('ServerSidePurge', () => {
         ]});
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -1001,7 +1001,7 @@ describe('ServerSidePurge', () => {
         ]});
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
@@ -1099,7 +1099,7 @@ describe('ServerSidePurge', () => {
         ]});
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
@@ -1181,7 +1181,7 @@ describe('ServerSidePurge', () => {
         ]});
 
       sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(registrationUtils, 'getPatientId').callsFake(doc => doc.patient_id);
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [

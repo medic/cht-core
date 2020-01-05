@@ -205,7 +205,7 @@ const getRecordGroupInfo = (row, groups, subjectIds) => {
   }
 
   if (row.doc.form) {
-    const subjectId = registrationUtils.getPatientId(row.doc);
+    const subjectId = registrationUtils.getSubjectId(row.doc);
     if (row.doc.needs_signoff) {
       // reports with needs_signoff will emit for every contact from their submitter lineage,
       // but we only want to process them once, either associated to their patient or alone, if no patient_id

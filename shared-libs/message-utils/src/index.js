@@ -167,7 +167,8 @@ var extractTemplateContext = function(doc) {
 
 var extendedTemplateContext = function(doc, extras) {
   var templateContext = {
-    patient: extras.patient
+    patient: extras.patient,
+    place: extras.place,
   };
 
   if (extras.templateContext) {
@@ -180,6 +181,10 @@ var extendedTemplateContext = function(doc, extras) {
     // Don't want to add this to extractTemplateContext as 'name' is too generic
     // and eTC gets called elsewhere
     templateContext.patient_name = templateContext.patient_name || extras.patient.name;
+  }
+
+  if (extras.place) {
+    _.defaults(templateContext, extractTemplateContext(extras.place));
   }
 
   _.defaults(templateContext, extractTemplateContext(doc));

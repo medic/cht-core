@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const request = require('request-promise-native');
 const utils = require('./utils');
 const constants = require('./constants');
@@ -126,8 +125,7 @@ const login = browser => {
 };
 
 const setupSettings = () => {
-  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
-  const defaultAppSettings = JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
+  const defaultAppSettings = utils.getDefaultSettings();
   defaultAppSettings.transitions = {};
 
   return utils.request({

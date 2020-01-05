@@ -252,7 +252,7 @@ describe('functional schedules', () => {
       }]
     }]);
     sinon.stub(schedules, 'getScheduleConfig').returns({});
-    sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
+    sinon.stub(utils, 'getContactUuid').resolves({_id: 'uuid'});
     sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('Thanks');
 
@@ -319,7 +319,7 @@ describe('functional schedules', () => {
       ]
     });
 
-    sinon.stub(utils, 'getPatientContactUuid').resolves({_id: 'uuid'});
+    sinon.stub(utils, 'getContactUuid').resolves({_id: 'uuid'});
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -464,7 +464,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
+    sinon.stub(utils, 'getContactUuid').resolves('uuid');
 
     return transition.onMatch({ doc: doc })
       .then(complete => {
@@ -521,7 +521,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(utils, 'getPatientContactUuid').resolves('uuid');
+    sinon.stub(utils, 'getContactUuid').resolves('uuid');
 
     return transition.onMatch({ doc: doc })
       .then(complete => {
