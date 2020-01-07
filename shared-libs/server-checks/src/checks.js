@@ -52,7 +52,7 @@ const couchDbNoAdminPartyModeCheck = () => {
       } else {
         console.error('Expected a 401 when accessing db without authentication.');
         console.error(`Instead we got a ${statusCode}`);
-        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core#enabling-a-secure-couchdb'));
+        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
       }
     });
   });
