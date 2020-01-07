@@ -5,13 +5,6 @@
   },
   "overrides": [
     {
-      "extends": "@medic/eslint-config/test",
-      "files": [
-        "**/tests/**",
-        "**/test/**"
-      ]
-    },
-    {
       "files": [ "Gruntfile.js", "grunt/service-worker.js" ],
       "env": {
         "node": true
