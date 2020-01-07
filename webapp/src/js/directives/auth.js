@@ -8,18 +8,18 @@ angular.module('inboxDirectives').directive('mmAuth', function(
 ) {
   'use strict';
   'ngInject';
+  
   const link = function(scope, element, attributes) {
-
     const updateVisibility = promises => {
       return $q.all(promises)
-        .then(function () {
-          element.removeClass('hidden');
-          return true;
-        })
-        .catch(function (err) {
-          if (err) {
-            $log.error('Error checking authorization', err);
+        .then(permissions => {
+          const allPermissions = permissions.every(permission => !!permission);
+          if (allPermissions) {
+            element.removeClass('hidden');
+            return true;
           }
+
+          $log.debug('mmAuth failed authorization check');
           element.addClass('hidden');
           return false;
         });
@@ -27,12 +27,13 @@ angular.module('inboxDirectives').directive('mmAuth', function(
 
     const staticChecks = () => {
       const promises = [];
-      if (attributes.mmAuth) {
-        promises.push(Auth.assert(attributes.mmAuth.split(',')));
+      if (attributes.mmAuthOnline) {
+        const onlineResult = Auth.online($parse(attributes.mmAuthOnline)(scope));
+        promises.push($q.resolve(onlineResult));
       }
 
-      if (attributes.mmAuthOnline) {
-        promises.push(Auth.online($parse(attributes.mmAuthOnline)(scope)));
+      if (attributes.mmAuth) {
+        promises.push(Auth.has(attributes.mmAuth.split(',')));
       }
 
       if (!promises.length) {
@@ -76,8 +77,9 @@ angular.module('inboxDirectives').directive('mmAuth', function(
       result.then(dynamicChecks);
     }
   };
+  
   return {
     restrict: 'A',
-    link: link
+    link,
   };
 });
