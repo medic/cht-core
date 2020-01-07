@@ -28,7 +28,7 @@ angular.module('inboxDirectives').directive('mmAuth', function(
     const staticChecks = () => {
       const promises = [];
       if (attributes.mmAuth) {
-        promises.push(Auth(attributes.mmAuth.split(',')));
+        promises.push(Auth.assert(attributes.mmAuth.split(',')));
       }
 
       if (attributes.mmAuthOnline) {

@@ -55,7 +55,7 @@ angular
           filter: readOnlyFilter,
           checkpoint: 'source',
         },
-        allowed: () => Auth('can_edit').then(() => true).catch(() => false),
+        allowed: () => Auth.has('can_edit'),
         onDenied: DBSyncRetry,
       },
       {

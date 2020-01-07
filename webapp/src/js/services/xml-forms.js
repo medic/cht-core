@@ -153,13 +153,7 @@ angular.module('inboxServices').factory('XmlForms',
         if (!form.context.permission) {
           return true;
         }
-        return Auth(form.context.permission)
-          .then(function() {
-            return true;
-          })
-          .catch(function() {
-            return false;
-          });
+        return Auth.has(form.context.permission);
       });
     };
 

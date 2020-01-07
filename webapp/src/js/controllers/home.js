@@ -16,14 +16,8 @@ angular.module('inboxControllers').controller('HomeCtrl',
     'use strict';
     'ngInject';
 
-    const hasAuth = perm => {
-      return Auth(perm)
-        .then(() => true)
-        .catch(() => false);
-    };
-
     const findFirstAuthorizedTab = () => {
-      return $q.all(TABS.map(tab => hasAuth(tab.perm))).then(results => {
+      return $q.all(TABS.map(tab => Auth.has(tab.perm))).then(results => {
         const idx = results.findIndex(result => result);
         if (idx === -1) {
           return;

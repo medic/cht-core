@@ -10,7 +10,7 @@ describe('Contacts store', () => {
   let getChildren;
   let contactSummary;
   let settings;
-  let auth;
+  let hasAuth;
   let tasksForContact;
   let listen;
   let settingSelected;
@@ -34,7 +34,7 @@ describe('Contacts store', () => {
     getChildren = sinon.stub();
     contactSummary = sinon.stub();
     settings = sinon.stub();
-    auth = sinon.stub();
+    hasAuth = sinon.stub();
     tasksForContact = sinon.stub();
     listen = sinon.stub();
     settingSelected = sinon.stub();
@@ -59,7 +59,7 @@ describe('Contacts store', () => {
       $provide.value('ContactTypes', { getChildren });
       $provide.value('ContactSummary', contactSummary);
       $provide.value('Settings', settings);
-      $provide.value('Auth', auth);
+      $provide.value('Auth', { has: hasAuth });
       $provide.value('TasksForContact', tasksForContact);
       $provide.value('XmlForms', { listen });
       $provide.value('GlobalActions', () => ({ settingSelected, clearCancelCallback, setTitle, setRightActionBar }));
@@ -89,7 +89,7 @@ describe('Contacts store', () => {
       getChildren.resolves([]);
       contactSummary.resolves({ alive: true });
       settings.resolves({});
-      auth.resolves();
+      hasAuth.resolves(true);
       tasksForContact.resolves();
     });
 
@@ -124,7 +124,7 @@ describe('Contacts store', () => {
     });
 
     it('should not get tasks when not allowed', () => {
-      auth.rejects();
+      hasAuth.resolves(false);
       return contactsActions.setSelectedContact('123').then(() => {
         chai.expect(tasksForContact.callCount).to.equal(0);
       });

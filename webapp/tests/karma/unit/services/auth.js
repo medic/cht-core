@@ -34,7 +34,7 @@ describe('Auth service', function() {
 
   it('rejects when no session', function(done) {
     userCtx.returns(null);
-    service()
+    service.assert()
       .catch(function(err) {
         chai.expect(err.message).to.equal('Not logged in');
         done();
@@ -44,7 +44,7 @@ describe('Auth service', function() {
 
   it('rejects when user has no role', function(done) {
     userCtx.returns({});
-    service()
+    service.assert()
       .catch(function(err) {
         chai.expect(err).to.equal(undefined);
         done();
@@ -54,14 +54,15 @@ describe('Auth service', function() {
 
   it('resolves when user is db admin', function(done) {
     userCtx.returns({ roles: [ '_admin' ] });
-    service([ 'can_backup_facilities' ]).then(done);
+    service.assert([ 'can_backup_facilities' ]).then(done)
+    .catch(console.log);
     $rootScope.$digest();
   });
 
   it('rejects when settings errors', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
     Settings.returns(Promise.reject('boom'));
-    service([ 'can_backup_facilities' ])
+    service.assert([ 'can_backup_facilities' ])
       .catch(function(err) {
         chai.expect(err).to.equal('boom');
         done();
@@ -83,7 +84,7 @@ describe('Auth service', function() {
         },
       })
     );
-    service(['']).catch(function(err) {
+    service.assert(['']).catch(function(err) {
       chai.expect(err).to.equal(undefined);
       done();
     });
@@ -111,7 +112,7 @@ describe('Auth service', function() {
           },
         })
       );
-      service(['xyz']).catch(function(err) {
+      service.assert(['xyz']).catch(function(err) {
         chai.expect(err).to.equal(undefined);
         done();
       });
@@ -134,7 +135,7 @@ describe('Auth service', function() {
           },
         })
       );
-      service(['!xyz']).then(done);
+      service.assert(['!xyz']).then(done);
       setTimeout(function() {
         $rootScope.$digest();
       });
@@ -156,7 +157,7 @@ describe('Auth service', function() {
         },
       })
     );
-    service('can_backup_facilities').catch(function(err) {
+    service.assert('can_backup_facilities').catch(function(err) {
       chai.expect(err).to.equal(undefined);
       done();
     });
@@ -179,7 +180,7 @@ describe('Auth service', function() {
         },
       })
     );
-    service(['can_backup_facilities', 'can_export_messages']).catch(function(
+    service.assert(['can_backup_facilities', 'can_export_messages']).catch(function(
       err
     ) {
       chai.expect(err).to.equal(undefined);
@@ -204,7 +205,7 @@ describe('Auth service', function() {
         },
       })
     );
-    service(['can_backup_facilities', 'can_export_messages']).then(done);
+    service.assert(['can_backup_facilities', 'can_export_messages']).then(done);
     setTimeout(function() {
       $rootScope.$digest();
     });
@@ -212,7 +213,7 @@ describe('Auth service', function() {
 
   it('rejects when admin and !permission', function(done) {
     userCtx.returns({ roles: [ '_admin' ] });
-    service([ '!can_backup_facilities' ])
+    service.assert([ '!can_backup_facilities' ])
       .catch(function(err) {
         chai.expect(err).to.equal(undefined);
         done();
@@ -236,7 +237,7 @@ describe('Auth service', function() {
         },
       })
     );
-    service(['!can_backup_facilities', '!can_export_messages']).catch(function(
+    service.assert(['!can_backup_facilities', '!can_export_messages']).catch(function(
       err
     ) {
       chai.expect(err).to.equal(undefined);
@@ -261,7 +262,7 @@ describe('Auth service', function() {
         },
       })
     );
-    service(['!can_backup_facilities', 'can_export_messages'])
+    service.assert(['!can_backup_facilities', 'can_export_messages'])
       .then(done)
       .catch(function() {
         done('Should have passed auth');

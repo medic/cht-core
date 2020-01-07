@@ -9,9 +9,11 @@ describe('auth directive', () => {
   beforeEach(() => {
     module('inboxApp');
     module('inboxDirectives');
-    Auth = sinon.stub();
-    Auth.any = sinon.stub();
-    Auth.online = sinon.stub();
+    Auth = {
+      assert: sinon.stub(),
+      any: sinon.stub(),
+      online: sinon.stub(),
+    };
     module($provide => {
       $provide.value('Auth', Auth);
       $provide.value('$q', Q);
@@ -23,37 +25,37 @@ describe('auth directive', () => {
   });
 
   it('should be shown when auth does not error', done => {
-    Auth.returns(Promise.resolve());
+    Auth.assert.resolves();
     const element = compile('<a mm-auth="can_do_stuff">')(scope);
     scope.$digest();
     setTimeout(() => {
       chai.expect(element.hasClass('hidden')).to.equal(false);
-      chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+      chai.expect(Auth.assert.callCount).to.equal(1);
+      chai.expect(Auth.assert.args[0][0]).to.deep.equal(['can_do_stuff']);
       done();
     });
   });
 
   it('should be hidden when auth errors', done => {
-    Auth.returns(Promise.reject('boom'));
+    Auth.assert.rejects('boom');
     const element = compile('<a mm-auth="can_do_stuff">')(scope);
     scope.$digest();
     setTimeout(() => {
       chai.expect(element.hasClass('hidden')).to.equal(true);
-      chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+      chai.expect(Auth.assert.callCount).to.equal(1);
+      chai.expect(Auth.assert.args[0][0]).to.deep.equal(['can_do_stuff']);
       done();
     });
   });
 
   it('splits comma separated permissions', done => {
-    Auth.returns(Promise.resolve());
+    Auth.assert.resolves();
     const element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
     scope.$digest();
     setTimeout(() => {
       chai.expect(element.hasClass('hidden')).to.equal(false);
-      chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
+      chai.expect(Auth.assert.callCount).to.equal(1);
+      chai.expect(Auth.assert.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
       done();
     });
   });
@@ -98,7 +100,7 @@ describe('auth directive', () => {
 
   describe('mmAuth + mmAuthOnline', () => {
     it('should be shown when both do not err', (done) => {
-      Auth.resolves();
+      Auth.assert.resolves();
       Auth.online.resolves();
 
       const element = compile('<a mm-auth="permission_to_have" mm-auth-online="true">')(scope);
@@ -107,14 +109,14 @@ describe('auth directive', () => {
         chai.expect(element.hasClass('hidden')).to.equal(false);
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([true]);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        chai.expect(Auth.assert.callCount).to.equal(1);
+        chai.expect(Auth.assert.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
       });
     });
 
     it('should be hidden when online succeeds and permissions err', (done) => {
-      Auth.rejects();
+      Auth.assert.rejects();
       Auth.online.resolves();
 
       const element = compile('<a mm-auth="permission_to_have" mm-auth-online="false">')(scope);
@@ -123,14 +125,14 @@ describe('auth directive', () => {
         chai.expect(element.hasClass('hidden')).to.equal(true);
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([false]);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        chai.expect(Auth.assert.callCount).to.equal(1);
+        chai.expect(Auth.assert.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
       });
     });
 
     it('should be hidden when online fails and permissions succeed', (done) => {
-      Auth.resolves();
+      Auth.assert.resolves();
       Auth.online.rejects();
 
       const element = compile('<a mm-auth="permission_to_have" mm-auth-online="true">')(scope);
@@ -139,8 +141,8 @@ describe('auth directive', () => {
         chai.expect(element.hasClass('hidden')).to.equal(true);
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([true]);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        chai.expect(Auth.assert.callCount).to.equal(1);
+        chai.expect(Auth.assert.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
       });
     });
@@ -158,7 +160,7 @@ describe('auth directive', () => {
     });
 
     it('should be hidden when both fail', (done) => {
-      Auth.rejects();
+      Auth.assert.rejects();
       Auth.online.rejects();
 
       const element = compile('<a mm-auth="permission_to_have" mm-auth-online="false">')(scope);
@@ -167,8 +169,8 @@ describe('auth directive', () => {
         chai.expect(element.hasClass('hidden')).to.equal(true);
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([false]);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        chai.expect(Auth.assert.callCount).to.equal(1);
+        chai.expect(Auth.assert.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
       });
     });
@@ -201,7 +203,7 @@ describe('auth directive', () => {
 
     it('should be shown with at least one allowed permission', (done) => {
       const element = compile('<a mm-auth mm-auth-any="[\'perm1\', \'perm2\']">')(scope);
-      Auth.any.returns(Promise.resolve());
+      Auth.any.resolves();
 
       scope.$digest();
       setTimeout(() => {
@@ -214,7 +216,7 @@ describe('auth directive', () => {
 
     it('should be hidden with no allowed permissions', (done) => {
       const element = compile('<a mm-auth mm-auth-any="[\'perm1\', \'perm2\']">')(scope);
-      Auth.any.returns(Promise.reject());
+      Auth.any.rejects();
       scope.$digest();
       setTimeout(() => {
         chai.expect(element.hasClass('hidden')).to.equal(true);
@@ -226,7 +228,7 @@ describe('auth directive', () => {
 
     it('should work with stacked permissions', (done) => {
       const element = compile('<a mm-auth mm-auth-any="[[\'a\', \'b\'], [[\'c\', \'d\']], [[[\'e\', \'f\']]], \'g\']">')(scope);
-      Auth.any.withArgs([['a', 'b'], ['c', 'd'], ['e', 'f'], ['g']]).returns(Promise.resolve());
+      Auth.any.withArgs([['a', 'b'], ['c', 'd'], ['e', 'f'], ['g']]).resolves();
       scope.$digest();
 
       setTimeout(() => {
@@ -239,7 +241,7 @@ describe('auth directive', () => {
 
     it('should work with expressions ', (done) => {
       const element = compile('<a mm-auth mm-auth-any="[true && [\'a\', \'b\'], false && [\'c\', \'d\'], \'f\']">')(scope);
-      Auth.any.withArgs([['a', 'b'], ['f']]).returns(Promise.reject());
+      Auth.any.withArgs([['a', 'b'], ['f']]).rejects();
       scope.$digest();
 
       setTimeout(() => {

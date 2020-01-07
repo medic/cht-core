@@ -299,9 +299,7 @@ angular.module('inboxServices').factory('ReportsActions',
           };
 
           globalActions.setLoadingSubActionBar(true);
-          Auth('can_edit_verification')
-            .then(() => true)
-            .catch(() => false)
+          Auth.has('can_edit_verification')
             .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
             .then(shouldVerify => {
               if (shouldVerify) {

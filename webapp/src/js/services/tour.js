@@ -486,7 +486,7 @@ angular.module('inboxServices').service('Tour',
     };
 
     var getMessagesTour = function() {
-      return Auth('can_view_messages_tab')
+      return Auth.assert('can_view_messages_tab')
         .then(function() {
           return {
             order: 0,
@@ -502,7 +502,7 @@ angular.module('inboxServices').service('Tour',
       if (Session.isOnlineOnly()) {
         return;
       }
-      return Auth('can_view_tasks_tab')
+      return Auth.assert('can_view_tasks_tab')
         .then(function() {
           return {
             order: 1,
@@ -515,7 +515,7 @@ angular.module('inboxServices').service('Tour',
     };
 
     var getReportsTour = function() {
-      return Auth('can_view_reports_tab')
+      return Auth.assert('can_view_reports_tab')
         .then(function() {
           return {
             order: 2,
@@ -528,7 +528,7 @@ angular.module('inboxServices').service('Tour',
     };
 
     var getContactsTour = function() {
-      return Auth('can_view_contacts_tab')
+      return Auth.assert('can_view_contacts_tab')
         .then(function() {
           return {
             order: 3,
@@ -543,7 +543,7 @@ angular.module('inboxServices').service('Tour',
     var getAnalyticsTour = function() {
       return $q.all([
         AnalyticsModules(),
-        Auth('can_view_analytics')
+        Auth.assert('can_view_analytics')
       ])
         .then(function(results) {
           if (results.length) {

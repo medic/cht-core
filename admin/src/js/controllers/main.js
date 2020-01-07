@@ -27,13 +27,11 @@ angular.module('controllers').controller('MainCtrl',
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
     Auth.any([['can_configure'], ['can_view_outgoing_messages'], ['can_export_all']])
-    .then(function() {
-      $scope.authorized = true;
-    })
-    .catch(function() {
-      $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
-      $window.location.href = Location.path;
-    });
+      .then(() => $scope.authorized = true)
+      .catch(() => {
+        $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
+        $window.location.href = Location.path;
+      });
 
 
     $scope.webAppUrl = Location.path;
