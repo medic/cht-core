@@ -68,7 +68,8 @@ describe('emit-complete', function() {
       define Contact {  contact: null,  reports: null}
       define Task {  _id: null,  deleted: null,  doc: null,  contact: null,  icon: null,  date: null,  title: null,
         fields: null,  resolved: null,  priority: null,  priorityLabel: null,  reports: null,  actions: null}
-      rule GenerateEvents {  when {    c: Contact  }  then {    emit("task", { _id: 1 });  }}
+      rule GenerateEvents {  when {    c: Contact  }
+        then {    emit("task", { _id: 1 });  }}
     `;
     const expected = `
       define Target {  _id: null,  deleted: null,  type: null,  pass: null,  date: null}
