@@ -1930,5 +1930,5 @@ function nextReportId(baseName) {
 
 function assertTargetsEqual(actual, expected) {
   const sortTargets = (a, b) => a._id.localeCompare(b._id);
-  assert.deepEqualExcluding(actual.sort(sortTargets), expected.sort(sortTargets), ['contact', 'date']);
+  assert.deepEqualExcluding(actual.sort(sortTargets), expected.sort(sortTargets), ['contact', 'groupBy', 'date']);
 }
