@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 angular.module('inboxServices').factory('RelativeDate',
   function(
@@ -7,26 +7,26 @@ angular.module('inboxServices').factory('RelativeDate',
     'use strict';
     'ngInject';
 
-    var config = {
+    const config = {
       cssSelector: 'update-relative-date'
     };
 
-    var skipOptions = ['FormatDate', 'RelativeDate', 'suffix', 'prefix'];
+    const skipOptions = ['FormatDate', 'RelativeDate', 'suffix', 'prefix'];
 
     return {
       getCssSelector: function() {
         return config.cssSelector;
       },
       generateDataset: function(date, options, absoluteToday) {
-        var dataAttributes = {};
-        var momentDate = moment(date);
+        const dataAttributes = {};
+        const momentDate = moment(date);
 
         dataAttributes.date = momentDate.valueOf();
         if (absoluteToday) {
           dataAttributes.absoluteToday = true;
         }
 
-        for (var key in options) {
+        for (const key in options) {
           if (typeof options[key] !== 'object' && skipOptions.indexOf(key) === -1 && options[key]) {
             dataAttributes[key] = options[key];
           }
@@ -35,10 +35,10 @@ angular.module('inboxServices').factory('RelativeDate',
         return 'data-date-options=\''+ JSON.stringify(dataAttributes) +'\'';
       },
       updateRelativeDates: function () {
-        var elements = document.querySelectorAll('.' + config.cssSelector);
+        const elements = document.querySelectorAll('.' + config.cssSelector);
         elements.forEach(function(element) {
-          var dataset = element.dataset.dateOptions;
-          var options;
+          const dataset = element.dataset.dateOptions;
+          let options;
           if (!dataset) {
             return;
           }
@@ -49,9 +49,9 @@ angular.module('inboxServices').factory('RelativeDate',
             return;
           }
 
-          var timestamp = parseInt(options.date);
+          const timestamp = parseInt(options.date);
 
-          var isTimestamp = (new Date(timestamp)).getTime() > 0;
+          const isTimestamp = (new Date(timestamp)).getTime() > 0;
           if (!isTimestamp) {
             return;
           }

@@ -2,12 +2,12 @@ describe('UnreadRecords service', () => {
 
   'use strict';
 
-  let service,
-      query,
-      get,
-      put,
-      Changes,
-      Session;
+  let service;
+  let query;
+  let get;
+  let put;
+  let Changes;
+  let Session;
 
   beforeEach(() => {
     query = sinon.stub();

@@ -1,13 +1,13 @@
 // TODO: this doesn't need to exist. We can just work this out dynamically when
 //       gateway queries, it's not slow or complicated.
-const async = require('async'),
-  moment = require('moment'),
-  utils = require('../lib/utils'),
-  date = require('../date'),
-  config = require('../config'),
-  db = require('../db'),
-  lineage = require('@medic/lineage')(Promise, db.medic),
-  messageUtils = require('@medic/message-utils');
+const async = require('async');
+const moment = require('moment');
+const utils = require('../lib/utils');
+const date = require('../date');
+const config = require('../config');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const messageUtils = require('@medic/message-utils');
 
 const getPatient = (patientShortcodeId) => {
   return utils
@@ -74,7 +74,7 @@ module.exports = {
                   if (err) {
                     return cb(err);
                   }
-                  var updatedTasks = false;
+                  let updatedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
                     if (obj.dueDates.includes(task.due)) {

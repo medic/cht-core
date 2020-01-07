@@ -312,7 +312,7 @@ const moment = require('moment');
      * Translates using the key if truthy using the old style label
      * array as a fallback.
      */
-    var translateTitle = function(key, label) {
+    const translateTitle = function(key, label) {
       return key ? $translate.instant(key) : TranslateFrom(label);
     };
 
@@ -325,7 +325,7 @@ const moment = require('moment');
       return $translate.onReady()
         .then(() => JsonForms())
         .then(function(jsonForms) {
-          var jsonFormSummaries = jsonForms.map(function(jsonForm) {
+          const jsonFormSummaries = jsonForms.map(function(jsonForm) {
             return {
               code: jsonForm.code,
               title: translateTitle(jsonForm.translation_key, jsonForm.name),
@@ -339,7 +339,7 @@ const moment = require('moment');
               if (err) {
                 return $log.error('Error fetching form definitions', err);
               }
-              var xFormSummaries = xForms.map(function(xForm) {
+              const xFormSummaries = xForms.map(function(xForm) {
                 return {
                   code: xForm.internalId,
                   title: translateTitle(xForm.translation_key, xForm.title),
@@ -373,7 +373,7 @@ const moment = require('moment');
       });
     };
 
-    var startupModals = [
+    const startupModals = [
       // select language
       {
         required: (settings, user) => !user.language,
@@ -419,10 +419,10 @@ const moment = require('moment');
 
     $q.all([Settings(), UserSettings()])
       .then(function(results) {
-        var filteredModals = _.filter(startupModals, function(modal) {
+        const filteredModals = _.filter(startupModals, function(modal) {
           return modal.required(results[0], results[1]);
         });
-        var showModals = function() {
+        const showModals = function() {
           if (filteredModals && filteredModals.length) {
             // render the first modal and recursively show the rest
             filteredModals
@@ -448,7 +448,7 @@ const moment = require('moment');
       });
 
     $('body').on('click', '.send-message', function(event) {
-      var target = $(event.target).closest('.send-message');
+      const target = $(event.target).closest('.send-message');
       if (target.hasClass('mm-icon-disabled')) {
         return;
       }
@@ -484,7 +484,7 @@ const moment = require('moment');
     });
 
     $('body').on('click', '#message-content .message-body', function(e) {
-      var elem = $(e.target).closest('.message-body');
+      const elem = $(e.target).closest('.message-body');
       if (!elem.is('.selected')) {
         $('#message-content .selected').removeClass('selected');
         elem.addClass('selected');
@@ -494,7 +494,7 @@ const moment = require('moment');
     CountMessages.init();
 
     // close select2 dropdowns in the background
-    var closeDropdowns = function() {
+    const closeDropdowns = function() {
       $('select.select2-hidden-accessible').each(function() {
         // prevent errors being thrown if selectors have not been
         // initialised yet
@@ -521,7 +521,7 @@ const moment = require('moment');
     });
     DatabaseConnectionMonitor.listenForDatabaseClosed();
 
-    var showUpdateReady = function() {
+    const showUpdateReady = function() {
       Modal({
         templateUrl: 'templates/modals/version_update.html',
         controller: 'ReloadingModalCtrl',
@@ -576,7 +576,7 @@ const moment = require('moment');
       RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
-    var userCtx = Session.userCtx();
+    const userCtx = Session.userCtx();
     Changes({
       key: 'inbox-user-context',
       filter: function(change) {

@@ -1,7 +1,7 @@
-var settingsService = require('../services/settings'),
-    {promisify} = require('util'),
-    SETTINGS_REGEX = /(.*)(\}[ \n\t]*\}[ \n\t]*)$/,
-    COMPLETE_EVENT_CONFIG = 'emit(\'_complete\', { _id: true });';
+const settingsService = require('../services/settings');
+const {promisify} = require('util');
+const SETTINGS_REGEX = /(.*)(\}[ \n\t]*\}[ \n\t]*)$/;
+const COMPLETE_EVENT_CONFIG = 'emit(\'_complete\', { _id: true });';
 
 module.exports = {
   name: 'emit-complete',
@@ -9,7 +9,7 @@ module.exports = {
   run: promisify(function(callback) {
     settingsService.get()
       .then(settings => {
-        var rules = settings.tasks && settings.tasks.rules;
+        let rules = settings.tasks && settings.tasks.rules;
         if (!rules) {
           // no rules configured
           return;

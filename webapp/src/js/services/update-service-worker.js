@@ -31,18 +31,21 @@ angular.module('inboxServices').factory('UpdateServiceWorker', function(
           const installingWorker = registration.installing;
           installingWorker.onstatechange = function() {
             switch (installingWorker.state) {
-              case 'activated':
-                $log.info('New service worker activated');
-                registration.onupdatefound = undefined;
-                onSuccess();
-                break;
-              case 'redundant':
-                $log.warn(`Service worker failed to install or marked as redundant. Retrying install in ${retryFailedUpdateAfterSec}secs.`);
-                existingUpdateLoop = $timeout(() => update(onSuccess), retryFailedUpdateAfterSec * 1000);
-                registration.onupdatefound = undefined;
-                break;
-              default:
-                $log.debug(`Service worker state changed to ${installingWorker.state}!`);
+            case 'activated':
+              $log.info('New service worker activated');
+              registration.onupdatefound = undefined;
+              onSuccess();
+              break;
+            case 'redundant':
+              $log.warn(
+                'Service worker failed to install or marked as redundant. ' +
+                `Retrying install in ${retryFailedUpdateAfterSec}secs.`
+              );
+              existingUpdateLoop = $timeout(() => update(onSuccess), retryFailedUpdateAfterSec * 1000);
+              registration.onupdatefound = undefined;
+              break;
+            default:
+              $log.debug(`Service worker state changed to ${installingWorker.state}!`);
             }
           };
         };

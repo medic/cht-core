@@ -11,7 +11,7 @@ const TaskStates = require('./task-states');
  */
 module.exports = (taskDocs, timestamp = Date.now()) => {
   const docsToCommit = [];
-  for (let taskDoc of taskDocs) {
+  for (const taskDoc of taskDocs) {
     let updatedState = TaskStates.calculateState(taskDoc.emission, timestamp);
     if (taskDoc.authoredOn > timestamp) {
       updatedState = TaskStates.Cancelled;

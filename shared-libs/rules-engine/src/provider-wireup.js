@@ -41,7 +41,10 @@ module.exports = {
           throw Error('Rules Engine: Updates to the nools schema are required');
         }
 
-        const contactClosure = updatedState => provider.stateChangeCallback(existingStateDoc, { rulesStateStore: updatedState });
+        const contactClosure = updatedState => provider.stateChangeCallback(
+          existingStateDoc,
+          { rulesStateStore: updatedState }
+        );
         rulesStateStore.load(existingStateDoc.rulesStateStore, settings, userDoc, contactClosure);
       });
   },
@@ -75,7 +78,8 @@ module.exports = {
    * Refreshes the rules emissions for all contacts
    *
    * @param {Object} provider A data provider
-   * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the target scores
+   * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the target
+   *    scores
    * @param {Integer} filterInterval.start Start timestamp of interval
    * @param {Integer} filterInterval.end End timestamp of interval
    * @returns {Promise<Object>} The fresh aggregate target doc
@@ -161,7 +165,8 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
     return refreshForKnownContacts(calculationTimestamp, contactIds);
   }
 
-  // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in reports/tasks)
+  // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
+  // reports/tasks)
   if (!rulesStateStore.hasAllContacts()) {
     return refreshForAllContacts(calculationTimestamp);
   }

@@ -1,7 +1,7 @@
 if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
+  var define = function( factory ) { // eslint-disable-line
+    factory( require, exports, module );
+  };
 }
 /**
  * @preserve Copyright 2012 Martijn van de Rijdt & Modilabs
@@ -20,14 +20,14 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
  */
 
 define( function( require, exports, module ) {
-    'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
-    var $ = require( 'jquery' );
-    require( 'enketo-core/src/js/plugins' );
+  'use strict';
+  const Widget = require( 'enketo-core/src/js/Widget' );
+  const $ = require( 'jquery' );
+  require( 'enketo-core/src/js/plugins' );
 
-    var pluginName = 'androiddatepicker';
+  const pluginName = 'androiddatepicker';
 
-    /**
+  /**
      * Work around a bug in some versions of Android Browser and Android WebView
      * which cause datepickers to fail to re-display after they have been
      * dismissed either by the hardware back-button or by touching the screen
@@ -47,76 +47,76 @@ define( function( require, exports, module ) {
      * @param {*=} e     event
      */
 
-    function Androiddatepicker( element, options ) {
-        this.namespace = pluginName;
-        Widget.call( this, element, options );
-        this._init();
+  function Androiddatepicker( element, options ) {
+    this.namespace = pluginName;
+    Widget.call( this, element, options );
+    this._init();
+  }
+
+  //copy the prototype functions from the Widget super class
+  Androiddatepicker.prototype = Object.create( Widget.prototype );
+
+  //ensure the constructor is the new one
+  Androiddatepicker.prototype.constructor = Androiddatepicker;
+
+  Androiddatepicker.prototype._init = function() {
+    if ( !window.medicmobile_android || typeof window.medicmobile_android.datePicker !== 'function' ) {
+      return;
     }
 
-    //copy the prototype functions from the Widget super class
-    Androiddatepicker.prototype = Object.create( Widget.prototype );
+    const el = this.element;
+    const angularServices = angular.element( document.body ).injector();
+    const Language = angularServices.get( 'Language' );
 
-    //ensure the constructor is the new one
-    Androiddatepicker.prototype.constructor = Androiddatepicker;
-
-    Androiddatepicker.prototype._init = function() {
-        if ( !window.medicmobile_android || typeof window.medicmobile_android.datePicker !== 'function' ) {
-            return;
+    Language()
+      .then( function( language ) {
+        if ( language.indexOf( 'ne' ) === 0 ) {
+          return;
         }
 
-        var el = this.element;
-        var angularServices = angular.element( document.body ).injector();
-        var Language = angularServices.get( 'Language' );
+        const $el = $( el );
+        $el.attr( 'type', 'text' );
 
-        Language()
-            .then( function( language ) {
-                if ( language.indexOf( 'ne' ) === 0 ) {
-                    return;
-                }
+        $el.on( 'click', function() {
+          // Assign a random ID every time we trigger the click listener.
+          // This avoids any potential collisions from e.g. cloned elements.
+          // Magic number: 9007199254740991 is Number.MAX_SAFE_INTEGER, but
+          // the named constant is not supported everywhere.
+          const $el = $(this);
+          const randomId = Math.floor( Math.random() * 9007199254740991 );
+          const selector = 'input[data-mm-android-dp=' + randomId + ']';
+          const val = $el.val();
 
-                var $el = $( el );
-                $el.attr( 'type', 'text' );
+          $el.attr( 'data-mm-android-dp', randomId );
 
-                $el.on( 'click', function() {
-                    // Assign a random ID every time we trigger the click listener.
-                    // This avoids any potential collisions from e.g. cloned elements.
-                    // Magic number: 9007199254740991 is Number.MAX_SAFE_INTEGER, but
-                    // the named constant is not supported everywhere.
-                    var $el = $(this),
-                        randomId = Math.floor( Math.random() * 9007199254740991 ),
-                        selector = 'input[data-mm-android-dp=' + randomId + ']',
-                        val = $el.val();
+          if ( val ) {
+            window.medicmobile_android.datePicker( selector, val );
+          } else {
+            window.medicmobile_android.datePicker( selector );
+          }
+        });
+      });
+  };
 
-                    $el.attr( 'data-mm-android-dp', randomId );
+  Androiddatepicker.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
-                    if ( val ) {
-                        window.medicmobile_android.datePicker( selector, val );
-                    } else {
-                        window.medicmobile_android.datePicker( selector );
-                    }
-                });
-            });
-    };
+  $.fn[ pluginName ] = function( options, event ) {
+    return this.each( function() {
+      const $this = $( this );
+      let data = $this.data( pluginName );
 
-    Androiddatepicker.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
+      options = options || {};
 
-    $.fn[ pluginName ] = function( options, event ) {
-        return this.each( function() {
-            var $this = $( this ),
-                data = $this.data( pluginName );
+      if ( !data && typeof options === 'object' ) {
+        $this.data( pluginName, ( data = new Androiddatepicker( this, options, event ) ) );
+      } else if ( data && typeof options === 'string' ) {
+        data[ options ]( this );
+      }
+    } );
+  };
 
-            options = options || {};
-
-            if ( !data && typeof options === 'object' ) {
-                $this.data( pluginName, ( data = new Androiddatepicker( this, options, event ) ) );
-            } else if ( data && typeof options === 'string' ) {
-                data[ options ]( this );
-            }
-        } );
-    };
-
-    module.exports = {
-        'name': pluginName,
-        'selector': 'input[type=date]'
-    };
+  module.exports = {
+    'name': pluginName,
+    'selector': 'input[type=date]'
+  };
 } );

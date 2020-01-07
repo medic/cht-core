@@ -2,16 +2,16 @@
  * @module phone-number
  * @description Our wrapper around google's libphonenumber.
  */
-var phonenumber = require('google-libphonenumber'),
-    CHARACTER_REGEX = /[a-z]/i;
+const phonenumber = require('google-libphonenumber');
+const CHARACTER_REGEX = /[a-z]/i;
 
-var _init = function(settings, phone) {
-  var instance = phonenumber.PhoneNumberUtil.getInstance();
-  var shortInfo = phonenumber.ShortNumberInfo.getInstance();
-  var countryCode = settings && settings.default_country_code;
-  var regionCode = instance.getRegionCodeForCountryCode(countryCode);
-  var parsed = instance.parseAndKeepRawInput(phone, regionCode);
-  var validationType = ((settings && settings.phone_validation) || '').toLowerCase();
+const _init = function(settings, phone) {
+  const instance = phonenumber.PhoneNumberUtil.getInstance();
+  const shortInfo = phonenumber.ShortNumberInfo.getInstance();
+  const countryCode = settings && settings.default_country_code;
+  const regionCode = instance.getRegionCodeForCountryCode(countryCode);
+  const parsed = instance.parseAndKeepRawInput(phone, regionCode);
+  const validationType = ((settings && settings.phone_validation) || '').toLowerCase();
 
   function validPhone(){
     if (validationType === 'partial') {
@@ -106,7 +106,7 @@ exports.validate = function(settings, phone) {
  */
 exports.same = function(a, b) {
   try {
-    var match = phonenumber.PhoneNumberUtil.getInstance().isNumberMatch(a, b);
+    const match = phonenumber.PhoneNumberUtil.getInstance().isNumberMatch(a, b);
     return match === phonenumber.PhoneNumberUtil.MatchType.NSN_MATCH ||
            match === phonenumber.PhoneNumberUtil.MatchType.EXACT_MATCH;
   } catch (e) {

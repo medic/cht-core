@@ -53,7 +53,8 @@ describe('Messages store', () => {
     const messagesState = selectors.getMessagesState(state);
     chai.expect(state).to.not.equal(initialState);
     chai.expect(messagesState.selected).to.not.equal(selectors.getMessagesState(initialState).selected);
-    chai.expect(messagesState.selected.messages).to.not.equal(selectors.getMessagesState(initialState).selected.messages);
+    chai.expect(messagesState.selected.messages)
+      .to.not.equal(selectors.getMessagesState(initialState).selected.messages);
     chai.expect(messagesState).to.deep.equal({ selected: { messages: [message1, message2]} });
   });
 
@@ -69,7 +70,8 @@ describe('Messages store', () => {
     const messagesState = selectors.getMessagesState(state);
     chai.expect(state).to.not.equal(initialState);
     chai.expect(messagesState.selected).to.not.equal(selectors.getMessagesState(initialState).selected);
-    chai.expect(messagesState.selected.messages).to.not.equal(selectors.getMessagesState(initialState).selected.messages);
+    chai.expect(messagesState.selected.messages)
+      .to.not.equal(selectors.getMessagesState(initialState).selected.messages);
     chai.expect(messagesState).to.deep.equal({ selected: { messages: [message2]} });
   });
 

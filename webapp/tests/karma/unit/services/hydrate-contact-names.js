@@ -2,8 +2,8 @@ describe('HydrateContactNames service', () => {
 
   'use strict';
 
-  let service,
-      GetSummaries;
+  let service;
+  let GetSummaries;
 
   beforeEach(() => {
     GetSummaries = sinon.stub();

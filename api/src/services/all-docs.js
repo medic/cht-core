@@ -27,8 +27,8 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
   }
 
   // support multiple startKey/endKey params in the same query, last one wins
-  const startKeys = _.values(_.pick(query, (value, key) => startKeyParams.indexOf(key) !== -1)),
-        endKeys = _.values(_.pick(query, (value, key) => endKeyParams.indexOf(key) !== -1));
+  const startKeys = _.values(_.pick(query, (value, key) => startKeyParams.indexOf(key) !== -1));
+  const endKeys = _.values(_.pick(query, (value, key) => endKeyParams.indexOf(key) !== -1));
 
   if (startKeys.length) {
     const startKey = _.last(startKeys);

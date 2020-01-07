@@ -1,5 +1,5 @@
-const fs = require('fs'),
-  EC = protractor.ExpectedConditions;
+const fs = require('fs');
+const EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
   const stream = fs.createWriteStream('./tests/results/' + filename);
@@ -92,7 +92,7 @@ module.exports = {
   },
 
   getTextFromElements: elements => {
-    let textFromElements = [];
+    const textFromElements = [];
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -225,11 +225,10 @@ module.exports = {
   waitForAngularComplete: () => {
     return browser.wait(() => {
       browser.sleep(200);
-      return browser
-        .executeScript(
-          'return typeof angular === "undefined" ? 0 : angular.element(document.body).injector().get("$http").pendingRequests.length'
-        )
-        .then(res => res === 0);
+      return browser.executeScript(
+        'return typeof angular === "undefined" ? 0 : ' +
+        'angular.element(document.body).injector().get("$http").pendingRequests.length'
+      ).then(res => res === 0);
     }, 15000);
   },
 

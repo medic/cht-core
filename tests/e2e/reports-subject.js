@@ -1,7 +1,7 @@
-const utils = require('../utils'),
-      commonElements = require('../page-objects/common/common.po.js'),
-      helper = require('../helper'),
-      moment = require('moment');
+const utils = require('../utils');
+const commonElements = require('../page-objects/common/common.po.js');
+const helper = require('../helper');
+const moment = require('moment');
 
 describe('Reports Summary', () => {
   const PHONE = '+64271234567';
@@ -250,7 +250,7 @@ describe('Reports Summary', () => {
     return browser
       .wait(() => element(
         by.cssContainingText('#reports-content .item-summary .sender .phone', CAROL.phone)).isPresent(),
-        10000
+      10000
       )
       .catch(loadReport);
   };

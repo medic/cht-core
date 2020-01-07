@@ -164,7 +164,7 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
 
   const factBySubjectId = contactDocs.reduce((agg, contactDoc) => {
     const subjectIds = registrationUtils.getSubjectIds(contactDoc);
-    for (let subjectId of subjectIds) {
+    for (const subjectId of subjectIds) {
       if (!agg[subjectId]) {
         agg[subjectId] = factByContactId[contactDoc._id];
       }
@@ -179,14 +179,14 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
     return newFact;
   };
 
-  for (let report of reportDocs) {
+  for (const report of reportDocs) {
     const subjectIdInReport = registrationUtils.getSubjectId(report);
     const factOfPatient = factBySubjectId[subjectIdInReport] || addHeadlessContact(subjectIdInReport);
     factOfPatient.reports.push(report);
   }
 
   if (Object.hasOwnProperty.call(Contact.prototype, 'tasks')) {
-    for (let task of taskDocs) {
+    for (const task of taskDocs) {
       const sourceId = task.requester;
       const factOfPatient = factBySubjectId[sourceId] || addHeadlessContact(sourceId);
       factOfPatient.tasks.push(task);

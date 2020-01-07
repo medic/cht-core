@@ -3,11 +3,11 @@ const sinon = require('sinon');
 const lineageFactory = require('../src');
 
 describe('Lineage', function() {
-  let lineage,
-      allDocs,
-      get,
-      query,
-      DB;
+  let lineage;
+  let allDocs;
+  let get;
+  let query;
+  let DB;
 
   beforeEach(function() {
     allDocs = sinon.stub();

@@ -16,7 +16,9 @@ const BATCH_SIZE = 1000;
 // set later to use local time
 later.date.localTime();
 
-const getReminderId = (reminder, scheduledDate, placeId) => `reminder:${reminder.form}:${scheduledDate.valueOf()}:${placeId}`;
+const getReminderId = (reminder, scheduledDate, placeId) => {
+  return `reminder:${reminder.form}:${scheduledDate.valueOf()}:${placeId}`;
+};
 
 const isConfigValid = (config) => {
   return Boolean(

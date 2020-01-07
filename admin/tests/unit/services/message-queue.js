@@ -2,13 +2,13 @@ describe('MessageQueue service', function() {
 
   'use strict';
 
-  let service,
-      Settings,
-      Languages,
-      utils,
-      query,
-      translate,
-      clock;
+  let service;
+  let Settings;
+  let Languages;
+  let utils;
+  let query;
+  let translate;
+  let clock;
 
   beforeEach(() => {
     Settings = sinon.stub();
@@ -90,7 +90,8 @@ describe('MessageQueue service', function() {
       return service.query('tab', 10, 5, false).then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
-        chai.expect(query.args[0]).to.deep.equal(['medic-admin/message_queue', { limit: 5, skip: 10, reduce: false, include_docs: true }]);
+        chai.expect(query.args[0])
+          .to.deep.equal(['medic-admin/message_queue', { limit: 5, skip: 10, reduce: false, include_docs: true }]);
         chai.expect(query.args[1]).to.deep.equal(['medic-admin/message_queue', { reduce: true, group_level: 1 }]);
       });
     });
@@ -233,7 +234,7 @@ describe('MessageQueue service', function() {
     });
 
     it('should format results', () => {
-      var messages = [
+      const messages = [
         {
           doc: {
             _id: 'report_id1',
@@ -483,7 +484,10 @@ describe('MessageQueue service', function() {
           due: 300
         }
       }, {
-        doc: { _id: 'report_id4', reported_date: 200, fields: { patient_uuid: 'patient1' }, contact: { _id: 'patient2' } },
+        doc: {
+          _id: 'report_id4', reported_date: 200,
+          fields: { patient_uuid: 'patient1' }, contact: { _id: 'patient2' }
+        },
         value: {
           scheduled_sms: { translation_key: 'sms7', recipient: 'recipient' },
           task: { translation_key: 'task3', state: 'pending' },
@@ -516,9 +520,9 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_reference')
         .resolves({ rows: [
-            { key: '1111', value: 'patient1' },
-            { key: '2222', value: 'patient2' }
-          ] });
+          { key: '1111', value: 'patient1' },
+          { key: '2222', value: 'patient2' }
+        ] });
 
       query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
 
@@ -612,21 +616,21 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_reference')
         .resolves({ rows: [
-            { key: ['shortcode', '1111'], id: 'patient1' },
-            { key: ['shortcode', '2222'], id: 'patient2' },
-            { key: ['shortcode', '3333'], id: 'patient3' }
-          ] });
+          { key: ['shortcode', '1111'], id: 'patient1' },
+          { key: ['shortcode', '2222'], id: 'patient2' },
+          { key: ['shortcode', '3333'], id: 'patient3' }
+        ] });
 
       query.withArgs('medic-client/registered_patients').resolves({ rows: [
-          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-          { key: '1111', doc: { type: 'invalid', patient_id: '1111' } },
-          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-          { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
-          { key: '2222', doc: { type: 'invalid', patient_id: '2222' } },
-          { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
-          { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
-        ]});
+        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+        { key: '1111', doc: { type: 'invalid', patient_id: '1111' } },
+        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+        { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
+        { key: '2222', doc: { type: 'invalid', patient_id: '2222' } },
+        { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
+        { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
+      ]});
 
       utils.lineage.fetchLineageByIds.resolves([
         [{ _id: 'patient1', patient_id: '1111', name: 'patient one' }],
@@ -649,17 +653,17 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [
-            { key: 'recipient1', id: 'recipient1_id' },
-            { key: 'recipient2', id: 'recipient2_id' },
-            { key: 'recipient3', id: 'recipient3_id' }
-          ]});
+          { key: 'recipient1', id: 'recipient1_id' },
+          { key: 'recipient2', id: 'recipient2_id' },
+          { key: 'recipient3', id: 'recipient3_id' }
+        ]});
       query
         .withArgs('medic/doc_summaries_by_id')
         .resolves({ rows: [
-            { key: 'recipient1_id', value: { phone: 'recipient1', name: 'recipient 1' }},
-            { key: 'recipient2_id', value: { phone: 'recipient2', name: 'recipient 2' }},
-            { key: 'recipient3_id', value: { phone: 'recipient3', name: 'recipient 3' }}
-          ]});
+          { key: 'recipient1_id', value: { phone: 'recipient1', name: 'recipient 1' }},
+          { key: 'recipient2_id', value: { phone: 'recipient2', name: 'recipient 2' }},
+          { key: 'recipient3_id', value: { phone: 'recipient3', name: 'recipient 3' }}
+        ]});
 
       return service.query('tab').then((result) => {
         chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(8);
@@ -812,16 +816,16 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_reference')
         .resolves({ rows: [
-            { key: ['shortcode', '1111'], id: 'patient1' },
-            { key: ['shortcode', '2222'], id: 'patient2' }
-          ] });
+          { key: ['shortcode', '1111'], id: 'patient1' },
+          { key: ['shortcode', '2222'], id: 'patient2' }
+        ] });
 
       query.withArgs('medic-client/registered_patients').resolves({ rows: [
-          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-          { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
-          { key: '2222', doc: { type: 'invalid', patient_id: '2222' } }
-        ]});
+        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+        { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
+        { key: '2222', doc: { type: 'invalid', patient_id: '2222' } }
+      ]});
 
       utils.lineage.fetchLineageByIds.resolves([
         [{ _id: 'patient1', patient_id: '1111', name: 'patient one' }],

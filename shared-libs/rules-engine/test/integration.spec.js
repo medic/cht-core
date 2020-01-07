@@ -92,10 +92,9 @@ describe('Rules Engine Integration Tests', () => {
 
   let configHashSalt = 0;
   beforeEach(async () => {
-    /*
-    Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils, the library uses the fake date at the time the
-    library is created. In this case, that is the time of rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
-    */
+    // Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils,
+    // the library uses the fake date at the time the library is created. In this case, that is the time of
+    // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
     sinon.useFakeTimers(THE_FUTURE);
    
     db = await memdownMedic('../..');
@@ -179,7 +178,8 @@ describe('Rules Engine Integration Tests', () => {
     // move forward 9 days, the contact is dirty, the task is recalculated
     sinon.useFakeTimers(MS_IN_DAY * 9);
     const noTasks = await rulesEngine.fetchTasksFor(['patient']);
-    expect(db.query.args.map(args => args[0])).to.deep.eq([...expectedQueriesForFreshData, ...expectedQueriesForFreshData]);
+    expect(db.query.args.map(args => args[0]))
+      .to.deep.eq([...expectedQueriesForFreshData, ...expectedQueriesForFreshData]);
     expect(noTasks).to.have.property('length', 0);
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
@@ -218,7 +218,10 @@ describe('Rules Engine Integration Tests', () => {
     // requery via 'tasks tab' interface instead of 'contacts tab' interface
     const completedTask = await rulesEngine.fetchTasksFor();
     expect(completedTask).to.have.property('length', 0);
-    expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1 /* update emissions for*/ + expectedQueriesForAllFreshData.length + 1 /* tasks */);
+    expect(db.query.callCount).to.eq(
+      expectedQueriesForFreshData.length + 1 /* update emissions for*/ +
+      expectedQueriesForAllFreshData.length + 1 /* tasks */
+    );
     expect(db.bulkDocs.callCount).to.eq(3);
     expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[2][0][0]).to.deep.include({
@@ -237,7 +240,10 @@ describe('Rules Engine Integration Tests', () => {
     });
 
     await rulesEngine.fetchTargets();
-    expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1 /* update emissions for*/ + expectedQueriesForAllFreshData.length + 1 /* tasks */);
+    expect(db.query.callCount).to.eq(
+      expectedQueriesForFreshData.length + 1 /* update emissions for*/ +
+      expectedQueriesForAllFreshData.length + 1 /* tasks */
+    );
   });
 
   it('cancel facility_reminder due to "purged" report', async () => {
@@ -370,7 +376,12 @@ describe('Rules Engine Integration Tests', () => {
     ]);
 
     expect(secondTasks).to.deep.eq(firstTasks);
-    expect(db.query.args.map(args => args[0])).to.deep.eq([...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact', 'medic-client/contacts_by_reference', ...expectedQueriesForFreshData]);
+    expect(db.query.args.map(args => args[0])).to.deep.eq([
+      ...expectedQueriesForAllFreshData,
+      'medic-client/tasks_by_contact',
+      'medic-client/contacts_by_reference',
+      ...expectedQueriesForFreshData
+    ]);
   });
 
   it('mark dirty by subject id (contacts tab scenario)', async () => {
@@ -393,37 +404,59 @@ describe('Rules Engine Integration Tests', () => {
     ]);
 
     expect(secondTasks).to.deep.eq(firstTasks);
-    expect(db.query.args.map(args => args[0])).to.deep.eq([...expectedQueriesForFreshData, 'medic-client/contacts_by_reference', ...expectedQueriesForFreshData]);
+    expect(db.query.args.map(args => args[0])).to.deep.eq([
+      ...expectedQueriesForFreshData,
+      'medic-client/contacts_by_reference',
+      ...expectedQueriesForFreshData
+    ]);
   });
 
   it('headless scenario (tasks tab)', async () => {
     const headlessReport = { _id: 'report', type: 'data_record', form: 'form', patient_id: 'headless' };
     const headlessReport2 = { _id: 'report2', type: 'data_record', form: 'form', patient_id: 'headless2' };
-    const taskOwnedByHeadless = { _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: { _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(), } };
-    const taskEmittedByHeadless2 = { _id: 'task2', type: 'task', state: 'Ready', requester: 'headless2', emission: { _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(), } };
+    const taskOwnedByHeadless = { _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: {
+      _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(), }
+    };
+    const taskEmittedByHeadless2 = { _id: 'task2', type: 'task', state: 'Ready', requester: 'headless2', emission: {
+      _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(), }
+    };
     await db.bulkDocs([headlessReport, headlessReport2, taskOwnedByHeadless, taskEmittedByHeadless2]);
 
     sinon.spy(db, 'bulkDocs');
     sinon.spy(db, 'query');
     sinon.spy(rulesEmitter, 'getEmissionsFor');
     const firstResult = await rulesEngine.fetchTasksFor();
-    expect(rulesEmitter.getEmissionsFor.args).excludingEvery(['_rev', 'state', 'stateHistory']).to.deep.eq([[[], [headlessReport, headlessReport2], [taskEmittedByHeadless2]]]);
-    expect(db.query.args.map(args => args[0])).to.deep.eq([...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']);
+    expect(rulesEmitter.getEmissionsFor.args).excludingEvery(['_rev', 'state', 'stateHistory'])
+      .to.deep.eq([[[], [headlessReport, headlessReport2], [taskEmittedByHeadless2]]]);
+    expect(db.query.args.map(args => args[0]))
+      .to.deep.eq([...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']);
     expect(firstResult).excludingEvery('_rev').to.deep.eq([taskOwnedByHeadless]);
     expect(db.bulkDocs.callCount).to.eq(1); // taskEmittedByHeadless2 gets cancelled
 
     await rulesEngine.updateEmissionsFor('headless');
     const secondResult = await rulesEngine.fetchTasksFor();
     expect(secondResult).to.deep.eq(firstResult);
-    expect(db.query.args.map(args => args[0]).length).to.deep.eq(expectedQueriesForAllFreshData.length + 2 /* tasks, updateFor */ + expectedQueriesForFreshData.length);
+    expect(db.query.args.map(args => args[0]).length).to.deep.eq(
+      expectedQueriesForAllFreshData.length + 2 /* tasks, updateFor */ +
+      expectedQueriesForFreshData.length
+    );
 
     await rulesEngine.fetchTasksFor();
-    expect(db.query.args.map(args => args[0]).length).to.deep.eq(expectedQueriesForAllFreshData.length + 2 /* tasks, updateFor */ + expectedQueriesForFreshData.length + 1 /* tasks */);
+    expect(db.query.args.map(args => args[0]).length).to.deep.eq(
+      expectedQueriesForAllFreshData.length + 2 /* tasks, updateFor */ +
+      expectedQueriesForFreshData.length + 1 /* tasks */
+    );
   });
 
   it('targets for two pregnancy registrations', async () => {
     const patientContact2 = Object.assign({}, patientContact, { _id: 'patient2', patient_id: 'patient_id2', });
-    const pregnancyRegistrationReport2 = Object.assign({}, pregnancyRegistrationReport, { _id: 'pregReg2', fields: { lmp_date_8601: THE_FUTURE, patient_id: patientContact2.patient_id }, reported_date: THE_FUTURE+1 });
+    const pregnancyRegistrationReport2 = Object.assign(
+      {},
+      pregnancyRegistrationReport,
+      { _id: 'pregReg2', fields: {
+        lmp_date_8601: THE_FUTURE, patient_id: patientContact2.patient_id
+      }, reported_date: THE_FUTURE+1
+      });
     await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
 
     sinon.spy(db, 'bulkDocs');
@@ -455,7 +488,9 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   sinon.spy(db, 'query');
   const tasks = await rulesEngine.fetchTasksFor(selectBy);
   expect(tasks).to.have.property('length', 1);
-  expect(db.query.args.map(args => args[0])).to.deep.eq(selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']);
+  expect(db.query.args.map(args => args[0])).to.deep.eq(
+    selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']
+  );
   expect(db.bulkDocs.callCount).to.eq(1);
   expect(tasks[0]).to.deep.include({
     _id: `task~user~report~pregnancy-facility-visit-reminder~2~${Date.now()}`,

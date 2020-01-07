@@ -59,7 +59,8 @@ function leftPad(s, w) {
 }
 
 function printTableRow(...columns) {
-  let i, row = '';
+  let i; let 
+    row = '';
   for(i=0; i<columns.length; i+=2) {
     if(i) {
       row += ' | ';
@@ -67,8 +68,8 @@ function printTableRow(...columns) {
     const colWidth = columns[i+1];
     let val = columns[i];
     val = !colWidth ? val : colWidth>0 ?
-        rightPad(val, colWidth):
-        leftPad(val, -colWidth);
+      rightPad(val, colWidth):
+      leftPad(val, -colWidth);
     row += colWidth ? snip(val, Math.abs(colWidth)) : val;
   }
   console.log(row);
@@ -76,21 +77,21 @@ function printTableRow(...columns) {
 
 log(`Starting for ${sanitiseUrl(couchUrl)}…`);
 
-var db = PouchDB(couchUrl);
+const db = PouchDB(couchUrl);
 
 console.log('        state | to               |  len | message                          | doc URL');
 
 db.query('medic/messages_by_state')
   .then((res) => {
     res.rows.map((row) => {
-        const state = row.key[0];
-        const m = row.value.content;
-        printTableRow(
-            state, -13,
-            row.value.to, 16,
-            m ? m.length : 0, -4,
-            m, 32,
-            link(row.id), 0);
+      const state = row.key[0];
+      const m = row.value.content;
+      printTableRow(
+        state, -13,
+        row.value.to, 16,
+        m ? m.length : 0, -4,
+        m, 32,
+        link(row.id), 0);
     });
   })
   .then(() => log('Finished.'));

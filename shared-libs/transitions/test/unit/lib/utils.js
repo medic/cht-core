@@ -1,9 +1,9 @@
-const { expect } = require('chai'),
-      sinon = require('sinon'),
-      registrationUtils = require('@medic/registration-utils'),
-      taskUtils = require('@medic/task-utils'),
-      config = require('../../../src/config'),
-      db = require('../../../src/db');
+const { expect } = require('chai');
+const sinon = require('sinon');
+const registrationUtils = require('@medic/registration-utils');
+const taskUtils = require('@medic/task-utils');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
 
 describe('utils util', () => {
 
@@ -122,7 +122,8 @@ describe('utils util', () => {
       return utils.getReportsBySubject({ id: '12345' }).then(result => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
-        db.medic.query.args[0].should.deep.equal(['medic-client/reports_by_subject', { key: ['12345'], include_docs: true }]);
+        db.medic.query.args[0]
+          .should.deep.equal(['medic-client/reports_by_subject', { key: ['12345'], include_docs: true }]);
       });
     });
 
@@ -194,11 +195,11 @@ describe('utils util', () => {
       sinon.stub(taskUtils, 'setTaskState').returns(true);
       const filter = sinon.stub().callsFake(task => task.filtered);
       const doc = { scheduled_tasks: [
-          { id: 1, filtered: true },
-          { id: 2, filtered: false },
-          { id: 3, filtered: true },
-          { id: 4, filtered: false },
-        ]};
+        { id: 1, filtered: true },
+        { id: 2, filtered: false },
+        { id: 3, filtered: true },
+        { id: 4, filtered: false },
+      ]};
 
       const r = utils.setTasksStates(doc, 'newState', filter);
       r.should.equal(2);

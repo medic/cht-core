@@ -2,11 +2,11 @@ describe('Auth service', function() {
 
   'use strict';
 
-  var service,
-      userCtx,
-      Settings,
-      $rootScope,
-      isOnlineOnly;
+  let service;
+  let userCtx;
+  let Settings;
+  let $rootScope;
+  let isOnlineOnly;
 
   beforeEach(function () {
     module('inboxApp');
@@ -331,7 +331,11 @@ describe('Auth service', function() {
         })
       );
       return service
-        .any([[ 'can_backup_facilities' ], [ 'can_export_messages', 'can_roll_over' ], [ 'can_add_people', 'can_add_places' ]])
+        .any([
+          [ 'can_backup_facilities' ],
+          [ 'can_export_messages', 'can_roll_over' ],
+          [ 'can_add_people', 'can_add_places' ]
+        ])
         .catch(() => {
           throw new Error('Should have passed auth');
         });
@@ -348,7 +352,11 @@ describe('Auth service', function() {
         })
       );
       return service
-        .any([[ 'can_backup_facilities', 'can_backup_people' ], [ 'can_export_messages', 'can_roll_over' ], [ 'can_add_people', 'can_add_places' ]])
+        .any([
+          [ 'can_backup_facilities', 'can_backup_people' ],
+          [ 'can_export_messages', 'can_roll_over' ],
+          [ 'can_add_people', 'can_add_places' ]
+        ])
         .catch(() => {
           throw new Error('Should have passed auth');
         });
@@ -365,7 +373,11 @@ describe('Auth service', function() {
         })
       );
       return service
-        .any([[ 'can_backup_facilities', 'can_backup_people' ], [ 'can_export_messages', 'can_roll_over' ], [ 'can_add_people', 'can_add_places' ]])
+        .any([
+          [ 'can_backup_facilities', 'can_backup_people' ],
+          [ 'can_export_messages', 'can_roll_over' ],
+          [ 'can_add_people', 'can_add_places' ]
+        ])
         .then(() => {
           throw new Error('Should have failed auth');
         })
@@ -393,7 +405,11 @@ describe('Auth service', function() {
         })
       );
       return service
-        .any([[ 'can_backup_facilities', '!random1' ], [ 'can_export_messages', '!random2' ], [ 'can_add_people', '!random3' ]])
+        .any([
+          [ 'can_backup_facilities', '!random1' ],
+          [ 'can_export_messages', '!random2' ],
+          [ 'can_add_people', '!random3' ]
+        ])
         .catch(() => {
           throw new Error('Should have passed auth');
         });
@@ -414,7 +430,11 @@ describe('Auth service', function() {
         })
       );
       service
-        .any([[ 'can_backup_facilities', '!can_add_people' ], [ 'can_export_messages', '!random2' ], [ 'can_backup_people', '!can_add_places' ]])
+        .any([
+          [ 'can_backup_facilities', '!can_add_people' ],
+          [ 'can_export_messages', '!random2' ],
+          [ 'can_backup_people', '!can_add_places' ]
+        ])
         .catch(() => {
           throw new Error('Should have passed auth');
         });
@@ -435,7 +455,11 @@ describe('Auth service', function() {
         })
       );
       return service
-        .any([[ 'can_backup_facilities', '!random1' ], [ 'can_backup_people', '!random2' ], [ 'can_backup_places', '!random3' ]])
+        .any([
+          [ 'can_backup_facilities', '!random1' ],
+          [ 'can_backup_people', '!random2' ],
+          [ 'can_backup_places', '!random3' ]
+        ])
         .then(() => {
           throw new Error('Should have failed auth');
         })

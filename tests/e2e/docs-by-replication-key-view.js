@@ -1,5 +1,5 @@
-const utils = require('../utils'),
-      async = require('async');
+const utils = require('../utils');
+const async = require('async');
 
 describe('view docs_by_replication_key', () => {
 
@@ -280,8 +280,8 @@ describe('view docs_by_replication_key', () => {
   ];
 
   // TODO: consider removing this and just pulling ids from the two arrays above
-  let docByPlaceIds,
-      docByPlaceIds_unassigned;
+  let docByPlaceIds;
+  let docByPlaceIds_unassigned;
 
   beforeAll(done => {
     const alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);

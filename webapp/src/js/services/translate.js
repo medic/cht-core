@@ -9,7 +9,7 @@ angular.module('inboxServices').service('Translate',
     'use strict';
     'ngInject';
 
-    var fieldIsRequired = function(fieldKey) {
+    const fieldIsRequired = function(fieldKey) {
       return $translate(fieldKey)
         .then(function(field) {
           return $translate('field is required', { field: field });

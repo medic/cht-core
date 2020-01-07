@@ -1,9 +1,9 @@
 describe('ZScore service', () => {
   'use strict';
 
-  let service,
-      allDocs,
-      Changes;
+  let service;
+  let allDocs;
+  let Changes;
 
   beforeEach(() => {
     module('inboxApp');

@@ -1,7 +1,7 @@
-const db = require('../db'),
-      messages = require('../lib/messages'),
-      utils = require('../lib/utils'),
-      idGenerator = require('../lib/ids').generator(db);
+const db = require('../db');
+const messages = require('../lib/messages');
+const utils = require('../lib/utils');
+const idGenerator = require('../lib/ids').generator(db);
 
 const findFirstMatchingMessage = (config, errorKey) => {
   if (!config.messages || !config.messages.length) {

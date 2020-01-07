@@ -1,11 +1,11 @@
 /**
  * @module smsparser
  */
-const config = require('../../config'),
-  mpParser = require('./mp-parser'),
-  javarosaParser = require('./javarosa-parser'),
-  textformsParser = require('./textforms-parser'),
-  logger = require('../../logger');
+const config = require('../../config');
+const mpParser = require('./mp-parser');
+const javarosaParser = require('./javarosa-parser');
+const textformsParser = require('./textforms-parser');
+const logger = require('../../logger');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
@@ -66,12 +66,12 @@ const getParser = (exports.getParser = (def, doc) => {
   const match = msg.match(MUVUKU_REGEX);
   if (match && match[1]) {
     switch (match[1].toUpperCase()) {
-      case '1':
-        return mpParser.parse;
-      case 'J1':
-        return javarosaParser.parse;
-      default:
-        return;
+    case '1':
+      return mpParser.parse;
+    case 'J1':
+      return javarosaParser.parse;
+    default:
+      return;
     }
   }
   msg = stripFormCode(code, msg);
@@ -121,64 +121,65 @@ const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
 exports.parseField = (field, raw) => {
   switch (field.type) {
-    case 'integer':
-      // store list value since it has more meaning.
-      // TODO we don't have locale data inside this function so calling
-      // translate does not resolve locale.
-      if (field.list) {
-        const item = field.list.find(item => String(item[0]) === String(raw));
-        if (!item) {
-          logger.warn(
-            `Option not available for ${JSON.stringify(raw)} in list.`
-          );
-          return null;
-        }
-        return config.translate(item[1]);
-      }
-      return parseNum(raw);
-    case 'string':
-      if (raw === undefined) {
-        return;
-      }
-      if (raw === '') {
+  case 'integer':
+    // store list value since it has more meaning.
+    // TODO we don't have locale data inside this function so calling
+    // translate does not resolve locale.
+    if (field.list) {
+      const item = field.list.find(item => String(item[0]) === String(raw));
+      if (!item) {
+        logger.warn(
+          `Option not available for ${JSON.stringify(raw)} in list.`
+        );
         return null;
       }
-      if (field.list) {
-        for (let i of field.list) {
-          const item = field.list[i];
-          if (item[0] === raw) {
-            return item[1];
-          }
-        }
-        logger.warn(`Option not available for ${raw} in list.`);
-      }
-      return raw;
-    case 'date':
-      if (!raw) {
-        return null;
-      }
-      // YYYY-MM-DD assume muvuku format for now
-      // store in milliseconds since Epoch
-      return new Date(raw).valueOf();
-    case 'boolean':
-      if (raw === undefined) {
-        return;
-      }
-      var val = parseNum(raw);
-      if (val === 1) {
-        return true;
-      }
-      if (val === 0) {
-        return false;
-      }
-      // if we can't parse a number then return null
+      return config.translate(item[1]);
+    }
+    return parseNum(raw);
+  case 'string':
+    if (raw === undefined) {
+      return;
+    }
+    if (raw === '') {
       return null;
-    case 'month':
-      // keep months integers, not their list value.
-      return parseNum(raw);
-    default:
-      logger.warn(`Unknown field type: ${field.type}`);
-      return raw;
+    }
+    if (field.list) {
+      for (const i of field.list) {
+        const item = field.list[i];
+        if (item[0] === raw) {
+          return item[1];
+        }
+      }
+      logger.warn(`Option not available for ${raw} in list.`);
+    }
+    return raw;
+  case 'date':
+    if (!raw) {
+      return null;
+    }
+    // YYYY-MM-DD assume muvuku format for now
+    // store in milliseconds since Epoch
+    return new Date(raw).valueOf();
+  case 'boolean': {
+    if (raw === undefined) {
+      return;
+    }
+    const val = parseNum(raw);
+    if (val === 1) {
+      return true;
+    }
+    if (val === 0) {
+      return false;
+    }
+    // if we can't parse a number then return null
+    return null;
+  }
+  case 'month':
+    // keep months integers, not their list value.
+    return parseNum(raw);
+  default:
+    logger.warn(`Unknown field type: ${field.type}`);
+    return raw;
   }
 };
 
@@ -190,16 +191,15 @@ exports.parseField = (field, raw) => {
  * messages.
  */
 exports.parse = (def, doc) => {
-  let msgData,
-    parser,
-    formData = {},
-    addOmittedFields = false;
+  let msgData;
+  const formData = {};
+  let addOmittedFields = false;
 
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
   }
 
-  parser = getParser(def, doc);
+  const parser = getParser(def, doc);
 
   if (!parser) {
     logger.error('Failed to find message parser.');
@@ -210,14 +210,14 @@ exports.parse = (def, doc) => {
     msgData = parser(def, doc);
     addOmittedFields = true;
   } else {
-    const code = def && def.meta && def.meta.code,
-      msg = stripFormCode(code, doc.message || doc);
+    const code = def && def.meta && def.meta.code;
+    const msg = stripFormCode(code, doc.message || doc);
     if (textformsParser.isCompact(def, msg, doc.locale)) {
       msgData = parser(def, msg);
     } else {
       msgData = parser(msg);
       // replace tiny labels with field keys for textforms
-      for (let j of Object.keys(def.fields)) {
+      for (const j of Object.keys(def.fields)) {
         const label = lower(
           config.translate(def.fields[j].labels.tiny, doc.locale)
         );
@@ -230,7 +230,7 @@ exports.parse = (def, doc) => {
   }
 
   // parse field types and resolve dot notation keys
-  for (let k of Object.keys(def.fields)) {
+  for (const k of Object.keys(def.fields)) {
     if (msgData[k] || addOmittedFields) {
       const value = exports.parseField(def.fields[k], msgData[k]);
       createDeepKey(formData, k.split('.'), value);
@@ -251,8 +251,8 @@ exports.parse = (def, doc) => {
  * @returns {Array} - An array of values from the raw sms message
  */
 exports.parseArray = (def, doc) => {
-  const parser = getParser(def, doc),
-    obj = parser(def, doc);
+  const parser = getParser(def, doc);
+  const obj = parser(def, doc);
 
   if (!def || !def.fields) {
     return [];

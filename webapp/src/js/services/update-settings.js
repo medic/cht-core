@@ -8,7 +8,7 @@ angular.module('inboxServices').factory('UpdateSettings',
 
     return function(updates, options) {
       options = options || {};
-      var config = {
+      const config = {
         params: { replace: options.replace },
         headers: { 'Content-Type': 'application/json' }
       };

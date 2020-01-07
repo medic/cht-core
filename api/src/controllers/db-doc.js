@@ -1,6 +1,6 @@
-const dbDoc = require('../services/db-doc'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+const dbDoc = require('../services/db-doc');
+const _ = require('underscore');
+const serverUtils = require('../server-utils');
 
 // block this middleware from processing requests to these endpoints
 const RESERVED_ENDPOINTS = [

@@ -3,9 +3,9 @@ describe('TasksForContact service', function() {
 
   const { assert, expect } = chai;
 
-  let fetchTaskDocsFor,
-    rulesEngineIsEnabled,
-    service;
+  let fetchTaskDocsFor;
+  let rulesEngineIsEnabled;
+  let service;
 
   const docId = 'dockyMcDocface';
   const PERSON_TYPE = { id: 'person', person: true, parents: ['clinic'] };
@@ -43,7 +43,7 @@ describe('TasksForContact service', function() {
     expect(tasks).to.deep.eq([]);
   });
 
-  for (let contactType of [PERSON_TYPE, CLINIC_TYPE, {}]) {
+  for (const contactType of [PERSON_TYPE, CLINIC_TYPE, {}]) {
     it(`displays tasks for contact-type ${contactType.id}`, async () => {
       const task = emissionAsDoc({ _id: 'aa', contact: { _id: docId } });
       
@@ -60,7 +60,7 @@ describe('TasksForContact service', function() {
     });
   }
 
-  for (let contactType of [HEALTH_CENTER_TYPE]) {
+  for (const contactType of [HEALTH_CENTER_TYPE]) {
     it(`does not display tasks for contact-type ${contactType.id}`, async () => {
       const task = emissionAsDoc({ _id: 'aa', contact: { _id: docId } });
       

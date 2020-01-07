@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
@@ -165,8 +167,11 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding': './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'translator': './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
-            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
+            // translator for enketo's internal i18n
+            'translator': './webapp/src/js/enketo/translator',
+            // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
+            // https://github.com/enketo/enketo-core/issues/454
+            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown',
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'bikram-sambat': './webapp/node_modules/bikram-sambat',
@@ -205,7 +210,7 @@ module.exports = function(grunt) {
 
           // admin files
           'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
-          'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
+          'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js'
         },
       },
       api: {
@@ -421,7 +426,7 @@ module.exports = function(grunt) {
               pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
             }
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
-            console.log(`Updated 'bundledDependencies' for ${filePath}`);
+            console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
           });
           return 'echo "Node module dependencies updated"';
         },
@@ -529,7 +534,7 @@ module.exports = function(grunt) {
       'check-version': `node scripts/travis/check-versions.js`,
       'undo-patches': {
         cmd: function() {
-          var modulesToPatch = [
+          const modulesToPatch = [
             'bootstrap-daterangepicker',
             'enketo-core',
             'font-awesome',
@@ -590,7 +595,7 @@ module.exports = function(grunt) {
       // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
       'apply-patches': {
         cmd: function() {
-          var patches = [
+          const patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',

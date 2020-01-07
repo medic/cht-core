@@ -367,8 +367,8 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults),
-          newSubjects = authorization.updateContext(allowed, feed, changeObj.viewResults);
+    const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults);
+    const newSubjects = authorization.updateContext(allowed, feed, changeObj.viewResults);
 
     if (!allowed) {
       return feed.reiterate_changes && feed.pendingChanges.push(changeObj);

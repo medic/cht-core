@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 angular.module('inboxServices').factory('UpdateFacility',
   function(
@@ -14,8 +14,8 @@ angular.module('inboxServices').factory('UpdateFacility',
         DB().get(facilityId)
       ])
         .then(function(results) {
-          var message = results[0];
-          var facility = results[1];
+          const message = results[0];
+          const facility = results[1];
           message.contact = ExtractLineage(facility);
           if (facility) {
             message.errors = _.reject(message.errors, function(error) {

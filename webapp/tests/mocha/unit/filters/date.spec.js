@@ -1,5 +1,5 @@
-const assert = require('chai').assert,
-      moment = require('moment');
+const assert = require('chai').assert;
+const moment = require('moment');
 
 const mockAngular = require('../mock-angular');
 require('../../../../src/js/filters/date');
@@ -63,7 +63,8 @@ describe('date filter', function() {
 
     it('should return nicely-formatted output', function() {
       // expect
-      assert.equal(autoreply(TEST_TASK), '<span><span class="state STATE">state.STATE</span>&nbsp;<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>');
+      assert.equal(autoreply(TEST_TASK), '<span><span class="state STATE">state.STATE</span>&nbsp;' +
+        '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>');
     });
 
   });
@@ -103,7 +104,8 @@ describe('date filter', function() {
     it('should return nicely-formatted output', function() {
       // expect
       const expected = '<span class="relative-date future" title="2046-01-02T02:14:45.558Z">' +
-                         '<span class="relative-date-content update-relative-date" data-date-options="someOptions">0 days</span>' +
+                         '<span class="relative-date-content update-relative-date" ' +
+                         'data-date-options="someOptions">0 days</span>' +
                        '</span>';
       assert.equal(relativeDate(TEST_DATE), expected);
     });

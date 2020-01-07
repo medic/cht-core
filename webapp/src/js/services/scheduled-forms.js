@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 (function () {
 
@@ -20,7 +20,7 @@ var _ = require('underscore');
       'ngInject';
       return function() {
         return Settings().then(function(settings) {
-          var results = [];
+          const results = [];
           _.each(_.pairs(settings.forms), function(pair) {
             if (_.some(settings['kujua-reporting'], function(report) {
               return report.code === pair[0];

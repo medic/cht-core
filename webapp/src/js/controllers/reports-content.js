@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 (function () {
 
@@ -61,13 +61,13 @@ var _ = require('underscore');
       };
 
       ctrl.canSchedule = function(group) {
-       return MessageState.any(group, 'muted');
+        return MessageState.any(group, 'muted');
       };
 
-      var setMessageState = function(report, group, from, to) {
+      const setMessageState = function(report, group, from, to) {
         group.loading = true;
-        var id = report._id;
-        var groupNumber = group.rows[0].group;
+        const id = report._id;
+        const groupNumber = group.rows[0].group;
         MessageState.set(id, groupNumber, from, to).catch(function(err) {
           group.loading = false;
           $log.error('Error setting message state', err);
@@ -87,7 +87,7 @@ var _ = require('underscore');
           return;
         }
 
-        var id = selection._id;
+        const id = selection._id;
         if (selection.report || selection.expanded) {
           ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
         } else {
@@ -122,7 +122,7 @@ var _ = require('underscore');
         }).catch(() => {}); // dismissed
       };
 
-      var changeListener = Changes({
+      const changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
           return ctrl.selectedReports &&
@@ -135,7 +135,7 @@ var _ = require('underscore');
           if (change.deleted) {
             ctrl.removeSelectedReport(change.id);
           } else {
-            var selectedReports = ctrl.selectedReports;
+            const selectedReports = ctrl.selectedReports;
             ctrl.selectReport(change.id, { silent: true })
               .then(function() {
                 if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||

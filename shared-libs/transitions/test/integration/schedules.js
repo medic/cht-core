@@ -7,15 +7,15 @@ const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
 
 const contact = {
-        phone: '+1234',
-        name: 'Julie',
-        parent: {
-          contact: {
-            phone: '+1234',
-            name: 'Julie'
-          }
-        }
-      };
+  phone: '+1234',
+  name: 'Julie',
+  parent: {
+    contact: {
+      phone: '+1234',
+      name: 'Julie'
+    }
+  }
+};
 
 const getMessage = (doc, idx) =>
   doc &&
@@ -94,18 +94,18 @@ describe('functional schedules', () => {
       assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
       testMessage(
-          getMessage(doc, 0),
-          '+1234',
-          'thanks Julie');
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
       /*
        * Also checks that recipient using doc property value is resolved
        * correctly.
        */
       testMessage(
-          getScheduledMessage(doc, 0),
-          '+1234',
-          'Mustaches.  Overrated or underrated?');
+        getScheduledMessage(doc, 0),
+        '+1234',
+        'Mustaches.  Overrated or underrated?');
 
     });
   });
@@ -158,9 +158,9 @@ describe('functional schedules', () => {
       assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
       testMessage(
-          getMessage(doc, 0),
-          '+1234',
-          'thanks Julie');
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
       // check that message generation is deferred until later
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -226,18 +226,18 @@ describe('functional schedules', () => {
       assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
       testMessage(
-          getMessage(doc, 0),
-          '+1234',
-          'thanks Julie');
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
       /*
        * Also checks that recipient using doc property value is resolved
        * correctly.
        */
       testMessage(
-          getScheduledMessage(doc, 0),
-          '+1234',
-          'Mustaches.  Overrated or underrated?');
+        getScheduledMessage(doc, 0),
+        '+1234',
+        'Mustaches.  Overrated or underrated?');
     });
   });
 
@@ -271,9 +271,9 @@ describe('functional schedules', () => {
       assert.equal(doc.tasks && doc.tasks.length, 1);
 
       testMessage(
-          getMessage(doc, 0),
-          '+5551596',
-          'Thanks');
+        getMessage(doc, 0),
+        '+5551596',
+        'Thanks');
     });
   });
 
@@ -340,18 +340,18 @@ describe('functional schedules', () => {
       assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
       testMessage(
-          getMessage(doc, 0),
-          '+1234',
-          'thanks for registering barry');
+        getMessage(doc, 0),
+        '+1234',
+        'thanks for registering barry');
 
       /*
        * Also checks that recipient using doc property value is resolved
        * correctly.
        */
       testMessage(
-          getScheduledMessage(doc, 0),
-          '+1234',
-          'Remember to visit barry');
+        getScheduledMessage(doc, 0),
+        '+1234',
+        'Remember to visit barry');
 
       assert.equal(getRegistrations.callCount, 2);
       assert.equal(getRegistrations.args[0][0].id, '123');
@@ -414,9 +414,9 @@ describe('functional schedules', () => {
       assert(!doc.scheduled_tasks);
 
       testMessage(
-          getMessage(doc, 0),
-          '+1234',
-          'thanks Julie');
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
     });
   });
 

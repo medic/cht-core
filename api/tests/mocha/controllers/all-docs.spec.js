@@ -1,11 +1,11 @@
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
-const controller = require('../../../src/controllers/all-docs'),
-      service = require('../../../src/services/all-docs'),
-      serverUtils = require('../../../src/server-utils');
+const controller = require('../../../src/controllers/all-docs');
+const service = require('../../../src/services/all-docs');
+const serverUtils = require('../../../src/server-utils');
 
-let testReq,
-    testRes;
+let testReq;
+let testRes;
 
 describe('All Docs controller', () => {
   beforeEach(() => {
@@ -25,7 +25,8 @@ describe('All Docs controller', () => {
   describe('invalidRequest', () => {
     it('returns error when request query `keys` is not JSON', () => {
       testReq.query.keys = 'abcd';
-      controller._invalidRequest(testReq).should.deep.equal({ error: 'bad_request', reason: '`keys` parameter must be an array.' });
+      controller._invalidRequest(testReq)
+        .should.deep.equal({ error: 'bad_request', reason: '`keys` parameter must be an array.' });
     });
 
     it('returns error when request query `keys` is not an array', () => {

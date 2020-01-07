@@ -45,7 +45,7 @@ const uploadDefaultDocuments = async function () {
   if (fs.existsSync(pathToConfig)) {
     const uploadResult = await uploadDocumentsInFolder(pathToConfig);
     const unsuccessfulUploads = uploadResult.filter(result => !result.ok);
-    for (let unsuccessful of unsuccessfulUploads) {
+    for (const unsuccessful of unsuccessfulUploads) {
       error(`Failured to upload initial config document ${unsuccessful.id}: ${unsuccessful.message}`);
     }
 

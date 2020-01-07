@@ -1,22 +1,22 @@
-const utils = require('../../utils'),
-      usersPage = require('../../page-objects/users/users.po.js'),
-      helper = require('../../helper'),
-      addUserModal = require('../../page-objects/users/add-user-modal.po.js');
+const utils = require('../../utils');
+const usersPage = require('../../page-objects/users/users.po.js');
+const helper = require('../../helper');
+const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
-const addedUser = 'fulltester' + new Date().getTime(),
-      fullName = 'Bede Ngaruko',
-      errorMessagePassword = element(by.css('#password ~ .help-block'));
+const addedUser = 'fulltester' + new Date().getTime();
+const fullName = 'Bede Ngaruko';
+const errorMessagePassword = element(by.css('#password ~ .help-block'));
 
 describe('Add user  : ', () => {
 
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
-    .then(doc => utils.request({
-      path: `/_users/${addedUser}?rev=${doc._rev}`,
-      method: 'DELETE'
-    }))
-    .catch(() => {}) // If this fails we don't care
-    .then(() => utils.afterEach(done)));
+      .then(doc => utils.request({
+        path: `/_users/${addedUser}?rev=${doc._rev}`,
+        method: 'DELETE'
+      }))
+      .catch(() => {}) // If this fails we don't care
+      .then(() => utils.afterEach(done)));
 
   it('should add user with valid password', () => {
     usersPage.openAddUserModal();

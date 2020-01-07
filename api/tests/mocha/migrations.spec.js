@@ -1,7 +1,7 @@
-const chai = require('chai'),
-      sinon = require('sinon'),
-      migrations = require('../../src/migrations'),
-      db = require('../../src/db');
+const chai = require('chai');
+const sinon = require('sinon');
+const migrations = require('../../src/migrations');
+const db = require('../../src/db');
 
 describe('migrations', () => {
 

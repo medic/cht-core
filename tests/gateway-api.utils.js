@@ -121,7 +121,7 @@ function getMessageContents() {
 
       if(doc.kujua_message) {
         doc.tasks.forEach(task =>
-            task.messages.forEach(m => acc.push(m.message)));
+          task.messages.forEach(m => acc.push(m.message)));
       }
 
       if(doc.sms_message) {
@@ -134,6 +134,6 @@ function getMessageContents() {
 
 function allMessageDocs() {
   return testUtils.db.query('medic-client/messages_by_contact_date',
-      { reduce:false, include_docs:true })
+    { reduce:false, include_docs:true })
     .then(res => res.rows.map(row => row.doc));
 }

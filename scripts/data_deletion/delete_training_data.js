@@ -23,16 +23,15 @@
  * the rev on a form in between each batch (see bump_rev.js).
  */
 
- /* eslint-disable no-unused-vars */
-
+/* eslint-disable no-unused-vars */
 'use strict';
 
-var PouchDB = require('pouchdb');
-var _ = require('underscore');
-var url = require('url');
-var utils = require('./delete_training_data_utils.js');
+const PouchDB = require('pouchdb');
+const _ = require('underscore');
+const url = require('url');
+const utils = require('./delete_training_data_utils.js');
 
-var deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
   return utils.queryInBatches(
     function(skip) {
       console.log('Deleting reports');
@@ -51,7 +50,7 @@ var deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp,
     });
 };
 
-var deletePersons = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+const deletePersons = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
   return utils.queryInBatches(
     function(skip) {
       console.log('Deleting persons');
@@ -74,7 +73,7 @@ var deletePersons = function(db, dryrun, branchId, startTimestamp, endTimestamp,
     });
 };
 
-var deleteClinics = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteClinics = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
   return utils.queryInBatches(
     function(skip) {
       console.log('Deleting clinics');
@@ -96,7 +95,7 @@ var deleteClinics = function(db, dryrun, branchId, startTimestamp, endTimestamp,
     });
 };
 
-var deleteHealthCenters = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteHealthCenters = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
   return Promise.resolve()
     .then(function() {
       console.log('Deleting health centers');
@@ -116,7 +115,7 @@ var deleteHealthCenters = function(db, dryrun, branchId, startTimestamp, endTime
     });
 };
 
-var deleteBranches = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteBranches = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
 
   return Promise.resolve()
     .then(function() {
@@ -149,34 +148,37 @@ if (process.argv.length < 7) {
     'between the two timestamps.');
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
-  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
-  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 500 dryrun');
+  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the ' +
+    'deletions.\n');
+  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js ' +
+    '52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ' +
+    './training_data_20160425 500 dryrun');
   process.exit();
 }
 
-var now = new Date();
-var dbUrl = process.env.COUCH_URL;
-var branchId = process.argv[2];
-var start = new Date(process.argv[3]);
-var end = new Date(process.argv[4]);
-var logdir = process.argv[5] + '/' + now.getTime();
-var batchSize = parseInt(process.argv[6]);
-var dryrun = process.argv[7];
+const now = new Date();
+const dbUrl = process.env.COUCH_URL;
+const branchId = process.argv[2];
+const start = new Date(process.argv[3]);
+const end = new Date(process.argv[4]);
+const logdir = process.argv[5] + '/' + now.getTime();
+const batchSize = parseInt(process.argv[6]);
+let dryrun = process.argv[7];
 dryrun = (dryrun === 'dryrun');
 
-var logfile = 'debug.log';
+const logfile = 'debug.log';
 utils.setupLogging(logdir, logfile);
 
 console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
 
-var db = new PouchDB(dbUrl);
-var startTimestamp = start.getTime();
-var endTimestamp = end.getTime();
-var parsedUrl = url.parse(dbUrl);
+const db = new PouchDB(dbUrl);
+const startTimestamp = start.getTime();
+const endTimestamp = end.getTime();
+const parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with' +
+    const message = '\nStarting deletion process with' +
       '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +

@@ -1,6 +1,6 @@
 const //_ = require('underscore'),
-      parseArgs = require('minimist'),
-      jsondiff = require('json-diff');
+  parseArgs = require('minimist');
+const jsondiff = require('json-diff');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));

@@ -35,7 +35,8 @@ describe('ContactMuted service', function() {
 
   it('should return false when lineage is not provided and there is no muted parent', () => {
     chai.expect(service({ parent: { parent: { parent: { _id: 1, parent: {} } } } })).to.equal(false);
-    chai.expect(service({ parent: { muted: false, parent: { parent: { _id: 1, parent: { muted: false } } } } })).to.equal(false);
+    chai.expect(service({ parent: { muted: false, parent: { parent: { _id: 1, parent: { muted: false } } } } }))
+      .to.equal(false);
   });
 
   it('should return true when lineage is not provided and there is at lease one muted parent', () => {

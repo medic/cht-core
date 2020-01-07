@@ -18,10 +18,13 @@ const TaskStates = require('./task-states');
  */
 module.exports = (taskEmission, calculatedAt, userContactId, existingDoc) => {
   const emittedState = TaskStates.calculateState(taskEmission, calculatedAt);
-  const baseFromExistingDoc = !!existingDoc && (!TaskStates.isTerminal(existingDoc.state) || existingDoc.state === emittedState);
+  const baseFromExistingDoc = !!existingDoc &&
+    (!TaskStates.isTerminal(existingDoc.state) || existingDoc.state === emittedState);
 
   // reduce document churn - don't tweak data on existing docs in terminal states
-  const baselineStateOfExistingDoc = baseFromExistingDoc && !TaskStates.isTerminal(existingDoc.state) && JSON.stringify(existingDoc);
+  const baselineStateOfExistingDoc = baseFromExistingDoc &&
+    !TaskStates.isTerminal(existingDoc.state) &&
+    JSON.stringify(existingDoc);
   const taskDoc = baseFromExistingDoc ? existingDoc : newTaskDoc(taskEmission, userContactId, calculatedAt);
   taskDoc.user = userContactId;
   taskDoc.requester = taskEmission.doc && taskEmission.doc.contact && taskEmission.doc.contact._id;

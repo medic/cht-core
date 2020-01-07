@@ -2,9 +2,9 @@ describe('HydrateMessages service', () => {
 
   'use strict';
 
-  let service,
-      query,
-      lineageModelGenerator;
+  let service;
+  let query;
+  let lineageModelGenerator;
 
   const contact = { _id: 'contact', name: 'aa' };
 

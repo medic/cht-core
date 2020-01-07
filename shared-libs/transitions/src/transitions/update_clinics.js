@@ -1,9 +1,9 @@
-const transitionUtils = require('./utils'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
-      utils = require('../lib/utils'),
-      NAME = 'update_clinics',
-      FACILITY_NOT_FOUND = 'sys.facility_not_found';
+const transitionUtils = require('./utils');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const utils = require('../lib/utils');
+const NAME = 'update_clinics';
+const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
 const config = require('../config');
 

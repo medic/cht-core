@@ -1,5 +1,5 @@
-const auth = require('../auth'),
-      serverUtils = require('../server-utils');
+const auth = require('../auth');
+const serverUtils = require('../server-utils');
 
 const FIREWALL_ERROR = {
   code: 403,

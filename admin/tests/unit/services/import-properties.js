@@ -2,11 +2,11 @@ describe('ImportProperties service', function() {
 
   'use strict';
 
-  var service,
-      Settings,
-      put,
-      UpdateSettings,
-      rootScope;
+  let service;
+  let Settings;
+  let put;
+  let UpdateSettings;
+  let rootScope;
 
   beforeEach(function() {
     Settings = sinon.stub();
@@ -32,9 +32,9 @@ describe('ImportProperties service', function() {
   });
 
   it('updates settings', function() {
-    var content = 'Hello = Bonjour\n' +
+    const content = 'Hello = Bonjour\n' +
                   'Goodbye = Au revoir';
-    var doc = {
+    const doc = {
       code: 'fr',
       generic: {
         'Hello': 'hello',
@@ -68,9 +68,9 @@ describe('ImportProperties service', function() {
   });
 
   it('updates locale docs', function() {
-    var content = 'Hello = Bonjour\n' +
+    const content = 'Hello = Bonjour\n' +
                   'Goodbye = Au revoir';
-    var doc = {
+    const doc = {
       code: 'fr',
       generic: {
         'Hello': 'hello'

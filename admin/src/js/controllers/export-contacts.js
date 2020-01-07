@@ -21,7 +21,7 @@ angular.module('controllers').controller('ExportContactsCtrl',
     };
 
     $scope.import = function() {
-      var file = $('#import-contacts [name="contacts"]').prop('files')[0];
+      const file = $('#import-contacts [name="contacts"]').prop('files')[0];
       if (!file) {
         Translate.fieldIsRequired('Contacts')
           .then(function(message) {

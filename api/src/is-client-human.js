@@ -1,4 +1,4 @@
-const DALVIK_DETECT = new RegExp('^Dalvik/');
+const DALVIK_DETECT = /^Dalvik\//;
 
 /**
  * Check an incoming request to see if it's from a human browser, or from an

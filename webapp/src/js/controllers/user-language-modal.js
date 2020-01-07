@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     'use strict';
 
     const ctrl = this;
-    var initialLanguageCode;
+    let initialLanguageCode;
 
     Languages().then(function(languages) {
       ctrl.enabledLocales = languages;
@@ -46,7 +46,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
 
     ctrl.submit = function() {
       if (!ctrl.selectedLanguage) {
-        var err = new Error('No language selected');
+        const err = new Error('No language selected');
         $log.error(err);
         return $q.reject(err);
       }

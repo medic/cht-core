@@ -1,5 +1,5 @@
-var db = require('../db'),
-    moment = require('moment');
+const db = require('../db');
+const moment = require('moment');
 
 const convertBadDobFormat = docs => {
   docs.forEach(function(doc) {
@@ -21,6 +21,6 @@ module.exports = {
         }
       }
     })
-    .then(results => convertBadDobFormat(results.docs));
+      .then(results => convertBadDobFormat(results.docs));
   }
 };

@@ -1,5 +1,5 @@
-const assert = require('chai').assert,
-      format = require('../../../../src/js/modules/format');
+const assert = require('chai').assert;
+const format = require('../../../../src/js/modules/format');
 
 let $state;
 
@@ -32,7 +32,8 @@ describe('lineage', () => {
     it('escapes each given string', () => {
       const given = ['<b>clinic</b>', '<script>alert("pwned")</script>district'];
       const actual = format.lineage(given);
-      assert.equal(actual, '<ol class="horizontal lineage"><li>&lt;b&gt;clinic&lt;/b&gt;</li><li>&lt;script&gt;alert(&quot;pwned&quot;)&lt;/script&gt;district</li></ol>');
+      assert.equal(actual, '<ol class="horizontal lineage"><li>&lt;b&gt;clinic&lt;/b&gt;</li><li>&lt;script&gt;' +
+        'alert(&quot;pwned&quot;)&lt;/script&gt;district</li></ol>');
     });
 
     it('returns links for every given entity', () => {
@@ -41,7 +42,8 @@ describe('lineage', () => {
         { _id: 'b', contact: { phone: '+123' } }
       ];
       const actual = format.lineage(given, $state);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">clinic</a></li><li><a href="contacts.detail?id=b">+123</a></li></ol>');
+      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">clinic</a></li>' +
+        '<li><a href="contacts.detail?id=b">+123</a></li></ol>');
     });
 
     it('escapes entity names', () => {
@@ -50,7 +52,9 @@ describe('lineage', () => {
         { _id: 'b', contact: { phone: '<blink>+123</blink>' } }
       ];
       const actual = format.lineage(given, $state);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">&lt;b&gt;clinic&lt;/b&gt;</a></li><li><a href="contacts.detail?id=b">&lt;blink&gt;+123&lt;/blink&gt;</a></li></ol>');
+      assert.equal(actual, '<ol class="horizontal lineage">' +
+        '<li><a href="contacts.detail?id=a">&lt;b&gt;clinic&lt;/b&gt;</a></li>' +
+        '<li><a href="contacts.detail?id=b">&lt;blink&gt;+123&lt;/blink&gt;</a></li></ol>');
     });
 
   });
@@ -72,7 +76,8 @@ describe('lineage', () => {
         }
       };
       const actual = format.lineage(given, $state);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">clinic</a></li><li>centre</li><li><a href="contacts.detail?id=c">+456</a></li></ol>');
+      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">clinic</a></li>' +
+        '<li>centre</li><li><a href="contacts.detail?id=c">+456</a></li></ol>');
     });
 
   });

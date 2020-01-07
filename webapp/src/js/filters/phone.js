@@ -1,4 +1,4 @@
-var phoneNumber = require('@medic/phone-number');
+const phoneNumber = require('@medic/phone-number');
 
 angular.module('inboxFilters').filter('phone',
   function(
@@ -7,13 +7,13 @@ angular.module('inboxFilters').filter('phone',
     'use strict';
     'ngInject';
 
-    var settings;
+    let settings;
 
     Settings().then(function(result) {
       settings = result;
     });
 
-    var format = function(phone) {
+    const format = function(phone) {
       if (settings) {
         // if valid return the formatted number,
         // if invalid return the given string
@@ -26,7 +26,7 @@ angular.module('inboxFilters').filter('phone',
       if (!phone) {
         return;
       }
-      var formatted = format(phone);
+      const formatted = format(phone);
       return  '<p>' +
                 '<a href="tel:' + phone + '" class="mobile-only">' + formatted + '</a>' +
                 '<span class="desktop-only">' + formatted + '</span>' +

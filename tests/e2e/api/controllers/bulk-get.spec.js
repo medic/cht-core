@@ -1,6 +1,6 @@
-const _ = require('underscore'),
-      utils = require('../../../utils'),
-      constants = require('../../../constants');
+const _ = require('underscore');
+const utils = require('../../../utils');
+const constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -43,8 +43,8 @@ const users = [
   }
 ];
 
-let offlineRequestOptions,
-    onlineRequestOptions;
+let offlineRequestOptions;
+let onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -212,22 +212,26 @@ describe('bulk-get handler', () => {
         expect(result.results[0].id).toEqual('a1');
         expect(result.results[0].docs.length).toEqual(1);
         expect(result.results[0].docs[0].ok).toEqual(
-          { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1', _rev: revs.a1[0] });
+          { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' },
+            name: 'Allowed Contact 1', _rev: revs.a1[0] });
 
         expect(result.results[1].id).toEqual('a1');
         expect(result.results[1].docs.length).toEqual(1);
         expect(result.results[1].docs[0].ok).toEqual(
-          { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1', _rev: revs.a1[1] });
+          { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' },
+            name: 'Allowed Contact 1', _rev: revs.a1[1] });
 
         expect(result.results[2].id).toEqual('a2');
         expect(result.results[2].docs.length).toEqual(1);
         expect(result.results[2].docs[0].ok).toEqual(
-          { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2', _rev: revs.a2[0] });
+          { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' },
+            name: 'Allowed Contact 2', _rev: revs.a2[0] });
 
         expect(result.results[3].id).toEqual('d2');
         expect(result.results[3].docs.length).toEqual(1);
         expect(result.results[3].docs[0].ok).toEqual(
-          { _id: 'd2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Previously denied Contact 2', _rev: revs.d2[1] });
+          { _id: 'd2', type: 'clinic', parent: { _id: 'fixture:offline' },
+            name: 'Previously denied Contact 2', _rev: revs.d2[1] });
       });
   });
 

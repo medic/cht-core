@@ -35,7 +35,9 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       function setAndroidAppVersion(androidAppVersion) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ANDROID_APP_VERSION, 'androidAppVersion', androidAppVersion));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_ANDROID_APP_VERSION, 'androidAppVersion', androidAppVersion
+        ));
       }
 
       function createSetCancelCallbackAction(value) {
@@ -95,7 +97,9 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       function setLoadingSubActionBar(loading) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
+        ));
       }
 
       function setSelectMode(selectMode) {
@@ -130,7 +134,9 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       function updateReplicationStatus(replicationStatus) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus
+        ));
       }
 
       function setLoadingShowContent(id) {

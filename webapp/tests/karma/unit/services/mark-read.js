@@ -2,9 +2,9 @@ describe('MarkRead service', () => {
 
   'use strict';
 
-  let service,
-      db,
-      bulkDocs;
+  let service;
+  let db;
+  let bulkDocs;
 
   beforeEach(() => {
     bulkDocs = sinon.stub();

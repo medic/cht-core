@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var errors = {
+  const errors = {
     403: {
       title: 'error.403.title',
       description: 'error.403.description'

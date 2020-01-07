@@ -1,8 +1,8 @@
-const chai = require('chai'),
-      sinon = require('sinon'),
-      properties = require('properties'),
-      db = require('../../src/db'),
-      translations = require('../../src/translations');
+const chai = require('chai');
+const sinon = require('sinon');
+const properties = require('properties');
+const db = require('../../src/db');
+const translations = require('../../src/translations');
 
 describe('translations', () => {
 
@@ -121,7 +121,8 @@ describe('translations', () => {
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    const parse = sinon.stub(properties, 'parse')
+      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     const dbView = sinon.stub(db.medic, 'query');
     dbView.onCall(0).resolves({ rows: docs });
     const dbBulk = sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject('boom'));
@@ -145,7 +146,8 @@ describe('translations', () => {
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    const parse = sinon.stub(properties, 'parse')
+      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     const dbView = sinon.stub(db.medic, 'query');
     dbView.onCall(0).resolves({ rows: docs });
     const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -200,7 +202,8 @@ describe('translations', () => {
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    const parse = sinon.stub(properties, 'parse')
+      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     const dbView = sinon.stub(db.medic, 'query');
     dbView.onCall(0).resolves({ rows: docs });
     const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -239,7 +242,8 @@ describe('translations', () => {
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    const parse = sinon.stub(properties, 'parse')
+      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     const dbView = sinon.stub(db.medic, 'query');
     dbView.onCall(0).resolves({ rows: docs });
     const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -412,15 +416,15 @@ describe('translations', () => {
 
   it('converts all non-string values to string', () => {
     const ddoc = { _attachments: {
-        'translations/messages-en.properties': {}
-      } };
+      'translations/messages-en.properties': {}
+    } };
     const docs = [
       { doc: {
-          _id: 'messages-en',
-          code: 'en',
-          type: 'translations',
-          generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
-        } }
+        _id: 'messages-en',
+        code: 'en',
+        type: 'translations',
+        generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+      } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');

@@ -22,15 +22,15 @@
       };
     }
 
-    var state = $(this).data('multidropdown');
+    let state = $(this).data('multidropdown');
 
     if (state) {
       return state;
     }
 
-    var $element = $(this);
+    const $element = $(this);
 
-    var getVal = function(selector) {
+    const getVal = function(selector) {
       return $element.find(selector).map(function() {
         return $(this).find('> a').data('value');
       }).get();
@@ -57,7 +57,7 @@
       }
     };
 
-    var updateMultipleSelect = function() {
+    const updateMultipleSelect = function() {
       return options.label(
         {
           total: $element.find('li'),
@@ -70,16 +70,16 @@
       );
     };
 
-    var updateSelected = function() {
+    const updateSelected = function() {
       $element.trigger({ type: 'update' });
       updateMultipleSelect();
       state.blockSelectHide = true;
     };
 
-    var selectItem = function(e) {
+    const selectItem = function(e) {
       e.stopPropagation();
       e.preventDefault();
-      var item = $(this);
+      const item = $(this);
       item.blur();
       if (item.closest('li').is('.disabled')) {
         return;
@@ -90,7 +90,7 @@
       updateSelected();
     };
 
-    var hideMenu = function(e) {
+    const hideMenu = function(e) {
       if (state.blockSelectHide) {
         e.preventDefault();
         state.blockSelectHide = false;
@@ -111,9 +111,9 @@
     
     $element.data('multidropdown', state);
 
-    var selectAllLabel = options.selectAllLabel || 'select all';
-    var clearLabel = options.clearLabel || 'clear';
-    var actionsBar =
+    const selectAllLabel = options.selectAllLabel || 'select all';
+    const clearLabel = options.clearLabel || 'clear';
+    const actionsBar =
       '<p class="actions">' +
         '<a href="#" class="btn btn-link select-all">' + selectAllLabel + '</a>' +
         '<a href="#" class="btn btn-link reset">' + clearLabel + '</a>' +

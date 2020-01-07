@@ -1,14 +1,14 @@
 describe('Tasks controller', () => {
   const { expect } = chai;
   let
-    getService,
-    $ngRedux,
-    $scope,
-    Changes,
-    db,
-    LiveList,
-    RulesEngine,
-    Tour;
+    getService;
+  let $ngRedux;
+  let $scope;
+  let Changes;
+  let db;
+  let LiveList;
+  let RulesEngine;
+  let Tour;
 
   beforeEach(async () => {
     Changes = sinon.stub();

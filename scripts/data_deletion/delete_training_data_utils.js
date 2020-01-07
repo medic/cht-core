@@ -4,21 +4,21 @@
 
 'use strict';
 
-var _ = require('underscore');
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-var prompt = require('prompt');
-var util = require('util');
+const _ = require('underscore');
+const fs = require('fs');
+const mkdirp = require('mkdirp');
+const prompt = require('prompt');
+const util = require('util');
 
 // Overload console.log to log to file.
-var setupLogging = function(logdir, logfile) {
+const setupLogging = function(logdir, logfile) {
   if (!mkdirp.sync(logdir)) {
     console.log('Couldnt create logdir, aborting.');
     process.exit();
   }
-  var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
+  const log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
   log_file.write(''); // create file by writing in it
-  var log_stdout = process.stdout;
+  const log_stdout = process.stdout;
   console.log = function(d) {
     log_file.write(util.format(d) + '\n');
     log_stdout.write(util.format(d) + '\n');
@@ -26,20 +26,20 @@ var setupLogging = function(logdir, logfile) {
 };
 
 // Useful to keep track of the last seq number, and who knows what else?
-var printoutDbStats = function(db, data) {
+const printoutDbStats = function(db, data) {
   return db.info().then(function (result) {
     console.log('DB stats - ' + JSON.stringify(result));
     return data;
   });
 };
 
-var getDocsFromRows = function(rows) {
+const getDocsFromRows = function(rows) {
   return _.map(rows, function(row) {
     return row.doc;
   });
 };
 
-var getIdsFromRows = function(rows) {
+const getIdsFromRows = function(rows) {
   return _.map(rows, function(row) {
     return row.id;
   });
@@ -47,12 +47,12 @@ var getIdsFromRows = function(rows) {
 
 // Note : instead of deleting docs, we set {_deleted: true}, so that the
 // deletions are replicated to clients.
-var deleteDocs = function(dryrun, db, docs) {
+const deleteDocs = function(dryrun, db, docs) {
   if (dryrun) {
     console.log('Dryrun : not deleting.');
     return docs;
   }
-  var docsWithDeleteField = _.map(docs, function(doc) {
+  const docsWithDeleteField = _.map(docs, function(doc) {
     doc._deleted = true;
     return doc;
   });
@@ -73,14 +73,14 @@ var deleteDocs = function(dryrun, db, docs) {
  * queryFunc(skip) : queries db, returns list of docs.
  * processFunc(docs, skip) : filters docs, deletes them.
  */
-var queryInBatches = function(queryFunc, processFunc) {
-  var skip = 0;
-  var loopCounter = 0;
-  var maxLoops = 500;
-  var done = false;
-  var timeoutSecs = 5;
-  var batchSize = 0;
-  var loopFunc = function() {
+const queryInBatches = function(queryFunc, processFunc) {
+  let skip = 0;
+  let loopCounter = 0;
+  const maxLoops = 500;
+  let done = false;
+  let timeoutSecs = 5;
+  let batchSize = 0;
+  const loopFunc = function() {
     console.log(new Date());
     loopCounter++;
     console.log('loop ' + loopCounter);
@@ -126,7 +126,7 @@ var queryInBatches = function(queryFunc, processFunc) {
 };
 
 // Skip : how many records to skip before outputting (~= offset)
-var getContactsForPlace = function(db, placeId, skip, batchSize) {
+const getContactsForPlace = function(db, placeId, skip, batchSize) {
   console.log('query with batchsize ' + batchSize + ' , skip ' + skip);
   return db.query(
     'medic-client/contacts_by_place',
@@ -134,15 +134,15 @@ var getContactsForPlace = function(db, placeId, skip, batchSize) {
   ).then(function (result) {
     console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
     console.log('Contacts for place : ' + result.rows.length);
-    var docs = getDocsFromRows(result.rows);
+    const docs = getDocsFromRows(result.rows);
     return docs;
   });
 };
 
 // Skip : how many records to skip before outputting (~= offset)
-var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
+const getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
   console.log('query with batchsize ' + batchSize + ' , skip ' + skip);
-  var params = {
+  const params = {
     key: branchId,
     skip: skip,
     include_docs: true,
@@ -155,28 +155,28 @@ var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
   });
 };
 
-var filterByDate = function(docsList, startTimestamp, endTimestamp) {
-  var filteredList = _.filter(docsList, function(doc) {
+const filterByDate = function(docsList, startTimestamp, endTimestamp) {
+  const filteredList = _.filter(docsList, function(doc) {
     return doc.reported_date && doc.reported_date >= startTimestamp && doc.reported_date < endTimestamp;
   });
   console.log('Filtered by date : ' + filteredList.length);
   return filteredList;
 };
 
-var filterByType = function(docsList, type) {
-  var filteredList = _.filter(docsList, function(doc) { return doc.type === type; });
+const filterByType = function(docsList, type) {
+  const filteredList = _.filter(docsList, function(doc) { return doc.type === type; });
   console.log('Filtered by type ' + type + ' : ' + filteredList.length);
   return filteredList;
 };
 
 // Only keep the persons that are family members.
 // Avoids deleting CHP contacts and district supervisors.
-var filterFamilyMembers = function(personsList, logdir) {
+const filterFamilyMembers = function(personsList, logdir) {
   if (personsList.lenth === 0) {
     console.log('Filtered for only family members : 0');
     return [];
   }
-  var groups = _.groupBy(personsList, function(person) {
+  const groups = _.groupBy(personsList, function(person) {
     if (!person.parent || person.parent.type === 'clinic') {
       return 'familyMember';
     }
@@ -188,7 +188,7 @@ var filterFamilyMembers = function(personsList, logdir) {
         return;
       }
       console.log('Non-family members : ' + groups.other.length);
-      var undated = _.filter(groups.other, function(person) {
+      const undated = _.filter(groups.other, function(person) {
         return !person.reported_date;
       });
       console.log('Non-family members without reported_date (should not exist!) : ' + undated.length);
@@ -204,10 +204,10 @@ var filterFamilyMembers = function(personsList, logdir) {
 };
 
 // Find which facilities (if any) this person is a contact for.
-var isContactFor = function(db, personId) {
+const isContactFor = function(db, personId) {
   return db.query('medic-scripts/places_by_contact', {key: personId, include_docs: true})
     .then(function(result) {
-      var ids = getIdsFromRows(result.rows);
+      const ids = getIdsFromRows(result.rows);
       if (result.rows.length > 0) {
         console.log('Person ' + personId + ' is contact for ' + result.rows.length + ' facilities : ', ids);
       }
@@ -220,7 +220,7 @@ var isContactFor = function(db, personId) {
     });
 };
 
-var removeContact = function(db, dryrun, person, facilitiesList) {
+const removeContact = function(db, dryrun, person, facilitiesList) {
   _.each(facilitiesList, function(facility) {
     delete facility.contact;
   });
@@ -240,31 +240,31 @@ var removeContact = function(db, dryrun, person, facilitiesList) {
 
 // If the persons are contacts for facilities, edit the facilities to remove the contact.
 // Do it them one after the other, rather than concurrently, to avoid too many requests on the DB.
-var cleanContactPersons = function(db, dryrun, logdir, personsList) {
-  var promise = Promise.resolve();
+const cleanContactPersons = function(db, dryrun, logdir, personsList) {
+  let promise = Promise.resolve();
   _.each(personsList, function(person) {
     promise = promise.then(function() { return cleanContactPerson(db, dryrun, logdir, person); });
   });
   return promise.then(function() { return personsList; });
 };
 
-var cleanContactPerson = function(db, dryrun, logdir, person) {
+const cleanContactPerson = function(db, dryrun, logdir, person) {
   return isContactFor(db, person._id)
-      .then(function(facilities) {
-        if (!facilities || facilities.length === 0) {
-          return;
-        }
-        return writeDocsToFile(logdir + '/cleaned_facilities_' + person._id + '.json', facilities)
-          .then(_.partial(removeContact, db, dryrun, person));
-      })
-      .catch(function (err) {
-        console.log('Error when removing contact ' + person._id);
-        console.log(err);
-        throw err;
-      });
-    };
+    .then(function(facilities) {
+      if (!facilities || facilities.length === 0) {
+        return;
+      }
+      return writeDocsToFile(logdir + '/cleaned_facilities_' + person._id + '.json', facilities)
+        .then(_.partial(removeContact, db, dryrun, person));
+    })
+    .catch(function (err) {
+      console.log('Error when removing contact ' + person._id);
+      console.log(err);
+      throw err;
+    });
+};
 
-var _writeToFile = function(filepath, text) {
+const _writeToFile = function(filepath, text) {
   return new Promise(function(resolve,reject){
     fs.writeFile(filepath, text, {flag: 'a'}, function(err) {
       if(err) {
@@ -275,7 +275,7 @@ var _writeToFile = function(filepath, text) {
   });
 };
 
-var writeDocsToFile = function(filepath, docsList) {
+const writeDocsToFile = function(filepath, docsList) {
   if (docsList.length === 0) {
     // don't write empty files.
     return docsList;
@@ -287,30 +287,30 @@ var writeDocsToFile = function(filepath, docsList) {
     });
 };
 
-var writeDocsIdsToFile = function(filepath, docsList) {
+const writeDocsIdsToFile = function(filepath, docsList) {
   if (docsList.length === 0) {
     // don't write empty files.
     return docsList;
   }
-  var megaPromise = Promise.resolve();
+  let megaPromise = Promise.resolve();
   _.each(docsList, function(doc) {
     megaPromise = megaPromise.then(_.partial(_writeToFile, filepath, doc._id + '\n'));
   });
   return megaPromise.then(function() {
-      console.log('Wrote ' + docsList.length + ' doc ids to file ' + filepath);
-      return docsList;
-    });
+    console.log('Wrote ' + docsList.length + ' doc ids to file ' + filepath);
+    return docsList;
+  });
 };
 
-var writeDocsDatesToFile = function(filepath, docsList) {
+const writeDocsDatesToFile = function(filepath, docsList) {
   if (docsList.length === 0) {
     // don't write empty files.
     return docsList;
   }
-  var megaPromise = Promise.resolve();
+  let megaPromise = Promise.resolve();
   _.each(docsList, function(doc) {
-    var date = new Date(doc.reported_date);
-    var name = '';
+    const date = new Date(doc.reported_date);
+    let name = '';
     if (doc.type === 'data_record' || doc.type === 'clinic') {
       name = doc.contact.name;
     }
@@ -321,12 +321,12 @@ var writeDocsDatesToFile = function(filepath, docsList) {
       date + ' --- ' + doc.reported_date + ' --- ' + doc._id + ' --- ' + name + '\n'));
   });
   return megaPromise.then(function() {
-      console.log('Wrote ' + docsList.length + ' doc dates to file ' + filepath);
-      return docsList;
-    });
+    console.log('Wrote ' + docsList.length + ' doc dates to file ' + filepath);
+    return docsList;
+  });
 };
 
-var fetchBranchInfo = function(db, branchId) {
+const fetchBranchInfo = function(db, branchId) {
   return db.get(branchId)
     .then(function(result) {
       return { _id: result._id, name: result.name, type: result.type };
@@ -337,8 +337,8 @@ var fetchBranchInfo = function(db, branchId) {
     });
 };
 
-var fetchBranch = function(db, branchId) {
-    return db.get(branchId)
+const fetchBranch = function(db, branchId) {
+  return db.get(branchId)
     .then(function(result) {
       return [ result ];
     })
@@ -348,11 +348,11 @@ var fetchBranch = function(db, branchId) {
     });
 };
 
-var userConfirm = function(message) {
+const userConfirm = function(message) {
   console.log(message); // log to logfile because prompt doesn't.
 
   prompt.message = ''; // remove annoying pre-prompt message.
-  var property = {
+  const property = {
     name: 'yesno',
     message: message,
     validator: /y[es]*|n[o]?/,

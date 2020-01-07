@@ -483,7 +483,10 @@ describe('registration', () => {
       ];
 
       sinon.stub(config, 'get').returns(eventConfig);
-      transition.init.should.throw(Error, 'Configuration error in R.add_patient: patient_id_field cannot be set to patient_id');
+      transition.init.should.throw(
+        Error,
+        'Configuration error in R.add_patient: patient_id_field cannot be set to patient_id'
+      );
     });
 
     it('should add configured type of person', () => {
@@ -523,7 +526,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Patient {{patient_name}} with type {{patient.contact_type}} was added to {{patient.parent.name}}({{patient.parent.contact_type}})'
+              content: 'Patient {{patient_name}} with type {{patient.contact_type}} was added to ' +
+                '{{patient.parent.name}}({{patient.parent.contact_type}})'
             }
           ]
         }]
@@ -584,7 +588,10 @@ describe('registration', () => {
               place_id: 'petes_place',
               type: 'contact',
               contact_type: 'area_type_1',
-              parent: { _id: 'west_hc', name: 'west hc', contact_type: 'health_center', type: 'contact', place_id: 'the_west_hc' }
+              parent: {
+                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                type: 'contact', place_id: 'the_west_hc'
+              }
             },
           },
         }
@@ -604,7 +611,10 @@ describe('registration', () => {
 
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_patient', params: { contact_type: 'buddy', patient_name_field: 'buddy_name', parent_id: 'parent' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_patient',
+          params: { contact_type: 'buddy', patient_name_field: 'buddy_name', parent_id: 'parent' }
+        }],
         messages: [ {
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
@@ -612,7 +622,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Friend {{buddy_name}} with type {{patient.contact_type}} was added to {{patient.parent.name}}({{patient.parent.contact_type}})'
+              content: 'Friend {{buddy_name}} with type {{patient.contact_type}} was added to ' +
+                '{{patient.parent.name}}({{patient.parent.contact_type}})'
             }
           ]
         }]
@@ -677,7 +688,10 @@ describe('registration', () => {
               place_id: 'petes_place',
               type: 'contact',
               contact_type: 'area_type_1',
-              parent: { _id: 'west_hc', name: 'west hc', contact_type: 'health_center', type: 'contact', place_id: 'the_west_hc' }
+              parent: {
+                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                type: 'contact', place_id: 'the_west_hc'
+              }
             },
           },
         }
@@ -690,7 +704,9 @@ describe('registration', () => {
 
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'parent' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'parent' }
+        }],
         messages: [ {
           recipient: 'reporting_unit',
           event_type: 'parent_field_not_provided',
@@ -755,7 +771,10 @@ describe('registration', () => {
               place_id: 'petes_place',
               type: 'contact',
               contact_type: 'area_type_1',
-              parent: { _id: 'west_hc', name: 'west hc', contact_type: 'health_center', type: 'contact', place_id: 'the_west_hc' }
+              parent: {
+                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                type: 'contact', place_id: 'the_west_hc'
+              }
             },
           },
         }
@@ -768,7 +787,9 @@ describe('registration', () => {
 
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'parent_id' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'parent_id' }
+        }],
         messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_not_found',
@@ -834,7 +855,10 @@ describe('registration', () => {
               place_id: 'petes_place',
               type: 'contact',
               contact_type: 'area_type_1',
-              parent: { _id: 'west_hc', name: 'west hc', contact_type: 'health_center', type: 'contact', place_id: 'the_west_hc' }
+              parent: {
+                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                type: 'contact', place_id: 'the_west_hc'
+              }
             },
           },
         }
@@ -854,14 +878,17 @@ describe('registration', () => {
 
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'the_parent_field' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'the_parent_field' }
+        }],
         messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_invalid',
           message: [
             {
               locale: 'en',
-              content: 'Cannot create patient under parent {{parent.name}}({{parent.place_id}}) of type {{parent.contact_type}}.'
+              content: 'Cannot create patient under parent {{parent.name}}({{parent.place_id}}) ' +
+                'of type {{parent.contact_type}}.'
             }
           ]
         }]
@@ -945,7 +972,9 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'parent_id' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'parent_id' }
+        }],
         messages: [ {
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
@@ -953,7 +982,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place_name}} with type {{place.type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place_name}} with type {{place.type}} was added to ' +
+                '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -995,7 +1025,7 @@ describe('registration', () => {
       });
     });
 
-    it('should add place with correct configurable type and submitter parent when parent_id param not specified', () => {
+    it('should add place with right configurable type and submitter parent when parent_id param not specified', () => {
       const change = {
         doc: {
           _id: 'reportID',
@@ -1033,7 +1063,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place_name}} with type {{place.contact_type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place_name}} with type {{place.contact_type}} was added to ' +
+                '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -1101,7 +1132,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place_name}} with type {{place.contact_type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place_name}} with type {{place.contact_type}} was added to ' +
+                '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -1109,17 +1141,17 @@ describe('registration', () => {
       sinon.stub(db.medic, 'query')
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [
-            {
-              doc: {
-                _id: 'supervisor',
-                name: 'Frank',
-                contact_type: 'supervisor',
-                type: 'contact',
-                phone: '+111222',
-                parent: { _id: 'west_hc' }
-              }
+          {
+            doc: {
+              _id: 'supervisor',
+              name: 'Frank',
+              contact_type: 'supervisor',
+              type: 'contact',
+              phone: '+111222',
+              parent: { _id: 'west_hc' }
             }
-          ]});
+          }
+        ]});
       sinon.stub(db.medic, 'get').withArgs('west_hc').resolves({
         _id: 'west_hc',
         name: 'west hc',
@@ -1146,7 +1178,8 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(0);
         db.medic.query.callCount.should.equal(1);
-        db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
+        db.medic.query.args[0]
+          .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
         db.medic.get.callCount.should.equal(1);
         db.medic.get.args[0].should.deep.equal(['west_hc']);
         db.medic.post.callCount.should.equal(1);
@@ -1212,7 +1245,10 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1', parent_id: 'parent_id', place_name_field: 'doodle' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_place',
+          params: { contact_type: 'clinic_1', parent_id: 'parent_id', place_name_field: 'doodle' }
+        }],
         messages: [ {
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
@@ -1220,7 +1256,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place.name}} with type {{place.contact_type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place.name}} with type {{place.contact_type}} was added to ' +
+                '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -1306,7 +1343,10 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'fiddle', place_name_field: 'doodle' } }],
+        events: [{
+          name: 'on_create', trigger: 'add_place',
+          params: { contact_type: 'clinic', parent_id: 'fiddle', place_name_field: 'doodle' }
+        }],
         messages: [ {
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
@@ -1314,7 +1354,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place.name}} with type {{place.type}} was added to {{place.parent.name}}({{place.parent.contact_type}})'
+              content: 'Place {{place.name}} with type {{place.type}} was added to ' +
+                '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
         }]
@@ -1400,7 +1441,8 @@ describe('registration', () => {
         utils.getContact.callCount.should.equal(0);
         db.medic.post.callCount.should.equal(0);
         db.medic.query.callCount.should.equal(1);
-        db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
+        db.medic.query.args[0]
+          .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
         db.medic.get.callCount.should.equal(0);
 
         change.doc.errors.length.should.equal(1);
@@ -1535,7 +1577,12 @@ describe('registration', () => {
           reported_date: 53,
           from: '+111222',
           fields: { place_name: 'New Orleans', parent_id: 'hc2' },
-          contact: { _id: 'bob', name: 'Bob', parent: { _id: 'a_health_center', name: 'HC1', type: 'contact', contact_type: 'health_center', place_id: 'hc1' } }
+          contact: {
+            _id: 'bob', name: 'Bob',
+            parent: {
+              _id: 'a_health_center', name: 'HC1', type: 'contact', contact_type: 'health_center', place_id: 'hc1'
+            }
+          }
         }
       };
       const placeId = 'my_place_id';
@@ -1559,7 +1606,8 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Cannot create area with name {{place_name}} under parent {{parent.name}} of type {{parent.contact_type}}'
+              content: 'Cannot create area with name {{place_name}} under parent {{parent.name}} of type ' +
+                '{{parent.contact_type}}'
             }
           ]
         }]
@@ -1794,7 +1842,8 @@ describe('registration', () => {
       ];
 
       sinon.stub(config, 'get').returns(eventConfig);
-      transition.init.should.throw(Error, 'Configuration error. Expecting params to be defined as the name of the schedule(s) for R.assign_schedule');
+      transition.init.should.throw(Error, 'Configuration error. Expecting params to be defined as the name of the ' +
+        'schedule(s) for R.assign_schedule');
     });
 
     it('fails with object parameters', () => {
@@ -1812,7 +1861,8 @@ describe('registration', () => {
       ];
 
       sinon.stub(config, 'get').returns(eventConfig);
-      transition.init.should.throw(Error, 'Configuration error. Expecting params to be a string, comma separated list, or an array for R.assign_schedule: \'{ "name": "hello" }\'');
+      transition.init.should.throw(Error, 'Configuration error. Expecting params to be a string, ' +
+        'comma separated list, or an array for R.assign_schedule: \'{ "name": "hello" }\'');
     });
 
     it('succeeds with array parameters', () => {
@@ -1848,7 +1898,8 @@ describe('registration', () => {
       ];
 
       sinon.stub(config, 'get').returns(eventConfig);
-      transition.init.should.throw(Error, 'Configuration error. Unable to parse params for R.testparamparsing: \'{"foo": "bar"\'. Error: SyntaxError: Unexpected end of JSON input');
+      transition.init.should.throw(Error, 'Configuration error. Unable to parse params for R.testparamparsing: ' +
+        '\'{"foo": "bar"\'. Error: SyntaxError: Unexpected end of JSON input');
     });
 
     it('add_patient fails if the configured contact type is not known', () => {
@@ -1865,7 +1916,8 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns(eventConfig);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a doc with an unknown contact type "unknown"');
+      transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a doc with an ' +
+        'unknown contact type "unknown"');
     });
 
     it('add_patient fails if the configured contact type is not a person', () => {
@@ -1882,7 +1934,8 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns(eventConfig);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a person with a place contact type "place"');
+      transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a person ' +
+        'with a place contact type "place"');
     });
 
     it('add_patient fails if the default "person" contact type is not known', () => {
@@ -1899,7 +1952,8 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns(eventConfig);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a doc with an unknown contact type "person"');
+      transition.init.should.throw(Error, 'Configuration error in R.add_patient: trigger would create a doc ' +
+        'with an unknown contact type "person"');
     });
 
     it('succeeds for known person type', done => {
@@ -1934,7 +1988,8 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns(eventConfig);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with an undefined contact type');
+      transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place ' +
+        'with an undefined contact type');
     });
 
     it('add_place should fail for unknown contact_type', () => {
@@ -1951,7 +2006,8 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns(eventConfig);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with an unknown contact type "oh_noo"');
+      transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place ' +
+        'with an unknown contact type "oh_noo"');
     });
 
     it('add_place should fail for person contact_type', () => {
@@ -1967,7 +2023,8 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns(eventConfig);
       sinon.stub(config, 'getAll').returns(settings);
 
-      transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with a person contact type "person"');
+      transition.init.should.throw(Error, 'Configuration error in R.add_place: trigger would create a place with ' +
+        'a person contact type "person"');
     });
 
     it('should succeed for known place type', () => {
@@ -1993,19 +2050,19 @@ describe('registration', () => {
     });
 
     it('prepops and passes the right information to messages.addMessage', () => {
-      const testPhone = '1234',
-        testMessage1 = {
-          message: 'A Test Message 1',
-          recipient: testPhone,
-          event_type: 'report_accepted',
-        },
-        testMessage2 = {
-          message: 'A Test Message 2',
-          recipient: testPhone,
-          event_type: 'report_accepted',
-        },
-        testRegistration = 'some registrations',
-        testPatient = 'a patient contact';
+      const testPhone = '1234';
+      const testMessage1 = {
+        message: 'A Test Message 1',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const testMessage2 = {
+        message: 'A Test Message 2',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const testRegistration = 'some registrations';
+      const testPatient = 'a patient contact';
 
       const addMessage = sinon.stub(messages, 'addMessage');
 
@@ -2052,20 +2109,20 @@ describe('registration', () => {
     });
 
     it('supports ignoring messages based on bool_expr', () => {
-      const testPhone = '1234',
-        testMessage1 = {
-          message: 'A Test Message 1',
-          recipient: testPhone,
-          event_type: 'report_accepted',
-        },
-        testMessage2 = {
-          message: 'A Test Message 2',
-          recipient: testPhone,
-          event_type: 'report_accepted',
-          bool_expr: '1 === 2',
-        },
-        testRegistration = 'some registrations',
-        testPatient = 'a patient contact';
+      const testPhone = '1234';
+      const testMessage1 = {
+        message: 'A Test Message 1',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const testMessage2 = {
+        message: 'A Test Message 2',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+        bool_expr: '1 === 2',
+      };
+      const testRegistration = 'some registrations';
+      const testPatient = 'a patient contact';
 
       const addMessage = sinon.stub(messages, 'addMessage');
 
@@ -2134,9 +2191,9 @@ describe('registration', () => {
     });
 
     it('should call silenceRegistrations with correct params', () => {
-      const doc = { _id: 'uuid', patient_id: 'patient_id' },
-            params = ['1', '2', '3', '4'],
-            registrations = ['a', 'b', 'c'];
+      const doc = { _id: 'uuid', patient_id: 'patient_id' };
+      const params = ['1', '2', '3', '4'];
+      const registrations = ['a', 'b', 'c'];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
       sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
@@ -2165,7 +2222,7 @@ describe('registration', () => {
           utils.getReportsBySubject.callCount.should.equal(1);
           utils.getSubjectIds.callCount.should.equal(1);
           acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
-      });
+        });
     });
 
     it('should catch silenceRegistrations errors', () => {

@@ -1,7 +1,7 @@
-var uuid = require('uuid/v4'),
-    pojo2xml = require('pojo2xml'),
-    xpathPath = require('../modules/xpath-element-path'),
-    medicXpathExtensions = require('../enketo/medic-xpath-extensions');
+const uuid = require('uuid/v4');
+const pojo2xml = require('pojo2xml');
+const xpathPath = require('../modules/xpath-element-path');
+const medicXpathExtensions = require('../enketo/medic-xpath-extensions');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo',
@@ -36,9 +36,9 @@ angular.module('inboxServices').service('Enketo',
     const HTML_ATTACHMENT_NAME = 'form.html';
     const MODEL_ATTACHMENT_NAME = 'model.xml';
 
-    var objUrls = [];
+    const objUrls = [];
 
-    var currentForm;
+    let currentForm;
     this.getCurrentForm = function() {
       return currentForm;
     };
@@ -52,7 +52,7 @@ angular.module('inboxServices').service('Enketo',
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);
 
-    var init = function() {
+    const init = function() {
       ZScore()
         .then(function(zscoreUtil) {
           medicXpathExtensions.init(zscoreUtil);
@@ -61,18 +61,18 @@ angular.module('inboxServices').service('Enketo',
           $log.error('Error initialising zscore util', err);
         });
     };
-    var inited = init();
+    const inited = init();
 
-    var replaceJavarosaMediaWithLoaders = function(formDoc, formHtml) {
+    const replaceJavarosaMediaWithLoaders = function(formDoc, formHtml) {
       formHtml.find('[data-media-src]').each(function() {
-        var elem = $(this);
-        var src = elem.attr('data-media-src');
+        const elem = $(this);
+        const src = elem.attr('data-media-src');
         elem.css('visibility', 'hidden');
         elem.wrap('<div class="loader">');
         DB()
           .getAttachment(formDoc._id, src)
           .then(function(blob) {
-            var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
+            const objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
             elem.attr('src', objUrl);
             elem.css('visibility', '');
@@ -84,52 +84,54 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var transformXml = function(form) {
+    const transformXml = function(form) {
       return $q.all([
         getAttachment(form._id, HTML_ATTACHMENT_NAME),
         getAttachment(form._id, MODEL_ATTACHMENT_NAME)
       ])
-      .then(function(results) {
-        const $html = $(results[0]);
-        const model = results[1];
-        $html.find('[data-i18n]').each(function() {
-          var $this = $(this);
-          $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+        .then(function(results) {
+          const $html = $(results[0]);
+          const model = results[1];
+          $html.find('[data-i18n]').each(function() {
+            const $this = $(this);
+            $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+          });
+          const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
+          return {
+            html: $html,
+            model: model,
+            title: form.title,
+            hasContactSummary: hasContactSummary
+          };
         });
-        var hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
-        return {
-          html: $html,
-          model: model,
-          title: form.title,
-          hasContactSummary: hasContactSummary
-        };
-      });
     };
 
-    var getAttachment = function(id, name) {
+    const getAttachment = function(id, name) {
       return DB().getAttachment(id, name).then(FileReader.utf8);
     };
 
-    var getFormAttachment = function(doc) {
+    const getFormAttachment = function(doc) {
       return getAttachment(doc._id, XmlForms.findXFormAttachmentName(doc));
     };
 
-    var handleKeypressOnInputField = function(e) {
+    const handleKeypressOnInputField = function(e) {
       // Here we capture both CR and TAB characters, and handle field-skipping
       if(!$window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
         return;
       }
 
-      var $this = $(this);
+      const $this = $(this);
 
       // stop the keypress from being handled elsewhere
       e.preventDefault();
 
-      var $thisQuestion = $this.closest('.question');
+      const $thisQuestion = $this.closest('.question');
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)');
+        const $nextQuestion = $thisQuestion.find(
+          '~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)'
+        );
         if($nextQuestion.length) {
           if($nextQuestion[0].tagName !== 'LABEL') {
             // The next question is something complicated, so we can't just
@@ -152,11 +154,11 @@ angular.module('inboxServices').service('Enketo',
       // model
       $this.trigger('change');
 
-      var enketoContainer = $thisQuestion.closest('.enketo');
+      const enketoContainer = $thisQuestion.closest('.enketo');
 
       // If there's no question on the current page, try to go to change page,
       // or submit the form.
-      var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
+      const next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
       if(next.length) {
         next.trigger('click');
       } else {
@@ -164,7 +166,7 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var getLineage = function(contact) {
+    const getLineage = function(contact) {
       return LineageModelGenerator.contact(contact._id)
         .then(function(model) {
           return model.lineage;
@@ -179,17 +181,17 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var getContactReports = function(contact) {
-      var subjectIds = [ contact._id ];
-      var shortCode = contact.patient_id || contact.place_id;
+    const getContactReports = function(contact) {
+      const subjectIds = [ contact._id ];
+      const shortCode = contact.patient_id || contact.place_id;
       if (shortCode) {
         subjectIds.push(shortCode);
       }
       return Search('reports', { subjectIds: subjectIds }, { include_docs: true });
     };
 
-    var getContactSummary = function(doc, instanceData) {
-      var contact = instanceData && instanceData.contact;
+    const getContactSummary = function(doc, instanceData) {
+      const contact = instanceData && instanceData.contact;
       if (!doc.hasContactSummary || !contact) {
         return $q.resolve();
       }
@@ -217,7 +219,7 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var getEnketoOptions = function(doc, instanceData) {
+    const getEnketoOptions = function(doc, instanceData) {
       return $q.all([
         EnketoPrepopulationData(doc.model, instanceData),
         getContactSummary(doc, instanceData),
@@ -236,19 +238,19 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var renderFromXmls = function(doc, selector, instanceData) {
-      var wrapper = $(selector);
+    const renderFromXmls = function(doc, selector, instanceData) {
+      const wrapper = $(selector);
       wrapper.find('.form-footer')
-             .addClass('end')
-             .find('.previous-page,.next-page')
-             .addClass('disabled');
+        .addClass('end')
+        .find('.previous-page,.next-page')
+        .addClass('disabled');
 
-      var formContainer = wrapper.find('.container').first();
+      const formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
 
       return getEnketoOptions(doc, instanceData).then(function(options) {
         currentForm = new EnketoForm(wrapper.find('form').first(), options);
-        var loadErrors = currentForm.init();
+        const loadErrors = currentForm.init();
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
         }
@@ -279,7 +281,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var overrideNavigationButtons = function(form, $wrapper) {
+    const overrideNavigationButtons = function(form, $wrapper) {
       $wrapper.find('.btn.next-page')
         .off('.pagemode')
         .on('click.pagemode', function() {
@@ -302,34 +304,34 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var addPopStateHandler = function(form, $wrapper) {
+    const addPopStateHandler = function(form, $wrapper) {
       $($window).on('popstate.enketo-pagemode', function(event) {
         if(event.originalEvent &&
             event.originalEvent.state &&
             typeof event.originalEvent.state.enketo_page_number === 'number') {
-          var targetPage = event.originalEvent.state.enketo_page_number;
+          const targetPage = event.originalEvent.state.enketo_page_number;
 
           if ($wrapper.find('.container').not(':empty')) {
-            var pages = form.pages;
+            const pages = form.pages;
             pages.flipTo(pages.getAllActive()[targetPage], targetPage);
           }
         }
       });
     };
 
-    var registerEditedListener = function(selector, listener) {
+    const registerEditedListener = function(selector, listener) {
       if (listener) {
         $(selector).on('edited.enketo', listener);
       }
     };
 
-    var registerValuechangeListener = function(selector, listener) {
+    const registerValuechangeListener = function(selector, listener) {
       if (listener) {
         $(selector).on('valuechange.enketo', listener);
       }
     };
 
-    var renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
+    const renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
         return transformXml(form)
           .then(doc => {
@@ -341,7 +343,7 @@ angular.module('inboxServices').service('Enketo',
             registerValuechangeListener(selector, valuechangeListener);
             return form;
           });
-        });
+      });
     };
 
     this.render = function(selector, form, instanceData, editedListener, valuechangeListener) {
@@ -352,11 +354,11 @@ angular.module('inboxServices').service('Enketo',
 
     this.renderContactForm = renderForm;
 
-    var xmlToDocs = function(doc, record) {
+    const xmlToDocs = function(doc, record) {
 
       function mapOrAssignId(e, id) {
         if (!id) {
-          var $id = $(e).children('_id');
+          const $id = $(e).children('_id');
           if ($id.length) {
             id = $id.text();
           }
@@ -382,8 +384,8 @@ angular.module('inboxServices').service('Enketo',
         return $('<temproot>').append($(xml).clone()).html();
       }
 
-      var recordDoc = $.parseXML(record);
-      var $record = $($(recordDoc).children()[0]);
+      const recordDoc = $.parseXML(record);
+      const $record = $($(recordDoc).children()[0]);
       mapOrAssignId($record[0], doc._id || uuid());
 
       $record.find('[db-doc]')
@@ -395,13 +397,13 @@ angular.module('inboxServices').service('Enketo',
         });
 
       $record.find('[db-doc-ref]').each(function() {
-        var $ref = $(this);
-        var refId = getId($ref.attr('db-doc-ref'));
+        const $ref = $(this);
+        const refId = getId($ref.attr('db-doc-ref'));
         $ref.text(refId);
       });
 
-      var docsToStore = $record.find('[db-doc=true]').map(function() {
-        var docToStore = EnketoTranslation.reportRecordToJs(getOuterHTML(this));
+      const docsToStore = $record.find('[db-doc=true]').map(function() {
+        const docToStore = EnketoTranslation.reportRecordToJs(getOuterHTML(this));
         docToStore._id = getId(xpathPath(this));
         docToStore.reported_date = Date.now();
         return docToStore;
@@ -410,25 +412,25 @@ angular.module('inboxServices').service('Enketo',
       doc._id = getId('/*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
-      var attach = function(elem, file, type, alreadyEncoded, xpath) {
+      const attach = function(elem, file, type, alreadyEncoded, xpath) {
         xpath = xpath || xpathPath(elem);
         // replace instance root element node name with form internal ID
-        var filename = 'user-file' +
+        const filename = 'user-file' +
                        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
         AddAttachment(doc, filename, file, type, alreadyEncoded);
       };
 
       $record.find('[type=file]').each(function() {
-        var xpath = xpathPath(this);
-        var $input = $('input[type=file][name="' + xpath + '"]');
-        var file = $input[0].files[0];
+        const xpath = xpathPath(this);
+        const $input = $('input[type=file][name="' + xpath + '"]');
+        const file = $input[0].files[0];
         if (file) {
           attach(this, file, file.type, false, xpath);
         }
       });
 
       $record.find('[type=binary]').each(function() {
-        var file = $(this).text();
+        const file = $(this).text();
         if (file) {
           $(this).text('');
           attach(this, file, 'image/png', true);
@@ -449,7 +451,7 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var saveDocs = function(docs) {
+    const saveDocs = function(docs) {
       return DB().bulkDocs(docs)
         .then(function(results) {
           results.forEach(function(result) {
@@ -467,7 +469,7 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var update = function(docId) {
+    const update = function(docId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
@@ -480,10 +482,11 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var getUserContact = function() {
+    const getUserContact = function() {
       return UserContact().then(function(contact) {
         if (!contact) {
-          var err = new Error('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          const err = new Error('Your user does not have an associated contact, or does not have access to the ' +
+            'associated contact. Talk to your administrator to correct this.');
           err.translationKey = 'error.loading.form.no_contact';
           throw err;
         }
@@ -491,7 +494,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var create = function(formInternalId) {
+    const create = function(formInternalId) {
       return getUserContact().then(function(contact) {
         return {
           form: formInternalId,
@@ -504,7 +507,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var forceRecalculate = function(form) {
+    const forceRecalculate = function(form) {
       // Work-around for stale jr:choice-name() references in labels.  ref #3870
       form.calc.update();
 

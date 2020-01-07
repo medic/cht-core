@@ -11,18 +11,18 @@ const extractPlaceholdersFromFile = (file, extraPlaceholders = {}) => {
     .split('\n')
     .forEach((line, index) => {
       const key = line.split('=')[0].trim();
-      var placeholders = line.match(/{{.+?}}/g);
+      let placeholders = line.match(/{{.+?}}/g);
       if (placeholders) {
         placeholders = placeholders
-                          .sort()
-                          .concat(extraPlaceholders[key] ? extraPlaceholders[key].placeholders : [])
-                          .filter((el, i, a) => i === a.indexOf(el));
+          .sort()
+          .concat(extraPlaceholders[key] ? extraPlaceholders[key].placeholders : [])
+          .filter((el, i, a) => i === a.indexOf(el));
         result[key] = {placeholders, index};
       } else if (extraPlaceholders[key]) {
         result[key] = extraPlaceholders[key];
       }
     });
-    return result;  
+  return result;  
 };
 
 module.exports = {

@@ -177,7 +177,7 @@ const assignContactToGroups = (row, groups, subjectIds) => {
     ids: []
   };
   let key;
-  let contact = row.doc;
+  const contact = row.doc;
   if (tombstoneUtils.isTombstoneId(row.id)) {
     // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
     // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
@@ -244,8 +244,8 @@ const getRecordsByKey = (rows, groups, subjectIds) => {
     recordsByKey[key] = recordsByKey[key] || { reports: [], messages: [] };
 
     return report ?
-           recordsByKey[key].reports.push(report) :
-           recordsByKey[key].messages.push(message);
+      recordsByKey[key].reports.push(report) :
+      recordsByKey[key].messages.push(message);
   });
   return recordsByKey;
 };

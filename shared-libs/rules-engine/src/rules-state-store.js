@@ -20,7 +20,8 @@ const self = {
    * @param {Object} existingState State object previously passed to the stateChangeCallback
    * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} userDoc User's hydrated contact document
-   * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
+   * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
+   *    Receives the updated state as the only parameter.
    */
   load: (existingState, settings, userDoc, stateChangeCallback) => {
     if (state) {
@@ -43,7 +44,8 @@ const self = {
    *
    * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} userDoc User's hydrated contact document
-   * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes. Receives the updated state as the only parameter.
+   * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
+   *    Receives the updated state as the only parameter.
    */
   build: (settings, userDoc, stateChangeCallback) => {
     if (state) {
@@ -82,12 +84,13 @@ const self = {
     const { calculatedAt, isDirty } = state.contactState[contactId];
     return !calculatedAt ||
       isDirty ||
-      /* user rewinded their clock */ calculatedAt > now ||
-      /* isExpired */ calculatedAt < now - EXPIRE_CALCULATION_AFTER_MS;
+    /* user rewinded their clock */ calculatedAt > now ||
+    /* isExpired */ calculatedAt < now - EXPIRE_CALCULATION_AFTER_MS;
   },
 
   /**
-   * Determines if either the settings document or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
+   * Determines if either the settings document or user's hydrated contact document have changed in a way which
+   * will impact the result of rules calculations.
    * If they have changed in a meaningful way, the calculation state of all contacts is reset
    *
    * @param {Object} settings Settings for the behavior of the rules store
@@ -125,7 +128,7 @@ const self = {
       return;
     }
 
-    for (let contactId of contactIds) {
+    for (const contactId of contactIds) {
       state.contactState[contactId] = { calculatedAt };
     }
 
@@ -145,7 +148,7 @@ const self = {
       return;
     }
 
-    for (let contactId of contactIds) {
+    for (const contactId of contactIds) {
       if (!state.contactState[contactId]) {
         state.contactState[contactId] = {};
       }
@@ -162,14 +165,17 @@ const self = {
   getContactIds: () => Object.keys(state.contactState),
 
   /**
-   * The rules system supports the concept of "headless" reports and "headless" task documents. In these scenarios, a report exists on a user's device while the associated
-   * contact document of that report is not on the device. A common scenario associated with this case is during supervisor workflows where supervisors sync reports with the
+   * The rules system supports the concept of "headless" reports and "headless" task documents. In these scenarios,
+   * a report exists on a user's device while the associated contact document of that report is not on the device.
+   * A common scenario associated with this case is during supervisor workflows where supervisors sync reports with the
    * needs_signoff attribute but not the associated patient.
    *
-   * In these cases, getting a list of "all the contacts with rules" requires us to look not just through contact docs, but also through reports. To avoid this costly operation,
-   * the rules-state-store maintains a flag which indicates if the contact ids in the store can serve as a trustworthy authority.
+   * In these cases, getting a list of "all the contacts with rules" requires us to look not just through contact
+   * docs, but also through reports. To avoid this costly operation, the rules-state-store maintains a flag which
+   * indicates if the contact ids in the store can serve as a trustworthy authority.
    *
-   * markAllFresh should be called when the list of contact ids within the store is the complete set of contacts with rules
+   * markAllFresh should be called when the list of contact ids within the store is the complete set of contacts with
+   * rules
    */
   markAllFresh: (calculatedAt, contactIds) => {
     state.allContactIds = true;
@@ -189,7 +195,8 @@ const self = {
   /**
    * Store a set of target emissions which were emitted by refreshing a set of contacts
    *
-   * @param {string[]} contactIds An array of contact ids which produced these targetEmissions by being refreshed. If undefined, all contacts are updated.
+   * @param {string[]} contactIds An array of contact ids which produced these targetEmissions by being refreshed.
+   *    If undefined, all contacts are updated.
    * @param {Object[]} targetEmissions An array of target emissions (the result of the rules-emitter).
    */
   storeTargetEmissions: (contactIds, targetEmissions) => {
@@ -202,16 +209,21 @@ const self = {
   /**
    * Aggregates the stored target emissions into target models
    *
-   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should be aggregated
+   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should
+   *    be aggregated
    * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
    *
    * @returns {Object[]} result
    * @returns {string} result[n].* All attributes of the target as defined in the settings doc
    * @returns {Integer} result[n].total The total number of unique target emission ids matching instanceFilter
-   * @returns {Integer} result[n].pass The number of unique target emission ids matching instanceFilter with the latest emission with truthy "pass"
+   * @returns {Integer} result[n].pass The number of unique target emission ids matching instanceFilter with the
+   *    latest emission with truthy "pass"
    * @returns {Integer} result[n].percent The percentage of pass/total
    */
-  aggregateStoredTargetEmissions: targetEmissionFilter => targetState.aggregateStoredTargetEmissions(state.targetState, targetEmissionFilter),
+  aggregateStoredTargetEmissions: targetEmissionFilter => targetState.aggregateStoredTargetEmissions(
+    state.targetState,
+    targetEmissionFilter
+  ),
 };
 
 const hashRulesConfig = (settings, userDoc) => {

@@ -2,9 +2,9 @@ describe('enter directive', function() {
 
   'use strict';
 
-  var compile,
-      scope,
-      document;
+  let compile;
+  let scope;
+  let document;
 
   beforeEach(function () {
     module('inboxApp');

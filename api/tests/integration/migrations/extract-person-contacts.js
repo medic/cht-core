@@ -2,8 +2,8 @@ const sinon = require('sinon');
 const path = require('path');
 const utils = require('./utils');
 
-const ANY_STRING = new RegExp('^.*$');
-const ANY_NUMBER = new RegExp('^[0-9]+(\\.[0-9]*)?$');
+const ANY_STRING = /^.*$/;
+const ANY_NUMBER = /^[0-9]+(\\.[0-9]*)?$/;
 
 const environment = require('../../../src/environment');
 const config = require('../../../src/config');
@@ -231,21 +231,21 @@ describe('extract-person-contacts migration', function() {
     await config.load();
     await utils.runMigration('extract-person-contacts');
     await utils.assertDb([districtHospitalFixed, districtHospitalContact,
-              healthCenterFixed, healthCenterContact,
-              clinicFixed, clinicContact]);
+      healthCenterFixed, healthCenterContact,
+      clinicFixed, clinicContact]);
   });
 
   it('should create a new Person from facility.contact', function() {
     // given
     return utils.initDb([{
-        _id: 'abc',
-        type: 'district_hospital',
-        name: 'myfacility',
-        contact: {
-          name: 'Alice',
-          phone: '+123'
-        },
-      }, ])
+      _id: 'abc',
+      type: 'district_hospital',
+      name: 'myfacility',
+      contact: {
+        name: 'Alice',
+        phone: '+123'
+      },
+    }, ])
       .then(() => utils.initSettings(settings))
       .then(() => config.load())
       .then(function() {
@@ -283,15 +283,15 @@ describe('extract-person-contacts migration', function() {
   it('should retain the rc code - #2970', function() {
     // given
     return utils.initDb([{
-        _id: 'abc',
-        type: 'district_hospital',
-        name: 'myfacility',
-        contact: {
-          name: 'Alice',
-          phone: '+123',
-          rc_code: 'rc1'
-        },
-      }, ])
+      _id: 'abc',
+      type: 'district_hospital',
+      name: 'myfacility',
+      contact: {
+        name: 'Alice',
+        phone: '+123',
+        rc_code: 'rc1'
+      },
+    }, ])
       .then(() => utils.initSettings(settings))
       .then(() => config.load())
       .then(function() {
@@ -337,19 +337,19 @@ describe('extract-person-contacts migration', function() {
     it('should not break if parent of place not found', function() {
       // given
       return utils.initDb([{
-          _id: 'abc',
-          type: 'health_center',
-          name: 'Homa Bay Health',
-          parent: {
-            _id: 'def',
-            type: 'district_hospital',
-            name: 'Kisumu',
-            contact: {
-              name: 'Madam Regina',
-              phone: '+1234567890'
-            }
+        _id: 'abc',
+        type: 'health_center',
+        name: 'Homa Bay Health',
+        parent: {
+          _id: 'def',
+          type: 'district_hospital',
+          name: 'Kisumu',
+          contact: {
+            name: 'Madam Regina',
+            phone: '+1234567890'
           }
-        }])
+        }
+      }])
         .then(() => utils.initSettings(settings))
         .then(() => config.load())
         .then(function() {
@@ -387,20 +387,20 @@ describe('extract-person-contacts migration', function() {
           }
         }
       }])
-      .then(() => utils.initSettings(settings))
-      .then(() => config.load())
-      .then(function() {
-        return utils.runMigration('extract-person-contacts');
-      })
-      .then(function() {
-        return utils.assertDb([{
-          _id: 'abc',
-          type: 'health_center',
-          name: 'Homa Bay Health',
-          contact: {
-            _id: 'contact-id'
-          }
-        }]);
-      }));
+        .then(() => utils.initSettings(settings))
+        .then(() => config.load())
+        .then(function() {
+          return utils.runMigration('extract-person-contacts');
+        })
+        .then(function() {
+          return utils.assertDb([{
+            _id: 'abc',
+            type: 'health_center',
+            name: 'Homa Bay Health',
+            contact: {
+              _id: 'contact-id'
+            }
+          }]);
+        }));
   });
 });
