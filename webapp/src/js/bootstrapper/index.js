@@ -13,8 +13,8 @@
   let localDocCount;
 
   const getUserCtx = function() {
-    let userCtx; let 
-      locale;
+    let userCtx;
+    let locale;
     document.cookie.split(';').forEach(function(c) {
       c = c.trim().split('=', 2);
       if (c[0] === 'userCtx') {
