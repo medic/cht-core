@@ -11,12 +11,12 @@
   "rules": {
     "max-len": "off",
     "no-var": "off",
-    "quotes": "off",
     "indent": "off",
     "one-var-declaration-per-line": "off",
     "one-var": "off",
     "curly": "off",
     "no-prototype-builtins": "off",
+    "quotes": ["error", "single", { "avoidEscape": true } ]
   },
   "globals": {
     "contact": true,
@@ -24,9 +24,6 @@
     "lineage": true,
     "Utils": true,
     "no-global-assign": true
-  },
-  "rules": {
-    "quotes": ["error", "single", { "avoidEscape": true } ]
   },
   "overrides": [
     {
