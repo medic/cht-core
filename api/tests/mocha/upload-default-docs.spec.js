@@ -27,7 +27,7 @@ describe('upload default docs', () => {
       }
     };
 
-    for (let key of Object.keys(mocks)) {
+    for (const key of Object.keys(mocks)) {
       uploadDefaultDocs.__set__(key, mocks[key]);
     }
   });
@@ -64,7 +64,8 @@ describe('upload default docs', () => {
 
   it('throws on document conflict', () => {
     mocks.fs.readdirSync.returns(['messages-en.properties', 'messages-fr.properties']);
-    mocks.db.medic.bulkDocs.resolves([{ ok: true }, { error: 'conflict', id: 'messages-fr.properties', message: 'Document conflict.' }]);
+    mocks.db.medic.bulkDocs
+      .resolves([{ ok: true }, { error: 'conflict', id: 'messages-fr.properties', message: 'Document conflict.' }]);
     return uploadDefaultDocs.run()
       .then(() => { throw 'should not succeed'; })
       .catch(() => {

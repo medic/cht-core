@@ -48,7 +48,7 @@ describe('Export Data V2.0', () => {
         const rows = result.split('\n');
         rows.pop(); // Last row is empty string, discard
         const expected = [
-          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
           '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,',
           '"export-data-2-test-doc-2","a","abc124",1517529600000,,,,,,"barVal2",,"fooVal2","smangsmongVal2"',
           '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
@@ -70,28 +70,31 @@ describe('Export Data V2.0', () => {
             }
           }
         }}).then(result => {
-          const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
-          const expected = [
-            '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,baz',
-            '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,"bazVal"'
-          ];
-          expect(rows.length).toBe(2);
-          expect(rows).toEqual(expected);
-        }));
+        const rows = result.split('\n');
+        rows.pop(); // Last row is empty string, discard
+        const expected = [
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,baz', // eslint-disable-line max-len
+          '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,"bazVal"'
+        ];
+        expect(rows.length).toBe(2);
+        expect(rows).toEqual(expected);
+      }));
     it('GET Filters by date', () => {
       const from = Date.UTC(2018,1,2,12);
       const to = Date.UTC(2018,1,3,12);
-      return utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
-          const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
+      return utils.request(`/api/v2/export/reports?` +
+        `filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`,
+      {notJson: true}
+      ).then(result => {
+        const rows = result.split('\n');
+        rows.pop(); // Last row is empty string, discard
 
-          const expected = [
-            '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
-            '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
-          ];
-          expect(rows.length).toBe(2);
-          expect(rows).toEqual(expected);
+        const expected = [
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
+          '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
+        ];
+        expect(rows.length).toBe(2);
+        expect(rows).toEqual(expected);
       });
     });
   });
@@ -122,19 +125,19 @@ describe('Export Data V2.0', () => {
             }
           }
         }}).then(result => {
-          const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
-          //
-          // NB: if you have to debug this test failing, note that the test
-          // runner will not output the escaped string values correctly to the
-          // console. You can rely on its output to debug the problem.
-          //
-          const expected = [
-            '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,wd_array,wd_emptyString,wd_false,wd_naughtyArray,wd_naughtyString,wd_null,wd_zero',
-            '"export-data-2-test-doc-4","weird-data-types",,"",,,,,,"[0,1,2]","",false,"[0,{\\"foo\\":false,\\"bar\\":null},\\"Hello, \\\\"world\\\\"\\"]","Woah there, \\"Jimmy O\'Tool\\"",,0',
-          ];
-          expect(rows.length).toBe(2);
-          expect(rows).toEqual(expected);
-        }));
+        const rows = result.split('\n');
+        rows.pop(); // Last row is empty string, discard
+        //
+        // NB: if you have to debug this test failing, note that the test
+        // runner will not output the escaped string values correctly to the
+        // console. You can rely on its output to debug the problem.
+        //
+        const expected = [
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,wd_array,wd_emptyString,wd_false,wd_naughtyArray,wd_naughtyString,wd_null,wd_zero', // eslint-disable-line max-len
+          '"export-data-2-test-doc-4","weird-data-types",,"",,,,,,"[0,1,2]","",false,"[0,{\\"foo\\":false,\\"bar\\":null},\\"Hello, \\\\"world\\\\"\\"]","Woah there, \\"Jimmy O\'Tool\\"",,0', // eslint-disable-line max-len
+        ];
+        expect(rows.length).toBe(2);
+        expect(rows).toEqual(expected);
+      }));
   });
 });

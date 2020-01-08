@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 (function () {
 
@@ -14,7 +14,7 @@ var moment = require('moment');
 
       'ngInject';
 
-      var config = {
+      const config = {
         date: 'DD-MMM-YYYY',
         datetime: 'DD-MMM-YYYY HH:mm:ss',
         time: MomentLocaleData().longDateFormat('LT'),
@@ -34,16 +34,16 @@ var moment = require('moment');
           $log.error('Error fetching settings', err);
         });
 
-      var format = function(date, key) {
+      const format = function(date, key) {
         return moment(date).format(config[key]);
       };
 
-      var getDateDiff = function(date, options) {
-        var end = options.end ? moment(options.end) : moment(); // default to now
+      const getDateDiff = function(date, options) {
+        let end = options.end ? moment(options.end) : moment(); // default to now
         end = end.startOf('day'); // remove the time component
-        for (var i = 0; i < config.ageBreaks.length; i++) {
-          var ageBreak = config.ageBreaks[i];
-          var diff = date.diff(end, ageBreak.unit);
+        for (let i = 0; i < config.ageBreaks.length; i++) {
+          const ageBreak = config.ageBreaks[i];
+          const diff = date.diff(end, ageBreak.unit);
           if (Math.abs(diff) > ageBreak.min) {
             return { quantity: diff, key: ageBreak.key };
           }
@@ -51,8 +51,8 @@ var moment = require('moment');
         return { quantity: 0, key: { singular: 'd', plural: 'dd' } };
       };
 
-      var relativeDate = function(date, options) {
-        var diff = getDateDiff(moment(date).startOf('day'), options);
+      const relativeDate = function(date, options) {
+        const diff = getDateDiff(moment(date).startOf('day'), options);
         if (options.humanize) {
           if (diff.quantity === 0) {
             return $translate.instant('today');
@@ -64,9 +64,9 @@ var moment = require('moment');
             return $translate.instant('yesterday');
           }
         }
-        var quantity = Math.abs(diff.quantity);
-        var key = quantity === 1 ? diff.key.singular : diff.key.plural;
-        var output = MomentLocaleData().relativeTime(quantity, true, key);
+        const quantity = Math.abs(diff.quantity);
+        const key = quantity === 1 ? diff.key.singular : diff.key.plural;
+        const output = MomentLocaleData().relativeTime(quantity, true, key);
         if (options.suffix) {
           return MomentLocaleData().pastFuture(diff.quantity, output);
         }

@@ -4,16 +4,15 @@ describe(`RulesEngine service`, () => {
 
   'use strict';
 
-  let
-    $timeout,
-    getService,
-    hasAuth,
-    Changes,
-    RulesEngineCore,
-    Session,
-    Settings,
-    TranslateFrom,
-    UserContact;
+  let $timeout;
+  let getService;
+  let hasAuth;
+  let Changes;
+  let RulesEngineCore;
+  let Session;
+  let Settings;
+  let TranslateFrom;
+  let UserContact;
 
   const settingsDoc = {
     _id: 'settings',
@@ -186,7 +185,7 @@ describe(`RulesEngine service`, () => {
         },
       ];
 
-      for (let scenario of scenarios) {
+      for (const scenario of scenarios) {
         it(`trigger update for ${scenario.doc._id}`, async () => {
           expect(await getService().isEnabled()).to.be.true;
           const change = Changes.args[0][0];
@@ -212,7 +211,7 @@ describe(`RulesEngine service`, () => {
         userContactGrandparent,
       ];
 
-      for (let scenarioDoc of cachebustScenarios) {
+      for (const scenarioDoc of cachebustScenarios) {
         it(`bust cache for settings ${scenarioDoc._id}`, async () => {
           expect(await getService().isEnabled()).to.be.true;
           const change = changeFeedFormat(scenarioDoc);

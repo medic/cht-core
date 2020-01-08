@@ -3,7 +3,8 @@ const { expect } = chai;
 describe('DatabaseConnectionMonitor service', function() {
   'use strict';
 
-  let service, rootScope;
+  let service; let 
+    rootScope;
 
   beforeEach(function() {
     module('inboxApp');
@@ -33,14 +34,14 @@ describe('DatabaseConnectionMonitor service', function() {
   });
 
   const triggerPouchDbDOMException = () => { 
-      let db = new window.PouchDB('test', { auto_compaction: true }); 
-      const write = i => {
-        db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
-          write(i + 1); 
-        });
-      };
-      write(0); 
-      db.destroy(); 
-      db = new window.PouchDB('test', { auto_compaction: true }); 
+    let db = new window.PouchDB('test', { auto_compaction: true }); 
+    const write = i => {
+      db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
+        write(i + 1); 
+      });
+    };
+    write(0); 
+    db.destroy(); 
+    db = new window.PouchDB('test', { auto_compaction: true }); 
   };
 });

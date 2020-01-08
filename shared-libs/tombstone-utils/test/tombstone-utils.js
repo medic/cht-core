@@ -1,8 +1,8 @@
-var sinon = require('sinon'),
-    lib = require('../src/tombstone-utils'),
-    expect = require('chai').expect,
-    _ = require('underscore'),
-    DB;
+const sinon = require('sinon');
+const lib = require('../src/tombstone-utils');
+const expect = require('chai').expect;
+const _ = require('underscore');
+let DB;
 
 describe('Tombstone Utils Lib', function() {
   'use strict';
@@ -24,7 +24,7 @@ describe('Tombstone Utils Lib', function() {
 
   describe('extractDoc', function() {
     it('returns tombstone property contents', function() {
-      var doc = { _id: 'some_tombstone', tombstone: { _id: 'some', foo: 'bar' } };
+      const doc = { _id: 'some_tombstone', tombstone: { _id: 'some', foo: 'bar' } };
       expect(lib.extractDoc(doc)).to.deep.equal({ _id: 'some', foo: 'bar' });
       expect(lib.extractDoc({})).to.equal(undefined);
       expect(lib.extractDoc(33)).to.equal(undefined);
@@ -41,11 +41,11 @@ describe('Tombstone Utils Lib', function() {
 
   describe('processChange', function() {
     it('saves a tombstone doc for a deleted contact or report', function() {
-      var person = { _id: 'personId', _rev: 'personRev', type: 'person' };
-      var clinic = { _id: 'clinicId', _rev: 'clinicRev', type: 'clinic' };
-      var districtHospital = { _id: 'districtHospitalId', _rev: 'districtHospitalRev', type: 'district_hospital' };
-      var healthCenter = { _id: 'healthCenterId', _rev: 'healthCenterRev', type: 'health_center' };
-      var report = { _id: 'reportId', _rev: 'reportRev', type: 'data_record' };
+      const person = { _id: 'personId', _rev: 'personRev', type: 'person' };
+      const clinic = { _id: 'clinicId', _rev: 'clinicRev', type: 'clinic' };
+      const districtHospital = { _id: 'districtHospitalId', _rev: 'districtHospitalRev', type: 'district_hospital' };
+      const healthCenter = { _id: 'healthCenterId', _rev: 'healthCenterRev', type: 'health_center' };
+      const report = { _id: 'reportId', _rev: 'reportRev', type: 'data_record' };
 
       DB.get.withArgs(person._id).resolves(_.extend({ _revisions: 'something' }, person));
       DB.get.withArgs(clinic._id).resolves(_.extend({ _revisions: 'something' }, clinic));
@@ -54,11 +54,13 @@ describe('Tombstone Utils Lib', function() {
       DB.get.withArgs(report._id).resolves(_.extend({ _revisions: 'something' }, report));
 
       DB.put.resolves();
-      var personChange = { id: 'personId', deleted: true, changes: [{ rev: 'personRev' }] };
-      var clinicChange = { id: 'clinicId', deleted: true, changes: [{ rev: 'clinicRev' }] };
-      var districtHospitalChange = { id: 'districtHospitalId', deleted: true, changes: [{ rev: 'districtHospitalRev' }] };
-      var healthCenterChange = { id: 'healthCenterId', deleted: true, changes: [{ rev: 'healthCenterRev' }] };
-      var reportChange = { id: 'reportId', deleted: true, changes: [{ rev: 'reportRev' }] };
+      const personChange = { id: 'personId', deleted: true, changes: [{ rev: 'personRev' }] };
+      const clinicChange = { id: 'clinicId', deleted: true, changes: [{ rev: 'clinicRev' }] };
+      const districtHospitalChange = {
+        id: 'districtHospitalId', deleted: true, changes: [{ rev: 'districtHospitalRev' }]
+      };
+      const healthCenterChange = { id: 'healthCenterId', deleted: true, changes: [{ rev: 'healthCenterRev' }] };
+      const reportChange = { id: 'reportId', deleted: true, changes: [{ rev: 'reportRev' }] };
 
       return Promise
         .all([
@@ -106,12 +108,12 @@ describe('Tombstone Utils Lib', function() {
     });
 
     it('saves a tombstone for any deleted document, except for tombstones!', function() {
-      var notype = {_id: 'doc1', _rev: 'doc1Rev'};
-      var form = {_id: 'form', _rev: 'formRev', type: 'form'};
-      var feedback = {_id: 'feedback', _rev: 'feedbackRev', type: 'feedback'};
-      var info = {_id: 'info', _rev: 'infoRev', type: 'info'};
-      var tombstone = {_id: 'tombstone', _rev: 'tombstoneRev', type: 'tombstone'};
-      var translation = {_id: 'translation', _rev: 'translationRev', type: 'translations'};
+      const notype = {_id: 'doc1', _rev: 'doc1Rev'};
+      const form = {_id: 'form', _rev: 'formRev', type: 'form'};
+      const feedback = {_id: 'feedback', _rev: 'feedbackRev', type: 'feedback'};
+      const info = {_id: 'info', _rev: 'infoRev', type: 'info'};
+      const tombstone = {_id: 'tombstone', _rev: 'tombstoneRev', type: 'tombstone'};
+      const translation = {_id: 'translation', _rev: 'translationRev', type: 'translations'};
 
       DB.get.withArgs(notype._id).resolves(_.extend({ _revisions: 'something' }, notype));
       DB.get.withArgs(form._id).resolves(_.extend({ _revisions: 'something' }, form));
@@ -121,12 +123,12 @@ describe('Tombstone Utils Lib', function() {
       DB.get.withArgs(translation._id).resolves(_.extend({ _revisions: 'something' }, translation));
 
       DB.put.resolves();
-      var notypeChange = {id: 'doc1', deleted: true, changes: [{rev: 'doc1Rev'}]};
-      var formChange = {id: 'form', deleted: true, changes: [{rev: 'formRev'}]};
-      var feedbackChange = {id: 'feedback', deleted: true, changes: [{rev: 'feedbackRev'}]};
-      var infoChange = {id: 'info', deleted: true, changes: [{rev: 'infoRev'}]};
-      var tombstoneChange = {id: 'tombstone', deleted: true, changes: [{rev: 'tombstoneRev'}]};
-      var translationChange = {id: 'translation', deleted: true, changes: [{rev: 'translationRev'}]};
+      const notypeChange = {id: 'doc1', deleted: true, changes: [{rev: 'doc1Rev'}]};
+      const formChange = {id: 'form', deleted: true, changes: [{rev: 'formRev'}]};
+      const feedbackChange = {id: 'feedback', deleted: true, changes: [{rev: 'feedbackRev'}]};
+      const infoChange = {id: 'info', deleted: true, changes: [{rev: 'infoRev'}]};
+      const tombstoneChange = {id: 'tombstone', deleted: true, changes: [{rev: 'tombstoneRev'}]};
+      const translationChange = {id: 'translation', deleted: true, changes: [{rev: 'translationRev'}]};
 
       return Promise
         .all([
@@ -177,7 +179,7 @@ describe('Tombstone Utils Lib', function() {
 
     it('throws error when reading the change doc fails', function() {
       DB.get.rejects('some error');
-      var change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
+      const change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
       return lib
         .processChange(Promise, DB, change)
         .then(function() {
@@ -191,7 +193,7 @@ describe('Tombstone Utils Lib', function() {
     it('does not throw if the tombstone already exists', function() {
       DB.get.resolves({ _id: 'id', type: 'person', _rev: 'rev' });
       DB.put.rejects({ status: 409, reason: 'document update conflict' });
-      var change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
+      const change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
       return lib
         .processChange(Promise, DB, change)
         .then(function() {
@@ -207,7 +209,7 @@ describe('Tombstone Utils Lib', function() {
     it('throws an error when saving the tombstone fails of something other than doc conflicts', function() {
       DB.get.resolves({ _id: 'id', type: 'person' });
       DB.put.rejects('some other error');
-      var change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
+      const change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
       return lib
         .processChange(Promise, DB, change)
         .then(function() {
@@ -219,7 +221,7 @@ describe('Tombstone Utils Lib', function() {
     });
 
     it('saves change.doc if provided', function() {
-      var change = {
+      const change = {
         id: 'id',
         deleted: true,
         changes: [{ rev: '2' }], doc: { _id: 'id', _rev: '2', some: 'thing', _deleted: true }
@@ -241,9 +243,9 @@ describe('Tombstone Utils Lib', function() {
 
     describe('for CouchDB tombstone stubs', function() {
       it('saves previous version of doc content for CouchDB generated tombstones', function() {
-        var doc = [ { _id: 'id', _rev: '5-rev', _deleted: true }, { _id: 'id', _rev: '4-prev', 'some': 'thing' } ],
-            revisions = { start: 5, ids: ['rev', 'prev', '1', '2', '3'] },
-            change = { id: 'id', deleted: true, changes: [{ rev: '5-rev' }, { rev: '3-1' }] };
+        const doc = [ { _id: 'id', _rev: '5-rev', _deleted: true }, { _id: 'id', _rev: '4-prev', 'some': 'thing' } ];
+        const revisions = { start: 5, ids: ['rev', 'prev', '1', '2', '3'] };
+        const change = { id: 'id', deleted: true, changes: [{ rev: '5-rev' }, { rev: '3-1' }] };
 
         DB.put.resolves();
         DB.get
@@ -268,7 +270,7 @@ describe('Tombstone Utils Lib', function() {
       });
 
       it('saves original version when no previous revisions are available for some reason', function() {
-        var change = { id: 'id', deleted: true, changes: [{ rev: '2-rev' }] };
+        const change = { id: 'id', deleted: true, changes: [{ rev: '2-rev' }] };
         DB.get
           .withArgs('id', { rev: '2-rev', revs: true })
           .resolves({ _id: 'id', _rev: '2-rev', _deleted: true, _revisions: false });
@@ -289,9 +291,9 @@ describe('Tombstone Utils Lib', function() {
       });
 
       it('saves previous version of doc when change doc is a couchdb tombstone', function() {
-        var doc = [ { _id: 'id', _rev: '5-rev', _deleted: true }, { _id: 'id', _rev: '4-prev', 'some': 'thing' } ],
-            revisions = { start: 5, ids: ['rev', 'prev', '1', '2', '3'] },
-            change = { id: 'id', deleted: true, changes: [{ rev: '5-rev' }, { rev: '3-1' }], doc: doc[0] };
+        const doc = [ { _id: 'id', _rev: '5-rev', _deleted: true }, { _id: 'id', _rev: '4-prev', 'some': 'thing' } ];
+        const revisions = { start: 5, ids: ['rev', 'prev', '1', '2', '3'] };
+        const change = { id: 'id', deleted: true, changes: [{ rev: '5-rev' }, { rev: '3-1' }], doc: doc[0] };
 
         DB.put.resolves();
         DB.get
@@ -329,7 +331,7 @@ describe('Tombstone Utils Lib', function() {
       expect(lib.generateChangeFromTombstone({ id: 'id____rev____tombstone' }, true))
         .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined });
 
-      var changeWithDoc = {
+      const changeWithDoc = {
         id: 'id____rev____tombstone',
         doc: {
           _id:'id____rev____tombstone',
@@ -338,8 +340,9 @@ describe('Tombstone Utils Lib', function() {
       };
       expect(lib.generateChangeFromTombstone(changeWithDoc))
         .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined });
-      expect(lib.generateChangeFromTombstone(changeWithDoc, true))
-        .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined, doc: { _id: 'id', _rev: 'rev' }});
+      expect(lib.generateChangeFromTombstone(changeWithDoc, true)).to.deep.equal(
+        { id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined, doc: { _id: 'id', _rev: 'rev' }}
+      );
     });
   });
 
@@ -355,7 +358,7 @@ describe('Tombstone Utils Lib', function() {
     });
 
     it('returns true for couchDB tombstones', function() {
-      var doc = {
+      const doc = {
         _id: 'id',
         _rev: 'rev',
         _revisions: 'a',

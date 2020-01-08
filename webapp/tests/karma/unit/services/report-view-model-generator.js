@@ -2,12 +2,12 @@ describe('ReportViewModelGenerator service', () => {
 
   'use strict';
 
-  let service,
-      formatDataRecord,
-      lineageModelGenerator,
-      getSubjectSummaries,
-      getSummaries,
-      report;
+  let service;
+  let formatDataRecord;
+  let lineageModelGenerator;
+  let getSubjectSummaries;
+  let getSummaries;
+  let report;
 
   beforeEach(() => {
     module('inboxApp');

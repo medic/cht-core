@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+const _ = require('underscore');
+let scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
 
@@ -48,24 +48,24 @@ const PAGE_SIZE = 50;
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var liveList = LiveList.contacts;
+    let liveList = LiveList.contacts;
 
     ctrl.appending = false;
     ctrl.error = false;
     ctrl.loading = true;
     ctrl.clearSelection();
     ctrl.clearFilters();
-    var defaultTypeFilter = {};
-    var usersHomePlace;
-    var additionalListItem = false;
+    let defaultTypeFilter = {};
+    let usersHomePlace;
+    let additionalListItem = false;
     let childPlaces = [];
 
     ctrl.sortDirection = ctrl.defaultSortDirection = 'alpha';
-    var isSortedByLastVisited = function() {
+    const isSortedByLastVisited = function() {
       return ctrl.sortDirection === 'last_visited_date';
     };
 
-    var _initScroll = function() {
+    const _initScroll = function() {
       scrollLoader.init(function() {
         if (!ctrl.loading && ctrl.moreItems) {
           _query({
@@ -76,7 +76,7 @@ const PAGE_SIZE = 50;
       });
     };
 
-    var _query = function(options) {
+    const _query = function(options) {
       options = options || {};
       if (!options.limit || options.limit < PAGE_SIZE) {
         options.limit = PAGE_SIZE;
@@ -103,12 +103,12 @@ const PAGE_SIZE = 50;
         }
       }
 
-      var actualFilter = defaultTypeFilter;
+      let actualFilter = defaultTypeFilter;
       if (ctrl.filters.search || ctrl.filters.simprintsIdentities) {
         actualFilter = ctrl.filters;
       }
 
-      var extensions = {};
+      const extensions = {};
       if (ctrl.lastVisitedDateExtras) {
         extensions.displayLastVisitedDate = true;
         extensions.visitCountSettings = ctrl.visitCountSettings;
@@ -117,7 +117,7 @@ const PAGE_SIZE = 50;
         extensions.sortByLastVisitedDate = true;
       }
 
-      var docIds;
+      let docIds;
       if (options.withIds) {
         docIds = liveList.getList().map(function(item) {
           return item._id;
@@ -128,7 +128,7 @@ const PAGE_SIZE = 50;
         .then(function(contacts) {
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
-            var homeIndex = _.findIndex(contacts, function(contact) {
+            const homeIndex = _.findIndex(contacts, function(contact) {
               return contact._id === usersHomePlace._id;
             });
 
@@ -151,7 +151,7 @@ const PAGE_SIZE = 50;
               }
               if (ctrl.filters.simprintsIdentities) {
                 contacts.forEach(function(contact) {
-                  var identity = ctrl.filters.simprintsIdentities.find(
+                  const identity = ctrl.filters.simprintsIdentities.find(
                     function(identity) {
                       return identity.id === contact.simprints_id;
                     }
@@ -241,7 +241,7 @@ const PAGE_SIZE = 50;
       return p.then(children => children.filter(child => !child.person));
     };
 
-    var setActionBarData = function() {
+    const setActionBarData = function() {
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
@@ -252,7 +252,7 @@ const PAGE_SIZE = 50;
       });
     };
 
-    var getUserHomePlaceSummary = function() {
+    const getUserHomePlaceSummary = function() {
       return UserSettings()
         .then(function(userSettings) {
           if (userSettings.facility_id) {
@@ -267,7 +267,7 @@ const PAGE_SIZE = 50;
         });
     };
 
-    var canViewLastVisitedDate = function() {
+    const canViewLastVisitedDate = function() {
       if (Session.isDbAdmin()) {
         // disable UHC for DB admins
         return false;
@@ -275,7 +275,7 @@ const PAGE_SIZE = 50;
       return Auth.has('can_view_last_visited_date');
     };
 
-    var setupPromise = $q
+    const setupPromise = $q
       .all([
         getUserHomePlaceSummary(),
         canViewLastVisitedDate(),
@@ -308,8 +308,8 @@ const PAGE_SIZE = 50;
       return setupPromise;
     };
 
-    var isRelevantVisitReport = function(doc) {
-      var isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
+    const isRelevantVisitReport = function(doc) {
+      const isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
       return (
         doc &&
         ctrl.lastVisitedDateExtras &&
@@ -322,7 +322,7 @@ const PAGE_SIZE = 50;
       );
     };
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'contacts-list',
       callback: function(change) {
         const limit = liveList.count();

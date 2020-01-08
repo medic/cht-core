@@ -1,7 +1,8 @@
-const utils = require('../../utils'),
-      helper = require('../../helper'),
-      common = require('../common/common.po');
+const utils = require('../../utils');
+const helper = require('../../helper');
+const common = require('../common/common.po');
 
+/* eslint-disable max-len */
 const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
   <h:head>
     <h:title>z-score() - Demo Form</h:title>

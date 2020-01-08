@@ -25,15 +25,15 @@ angular.module('inboxServices').config(
         ipCookie,
         pouchDB
       ) {
-        var cookieName = 'medic-webapp-debug';
-        var get = function() {
+        const cookieName = 'medic-webapp-debug';
+        const get = function() {
           return Boolean(ipCookie(cookieName));
         };
-        var set = function(bool) {
+        const set = function(bool) {
           // this changes the default angular behavior and hides debug level
           // log messages.
           $logProvider.debugEnabled(bool);
-          var db = pouchDB.debug ? pouchDB : $window.PouchDB;
+          const db = pouchDB.debug ? pouchDB : $window.PouchDB;
           if (bool) {
             db.debug.enable('*');
             ipCookie(cookieName, bool, { expires: 360, path: '/' });

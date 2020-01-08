@@ -34,7 +34,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var selectContact = function(id, silent) {
+    const selectContact = function(id, silent) {
       ctrl.setSelectedContact(id)
         .then(() => {
           $translate('contact.deceased.title')
@@ -54,7 +54,7 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
       selectContact($stateParams.id);
     }
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'contacts-deceased',
       filter: function(change) {
         return ctrl.selectedContact && ctrl.selectedContact.doc._id === change.id;

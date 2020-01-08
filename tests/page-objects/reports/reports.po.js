@@ -1,8 +1,8 @@
 const helper = require('../../helper');
 
-const itemSummary = '#reports-content .report-body .item-summary',
-      reportBody = '#reports-content .report-body',
-      reportBodyDetails = '#reports-content .report-body .details';
+const itemSummary = '#reports-content .report-body .item-summary';
+const reportBody = '#reports-content .report-body';
+const reportBodyDetails = '#reports-content .report-body .details';
 
 module.exports = {
   expectReportsToExist: uuids => {
@@ -69,17 +69,23 @@ module.exports = {
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     helper.waitElementToPresent(selectModeButton, 1000);
     selectModeButton.click();
-    expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
+    expect(element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`)).isDisplayed())
+      .toBeTruthy();
   },
 
   stopSelectMode: (savedUuids)=> {
     element(by.css('.action-container .select-mode-stop')).click();
-    expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeFalsy();
+    expect(element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`)).isDisplayed())
+      .toBeFalsy();
   },
 
   waitForReportToAppear: ()=> {
     browser.refresh();
-    browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
+    browser.wait(
+      () => element(by.css('#reports-list li:first-child')).isPresent(),
+      10000,
+      'There should be at least one report in the LHS'
+    );
   },
 };
 

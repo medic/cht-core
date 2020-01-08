@@ -1,5 +1,5 @@
-const chai = require('chai'),
-      validate = require('../../../src/services/report/validate');
+const chai = require('chai');
+const validate = require('../../../src/services/report/validate');
 
 describe('records validate', () => {
 

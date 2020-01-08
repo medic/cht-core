@@ -1,18 +1,18 @@
-const fs = require('fs'),
-  { promisify } = require('util'),
-  url = require('url'),
-  path = require('path'),
-  request = require('request-promise-native'),
-  _ = require('underscore'),
-  auth = require('../auth'),
-  environment = require('../environment'),
-  config = require('../config'),
-  cookie = require('../services/cookie'),
-  SESSION_COOKIE_RE = /AuthSession=([^;]*);/,
-  ONE_YEAR = 31536000000,
-  logger = require('../logger'),
-  db = require('../db'),
-  production = process.env.NODE_ENV === 'production';
+const fs = require('fs');
+const { promisify } = require('util');
+const url = require('url');
+const path = require('path');
+const request = require('request-promise-native');
+const _ = require('underscore');
+const auth = require('../auth');
+const environment = require('../environment');
+const config = require('../config');
+const cookie = require('../services/cookie');
+const SESSION_COOKIE_RE = /AuthSession=([^;]*);/;
+const ONE_YEAR = 31536000000;
+const logger = require('../logger');
+const db = require('../db');
+const production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
 
@@ -190,7 +190,7 @@ module.exports = {
       .then(userCtx => {
         // already logged in
         setUserCtxCookie(res, userCtx);
-        var hasForceLoginCookie = cookie.get(req, 'login') === 'force';
+        const hasForceLoginCookie = cookie.get(req, 'login') === 'force';
         if (hasForceLoginCookie) {
           throw new Error('Force login');
         }

@@ -128,8 +128,10 @@ describe('Contacts service', () => {
       }
     };
 
-    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']}).returns(Promise.resolve({ rows: [ { doc: clinicA }, { doc: clinicB } ] }));
-    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']}).returns(Promise.resolve({ rows: [ { doc: healthCenter } ] }));
+    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']})
+      .returns(Promise.resolve({ rows: [ { doc: clinicA }, { doc: clinicB } ] }));
+    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']})
+      .returns(Promise.resolve({ rows: [ { doc: healthCenter } ] }));
 
     return service(['clinic']).then(actual => {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);

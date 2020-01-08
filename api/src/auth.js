@@ -5,9 +5,9 @@ const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
 
-var get = (path, headers) => {
+const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
-  var fullUrl = url.format({
+  const fullUrl = url.format({
     protocol: dbUrl.protocol,
     host: dbUrl.host,
     pathname: path
@@ -20,21 +20,21 @@ var get = (path, headers) => {
 };
 
 // TODO Use a shared library for this duplicated code #4021
-var hasRole = (userCtx, role) => {
+const hasRole = (userCtx, role) => {
   return _.contains(userCtx && userCtx.roles, role);
 };
 
-var isDbAdmin = userCtx => hasRole(userCtx, '_admin');
+const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
 
-var hasPermission = (userCtx, permission) => {
-  var roles = config.get('permissions')[permission];
+const hasPermission = (userCtx, permission) => {
+  const roles = config.get('permissions')[permission];
   if (!roles) {
     return false;
   }
   return _.some(roles, role => _.contains(userCtx.roles, role));
 };
 
-var checkDistrict = (requested, permitted) => {
+const checkDistrict = (requested, permitted) => {
   if (!requested) {
     // limit to configured facility
     return permitted;
@@ -51,7 +51,7 @@ var checkDistrict = (requested, permitted) => {
 };
 
 const getFacilityId = (req, userCtx) => {
-  var url = '/_users/org.couchdb.user:' + userCtx.name;
+  const url = '/_users/org.couchdb.user:' + userCtx.name;
   return get(url, req.headers).then(user => user.facility_id);
 };
 
@@ -144,7 +144,8 @@ module.exports = {
       return false;
     }
 
-    let username, password;
+    let username; let 
+      password;
     try {
       [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
     } catch (err) {

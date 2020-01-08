@@ -61,9 +61,9 @@ angular
     });
     ctrl.verifyingReport = false;
 
-    var liveList = LiveList.reports;
+    let liveList = LiveList.reports;
 
-    var updateLiveList = function(updated) {
+    const updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
         updated.forEach(function(report) {
           liveList.update(report);
@@ -78,7 +78,7 @@ angular
       });
     };
 
-    var query = function(opts) {
+    const query = function(opts) {
       const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
       if (options.limit < PAGE_SIZE) {
         options.limit = PAGE_SIZE;
@@ -114,7 +114,7 @@ angular
             $state.is('reports.detail')
           ) {
             $timeout(function() {
-              var id = $('.inbox-items li')
+              const id = $('.inbox-items li')
                 .first()
                 .attr('data-record-id');
               $state.go('reports.detail', { id: id }, { location: 'replace' });
@@ -172,7 +172,7 @@ angular
       query();
     };
 
-    var initScroll = function() {
+    const initScroll = function() {
       scrollLoader.init(function() {
         if (!ctrl.loading && ctrl.moreItems) {
           query({ skip: true });
@@ -204,10 +204,10 @@ angular
       if (ctrl.selectMode) {
         e.preventDefault();
         e.stopPropagation();
-        var target = $(e.target).closest('li[data-record-id]');
-        var reportId = target.attr('data-record-id');
-        var checkbox = target.find('input[type="checkbox"]');
-        var alreadySelected = _.findWhere(ctrl.selectedReports, { _id: reportId });
+        const target = $(e.target).closest('li[data-record-id]');
+        const reportId = target.attr('data-record-id');
+        const checkbox = target.find('input[type="checkbox"]');
+        const alreadySelected = _.findWhere(ctrl.selectedReports, { _id: reportId });
         // timeout so if the user clicked the checkbox it has time to
         // register before we set it to the correct value.
         $timeout(function() {
@@ -221,27 +221,27 @@ angular
       }
     });
 
-    var syncCheckboxes = function() {
+    const syncCheckboxes = function() {
       $('#reports-list li').each(function() {
-        var id = $(this).attr('data-record-id');
-        var found = _.findWhere(ctrl.selectedReports, { _id: id });
+        const id = $(this).attr('data-record-id');
+        const found = _.findWhere(ctrl.selectedReports, { _id: id });
         $(this)
           .find('input[type="checkbox"]')
           .prop('checked', found);
       });
     };
 
-    var setActionBarData = function() {
+    const setActionBarData = function() {
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasReports,
         exportFn: function(e) {
-          var exportFilters = _.extendOwn({}, ctrl.filters);
+          const exportFilters = _.extendOwn({}, ctrl.filters);
           ['forms', 'facilities'].forEach(function(type) {
             if (exportFilters[type]) {
               delete exportFilters[type].options;
             }
           });
-          var $link = $(e.target).closest('a');
+          const $link = $(e.target).closest('a');
           $link.addClass('mm-icon-disabled');
           $timeout(function() {
             $link.removeClass('mm-icon-disabled');
@@ -254,7 +254,7 @@ angular
 
     setActionBarData();
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
         if (change.deleted) {

@@ -38,7 +38,10 @@ describe('task-states', () => {
       const first = mockEmission(0, { readyStart: 0, readyEnd: -5 });
       expect(TaskStates.calculateState(first, Date.now())).to.eq(false);
 
-      const second = mockEmission(0, { readyStart: undefined, readyEnd: undefined, date: undefined, startDate: undefined });
+      const second = mockEmission(
+        0,
+        { readyStart: undefined, readyEnd: undefined, date: undefined, startDate: undefined }
+      );
       expect(TaskStates.calculateState(second, Date.now())).to.eq(false);
     });
 
@@ -69,7 +72,11 @@ describe('task-states', () => {
     });
 
     it('append to stateHistory', () => {
-      expect(TaskStates.setStateOnTaskDoc({ stateHistory: ['foo', 'bar', { state: 'Cancelled' }] }, TaskStates.Ready)).to.deep.eq({
+      const actual = TaskStates.setStateOnTaskDoc(
+        { stateHistory: ['foo', 'bar', { state: 'Cancelled' }] },
+        TaskStates.Ready
+      );
+      expect(actual).to.deep.eq({
         state: 'Ready',
         stateHistory: [
           'foo',
@@ -83,7 +90,11 @@ describe('task-states', () => {
     });
 
     it('no append when state is the same', () => {
-      expect(TaskStates.setStateOnTaskDoc({ state: 'Ready', stateHistory: [{ state: 'Cancelled' }] }, TaskStates.Cancelled)).to.deep.eq({
+      const actual = TaskStates.setStateOnTaskDoc(
+        { state: 'Ready', stateHistory: [{ state: 'Cancelled' }] },
+        TaskStates.Cancelled
+      );
+      expect(actual).to.deep.eq({
         state: 'Cancelled',
         stateHistory: [{ state: 'Cancelled' }],
       });
@@ -148,10 +159,14 @@ describe('task-states', () => {
       expect(actual).to.be.false;
     });
 
-    it('ready is more ready than unknown', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, 'unknown')).to.be.true);
-    it('ready is more ready than draft', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, TaskStates.Draft)).to.be.true);
-    it('ready is not more ready than ready', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, TaskStates.Ready)).to.be.false);
-    it('draft is less ready than ready', () => expect(TaskStates.isMoreReadyThan(TaskStates.Draft, TaskStates.Ready)).to.be.false);
+    it('ready is more ready than unknown', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, 'unknown'))
+      .to.be.true);
+    it('ready is more ready than draft', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, TaskStates.Draft))
+      .to.be.true);
+    it('ready not more ready than ready', () => expect(TaskStates.isMoreReadyThan(TaskStates.Ready, TaskStates.Ready))
+      .to.be.false);
+    it('draft is less ready than ready', () => expect(TaskStates.isMoreReadyThan(TaskStates.Draft, TaskStates.Ready))
+      .to.be.false);
   });
 
   it('formatString is comparable', () => {

@@ -2,10 +2,10 @@ describe('Auth service', function() {
 
   'use strict';
 
-  var service,
-      userCtx,
-      Settings,
-      isOnlineOnly;
+  let service;
+  let userCtx;
+  let Settings;
+  let isOnlineOnly;
 
   beforeEach(function () {
     module('inboxApp');
@@ -44,15 +44,15 @@ describe('Auth service', function() {
     });
 
     it('true when user is db admin', async () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      const result = await service.has([ 'can_backup_facilities' ]);
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.has(['can_backup_facilities']);
       chai.expect(result).to.be.true;
     });
 
     it('false when settings errors', async () => {
-      userCtx.returns({ roles: [ 'district_admin' ] });
+      userCtx.returns({ roles: ['district_admin'] });
       Settings.returns(Promise.reject('boom'));
-      const result = await service.has([ 'can_backup_facilities' ]);
+      const result = await service.has(['can_backup_facilities']);
       chai.expect(result).to.be.false;
     });
 
@@ -163,8 +163,8 @@ describe('Auth service', function() {
     });
 
     it('false when admin and !permission', async () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      const result = await service.has([ '!can_backup_facilities' ]);
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.has(['!can_backup_facilities']);
       chai.expect(result).to.be.false;
     });
 
@@ -217,20 +217,20 @@ describe('Auth service', function() {
     });
 
     it('true when admin and no disallowed permissions', async () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      const result = await service.any([[ 'can_backup_facilities' ], [ 'can_export_messages' ], [ 'somepermission' ]]);
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('true when admin and some disallowed permissions', async () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      const result = await service.any([[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ 'somepermission' ]]);
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('false when admin and all disallowed permissions', async () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      const result = await service.any([[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ '!somepermission' ]]);
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
       chai.expect(result).to.be.false;
     });
 
@@ -249,7 +249,12 @@ describe('Auth service', function() {
           can_roll_over: ['national_admin', 'district_admin'],
         },
       });
-      const result = await service.any([[ 'can_backup_facilities' ], [ 'can_export_messages', 'can_roll_over' ], [ 'can_add_people', 'can_add_places' ]]);
+      const permissions = [
+        ['can_backup_facilities'],
+        ['can_export_messages', 'can_roll_over'],
+        ['can_add_people', 'can_add_places'],
+      ];
+      const result = await service.any(permissions);
       chai.expect(result).to.be.true;
     });
 
@@ -262,7 +267,12 @@ describe('Auth service', function() {
         },
       });
 
-      const result = await service.any([[ 'can_backup_facilities', 'can_backup_people' ], [ 'can_export_messages', 'can_roll_over' ], [ 'can_add_people', 'can_add_places' ]]);
+      const permissions = [
+        ['can_backup_facilities', 'can_backup_people'],
+        ['can_export_messages', 'can_roll_over'],
+        ['can_add_people', 'can_add_places']
+      ];
+      const result = await service.any(permissions);
       chai.expect(result).to.be.true;
     });
 
@@ -274,7 +284,12 @@ describe('Auth service', function() {
           can_backup_people: ['national_admin'],
         },
       });
-      const result = await service.any([[ 'can_backup_facilities', 'can_backup_people' ], [ 'can_export_messages', 'can_roll_over' ], [ 'can_add_people', 'can_add_places' ]]);
+      const permissions = [
+        ['can_backup_facilities', 'can_backup_people'],
+        ['can_export_messages', 'can_roll_over'],
+        ['can_add_people', 'can_add_places']
+      ];
+      const result = await service.any(permissions);
       chai.expect(result).to.be.false;
     });
 
@@ -295,7 +310,11 @@ describe('Auth service', function() {
         },
       });
 
-      const result = await service.any([[ 'can_backup_facilities', '!random1' ], [ 'can_export_messages', '!random2' ], [ 'can_add_people', '!random3' ]]);
+      const result = await service.any([
+        ['can_backup_facilities', '!random1'],
+        ['can_export_messages', '!random2'],
+        ['can_add_people', '!random3']
+      ]);
       chai.expect(result).to.be.true;
     });
 
@@ -311,7 +330,11 @@ describe('Auth service', function() {
           random3: ['national_admin'],
         },
       });
-      const result = await service.any([[ 'can_backup_facilities', '!can_add_people' ], [ 'can_export_messages', '!random2' ], [ 'can_backup_people', '!can_add_places' ]]);
+      const result = await service.any([
+        ['can_backup_facilities', '!can_add_people'],
+        ['can_export_messages', '!random2'],
+        ['can_backup_people', '!can_add_places']
+      ]);
       chai.expect(result).to.be.true;
     });
 
@@ -328,7 +351,11 @@ describe('Auth service', function() {
         },
       });
 
-      const result = await service.any([[ 'can_backup_facilities', '!random1' ], [ 'can_backup_people', '!random2' ], [ 'can_backup_places', '!random3' ]]);
+      const result = await service.any([
+        ['can_backup_facilities', '!random1'],
+        ['can_backup_people', '!random2'],
+        ['can_backup_places', '!random3']
+      ]);
       chai.expect(result).to.be.false;
     });
   });

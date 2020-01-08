@@ -1,9 +1,9 @@
-const helper = require('../../helper'),
-  photoUpload = require('../../page-objects/forms/photo-upload.po'),
-  common = require('../../page-objects/common/common.po'),
-  utils = require('../../utils'),
-  constants = require('../../constants'),
-  path = require('path');
+const helper = require('../../helper');
+const photoUpload = require('../../page-objects/forms/photo-upload.po');
+const common = require('../../page-objects/common/common.po');
+const utils = require('../../utils');
+const constants = require('../../constants');
+const path = require('path');
 
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,

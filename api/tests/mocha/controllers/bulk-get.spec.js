@@ -1,11 +1,11 @@
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
-const controller = require('../../../src/controllers/bulk-get'),
-      service = require('../../../src/services/bulk-get'),
-      serverUtils = require('../../../src/server-utils');
+const controller = require('../../../src/controllers/bulk-get');
+const service = require('../../../src/services/bulk-get');
+const serverUtils = require('../../../src/server-utils');
 
-let testReq,
-    testRes;
+let testReq;
+let testRes;
 
 describe('Bulk GET controller', () => {
   beforeEach(() => {

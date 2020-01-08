@@ -1,8 +1,8 @@
 describe('RecurringProcessManager Service', () => {
-  let service,
-    $interval,
-    RelativeDate,
-    UnreadRecords;
+  let service;
+  let $interval;
+  let RelativeDate;
+  let UnreadRecords;
 
   describe('mocked $interval', () => {
     beforeEach(() => {

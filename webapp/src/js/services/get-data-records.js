@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 /**
  * Gets data records by the given array of ids.
@@ -28,7 +28,7 @@ angular.module('inboxServices').factory('GetDataRecords',
     'use strict';
     'ngInject';
 
-    var getDocs = function(ids) {
+    const getDocs = function(ids) {
       return DB()
         .allDocs({ keys: ids, include_docs: true })
         .then(function(response) {
@@ -39,7 +39,8 @@ angular.module('inboxServices').factory('GetDataRecords',
     const getSummaries = function(ids, options) {
       return GetSummaries(ids)
         .then(summaries => {
-          const promiseToSummary = options.hydrateContactNames ? HydrateContactNames(summaries) : Promise.resolve(summaries);
+          const promiseToSummary = options.hydrateContactNames ?
+            HydrateContactNames(summaries) : Promise.resolve(summaries);
           return promiseToSummary.then(GetSubjectSummaries);
         });
     };
@@ -50,7 +51,7 @@ angular.module('inboxServices').factory('GetDataRecords',
       if (!ids) {
         return $q.resolve([]);
       }
-      var arrayGiven = _.isArray(ids);
+      const arrayGiven = _.isArray(ids);
       if (!arrayGiven) {
         ids = [ ids ];
       }

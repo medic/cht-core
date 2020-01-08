@@ -28,7 +28,7 @@ angular.module('inboxServices').service('ContactSave',
 
     function generateFailureMessage(bulkDocsResult) {
       return _.reduce(bulkDocsResult, function(msg, result) {
-        var newMsg = msg;
+        let newMsg = msg;
         if (!result.ok) {
           if (!newMsg) {
             newMsg = 'Some documents did not save correctly: ';

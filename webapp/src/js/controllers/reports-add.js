@@ -51,9 +51,9 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-    var geolocation;
+    let geolocation;
 
-    var getSelected = function() {
+    const getSelected = function() {
       if ($state.params.formId) { // adding
         Geolocation()
           .then(function(position) {
@@ -88,7 +88,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       ctrl.clearCancelCallback();
     }
 
-    var markFormEdited = function() {
+    const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
 
@@ -113,18 +113,18 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
               }
               return $q.all($('#report-form input[type=file]')
                 .map(function() {
-                  var $this = $(this);
-                  var attachmentName = 'user-file' + $this.attr('name');
+                  const $this = $(this);
+                  const attachmentName = 'user-file' + $this.attr('name');
 
                   return DB().getAttachment(model.doc._id, attachmentName)
                     .then(FileReader.base64)
                     .then(function(base64) {
-                      var $picker = $this.closest('.question')
+                      const $picker = $this.closest('.question')
                         .find('.widget.file-picker');
 
                       $picker.find('.file-feedback').empty();
 
-                      var $preview = $picker.find('.file-preview');
+                      const $preview = $picker.find('.file-preview');
                       $preview.empty();
                       $preview.append('<img src="data:' + base64 + '">');
                     });
@@ -166,9 +166,9 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
-      var model = ctrl.selectedReports[0];
-      var reportId = model.doc && model.doc._id;
-      var formInternalId = model.formInternalId;
+      const model = ctrl.selectedReports[0];
+      const reportId = model.doc && model.doc._id;
+      const formInternalId = model.formInternalId;
 
       Enketo.save(formInternalId, ctrl.form, geolocation, reportId)
         .then(function(docs) {
@@ -190,7 +190,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           ctrl.setEnketoSavingStatus(false);
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-          ctrl.setEnketoError(msg);
+            ctrl.setEnketoError(msg);
           });
         });
     };

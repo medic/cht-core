@@ -20,7 +20,7 @@ angular.module('inboxServices').service('Tour',
     'use strict';
     'ngInject';
 
-    var mmScroll = function(container, elem) {
+    const mmScroll = function(container, elem) {
       container = $(container);
       if (container.length) {
         elem = container.find(elem);
@@ -30,40 +30,40 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    var mmShowMessageList = function() {
+    const mmShowMessageList = function() {
       mmShow('#message-list', false);
     };
 
-    var mmShowMessageContent = function() {
+    const mmShowMessageContent = function() {
       mmShow('#message-list', true);
     };
 
-    var mmShowTaskList = function() {
+    const mmShowTaskList = function() {
       mmShow('#tasks-list', false);
     };
 
-    var mmShowTaskContent = function() {
+    const mmShowTaskContent = function() {
       mmShow('#tasks-list', true);
     };
 
-    var mmShowReportList = function() {
+    const mmShowReportList = function() {
       mmShow('#reports-list', false);
     };
 
-    var mmShowReportContent = function() {
+    const mmShowReportContent = function() {
       mmShow('#reports-list', true);
     };
 
-    var mmShowContactList = function() {
+    const mmShowContactList = function() {
       mmShow('#contacts-list', false);
     };
 
-    var mmShowContactContent = function() {
+    const mmShowContactContent = function() {
       mmShow('#contacts-list', true);
     };
 
-    var mmShow = function(list, showContent) {
-      var showingContent = $('body').is('.show-content');
+    const mmShow = function(list, showContent) {
+      const showingContent = $('body').is('.show-content');
       if (showContent !== showingContent) {
         if (showContent) {
           $(list).find('li').filter(':first').find('a').trigger('click');
@@ -73,7 +73,7 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    var mmOpenDropdown = function(elem) {
+    const mmOpenDropdown = function(elem) {
       if (!responsive.isMobile()) {
         $timeout(function() {
           $(elem).addClass('open');
@@ -81,7 +81,7 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    var tours = [
+    const tours = [
       {
         name: 'messages',
         route: 'messages.detail',
@@ -403,9 +403,9 @@ angular.module('inboxServices').service('Tour',
       }
     ];
 
-    var current;
+    let current;
 
-    var createTemplate = function() {
+    const createTemplate = function() {
       return  '<div class="popover tour">' +
                 '<div class="arrow"></div>' +
                 '<h3 class="popover-title"></h3>' +
@@ -426,20 +426,20 @@ angular.module('inboxServices').service('Tour',
               '</div>';
     };
 
-    var getTour = function(name) {
+    const getTour = function(name) {
       return _.findWhere(tours, { name: name }) || tours[0];
     };
 
-    var getSettings = function(name) {
+    const getSettings = function(name) {
 
-      var settings = getTour(name);
+      const settings = getTour(name);
       settings.autoscroll = false;
 
       if (!settings.transmogrified) {
 
         settings.template = createTemplate();
 
-        var mobile = responsive.isMobile();
+        const mobile = responsive.isMobile();
         _.each(settings.steps, function(step) {
           step.title = $translate.instant(step.title);
           step.content = $translate.instant(step.content);
@@ -465,9 +465,9 @@ angular.module('inboxServices').service('Tour',
       return settings;
     };
 
-    var createTour = function(name) {
-      var settings = getSettings(name);
-      var tour = new Tour(settings);
+    const createTour = function(name) {
+      const settings = getSettings(name);
+      const tour = new Tour(settings);
       tour.init();
       tour.restart();
       current = {
@@ -476,7 +476,7 @@ angular.module('inboxServices').service('Tour',
       };
     };
 
-    var endCurrent = function() {
+    const endCurrent = function() {
       if (current && current.tour) {
         current.tour.end();
         // remove any popovers that have become disassociated
@@ -485,7 +485,7 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    var getMessagesTour = () => {
+    const getMessagesTour = () => {
       return Auth.has('can_view_messages_tab')
         .then(canView => {
           return canView && {
@@ -497,7 +497,7 @@ angular.module('inboxServices').service('Tour',
         });
     };
 
-    var getTasksTour = () => {
+    const getTasksTour = () => {
       if (Session.isOnlineOnly()) {
         return;
       }
@@ -512,7 +512,7 @@ angular.module('inboxServices').service('Tour',
         });
     };
 
-    var getReportsTour = () => {
+    const getReportsTour = () => {
       return Auth.has('can_view_reports_tab')
         .then(canView => {
           return canView && {
@@ -524,7 +524,7 @@ angular.module('inboxServices').service('Tour',
         });
     };
 
-    var getContactsTour = () => {
+    const getContactsTour = () => {
       return Auth.has('can_view_contacts_tab')
         .then(canView => {
           return canView && {
@@ -536,13 +536,13 @@ angular.module('inboxServices').service('Tour',
         });
     };
 
-    var getAnalyticsTour = () => {
+    const getAnalyticsTour = () => {
       return $q.all([
         Auth.has('can_view_analytics'),
         AnalyticsModules()
       ])
         .then(([canView]) => {
-        return canView && {
+          return canView && {
             order: 4,
   
             id: 'analytics',
@@ -552,7 +552,7 @@ angular.module('inboxServices').service('Tour',
         });
     };
 
-    var getTours = function() {
+    const getTours = function() {
       return $q.all([
         getMessagesTour(),
         getTasksTour(),
@@ -573,8 +573,8 @@ angular.module('inboxServices').service('Tour',
         if (!name) {
           return;
         }
-        var tour = getTour(name);
-        var route = tour && tour.route;
+        const tour = getTour(name);
+        const route = tour && tour.route;
         $timeout(function() {
           if ($state.is(route)) {
             // already on required page - show tour
@@ -586,7 +586,7 @@ angular.module('inboxServices').service('Tour',
             if (route) {
               $state.go(route, { tour: name });
             } else {
-              var message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
+              const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
               Feedback.submit(message).catch(err => {
                 $log.error('Error saving feedback', err);
               }); 

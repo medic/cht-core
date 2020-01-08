@@ -2,8 +2,8 @@ describe('MessagesCtrl controller', () => {
 
   'use strict';
 
-  let createController,
-      scope;
+  let createController;
+  let scope;
 
   beforeEach(() => {
     module('inboxApp');

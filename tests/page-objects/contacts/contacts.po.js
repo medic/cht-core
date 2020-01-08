@@ -102,7 +102,7 @@ module.exports = {
   },
 
   deleteContactByName: async contactName => {
-    let peopleRow = peopleRows.filter((row) => {
+    const peopleRow = peopleRows.filter((row) => {
       return row.getText().then((text) => {
         return text.includes(contactName);
       });

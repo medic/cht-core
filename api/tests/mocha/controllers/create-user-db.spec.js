@@ -1,10 +1,10 @@
-const controller = require('../../../src/controllers/create-user-db'),
-      chai = require('chai'),
-      auth = require('../../../src/auth'),
-      userDb = require('../../../src/services/user-db'),
-      serverUtils = require('../../../src/server-utils'),
-      environment = require('../../../src/environment'),
-      sinon = require('sinon');
+const controller = require('../../../src/controllers/create-user-db');
+const chai = require('chai');
+const auth = require('../../../src/auth');
+const userDb = require('../../../src/services/user-db');
+const serverUtils = require('../../../src/server-utils');
+const environment = require('../../../src/environment');
+const sinon = require('sinon');
 
 describe('create-user-db controller', () => {
 

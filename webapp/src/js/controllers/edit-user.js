@@ -1,6 +1,6 @@
-var passwordTester = require('simple-password-tester'),
-    PASSWORD_MINIMUM_LENGTH = 8,
-    PASSWORD_MINIMUM_SCORE = 50;
+const passwordTester = require('simple-password-tester');
+const PASSWORD_MINIMUM_LENGTH = 8;
+const PASSWORD_MINIMUM_SCORE = 50;
 
 (function () {
 
@@ -34,7 +34,7 @@ var passwordTester = require('simple-password-tester'),
         ctrl.enabledLocales = languages;
       });
 
-      var determineEditUserModel = function() {
+      const determineEditUserModel = function() {
         return UserSettings()
           .then(function(user) {
             if (user) {
@@ -60,7 +60,7 @@ var passwordTester = require('simple-password-tester'),
           $log.error('Error determining user model', err);
         });
 
-      var validateRequired = function(fieldName, fieldDisplayName) {
+      const validateRequired = function(fieldName, fieldDisplayName) {
         if (!ctrl.editUserModel[fieldName]) {
           Translate.fieldIsRequired(fieldDisplayName)
             .then(function(value) {
@@ -74,7 +74,7 @@ var passwordTester = require('simple-password-tester'),
         return true;
       };
 
-      var validateConfirmPasswordMatches = function() {
+      const validateConfirmPasswordMatches = function() {
         if (ctrl.editUserModel.password !== ctrl.editUserModel.passwordConfirm) {
           $translate('Passwords must match').then(function(value) {
             ctrl.errors.password = value;
@@ -84,8 +84,8 @@ var passwordTester = require('simple-password-tester'),
         return true;
       };
 
-      var validatePasswordStrength = function() {
-        var password = ctrl.editUserModel.password || '';
+      const validatePasswordStrength = function() {
+        const password = ctrl.editUserModel.password || '';
         if (password.length < PASSWORD_MINIMUM_LENGTH) {
           $translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
             ctrl.errors.password = value;
@@ -101,17 +101,17 @@ var passwordTester = require('simple-password-tester'),
         return true;
       };
 
-      var validatePasswordFields = function() {
+      const validatePasswordFields = function() {
         return validateRequired('password', 'Password') &&
           validateRequired('currentPassword', 'Current Password') &&
           validatePasswordStrength() &&
           validateConfirmPasswordMatches();
       };
 
-      var changedUpdates = function(model) {
+      const changedUpdates = function(model) {
         return determineEditUserModel()
           .then(function(existingModel) {
-            var updates = {};
+            const updates = {};
             Object.keys(model)
               .filter(function(k) {
                 if (k === 'id') {
@@ -142,7 +142,7 @@ var passwordTester = require('simple-password-tester'),
           });
       };
 
-      var computeFields = function() {
+      const computeFields = function() {
         ctrl.editUserModel.place = $('#edit-user-profile [name=facilitySelect]').val();
         ctrl.editUserModel.contact = $('#edit-user-profile [name=contactSelect]').val();
       };
@@ -152,8 +152,8 @@ var passwordTester = require('simple-password-tester'),
         ctrl.errors = {};
         $scope.setProcessing();
         if (validatePasswordFields()) {
-          var updates = { password: ctrl.editUserModel.password };
-          var username = ctrl.editUserModel.username;
+          const updates = { password: ctrl.editUserModel.password };
+          const username = ctrl.editUserModel.username;
           UpdateUser(username, updates, username, ctrl.editUserModel.currentPassword)
             .then(function() {
               $scope.setFinished();
@@ -179,7 +179,7 @@ var passwordTester = require('simple-password-tester'),
         }
       };
 
-      var haveUpdates = function(updates) {
+      const haveUpdates = function(updates) {
         return Object.keys(updates).length;
       };
 

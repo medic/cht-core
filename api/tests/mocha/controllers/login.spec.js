@@ -1,19 +1,19 @@
-const controller = require('../../../src/controllers/login'),
-      chai = require('chai'),
-      environment = require('../../../src/environment'),
-      auth = require('../../../src/auth'),
-      cookie = require('../../../src/services/cookie'),
-      db = require('../../../src/db').medic,
-      sinon = require('sinon'),
-      config = require('../../../src/config'),
-      request = require('request-promise-native'),
-      fs = require('fs'),
-      DB_NAME = 'lg',
-      DDOC_NAME = 'medic';
+const controller = require('../../../src/controllers/login');
+const chai = require('chai');
+const environment = require('../../../src/environment');
+const auth = require('../../../src/auth');
+const cookie = require('../../../src/services/cookie');
+const db = require('../../../src/db').medic;
+const sinon = require('sinon');
+const config = require('../../../src/config');
+const request = require('request-promise-native');
+const fs = require('fs');
+const DB_NAME = 'lg';
+const DDOC_NAME = 'medic';
 
-let req,
-    res,
-    originalEnvironment;
+let req;
+let res;
+let originalEnvironment;
 
 describe('login controller', () => {
 

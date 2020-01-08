@@ -1,6 +1,6 @@
-const allDocs = require('../services/all-docs'),
-      serverUtils = require('../server-utils'),
-      _ = require('underscore');
+const allDocs = require('../services/all-docs');
+const serverUtils = require('../server-utils');
+const _ = require('underscore');
 
 const requestError = reason => ({
   error: 'bad_request',

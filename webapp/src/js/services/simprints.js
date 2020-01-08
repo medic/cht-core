@@ -1,10 +1,10 @@
 // Mask used in medic-android for separating request ID from request code
-var SP_ID_MASK = 0xFFFFF8,
+const SP_ID_MASK = 0xFFFFF8;
 
 // TIER_1, TIER_2, and TIER_3 are considered a match
 // TIER_4, and TIER_5 are considered no match
 // https://sites.google.com/simprints.com/simprints-for-developers/custom-integrations/tiers
-    MAX_TIER = 3;
+const MAX_TIER = 3;
 
 angular.module('inboxServices').service('Simprints',
   function(
@@ -15,11 +15,11 @@ angular.module('inboxServices').service('Simprints',
     'use strict';
     'ngInject';
 
-    var currentRequest = {};
+    let currentRequest = {};
 
-    var request = function(endpoint) {
+    const request = function(endpoint) {
       /* eslint-disable-next-line no-bitwise */
-      var requestId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
+      const requestId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
       currentRequest = {
         id: requestId,
         deferred: $q.defer()
@@ -29,11 +29,11 @@ angular.module('inboxServices').service('Simprints',
       return currentRequest.deferred.promise;
     };
 
-    var isCurrentRequest = function(requestId) {
+    const isCurrentRequest = function(requestId) {
       return currentRequest.id === requestId;
     };
 
-    var parseTierNumber = function(tier) {
+    const parseTierNumber = function(tier) {
       return Number.parseInt(tier.split('_')[1]);
     };
 

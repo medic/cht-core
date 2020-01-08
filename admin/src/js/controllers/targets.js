@@ -14,8 +14,8 @@ angular.module('controllers').controller('TargetsCtrl',
     $scope.loading = true;
     $scope.error = false;
 
-    var setEnabled = function(value) {
-      var settings = { tasks: { targets: { enabled: value } } };
+    const setEnabled = function(value) {
+      const settings = { tasks: { targets: { enabled: value } } };
       UpdateSettings(settings)
         .then(function() {
           $scope.configuration.enabled = value;

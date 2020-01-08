@@ -2,9 +2,9 @@ describe('UpdateFacility service', function() {
 
   'use strict';
 
-  var service,
-      get,
-      put;
+  let service;
+  let get;
+  let put;
 
   beforeEach(function() {
     get = sinon.stub();
@@ -24,7 +24,7 @@ describe('UpdateFacility service', function() {
   });
 
   it('updates the facility', function() {
-    var message = {
+    const message = {
       _id: 'abc',
       _rev: 1,
       errors: [
@@ -32,8 +32,8 @@ describe('UpdateFacility service', function() {
         { code: 'other error' }
       ]
     };
-    var facility = { _id: 'xyz' };
-    var expected = {
+    const facility = { _id: 'xyz' };
+    const expected = {
       _id: 'abc',
       _rev: 1,
       errors: [

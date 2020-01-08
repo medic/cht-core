@@ -1,7 +1,7 @@
-const ddocExtraction = require('../../src/ddoc-extraction'),
-      sinon = require('sinon'),
-      db = require('../../src/db'),
-      chai = require('chai');
+const ddocExtraction = require('../../src/ddoc-extraction');
+const sinon = require('sinon');
+const db = require('../../src/db');
+const chai = require('chai');
 const environment = require('../../src/environment');
 
 require('chai').should();
@@ -41,8 +41,12 @@ describe('DDoc extraction', () => {
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
     const getNew = get.withArgs('_design/new').rejects({ status: 404 });
-    const getUpdated = get.withArgs('_design/updated').resolves({ _id: '_design/updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } } });
-    const getUnchanged = get.withArgs('_design/unchanged').resolves({ _id: '_design/unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } } });
+    const getUpdated = get.withArgs('_design/updated').resolves({
+      _id: '_design/updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
+    });
+    const getUnchanged = get.withArgs('_design/unchanged').resolves({
+      _id: '_design/unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } }
+    });
     const getSwMeta = get.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -315,8 +319,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       deploy_info: { version: 2 },
@@ -371,8 +375,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       deploy_info: { version: 2 },
@@ -428,8 +432,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       deploy_info: { version: 2 },
@@ -478,8 +482,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
@@ -526,8 +530,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       deploy_info: 'something',
@@ -580,8 +584,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
@@ -634,8 +638,8 @@ describe('DDoc extraction', () => {
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-        { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-      ] };
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
+    ] };
     const ddoc = {
       _id: '_design/medic',
       deploy_info: 'something',

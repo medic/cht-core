@@ -2,17 +2,17 @@ describe('EditUserCtrl controller', () => {
 
   'use strict';
 
-  let jQuery,
-      mockEditCurrentUser,
-      scope,
-      translationsDbQuery,
-      UpdateUser,
-      CreateUser,
-      UserSettings,
-      translate,
-      Translate,
-      userToEdit,
-      ctrl;
+  let jQuery;
+  let mockEditCurrentUser;
+  let scope;
+  let translationsDbQuery;
+  let UpdateUser;
+  let CreateUser;
+  let UserSettings;
+  let translate;
+  let Translate;
+  let userToEdit;
+  let ctrl;
 
   beforeEach(() => {
     module('inboxApp');
@@ -209,7 +209,8 @@ describe('EditUserCtrl controller', () => {
   describe('ctrl.currentPassword', () => {
 
     it('errors if current password is not provided', done => {
-      Translate.fieldIsRequired.withArgs('Current Password').returns(Promise.resolve('Current password field must be filled'));
+      Translate.fieldIsRequired.withArgs('Current Password')
+        .returns(Promise.resolve('Current password field must be filled'));
       mockEditCurrentUser(userToEdit);
       setTimeout(() => {
         translate.withArgs('Current Password').returns(Promise.resolve('wrong'));

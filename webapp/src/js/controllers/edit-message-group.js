@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 angular
   .module('inboxControllers')
@@ -13,8 +13,8 @@ angular
 
     const ctrl = this;
 
-    var getNextHalfHour = function() {
-      var time = moment()
+    const getNextHalfHour = function() {
+      const time = moment()
         .second(0)
         .millisecond(0);
       if (time.minute() < 30) {
@@ -26,7 +26,7 @@ angular
       return time;
     };
 
-    var initDatePickers = function() {
+    const initDatePickers = function() {
       Settings().then(function(settings) {
         $('#edit-message-group input.datepicker').each(function(index) {
           $(this).daterangepicker(
@@ -43,7 +43,7 @@ angular
               },
             },
             function(date) {
-              var i = this.element.closest('fieldset').attr('data-index');
+              const i = this.element.closest('fieldset').attr('data-index');
               $scope.model.group.rows[i].due = date.toISOString();
             }
           );

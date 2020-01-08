@@ -2,10 +2,10 @@ describe('showMutedModal directive', () => {
 
   'use strict';
 
-  let compile,
-      scope,
-      Modal,
-      state;
+  let compile;
+  let scope;
+  let Modal;
+  let state;
 
   beforeEach(() => {
     module('inboxApp');

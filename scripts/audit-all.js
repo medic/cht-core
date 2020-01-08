@@ -49,7 +49,10 @@ const reduceAuditResultsToAdvisories = (agg, result) => {
   return [...agg, ...advisories];
 };
 
-const summarizeAdvisories = advisories => advisories.map(summary => `[${summary.advisory.severity}] ${summary.advisory.title} for ${summary.advisory.module_name} (#${summary.advisoryId}) in ${summary.directory}`);
+const summarizeAdvisories = advisories => advisories.map(summary => {
+  return `[${summary.advisory.severity}] ${summary.advisory.title} for ${summary.advisory.module_name} ` +
+    `(#${summary.advisoryId}) in ${summary.directory}`;
+});
 const logSummaries = summaries => summaries.forEach(x => console.log(x));
 
 (async () => {

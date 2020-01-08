@@ -1,8 +1,8 @@
-var sinon = require('sinon'),
-    assert = require('chai').assert,
-    config = require('../../src/config'),
-    messages = require('../../src/lib/messages'),
-    transition = require('../../src/transitions/default_responses');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const config = require('../../src/config');
+const messages = require('../../src/lib/messages');
+const transition = require('../../src/transitions/default_responses');
 
 describe('conditional alerts', () => {
   afterEach(() => sinon.restore());
@@ -17,39 +17,39 @@ describe('conditional alerts', () => {
 
   it('when doc has no errors do nothing', () => {
     assert.equal(transition.filter({
-        type: 'data_record',
-        errors: []
+      type: 'data_record',
+      errors: []
     }), false);
   });
 
   it('when doc has no from property do nothing', () => {
     assert.equal(transition.filter({
-        type: 'data_record',
-        errors: ['foo']
+      type: 'data_record',
+      errors: ['foo']
     }), false);
   });
 
   it('when doc has errors still pass filter', () => {
     assert.equal(transition.filter({
-        from: '+222',
-        type: 'data_record',
-        errors: ['foo']
+      from: '+222',
+      type: 'data_record',
+      errors: ['foo']
     }), true);
   });
 
   it('filter passes when message is from gateway', () => {
     sinon.stub(messages, 'isMessageFromGateway').returns(true);
     assert.equal(transition.filter({
-        from: 'x',
-        type: 'data_record'
+      from: 'x',
+      type: 'data_record'
     }), true);
   });
 
   it('filter passes when message is not from gateway', () => {
     sinon.stub(messages, 'isMessageFromGateway').returns(false);
     assert.equal(transition.filter({
-        from: 'x',
-        type: 'data_record'
+      from: 'x',
+      type: 'data_record'
     }), true);
   });
 
@@ -57,16 +57,16 @@ describe('conditional alerts', () => {
     // Filter passes because message is added with a 'denied' state.
     sinon.stub(messages, 'isOutgoingAllowed').returns(true);
     assert.equal(transition.filter({
-        from: 'x',
-        type: 'data_record'
+      from: 'x',
+      type: 'data_record'
     }), true);
   });
 
   it('pass filter when message is not from gateway', () => {
     sinon.stub(transition, '_getConfig').returns('+774455558889');
     assert.equal(transition.filter({
-        from: 'x',
-        type: 'data_record'
+      from: 'x',
+      type: 'data_record'
     }), true);
   });
 
@@ -74,31 +74,31 @@ describe('conditional alerts', () => {
     transition._isReportedAfterStartDate.restore();
     sinon.stub(transition, '_isReportedAfterStartDate').returns(false);
     assert.equal(transition.filter({
-        from: '+222',
-        type: 'data_record',
+      from: '+222',
+      type: 'data_record',
     }), false);
   });
 
   it('do nothing if outgoing message', () => {
     assert.equal(transition.filter({
-        kujua_message: true,
-        type: 'data_record',
+      kujua_message: true,
+      type: 'data_record',
     }), false);
   });
 
   it('when doc has no errors the message is not empty', () => {
     assert.equal(transition._isMessageEmpty({
-        from: '+222',
-        type: 'data_record',
-        errors: []
+      from: '+222',
+      type: 'data_record',
+      errors: []
     }), false);
   });
 
   it('when doc has no errors, form is not found returns false', () => {
     assert.equal(transition._isFormNotFound({
-        from: '+222',
-        type: 'data_record',
-        errors: []
+      from: '+222',
+      type: 'data_record',
+      errors: []
     }), false);
   });
 
@@ -112,7 +112,7 @@ describe('conditional alerts', () => {
     transition._isReportedAfterStartDate.restore();
     sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-01-01' });
     assert.equal(transition._isReportedAfterStartDate({
-        reported_date: 1412641215000
+      reported_date: 1412641215000
     }), true);
   });
 
@@ -120,39 +120,39 @@ describe('conditional alerts', () => {
     transition._isReportedAfterStartDate.restore();
     sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-12-01' });
     assert.equal(transition._isReportedAfterStartDate({
-        reported_date: 1412641215000
+      reported_date: 1412641215000
     }), false);
   });
 
   it('add response if unstructured message and setting enabled', () => {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
-        form: null,
-        from: '+23',
-        type: 'data_record',
-        errors: []
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
+      form: null,
+      from: '+23',
+      type: 'data_record',
+      errors: []
     };
     return transition.onMatch({ doc: doc }).then(changed => {
-        assert(messageFn.calledOnce);
-        assert.equal(messageFn.args[0][0], doc);
-        assert.equal(messageFn.args[0][1].translation_key, 'sms_received');
-        assert.equal(changed, true);
+      assert(messageFn.calledOnce);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].translation_key, 'sms_received');
+      assert.equal(changed, true);
     });
   });
 
   it('add response if unstructured message (form prop is undefined)', () => {
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
-        from: '+23',
-        type: 'data_record',
-        errors: []
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
+      from: '+23',
+      type: 'data_record',
+      errors: []
     };
     return transition.onMatch({ doc: doc }).then(changed => {
-        assert(messageFn.calledOnce);
-        assert.equal(messageFn.args[0][0], doc);
-        assert.equal(messageFn.args[0][1].translation_key, 'sms_received');
-        assert.equal(changed, true);
+      assert(messageFn.calledOnce);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].translation_key, 'sms_received');
+      assert.equal(changed, true);
     });
   });
 
@@ -162,64 +162,64 @@ describe('conditional alerts', () => {
    * on different transition.
    */
   it('do not add response if valid form', () => {
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
-        form: 'V',
-        from: '+23',
-        type: 'data_record',
-        errors: []
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
+      form: 'V',
+      from: '+23',
+      type: 'data_record',
+      errors: []
     };
     return transition.onMatch({ doc: doc }).then(changed => {
-        assert.equal(messageFn.called, false);
-        assert.equal(changed, true);
+      assert.equal(messageFn.called, false);
+      assert.equal(changed, true);
     });
   });
 
   it('add response if form not found', () => {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
-        from: '+23',
-        type: 'data_record',
-        errors: [ { code: 'sys.form_not_found' } ]
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
+      from: '+23',
+      type: 'data_record',
+      errors: [ { code: 'sys.form_not_found' } ]
     };
     return transition.onMatch({ doc: doc }).then(changed => {
-        assert(messageFn.calledOnce);
-        assert.equal(messageFn.args[0][0], doc);
-        assert.equal(messageFn.args[0][1].translation_key, 'sms_received');
-        assert.equal(changed, true);
+      assert(messageFn.calledOnce);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].translation_key, 'sms_received');
+      assert.equal(changed, true);
     });
   });
 
   it('add response if form not found and forms_only_mode', () => {
     sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
-        from: '+444',
-        type: 'data_record',
-        errors: [ { code: 'sys.form_not_found' } ]
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
+      from: '+444',
+      type: 'data_record',
+      errors: [ { code: 'sys.form_not_found' } ]
     };
     return transition.onMatch({ doc: doc }).then(changed => {
-        assert(messageFn.calledOnce);
-        assert.equal(messageFn.args[0][0], doc);
-        assert.equal(messageFn.args[0][1].translation_key, 'form_not_found');
-        assert.equal(changed, true);
+      assert(messageFn.calledOnce);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].translation_key, 'form_not_found');
+      assert.equal(changed, true);
     });
   });
 
   it('add response to empty message', () => {
     sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
-        from: '+23',
-        type: 'data_record',
-        errors: [ { code: 'sys.empty' } ]
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
+      from: '+23',
+      type: 'data_record',
+      errors: [ { code: 'sys.empty' } ]
     };
     return transition.onMatch({ doc: doc }).then(changed => {
-        assert(messageFn.calledOnce);
-        assert.equal(messageFn.args[0][0], doc);
-        assert.equal(messageFn.args[0][1].translation_key, 'empty');
-        assert.equal(changed, true);
+      assert(messageFn.calledOnce);
+      assert.equal(messageFn.args[0][0], doc);
+      assert.equal(messageFn.args[0][1].translation_key, 'empty');
+      assert.equal(changed, true);
     });
   });
 });

@@ -1,8 +1,8 @@
-var sinon = require('sinon'),
-  assert = require('chai').assert,
-  messages = require('../../src/lib/messages'),
-  utils = require('../../src/lib/utils'),
-  transition = require('../../src/transitions/conditional_alerts');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const messages = require('../../src/lib/messages');
+const utils = require('../../src/lib/utils');
+const transition = require('../../src/transitions/conditional_alerts');
 
 describe('conditional alerts', () => {
   afterEach(() => sinon.restore());
@@ -42,7 +42,7 @@ describe('conditional alerts', () => {
       form: 'STCK',
       condition: 'false'
     }]);
-    var doc = {
+    const doc = {
       form: 'PINK'
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -65,8 +65,8 @@ describe('conditional alerts', () => {
         recipient: '+6666666'
       }
     });
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       form: 'STCK'
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -93,8 +93,8 @@ describe('conditional alerts', () => {
         recipient: '+6666666'
       }
     });
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       form: 'STCK'
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -124,8 +124,8 @@ describe('conditional alerts', () => {
         recipient: '+6666666'
       }
     });
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       form: 'STCK'
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -162,9 +162,9 @@ describe('conditional alerts', () => {
       }
     }]);
 
-    var messageFn = sinon.spy(messages, 'addMessage');
+    const messageFn = sinon.spy(messages, 'addMessage');
 
-    var doc = {
+    const doc = {
       reported_date: 1390427075751,
       form: 'STCK',
       s1_used: 6
@@ -197,7 +197,7 @@ describe('conditional alerts', () => {
       }
     }]);
 
-    var doc = {
+    const doc = {
       form: 'STCK'
     };
 
@@ -234,9 +234,9 @@ describe('conditional alerts', () => {
       }
     }]);
 
-    var messageFn = sinon.spy(messages, 'addMessage');
+    const messageFn = sinon.spy(messages, 'addMessage');
 
-    var doc = {
+    const doc = {
       form: 'STCK',
       s1_avail: 3,
       s1_used: 5,
@@ -278,8 +278,8 @@ describe('conditional alerts', () => {
       }
     }]);
 
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       form: 'STCK',
       s1_avail: 3,
       s1_used: 5,
@@ -308,8 +308,8 @@ describe('conditional alerts', () => {
 
     sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([]);
 
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       form: 'STCK',
       s1_avail: 3,
       s1_used: 4
@@ -336,8 +336,8 @@ describe('conditional alerts', () => {
 
     sinon.stub(utils, 'getReportsWithSameParentAndForm').resolves([]);
 
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       _id: 'a',
       form: 'STCK',
       s1_avail: 3,
@@ -383,8 +383,8 @@ describe('conditional alerts', () => {
       }
     ]);
 
-    var messageFn = sinon.spy(messages, 'addMessage');
-    var doc = {
+    const messageFn = sinon.spy(messages, 'addMessage');
+    const doc = {
       _id: 'a',
       form: 'STCK',
       reported_date: 0,

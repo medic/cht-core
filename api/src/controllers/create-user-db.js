@@ -1,6 +1,6 @@
-const auth = require('../auth'),
-      serverUtils = require('../server-utils'),
-      userDb = require('../services/user-db');
+const auth = require('../auth');
+const serverUtils = require('../server-utils');
+const userDb = require('../services/user-db');
 
 const checkPermissions = req => {
   return auth.getUserCtx(req).then(userCtx => {

@@ -151,7 +151,9 @@ describe('auth directive', () => {
       Auth.any.resolves(true);
       Auth.online.returns(false);
 
-      const element = compile('<a mm-auth mm-auth-any="[\'permission_to_have\', \'another_permission\']" mm-auth-online="true">')(scope);
+      const element = compile(
+        '<a mm-auth mm-auth-any="[\'permission_to_have\', \'another_permission\']" mm-auth-online="true">'
+      )(scope);
       scope.$digest();
       setTimeout(() => {
         chai.expect(element.hasClass('hidden')).to.equal(true);
@@ -227,7 +229,8 @@ describe('auth directive', () => {
     });
 
     it('should work with stacked permissions', (done) => {
-      const element = compile('<a mm-auth mm-auth-any="[[\'a\', \'b\'], [[\'c\', \'d\']], [[[\'e\', \'f\']]], \'g\']">')(scope);
+      const template = '<a mm-auth mm-auth-any="[[\'a\', \'b\'], [[\'c\', \'d\']], [[[\'e\', \'f\']]], \'g\']">';
+      const element = compile(template)(scope);
       Auth.any.withArgs([['a', 'b'], ['c', 'd'], ['e', 'f'], ['g']]).resolves(true);
       scope.$digest();
 
@@ -240,7 +243,8 @@ describe('auth directive', () => {
     });
 
     it('should work with expressions ', (done) => {
-      const element = compile('<a mm-auth mm-auth-any="[true && [\'a\', \'b\'], false && [\'c\', \'d\'], \'f\']">')(scope);
+      const template = '<a mm-auth mm-auth-any="[true && [\'a\', \'b\'], false && [\'c\', \'d\'], \'f\']">';
+      const element = compile(template)(scope);
       Auth.any.withArgs([['a', 'b'], ['f']]).resolves(false);
       scope.$digest();
 

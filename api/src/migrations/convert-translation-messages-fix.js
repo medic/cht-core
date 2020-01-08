@@ -1,6 +1,6 @@
-const db = require('../db'),
-      properties = require('properties'),
-      DDOC_ID = '_design/medic';
+const db = require('../db');
+const properties = require('properties');
+const DDOC_ID = '_design/medic';
 
 const getAttachment = name => {
   return db.medic.getAttachment(DDOC_ID, `translations/${name}.properties`)

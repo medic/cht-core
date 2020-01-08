@@ -2,8 +2,8 @@ describe('ContactSummary service', () => {
 
   'use strict';
 
-  let service,
-      Settings = sinon.stub();
+  let service;
+  const Settings = sinon.stub();
 
   beforeEach(() => {
     module('inboxApp');

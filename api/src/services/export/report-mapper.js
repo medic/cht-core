@@ -1,9 +1,9 @@
-const _ = require('underscore'),
-      objectPath = require('object-path'),
-      db = require('../../db'),
-      dateFormat = require('./date-format'),
-      search = require('@medic/search')(Promise, db.medic),
-      lineage = require('@medic/lineage')(Promise, db.medic);
+const _ = require('underscore');
+const objectPath = require('object-path');
+const db = require('../../db');
+const dateFormat = require('./date-format');
+const search = require('@medic/search')(Promise, db.medic);
+const lineage = require('@medic/lineage')(Promise, db.medic);
 
 // Flattens a given object into an object where the keys are dot-notation
 // paths to the flattened values:
@@ -58,7 +58,7 @@ module.exports = {
         return Promise.resolve(forms);
       } else {
         return db.medic.query('medic-client/reports_by_form', {group: true})
-                .then(results => results.rows.map(r => r.key[0]));
+          .then(results => results.rows.map(r => r.key[0]));
       }
     };
 
@@ -76,11 +76,11 @@ module.exports = {
           include_docs: true,
           reduce: false
         })
-        .then(results =>
-          results.rows[0] &&
+          .then(results =>
+            results.rows[0] &&
           results.rows[0].doc &&
           results.rows[0].doc.fields
-        ))
+          ))
       ).then(allFields => {
         // Filter on identity as you can select forms that have no reports
         const fieldColumns = uniqueColumns(allFields.filter(_.identity));

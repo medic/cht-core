@@ -1,19 +1,20 @@
-const PouchDB = require('pouchdb-core'),
-  logger = require('../src/lib/logger');
+const PouchDB = require('pouchdb-core');
+const logger = require('../src/lib/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 PouchDB.plugin(require('pouchdb-replication'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
-const request = require('request'),
-      url = require('url');
+const request = require('request');
+const url = require('url');
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
     logger.error(
       new Error(
-        `db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`
+        `db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}. ` +
+        `Please stub PouchDB functions that will be interacted with in unit tests.`
       )
     );
     process.exit(1);

@@ -1,9 +1,9 @@
-const db = require('../../src/db'),
-      sinon = require('sinon'),
-      assert = require('chai').assert,
-      utils = require('../../src/lib/utils'),
-      config = require('../../src/config'),
-      registrationUtils = require('@medic/registration-utils');
+const db = require('../../src/db');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const utils = require('../../src/lib/utils');
+const config = require('../../src/config');
+const registrationUtils = require('@medic/registration-utils');
 
 describe('utils', () => {
   beforeEach(() => {

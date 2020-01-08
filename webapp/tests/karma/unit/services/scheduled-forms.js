@@ -2,8 +2,8 @@ describe('ScheduledForms service', function() {
 
   'use strict';
 
-  var service,
-      Settings;
+  let service;
+  let Settings;
 
   beforeEach(function() {
     Settings = sinon.stub();

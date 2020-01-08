@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 /**
  * Wrapper function for moment.localeData() so it can be mocked

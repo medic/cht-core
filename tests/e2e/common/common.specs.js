@@ -1,5 +1,5 @@
-const commonElements = require('../../page-objects/common/common.po.js'),
-  utils = require('../../utils');
+const commonElements = require('../../page-objects/common/common.po.js');
+const utils = require('../../utils');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);

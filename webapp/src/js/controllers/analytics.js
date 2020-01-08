@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 angular.module('inboxControllers').controller('AnalyticsCtrl',
   function (

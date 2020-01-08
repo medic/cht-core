@@ -30,7 +30,9 @@ describe('transform-task-emission-to-doc', () => {
 
     // one second later, the document moves to state Completed
     const completedEmission = mockEmission(0, { resolved: true });
-    const secondDoc = transformTaskEmissionToDoc(deepCopy(completedEmission), Date.now() + 1000, 'username', deepCopy(firstDoc.taskDoc));
+    const secondDoc = transformTaskEmissionToDoc(
+      deepCopy(completedEmission), Date.now() + 1000, 'username', deepCopy(firstDoc.taskDoc)
+    );
     expect(secondDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
       rev: '1', // attributes not in shema are preserved
@@ -43,13 +45,17 @@ describe('transform-task-emission-to-doc', () => {
     });
 
     // one second later, the same emission yields no change
-    const thirdDoc = transformTaskEmissionToDoc(deepCopy(completedEmission), Date.now() + 2000, 'username', deepCopy(secondDoc.taskDoc));
+    const thirdDoc = transformTaskEmissionToDoc(
+      deepCopy(completedEmission), Date.now() + 2000, 'username', deepCopy(secondDoc.taskDoc)
+    );
     expect(thirdDoc.taskDoc).to.deep.eq(secondDoc.taskDoc);
     expect(thirdDoc.isUpdated).to.be.false;
 
     // one second later, moving to a different terminal state yields a new doc
     const cancelledEmission = mockEmission(-MS_IN_DAY * 2);
-    const fourthDoc = transformTaskEmissionToDoc(deepCopy(cancelledEmission), Date.now() + 3000, 'username', deepCopy(secondDoc.taskDoc));
+    const fourthDoc = transformTaskEmissionToDoc(
+      deepCopy(cancelledEmission), Date.now() + 3000, 'username', deepCopy(secondDoc.taskDoc)
+    );
     expect(fourthDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${NOW + 3000}`,
       requester: 'gen',
@@ -67,7 +73,9 @@ describe('transform-task-emission-to-doc', () => {
     });
 
     const slightlyDifferentReadyEmission = mockEmission(0, { readyEnd: 2 });
-    const updatedDoc = transformTaskEmissionToDoc(deepCopy(slightlyDifferentReadyEmission), Date.now() + 1000, 'username', deepCopy(firstDoc.taskDoc));
+    const updatedDoc = transformTaskEmissionToDoc(
+      deepCopy(slightlyDifferentReadyEmission), Date.now() + 1000, 'username', deepCopy(firstDoc.taskDoc)
+    );
     expect(updatedDoc.isUpdated).to.eq(true);
     expect(updatedDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
@@ -100,7 +108,9 @@ describe('transform-task-emission-to-doc', () => {
     });
 
     const failedEmissionWithDifferentDetails = mockEmission(-MS_IN_DAY * 10);
-    const result = transformTaskEmissionToDoc(deepCopy(failedEmissionWithDifferentDetails), Date.now(), 'username', deepCopy(terminalDoc.taskDoc));
+    const result = transformTaskEmissionToDoc(
+      deepCopy(failedEmissionWithDifferentDetails), Date.now(), 'username', deepCopy(terminalDoc.taskDoc)
+    );
     expect(result.isUpdated).to.be.false;
     expect(result.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
@@ -112,7 +122,9 @@ describe('transform-task-emission-to-doc', () => {
   it('no new docs for cancelled state', () => {
     const invalidEmission = mockEmission(MS_IN_DAY);
     invalidEmission.readyStart = -1;
-    const docForCancelledEmission = transformTaskEmissionToDoc(deepCopy(invalidEmission), Date.now(), 'username');
+    const docForCancelledEmission = transformTaskEmissionToDoc(
+      deepCopy(invalidEmission), Date.now(), 'username'
+    );
     expect(docForCancelledEmission).to.nested.include({
       isUpdated: false,
       'taskDoc.state': 'Cancelled',
@@ -129,7 +141,9 @@ describe('transform-task-emission-to-doc', () => {
     });
 
     const failedEmissionWithDifferentDetails = mockEmission(-MS_IN_DAY * 10);
-    const result = transformTaskEmissionToDoc(deepCopy(failedEmissionWithDifferentDetails), Date.now(), 'username', deepCopy(terminalDoc.taskDoc));
+    const result = transformTaskEmissionToDoc(
+      deepCopy(failedEmissionWithDifferentDetails), Date.now(), 'username', deepCopy(terminalDoc.taskDoc)
+    );
     expect(result.isUpdated).to.be.false;
     expect(result.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
@@ -257,7 +271,9 @@ describe('transform-task-emission-to-doc', () => {
       });
 
       // one second later, the emission is the same
-      const secondTransform = transformTaskEmissionToDoc(copyOfTaskEmission, Date.now() + 1000, 'user', deepCopy(actual.taskDoc));
+      const secondTransform = transformTaskEmissionToDoc(
+        copyOfTaskEmission, Date.now() + 1000, 'user', deepCopy(actual.taskDoc)
+      );
       expect(secondTransform.isUpdated).to.be.false;
       expect(secondTransform.taskDoc).to.deep.eq(actual.taskDoc);
     });

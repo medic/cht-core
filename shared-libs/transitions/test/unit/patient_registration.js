@@ -205,31 +205,31 @@ describe('patient registration', () => {
   });
 
   it('getDOB uses weeks since dob if available', () => {
-    const reported_date = 1474942416907,
-      expected = moment(reported_date)
-        .startOf('day')
-        .subtract(5, 'weeks')
-        .valueOf();
+    const reported_date = 1474942416907;
+    const expected = moment(reported_date)
+      .startOf('day')
+      .subtract(5, 'weeks')
+      .valueOf();
     transition.__set__('getWeeksSinceDOB', sinon.stub().returns('5'));
     assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
   it('getDOB uses days since dob if available', () => {
-    const reported_date = 1474942416907,
-      expected = moment(reported_date)
-        .startOf('day')
-        .subtract(5, 'days')
-        .valueOf();
+    const reported_date = 1474942416907;
+    const expected = moment(reported_date)
+      .startOf('day')
+      .subtract(5, 'days')
+      .valueOf();
     transition.__set__('getWeeksSinceDOB', sinon.stub().returns(undefined));
     transition.__set__('getDaysSinceDOB', sinon.stub().returns('5'));
     assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
   it('getDOB falls back to reported_date if necessary', () => {
-    const reported_date = 1474942416907,
-      expected = moment(reported_date)
-        .startOf('day')
-        .valueOf();
+    const reported_date = 1474942416907;
+    const expected = moment(reported_date)
+      .startOf('day')
+      .valueOf();
     transition.__set__('getWeeksSinceDOB', sinon.stub().returns(undefined));
     transition.__set__('getDaysSinceDOB', sinon.stub().returns(undefined));
     assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
@@ -484,7 +484,10 @@ describe('patient registration', () => {
         },
         from: '+1234',
         reported_date: 1234,
-        contact: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place', type: 'contact', contact_type: 'place' } }
+        contact: {
+          _id: 'julie', name: 'Julie', phone: '+1234',
+          parent: { _id: 'place', type: 'contact', contact_type: 'place' }
+        }
       };
 
       sinon.stub(utils, 'getRegistrations');

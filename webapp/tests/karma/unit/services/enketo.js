@@ -140,7 +140,9 @@ describe('Enketo service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs,
+      createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr,
+      Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
     sinon.restore();
   });
 
@@ -154,7 +156,8 @@ describe('Enketo service', () => {
           done(new Error('Should throw error'));
         })
         .catch(actual => {
-          expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access ' +
+            'to the associated contact. Talk to your administrator to correct this.');
           expect(actual.translationKey).to.equal('error.loading.form.no_contact');
           done();
         });
@@ -381,7 +384,9 @@ describe('Enketo service', () => {
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
-        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes></context>');
+        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
+          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;' +
+          'characters&quot; &amp; \'words\'</notes></context>');
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });

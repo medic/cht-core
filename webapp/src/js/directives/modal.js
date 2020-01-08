@@ -11,7 +11,8 @@ angular.module('inboxDirectives').directive('mmModal', function() {
     transclude: true,
     templateUrl: 'templates/directives/modal.html',
     scope: {
-      // object: (required) the status object for marking errors and processing. If using the modal service just pass `status="status"`
+      // object: (required) the status object for marking errors and processing.
+      // If using the modal service just pass `status="status"`
       status: '=',
 
       // string: (optional) modal element id

@@ -4,15 +4,16 @@ This means service workers cannot cache any resource behind an authenticated end
 Therefore, we extract all cacheable resources into a folder and serve them as public static content.
 */
 
-const
-  fs = require('fs'),
-  path = require('path'),
-  db = require('./db'),
-  environment = require('./environment'),
-  logger = require('./logger');
+const fs = require('fs');
+const path = require('path');
+const db = require('./db');
+const environment = require('./environment');
+const logger = require('./logger');
 
 const extractableFolders = ['audio', 'css', 'fonts', 'default-docs', 'templates', 'img', 'js'];
-const isAttachmentExtractable = name => name === 'manifest.json' || extractableFolders.some(prefix => name.startsWith(`${prefix}/`));
+const isAttachmentExtractable = name => {
+  return name === 'manifest.json' || extractableFolders.some(prefix => name.startsWith(`${prefix}/`));
+};
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
 let extractedDigests = {};
@@ -25,9 +26,9 @@ const extractResources = () => {
   return db.medic
     .get('_design/medic')
     .then(ddoc => Promise.resolve(Object.keys(ddoc._attachments))
-      .then(attachmentNames => attachmentNames.filter(name => extractedDigests[name] !== ddoc._attachments[name].digest))
+      .then(attachmentNames => attachmentNames.filter(n => extractedDigests[n] !== ddoc._attachments[n].digest))
       .then(attachmentNames => attachmentNames.filter(isAttachmentExtractable))
-      .then(requiredNames => Promise.all(requiredNames.map(required => extractAttachment(extractToDirectory, required))))
+      .then(requiredNames => Promise.all(requiredNames.map(req => extractAttachment(extractToDirectory, req))))
       .then(attachmentNames => attachmentNames.forEach(name => extractedDigests[name] = ddoc._attachments[name].digest))
     );
 };

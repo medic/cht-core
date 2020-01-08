@@ -1,6 +1,6 @@
-const utils = require('../../utils'),
-      sentinelUtils = require('./utils'),
-      uuid = require('uuid');
+const utils = require('../../utils');
+const sentinelUtils = require('./utils');
+const uuid = require('uuid');
 
 const NBR_DOCS = 300;
 
@@ -23,7 +23,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw1', parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -78,8 +81,8 @@ describe('Sentinel queue drain', () => {
       }
     };
 
-    const docs = [],
-          ids = [];
+    const docs = [];
+    const ids = [];
 
     for (let i = 0; i < NBR_DOCS; i++) {
       const id = uuid();

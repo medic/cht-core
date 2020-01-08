@@ -1,5 +1,5 @@
-var lib = require('../src/translation-utils'),
-    expect = require('chai').expect;
+const lib = require('../src/translation-utils');
+const expect = require('chai').expect;
 
 describe('Translation Utils Lib', () => {
   'use strict';

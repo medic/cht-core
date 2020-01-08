@@ -2,10 +2,10 @@ describe('Simprints service', () => {
 
   'use strict';
 
-  let service,
-      medicmobile_android,
-      simprints_reg,
-      simprints_ident;
+  let service;
+  let medicmobile_android;
+  let simprints_reg;
+  let simprints_ident;
 
   const assertCalledOnCorrectObject = function() {
     // If the medicmobile_android functions are not called with `this` parameter

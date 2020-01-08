@@ -1,8 +1,8 @@
-var passwordTester = require('simple-password-tester'),
-  PASSWORD_MINIMUM_LENGTH = 8,
-  PASSWORD_MINIMUM_SCORE = 50,
-  USERNAME_WHITELIST = /^[a-z0-9_-]+$/,
-  ADMIN_ROLE = '_admin';
+const passwordTester = require('simple-password-tester');
+const PASSWORD_MINIMUM_LENGTH = 8;
+const PASSWORD_MINIMUM_SCORE = 50;
+const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+const ADMIN_ROLE = '_admin';
 
 angular
   .module('controllers')
@@ -34,7 +34,7 @@ angular
       $scope.enabledLocales = languages;
     });
 
-    var getRole = function(roles) {
+    const getRole = function(roles) {
       if (!roles || !roles.length) {
         return;
       }
@@ -46,7 +46,7 @@ angular
         return;
       }
       // find all the users roles that are specified in the configuration
-      var knownRoles = roles.filter(function(role) {
+      const knownRoles = roles.filter(function(role) {
         return !!$scope.roles[role];
       });
       if (knownRoles.length) {
@@ -58,7 +58,7 @@ angular
       }
     };
 
-    var determineEditUserModel = function() {
+    const determineEditUserModel = function() {
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
       // If $scope.model === {}, we're creating a new user.
@@ -105,7 +105,7 @@ angular
         Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes);
       });
 
-    var validateRequired = function(fieldName, fieldDisplayName) {
+    const validateRequired = function(fieldName, fieldDisplayName) {
       if (!$scope.editUserModel[fieldName]) {
         Translate.fieldIsRequired(fieldDisplayName)
           .then(function(value) {
@@ -116,8 +116,8 @@ angular
       return true;
     };
 
-    var validatePasswordForEditUser = function() {
-      var newUser = !$scope.editUserModel.id;
+    const validatePasswordForEditUser = function() {
+      const newUser = !$scope.editUserModel.id;
       if (newUser) {
         return validatePasswordFields();
       }
@@ -132,7 +132,7 @@ angular
       return true;
     };
 
-    var validateConfirmPasswordMatches = function() {
+    const validateConfirmPasswordMatches = function() {
       if (
         $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm
       ) {
@@ -144,8 +144,8 @@ angular
       return true;
     };
 
-    var validatePasswordStrength = function() {
-      var password = $scope.editUserModel.password || '';
+    const validatePasswordStrength = function() {
+      const password = $scope.editUserModel.password || '';
       if (password.length < PASSWORD_MINIMUM_LENGTH) {
         $translate('password.length.minimum', {
           minimum: PASSWORD_MINIMUM_LENGTH,
@@ -163,7 +163,7 @@ angular
       return true;
     };
 
-    var validatePasswordFields = function() {
+    const validatePasswordFields = function() {
       return (
         validateRequired('password', 'Password') &&
         (!$scope.editUserModel.currentPassword ||
@@ -173,7 +173,7 @@ angular
       );
     };
 
-    var validateName = function() {
+    const validateName = function() {
       if ($scope.editUserModel.id) {
         // username is readonly when editing so ignore it
         return true;
@@ -190,27 +190,27 @@ angular
       return true;
     };
 
-    var validateContactAndFacility = function() {
-      var role = $scope.roles && $scope.roles[$scope.editUserModel.role];
+    const validateContactAndFacility = function() {
+      const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
         return !$scope.editUserModel.contact || validateRequired('place', 'Facility');
       }
-      var hasPlace = validateRequired('place', 'Facility');
-      var hasContact = validateRequired('contact', 'associated.contact');
+      const hasPlace = validateRequired('place', 'Facility');
+      const hasContact = validateRequired('contact', 'associated.contact');
       return hasPlace && hasContact;
     };
 
-    var validateContactIsInPlace = function() {
-      var placeId = $scope.editUserModel.place;
-      var contactId = $scope.editUserModel.contact;
+    const validateContactIsInPlace = function() {
+      const placeId = $scope.editUserModel.place;
+      const contactId = $scope.editUserModel.contact;
       if (!placeId || !contactId) {
         return $q.resolve(true);
       }
       return DB()
         .get(contactId)
         .then(function(contact) {
-          var parent = contact.parent;
-          var valid = false;
+          let parent = contact.parent;
+          let valid = false;
           while (parent) {
             if (parent._id === placeId) {
               valid = true;
@@ -234,13 +234,13 @@ angular
         });
     };
 
-    var validateRole = function() {
+    const validateRole = function() {
       return validateRequired('role', 'configuration.role');
     };
 
-    var changedUpdates = function(model) {
+    const changedUpdates = function(model) {
       return determineEditUserModel().then(function(existingModel) {
-        var updates = {};
+        const updates = {};
         Object.keys(model)
           .filter(function(k) {
             if (k === 'id') {
@@ -313,7 +313,7 @@ angular
         });
     };
 
-    var computeFields = function() {
+    const computeFields = function() {
       $scope.editUserModel.place = $(
         '#edit-user-profile [name=facilitySelect]'
       ).val();
@@ -322,11 +322,11 @@ angular
       ).val();
     };
 
-    var haveUpdates = function(updates) {
+    const haveUpdates = function(updates) {
       return Object.keys(updates).length;
     };
 
-    var validateEmailAddress = function(){
+    const validateEmailAddress = function(){
       if (!$scope.editUserModel.email){
         return true;
       }
@@ -341,7 +341,7 @@ angular
       return true;
     };
 
-    var isEmailValid = function(email){
+    const isEmailValid = function(email){
       return email.match(/.+@.+/);
     };
 

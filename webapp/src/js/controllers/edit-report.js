@@ -34,8 +34,8 @@ angular.module('inboxControllers').controller('EditReportCtrl',
     };
 
     ctrl.saveReport = function() {
-      var docId = $scope.model.report._id;
-      var facilityId = $('#edit-report [name=facility]').val();
+      const docId = $scope.model.report._id;
+      const facilityId = $('#edit-report [name=facility]').val();
       if (!docId) {
         $scope.setError(new Error('Validation error'), 'Error updating facility');
       } else if (!facilityId) {

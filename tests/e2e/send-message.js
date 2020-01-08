@@ -1,7 +1,8 @@
-const utils = require('../utils'),
-  helper = require('../helper'),
-  common = require('../page-objects/common/common.po');
+const utils = require('../utils');
+const helper = require('../helper');
+const common = require('../page-objects/common/common.po');
 
+/* eslint-disable no-console */
 describe('Send message', () => {
   'use strict';
 

@@ -1,6 +1,6 @@
-const sinon = require('sinon').sandbox.create(),
-      chai = require('chai'),
-      utils = require('../src/index');
+const sinon = require('sinon').sandbox.create();
+const chai = require('chai');
+const utils = require('../src/index');
 
 describe('registrationUtils', () => {
 
@@ -138,7 +138,9 @@ describe('registrationUtils', () => {
     });
 
     it('should return true for valid docs', () => {
-      config.registrations = [{ form: 'form1' }, { form: 'form2' }, { form: 'form3' }, { form: 'FORM4' }, { form: 'form5' }];
+      config.registrations = [
+        { form: 'form1' }, { form: 'form2' }, { form: 'form3' }, { form: 'FORM4' }, { form: 'form5' }
+      ];
       config.forms = { form2: {}, form3: { public_form: true }, FORM5: { } };
 
       let validDoc = {
@@ -266,16 +268,24 @@ describe('registrationUtils', () => {
     });
 
     it('should priorotize patient over place', () => {
-      chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', place_id: 'place_s1' })).to.equal('patient_s1');
-      chai.expect(utils.getSubjectId({ place_id: 'place_s1', fields: { patient_id: 'patient_s1' } })).to.equal('patient_s1');
-      chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', fields: { place_id: 'place_s1' }})).to.equal('patient_s1');
-      chai.expect(utils.getSubjectId({ fields: {  place_id: 'place_s1', patient_id: 'patient_s1' } })).to.equal('patient_s1');
+      chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', place_id: 'place_s1' }))
+        .to.equal('patient_s1');
+      chai.expect(utils.getSubjectId({ place_id: 'place_s1', fields: { patient_id: 'patient_s1' } }))
+        .to.equal('patient_s1');
+      chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', fields: { place_id: 'place_s1' }}))
+        .to.equal('patient_s1');
+      chai.expect(utils.getSubjectId({ fields: {  place_id: 'place_s1', patient_id: 'patient_s1' } }))
+        .to.equal('patient_s1');
 
-      chai.expect(utils.getSubjectId({ fields: {  place_id: 'place_s1', patient_uuid: 'patient_id1' } })).to.equal('patient_id1');
+      chai.expect(utils.getSubjectId({ fields: {  place_id: 'place_s1', patient_uuid: 'patient_id1' } }))
+        .to.equal('patient_id1');
 
-      chai.expect(utils.getSubjectId({ place_id: 'place_s1', fields: { patient_uuid: 'patient_id1' } })).to.equal('patient_id1');
-      chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', fields: { place_id: 'place_s1' } })).to.equal('patient_s1');
-      chai.expect(utils.getSubjectId({ fields: { place_id: 'place_s1', patient_uuid: 'patient_id1' } })).to.equal('patient_id1');
+      chai.expect(utils.getSubjectId({ place_id: 'place_s1', fields: { patient_uuid: 'patient_id1' } }))
+        .to.equal('patient_id1');
+      chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', fields: { place_id: 'place_s1' } }))
+        .to.equal('patient_s1');
+      chai.expect(utils.getSubjectId({ fields: { place_id: 'place_s1', patient_uuid: 'patient_id1' } }))
+        .to.equal('patient_id1');
     });
   });
 });

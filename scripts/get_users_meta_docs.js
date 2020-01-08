@@ -1,8 +1,8 @@
-const inquirer = require('inquirer'),
-      PouchDB = require('pouchdb-core'),
-      fs = require('fs'),
-      path = require('path'),
-      minimist = require('minimist');
+const inquirer = require('inquirer');
+const PouchDB = require('pouchdb-core');
+const fs = require('fs');
+const path = require('path');
+const minimist = require('minimist');
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
@@ -94,7 +94,7 @@ const actionQuestions = [{
         }
       }
     } else if (mode === 'interactive') {
-      let result = await fetchNextDocs();
+      const result = await fetchNextDocs();
       let startkey = result.nextStartKey;
       let docs = result.docs;
       let docIndex = 0;

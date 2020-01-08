@@ -3,15 +3,15 @@ describe('Telemetry service', () => {
 
   const NOW = new Date(2018, 10, 10, 12, 33).getTime();
 
-  let clock,
-    service,
-    $window,
-    $log,
-    DB,
-    storageGetItem,
-    storageSetItem,
-    storageRemoveItem,
-    pouchDb;
+  let clock;
+  let service;
+  let $window;
+  let $log;
+  let DB;
+  let storageGetItem;
+  let storageSetItem;
+  let storageRemoveItem;
+  let pouchDb;
 
   beforeEach(() => {
     module('inboxApp');

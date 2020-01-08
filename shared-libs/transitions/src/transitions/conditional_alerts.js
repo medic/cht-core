@@ -1,10 +1,10 @@
-const config = require('../config'),
-      _ = require('underscore'),
-      messages = require('../lib/messages'),
-      utils = require('../lib/utils'),
-      async = require('async'),
-      transitionUtils = require('./utils'),
-      NAME = 'conditional_alerts';
+const config = require('../config');
+const _ = require('underscore');
+const messages = require('../lib/messages');
+const utils = require('../lib/utils');
+const async = require('async');
+const transitionUtils = require('./utils');
+const NAME = 'conditional_alerts';
 
 const runCondition = (condition, context) => {
   try {
@@ -57,8 +57,8 @@ module.exports = {
   },
   onMatch: change => {
     return new Promise((resolve, reject) => {
-      const doc = change.doc,
-        config = module.exports._getConfig();
+      const doc = change.doc;
+      const config = module.exports._getConfig();
       let updated = false;
 
       async.each(
