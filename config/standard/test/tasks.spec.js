@@ -683,7 +683,7 @@ function traverse(object, func, key, offset) {
         func.apply(this, [object, i, key, offset]);
         if (object[i] !== null && typeof(object[i]) === "object") {
             //going one step down in the object tree!!
-            traverse(object[i], func, key, offset);
+              traverse(object[i], func, key, offset);
         }
     }
 }
