@@ -27,13 +27,13 @@ angular.module('inboxDirectives').directive('mmAuth', function(
 
     const staticChecks = () => {
       const promises = [];
+      if (attributes.mmAuth) {
+        promises.push(Auth.has(attributes.mmAuth.split(',')));
+      }
+
       if (attributes.mmAuthOnline) {
         const onlineResult = Auth.online($parse(attributes.mmAuthOnline)(scope));
         promises.push($q.resolve(onlineResult));
-      }
-
-      if (attributes.mmAuth) {
-        promises.push(Auth.has(attributes.mmAuth.split(',')));
       }
 
       if (!promises.length) {
