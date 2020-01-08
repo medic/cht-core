@@ -59,7 +59,10 @@ describe('Server utils', () => {
         code: 503,
         message: {
           message: 'connect ECONNREFUSED 127.0.0.1:5985',
-          stack: 'Error: connect ECONNREFUSED 127.0.0.1:5985\n    at Object.exports._errnoException (util.js:1016:11)\n    at exports._exceptionWithHostPort (util.js:1039:20)\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1138:14)',
+          stack:
+            'Error: connect ECONNREFUSED 127.0.0.1:5985\n    at Object.exports._errnoException ' +
+            '(util.js:1016:11)\n    at exports._exceptionWithHostPort (util.js:1039:20)\n    ' +
+            'at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1138:14)',
           code: 'ECONNREFUSED',
           errno: 'ECONNREFUSED',
           syscall: 'connect',

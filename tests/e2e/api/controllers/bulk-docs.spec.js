@@ -1,7 +1,7 @@
-const _ = require('underscore'),
-  utils = require('../../../utils'),
-  sUtils = require('../../sentinel/utils'),
-  constants = require('../../../constants');
+const _ = require('underscore');
+const utils = require('../../../utils');
+const sUtils = require('../../sentinel/utils');
+const constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -44,7 +44,8 @@ const users = [
   },
 ];
 
-let offlineRequestOptions, onlineRequestOptions;
+let offlineRequestOptions; let 
+  onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -271,9 +272,12 @@ describe('bulk-docs handler', () => {
             expect(result[1]).not.toBeDefined();
 
             // Unsuccessful writes to existing
-            expect(_.pick(result[2], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[2], '_id', 'latest_replication_date'));
-            expect(_.pick(result[3], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[3], '_id', 'latest_replication_date'));
-            expect(_.pick(result[4], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[0], '_id', 'latest_replication_date'));
+            expect(_.pick(result[2], '_id', 'latest_replication_date'))
+              .toEqual(_.pick(existentDocsInfodocs[2], '_id', 'latest_replication_date'));
+            expect(_.pick(result[3], '_id', 'latest_replication_date'))
+              .toEqual(_.pick(existentDocsInfodocs[3], '_id', 'latest_replication_date'));
+            expect(_.pick(result[4], '_id', 'latest_replication_date'))
+              .toEqual(_.pick(existentDocsInfodocs[0], '_id', 'latest_replication_date'));
 
             // Successful write to existing
             expect(result[5]._id).toEqual(existentDocsInfodocs[1]._id);
@@ -282,7 +286,7 @@ describe('bulk-docs handler', () => {
             // Successful completely new write
             expect(result[6]).toBeDefined();
           });
-    });
+      });
   });
 
   it('reiterates over docs', () => {

@@ -8,28 +8,28 @@ angular.module('inboxServices').factory('ZScore',
     'use strict';
     'ngInject';
 
-    var CONFIGURATION_DOC_ID = 'zscore-charts';
-    var MINIMUM_Z_SCORE = -4;
-    var MAXIMUM_Z_SCORE = 4;
+    const CONFIGURATION_DOC_ID = 'zscore-charts';
+    const MINIMUM_Z_SCORE = -4;
+    const MAXIMUM_Z_SCORE = 4;
 
-    var tables;
+    let tables;
 
-    var findTable = function(id) {
-      for (var i = 0; i < tables.length; i++) {
+    const findTable = function(id) {
+      for (let i = 0; i < tables.length; i++) {
         if (tables[i].id === id) {
           return tables[i];
         }
       }
     };
 
-    var findClosestDataSet = function(data, key) {
+    const findClosestDataSet = function(data, key) {
       if (key < data[0].key || key > data[data.length - 1].key) {
         // the key isn't covered by the configured data points
         return;
       }
-      var current = { diff: Infinity };
+      const current = { diff: Infinity };
       data.forEach(function(datum) {
-        var diff = Math.abs(datum.key - key);
+        const diff = Math.abs(datum.key - key);
         if (diff < current.diff) {
           current.diff = diff;
           current.points = datum.points;
@@ -38,8 +38,8 @@ angular.module('inboxServices').factory('ZScore',
       return current.points;
     };
 
-    var findZScore = function(data, key) {
-      var lowerIndex = -1;
+    const findZScore = function(data, key) {
+      let lowerIndex = -1;
       data.forEach(function(datum, i) {
         if (datum <= key) {
           lowerIndex = i;
@@ -53,15 +53,15 @@ angular.module('inboxServices').factory('ZScore',
         // given key is above the maximum standard deviation
         return MAXIMUM_Z_SCORE;
       }
-      var upperIndex = lowerIndex + 1;
-      var lowerValue = data[lowerIndex];
-      var upperValue = data[upperIndex];
-      var ratio = (key - lowerValue) / (upperValue - lowerValue);
+      const upperIndex = lowerIndex + 1;
+      const lowerValue = data[lowerIndex];
+      const upperValue = data[upperIndex];
+      const ratio = (key - lowerValue) / (upperValue - lowerValue);
       return lowerIndex + MINIMUM_Z_SCORE + ratio;
     };
 
-    var calculate = function(data, x, y) {
-      var xAxisData = findClosestDataSet(data, x);
+    const calculate = function(data, x, y) {
+      const xAxisData = findClosestDataSet(data, x);
       if (!xAxisData) {
         // the key lies outside of the lookup table range
         return;
@@ -69,7 +69,7 @@ angular.module('inboxServices').factory('ZScore',
       return findZScore(xAxisData, y);
     };
 
-    var init = function() {
+    const init = function() {
       // use allDocs instead of get so a 404 doesn't report an error
       return DB().allDocs({ key: CONFIGURATION_DOC_ID, include_docs: true })
         .then(function(result) {
@@ -99,13 +99,13 @@ angular.module('inboxServices').factory('ZScore',
             // the form may not have been filled out yet
             return;
           }
-          var table = findTable(tableId);
+          const table = findTable(tableId);
           if (!table) {
             // log an error if the z-score utility is used but not configured
             $log.error('Requested z-score table not found', tableId);
             return;
           }
-          var data = table.data[sex];
+          const data = table.data[sex];
           if (!data) {
             $log.error('The ' + tableId + ' z-score table is not configured for ' + sex + ' children');
             // no data for the given sex

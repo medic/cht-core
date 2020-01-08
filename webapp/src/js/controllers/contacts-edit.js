@@ -61,18 +61,18 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       }
     });
 
-    var getFormInstanceData = function() {
+    const getFormInstanceData = function() {
       const type = ctrl.contact && (ctrl.contact.contact_type || ctrl.contact.type);
       if (!type) {
         return null;
       }
-      var result = {};
+      const result = {};
       result[type] = ctrl.contact;
       return result;
     };
 
-    var getContact = function() {
-      var id = $state.params.id;
+    const getContact = function() {
+      const id = $state.params.id;
       if (!id) {
         return $q.resolve();
       }
@@ -82,7 +82,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         });
     };
 
-    var getForm = function(contact) {
+    const getForm = function(contact) {
       let formId;
       let titleKey;
       const typeId = contact ? (contact.contact_type || contact.type) : $state.params.type;
@@ -116,35 +116,35 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       });
     };
 
-    var markFormEdited = function() {
+    const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
     
-    var resetFormError = function() {
+    const resetFormError = function() {
       if (ctrl.enketoError) {
         ctrl.setEnketoError(null);
       }
     };
                                               
-    var renderForm = function(formId) {
+    const renderForm = function(formId) {
       return $timeout(function() {
         if (!formId) {
           // Disable next and prev buttons
           $('#contact-form')
-              .find('.form-footer .btn')
-              .filter('.previous-page, .next-page')
-              .addClass('disabled');
+            .find('.form-footer .btn')
+            .filter('.previous-page, .next-page')
+            .addClass('disabled');
           return;
         }
         ctrl.setEnketoEditedStatus(false);
         return DB().get(formId);
       })
-      .then(form => {
-        return Enketo.renderContactForm('#contact-form', form, getFormInstanceData(), markFormEdited, resetFormError);
-      });
+        .then(form => {
+          return Enketo.renderContactForm('#contact-form', form, getFormInstanceData(), markFormEdited, resetFormError);
+        });
     };
 
-    var setEnketoContact = function(formInstance) {
+    const setEnketoContact = function(formInstance) {
       ctrl.enketoContact = {
         type: ctrl.contact.contact_type || ctrl.contact.type,
         formInstance: formInstance,
@@ -174,8 +174,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         return;
       }
 
-      var form = ctrl.enketoContact.formInstance;
-      var docId = ctrl.enketoContact.docId;
+      const form = ctrl.enketoContact.formInstance;
+      const docId = ctrl.enketoContact.docId;
       ctrl.setEnketoSavingStatus(true);
       ctrl.setEnketoError(null);
 
@@ -185,7 +185,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
             throw new Error('Validation failed.');
           }
 
-          var type = ctrl.enketoContact.type;
+          const type = ctrl.enketoContact.type;
           return ContactSave(form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);

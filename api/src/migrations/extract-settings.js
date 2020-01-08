@@ -1,6 +1,6 @@
-const db = require('../db'),
-      {promisify} = require('util'),
-      settingsService = require('../services/settings');
+const db = require('../db');
+const {promisify} = require('util');
+const settingsService = require('../services/settings');
 
 module.exports = {
   name: 'extract-settings',
@@ -14,7 +14,7 @@ module.exports = {
               delete ddoc.app_settings;
               return db.medic.put(ddoc);
             });
-          }
+        }
       })
       .then(() => {
         callback();

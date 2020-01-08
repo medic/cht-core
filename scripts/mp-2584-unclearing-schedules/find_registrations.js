@@ -21,8 +21,8 @@ const findRegistrations = () => {
       reduce: false,
       limit: 5000
     }).then(data => {
-      return data.rows.map(row => row.id);
-    });
+    return data.rows.map(row => row.id);
+  });
 };
 
 findRegistrations()

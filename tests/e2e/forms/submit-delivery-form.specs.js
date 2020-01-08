@@ -1,14 +1,14 @@
-const helper = require('../../helper'),
-  deliveryReport = require('../../page-objects/forms/delivery-report.po'),
-  genericForm = require('../../page-objects/forms/generic-form.po'),
-  common = require('../../page-objects/common/common.po'),
-  utils = require('../../utils'),
-  userData = require('../../page-objects/forms/data/user.po.data');
+const helper = require('../../helper');
+const deliveryReport = require('../../page-objects/forms/delivery-report.po');
+const genericForm = require('../../page-objects/forms/generic-form.po');
+const common = require('../../page-objects/common/common.po');
+const utils = require('../../utils');
+const userData = require('../../page-objects/forms/data/user.po.data');
 
 describe('Submit Delivery Report', () => {
   const { userContactDoc, docs } = userData;
-  const noteToCHW =
-    'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!';
+  const noteToCHW = 'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is ' +
+  'time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeAll(done => {
     protractor.promise

@@ -2,13 +2,13 @@ describe('AnalyticsCtrl controller', function() {
 
   'use strict';
 
-  var createController,
-      getSelected,
-      AnalyticsModules,
-      $rootScope,
-      scope,
-      stateGo,
-      stateIs;
+  let createController;
+  let getSelected;
+  let AnalyticsModules;
+  let $rootScope;
+  let scope;
+  let stateGo;
+  let stateIs;
 
   beforeEach(() => {
     module('inboxApp');

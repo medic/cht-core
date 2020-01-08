@@ -1,9 +1,9 @@
-var async = require('async'),
-  { promisify } = require('util'),
-  db = require('../db'),
-  logger = require('../logger'),
-  people = require('../controllers/people'),
-  places = require('../controllers/places');
+const async = require('async');
+const { promisify } = require('util');
+const db = require('../db');
+const logger = require('../logger');
+const people = require('../controllers/people');
+const places = require('../controllers/places');
 
 // WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
 // OFFLINE BEFORE RUNNING IT!
@@ -54,8 +54,8 @@ var async = require('async'),
 // fetches the existing place doc to set it as parent. So we start by deleting the contact field from the
 // parent doc, and saving that doc, so that it can be used as parent for the new person.
 // Then we reset the contact field on that parent doc, with `places.updatePlace`.
-var createPerson = function(id, callback) {
-  var checkContact = function(facility, callback) {
+const createPerson = function(id, callback) {
+  const checkContact = function(facility, callback) {
     if (!facility.contact || facility.contact._id) {
       // no contact to migrate or contact already migrated
       return callback({ skip: true });
@@ -65,7 +65,7 @@ var createPerson = function(id, callback) {
 
   // Remove old-style contact field from the facility, so that the `person` we will create will not have a
   // loop (`person.parent.contact = person`!).
-  var removeContact = function(facility, callback) {
+  const removeContact = function(facility, callback) {
     delete facility.contact;
     db.medic.put(facility, function(err) {
       if (err) {
@@ -82,8 +82,8 @@ var createPerson = function(id, callback) {
   };
 
   // Create a new person doc to represent the contact.
-  var createPerson = function(facilityId, oldContact, callback) {
-    var person = {
+  const createPerson = function(facilityId, oldContact, callback) {
+    const person = {
       name: oldContact.name,
       phone: oldContact.phone,
       place: facilityId,
@@ -106,8 +106,8 @@ var createPerson = function(id, callback) {
   };
 
   // Re-set the contact field in the facility : set it to the contents of the newly created `person` doc.
-  var resetContact = function(facilityId, oldContact, personId, callback) {
-    var updates = { contact: personId };
+  const resetContact = function(facilityId, oldContact, personId, callback) {
+    const updates = { contact: personId };
     if (oldContact.rc_code) {
       updates.place_id = oldContact.rc_code;
     }
@@ -128,7 +128,7 @@ var createPerson = function(id, callback) {
       });
   };
 
-  var restoreContact = function(facilityId, oldContact, callback) {
+  const restoreContact = function(facilityId, oldContact, callback) {
     places
       .updatePlace(facilityId, { contact: oldContact })
       .then(() => callback())
@@ -146,7 +146,7 @@ var createPerson = function(id, callback) {
       return callback(err);
     }
 
-    var oldContact = facility.contact;
+    const oldContact = facility.contact;
 
     async.waterfall(
       [
@@ -221,8 +221,8 @@ var createPerson = function(id, callback) {
 //    }
 // }
 // Parent of the facility : unchanged.
-var updateParents = function(id, callback) {
-  var checkParent = function(facility, callback) {
+const updateParents = function(id, callback) {
+  const checkParent = function(facility, callback) {
     if (!facility.parent) {
       return callback({ skip: true });
     }
@@ -253,8 +253,8 @@ var updateParents = function(id, callback) {
     callback();
   };
 
-  var removeParent = function(facility, callback) {
-    var parentId = facility.parent._id;
+  const removeParent = function(facility, callback) {
+    const parentId = facility.parent._id;
     delete facility.parent;
     db.medic.put(facility, function(err) {
       if (err) {
@@ -271,7 +271,7 @@ var updateParents = function(id, callback) {
     });
   };
 
-  var resetParent = function(facilityId, parentId, callback) {
+  const resetParent = function(facilityId, parentId, callback) {
     db.medic.get(parentId, function(err) {
       if (err) {
         if (err.status === 404) {
@@ -323,8 +323,8 @@ var updateParents = function(id, callback) {
   });
 };
 
-var migrateOneType = function(type, callback) {
-  var migrate = function(row, callback) {
+const migrateOneType = function(type, callback) {
+  const migrate = function(row, callback) {
     updateParents(row.id, function(err) {
       if (err) {
         return callback(err);
@@ -348,7 +348,7 @@ module.exports = {
   name: 'extract-person-contacts',
   created: new Date(2015, 3, 16, 17, 6, 0, 0),
   run: promisify(function(callback) {
-    var types = ['district_hospital', 'health_center', 'clinic'];
+    const types = ['district_hospital', 'health_center', 'clinic'];
     async.eachSeries(types, migrateOneType, callback);
   }),
 };

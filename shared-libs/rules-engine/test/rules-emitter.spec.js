@@ -46,7 +46,9 @@ describe('rules-emitter', () => {
   });
 
   it('single contact emits simple task and target', async () => {
-    const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c.contact })); emit('target', new Target({ data: c.contact }));`);
+    const rules = noolsPartnerTemplate(
+      `emit('task', new Task({ data: c.contact })); emit('target', new Target({ data: c.contact }));`
+    );
     const settingsDoc = settingsWithRules(rules);
     const contact = { _id: 'foo' };
     const initialized = rulesEmitter.initialize(settingsDoc, {});
@@ -131,7 +133,9 @@ describe('rules-emitter', () => {
   });
 
   it('nootils and user objects are available', async () => {
-    const rules = noolsPartnerTemplate(`emit('task', new Task({ data: user })); emit('target', new Target({ data: Utils }));`);
+    const rules = noolsPartnerTemplate(
+      `emit('task', new Task({ data: user })); emit('target', new Target({ data: Utils }));`
+    );
     const settingsDoc = settingsWithRules(rules);
     const userDoc = { user: true };
     const initialized = rulesEmitter.initialize(settingsDoc, userDoc);

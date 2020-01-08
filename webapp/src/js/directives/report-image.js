@@ -9,11 +9,11 @@ angular.module('inboxDirectives').directive('reportImage',
     return {
       template: '<div class="loader"></div>',
       link: function(scope, element, attr) {
-        var objectUrl;
+        let objectUrl;
 
         DB().getAttachment(attr.report, attr.path)
           .then(function(blob) {
-            var $newImg = $('<img class="report-image"/>');
+            const $newImg = $('<img class="report-image"/>');
             objectUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             $newImg.attr('src', objectUrl);
             $(element).replaceWith($newImg);
@@ -27,4 +27,4 @@ angular.module('inboxDirectives').directive('reportImage',
 
       },
     };
-});
+  });

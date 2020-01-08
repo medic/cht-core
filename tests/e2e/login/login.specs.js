@@ -1,10 +1,10 @@
-const auth = require('../../auth')(),
-  commonElements = require('../../page-objects/common/common.po.js'),
-  loginPage = require('../../page-objects/login/login.po.js');
+const auth = require('../../auth')();
+const commonElements = require('../../page-objects/common/common.po.js');
+const loginPage = require('../../page-objects/login/login.po.js');
 
 describe('Login tests : ', () => {
-  const wrongUsername = 'fakeuser',
-    wrongPassword = 'fakepass';
+  const wrongUsername = 'fakeuser';
+  const wrongPassword = 'fakepass';
 
   it('should have a title', () => {
     commonElements.goToLoginPage();

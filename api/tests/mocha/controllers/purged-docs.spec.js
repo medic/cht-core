@@ -49,7 +49,8 @@ describe('PurgedDocs controller', () => {
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'error' }, req, res]);
         chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
         chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-        chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([ authContext, { includeTombstones: false } ]);
+        chai.expect(authorization.getAllowedDocIds.args[0])
+          .to.deep.equal([ authContext, { includeTombstones: false } ]);
       });
     });
 
@@ -122,7 +123,8 @@ describe('PurgedDocs controller', () => {
       controller.checkpoint(req, res);
       chai.expect(res.json.callCount).to.equal(0);
       chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 400, reason: 'Missing required header medic-replication-id' }, req, res]);
+      chai.expect(serverUtils.error.args[0])
+        .to.deep.equal([{ code: 400, reason: 'Missing required header medic-replication-id' }, req, res]);
     });
 
     it('should throw an error when no provided seq', () => {
@@ -130,7 +132,8 @@ describe('PurgedDocs controller', () => {
       controller.checkpoint(req, res);
       chai.expect(res.json.callCount).to.equal(0);
       chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 400, reason: 'Missing required parameter seq' }, req, res]);
+      chai.expect(serverUtils.error.args[0])
+        .to.deep.equal([{ code: 400, reason: 'Missing required parameter seq' }, req, res]);
     });
 
     it('should throw writecheckpointer fails', () => {

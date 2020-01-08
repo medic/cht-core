@@ -1,6 +1,6 @@
-const _ = require('underscore'),
-  utils = require('../../utils'),
-  constants = require('../../constants');
+const _ = require('underscore');
+const utils = require('../../utils');
+const constants = require('../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -170,7 +170,10 @@ describe('routing', () => {
           .requestOnTestDb(_.extend({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.extend({ path: `//${constants.DB_NAME}//_design//medic//_list//test_list/test_view` }, offlineRequestOptions))
+          .request(_.extend(
+            { path: `//${constants.DB_NAME}//_design//medic//_list//test_list/test_view` },
+            offlineRequestOptions
+          ))
           .catch(err => err),
         utils
           .requestOnMedicDb(_.extend({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
@@ -538,11 +541,15 @@ describe('routing', () => {
         .requestOnTestDb(_.defaults(request, offlineRequestOptions))
         .then(result => {
           expect(_.omit(result, 'rev')).toEqual({ ok: true, id: '_local/some_local_id' });
-          return utils.requestOnTestDb(_.defaults({ method: 'GET', path: '/_local/some_local_id' }, offlineRequestOptions));
+          return utils.requestOnTestDb(
+            _.defaults({ method: 'GET', path: '/_local/some_local_id' }, offlineRequestOptions)
+          );
         })
         .then(result => {
           expect(_.omit(result, '_rev')).toEqual({ _id: '_local/some_local_id' });
-          return utils.requestOnTestDb(_.defaults({ method: 'DELETE', path: '/_local/some_local_id' }, offlineRequestOptions));
+          return utils.requestOnTestDb(
+            _.defaults({ method: 'DELETE', path: '/_local/some_local_id' }, offlineRequestOptions)
+          );
         })
         .then(result => {
           expect(_.omit(result, 'rev')).toEqual({ ok: true, id: '_local/some_local_id' });
@@ -642,10 +649,18 @@ describe('routing', () => {
         .then(() => utils.getDoc('settings'))
         .then(result => settings = result.settings)
         .then(() => Promise.all([
-          utils.requestOnTestDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)),
-          utils.requestOnTestDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)),
-          utils.requestOnMedicDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)),
-          utils.requestOnMedicDb(_.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)),
+          utils.requestOnTestDb(
+            _.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)
+          ),
+          utils.requestOnTestDb(
+            _.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)
+          ),
+          utils.requestOnMedicDb(
+            _.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)
+          ),
+          utils.requestOnMedicDb(
+            _.extend({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)
+          ),
         ]))
         .then(results => {
           results.forEach(result => expect(result.settings).toEqual(settings));

@@ -40,13 +40,13 @@ describe('LiveList service', () => {
   }
 
   function list_of() {
-    var args = Array.prototype.slice.call(arguments);
-    var items = _.map(args, doc);
+    const args = Array.prototype.slice.call(arguments);
+    const items = _.map(args, doc);
     service.testing.set(items);
   }
 
-  var assert = chai.assert,
-      service;
+  const assert = chai.assert;
+  let service;
 
   beforeEach(function() {
     module('inboxApp');
@@ -80,7 +80,7 @@ describe('LiveList service', () => {
     ], function(config, i) {
 
       it('should fail to init list when missing required config: ' + i, function() {
-        var thrown;
+        let thrown;
         try {
           service.$listFor('name', config);
         } catch(e) {
@@ -95,7 +95,7 @@ describe('LiveList service', () => {
 
   it('should initialise fine when supplied with valid config', function() {
     // given
-    var config = {
+    const config = {
       listItem: SIMPLE_LIST_ITEM,
       orderBy: SIMPLE_ORDER_FUNCTION,
       selector: '#list',
@@ -110,7 +110,7 @@ describe('LiveList service', () => {
 
   it('should provide a defined set of functions on initialised lists', function() {
     // given
-    var config = {
+    const config = {
       listItem: SIMPLE_LIST_ITEM,
       orderBy: SIMPLE_ORDER_FUNCTION,
       selector: '#list',
@@ -138,7 +138,7 @@ describe('LiveList service', () => {
 
   describe('a configured list', function() {
     beforeEach(function() {
-      var config = {
+      const config = {
         listItem: SIMPLE_LIST_ITEM,
         orderBy: SIMPLE_ORDER_FUNCTION,
         selector: '#list',
@@ -152,11 +152,11 @@ describe('LiveList service', () => {
     });
 
     describe('#refresh()', function() {
-        it('should not complain if list is not initialised', function() {
-          // expect
-          service.testing.refresh();
-          // no expcetion thrown
-        });
+      it('should not complain if list is not initialised', function() {
+        // expect
+        service.testing.refresh();
+        // no expcetion thrown
+      });
     });
 
     describe('an initialised list', function() {

@@ -162,9 +162,9 @@ describe('ContactChangeFilter service', () => {
   });
 
   describe('isRelevantReport', () => {
-    let change1,
-        change2,
-        contact;
+    let change1;
+    let change2;
+    let contact;
     beforeEach(() => {
       change1 = {
         doc: {

@@ -1,6 +1,6 @@
-const utils = require('../../utils'),
-  helper = require('../../helper'),
-  fs = require('fs');
+const utils = require('../../utils');
+const helper = require('../../helper');
+const fs = require('fs');
 
 const xml = fs.readFileSync(`${__dirname}/../../../demo-forms/multiple-repeats.xml`, 'utf8');
 

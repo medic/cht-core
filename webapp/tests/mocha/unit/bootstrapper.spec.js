@@ -1,10 +1,10 @@
-const sinon = require('sinon'),
-      { expect, assert } = require('chai'),
-      pouchDbOptions = {
-        local: { auto_compaction: true },
-        remote: { skip_setup: true },
-        remote_headers: { 'Accept': 'application/json' }
-      };
+const sinon = require('sinon');
+const { expect, assert } = require('chai');
+const pouchDbOptions = {
+  local: { auto_compaction: true },
+  remote: { skip_setup: true },
+  remote_headers: { 'Accept': 'application/json' }
+};
 const rewire = require('rewire');
 const bootstrapper = rewire('../../../src/js/bootstrapper');
 const purger = require('../../../src/js/bootstrapper/purger');
@@ -296,7 +296,10 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+      assert.equal(
+        err.redirect,
+        '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+      );
       done();
     });
   });
@@ -318,7 +321,10 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+      assert.equal(
+        err.redirect,
+        '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+      );
       done();
     });
   });
@@ -437,7 +443,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     let purgeOn;
-    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
+    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() }); // eslint-disable-line prefer-const
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     bootstrapper(pouchDbOptions, err => {
@@ -460,7 +466,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     let purgeOn;
-    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
+    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() }); // eslint-disable-line prefer-const
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     const localReplicateResult = Promise.resolve();

@@ -274,8 +274,10 @@ describe('server side purge', () => {
       })
       .then(() => Promise.all([ requestPurges('user1'), requestPurges('user2') ]))
       .then(([ purgedIdsUser1, purgedIdsUser2 ]) => {
-        chai.expect(purgedIdsUser1.purged_ids).to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
-        chai.expect(purgedIdsUser2.purged_ids).to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
+        chai.expect(purgedIdsUser1.purged_ids)
+          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+        chai.expect(purgedIdsUser2.purged_ids)
+          .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
       })
       .then(() => utils.revertSettings())
       .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }))
@@ -355,8 +357,10 @@ describe('server side purge', () => {
       .then(() => Promise.all([requestPurges('user1'), requestPurges('user2')]))
       .then(([purgedDocsUser1, purgedDocsUser2]) => {
         // reverse purges
-        chai.expect(purgedDocsUser1.purged_ids).to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
-        chai.expect(purgedDocsUser2.purged_ids).to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+        chai.expect(purgedDocsUser1.purged_ids)
+          .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
+        chai.expect(purgedDocsUser2.purged_ids)
+          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
       })
       .then(() => Promise.all([
         requestChanges('user1', { initial_replication: true }),
@@ -399,8 +403,10 @@ describe('server side purge', () => {
       ])
       .then(([purgedDocsUser1, purgedDocsUser2, infoUser1, infoUser2]) => {
         // reverse purges
-        chai.expect(purgedDocsUser1.purged_ids).to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
-        chai.expect(purgedDocsUser2.purged_ids).to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+        chai.expect(purgedDocsUser1.purged_ids)
+          .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
+        chai.expect(purgedDocsUser2.purged_ids)
+          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
         chai.assert(infoUser1.update_seq);
         chai.assert(infoUser2.update_seq);
 

@@ -1,7 +1,7 @@
 const auth = require('../auth');
-const bulkDocs = require('../services/bulk-docs'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+const bulkDocs = require('../services/bulk-docs');
+const _ = require('underscore');
+const serverUtils = require('../server-utils');
 
 const requestError = reason => ({
   error: 'bad_request',

@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-    moment = require('moment');
+const _ = require('underscore');
+const moment = require('moment');
 
 angular.module('controllers').controller('DisplayDateTimeCtrl',
   function (
@@ -14,13 +14,13 @@ angular.module('controllers').controller('DisplayDateTimeCtrl',
     'use strict';
     'ngInject';
 
-    var standard_date_formats = [
+    const standard_date_formats = [
       'DD-MMM-YYYY',
       'DD/MM/YYYY',
       'MM/DD/YYYY'
     ];
 
-    var standard_datetime_formats = [
+    const standard_datetime_formats = [
       'DD-MMM-YYYY HH:mm:ss',
       'DD/MM/YYYY HH:mm:ss',
       'MM/DD/YYYY HH:mm:ss'
@@ -28,7 +28,7 @@ angular.module('controllers').controller('DisplayDateTimeCtrl',
 
     $scope.submitAdvancedSettings = function() {
       $scope.status = { loading: true };
-      var changes = _.clone($scope.displayDateTimeModel);
+      const changes = _.clone($scope.displayDateTimeModel);
       UpdateSettings(changes)
         .then(function() {
           $scope.status = { success: true, msg: translateFilter('Saved') };
@@ -62,11 +62,11 @@ angular.module('controllers').controller('DisplayDateTimeCtrl',
         };
         $scope.date_formats = standard_date_formats;
         if (!_.contains($scope.date_formats, res.date_format)) {
-            $scope.date_formats.push(res.date_format);
+          $scope.date_formats.push(res.date_format);
         }
         $scope.datetime_formats = standard_datetime_formats;
         if (!_.contains($scope.datetime_formats, res.reported_date_format)) {
-            $scope.datetime_formats.push(res.reported_date_format);
+          $scope.datetime_formats.push(res.reported_date_format);
         }
 
         $scope.updateDateFormatExample();
@@ -74,7 +74,7 @@ angular.module('controllers').controller('DisplayDateTimeCtrl',
       })
       .catch(function(err) {
         $log.error('Error loading settings', err);
-    });
+      });
 
   }
 );

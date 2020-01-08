@@ -5,7 +5,7 @@ describe('InboxCtrl controller', () => {
   let scope;
   let RecurringProcessManager;
   let changes;
-  let changesListener = {};
+  const changesListener = {};
   let session;
   let rulesEnginePromise;
 
@@ -162,7 +162,8 @@ describe('InboxCtrl controller', () => {
 
     session.userCtx.returns(false);
     createController();
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }})).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
+      .to.equal(false);
   });
 
   it('InboxUserContent Changes listener callback should check current session', () => {

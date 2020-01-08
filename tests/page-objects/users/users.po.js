@@ -1,5 +1,5 @@
-const helper = require('../../helper'),
-      utils = require('../../utils');
+const helper = require('../../helper');
+const utils = require('../../utils');
 
 const getAddUserButton = () => {
   return element(by.id('add-user'));

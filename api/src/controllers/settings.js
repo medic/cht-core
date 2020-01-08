@@ -1,7 +1,7 @@
-const auth = require('../auth'),
-      serverUtils = require('../server-utils'),
-      settingsService = require('../services/settings'),
-      objectPath = require('object-path');
+const auth = require('../auth');
+const serverUtils = require('../server-utils');
+const settingsService = require('../services/settings');
+const objectPath = require('object-path');
 
 const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
 

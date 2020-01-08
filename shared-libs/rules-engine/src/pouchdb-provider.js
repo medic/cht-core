@@ -4,6 +4,8 @@
  * Wireup for accessing rules document data via medic pouch db
  */
 
+// TODO work out how to pass in the logger from node/browser
+/* eslint-disable no-console */
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 
@@ -12,10 +14,8 @@ const docsOf = query => query.then(result => result.rows.map(row => row.doc).fil
 
 const medicPouchProvider = db => {
   const self = {
-    /*
-    PouchDB.query slows down when provided with a large keys array.
-    For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
-    */
+    // PouchDB.query slows down when provided with a large keys array.
+    // For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
     allTasks: prefix => {
       const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
       return docsOf(db.query('medic-client/tasks_by_contact', options));
@@ -24,22 +24,23 @@ const medicPouchProvider = db => {
     allTaskData: userDoc => {
       const userContactId = userDoc && userDoc._id;
       return Promise.all([
-          docsOf(db.query('medic-client/contacts_by_type', { include_docs: true })),
-          docsOf(db.query('medic-client/reports_by_subject', { include_docs: true })),
-          self.allTasks('requester'),
-        ])
+        docsOf(db.query('medic-client/contacts_by_type', { include_docs: true })),
+        docsOf(db.query('medic-client/reports_by_subject', { include_docs: true })),
+        self.allTasks('requester'),
+      ])
         .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userContactId }));
     },
 
-    contactsBySubjectId: subjectIds => (
-      db.query('medic-client/contacts_by_reference', { keys: subjectIds.map(key => ['shortcode', key]), include_docs: true })
+    contactsBySubjectId: subjectIds => {
+      const keys = subjectIds.map(key => ['shortcode', key]);
+      return db.query('medic-client/contacts_by_reference', { keys, include_docs: true })
         .then(results => {
           const shortcodeIds = results.rows.map(result => result.doc._id);
           const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
 
           return [...shortcodeIds, ...idsThatArentShortcodes];
-        })
-    ),
+        });
+    },
 
     stateChangeCallback: docUpdateClosure(db),
 
@@ -95,9 +96,9 @@ const medicPouchProvider = db => {
          
           const keys = Array.from(subjectIds).map(key => [key]);
           return Promise.all([
-              docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
-              self.tasksByRelation(contactIds, 'requester'),
-            ])
+            docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
+            self.tasksByRelation(contactIds, 'requester'),
+          ])
             .then(([reportDocs, taskDocs]) => ({
               userContactId: userDoc && userDoc._id,
               contactDocs,

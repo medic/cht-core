@@ -9,14 +9,14 @@ angular
     'use strict';
     'ngInject';
 
-    var MESSAGE_LIMIT = 120;
+    const MESSAGE_LIMIT = 120;
 
-    var formattedMessage = function(msg) {
-      var suffix = msg.length > MESSAGE_LIMIT ? '...' : '';
+    const formattedMessage = function(msg) {
+      const suffix = msg.length > MESSAGE_LIMIT ? '...' : '';
       return msg.substring(0, MESSAGE_LIMIT) + suffix;
     };
 
-    var safeStringify = function(str) {
+    const safeStringify = function(str) {
       if (typeof str === 'string') {
         // User typed feedback
         return str;
@@ -30,8 +30,8 @@ angular
       }
     };
 
-    var mapFeedback = function(data) {
-      var result = {
+    const mapFeedback = function(data) {
+      const result = {
         page: {
           number: data.rows.length,
           total: data.total_rows,

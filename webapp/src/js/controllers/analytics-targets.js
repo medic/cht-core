@@ -1,29 +1,29 @@
 angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
-    $log,
-    RulesEngine
-  ) {
+  $log,
+  RulesEngine
+) {
 
-    'use strict';
-    'ngInject';
+  'use strict';
+  'ngInject';
 
-    const ctrl = this;
+  const ctrl = this;
 
-    ctrl.targets = [];
-    ctrl.loading = true;
-    ctrl.targetsDisabled = false;
+  ctrl.targets = [];
+  ctrl.loading = true;
+  ctrl.targetsDisabled = false;
 
-    RulesEngine.isEnabled()
-      .then(isEnabled => {
-        ctrl.targetsDisabled = !isEnabled;
-        return isEnabled ? RulesEngine.fetchTargets() : [];
-      })
-      .catch(err => {
-        $log.error('Error getting targets', err);
-        return [];
-      })
-      .then(targets => {
-        ctrl.loading = false;
-        ctrl.targets = targets;
-      });
-  }
+  RulesEngine.isEnabled()
+    .then(isEnabled => {
+      ctrl.targetsDisabled = !isEnabled;
+      return isEnabled ? RulesEngine.fetchTargets() : [];
+    })
+    .catch(err => {
+      $log.error('Error getting targets', err);
+      return [];
+    })
+    .then(targets => {
+      ctrl.loading = false;
+      ctrl.targets = targets;
+    });
+}
 );

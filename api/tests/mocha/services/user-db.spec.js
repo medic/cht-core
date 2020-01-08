@@ -69,7 +69,10 @@ describe('User DB service', () => {
         chai.expect(dbPut.callCount).to.equal(1);
         const ddoc = dbPut.args[0][0];
         chai.expect(ddoc._id).to.equal('_design/medic-user');
-        chai.expect(ddoc.views.read.map).to.equal('function (doc) {\n  var parts = doc._id.split(\':\');\n  if (parts[0] === \'read\') {\n    emit(parts[1]);\n  }\n}');
+        chai.expect(ddoc.views.read.map).to.equal(
+          'function (doc) {\n  var parts = doc._id.split(\':\');\n  if (parts[0] === \'read\') ' +
+          '{\n    emit(parts[1]);\n  }\n}'
+        );
         chai.expect(ddoc.views.read.reduce).to.equal('_count');
         chai.expect(db.close.callCount).to.equal(1);
         chai.expect(db.close.args[0]).to.deep.equal([userDb]);

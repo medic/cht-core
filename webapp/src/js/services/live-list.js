@@ -20,15 +20,15 @@ angular.module('inboxServices').factory('LiveListConfig',
     const ctrl = this;
     $ngRedux.connect(state => ({ forms: Selectors.getForms(state) }))(ctrl);
 
-    var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
-    var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
+    const HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
+    const EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
 
-    var parse = function(expr, scope) {
+    const parse = function(expr, scope) {
       return $parse(expr)(scope) || '';
     };
 
-    var renderTemplate = function(scope) {
-      var template = $templateCache.get('templates/directives/content_row_list_item.html');
+    const renderTemplate = function(scope) {
+      const template = $templateCache.get('templates/directives/content_row_list_item.html');
       return template
         .replace(HTML_BIND_REGEX, function(match, expr, extras) {
           return extras + parse(expr, scope);
@@ -55,7 +55,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     // Configure LiveList service
     return function() {
 
-      var contacts_config = {
+      const contacts_config = {
         orderBy: function(c1, c2) {
           if (!c1 || !c2) {
             return;
@@ -88,7 +88,7 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: function(contact, contactTypes) {
           const typeId = contact.contact_type || contact.type;
           const type = contactTypes.find(type => type.id === typeId);
-          var scope = {};
+          const scope = {};
           scope.id = contact._id;
           scope.route = 'contacts';
           scope.icon = type && type.icon;
@@ -102,13 +102,16 @@ angular.module('inboxServices').factory('LiveListConfig',
               scope.overdue = true;
               scope.summary = $translate.instant('contact.last.visited.unknown');
             } else {
-              var now = new Date().getTime();
-              var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+              const now = new Date().getTime();
+              const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
               scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
-              scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+              scope.summary = $translate.instant(
+                'contact.last.visited.date',
+                { date: relativeDayFilter(contact.lastVisitedDate, true) }
+              );
             }
 
-            var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+            const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
             scope.visits = {
               count: $translate.instant('contacts.visits.count', { count: visitCount }),
               summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
@@ -140,7 +143,7 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: contacts_config.listItem,
       });
 
-      var getHeading = function(report) {
+      const getHeading = function(report) {
         if (report.validSubject) {
           return report.subject.value;
         }
@@ -150,10 +153,10 @@ angular.module('inboxServices').factory('LiveListConfig',
         return $translate.instant('report.subject.unknown');
       };
 
-      var reports_config = {
+      const reports_config = {
         orderBy: function(r1, r2) {
-          var lhs = r1 && r1.reported_date,
-              rhs = r2 && r2.reported_date;
+          const lhs = r1 && r1.reported_date;
+          const rhs = r2 && r2.reported_date;
           if (!lhs && !rhs) {
             return 0;
           }
@@ -166,9 +169,9 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, contactTypes, removedDomElement) {
-          var scope = {};
+          const scope = {};
           scope.id = report._id;
-          var form = _.findWhere(ctrl.forms, { code: report.form });
+          const form = _.findWhere(ctrl.forms, { code: report.form });
           scope.route = 'reports';
           scope.icon = form && form.icon;
           scope.heading = getHeading(report);
@@ -177,11 +180,12 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
-          var statusIcon = (report.valid && report.verified) ? 'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
+          const statusIcon = (report.valid && report.verified) ?
+            'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
           scope.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon);
           scope.lineage = report.subject && report.subject.lineage || report.lineage;
           scope.unread = !report.read;
-          var element = renderTemplate(scope);
+          let element = renderTemplate(scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
@@ -207,8 +211,8 @@ angular.module('inboxServices').factory('LiveListConfig',
       LiveList.$listFor('tasks', {
         selector: '#tasks-list ul',
         orderBy: function(t1, t2) {
-          const lhs = t1 && t1.dueDate,
-              rhs = t2 && t2.dueDate;
+          const lhs = t1 && t1.dueDate;
+          const rhs = t2 && t2.dueDate;
           if (!lhs && !rhs) {
             return 0;
           }
@@ -261,7 +265,7 @@ angular.module('inboxServices').factory('LiveList',
 
     function findSortedIndex(list, newItem, orderBy) {
       // start at the end of the list?
-      var insertIndex = list.length;
+      let insertIndex = list.length;
 
       // search to find where to insert this item
       // TODO binary search more efficient here?  Maybe best to check first if
@@ -286,7 +290,7 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function listItemFor(idx, doc, contactTypes, removedDomElement) {
-      var li = $(idx.listItem(doc, contactTypes, removedDomElement));
+      const li = $(idx.listItem(doc, contactTypes, removedDomElement));
       if (doc._id === idx.selected) {
         li.addClass('selected');
       }
@@ -294,7 +298,7 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _getList(listName) {
-      var idx = indexes[listName];
+      const idx = indexes[listName];
 
       if (!idx) {
         throw new Error('LiveList not configured for: ' + listName);
@@ -304,13 +308,13 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _refresh(listName) {
-      var idx = indexes[listName];
+      const idx = indexes[listName];
 
       if (!idx.list) {
         return;
       }
 
-      var activeDom = $(idx.selector);
+      const activeDom = $(idx.selector);
       if(activeDom.length) {
         activeDom.empty();
         appendDomWithListOrdering(activeDom, idx);
@@ -319,7 +323,7 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _count(listName) {
-      var idx = indexes[listName];
+      const idx = indexes[listName];
       return idx.list && idx.list.length;
     }
 
@@ -361,15 +365,15 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _insert(listName, newItem, skipDomAppend, removedDomElement) {
-      var idx = indexes[listName];
+      const idx = indexes[listName];
 
       if (!idx.list) {
         return;
       }
 
-      var li = listItemFor(idx, newItem, contactTypes, removedDomElement);
+      const li = listItemFor(idx, newItem, contactTypes, removedDomElement);
 
-      var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
+      const newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
       idx.dom[newItem._id] = li;
 
@@ -377,14 +381,14 @@ angular.module('inboxServices').factory('LiveList',
         return;
       }
 
-      var activeDom = $(idx.selector);
+      const activeDom = $(idx.selector);
       if(activeDom.length) {
-        var children = activeDom.children();
+        const children = activeDom.children();
         if (!children.length || newItemIndex === children.length) {
           activeDom.append(li);
         } else {
           activeDom.children().eq(newItemIndex)
-              .before(li);
+            .before(li);
         }
       }
     }
@@ -399,20 +403,20 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _update(listName, updatedItem) {
-      var removed = _remove(listName, updatedItem);
+      const removed = _remove(listName, updatedItem);
       _insert(listName, updatedItem, false, removed);
     }
 
     function _remove(listName, removedItem) {
-      var idx = indexes[listName];
+      const idx = indexes[listName];
       const removedItemId = removedItem._id || removedItem;
 
       if (!idx.list) {
         return;
       }
 
-      var i = idx.list.length,
-          removeIndex = null;
+      let i = idx.list.length;
+      let removeIndex = null;
       while (i-- > 0 && removeIndex === null) {
         if(idx.list[i]._id === removedItemId) {
           removeIndex = i;
@@ -429,8 +433,8 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _setSelected(listName, _id) {
-      const idx = indexes[listName],
-            previous = idx.selected;
+      const idx = indexes[listName];
+      const previous = idx.selected;
 
       idx.selected = _id;
 
@@ -488,7 +492,7 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function millisTilMidnight(now) {
-      var midnight = new Date(now);
+      const midnight = new Date(now);
 
       midnight.setDate(now.getDate() + 1);
       midnight.setHours(0);
@@ -528,8 +532,8 @@ angular.module('inboxServices').factory('LiveList',
     };
 
     api.$reset = function() {
-      for (var i = 0; i < arguments.length; i++) {
-        var listName = arguments[i];
+      for (let i = 0; i < arguments.length; i++) {
+        const listName = arguments[i];
         if (api[listName]) {
           api[listName].set([]);
         }

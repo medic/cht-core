@@ -1,19 +1,19 @@
-const _ = require('underscore'),
-      passwordTester = require('simple-password-tester'),
-      people  = require('../controllers/people'),
-      places = require('../controllers/places'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
-      getRoles = require('./types-and-roles');
+const _ = require('underscore');
+const passwordTester = require('simple-password-tester');
+const people  = require('../controllers/people');
+const places = require('../controllers/places');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
 const DOC_IDS_WARN_LIMIT = 10000;
 
-const PASSWORD_MINIMUM_LENGTH = 8,
-      PASSWORD_MINIMUM_SCORE = 50,
-      USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+const PASSWORD_MINIMUM_LENGTH = 8;
+const PASSWORD_MINIMUM_SCORE = 50;
+const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
@@ -51,7 +51,9 @@ const illegalDataModificationAttempts = data =>
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-const error400 = (msg, key, params) => ({ code: 400, message: { message: msg, translationKey: key, translationParams: params }});
+const error400 = (msg, key, params) => ({
+  code: 400, message: { message: msg, translationKey: key, translationParams: params }
+});
 
 const getType = user => {
   if (user.roles && user.roles.length) {
@@ -136,14 +138,21 @@ const validateNewUsernameForDb = (username, database) => {
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400('Username "'+ username +'" already taken.','username.taken',{ 'username': username }));
+        return Promise.reject(error400(
+          'Username "'+ username +'" already taken.',
+          'username.taken',
+          { 'username': username }
+        ));
       }
     });
 };
 
 const validateNewUsername = username => {
   if (!USERNAME_WHITELIST.test(username)) {
-    return Promise.reject(error400(`Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).`,'username.invalid'));
+    return Promise.reject(error400(
+      'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).',
+      'username.invalid'
+    ));
   }
   return Promise.all([
     validateNewUsernameForDb(username, db.users),
@@ -376,10 +385,17 @@ const deleteUser = id => {
 
 const validatePassword = password => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,'password.length.minimum',{'minimum': PASSWORD_MINIMUM_LENGTH});
+    return error400(
+      `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
+      'password.length.minimum',
+      { 'minimum': PASSWORD_MINIMUM_LENGTH }
+    );
   }
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.','password.weak');
+    return error400(
+      'The password is too easy to guess. Include a range of types of characters to increase the score.',
+      'password.weak'
+    );
   }
 };
 
@@ -460,7 +476,11 @@ module.exports = {
   createUser: data => {
     const missing = missingFields(data);
     if (missing.length > 0) {
-      return Promise.reject(error400('Missing required fields: ' + missing.join(', '),'fields.required', { 'fields': missing.join(', ')} ));
+      return Promise.reject(error400(
+        'Missing required fields: ' + missing.join(', '),
+        'fields.required',
+        { 'fields': missing.join(', ') }
+      ));
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -511,7 +531,11 @@ module.exports = {
         !_.isNull(data.contact) &&
         !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
-      return Promise.reject(error400('One of the following fields are required: ' + props.join(', '),'fields.one.required', { 'fields': props.join(', ')} ));
+      return Promise.reject(error400(
+        'One of the following fields are required: ' + props.join(', '),
+        'fields.one.required',
+        { 'fields': props.join(', ') }
+      ));
     }
     if (data.password) {
       const passwordError = validatePassword(data.password);
@@ -534,7 +558,11 @@ module.exports = {
               return places.getPlace(user.facility_id);
             } else if (_.isNull(data.place)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400('Place field is required for offline users','field is required',{'field': 'Place'}));
+                return Promise.reject(error400(
+                  'Place field is required for offline users',
+                  'field is required',
+                  {'field': 'Place'}
+                ));
               }
               user.facility_id = null;
               settings.facility_id = null;
@@ -545,7 +573,11 @@ module.exports = {
               return module.exports._validateContact(settings.contact_id, user.facility_id);
             } else if (_.isNull(data.contact)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400('Contact field is required for offline users','field is required',{'field': 'Contact'}));
+                return Promise.reject(error400(
+                  'Contact field is required for offline users',
+                  'field is required',
+                  {'field': 'Contact'}
+                ));
               }
               settings.contact_id = null;
             }

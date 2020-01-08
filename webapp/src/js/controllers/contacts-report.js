@@ -48,18 +48,18 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var geolocation;
+    let geolocation;
     Geolocation()
       .then(function(position) {
         geolocation = position;
       })
       .catch($log.warn);
 
-    var markFormEdited = function() {
+    const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
 
-    var setCancelCallback = function() {
+    const setCancelCallback = function() {
       ctrl.setCancelCallback(function() {
         $state.go('contacts.detail', { id: $state.params.id });
       });
@@ -130,7 +130,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           ctrl.setEnketoSavingStatus(false);
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-          ctrl.setEnketoError(msg);
+            ctrl.setEnketoError(msg);
           });
         });
     };

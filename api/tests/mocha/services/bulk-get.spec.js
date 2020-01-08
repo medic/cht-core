@@ -1,12 +1,12 @@
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
-const service = require('../../../src/services/bulk-get'),
-      db = require('../../../src/db'),
-      authorization = require('../../../src/services/authorization');
+const service = require('../../../src/services/bulk-get');
+const db = require('../../../src/db');
+const authorization = require('../../../src/services/authorization');
 
-let userCtx,
-    query,
-    docs;
+let userCtx;
+let query;
+let docs;
 
 describe('Bulk Get service', () => {
   beforeEach(function() {
@@ -63,8 +63,12 @@ describe('Bulk Get service', () => {
         .withArgs({ docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }, { id: 'g' }] })
         .resolves({ results:
             [
-              { id: 'a', docs: [ { ok: { id: 'a', rev: 1 } }, { error: { id: 'a', rev: 2 } }, { ok: { id: 'a', rev: 3 } } ] },
-              { id: 'b', docs: [ { ok: { id: 'b', rev: 1 } }, { ok: { id: 'b', rev: 2 } }, { ok: { id: 'b', rev: 3 } } ] },
+              { id: 'a', docs: [
+                { ok: { id: 'a', rev: 1 } }, { error: { id: 'a', rev: 2 } }, { ok: { id: 'a', rev: 3 } }
+              ] },
+              { id: 'b', docs: [
+                { ok: { id: 'b', rev: 1 } }, { ok: { id: 'b', rev: 2 } }, { ok: { id: 'b', rev: 3 } }
+              ] },
               { id: 'c', docs: [ { error: { id: 'c' } } ] },
               { id: 'd', docs: [ { ok: { id: 'd' } } ] },
               { id: 'e', docs: [ { ok: { id: 'e' } } ] },

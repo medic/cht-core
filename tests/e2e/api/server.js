@@ -1,8 +1,8 @@
-const utils = require('../../utils'),
-      auth = require('../../auth')(),
-      request = require('request'),
-      constants = require('../../constants'),
-      _ = require('underscore');
+const utils = require('../../utils');
+const auth = require('../../auth')();
+const request = require('request');
+const constants = require('../../constants');
+const _ = require('underscore');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {

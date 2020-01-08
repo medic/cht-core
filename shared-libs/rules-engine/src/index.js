@@ -42,7 +42,8 @@ module.exports = db => {
     /**
      * Refreshes all rules documents and returns the latest target document
      *
-     * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the target scores
+     * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the
+     *   target scores
      * @param {Integer} filterInterval.start Start timestamp of interval
      * @param {Integer} filterInterval.end End timestamp of interval
      * @returns {Promise<Object[]>} Array of fresh targets
@@ -59,7 +60,8 @@ module.exports = db => {
     updateEmissionsFor: subjectIds => wireupToProvider.updateEmissionsFor(provider, subjectIds),
 
     /**
-     * Determines if either the settings or user's hydrated contact document have changed in a way which will impact the result of rules calculations.
+     * Determines if either the settings or user's hydrated contact document have changed in a way which will impact
+     *   the result of rules calculations.
      * If they have changed in a meaningful way, the calculation state of all contacts is reset
      *
      * @param {Object} settings Updated settings

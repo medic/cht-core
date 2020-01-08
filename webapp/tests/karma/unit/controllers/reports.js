@@ -136,19 +136,23 @@ describe('ReportsCtrl controller', () => {
       { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
       { canEdit: true, initial: undefined, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
       { canEdit: true, initial: true, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: false, setTo: false, expectVerified: undefined, expectPost: true, expectedDate: undefined },
-      { canEdit: true, initial: true, setTo: true, expectVerified: undefined, expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: false, setTo: false, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
 
       /* User scenarios without permission to edit */
-      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true, expectPost: true, expectedDate: 0 },
-      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false, expectPost: false, expectedDate: undefined },
+      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
+        expectPost: true, expectedDate: 0 },
+      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false,
+        expectPost: false, expectedDate: undefined },
       { canEdit: false, initial: true, setTo: false, expectVerified: true, expectPost: false, expectedDate: 0 },
       { canEdit: false, initial: false, setTo: false, expectVerified: false, expectPost: false, expectedDate: 0 },
     ];
 
     scenarios.forEach(scenario => {
       const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      it(`user ${canEdit ? 'can' : 'cannot'} edit, verified:${initial}->${setTo} yields verified:${expectVerified}`, () => {
+      it(`user ${canEdit ? 'can' : 'cannot'} edit, verified:${initial}->${setTo} yields ${expectVerified}`, () => {
         auth = canEdit ? sinon.stub().resolves() : sinon.stub().rejects();
         confirm ? modal.resolves() : modal.rejects();
         post.returns(Promise.resolve());

@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 // In this context $stateParams.id (the id in the url) can be:
 //  - the _id of the contact who is sending these messages
@@ -62,16 +62,16 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
     const userCtx = Session.userCtx();
 
-    var checkScroll = function() {
+    const checkScroll = function() {
       if (this.scrollTop === 0 && !ctrl.allLoaded) {
         updateConversation({ skip: true });
       }
     };
 
-    var scrollToUnread = function() {
-      var content = $('.message-content-wrapper');
-      var markers = content.find('.marker');
-      var scrollTo;
+    const scrollToUnread = function() {
+      const content = $('.message-content-wrapper');
+      const markers = content.find('.marker');
+      let scrollTo;
       if (markers.length) {
         scrollTo = markers[0].offsetTop - 50;
       } else {
@@ -82,7 +82,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
 
     // See $stateParams.id note at top of file
-    var getContactable = function(id, type) {
+    const getContactable = function(id, type) {
       if (type === 'contact') {
         return LineageModelGenerator.contact(id).catch(err => {
           if (err.code === 404) {
@@ -164,10 +164,10 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         });
     };
 
-    var updateConversation = (options={}) => {
-      var selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
+    const updateConversation = (options={}) => {
+      const selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
       if (selectedId) {
-        var skip = options.skip && ctrl.selectedMessage.messages.length;
+        const skip = options.skip && ctrl.selectedMessage.messages.length;
         if (skip) {
           $timeout(function() {
             ctrl.loadingMoreContent = true;
@@ -177,11 +177,11 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         MessageContacts.conversation(selectedId, skip)
           .then(function(conversation) {
             ctrl.loadingMoreContent = false;
-            var contentElem = $('.message-content-wrapper');
-            var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
-            var first = $('.item-content .body > ul > li').filter(':first');
+            const contentElem = $('.message-content-wrapper');
+            let scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
+            const first = $('.item-content .body > ul > li').filter(':first');
             conversation.forEach(function(updated) {
-              var match = _.findWhere(ctrl.selectedMessage.messages, { id: updated.id });
+              const match = _.findWhere(ctrl.selectedMessage.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
               } else {
@@ -197,9 +197,9 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
             }
             markConversationReadIfNeeded();
             $timeout(function() {
-              var scroll = false;
+              let scroll = false;
               if (options.skip) {
-                var spinnerHeight = 102;
+                const spinnerHeight = 102;
                 scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
                 scroll = $('.message-content-wrapper')[0].scrollHeight;

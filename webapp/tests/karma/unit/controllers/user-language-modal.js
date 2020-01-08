@@ -1,14 +1,14 @@
 describe('UserLanguageModalCtrl controller', function() {
   'use strict';
 
-  var createController,
-      ctrl,
-      scope,
-      stubSetLanguage,
-      stubLanguage,
-      stubLanguages,
-      stubUpdateUser,
-      spyUibModalInstance;
+  let createController;
+  let ctrl;
+  let scope;
+  let stubSetLanguage;
+  let stubLanguage;
+  let stubLanguages;
+  let stubUpdateUser;
+  let spyUibModalInstance;
 
 
   beforeEach(module('inboxApp'));
@@ -53,7 +53,7 @@ describe('UserLanguageModalCtrl controller', function() {
 
   it('changes language on user selection', function() {
     createController();
-    var lang = 'aaaaaa';
+    const lang = 'aaaaaa';
     ctrl.changeLanguage(lang);
     chai.assert(stubSetLanguage.called, 'Should set new language');
     chai.expect(ctrl.selectedLanguage).to.equal(lang);
@@ -76,7 +76,7 @@ describe('UserLanguageModalCtrl controller', function() {
 
   it('triggers saving on user submit', function() {
     createController();
-    var selectedLang = 'klingon';
+    const selectedLang = 'klingon';
     ctrl.changeLanguage(selectedLang);
     ctrl.submit();
     chai.assert(stubUpdateUser.called, 'Should call the processing function on user action');
@@ -119,7 +119,7 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.reset();
     stubUpdateUser.returns(Promise.reject({err: 'oh noes language is all wrong'}));
     setTimeout(function() {
-      var initialLang = ctrl.selectedLanguage;
+      const initialLang = ctrl.selectedLanguage;
       ctrl.submit().then(function() {
         chai.assert(stubSetLanguage.called, 'Should reset saved language');
         chai.expect(ctrl.selectedLanguage).to.equal(initialLang);

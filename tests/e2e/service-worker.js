@@ -96,7 +96,10 @@ describe('Service worker cache', () => {
       await stubAllCachedRequests();
 
       await expectCachedState(true, '/');
-      await expectCachedState(true, '/', { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3' });
+      await expectCachedState(true, '/', {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
+        'q=0.8,application/signed-exchange;v=b3'
+      });
       
       // no part of syncing is cached
       await expectCachedState(false, '/dbinfo', { 'Accept': 'application/json' });

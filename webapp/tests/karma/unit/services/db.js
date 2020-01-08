@@ -2,12 +2,12 @@ describe('DB service', () => {
 
   'use strict';
 
-  let getService,
-      Location,
-      userCtx,
-      pouchDB,
-      expected,
-      isOnlineOnly;
+  let getService;
+  let Location;
+  let userCtx;
+  let pouchDB;
+  let expected;
+  let isOnlineOnly;
 
   beforeEach(() => {
     Location = {};

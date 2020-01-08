@@ -262,7 +262,8 @@ describe('ContactType Utils', () => {
     it('should return contact type', () => {
       chai.expect(utils.getContactType(settings, { type: 'person' })).to.equal(personType);
       chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'person' })).to.equal(personType);
-      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'my_health_center' })).to.equal(healthCenterType);
+      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'my_health_center' }))
+        .to.equal(healthCenterType);
       chai.expect(utils.getContactType(settings, { type: 'my_health_center' })).to.equal(healthCenterType);
     });
   });

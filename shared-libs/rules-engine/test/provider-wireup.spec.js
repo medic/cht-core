@@ -100,17 +100,21 @@ describe('provider-wireup integration tests', () => {
 
       await wireup.fetchTasksFor(provider, ['abc']);
       await provider.stateChangeCallback.returnValues[0];
-      expect(db.put.args[db.put.callCount - 1]).excludingEvery(['rulesConfigHash', 'targetState']).excluding('_rev').to.deep.eq([{
-        _id: pouchdbProvider.RULES_STATE_DOCID,
-        rulesStateStore: {
-          contactState: {
-            'abc': {
-              calculatedAt: NOW,
+      expect(db.put.args[db.put.callCount - 1])
+        .excludingEvery(['rulesConfigHash', 'targetState'])
+        .excluding('_rev')
+        .to.deep.eq([{
+          _id: pouchdbProvider.RULES_STATE_DOCID,
+          rulesStateStore: {
+            contactState: {
+              'abc': {
+                calculatedAt: NOW,
+              },
             },
           },
-        },
-      }]);
-      expect(db.put.args[0][0].rulesStateStore.rulesConfigHash).to.eq(db.put.args[db.put.callCount - 1][0].rulesStateStore.rulesConfigHash);
+        }]);
+      expect(db.put.args[0][0].rulesStateStore.rulesConfigHash)
+        .to.eq(db.put.args[db.put.callCount - 1][0].rulesStateStore.rulesConfigHash);
 
       // simulate restarting the app. the database is the same, but the taskFetcher is uninitialized
       rulesEmitter.shutdown();
@@ -163,7 +167,8 @@ describe('provider-wireup integration tests', () => {
     it('many', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, ['headless', 'patient', 'patient_id']);
-      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]); // dupes don't matter here
+      // dupes don't matter here
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]);
     });
   });
 

@@ -5,13 +5,13 @@
  * http://www.who.int/childgrowth/standards/en/
  */
 
-var fs = require('fs');
+const fs = require('fs');
 
-var pivot = function(data, keyFn) {
-  var result = [];
-  var lines = data.split('\n');
+const pivot = function(data, keyFn) {
+  const result = [];
+  const lines = data.split('\n');
   lines.forEach(function(line) {
-    var points = line.split(' ');
+    const points = line.split(' ');
     points.shift(); // the first point is a SD number
     points.forEach(function(point, i) {
       if (!result[i]) {
@@ -26,7 +26,7 @@ var pivot = function(data, keyFn) {
   return result;
 };
 
-var getHFWChart = function(callback) {
+const getHFWChart = function(callback) {
   fs.readFile('wfl_kg_boys_z_exp.txt', 'utf8', function(err, male) {
     if (err) {
       return callback(err);
@@ -35,11 +35,11 @@ var getHFWChart = function(callback) {
       if (err) {
         return callback(err);
       }
-      var keyFn = function(i) {
+      const keyFn = function(i) {
         // height starts at 45cm and increments by 0.1cm
         return (i / 10) + 45;
       };
-      var chart = {
+      const chart = {
         id: 'weight-for-height',
         data: {
           male: pivot(male, keyFn),
@@ -51,7 +51,7 @@ var getHFWChart = function(callback) {
   });
 };
 
-var getWFAChart = function(callback) {
+const getWFAChart = function(callback) {
   fs.readFile('wfa_kg_boys_z_exp.txt', 'utf8', function(err, male) {
     if (err) {
       return callback(err);
@@ -60,11 +60,11 @@ var getWFAChart = function(callback) {
       if (err) {
         return callback(err);
       }
-      var keyFn = function(i) {
+      const keyFn = function(i) {
         // age starts at 0 days and increments by 1 day
         return i;
       };
-      var chart = {
+      const chart = {
         id: 'weight-for-age',
         data: {
           male: pivot(male, keyFn),
@@ -76,7 +76,7 @@ var getWFAChart = function(callback) {
   });
 };
 
-var getHFAChart = function(callback) {
+const getHFAChart = function(callback) {
   fs.readFile('lhfa_boys_z_exp.txt', 'utf8', function(err, male) {
     if (err) {
       return callback(err);
@@ -85,11 +85,11 @@ var getHFAChart = function(callback) {
       if (err) {
         return callback(err);
       }
-      var keyFn = function(i) {
+      const keyFn = function(i) {
         // age starts at 0 days and increments by 1 day
         return i;
       };
-      var chart = {
+      const chart = {
         id: 'height-for-age',
         data: {
           male: pivot(male, keyFn),
@@ -113,7 +113,7 @@ getWFAChart(function(err, wfaChart) {
       if (err) {
         throw err;
       }
-      var doc = {
+      const doc = {
         _id: 'zscore-charts',
         charts: [ wfaChart, hfaChart, wfhChart ]
       };

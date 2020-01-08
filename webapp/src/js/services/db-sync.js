@@ -89,7 +89,8 @@ angular
         .catch(err => {
           if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
             batchSize = parseInt(batchSize / 2);
-            $log.warn(`Error attempting to replicate too much data to the server. Trying again with batch size of ${batchSize}`);
+            $log.warn('Error attempting to replicate too much data to the server. ' +
+              `Trying again with batch size of ${batchSize}`);
             return replicate(direction, { batchSize });
           }
           $log.error(`Error replicating ${direction.name} remote server`, err);

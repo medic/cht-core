@@ -52,7 +52,8 @@ const getSelectedReportsSummaries = reselect.createSelector(
 );
 const getSelectedReportsValidChecks = reselect.createSelector(
   getSelectedReports,
-  selected => selected.map(item => item.summary && item.summary.valid || item.formatted && !(item.formatted.errors && item.formatted.errors.length))
+  selected => selected.map(item => item.summary && item.summary.valid || item.formatted &&
+    !(item.formatted.errors && item.formatted.errors.length))
 );
 const getSelectedReportsDocs = reselect.createSelector(
   getSelectedReports,

@@ -1,8 +1,10 @@
-const chai = require('chai'),
-    sinon = require('sinon'),
-    service = require('../src/checks'),
-    http = require('http'),
-    request = require('request');
+const chai = require('chai');
+const sinon = require('sinon');
+const service = require('../src/checks');
+const http = require('http');
+const request = require('request');
+
+/* eslint-disable no-console */
 
 describe('Server Checks service', () => {
 

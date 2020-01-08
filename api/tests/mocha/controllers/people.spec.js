@@ -1,10 +1,10 @@
-const controller = require('../../../src/controllers/people'),
-      chai = require('chai'),
-      places = require('../../../src/controllers/places'),
-      cutils = require('../../../src/controllers/utils'),
-      config = require('../../../src/config'),
-      db = require('../../../src/db'),
-      sinon = require('sinon');
+const controller = require('../../../src/controllers/people');
+const chai = require('chai');
+const places = require('../../../src/controllers/places');
+const cutils = require('../../../src/controllers/utils');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
+const sinon = require('sinon');
 
 describe('people controller', () => {
 

@@ -81,7 +81,8 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
           chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_update_users']);
-          chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 403, reason: 'Insufficient privileges' }, req, res]);
+          chai.expect(serverUtils.error.args[0])
+            .to.deep.equal([{ code: 403, reason: 'Insufficient privileges' }, req, res]);
           chai.expect(res.json.callCount).to.equal(0);
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(0);
           chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -94,7 +95,8 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
           chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_update_users']);
-          chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res]);
+          chai.expect(serverUtils.error.args[0])
+            .to.deep.equal([{ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res]);
           chai.expect(res.json.callCount).to.equal(0);
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(0);
           chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -107,7 +109,8 @@ describe('Users Controller', () => {
         auth.hasAllPermissions.returns(true);
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(1);
-          chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res]);
+          chai.expect(serverUtils.error.args[0])
+            .to.deep.equal([{ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res]);
         });
       });
 
@@ -117,7 +120,8 @@ describe('Users Controller', () => {
         auth.hasAllPermissions.returns(true);
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(1);
-          chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res]);
+          chai.expect(serverUtils.error.args[0])
+            .to.deep.equal([{ code: 400, reason: 'Missing required query params: role and/or facility_id' }, req, res]);
         });
       });
 
@@ -131,7 +135,8 @@ describe('Users Controller', () => {
         auth.hasAllPermissions.returns(true);
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(1);
-          chai.expect(serverUtils.error.args[0]).to.deep.equal([{ code: 400, reason: 'Provided role is not offline' }, req, res]);
+          chai.expect(serverUtils.error.args[0])
+            .to.deep.equal([{ code: 400, reason: 'Provided role is not offline' }, req, res]);
         });
       });
 
@@ -161,7 +166,8 @@ describe('Users Controller', () => {
             contact_id: undefined
           }]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
+          chai.expect(authorization.getAllowedDocIds.args[0])
+            .to.deep.equal([authContext, { includeTombstones: false }]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['some_role'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
@@ -196,7 +202,8 @@ describe('Users Controller', () => {
             contact_id: req.query.contact_id
           }]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false }]);
+          chai.expect(authorization.getAllowedDocIds.args[0])
+            .to.deep.equal([authContext, { includeTombstones: false }]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
         });
@@ -353,7 +360,8 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([userCtx]);
           chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0]).to.deep.equal([authContext, { includeTombstones: false } ]);
+          chai.expect(authorization.getAllowedDocIds.args[0])
+            .to.deep.equal([authContext, { includeTombstones: false } ]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['offline'], docIds]);
         });

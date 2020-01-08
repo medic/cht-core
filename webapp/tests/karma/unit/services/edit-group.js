@@ -2,9 +2,9 @@ describe('EditGroup service', function() {
 
   'use strict';
 
-  var service,
-      get,
-      put;
+  let service;
+  let get;
+  let put;
 
   beforeEach(function() {
     put = sinon.stub();
@@ -24,7 +24,7 @@ describe('EditGroup service', function() {
 
   it('returns get errors', function(done) {
     get.returns(Promise.reject('db messed up'));
-    var group = {};
+    const group = {};
     service('123', group)
       .catch(function(err) {
         chai.expect(err).to.equal('db messed up');
@@ -33,14 +33,14 @@ describe('EditGroup service', function() {
   });
 
   it('does not save if nothing changed', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 1 },
         { group: 2 },
         { group: 3 }
       ]
     };
-    var group = {
+    const group = {
       rows: [ { group: 1, state: 'muted' } ]
     };
     get.returns(Promise.resolve(doc));
@@ -51,7 +51,7 @@ describe('EditGroup service', function() {
   });
 
   it('returns save errors', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 1 },
         { group: 2 },
@@ -60,7 +60,7 @@ describe('EditGroup service', function() {
     };
     get.returns(Promise.resolve(doc));
     put.returns(Promise.reject('audit borked'));
-    var group = {
+    const group = {
       number: 1,
       rows: [ { group: 1, state: 'scheduled' } ]
     };
@@ -71,7 +71,7 @@ describe('EditGroup service', function() {
   });
 
   it('saves updated doc', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 1, due: '1', messages: [ { message: 'a' } ] },
         { group: 2, due: '2', messages: [ { message: 'b' } ] },
@@ -79,7 +79,7 @@ describe('EditGroup service', function() {
         { group: 3, due: '4', messages: [ { message: 'd' } ] }
       ]
     };
-    var group = {
+    const group = {
       number: 2,
       rows: [
         { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ] },
@@ -116,14 +116,14 @@ describe('EditGroup service', function() {
   });
 
   it('removes deleted messages', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 2, due: '2', messages: [ { message: 'b' } ] },
         { group: 2, due: '3', messages: [ { message: 'c' } ] },
         { group: 2, due: '4', messages: [ { message: 'd' } ] }
       ]
     };
-    var group = {
+    const group = {
       number: 2,
       rows: [
         { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ], deleted: true },
@@ -145,12 +145,12 @@ describe('EditGroup service', function() {
   });
 
   it('adds new messages', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 2, due: '2', messages: [ { to: '5551234', message: 'b' } ] }
       ]
     };
-    var group = {
+    const group = {
       number: 2,
       rows: [
         { group: 2, state: 'scheduled', due: '6', messages: [ { to: '5551234', message: 'f' } ] },
@@ -163,7 +163,7 @@ describe('EditGroup service', function() {
     service('123', group).then(function(actual) {
       chai.expect(actual.scheduled_tasks.length).to.equal(2);
 
-      var task = actual.scheduled_tasks[0];
+      let task = actual.scheduled_tasks[0];
       chai.expect(task.group).to.equal(2);
       chai.expect(task.due).to.equal('6');
       chai.expect(task.messages.length).to.equal(1);
@@ -182,11 +182,11 @@ describe('EditGroup service', function() {
   });
 
   it('gets the to number from the data_record', function(done) {
-    var doc = {
+    const doc = {
       from: '5554321',
       scheduled_tasks: []
     };
-    var group = {
+    const group = {
       number: 2,
       rows: [
         { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], added: true }
@@ -197,7 +197,7 @@ describe('EditGroup service', function() {
     service('123', group).then(function(actual) {
       chai.expect(actual.scheduled_tasks.length).to.equal(1);
 
-      var task = actual.scheduled_tasks[0];
+      const task = actual.scheduled_tasks[0];
       chai.expect(task.group).to.equal(2);
       chai.expect(task.due).to.equal('7');
       chai.expect(task.messages.length).to.equal(1);

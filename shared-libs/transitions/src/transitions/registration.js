@@ -1,17 +1,17 @@
-const _ = require('underscore'),
-  utils = require('../lib/utils'),
-  transitionUtils = require('./utils'),
-  logger = require('../lib/logger'),
-  db = require('../db'),
-  lineage = require('@medic/lineage')(Promise, db.medic),
-  messages = require('../lib/messages'),
-  validation = require('../lib/validation'),
-  schedules = require('../lib/schedules'),
-  acceptPatientReports = require('./accept_patient_reports'),
-  moment = require('moment'),
-  config = require('../config'),
-  date = require('../date'),
-  NAME = 'registration';
+const _ = require('underscore');
+const utils = require('../lib/utils');
+const transitionUtils = require('./utils');
+const logger = require('../lib/logger');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const messages = require('../lib/messages');
+const validation = require('../lib/validation');
+const schedules = require('../lib/schedules');
+const acceptPatientReports = require('./accept_patient_reports');
+const moment = require('moment');
+const config = require('../config');
+const date = require('../date');
+const NAME = 'registration';
 
 const registrationUtils = require('@medic/registration-utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
@@ -140,7 +140,7 @@ const getDaysSinceDOB = doc => {
  * */
 const getWeeksSinceLMP = doc => {
   const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
-  for (let prop of props) {
+  for (const prop of props) {
     const lmp = Number(doc.fields && doc.fields[prop]);
     if (!isNaN(lmp)) {
       return lmp;
@@ -149,8 +149,8 @@ const getWeeksSinceLMP = doc => {
 };
 
 const setExpectedBirthDate = doc => {
-  const lmp = getWeeksSinceLMP(doc),
-        start = moment(doc.reported_date).startOf('day');
+  const lmp = getWeeksSinceLMP(doc);
+  const start = moment(doc.reported_date).startOf('day');
   if (lmp === 0) {
     // means baby was already born, chw just wants a registration.
     doc.lmp_date = null;
@@ -449,7 +449,7 @@ const addPatient = (options) => {
             options.registrationConfig,
             PARENT_INVALID,
             { templateContext: { parent } }
-            );
+          );
           return;
         }
 
@@ -531,20 +531,32 @@ module.exports = {
           try {
             params = parseParams(event.params);
           } catch (e) {
-            throw new Error(`Configuration error. Unable to parse params for ${registration.form}.${event.trigger}: '${event.params}'. Error: ${e}`);
+            throw new Error(
+              `Configuration error. Unable to parse params for ${registration.form}.${event.trigger}: ` +
+              `'${event.params}'. Error: ${e}`
+            );
           }
 
           if (event.trigger === 'add_patient') {
             if (params.patient_id_field === 'patient_id') {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: patient_id_field cannot be set to patient_id`);
+              throw new Error(
+                `Configuration error in ${registration.form}.${event.trigger}: ` +
+                `patient_id_field cannot be set to patient_id`
+              );
             }
             const typeId = params.contact_type || 'person';
             const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a doc with an unknown contact type "${typeId}"`);
+              throw new Error(
+                `Configuration error in ${registration.form}.${event.trigger}: ` +
+                `trigger would create a doc with an unknown contact type "${typeId}"`
+              );
             }
             if (!contactTypesUtils.isPersonType(contactType)) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a person with a place contact type "${typeId}"`);
+              throw new Error(
+                `Configuration error in ${registration.form}.${event.trigger}: ` +
+                `trigger would create a person with a place contact type "${typeId}"`
+              );
             }
           }
 
@@ -553,24 +565,39 @@ module.exports = {
             event.trigger === 'clear_schedule'
           ) {
             if (!event.params) {
-              throw new Error(`Configuration error. Expecting params to be defined as the name of the schedule(s) for ${registration.form}.${event.trigger}`);
+              throw new Error(
+                `Configuration error. Expecting params to be defined as the name of the schedule(s) ` +
+                `for ${registration.form}.${event.trigger}`
+              );
             }
             if (!Array.isArray(params)) {
-              throw new Error(`Configuration error. Expecting params to be a string, comma separated list, or an array for ${registration.form}.${event.trigger}: '${event.params}'`);
+              throw new Error(
+                `Configuration error. Expecting params to be a string, comma separated list, ` +
+                `or an array for ${registration.form}.${event.trigger}: '${event.params}'
+              `);
             }
           }
 
           if (event.trigger === 'add_place') {
             const typeId = params.contact_type;
             if (!typeId) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an undefined contact type`);
+              throw new Error(
+                `Configuration error in ${registration.form}.${event.trigger}: ` +
+                `trigger would create a place with an undefined contact type`
+              );
             }
             const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with an unknown contact type "${typeId}"`);
+              throw new Error(
+                `Configuration error in ${registration.form}.${event.trigger}: ` +
+                `trigger would create a place with an unknown contact type "${typeId}"`
+              );
             }
             if (!contactTypesUtils.isPlaceType(contactType)) {
-              throw new Error(`Configuration error in ${registration.form}.${event.trigger}: trigger would create a place with a person contact type "${typeId}"`);
+              throw new Error(
+                `Configuration error in ${registration.form}.${event.trigger}: ` +
+                `trigger would create a place with a person contact type "${typeId}"`
+              );
             }
           }
         });

@@ -1,7 +1,7 @@
-const db = require('../db'),
-  authorization = require('./authorization'),
-  _ = require('underscore'),
-  logger = require('../logger');
+const db = require('../db');
+const authorization = require('./authorization');
+const _ = require('underscore');
+const logger = require('../logger');
 
 const utils = require('@medic/bulk-docs-utils')({
   Promise: Promise,
@@ -132,7 +132,8 @@ const deleteDocs = (
 
       if (deletionFailures.length > 0 || updateFailures.length > 0) {
         return fetchDocs(deletionFailures).then(docsToDelete => {
-          // Retry updates by resending through the child doc (ensuring the update is still necessary in case of conflict)
+          // Retry updates by resending through the child doc
+          // (ensuring the update is still necessary in case of conflict)
           const updatesToRetryThroughDocDeletions = updateFailures
             .map(id => documentByParentId[id])
             .filter(doc => !deletionFailures.includes(doc._id));

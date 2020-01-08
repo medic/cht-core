@@ -6,7 +6,7 @@ const responsive = require('../modules/responsive');
 
   'use strict';
 
-  var ENTER_KEY_CODE = 13;
+  const ENTER_KEY_CODE = 13;
 
   angular.module('inboxServices').factory('SearchFilters',
     function(
@@ -15,11 +15,11 @@ const responsive = require('../modules/responsive');
     ) {
       'ngInject';
 
-      var isEnter = function(e) {
+      const isEnter = function(e) {
         return e.which === ENTER_KEY_CODE;
       };
 
-      var initFreetext = function(callback) {
+      const initFreetext = function(callback) {
         $('#search').on('click', function(e) {
           e.preventDefault();
           callback();
@@ -31,7 +31,7 @@ const responsive = require('../modules/responsive');
           }
         });
 
-        var performMobileSearch = function(e) {
+        const performMobileSearch = function(e) {
           e.preventDefault();
           $(e.target).closest('.filter').removeClass('open');
           callback();
@@ -52,7 +52,7 @@ const responsive = require('../modules/responsive');
         });
       };
 
-      var getMultidropdownOptions = function() {
+      const getMultidropdownOptions = function() {
         return $translate.onReady().then(function() {
           return {
             label: function(state, callback) {
@@ -72,15 +72,15 @@ const responsive = require('../modules/responsive');
         });
       };
 
-      var getMultidropdownResult = function(input) {
-        var dropdown = input.multiDropdown();
+      const getMultidropdownResult = function(input) {
+        const dropdown = input.multiDropdown();
         return {
           selected: dropdown.val(),
           options: dropdown.options()
         };
       };
 
-      var initFormType = function(callback) {
+      const initFormType = function(callback) {
         getMultidropdownOptions().then(function(options) {
           $('#formTypeDropdown').multiDropdown(options);
           $('#formTypeDropdown').on('update', function() {
@@ -89,7 +89,7 @@ const responsive = require('../modules/responsive');
         });
       };
 
-      var initFacility = function(callback) {
+      const initFacility = function(callback) {
         getMultidropdownOptions().then(function(options) {
           $('#facilityDropdown').multiDropdown(options);
           $('#facilityDropdown').on('update', function() {
@@ -98,7 +98,7 @@ const responsive = require('../modules/responsive');
         });
       };
 
-      var getTernaryValue = function(positive, negative) {
+      const getTernaryValue = function(positive, negative) {
         if (positive && !negative) {
           return true;
         }
@@ -107,16 +107,16 @@ const responsive = require('../modules/responsive');
         }
       };
 
-      var initStatus = function(callback) {
+      const initStatus = function(callback) {
         $translate.onReady().then(function() {
           $('#statusDropdown').multiDropdown({
             label: function(state, callback) {
-              var values = {};
+              const values = {};
               state.selected.each(function() {
-                var elem = $(this);
+                const elem = $(this);
                 values[elem.data('value')] = elem.text();
               });
-              var parts = [];
+              let parts = [];
               if(values.unverified) {
                 parts.push(values.unverified);
               }
@@ -144,12 +144,12 @@ const responsive = require('../modules/responsive');
             clearLabel: $translate.instant('clear')
           });
           $('#statusDropdown').on('update', function() {
-            var values = $(this).multiDropdown().val();
-            var valid = getTernaryValue(
+            const values = $(this).multiDropdown().val();
+            const valid = getTernaryValue(
               _.contains(values, 'valid'),
               _.contains(values, 'invalid')
             );
-            var verified = [];
+            const verified = [];
             if(_.contains(values, 'verified')) {
               verified.push(true);
             }
@@ -168,7 +168,7 @@ const responsive = require('../modules/responsive');
         });
       };
 
-      var initDate = function(callback) {
+      const initDate = function(callback) {
         $('#date-filter').daterangepicker({
           startDate: moment().subtract(1, 'months'),
           endDate: moment(),
@@ -187,23 +187,23 @@ const responsive = require('../modules/responsive');
             to: end.valueOf()
           });
         })
-        .on('show.daterangepicker', function(e, picker) {
-          $timeout(function() {
-            if ($('#dateRangeDropdown').is('.disabled')) {
-              picker.hide();
+          .on('show.daterangepicker', function(e, picker) {
+            $timeout(function() {
+              if ($('#dateRangeDropdown').is('.disabled')) {
+                picker.hide();
+              }
+            });
+          })
+          .on('mm.dateSelected.daterangepicker', function(e, picker) {
+            if (responsive.isMobile()) {
+            // mobile version - only show one calendar at a time
+              if (picker.container.is('.show-from')) {
+                picker.container.removeClass('show-from').addClass('show-to');
+              } else {
+                picker.container.removeClass('show-to').addClass('show-from');
+              }
             }
           });
-        })
-        .on('mm.dateSelected.daterangepicker', function(e, picker) {
-          if (responsive.isMobile()) {
-            // mobile version - only show one calendar at a time
-            if (picker.container.is('.show-from')) {
-              picker.container.removeClass('show-from').addClass('show-to');
-            } else {
-              picker.container.removeClass('show-to').addClass('show-from');
-            }
-          }
-        });
         $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
       };
 

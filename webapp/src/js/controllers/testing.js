@@ -51,7 +51,7 @@ angular.module('inboxControllers').controller('TestingCtrl',
     const wipeServiceWorkers = () => {
       if ($window.navigator && $window.navigator.serviceWorker) {
         return $window.navigator.serviceWorker.getRegistrations().then(registrations => {
-          for (let registration of registrations) {
+          for (const registration of registrations) {
             registration.unregister();
           }
         });

@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
@@ -20,12 +20,12 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     'use strict';
     'ngInject';
 
-    var createLocaleModel = function(doc, totalTranslations) {
-      var result = {
+    const createLocaleModel = function(doc, totalTranslations) {
+      const result = {
         doc: doc
       };
 
-      var content = ExportProperties(doc);
+      const content = ExportProperties(doc);
       if (content) {
         result.export = {
           name: doc._id + '.properties',
@@ -37,7 +37,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return result;
     };
 
-    var setLanguageStatus = function(doc, enabled) {
+    const setLanguageStatus = function(doc, enabled) {
       doc.enabled = enabled;
       DB().put(doc).catch(function(err) {
         $log.error('Error updating settings', err);
@@ -54,7 +54,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return keys.length;
     };
 
-    var getLanguages = function() {
+    const getLanguages = function() {
       $scope.loading = true;
       $q.all([
         DB().query('medic-client/doc_by_type', {
@@ -65,9 +65,9 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         Settings()
       ])
         .then(function(results) {
-          var rows = results[0].rows;
-          var settings = results[1];
-          var totalTranslations = countTotalTranslations(rows);
+          const rows = results[0].rows;
+          const settings = results[1];
+          const totalTranslations = countTotalTranslations(rows);
           $scope.loading = false;
           $scope.languagesModel = {
             totalTranslations: totalTranslations,
@@ -125,7 +125,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     $scope.submitLanguageSettings = function() {
       $scope.status = { loading: true };
-      var settings = {
+      const settings = {
         locale: $scope.basicLanguagesModel.locale,
         locale_outgoing: $scope.basicLanguagesModel.locale_outgoing
       };

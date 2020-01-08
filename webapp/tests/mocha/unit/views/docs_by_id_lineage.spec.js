@@ -1,6 +1,6 @@
-const expect = require('chai').expect,
-      utils = require('./utils'),
-      map = utils.loadView('medic-client', 'docs_by_id_lineage');
+const expect = require('chai').expect;
+const utils = require('./utils');
+const map = utils.loadView('medic-client', 'docs_by_id_lineage');
 
 describe('docs_by_id_lineage view', () => {
   beforeEach(() => {
@@ -124,7 +124,8 @@ describe('docs_by_id_lineage view', () => {
       const districtHospital = { _id: 'districtHospital', type: 'district_hospital' };
       const resultdistrictHospital = map(districtHospital, true);
       expect(resultdistrictHospital.length).to.equal(1);
-      expect(resultdistrictHospital[0]).to.deep.equal({ key: [ 'districtHospital', 0 ], value: { _id: 'districtHospital' }});
+      expect(resultdistrictHospital[0])
+        .to.deep.equal({ key: [ 'districtHospital', 0 ], value: { _id: 'districtHospital' }});
     });
 
     it('emits full lineage', () => {

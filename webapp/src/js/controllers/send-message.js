@@ -1,6 +1,6 @@
-var _ = require('underscore'),
-    phoneNumber = require('@medic/phone-number'),
-    format = require('../modules/format');
+const _ = require('underscore');
+const phoneNumber = require('@medic/phone-number');
+const format = require('../modules/format');
 
 angular.module('inboxControllers').controller('SendMessageCtrl',
   function (
@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     const ctrl = this;
     ctrl.error = {};
 
-    var validateMessage = function(message) {
+    const validateMessage = function(message) {
       if (message) {
         ctrl.error.message = false;
       } else {
@@ -31,18 +31,18 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       }
     };
 
-    var validatePhoneNumber = function(settings, data) {
+    const validatePhoneNumber = function(settings, data) {
       if (data.everyoneAt) {
         return true;
       }
       if (data.doc) {
-        var contact = data.doc.contact || data.doc;
+        const contact = data.doc.contact || data.doc;
         return contact && phoneNumber.validate(settings, contact.phone);
       }
       return phoneNumber.validate(settings, data.id);
     };
 
-    var validatePhoneNumbers = function(settings, recipients) {
+    const validatePhoneNumbers = function(settings, recipients) {
 
       // recipients is mandatory
       if (!recipients || recipients.length === 0) {
@@ -53,11 +53,11 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       }
 
       // all recipients must have a valid phone number
-      var errors = _.filter(recipients, function(data) {
+      const errors = _.filter(recipients, function(data) {
         return !validatePhoneNumber(settings, data);
       });
       if (errors.length > 0) {
-        var errorRecipients = _.map(errors, function(error) {
+        const errorRecipients = _.map(errors, function(error) {
           return templateSelection(error);
         }).join(', ');
         return $translate('Invalid contact numbers', { recipients: errorRecipients })
@@ -69,14 +69,14 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       ctrl.error.phone = false;
     };
 
-    var formatPlace = function(row) {
+    const formatPlace = function(row) {
       return $translate.instant('Everyone at', {
         facility: row.doc.name,
         count: row.descendants && row.descendants.length
       });
     };
 
-    var templateResult = function(contactTypes, row) {
+    const templateResult = function(contactTypes, row) {
       if (row.text) {
         // Either Select2 detritus such as 'Searching…', or any custom value
         // you enter, such as a raw phone number
@@ -100,7 +100,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       return $('<span class="fa fa-fw ' + type.icon + '"></span>' + contact);
     };
 
-    var templateSelection = function(row) {
+    const templateSelection = function(row) {
       if (!row.doc) {
         return row.text;
       }
@@ -113,7 +113,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       return row.doc.name || row.doc.phone;
     };
 
-    var initPhoneField = function($phone, initialValue) {
+    const initPhoneField = function($phone, initialValue) {
       return $q.all([
         Settings(),
         ContactTypes.getAll()
@@ -156,9 +156,9 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     };
 
     $uibModalInstance.rendered.then(function() {
-      var to = $scope.model.to;
-      var $modal = $('#send-message');
-      var phoneField = $modal.find('[name=phone]');
+      const to = $scope.model.to;
+      const $modal = $('#send-message');
+      const phoneField = $modal.find('[name=phone]');
       $modal.find('.count').text('');
       initPhoneField(phoneField, to);
     });
@@ -171,8 +171,8 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       $scope.setProcessing();
       Settings()
         .then(function(settings) {
-          var message = $scope.model.message && $scope.model.message.trim();
-          var recipients = $('#send-message [name=phone]').select2('data');
+          const message = $scope.model.message && $scope.model.message.trim();
+          const recipients = $('#send-message [name=phone]').select2('data');
           $q.all([
             validateMessage(message),
             validatePhoneNumbers(settings, recipients)
