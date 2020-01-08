@@ -154,7 +154,7 @@ describe('ReportsCtrl controller', () => {
 
     scenarios.forEach(scenario => {
       const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      it(`user ${canEdit ? 'can' : 'cannot'} edit, verified:${initial}->${setTo} yields verified:${expectVerified}`, () => {
+      it(`user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`, () => {
         hasAuth = canEdit ? hasAuth.resolves(true) : hasAuth.resolves(false);
         confirm ? modal.resolves() : modal.rejects();
         post.returns(Promise.resolve());
