@@ -1,9 +1,9 @@
-const _ = require('underscore'),
-      properties = require('properties'),
-      db = require('./db'),
-      DDOC_ID = '_design/medic',
-      TRANSLATION_FILE_NAME_REGEX = /translations\/messages-([a-z]*)\.properties/,
-      DOC_TYPE = 'translations';
+const _ = require('underscore');
+const properties = require('properties');
+const db = require('./db');
+const DDOC_ID = '_design/medic';
+const TRANSLATION_FILE_NAME_REGEX = /translations\/messages-([a-z]*)\.properties/;
+const DOC_TYPE = 'translations';
 
 const LOCAL_NAME_MAP = {
   bm: 'Bamanankan (Bambara)',

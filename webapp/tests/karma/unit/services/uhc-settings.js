@@ -23,7 +23,8 @@ describe('UHCSettings service', function() {
 
     it('should return correct month_start_date', () => {
       chai.expect(service.getMonthStartDate({ uhc: { month_start_date: 3 }})).to.equal(3);
-      chai.expect(service.getMonthStartDate({ uhc: { month_start_date: 3, visit_count: { month_start_date: 10 } }})).to.equal(3);
+      chai.expect(service.getMonthStartDate({ uhc: { month_start_date: 3, visit_count: { month_start_date: 10 } }}))
+        .to.equal(3);
       chai.expect(service.getMonthStartDate({ uhc: { visit_count: { month_start_date: 10 } }})).to.equal(10);
     });
   });

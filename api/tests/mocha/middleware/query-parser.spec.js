@@ -2,9 +2,9 @@ const chai = require('chai');
 const sinon = require('sinon');
 const queryParser = require('../../../src/middleware/query-parser');
 
-let req,
-    res,
-    next;
+let req;
+let res;
+let next;
 
 describe('API queryParser middleware', () => {
   beforeEach(() => {

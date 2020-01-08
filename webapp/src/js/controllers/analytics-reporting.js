@@ -45,8 +45,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
       getTopLevelPlaces()
     ])
       .then(function(results) {
-        var forms = results[0];
-        var districts = results[1];
+        const forms = results[0];
+        const districts = results[1];
         ctrl.forms = forms;
         ctrl.districts = districts;
         if (!forms.length) {

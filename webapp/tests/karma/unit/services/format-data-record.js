@@ -160,9 +160,24 @@ describe('FormatDataRecord service', () => {
 
     return service(report).then(result => {
       chai.expect(result.fields).to.deep.equal([
-        { label: 'report.my-form.image', value: 'some image', depth: 0, imagePath: 'user-file/my-form/image', hasUrl: false },
-        { label: 'report.my-form.deep', depth: 0 },
-        { label: 'report.my-form.deep.image2', value: 'other', depth: 1, imagePath: 'user-file/my-form/deep/image2', hasUrl: false }
+        {
+          label: 'report.my-form.image',
+          value: 'some image',
+          depth: 0,
+          imagePath: 'user-file/my-form/image',
+          hasUrl: false
+        },
+        {
+          label: 'report.my-form.deep',
+          depth: 0
+        },
+        {
+          label: 'report.my-form.deep.image2',
+          value: 'other',
+          depth: 1,
+          imagePath: 'user-file/my-form/deep/image2',
+          hasUrl: false
+        }
       ]);
     });
   });

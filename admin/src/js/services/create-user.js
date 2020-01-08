@@ -16,7 +16,7 @@ angular.module('services').factory('CreateUser',
      * @param      {Object}  updates        Updates you wish to make
      */
     return function(updates) {
-      var url = '/api/v1/users';
+      const url = '/api/v1/users';
 
       if (!updates.username) {
         return $q.reject('You must provide a username to create a user');

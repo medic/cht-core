@@ -1,7 +1,7 @@
 describe('Contacts store', () => {
   'use strict';
 
-  let { assert } = chai;
+  const { assert } = chai;
   let loadChildren;
   let loadReports;
   let getContact;
@@ -301,7 +301,10 @@ describe('Contacts store', () => {
         it('uses the title', () => {
           return contactsActions.setSelectedContact('111').then(() => {
             const listenCallback = listen.args[0][2];
-            listenCallback(null, [{ internalId: 'a', icon: 'a-icon', title: 'My Form', translation_key: 'a.form.key' }]);
+            listenCallback(
+              null,
+              [{ internalId: 'a', icon: 'a-icon', title: 'My Form', translation_key: 'a.form.key' }]
+            );
             chai.expect(translateFrom.callCount).to.equal(0);
             chai.expect(setRightActionBar.args[1][0].relevantForms[0].title).to.equal('a.form.key');
           });

@@ -1,7 +1,7 @@
-var translationUtils = require('@medic/translation-utils');
+const translationUtils = require('@medic/translation-utils');
 
-var DEFAULT_LOCALE = 'en',
-    DOC_ID_PREFIX = 'messages-';
+const DEFAULT_LOCALE = 'en';
+const DOC_ID_PREFIX = 'messages-';
 
 angular.module('inboxServices').factory('TranslationLoader',
   function(
@@ -12,7 +12,7 @@ angular.module('inboxServices').factory('TranslationLoader',
     'use strict';
     'ngInject';
 
-    var getLocale = function(options) {
+    const getLocale = function(options) {
       if (options.key) {
         return $q.resolve(options.key);
       }
@@ -21,14 +21,14 @@ angular.module('inboxServices').factory('TranslationLoader',
       });
     };
 
-    var mapTesting = function(doc) {
+    const mapTesting = function(doc) {
       Object.keys(doc).forEach(function(key) {
         doc[key] = '-' + doc[key] + '-';
       });
     };
 
     const service = (options) => {
-      var testing = false;
+      let testing = false;
       if (options.key === 'test') {
         options.key = 'en';
         testing = true;
@@ -38,7 +38,7 @@ angular.module('inboxServices').factory('TranslationLoader',
           return DB().get(DOC_ID_PREFIX + locale);
         })
         .then(function(doc) {
-          let values = Object.assign(doc.generic || {}, doc.custom || {});
+          const values = Object.assign(doc.generic || {}, doc.custom || {});
           if (testing) {
             mapTesting(values);
           }

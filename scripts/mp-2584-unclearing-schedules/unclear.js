@@ -7,13 +7,13 @@
 */
 /*jshint esversion: 6 */
 'use strict';
-const fs = require('fs'),
-    moment = require('moment'),
-    PouchDB = require('pouchdb');
+const fs = require('fs');
+const moment = require('moment');
+const PouchDB = require('pouchdb');
 
-const accept_patient_reports = require('../../sentinel/transitions/accept_patient_reports'),
-    config = require('../../sentinel/config'),
-    utils = require('../../sentinel/lib/utils');
+const accept_patient_reports = require('../../sentinel/transitions/accept_patient_reports');
+const config = require('../../sentinel/config');
+const utils = require('../../sentinel/lib/utils');
 
 const VISIT_CODE = 'ग';
 const DELIVERY_CODE = 'ज';
@@ -39,9 +39,9 @@ const findReportsForPatientId = patientId => {
       endkey: [ patientId + '\ufff0'],
       include_docs: true
     }).then(data => {
-      return data.rows.map(row => row.doc)
-        .filter(isValid);
-    })
+    return data.rows.map(row => row.doc)
+      .filter(isValid);
+  })
     .catch(err => {
       console.log('findReportsForPatientId failed for patientId', patientId, err);
       throw err;
@@ -117,22 +117,22 @@ const getAcceptedReportsConfig = (formCode) => {
 };
 
 const silenceRemindersNoSaving = (
-    latestVisitReportedDate,
-    registrationReport,
-    acceptedReportsConfig) => {
+  latestVisitReportedDate,
+  registrationReport,
+  acceptedReportsConfig) => {
 
   // Code plucked from accept_patient_reports.silenceReminders
   // filter scheduled message by group
-  var toClear = accept_patient_reports._findToClear(
+  const toClear = accept_patient_reports._findToClear(
     registrationReport, latestVisitReportedDate, acceptedReportsConfig);
   if (!toClear.length) {
-      return;
+    return;
   }
   toClear.forEach(function(task) {
-      if (task.state === 'scheduled') {
-          console.log(registrationReport._id, 'Clearing task due', task.due);
-          utils.setTaskState(task, 'cleared');
-      }
+    if (task.state === 'scheduled') {
+      console.log(registrationReport._id, 'Clearing task due', task.due);
+      utils.setTaskState(task, 'cleared');
+    }
   });
   // end code pluck
 };
@@ -142,7 +142,10 @@ const getDocs = ids => {
     .then(data => {
       return data.rows.filter(row => {
         if (row.error) {
-          console.error('DOC', row.key, 'NOT FETCHED! Error :', row.error ,'. Ignoring it. You should fix it by hand later.');
+          console.error(
+            'DOC', row.key,
+            'NOT FETCHED! Error :', row.error ,'. Ignoring it. You should fix it by hand later.'
+          );
           return false;
         }
         return true;
@@ -164,7 +167,8 @@ const fixReport = (registrationReport, visitFormConfig) => {
 
   return findReportsForPatientId(registrationReport.patient_id)
     .then(associatedReports => {
-      console.log(registrationReport._id ,'\nfound', associatedReports.length, 'reports for patient', registrationReport.patient_id, associatedReports.map(report => report.form));
+      console.log(registrationReport._id ,'\nfound', associatedReports.length, 'reports for patient',
+        registrationReport.patient_id, associatedReports.map(report => report.form));
       const birthReports = associatedReports.filter(report => report.form === DELIVERY_CODE);
       if (birthReports && birthReports.length) { // there is an associated birth report
         console.log('has birth report', birthReports.map(report => report._id));
@@ -175,14 +179,17 @@ const fixReport = (registrationReport, visitFormConfig) => {
 
       const visitReports = associatedReports.filter(report => report.form === VISIT_CODE);
       if (visitReports && visitReports.length) {
-        console.log('has visit reports', visitReports.map(report => [report._id, new Date(report.reported_date).toString()]));
+        console.log('has visit reports',
+          visitReports.map(report => [report._id, new Date(report.reported_date).toString()]));
         const latestVisitReport = findLatestReport(visitReports);
-        console.log('has latest visit report', latestVisitReport._id, 'with reported_date', new Date(latestVisitReport.reported_date).toString());
+        console.log('has latest visit report', latestVisitReport._id, 'with reported_date',
+          new Date(latestVisitReport.reported_date).toString());
         // Set status "cleared" for all messages whose due date is before latestVisitReport.reported_date
         clearScheduledMessagesBeforeTimestamp(registrationReport, latestVisitReport.reported_date);
         // Set status "scheduled" for all messages whose due date is after latestVisitReport.reported_date
         scheduleClearedMessagesAfterTimestamp(registrationReport, latestVisitReport.reported_date);
-        // Run the piece of code in sentinel transition accept_patient_ids that clears the appropriate messages for latestVisitReport, according to config.
+        // Run the piece of code in sentinel transition accept_patient_ids that clears the appropriate messages for
+        // latestVisitReport, according to config.
         silenceRemindersNoSaving(latestVisitReport.reported_date, registrationReport, visitFormConfig);
         console.log('Report fixed (not saved yet)', registrationReport._id);
         return registrationReport;

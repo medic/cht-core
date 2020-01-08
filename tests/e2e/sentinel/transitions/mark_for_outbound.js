@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
 
 const makeReport = () => ({
   _id: uuid(),
@@ -11,20 +11,20 @@ const makeReport = () => ({
 });
 
 const getTasks = () => sentinelUtils.requestOnSentinelTestDb({
-    method: 'POST',
-    path: '/_find',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: {
-      selector: {
-        _id: {
-          $gt: 'task:outbound:',
-          $lt: 'task:outbound:\ufff0'
-        }
+  method: 'POST',
+  path: '/_find',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: {
+    selector: {
+      _id: {
+        $gt: 'task:outbound:',
+        $lt: 'task:outbound:\ufff0'
       }
     }
-  }).then(result => result.docs);
+  }
+}).then(result => result.docs);
 
 const wipeTasks = () => getTasks()
   .then(tasks => {

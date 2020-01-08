@@ -66,10 +66,10 @@ module.exports = {
       }
     };
 
-    const type = req.params.type,
-          filters = (req.body && req.body.filters) ||
-                    (req.query && req.query.filters) || {},
-          options = (req.body && req.body.options) ||
+    const type = req.params.type;
+    const filters = (req.body && req.body.filters) ||
+                    (req.query && req.query.filters) || {};
+    const options = (req.body && req.body.options) ||
                     (req.query && req.query.options) || {};
 
     correctFilterTypes(filters);

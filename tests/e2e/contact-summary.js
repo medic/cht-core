@@ -1,5 +1,5 @@
-const utils = require('../utils'),
-  helper = require('../helper');
+const utils = require('../utils');
+const helper = require('../helper');
 
 describe('Contact summary info', () => {
   const SCRIPT = `

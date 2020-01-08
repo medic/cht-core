@@ -60,6 +60,8 @@ _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
 };
 
+const KARMA_UNIT_TEST_PORT = '9876';
+
 const minifySelected = selected => {
   const pathsToMinify = ['doc', 'formatted'];
   const lineageDocs = objectPath.get(selected, 'lineage', []);
@@ -146,12 +148,13 @@ const createReduxLoggerConfig = Selectors => ({
     $compileProvider.aHrefSanitizationWhitelist(
       /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
     );
-    var isDevelopment = window.location.hostname === 'localhost' && window.location.port !== '9876'; // 9876 is port used for karma tests
+
+    const isDevelopment = window.location.hostname === 'localhost' && window.location.port !== KARMA_UNIT_TEST_PORT;
     $compileProvider.debugInfoEnabled(isDevelopment);
 
-    var middlewares = [reduxThunk];
+    const middlewares = [reduxThunk];
     if (isDevelopment) {
-      var reduxLogger = require('redux-logger');
+      const reduxLogger = require('redux-logger');
       middlewares.push(reduxLogger.createLogger(createReduxLoggerConfig(Selectors)));
     }
     $ngReduxProvider.createStoreWith(RootReducer, middlewares);
@@ -197,7 +200,7 @@ const createReduxLoggerConfig = Selectors => ({
     return;
   }
 
-  var ROUTE_PERMISSIONS = {
+  const ROUTE_PERMISSIONS = {
     tasks: 'can_view_tasks',
     messages: 'can_view_messages',
     contacts: 'can_view_contacts',
@@ -206,7 +209,7 @@ const createReduxLoggerConfig = Selectors => ({
     'reports.edit': ['can_update_reports', 'can_view_reports']
   };
 
-  var getRequiredPermissions = function(route) {
+  const getRequiredPermissions = function(route) {
     return ROUTE_PERMISSIONS[route] || ROUTE_PERMISSIONS[route.split('.')[0]];
   };
 

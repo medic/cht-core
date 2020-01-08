@@ -2,7 +2,7 @@
 
 // Intentionally not ES6 because it may be run on old systems with an old node
 
-var migrationLocation = process.argv[2];
+const migrationLocation = process.argv[2];
 
 if (!migrationLocation) {
   console.error('You must provide the migration to run as an argument.');
@@ -15,7 +15,7 @@ if (!process.env.COUCH_URL) {
   process.exit(1);
 }
 
-var migration = require(migrationLocation);
+const migration = require(migrationLocation);
 
 console.log('Migration migration ' + migration.name);
 console.log('Created on ' + migration.created);

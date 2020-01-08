@@ -1,6 +1,6 @@
-const PouchDB = require('pouchdb-core'),
-  logger = require('./logger'),
-  environment = require('./environment');
+const PouchDB = require('pouchdb-core');
+const logger = require('./logger');
+const environment = require('./environment');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -35,7 +35,10 @@ if (UNIT_TEST_ENV) {
 
   const notStubbed = (first, second) => {
     const name = second ? `${first}.${second}` : first;
-    logger.error(new Error(`${name}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`));
+    logger.error(new Error(
+      `${name}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}. ` +
+      `Please stub PouchDB functions that will be interacted with in unit tests.`
+    ));
     process.exit(1);
   };
 
@@ -47,7 +50,7 @@ if (UNIT_TEST_ENV) {
   });
 
   GLOBAL_FUNCTIONS_TO_STUB.forEach(fn => {
-     module.exports[fn] = () => notStubbed(fn);
+    module.exports[fn] = () => notStubbed(fn);
   });
 } else {
   const DB = new PouchDB(environment.couchUrl, {

@@ -1,10 +1,10 @@
-var moment = require('moment');
+const moment = require('moment');
 
 (function () {
 
   'use strict';
 
-  var localeCookieKey = 'locale';
+  const localeCookieKey = 'locale';
 
   angular.module('inboxServices').factory('SetLanguageCookie',
     function(
@@ -25,9 +25,9 @@ var moment = require('moment');
     ) {
       'ngInject';
       
-      var setDatepickerLanguage = function(language) {
-        var availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
-        var calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
+      const setDatepickerLanguage = function(language) {
+        const availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
+        const calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
         $.fn.datepicker.defaults.language = calendarLanguage;
       };
 
@@ -54,7 +54,7 @@ var moment = require('moment');
 
       'ngInject';
 
-      var fetchLocale = function() {
+      const fetchLocale = function() {
         return UserSettings()
           .then(function(user) {
             if (user && user.language) {
@@ -68,7 +68,7 @@ var moment = require('moment');
       };
 
       return function() {
-        var cookieVal = ipCookie(localeCookieKey);
+        const cookieVal = ipCookie(localeCookieKey);
         if (cookieVal) {
           return $q.resolve(cookieVal);
         }

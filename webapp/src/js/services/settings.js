@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var SETTINGS_ID = 'settings';
+  const SETTINGS_ID = 'settings';
 
   angular.module('inboxServices').factory('Settings',
     function(
@@ -14,7 +14,7 @@
 
       'ngInject';
 
-      var cache = Cache({
+      const cache = Cache({
         get: function(callback) {
           DB()
             .get(SETTINGS_ID)
@@ -29,7 +29,7 @@
       });
 
       return function() {
-        var listeners = {};
+        const listeners = {};
 
         function emit(event, data) {
           if (listeners[event]) {
@@ -43,7 +43,7 @@
           }
         }
 
-        var deferred = $q(function(resolve, reject) {
+        const deferred = $q(function(resolve, reject) {
           cache(function(err, settings) {
             if (err) {
               emit('error', err);

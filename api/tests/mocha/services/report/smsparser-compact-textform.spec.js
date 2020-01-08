@@ -1,5 +1,5 @@
-const smsparser = require('../../../../src/services/report/smsparser'),
-      chai = require('chai');
+const smsparser = require('../../../../src/services/report/smsparser');
+const chai = require('chai');
 
 const def = {
   meta: {

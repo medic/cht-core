@@ -60,7 +60,7 @@ const processTaskStateUpdates = req => {
 
 // Process webapp-terminating messages
 const addNewMessages = req => {
-  let messages = req.body.messages;
+  const messages = req.body.messages;
   return messaging.processIncomingMessages(messages);
 };
 

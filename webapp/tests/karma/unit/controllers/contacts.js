@@ -97,7 +97,7 @@ describe('Contacts controller', () => {
     contactSearchLiveList = deadList();
     getDataRecords = KarmaUtils.promiseService(null, district);
     searchResults = [];
-    var $translate = key => Promise.resolve(key + 'translated');
+    const $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
     scrollLoaderStub = {
       init: callback => {
@@ -507,7 +507,8 @@ describe('Contacts controller', () => {
         .then(() => {
           changesCallback({ doc: { _id: '123' } });
           assert.equal(searchService.callCount, 2);
-          assert.equal(searchService.args[1][2].limit, 50); // 50 is the minimum size just in case it's a new contact at the end of the list
+          // 50 is the minimum size just in case it's a new contact at the end of the list
+          assert.equal(searchService.args[1][2].limit, 50);
         });
     });
 
@@ -849,27 +850,27 @@ describe('Contacts controller', () => {
 
     describe('fully refreshing LHS list', () => {
       const relevantVisitReport = {
-          type: 'data_record',
-          form: 'home_visit',
-          fields: { visited_contact_uuid: 4 },
-        },
-        irrelevantReport = {
-          type: 'data_record',
-          form: 'somethibg',
-          fields: {},
-        },
-        irrelevantVisitReport = {
-          type: 'data_record',
-          form: 'home_visit',
-          fields: { visited_contact_uuid: 122 },
-        },
-        deletedVisitReport = {
-          type: 'data_record',
-          form: 'home_visit',
-          fields: { visited_contact_uuid: 122 },
-          _deleted: true,
-        },
-        someContact = { type: 'person', _id: 1 };
+        type: 'data_record',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 4 },
+      };
+      const irrelevantReport = {
+        type: 'data_record',
+        form: 'somethibg',
+        fields: {},
+      };
+      const irrelevantVisitReport = {
+        type: 'data_record',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 122 },
+      };
+      const deletedVisitReport = {
+        type: 'data_record',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 122 },
+        _deleted: true,
+      };
+      const someContact = { type: 'person', _id: 1 };
 
       describe('uhc visits enabled', () => {
         beforeEach(() => {

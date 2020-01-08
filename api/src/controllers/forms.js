@@ -63,9 +63,9 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   get: (req, res) => {
-    const parts = req.params.form.split('.'),
-      form = parts.slice(0, -1).join('.'),
-      format = parts.slice(-1)[0];
+    const parts = req.params.form.split('.');
+    const form = parts.slice(0, -1).join('.');
+    const format = parts.slice(-1)[0];
     if (!form) {
       const error = {
         code: 400,

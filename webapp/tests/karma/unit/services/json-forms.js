@@ -2,8 +2,8 @@ describe('JsonForms service', function() {
 
   'use strict';
 
-  var service,
-      Settings = sinon.stub();
+  let service;
+  const Settings = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');

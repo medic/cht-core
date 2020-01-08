@@ -1,6 +1,6 @@
-const request = require('request-promise-native'),
-      url = require('url'),
-      environment = require('../environment');
+const request = require('request-promise-native');
+const url = require('url');
+const environment = require('../environment');
 
 const addMemberToDb = () => {
   const securityObject = {

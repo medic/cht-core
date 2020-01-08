@@ -2,10 +2,10 @@ describe('GetSubjectSummaries service', () => {
 
   'use strict';
 
-  let service,
-      query,
-      GetSummaries,
-      LineageModelGenerator;
+  let service;
+  let query;
+  let GetSummaries;
+  let LineageModelGenerator;
 
   const doc = { _id: 'result' };
   const lineage = [

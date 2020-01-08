@@ -11,7 +11,6 @@
   },
   "rules": {
     "compat/compat": "error",
-    "no-console": "error",
     "angular/window-service": "error",
     "angular/timeout-service": "error",
     "angular/module-getter": "error",

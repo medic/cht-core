@@ -1,5 +1,5 @@
 // Override chai.assert.equal to pretty print.
-var equal = chai.assert.equal;
+const equal = chai.assert.equal;
 chai.assert.equal = function() {
   try {
     equal.apply(this, arguments);
@@ -12,8 +12,8 @@ chai.assert.equal = function() {
 
 window.KarmaUtils = {
   restore: function() {
-    for (var i = 0; i < arguments.length; i++) {
-      var arg = arguments[i];
+    for (let i = 0; i < arguments.length; i++) {
+      const arg = arguments[i];
       if (typeof arg !== 'undefined' && arg) {
         if (arg.restore) {
           arg.restore();
@@ -44,8 +44,8 @@ window.KarmaUtils = {
   }
 };
 
-var sortedJson = function(o) {
-  var s;
+const sortedJson = function(o) {
+  let s;
   if(typeof o !== 'object') {
     return JSON.stringify(o);
   }
@@ -56,17 +56,17 @@ var sortedJson = function(o) {
     });
     return s + ']';
   }
-  var keys = Object.keys(o).sort();
+  const keys = Object.keys(o).sort();
   s = '{ ';
-  for(var i=0; i<keys.length; ++i) {
-    var k = keys[i];
+  for(let i=0; i<keys.length; ++i) {
+    const k = keys[i];
     s += '"' + k + '":' + sortedJson(o[k]) + ', ';
   }
   // N.B. not valid JSON, as an extra comma will appear
   return s + '}';
 };
 
-var _originalDeepEqual = chai.assert.deepEqual;
+const _originalDeepEqual = chai.assert.deepEqual;
 chai.assert.deepEqual = function() {
   try {
     _originalDeepEqual.apply(this, arguments);

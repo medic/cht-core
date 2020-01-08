@@ -1,6 +1,6 @@
-const chai = require('chai'),
-      utils = require('../../../src/controllers/utils'),
-      sinon = require('sinon');
+const chai = require('chai');
+const utils = require('../../../src/controllers/utils');
+const sinon = require('sinon');
 const _ = require('underscore');
 const uuid = require('uuid');
 const { performance } = require('perf_hooks');

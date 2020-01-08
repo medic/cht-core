@@ -2,9 +2,9 @@ describe('TranslationLoader service', function() {
 
   'use strict';
 
-  var service,
-      Settings,
-      DBGet;
+  let service;
+  let Settings;
+  let DBGet;
 
   beforeEach(function() {
     module('inboxApp');
@@ -25,8 +25,8 @@ describe('TranslationLoader service', function() {
   });
 
   it('returns error when db throws error', function(done) {
-    var options = { key: 'err' };
-    var expected = { status: 503 };
+    const options = { key: 'err' };
+    const expected = { status: 503 };
     DBGet.returns(Promise.reject(expected));
     service(options)
       .then(function() {
@@ -39,7 +39,7 @@ describe('TranslationLoader service', function() {
   });
 
   it('returns empty when no translation document', function() {
-    var options = { key: 'notfound' };
+    const options = { key: 'notfound' };
     DBGet.returns(Promise.reject({ status: 404 }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal({});
@@ -50,8 +50,8 @@ describe('TranslationLoader service', function() {
   });
 
   it('returns values for the given key', function() {
-    var options = { key: 'au' };
-    var expected = {
+    const options = { key: 'au' };
+    const expected = {
       prawn: 'shrimp',
       bbq: 'barbie'
     };
@@ -65,9 +65,9 @@ describe('TranslationLoader service', function() {
   });
 
   it('falls back to settings default', function() {
-    var options = { };
-    var settings = { locale: 'us' };
-    var expected = {
+    const options = { };
+    const settings = { locale: 'us' };
+    const expected = {
       prawn: 'prawn',
       bbq: 'grill'
     };
@@ -82,9 +82,9 @@ describe('TranslationLoader service', function() {
   });
 
   it('defaults to "en"', function() {
-    var options = { };
-    var settings = { };
-    var expected = {
+    const options = { };
+    const settings = { };
+    const expected = {
       prawn: 'prawn',
       bbq: 'barbeque'
     };
@@ -99,12 +99,12 @@ describe('TranslationLoader service', function() {
   });
 
   it('returns "en" wrapped in hypens for test locale', function() {
-    var options = { key: 'test' };
-    var doc = {
+    const options = { key: 'test' };
+    const doc = {
       prawn: 'prawn',
       bbq: 'barbeque'
     };
-    var expected = {
+    const expected = {
       prawn: '-prawn-',
       bbq: '-barbeque-'
     };

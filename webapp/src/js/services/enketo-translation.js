@@ -12,7 +12,7 @@ angular.module('inboxServices').service('EnketoTranslation',
 
     const findChildNode = function(root, childNodeName) {
       return withElements(root.childNodes)
-          .find(node => node.nodeName === childNodeName);
+        .find(node => node.nodeName === childNodeName);
     };
 
     const getHiddenFieldList = (nodes, prefix, current) => {
@@ -28,21 +28,21 @@ angular.module('inboxServices').service('EnketoTranslation',
       });
     };
 
-    var nodesToJs = function(data, repeatPaths, path) {
+    const nodesToJs = function(data, repeatPaths, path) {
       repeatPaths = repeatPaths || [];
       path = path || '';
-      var result = {};
+      const result = {};
       withElements(data).forEach(function(n) {
-        var dbDocAttribute = n.attributes.getNamedItem('db-doc');
+        const dbDocAttribute = n.attributes.getNamedItem('db-doc');
         if (dbDocAttribute && dbDocAttribute.value === 'true') {
           return;
         }
 
-        var typeAttribute = n.attributes.getNamedItem('type');
-        var updatedPath = path + '/' + n.nodeName;
-        var value;
+        const typeAttribute = n.attributes.getNamedItem('type');
+        const updatedPath = path + '/' + n.nodeName;
+        let value;
 
-        var hasChildren = withElements(n.childNodes).length > 0;
+        const hasChildren = withElements(n.childNodes).length > 0;
         if (hasChildren) {
           value = nodesToJs(n.childNodes, repeatPaths, updatedPath);
         } else if (typeAttribute && typeAttribute.value === 'binary') {
@@ -64,16 +64,16 @@ angular.module('inboxServices').service('EnketoTranslation',
       return result;
     };
 
-    var repeatsToJs = function(data) {
-      var repeatNode = findChildNode(data, 'repeat');
+    const repeatsToJs = function(data) {
+      const repeatNode = findChildNode(data, 'repeat');
       if(!repeatNode) {
         return;
       }
 
-      var repeats = {};
+      const repeats = {};
 
       withElements(repeatNode.childNodes).forEach(function(repeated) {
-        var key = repeated.nodeName + '_data';
+        const key = repeated.nodeName + '_data';
         if(!repeats[key]) {
           repeats[key] = [];
         }
@@ -83,12 +83,13 @@ angular.module('inboxServices').service('EnketoTranslation',
       return repeats;
     };
 
-    var findCurrentElement = function(elem, name, childMatcher) {
+    const findCurrentElement = function(elem, name, childMatcher) {
       if (childMatcher) {
         const matcher = childMatcher(name);
         const found = elem.find(matcher);
         if (found.length > 1) {
-          $log.warn(`Enketo bindJsonToXml: Using the matcher "${matcher}" we found ${found.length} elements. We should only ever bind one.`, elem);
+          $log.warn(`Enketo bindJsonToXml: Using the matcher "${matcher}" we found ${found.length} elements. ` +
+            'We should only ever bind one.', elem);
         }
         return found;
       } else {
@@ -127,11 +128,11 @@ angular.module('inboxServices').service('EnketoTranslation',
       },
 
       reportRecordToJs: function(record, formXml) {
-        var root = $.parseXML(record).firstChild;
+        const root = $.parseXML(record).firstChild;
         if (!formXml) {
           return nodesToJs(root.childNodes);
         }
-        var repeatPaths = $(formXml)
+        const repeatPaths = $(formXml)
           .find('repeat[nodeset]')
           .map(function() {
             return $(this).attr('nodeset');
@@ -152,13 +153,13 @@ angular.module('inboxServices').service('EnketoTranslation',
        *   see: contacts-edit.js:saveRepeated
        */
       contactRecordToJs: function(record) {
-        var root = $.parseXML(record).firstChild;
+        const root = $.parseXML(record).firstChild;
 
-        var result = {
+        const result = {
           doc: null,
           siblings: {},
         };
-        var repeats = repeatsToJs(root);
+        const repeats = repeatsToJs(root);
         if (repeats) {
           result.repeats = repeats;
         }

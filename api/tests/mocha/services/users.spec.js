@@ -604,7 +604,8 @@ describe('Users service', () => {
         password: 'password'
       }).catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message.message).to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
+        chai.expect(err.message.message)
+          .to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
         chai.expect(err.message.translationKey).to.equal('password.weak');
         done();
       });
@@ -1012,7 +1013,8 @@ describe('Users service', () => {
       service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.translationKey).to.equal('password.weak');
-        chai.expect(err.message.message).to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
+        chai.expect(err.message.message)
+          .to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
         done();
@@ -1188,7 +1190,9 @@ describe('Users service', () => {
     it('fails if username contains invalid characters', done => {
       service._validateNewUsername('^_^').catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message.message).to.equal('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).');
+        chai.expect(err.message.message).to.equal(
+          'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).'
+        );
         chai.expect(err.message.translationKey).to.equal('username.invalid');
         done();
       });

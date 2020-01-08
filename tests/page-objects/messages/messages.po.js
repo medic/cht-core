@@ -1,7 +1,7 @@
 const helper = require('../../helper');
 
-const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message')),
-      exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
+const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message'));
+const exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
 
 module.exports = {
   exportData: ()=> {
@@ -12,7 +12,7 @@ module.exports = {
     helper.waitUntilReady(sendMessageButton);
     sendMessageButton.click();
   },
- getSendMessageButton: ()=> {
+  getSendMessageButton: ()=> {
     helper.waitUntilReady(sendMessageButton);
     return sendMessageButton;
   }

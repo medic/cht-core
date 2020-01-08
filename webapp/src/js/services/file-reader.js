@@ -10,8 +10,8 @@ angular.module('inboxServices').service('FileReader',
 
     function readerThat(readMethod) {
       return function(blob) {
-        var deferred = $q.defer();
-        var reader = new FileReader();
+        const deferred = $q.defer();
+        const reader = new FileReader();
         reader.addEventListener('loadend', function() {
           deferred.resolve(reader.result);
         });

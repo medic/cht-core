@@ -4,9 +4,9 @@
 
 'use strict';
 
-var _ = require('underscore');
-var fs = require('fs');
-var PouchDB = require('pouchdb');
+const _ = require('underscore');
+const fs = require('fs');
+const PouchDB = require('pouchdb');
 
 if (process.argv.length < 7) {
   console.log('Usage:\nnode validate_deleted_data_for_group.js ' +
@@ -14,18 +14,18 @@ if (process.argv.length < 7) {
   process.exit();
 }
 
-var branchId = process.argv[2];
-var groupFile = process.argv[3];
-var start = new Date(process.argv[4]);
-var end = new Date(process.argv[5]);
-var logdir = process.argv[6];
-var dbUrl = process.env.COUCH_URL;
+const branchId = process.argv[2];
+const groupFile = process.argv[3];
+const start = new Date(process.argv[4]);
+const end = new Date(process.argv[5]);
+const logdir = process.argv[6];
+const dbUrl = process.env.COUCH_URL;
 
-var startMillis = start.getTime();
-var endMillis = end.getTime();
+const startMillis = start.getTime();
+const endMillis = end.getTime();
 
-var getUsernames = function(groupFile) {
-  var group = [];
+const getUsernames = function(groupFile) {
+  let group = [];
   try {
     group = fs.readFileSync(groupFile, 'utf8');
   } catch (err) {
@@ -33,7 +33,7 @@ var getUsernames = function(groupFile) {
     process.exit();
   }
 
-  var lines = group.split('\n');
+  let lines = group.split('\n');
   lines = _.filter(lines, function(line) { return line !== ''; });
   lines = _.map(lines, function(line) { return line.trim(); });
   if (lines.length === 0) {
@@ -44,9 +44,9 @@ var getUsernames = function(groupFile) {
   return Promise.resolve(lines);
 };
 
-var getUserObjects = function(db, group) {
+const getUserObjects = function(db, group) {
   console.log('Getting users from db');
-  var userSettingsNames = _.map(group, function(user) {
+  const userSettingsNames = _.map(group, function(user) {
     return 'org.couchdb.user:' + user;
   });
   return db.allDocs({keys: userSettingsNames, include_docs: true})
@@ -73,29 +73,29 @@ var getUserObjects = function(db, group) {
     });
 };
 
-var findDistrict = function(place, originalId) {
-    if (!place) {
-      throw new Error('no district for ' + originalId);
-    }
-    if (place.type === 'district_hospital') {
-      return place._id;
-    }
-    return findDistrict(place.parent, originalId);
+const findDistrict = function(place, originalId) {
+  if (!place) {
+    throw new Error('no district for ' + originalId);
+  }
+  if (place.type === 'district_hospital') {
+    return place._id;
+  }
+  return findDistrict(place.parent, originalId);
 };
 
 console.log('\nStarting validation with\nbranchId = ' + branchId +
   '\nstartTimeMillis = ' + startMillis + '\nendTimeMillis = ' + endMillis + '\nlogdir = ' + logdir + '\n');
 
 
-var testDocs = function(logdir, type, findDistrictFunc, isInGroupFunc) {
-  var logfiles = fs.readdirSync(logdir);
-  var relevantLogFiles = _.filter(logfiles, function(file) {
+const testDocs = function(logdir, type, findDistrictFunc, isInGroupFunc) {
+  const logfiles = fs.readdirSync(logdir);
+  const relevantLogFiles = _.filter(logfiles, function(file) {
     return file.includes(type);
   });
   console.log(relevantLogFiles);
 
   _.each(relevantLogFiles, function(file) {
-    var fileContents = '';
+    let fileContents = '';
     try {
       fileContents = fs.readFileSync(logdir + '/' + file, 'utf8');
     } catch (err) {
@@ -103,7 +103,7 @@ var testDocs = function(logdir, type, findDistrictFunc, isInGroupFunc) {
       return;
     }
 
-    var docs;
+    let docs;
     try {
       docs = JSON.parse(fileContents);
     } catch (err) {
@@ -114,26 +114,26 @@ var testDocs = function(logdir, type, findDistrictFunc, isInGroupFunc) {
     console.log('Read ' + docs.length + ' ' + type + 's from file ' + file + '. Will print out any problems.');
 
     _.each(docs, function(doc) {
-        if (doc.reported_date < startMillis) {
-            console.log(type + ' ' + doc._id + ' earlier than date range!! - ' + doc.reported_date + ' < ' + startMillis);
-        }
-        if (doc.reported_date >= endMillis) {
-            console.log(type + ' ' + doc._id + ' later than date range!! - ' + doc.reported_date + ' >= ' + endMillis);
-        }
-        var district = findDistrictFunc(doc);
-        if (district !== branchId) {
-          console.log(type + ' ' + doc._id + ' in wrong branch! - ' + district + ' !== ' + branchId);
-        }
-        if (!isInGroupFunc(doc)) {
-          console.log(doc._id + ' is not in group!');
-        }
+      if (doc.reported_date < startMillis) {
+        console.log(type + ' ' + doc._id + ' earlier than date range!! - ' + doc.reported_date + ' < ' + startMillis);
+      }
+      if (doc.reported_date >= endMillis) {
+        console.log(type + ' ' + doc._id + ' later than date range!! - ' + doc.reported_date + ' >= ' + endMillis);
+      }
+      const district = findDistrictFunc(doc);
+      if (district !== branchId) {
+        console.log(type + ' ' + doc._id + ' in wrong branch! - ' + district + ' !== ' + branchId);
+      }
+      if (!isInGroupFunc(doc)) {
+        console.log(doc._id + ' is not in group!');
+      }
     });
     console.log('');
   });
 };
 
-var testContactDeletion = function(deletedContacts, logdir, filename) {
-  var contactId = filename.replace('cleaned_facilities_', '').replace('.json', '');
+const testContactDeletion = function(deletedContacts, logdir, filename) {
+  const contactId = filename.replace('cleaned_facilities_', '').replace('.json', '');
   if (contactId.length !== 36) {
     console.log('Couldnt find contactId in filename ' + filename + '. Skipping it.');
     return;
@@ -146,7 +146,7 @@ var testContactDeletion = function(deletedContacts, logdir, filename) {
   }
 
   // Check is contact for each facility in the file.
-  var facilities = JSON.parse(fs.readFileSync(logdir + '/' + filename, 'utf8'));
+  const facilities = JSON.parse(fs.readFileSync(logdir + '/' + filename, 'utf8'));
   _.each(facilities, function(facility) {
     if (facility.contact._id !== contactId) {
       console.log('Contact ' + contactId + ' is not contact for ' + facility._id);
@@ -154,7 +154,7 @@ var testContactDeletion = function(deletedContacts, logdir, filename) {
   });
 };
 
-var db = new PouchDB(dbUrl);
+const db = new PouchDB(dbUrl);
 
 Promise.resolve()
   .then(_.partial(getUsernames, groupFile))
@@ -203,15 +203,15 @@ Promise.resolve()
       });
 
     console.log('CONTACT LINKS');
-    var logfiles = fs.readdirSync(logdir);
-    var relevantLogFiles = _.filter(logfiles, function(file) {
+    const logfiles = fs.readdirSync(logdir);
+    const relevantLogFiles = _.filter(logfiles, function(file) {
       return file.includes('person');
     });
-    var deletedContacts = [];
+    let deletedContacts = [];
     console.log(relevantLogFiles);
     _.each(relevantLogFiles, function(file) {
       try {
-        var moreContacts = JSON.parse(fs.readFileSync(logdir + '/' + file, 'utf8'));
+        const moreContacts = JSON.parse(fs.readFileSync(logdir + '/' + file, 'utf8'));
         deletedContacts = deletedContacts.concat(moreContacts);
       } catch (err) {
         console.log('Couldnt open file ' + file + '. Skipping. ' + err + '\n');

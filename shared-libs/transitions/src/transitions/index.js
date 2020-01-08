@@ -1,12 +1,12 @@
-const _ = require('underscore'),
-  async = require('async'),
-  db = require('../db'),
-  lineage = require('@medic/lineage')(Promise, db.medic),
-  utils = require('../lib/utils'),
-  logger = require('../lib/logger'),
-  config = require('../config'),
-  infodoc = require('@medic/infodoc'),
-  uuid = require('uuid');
+const _ = require('underscore');
+const async = require('async');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const utils = require('../lib/utils');
+const logger = require('../lib/logger');
+const config = require('../config');
+const infodoc = require('@medic/infodoc');
+const uuid = require('uuid');
 
 infodoc.initLib(db.medic, db.sentinel);
 /*

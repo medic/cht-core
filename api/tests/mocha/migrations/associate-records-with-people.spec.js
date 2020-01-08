@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      request = require('request-promise-native'),
-      db = require('../../../src/db'),
-      migration = require('../../../src/migrations/associate-records-with-people');
+const sinon = require('sinon');
+const chai = require('chai');
+const request = require('request-promise-native');
+const db = require('../../../src/db');
+const migration = require('../../../src/migrations/associate-records-with-people');
 
 describe('associate-records-with-people migration', () => {
 
@@ -337,7 +337,8 @@ describe('associate-records-with-people migration', () => {
         messages: [
           {
             to: '+64274622666',
-            message: 'Thank you _Gareth, record for archie (19446) has been reactivated. Notifications regarding this patient will resume.',
+            message: 'Thank you _Gareth, record for archie (19446) has been reactivated. ' +
+            'Notifications regarding this patient will resume.',
             uuid: '944f8526-d0fc-471f-a7f8-bb12f72f09c3'
           }
         ],
@@ -432,7 +433,8 @@ describe('associate-records-with-people migration', () => {
         messages: [
           {
             to: '+64274622666',
-            message: 'Thank you _Gareth, record for archie (19446) has been reactivated. Notifications regarding this patient will resume.',
+            message: 'Thank you _Gareth, record for archie (19446) has been reactivated. ' +
+              'Notifications regarding this patient will resume.',
             uuid: '944f8526-d0fc-471f-a7f8-bb12f72f09c3'
           }
         ],

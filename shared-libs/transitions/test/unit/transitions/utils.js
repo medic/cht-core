@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      assert = require('chai').assert,
-      messages = require('../../../src/lib/messages'),
-      utils = require('../../../src/lib/utils'),
-      transitionUtils = require('../../../src/transitions/utils');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const messages = require('../../../src/lib/messages');
+const utils = require('../../../src/lib/utils');
+const transitionUtils = require('../../../src/transitions/utils');
 
 describe('unit transition utils', () => {
   afterEach(() => sinon.restore());
@@ -55,9 +55,9 @@ describe('unit transition utils', () => {
     const doc = { _id: 'a', parent: { _id: 'PARENT' }, name: 'doc_name' };
     const parent = { _id: 'PARENT', name: 'parent_name' };
     const config = { messages: [
-        { event_type: 'notfound', recipient: 'bob' },
-        { event_type: 'found', message: '{{parent.name}} is not valid for {{doc_name}}', recipient: 'jim' }
-      ] };
+      { event_type: 'notfound', recipient: 'bob' },
+      { event_type: 'found', message: '{{parent.name}} is not valid for {{doc_name}}', recipient: 'jim' }
+    ] };
     const errorKey = 'found';
     const addMessage = sinon.stub(messages, 'addMessage');
     const addError = sinon.stub(messages, 'addError');

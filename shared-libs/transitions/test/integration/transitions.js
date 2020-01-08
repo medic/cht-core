@@ -1,16 +1,16 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      assert = chai.assert,
-      chaiExclude = require('chai-exclude'),
-      db = require('../../src/db'),
-      config = require('../../src/config'),
-      infodoc = require('@medic/infodoc'),
-      updateClinics = require('../../src/transitions/update_clinics');
+const sinon = require('sinon');
+const chai = require('chai');
+const assert = chai.assert;
+const chaiExclude = require('chai-exclude');
+const db = require('../../src/db');
+const config = require('../../src/config');
+const infodoc = require('@medic/infodoc');
+const updateClinics = require('../../src/transitions/update_clinics');
 
 chai.use(chaiExclude);
 
-let transitions,
-    configGet;
+let transitions;
+let configGet;
 
 describe('functional transitions', () => {
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe('functional transitions', () => {
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
 
     transitions.loadTransitions();
-    var change1 = {
+    const change1 = {
       id: 'abc',
       seq: '44',
       doc: {
@@ -405,8 +405,8 @@ describe('functional transitions', () => {
       const docs = [
         {
           id: 'has alert', // intentionally not _id, just used to identify the doc later in assertions
-                           // in this scenario these docs have not yet been saved to Couch, coming straight
-                           // from the SMS api
+          // in this scenario these docs have not yet been saved to Couch, coming straight
+          // from the SMS api
           form: 'V',
           from: 'phone1',
           type: 'data_record',
@@ -570,7 +570,10 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[4].id, 'will have errors');
         assert.equal(savedDocs[4].sent_by, 'Angela');
         assert.equal(savedDocs[4].errors.length, 1);
-        assert.deepEqual(savedDocs[4].errors[0], { code: 'invalid_random_field', message: 'Random field is incorrect' });
+        assert.deepEqual(
+          savedDocs[4].errors[0],
+          { code: 'invalid_random_field', message: 'Random field is incorrect' }
+        );
         assert.equal(savedDocs[4].tasks.length, 2);
         assert.equal(savedDocs[4].tasks[0].messages[0].message, 'Random field is incorrect');
         assert.equal(savedDocs[4].tasks[1].messages[0].message, 'too much randomness');

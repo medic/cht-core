@@ -1,7 +1,8 @@
 describe('UpdateServiceWorker Service', () => {
   'use strict';
 
-  let $timeout, service, fakeGetReg;
+  let $timeout; let service; let 
+    fakeGetReg;
 
   beforeEach(() => {
     module('inboxApp');

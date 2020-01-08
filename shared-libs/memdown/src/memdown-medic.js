@@ -46,7 +46,7 @@ module.exports = (rootDir='./') => {
   function loadDdoc(ddocName) {
     const viewsDir = `${rootDir}/ddocs/${ddocName}/views`;
 
-    let views = {};
+    const views = {};
     if (fs.existsSync(viewsDir)) {
       filesIn(viewsDir).forEach(view => views[view] = loadView(ddocName, view));
     }

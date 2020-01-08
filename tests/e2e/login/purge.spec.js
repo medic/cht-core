@@ -1,8 +1,8 @@
-const auth = require('../../auth')(),
-      commonElements = require('../../page-objects/common/common.po.js'),
-      reports = require('../../page-objects/reports/reports.po.js'),
-      utils = require('../../utils'),
-      loginPage = require('../../page-objects/login/login.po.js');
+const auth = require('../../auth')();
+const commonElements = require('../../page-objects/common/common.po.js');
+const reports = require('../../page-objects/reports/reports.po.js');
+const utils = require('../../utils');
+const loginPage = require('../../page-objects/login/login.po.js');
 const sentinelUtils = require('../sentinel/utils');
 const chai = require('chai');
 const helper = require('../../helper');
@@ -11,13 +11,13 @@ const helper = require('../../helper');
 
 describe('Purging on login', () => {
 
-  const restrictedUserName = 'e2e_restricted',
-        restrictedPass = 'e2e_restricted',
-        restrictedFacilityId = 'restriced-facility',
-        restrictedContactId = 'restricted-contact',
-        patientId = 'e2e-patient',
-        goodFormId = 'good-form',
-        badFormId = 'bad-form';
+  const restrictedUserName = 'e2e_restricted';
+  const restrictedPass = 'e2e_restricted';
+  const restrictedFacilityId = 'restriced-facility';
+  const restrictedContactId = 'restricted-contact';
+  const patientId = 'e2e-patient';
+  const goodFormId = 'good-form';
+  const badFormId = 'bad-form';
   const badFormId2 = 'bad-form2';
   const goodFormId2 = 'good-form2';
 
@@ -219,14 +219,14 @@ describe('Purging on login', () => {
     loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${restrictedUserName}`)
-      .then(doc => utils.request({
-        path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
-        method: 'DELETE'
-      })),
+        .then(doc => utils.request({
+          path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
+          method: 'DELETE'
+        })),
       utils.revertDb()
     ])
-    .then(() => sentinelUtils.deletePurgeDbs())
-    .then(() => done()).catch(done.fail);
+      .then(() => sentinelUtils.deletePurgeDbs())
+      .then(() => done()).catch(done.fail);
   });
 
   beforeEach(utils.beforeEach);
@@ -234,8 +234,8 @@ describe('Purging on login', () => {
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
-      let callback = arguments[arguments.length - 1];
-      let db = window.PouchDB('medic-user-e2e_restricted');
+      const callback = arguments[arguments.length - 1];
+      const db = window.PouchDB('medic-user-e2e_restricted');
       db.get('_local/purgelog').then(doc => callback(doc), err => callback(err));
     }));
   };
@@ -248,7 +248,11 @@ describe('Purging on login', () => {
     loginPage.login(restrictedUserName, restrictedPass);
     commonElements.calm();
     commonElements.goToReports();
-    browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
+    browser.wait(
+      () => element(by.css('#reports-list li:first-child')).isPresent(),
+      10000,
+      'There should be at least one report in the LHS'
+    );
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
 

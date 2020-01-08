@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      definitions = require('../../../form-definitions'),
-      config = require('../../../../src/config'),
-      smsparser = require('../../../../src/services/report/smsparser');
+const sinon = require('sinon');
+const chai = require('chai');
+const definitions = require('../../../form-definitions');
+const config = require('../../../../src/config');
+const smsparser = require('../../../../src/services/report/smsparser');
 
 describe('sms parser', () => {
 
@@ -97,21 +97,21 @@ describe('sms parser', () => {
   });
 
   it('parse month type', () => {
-    const doc = { message: '1!FOO!10' },
-          def = {
-            meta: {code: 'FOO', label: 'Test Monthly Report'},
-            fields: {
-              month: {
-                labels: {
-                   short: 'Report Month',
-                   tiny: 'RPM'
-                },
-                type: 'month',
-                required: true
-              }
-            }
+    const doc = { message: '1!FOO!10' };
+    const def = {
+      meta: {code: 'FOO', label: 'Test Monthly Report'},
+      fields: {
+        month: {
+          labels: {
+            short: 'Report Month',
+            tiny: 'RPM'
           },
-          data = smsparser.parse(def, doc);
+          type: 'month',
+          required: true
+        }
+      }
+    };
+    const data = smsparser.parse(def, doc);
     chai.expect(data.month).to.equal(10);
   });
 
@@ -754,7 +754,8 @@ describe('sms parser', () => {
 
     const arr = smsparser.parseArray(def, doc);
     chai.expect(arr).to.deep.equal(
-      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', '0', '1', '2', '3', '4', '5', '6', '9', '8', '7', '6', '5', '4']
+      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11',
+        '0', '1', '2', '3', '4', '5', '6', '9', '8', '7', '6', '5', '4']
     );
   });
 
@@ -763,7 +764,8 @@ describe('sms parser', () => {
     const doc = {
       sent_timestamp: '12-11-11 15:00',
       from: '+15551212',
-      message: 'J1!YYYY!HFI#facility#RPY#2011#RPM#11#MSP#0#L1T#1#L2T#2#CDT#3#ZDT#4#ODT#5#EOT#6#L1O#9#L2O#8#CDO#7#ZDO#6#ODO#5#EDO#4'
+      message: 'J1!YYYY!HFI#facility#RPY#2011#RPM#11#MSP#0#L1T#1#L2T#2#CDT#3#ZDT#4#ODT#5#EOT#6#L1O#9#' +
+        'L2O#8#CDO#7#ZDO#6#ODO#5#EDO#4'
     };
     const actual = smsparser.parse(def, doc);
     chai.expect(actual).to.deep.equal({
@@ -790,7 +792,8 @@ describe('sms parser', () => {
     });
     const arr = smsparser.parseArray(def, doc);
     chai.expect(arr).to.deep.equal(
-      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', '0', '1', '2', '3', '4', '5', '6', '9', '8', '7', '6', '5', '4']
+      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11',
+        '0', '1', '2', '3', '4', '5', '6', '9', '8', '7', '6', '5', '4']
     );
   });
 
@@ -799,7 +802,8 @@ describe('sms parser', () => {
     const doc = {
       sent_timestamp: '12-11-11 15:00',
       from: '+15551212',
-      message: 'J1!YYYY!EDO#4#ODT#5#RPM#11#L2T#2#HFI#facility#CDT#3#CDO#7#MSP#0#ZDO#6#L1O#9#RPY#2011#EOT#6#ODO#5#L1T#1#ZDT#4#L2O#8'
+      message: 'J1!YYYY!EDO#4#ODT#5#RPM#11#L2T#2#HFI#facility#CDT#3#CDO#7#MSP#0#ZDO#6#L1O#9#RPY#2011#EOT#6#ODO#' +
+      '5#L1T#1#ZDT#4#L2O#8'
     };
     const actual = smsparser.parse(def, doc);
     chai.expect(actual).to.deep.equal({
@@ -826,7 +830,8 @@ describe('sms parser', () => {
     });
     const arr = smsparser.parseArray(def, doc);
     chai.expect(arr).to.deep.equal(
-      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', '0', '1', '2', '3', '4', '5', '6', '9', '8', '7', '6', '5', '4']
+      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11',
+        '0', '1', '2', '3', '4', '5', '6', '9', '8', '7', '6', '5', '4']
     );
   });
 
@@ -862,7 +867,8 @@ describe('sms parser', () => {
     });
     const arr = smsparser.parseArray(def, doc);
     chai.expect(arr).to.deep.equal(
-      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', '0', undefined, '2', '3', undefined, '5', '6', '9', undefined, '7', '6', undefined, '4']
+      ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', '0', undefined, '2', '3', undefined,
+        '5', '6', '9', undefined, '7', '6', undefined, '4']
     );
   });
 
@@ -898,7 +904,8 @@ describe('sms parser', () => {
     });
     const arr = smsparser.parseArray(def, doc);
     chai.expect(arr).to.deep.equal(
-      ['12-11-11 15:00', '+15551212', 'fa\\cility#2#3', undefined, undefined, undefined, undefined, '2', '3', undefined, undefined, undefined, undefined, undefined, '7', undefined, undefined, undefined]
+      ['12-11-11 15:00', '+15551212', 'fa\\cility#2#3', undefined, undefined, undefined, undefined,
+        '2', '3', undefined, undefined, undefined, undefined, undefined, '7', undefined, undefined, undefined]
     );
   });
 

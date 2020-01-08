@@ -2,12 +2,12 @@ describe('Search service', function() {
 
   'use strict';
 
-  var service,
-      GetDataRecords,
-      searchStub,
-      db,
-      clock,
-      session;
+  let service;
+  let GetDataRecords;
+  let searchStub;
+  let db;
+  let clock;
+  let session;
 
   let qAll;
 
@@ -19,8 +19,8 @@ describe('Search service', function() {
         return qAll(map);
       }
 
-      const keys = Object.keys(map),
-            iterable = keys.map(key => map[key]);
+      const keys = Object.keys(map);
+      const iterable = keys.map(key => map[key]);
 
       return qAll(iterable).then(results => {
         const resultMap = {};
@@ -61,7 +61,7 @@ describe('Search service', function() {
   describe('debouncing', function() {
 
     it('debounces if the same query is executed twice', function(done) {
-      var expected = [ { id: 'a' } ];
+      const expected = [ { id: 'a' } ];
       GetDataRecords.returns(Promise.resolve(expected));
       service('reports', {})
         .then(function(actual) {
@@ -75,9 +75,9 @@ describe('Search service', function() {
     });
 
     it('does not debounce if the same query is executed twice with the force option', function() {
-      var expected = [ { id: 'a' } ];
+      const expected = [ { id: 'a' } ];
       GetDataRecords.returns(Promise.resolve(expected));
-      var firstReturned = false;
+      let firstReturned = false;
       service('reports', {})
         .then(function(actual) {
           firstReturned = true;
@@ -95,7 +95,7 @@ describe('Search service', function() {
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
 
-      var firstReturned = false;
+      let firstReturned = false;
       const filters = { foo: 'bar' };
       service('reports', filters)
         .then(function(actual) {
@@ -115,7 +115,7 @@ describe('Search service', function() {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
-      var firstReturned = false;
+      let firstReturned = false;
       service('reports', { freetext: 'first' })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
@@ -129,7 +129,7 @@ describe('Search service', function() {
     });
 
     it('does not debounce subsequent queries', function() {
-      var expected = [ { id: 'a' } ];
+      const expected = [ { id: 'a' } ];
       GetDataRecords.returns(Promise.resolve(expected));
       return service('reports', {})
         .then(function(actual) {
@@ -572,14 +572,14 @@ describe('Search service', function() {
         docIds: ['1', '2', '3', '4'],
         queryResultsCache: [
           { key: '1', value: moment('2018-08-10').valueOf() },
-            { key: '2', value: moment('2018-08-18').valueOf() },
-            { key: '3', value: moment('2018-07-13').valueOf() },
-            { key: '4', value: -1 },
-            { key: '5', value: moment('2018-07-21').valueOf() },
-            { key: '6', value: moment('2018-06-01').valueOf() },
-            { key: '7', value: moment('2018-07-29').valueOf() },
-            { key: '8', value: moment('2018-07-30').valueOf() },
-          ]
+          { key: '2', value: moment('2018-08-18').valueOf() },
+          { key: '3', value: moment('2018-07-13').valueOf() },
+          { key: '4', value: -1 },
+          { key: '5', value: moment('2018-07-21').valueOf() },
+          { key: '6', value: moment('2018-06-01').valueOf() },
+          { key: '7', value: moment('2018-07-29').valueOf() },
+          { key: '8', value: moment('2018-07-30').valueOf() },
+        ]
       });
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
       db.query
@@ -605,8 +605,12 @@ describe('Search service', function() {
       return service('contacts', {}, {}, { displayLastVisitedDate: true, sortByLastVisitedDate: true })
         .then(result => {
           chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: true, sortByLastVisitedDate: true }]);
+          chai.expect(searchStub.args[0]).to.deep.equal([
+            'contacts',
+            {},
+            { limit: 50, skip: 0 },
+            { displayLastVisitedDate: true, sortByLastVisitedDate: true }
+          ]);
           chai.expect(db.query.callCount).to.equal(1);
           chai.expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',

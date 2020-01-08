@@ -56,7 +56,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
           });
       })
   );
-  let initialized = initialize();
+  const initialized = initialize();
 
   const cancelDebounce = debounce => {
     if (debounce) {
@@ -128,7 +128,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       return TranslateFrom(property, task);
     };
 
-    for (let taskDoc of taskDocs) {
+    for (const taskDoc of taskDocs) {
       const { emission } = taskDoc;
       if (emission) {
         emission.title = translateProperty(emission.title, emission);

@@ -55,46 +55,46 @@ describe('Users API', () => {
         },
         body: _usersUser
       })
-      .then(() => utils.saveDocs(medicData))
-      .then(() => {
-        const deferred = protractor.promise.defer();
+        .then(() => utils.saveDocs(medicData))
+        .then(() => {
+          const deferred = protractor.promise.defer();
 
-        const options = {
-          hostname: constants.API_HOST,
-          port: constants.API_PORT,
-          path: '/_session',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          auth: `${username}:${password}`
-        };
+          const options = {
+            hostname: constants.API_HOST,
+            port: constants.API_PORT,
+            path: '/_session',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            auth: `${username}:${password}`
+          };
 
-        // Use http service to extract cookie
-        const req = http.request(options, res => {
-          if (res.statusCode !== 200) {
-            return deferred.reject('Expected 200 from _session authing');
-          }
+          // Use http service to extract cookie
+          const req = http.request(options, res => {
+            if (res.statusCode !== 200) {
+              return deferred.reject('Expected 200 from _session authing');
+            }
 
-          // Example header:
-          // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
-          try {
-            cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
-          } catch (err) {
-            return deferred.reject(err);
-          }
+            // Example header:
+            // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
+            try {
+              cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
+            } catch (err) {
+              return deferred.reject(err);
+            }
 
-          deferred.fulfill(cookie);
-        });
+            deferred.fulfill(cookie);
+          });
 
-        req.write(JSON.stringify({
+          req.write(JSON.stringify({
             name: username,
             password: password
-        }));
-        req.end();
+          }));
+          req.end();
 
-        return deferred.promise;
-      }));
+          return deferred.promise;
+        }));
 
     afterAll(() =>
       utils.request(`/_users/${user(username)}`)
@@ -117,10 +117,10 @@ describe('Users API', () => {
           place: newPlaceId
         }
       })
-      .then(() => utils.getDoc(user(username)))
-      .then(doc => {
-        expect(doc.facility_id).toBe(newPlaceId);
-      }));
+        .then(() => utils.getDoc(user(username)))
+        .then(doc => {
+          expect(doc.facility_id).toBe(newPlaceId);
+        }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
       utils.request({
@@ -131,10 +131,10 @@ describe('Users API', () => {
         },
         auth: { username, password },
       })
-      .then(() => fail('You should get a 401 in this situation'))
-      .catch(err => {
-        expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
-      }));
+        .then(() => fail('You should get a 401 in this situation'))
+        .catch(err => {
+          expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
+        }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
       utils.request({
@@ -145,10 +145,10 @@ describe('Users API', () => {
         },
         auth: { username, password },
       })
-      .then(() => fail('You should get an error in this situation'))
-      .catch(err => {
-        expect(err.responseBody.error).toBe('unauthorized');
-      }));
+        .then(() => fail('You should get an error in this situation'))
+        .catch(err => {
+          expect(err.responseBody.error).toBe('unauthorized');
+        }));
 
     it('Allows for users to modify themselves with a cookie', () =>
       utils.request({
@@ -162,53 +162,53 @@ describe('Users API', () => {
         },
         auth: { username, password},
       })
-      .then(() => utils.getDoc(user(username)))
-      .then(doc => {
-        expect(doc.fullname).toBe('Awesome Guy');
-      }));
+        .then(() => utils.getDoc(user(username)))
+        .then(doc => {
+          expect(doc.fullname).toBe('Awesome Guy');
+        }));
 
     it('Does not allow users to update their password with only a cookie', () =>
-        utils.request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          headers: {
-            'Cookie': cookie
-          },
-          body: {
-            password: 'swizzlesticks'
-          },
-          noAuth: true
-        })
+      utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        headers: {
+          'Cookie': cookie
+        },
+        body: {
+          password: 'swizzlesticks'
+        },
+        noAuth: true
+      })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
-        utils.request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          headers: {
-            'Cookie': cookie
-          },
-          body: {
-            password: password // keeping it the same, but the security check will be equivilent,
-                               // our code can't know it's the same!
-          },
-          auth: { username, password }
-        })
+      utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        headers: {
+          'Cookie': cookie
+        },
+        body: {
+          password: password // keeping it the same, but the security check will be equivilent,
+          // our code can't know it's the same!
+        },
+        auth: { username, password }
+      })
         .catch(() => fail('This should not result in an error')));
 
     it('Does allow users to update their password with just basic auth', () =>
-        utils.request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          body: {
-            password: password // keeping it the same, but the security check will be equivilent,
-                               // our code can't know it's the same!
-          },
-          auth: { username, password }
-        })
+      utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        body: {
+          password: password // keeping it the same, but the security check will be equivilent,
+          // our code can't know it's the same!
+        },
+        auth: { username, password }
+      })
         .catch(() => fail('This should not result in an error')));
 
   });
@@ -259,7 +259,8 @@ describe('Users API', () => {
     let offlineRequestOptions;
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
-    let expectedNbrDocs = nbrOfflineDocs + 4; // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
 
     beforeAll(done => {

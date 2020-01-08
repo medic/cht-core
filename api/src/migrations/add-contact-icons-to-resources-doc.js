@@ -1,8 +1,8 @@
-const fs = require('fs'),
-      path = require('path'),
-      {promisify} = require('util'),
-      asyncEach = require('async/each'),
-      db = require('../db');
+const fs = require('fs');
+const path = require('path');
+const {promisify} = require('util');
+const asyncEach = require('async/each');
+const db = require('../db');
 
 const resources = [
   { name: 'medic-person', file: 'medic-person.svg', type: 'image/svg+xml' },

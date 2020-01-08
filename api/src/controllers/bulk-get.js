@@ -1,6 +1,6 @@
-const bulkGet = require('../services/bulk-get'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+const bulkGet = require('../services/bulk-get');
+const _ = require('underscore');
+const serverUtils = require('../server-utils');
 
 const requestError = reason => ({
   error: 'bad_request',

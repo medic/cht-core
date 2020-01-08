@@ -22,7 +22,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw1', parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -54,7 +57,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw2', parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw2',
+      parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -334,8 +340,8 @@ describe('transitions', () => {
     };
     Object.assign(settings, transitionsConfig);
 
-    let docs,
-        ids;
+    let docs;
+    let ids;
 
     return utils
       .updateSettings(settings)
@@ -492,8 +498,8 @@ describe('transitions', () => {
         utils.getDoc('person4')
       ]))
       .then(([infos, child1, person3, person4]) => {
-        let doc,
-            infodoc;
+        let doc;
+        let infodoc;
 
         //temp_unknown_patient
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_patient');
@@ -503,7 +509,9 @@ describe('transitions', () => {
         //temp_invalid
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_invalid');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //temp_successful
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_successful');
@@ -513,7 +521,9 @@ describe('transitions', () => {
         //temp_high
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_high');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
@@ -562,9 +572,8 @@ describe('transitions', () => {
         utils.getDoc('person4')
       ]))
       .then(([infos, updated, person3, person4]) => {
-        let doc,
-            infodoc,
-            updatedDoc;
+        let doc;
+        let infodoc;
 
         //temp_unknown_patient
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_patient');
@@ -574,7 +583,9 @@ describe('transitions', () => {
         //temp_invalid
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_invalid');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //temp_successful
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_successful');
@@ -584,7 +595,9 @@ describe('transitions', () => {
         //temp_high
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_high');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
@@ -615,7 +628,7 @@ describe('transitions', () => {
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
         infodoc = infos.find(info => info.doc_id === doc._id);
         expectTransitions(infodoc, 'default_responses', 'update_clinics', 'muting');
-        updatedDoc = updated.find(u => u._id === doc._id);
+        const updatedDoc = updated.find(u => u._id === doc._id);
         chai.expect(updatedDoc._rev).not.to.equal(doc._rev);
         chai.expect(updatedDoc.tasks.length).to.equal(1);
         chai.expect(updatedDoc.tasks[0].messages[0].message).to.equal('Patient patient4 muted');
@@ -782,7 +795,7 @@ describe('transitions', () => {
       .then(([ infos, docs ]) => {
         const immPatient2 = docs.filter(doc => doc.fields.patient_id === 'patient2');
         immPatient2.forEach(doc => {
-         chai.expect(doc.contact).to.be.an('object');
+          chai.expect(doc.contact).to.be.an('object');
           chai.expect(doc.scheduled_tasks.length).to.equal(2);
           chai.expect(doc.scheduled_tasks[0].messages[0].message).to.equal('Immunize patient2 for disease A');
           chai.expect(doc.scheduled_tasks[1].messages[0].message).to.equal('Immunize patient2 for disease B');

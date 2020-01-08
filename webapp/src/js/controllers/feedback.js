@@ -16,7 +16,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     ctrl.model = {};
     ctrl.error = {};
 
-    var validateMessage = function(message) {
+    const validateMessage = function(message) {
       if (message) {
         ctrl.error.message = false;
         return $q.resolve();
@@ -35,7 +35,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     ctrl.submit = function() {
       $scope.setProcessing();
 
-      var message = ctrl.model.message && ctrl.model.message.trim();
+      const message = ctrl.model.message && ctrl.model.message.trim();
       return validateMessage(message)
         .then(function() {
           if (ctrl.error.message) {

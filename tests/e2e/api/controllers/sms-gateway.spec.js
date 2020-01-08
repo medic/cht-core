@@ -118,13 +118,13 @@ describe('/sms', function() {
           .then(() => assert.messageState('abc-123', 'sent'));
       });
 
-      it('should update message multiple times when multiple status updates for the same message are received', function() {
+      it('should update message multiple times when multiple status updates for the same message are received', () => {
         return setup.saveWoMessage('abc-123', 'hello again')
           .then(() => assert.messageWithoutState('abc-123'))
 
           .then(() => api.postStatuses(
-              { id:'abc-123', status:'SENT' },
-              { id:'abc-123', status:'DELIVERED' }))
+            { id:'abc-123', status:'SENT' },
+            { id:'abc-123', status:'DELIVERED' }))
           .then(assert.response({ messages:[] }))
 
           .then(() => assert.messageStates({ id:'abc-123', states:['sent', 'delivered'] }));
@@ -166,23 +166,23 @@ describe('/sms', function() {
     });
 
     it('should still save messages when a status update for an unknown message is received', function() {
-        return setup.saveWoMessage('abc-123', 'hello again')
-          .then(() => assert.messageWithoutState('abc-123'))
+      return setup.saveWoMessage('abc-123', 'hello again')
+        .then(() => assert.messageWithoutState('abc-123'))
 
-          .then(() => api.postStatuses(
-              { id:'abc-123', status:'SENT' },
-              { id:'def-456', status:'DELIVERED' }))
-          .then(assert.response({ messages:[] }))
-          .then(() => assert.messageStates({ id:'abc-123', states:['sent'] }));
+        .then(() => api.postStatuses(
+          { id:'abc-123', status:'SENT' },
+          { id:'def-456', status:'DELIVERED' }))
+        .then(assert.response({ messages:[] }))
+        .then(() => assert.messageStates({ id:'abc-123', states:['sent'] }));
     });
 
     it('should still save messages when an unrecognised status update is received', function() {
-        return setup.saveWoMessage('abc-123', 'hello again')
-          .then(() => assert.messageWithoutState('abc-123'))
+      return setup.saveWoMessage('abc-123', 'hello again')
+        .then(() => assert.messageWithoutState('abc-123'))
 
-          .then(() => api.postStatus('abc-123', 'WTF'))
-          .then(assert.response({ messages:[] }))
-          .then(() => assert.messageStates({ id:'abc-123', states:['unrecognised'] }));
+        .then(() => api.postStatus('abc-123', 'WTF'))
+        .then(assert.response({ messages:[] }))
+        .then(() => assert.messageStates({ id:'abc-123', states:['unrecognised'] }));
     });
 
   });

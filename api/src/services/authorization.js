@@ -1,12 +1,12 @@
-const db = require('../db'),
-      auth = require('../auth'),
-      _ = require('lodash'),
-      config = require('../config'),
-      viewMapUtils = require('@medic/view-map-utils'),
-      tombstoneUtils = require('@medic/tombstone-utils');
+const db = require('../db');
+const auth = require('../auth');
+const _ = require('lodash');
+const config = require('../config');
+const viewMapUtils = require('@medic/view-map-utils');
+const tombstoneUtils = require('@medic/tombstone-utils');
 
-const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
-      UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
+const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
+const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 
 // fake view map, to store whether doc is a medic.user-settings doc
 const couchDbUser = doc => doc.type === 'user-settings';
@@ -219,8 +219,8 @@ const getAllTombstones = (ids) => {
         start_key: tombstoneUtils.getTombstonePrefix(id),
         end_key: `${tombstoneUtils.getTombstonePrefix(id)}\ufff0`,
       };
-    return db.medic.allDocs(opts);
-  });
+      return db.medic.allDocs(opts);
+    });
 
   return tombstonePromises;
 };
@@ -339,11 +339,11 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
 
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
-    const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name],
-          tombstoneIds = [];
+    const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name];
+    const tombstoneIds = [];
 
     results.rows.forEach(row => {
-      if (isSensitive(feed.userCtx, row.key, row.value.submitter, feed.subjectIds.indexOf(row.value.submitter) !== -1)) {
+      if (isSensitive(feed.userCtx, row.key, row.value.submitter, feed.subjectIds.includes(row.value.submitter))) {
         return;
       }
 

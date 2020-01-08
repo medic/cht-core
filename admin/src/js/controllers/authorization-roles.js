@@ -14,8 +14,8 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
     $scope.newRole = {};
     $scope.validation = {};
 
-    var validate = function(newRole) {
-      var errors = {};
+    const validate = function(newRole) {
+      const errors = {};
       if (!newRole.key) {
         errors.key = $translate.instant('field is required', {
           field: $translate.instant('configuration.role')
@@ -29,7 +29,7 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
       return errors;
     };
 
-    var save = function(changes) {
+    const save = function(changes) {
       return UpdateSettings({ roles: changes }, { replace: true })
         .then(function() {
           $scope.newRole = {};
@@ -56,7 +56,7 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
 
     $scope.delete = function(deleteKey) {
       // clone the roles so the UI doesn't update yet
-      var changes = {};
+      const changes = {};
       Object.keys($scope.roles).forEach(function(key) {
         if (key !== deleteKey) {
           changes[key] = $scope.roles[key];
@@ -76,7 +76,7 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
       }
       $scope.submitting = true;
       // clone the roles so the UI doesn't update yet
-      var changes = {};
+      const changes = {};
       Object.keys($scope.roles).forEach(function(key) {
         changes[key] = $scope.roles[key];
       });
