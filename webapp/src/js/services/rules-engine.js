@@ -19,7 +19,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
   Settings,
   TranslateFrom,
   UHCSettings,
-  UserContact
+  UserContact,
+  UserSettings
 ) {
   'ngInject';
 
@@ -36,10 +37,10 @@ angular.module('inboxServices').factory('RulesEngine', function(
           return false;
         }
 
-        return Promise.all([ Settings(), UserContact() ])
-          .then(([settingsDoc, userContactDoc]) => {
+        return Promise.all([ Settings(), UserContact(), UserSettings() ])
+          .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
             const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
-            return RulesEngineCore.initialize(rulesSettings, userContactDoc)
+            return RulesEngineCore.initialize(rulesSettings, userContactDoc, userSettingsDoc)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
@@ -48,7 +49,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
                   ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTaskFreshness();
-                  
+
                   ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTargetFreshness();
                 }
@@ -117,7 +118,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       },
     });
   };
-  
+
   const translateTaskDocs = taskDocs => {
     const translateProperty = (property, task) => {
       if (typeof property === 'string') {

@@ -21,14 +21,14 @@ const medicPouchProvider = db => {
       return docsOf(db.query('medic-client/tasks_by_contact', options));
     },
 
-    allTaskData: userDoc => {
-      const userContactId = userDoc && userDoc._id;
+    allTaskData: userSettingsDoc => {
+      const userSettingsId = userSettingsDoc && userSettingsDoc._id;
       return Promise.all([
         docsOf(db.query('medic-client/contacts_by_type', { include_docs: true })),
         docsOf(db.query('medic-client/reports_by_subject', { include_docs: true })),
         self.allTasks('requester'),
       ])
-        .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userContactId }));
+        .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userSettingsId }));
     },
 
     contactsBySubjectId: subjectIds => {
@@ -44,13 +44,15 @@ const medicPouchProvider = db => {
 
     stateChangeCallback: docUpdateClosure(db),
 
-    commitTargetDoc: (assign, userDoc, docTag) => {
-      const userContactId = userDoc && userDoc._id;
-      const _id = `target-${docTag}-${userContactId}`;
+    commitTargetDoc: (assign, userContactDoc, userSettingsDoc, docTag) => {
+      const userContactId = userContactDoc && userContactDoc._id;
+      const userSettingsId = userSettingsDoc && userSettingsDoc._id;
+      const _id = `target-${docTag}-${userContactId}-${userSettingsId}`;
       const createNew = () => ({
         _id,
         type: 'target',
-        user: userContactId,
+        user: userSettingsId,
+        owner: userContactId,
       });
 
       const today = moment().startOf('day').valueOf();
@@ -69,7 +71,7 @@ const medicPouchProvider = db => {
       if (!taskDocs || taskDocs.length === 0) {
         return Promise.resolve([]);
       }
-   
+
       console.debug(`Committing ${taskDocs.length} task document updates`);
       return db.bulkDocs(taskDocs)
         .catch(err => console.error('Error committing task documents', err));
@@ -82,7 +84,7 @@ const medicPouchProvider = db => {
       return docsOf(db.query('medic-client/tasks_by_contact', { keys, include_docs: true }));
     },
 
-    taskDataFor: (contactIds, userDoc) => {
+    taskDataFor: (contactIds, userSettingsDoc) => {
       if (!contactIds || contactIds.length === 0) {
         return Promise.resolve({});
       }
@@ -93,14 +95,14 @@ const medicPouchProvider = db => {
             registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
             return agg;
           }, new Set(contactIds));
-         
+
           const keys = Array.from(subjectIds).map(key => [key]);
           return Promise.all([
             docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
             self.tasksByRelation(contactIds, 'requester'),
           ])
             .then(([reportDocs, taskDocs]) => ({
-              userContactId: userDoc && userDoc._id,
+              userSettingsId: userSettingsDoc && userSettingsDoc._id,
               contactDocs,
               reportDocs,
               taskDocs,

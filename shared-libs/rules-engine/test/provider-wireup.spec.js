@@ -68,9 +68,10 @@ describe('provider-wireup integration tests', () => {
   let db;
   beforeEach(async () => {
     sinon.useFakeTimers(NOW);
-    sinon.stub(rulesStateStore, 'currentUser').returns({ _id: 'mock_user_id' });
+    sinon.stub(rulesStateStore, 'currentUserContact').returns({ _id: 'mock_user_id' });
+    sinon.stub(rulesStateStore, 'currentUserSettings').returns({ _id: 'org.couchdb.user:username' });
     wireup.__set__('rulesStateStore', rulesStateStore);
-   
+
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
@@ -145,7 +146,7 @@ describe('provider-wireup integration tests', () => {
       await wireup.updateEmissionsFor(provider, []);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
     });
- 
+
     it('contact id', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
@@ -179,7 +180,7 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       sinon.spy(db, 'bulkDocs');
       await wireup.initialize(provider, settings, {});
-   
+
       const refreshRulesEmissions = sinon.stub().resolves({
         targetEmissions: [],
         taskTransforms: [],
@@ -190,7 +191,7 @@ describe('provider-wireup integration tests', () => {
         contactDocs: [],
         reportDocs: [headlessReport],
         taskDocs: [headlessTask],
-        userContactId: 'mock_user_id',
+        userSettingsId: 'org.couchdb.user:username',
       });
 
       expect(db.bulkDocs.callCount).to.eq(1);
@@ -206,20 +207,20 @@ describe('provider-wireup integration tests', () => {
       const rules = noolsPartnerTemplate('', { });
       const settings = { rules };
       await wireup.initialize(provider, settings, {});
-   
+
       const refreshRulesEmissions = sinon.stub().resolves({
         targetEmissions: [],
         taskTransforms: [],
       });
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
-   
+
       await withMockRefresher(() => wireup.fetchTasksFor(provider));
       expect(refreshRulesEmissions.callCount).to.eq(1);
       expect(refreshRulesEmissions.args[0][0]).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
         reportDocs: [headlessReport, reportConnectedByPlace, chtDocs.pregnancyReport],
         taskDocs: [headlessTask, taskRequestedByChtContact],
-        userContactId: 'mock_user_id',
+        userSettingsId: 'org.couchdb.user:username',
       });
 
       expect(rulesStateStore.hasAllContacts()).to.be.true;
@@ -246,7 +247,7 @@ describe('provider-wireup integration tests', () => {
             timestamp: 50000,
           }]
         }],
-        userContactId: 'mock_user_id',
+        userSettingsId: 'org.couchdb.user:username',
       });
     });
 
@@ -257,7 +258,7 @@ describe('provider-wireup integration tests', () => {
       const settings = { rules };
       await wireup.initialize(provider, settings, {});
       await rulesStateStore.markFresh(Date.now(), 'fresh');
-   
+
       const actual = await wireup.fetchTasksFor(provider, ['fresh']);
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
@@ -286,7 +287,7 @@ describe('provider-wireup integration tests', () => {
 
     it('user rewinds system clock', async () => {
       const getWrittenTaskDoc = () => {
-        const expectedId = `task~mock_user_id~${emission._id}~${Date.now()}`;
+        const expectedId = `task~org.couchdb.user:username~${emission._id}~${Date.now()}`;
         const committedDocs = db.bulkDocs.args.reduce((agg, arg) => [...agg, ...arg[0]], []);
         const doc = committedDocs.find(doc => doc._id === expectedId);
         expect(doc).to.not.be.undefined;
@@ -363,19 +364,20 @@ describe('provider-wireup integration tests', () => {
 
     it('aggregate target doc is written (latest)', async () => {
       sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, chtRulesSettings(), {});
+      await wireup.initialize(provider, chtRulesSettings(), {}, {});
       const actual = await wireup.fetchTargets(provider);
       expect(actual.length).to.be.gt(1);
 
       expect(provider.commitTargetDoc.callCount).to.eq(1);
       await provider.commitTargetDoc.returnValues[0];
 
-      const writtenDoc = await db.get('target-latest-mock_user_id');
+      const writtenDoc = await db.get('target-latest-mock_user_id-org.couchdb.user:username');
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
-        _id: 'target-latest-mock_user_id',
+        _id: 'target-latest-mock_user_id-org.couchdb.user:username',
         type: 'target',
         updated_date: moment(NOW).startOf('day').valueOf(),
-        user: 'mock_user_id',
+        owner: 'mock_user_id',
+        user: 'org.couchdb.user:username',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
         id: 'deaths-this-month',
@@ -388,7 +390,7 @@ describe('provider-wireup integration tests', () => {
 
     it('aggregate target doc is written (date)', async () => {
       sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, chtRulesSettings(), {});
+      await wireup.initialize(provider, chtRulesSettings(), {}, {});
       const interval = { start: 1, end: 1000 };
       const actual = await wireup.fetchTargets(provider, interval);
       expect(actual.length).to.be.gt(1);
@@ -396,13 +398,14 @@ describe('provider-wireup integration tests', () => {
       expect(provider.commitTargetDoc.callCount).to.eq(1);
       await provider.commitTargetDoc.returnValues[0];
 
-      const expectedId = `target-${moment(1000).format('YYYY-MM')}-mock_user_id`;
+      const expectedId = `target-${moment(1000).format('YYYY-MM')}-mock_user_id-org.couchdb.user:username`;
       const writtenDoc = await db.get(expectedId);
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
         _id: expectedId,
         type: 'target',
         updated_date: moment(NOW).startOf('day').valueOf(),
-        user: 'mock_user_id',
+        owner: 'mock_user_id',
+        user: 'org.couchdb.user:username',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
         id: 'deaths-this-month',
@@ -424,7 +427,7 @@ describe('provider-wireup integration tests', () => {
         }]
       };
       await wireup.initialize(provider, settings, {});
-   
+
       const hhEmission = (day, family, patient) => {
         const date = moment(`2000-01-${day}`);
         return {
@@ -451,7 +454,7 @@ describe('provider-wireup integration tests', () => {
         ],
       });
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
-   
+
       const interval = {
         start: moment('2000-01-01').valueOf(),
         end: moment('2000-01-31').valueOf(),

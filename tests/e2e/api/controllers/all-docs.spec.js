@@ -289,14 +289,27 @@ describe('all_docs handler', () => {
       { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
     ];
 
+    // skip all "default" docs
+    // this includes does that emit _all or the user settings doc id,
+    // along with medic-client ddoc and the user-settings doc itself
+    const getSkip = () => {
+      const ddocAndUserSettings = 2;
+      return utils.db
+        .query('medic/docs_by_replication_key', { keys: ['_all', 'org.couchdb.user:offline'] })
+        .then(result => {
+          return result.rows && result.rows.length + ddocAndUserSettings;
+        });
+    };
+
     return utils
       .saveDocs(docs)
-      .then(() => Promise.all([
+      .then(() => getSkip())
+      .then(skip => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions)
+          { path: `/_all_docs?limit=2&skip=${skip}&include_docs=false` }, offlineRequestOptions)
         ),
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions)
+          { path: `/_all_docs?limit=1&skip=${skip + 2}&include_docs=true` }, offlineRequestOptions)
         )
       ]))
       .then(results => {

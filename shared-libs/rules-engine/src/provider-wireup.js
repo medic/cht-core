@@ -26,15 +26,15 @@ module.exports = {
    * @param {Boolean} settings.enableTargets Flag to enable targets
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (provider, settings, userDoc) => {
-    const isEnabled = rulesEmitter.initialize(settings, userDoc);
+  initialize: (provider, settings, userContactDoc, userSettingsDoc) => {
+    const isEnabled = rulesEmitter.initialize(settings, userContactDoc);
     if (!isEnabled) {
       return Promise.resolve();
     }
 
     const { enableTasks=true, enableTargets=true } = settings;
     wireupOptions = { enableTasks, enableTargets };
-         
+
     return provider.existingRulesStateStore()
       .then(existingStateDoc => {
         if (!rulesEmitter.isLatestNoolsSchema()) {
@@ -45,7 +45,7 @@ module.exports = {
           existingStateDoc,
           { rulesStateStore: updatedState }
         );
-        rulesStateStore.load(existingStateDoc.rulesStateStore, settings, userDoc, contactClosure);
+        rulesStateStore.load(existingStateDoc.rulesStateStore, settings, userContactDoc, userSettingsDoc, contactClosure);
       });
   },
 
@@ -91,7 +91,7 @@ module.exports = {
 
     const calculationTimestamp = Date.now();
     const targetEmissionFilter = filterInterval && (emission => {
-      const emissionDate = moment(emission.date);	
+      const emissionDate = moment(emission.date);
       return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
     });
 
@@ -132,7 +132,7 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   );
 
   const refreshForAllContacts = (calculationTimestamp) => (
-    provider.allTaskData(rulesStateStore.currentUser())
+    provider.allTaskData(rulesStateStore.currentUserSettings())
       .then(freshData => (
         refreshAndSave(freshData)
           .then(() => {
@@ -154,7 +154,7 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
 
   const refreshForKnownContacts = (calculationTimestamp, contactIds) => {
     const dirtyContactIds = contactIds.filter(contactId => rulesStateStore.isDirty(contactId));
-    return provider.taskDataFor(dirtyContactIds, rulesStateStore.currentUser())
+    return provider.taskDataFor(dirtyContactIds, rulesStateStore.currentUserSettings())
       .then(freshData => refreshAndSave(freshData, dirtyContactIds))
       .then(() => {
         rulesStateStore.markFresh(calculationTimestamp, dirtyContactIds);
@@ -182,5 +182,5 @@ const storeTargetsDoc = (provider, targets, filterInterval) => {
     updated_date: Date.now(),
     targets: targets.map(minifyTarget),
   };
-  return provider.commitTargetDoc(content, rulesStateStore.currentUser(), targetDocTag);
+  return provider.commitTargetDoc(content, rulesStateStore.currentUserContact(), rulesStateStore.currentUserSettings(), targetDocTag);
 };

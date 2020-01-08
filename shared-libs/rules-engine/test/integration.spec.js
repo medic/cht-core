@@ -15,7 +15,9 @@ chai.use(chaiExclude);
 
 let db;
 let rulesEngine;
-const userDoc = { _id: 'user' };
+const userContactDoc = { _id: 'user' };
+const userSettingsDoc = { _id: 'org.couchdb.user:username' };
+
 
 const THE_FUTURE = 1500000000000;
 const patientContact = {
@@ -83,7 +85,7 @@ describe('Rules Engine Integration Tests', () => {
     sinon.useFakeTimers(THE_FUTURE);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
-    await rulesEngine.initialize(chtRulesSettings(), userDoc);
+    await rulesEngine.initialize(chtRulesSettings(), userContactDoc, userSettingsDoc);
   });
 
   after(() => {
@@ -96,13 +98,13 @@ describe('Rules Engine Integration Tests', () => {
     // the library uses the fake date at the time the library is created. In this case, that is the time of
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
     sinon.useFakeTimers(THE_FUTURE);
-   
     db = await memdownMedic('../..');
+
     rulesEngine = RulesEngine(db);
 
     configHashSalt++;
     const rulesSettings = chtRulesSettings({ configHashSalt });
-    await rulesEngine.rulesConfigChange(rulesSettings, userDoc);
+    await rulesEngine.rulesConfigChange(rulesSettings, userContactDoc);
     sinon.useFakeTimers(1);
   });
 
@@ -149,7 +151,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[1][0][0]).to.deep.include({
-      _id: `task~user~report~pregnancy-facility-visit-reminder~2~${NOW}`,
+      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~${NOW}`,
       requester: 'patient',
       owner: 'patient',
       state: 'Failed',
@@ -184,7 +186,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[1][0][0]).to.deep.include({
-      _id: 'task~user~report~pregnancy-facility-visit-reminder~2~1',
+      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~1',
       state: 'Failed',
       stateHistory: [
         {
@@ -225,7 +227,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(3);
     expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[2][0][0]).to.deep.include({
-      _id: 'task~user~report~pregnancy-facility-visit-reminder~2~1',
+      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~1',
       state: 'Completed',
       stateHistory: [
         {
@@ -268,7 +270,7 @@ describe('Rules Engine Integration Tests', () => {
 
     const [taskDoc] = db.bulkDocs.args[2][0];
     expect(taskDoc).to.deep.include({
-      _id: 'task~user~report~pregnancy-facility-visit-reminder~2~1',
+      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~1',
       state: 'Cancelled',
       stateHistory: [
         {
@@ -296,7 +298,7 @@ describe('Rules Engine Integration Tests', () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
     const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('const nothing = [];') });
-    await rulesEngine.rulesConfigChange(updatedSettings, userDoc);
+    await rulesEngine.rulesConfigChange(updatedSettings, userContactDoc);
     expect(db.bulkDocs.callCount).to.eq(1);
 
     const completedTask = await rulesEngine.fetchTasksFor(['patient']);
@@ -309,12 +311,12 @@ describe('Rules Engine Integration Tests', () => {
 
     try {
       const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('not javascript') });
-      await rulesEngine.rulesConfigChange(updatedSettings, userDoc);
+      await rulesEngine.rulesConfigChange(updatedSettings, userContactDoc);
       expect('throw').to.throw;
     } catch (err) {
       expect(err.message).to.include('not javascript');
     }
-    
+
     const successfulRecompile = rulesEmitter.isEnabled();
     expect(successfulRecompile).to.be.false;
     expect(rulesEngine.isEnabled()).to.be.false;
@@ -326,7 +328,7 @@ describe('Rules Engine Integration Tests', () => {
   it('reloading same config does not bust cache', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
-    await rulesEngine.rulesConfigChange(chtRulesSettings({ configHashSalt }), userDoc);
+    await rulesEngine.rulesConfigChange(chtRulesSettings({ configHashSalt }), userContactDoc);
     const successfulRecompile = rulesEmitter.isEnabled();
     expect(successfulRecompile).to.be.true;
     expect(rulesEngine.isEnabled()).to.be.true;
@@ -493,7 +495,7 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   );
   expect(db.bulkDocs.callCount).to.eq(1);
   expect(tasks[0]).to.deep.include({
-    _id: `task~user~report~pregnancy-facility-visit-reminder~2~${Date.now()}`,
+    _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~${Date.now()}`,
     state: 'Ready',
     requester: 'patient',
     owner: 'patient',

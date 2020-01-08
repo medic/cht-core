@@ -18,9 +18,10 @@ describe('rules-state-store', () => {
 
   it('throw on build twice', async () => {
     const state = mockState({ 'a': { calculatedAt: 1 } });
-    await rulesStateStore.load(state, {}, {});
-    expect(() => rulesStateStore.load(state, {}, {})).to.throw('multiple times');
-    expect(rulesStateStore.currentUser()).to.deep.eq({});
+    await rulesStateStore.load(state, {}, {}, {});
+    expect(() => rulesStateStore.load(state, {}, {}, {})).to.throw('multiple times');
+    expect(rulesStateStore.currentUserContact()).to.deep.eq({});
+    expect(rulesStateStore.currentUserSettings()).to.deep.eq({});
   });
 
   it('throw if not initialized', async () => {
@@ -34,7 +35,7 @@ describe('rules-state-store', () => {
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.true;
-    expect(rulesStateStore.currentUser()).to.eq(userDoc);
+    expect(rulesStateStore.currentUserContact()).to.eq(userDoc);
   });
 
   it('load a fresh contact', async () => {
@@ -57,7 +58,7 @@ describe('rules-state-store', () => {
   it('scenario after loading state', async () => {
     const onStateChange = sinon.stub().resolves();
     const state = mockState({ 'a': { calculatedAt: Date.now() } });
-    await rulesStateStore.load(state, {}, {}, onStateChange);
+    await rulesStateStore.load(state, {}, {}, {}, onStateChange);
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.false;
@@ -74,7 +75,7 @@ describe('rules-state-store', () => {
 
   it('scenario after building state', async () => {
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build({}, {}, onStateChange);
+    await rulesStateStore.build({}, {}, {}, onStateChange);
     expect(onStateChange.callCount).to.eq(1);
     expect(rulesStateStore.getContactIds()).to.deep.eq([]);
     expect(rulesStateStore.isDirty('a')).to.be.true;
@@ -102,7 +103,7 @@ describe('rules-state-store', () => {
 
   it('hasAllContacts:true scenario', async () => {
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build({}, {}, onStateChange);
+    await rulesStateStore.build({}, {}, {}, onStateChange);
     expect(onStateChange.callCount).to.eq(1);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -128,7 +129,7 @@ describe('rules-state-store', () => {
   });
 
   it('rewinding clock makes contacts dirty', async () => {
-    await rulesStateStore.build({}, {});
+    await rulesStateStore.build({}, {}, {});
     await rulesStateStore.markFresh(Date.now() + 1000, 'a');
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
@@ -143,7 +144,7 @@ describe('rules-state-store', () => {
 
   it('empty targets', async () => {
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build({}, {}, onStateChange);
+    await rulesStateStore.build({}, {}, {}, onStateChange);
     rulesStateStore.storeTargetEmissions([], [{ id: 'abc', type: 'dne', contact: { _id: 'a', reported_date: 1000 } }]);
     const initialTargets = rulesStateStore.aggregateStoredTargetEmissions();
     expect(initialTargets).to.be.empty;
