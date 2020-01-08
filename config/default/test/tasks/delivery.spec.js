@@ -60,7 +60,7 @@ describe('Delivery tasks tests', () => {
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day)) {
-        expect(taskForDelivery.length, day).to.equal(15);
+        expect(taskForDelivery.length, day).to.equal(1);
       }
 
       else {
