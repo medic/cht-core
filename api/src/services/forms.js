@@ -20,7 +20,7 @@ module.exports = {
    * @return {Promise} Resolves all the documents of type 'form'
    *   with a valid xform attachment.
    */
-   getFormDocs: () => {
+  getFormDocs: () => {
     const options = {
       key: ['form'],
       include_docs: true,

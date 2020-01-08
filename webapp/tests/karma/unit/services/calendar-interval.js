@@ -1,6 +1,6 @@
 describe('service module', () => {
-  let clock,
-      service;
+  let clock;
+  let service;
 
   beforeEach(function() {
     module('inboxApp');
@@ -19,8 +19,8 @@ describe('service module', () => {
   describe('getCurrent', () => {
     it('returns 1st of current month when month start is not set or incorrect', () => {
       clock = sinon.useFakeTimers(moment('2018-01-20 21:10:01').valueOf());
-      let expectedStart,
-          expectedEnd;
+      let expectedStart;
+      let expectedEnd;
 
       expectedStart = moment('2018-01-01 00:00:00').valueOf();
       expectedEnd = moment('2018-01-31 23:59:59:999').valueOf();

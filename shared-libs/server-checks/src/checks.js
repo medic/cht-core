@@ -1,7 +1,9 @@
-const url = require('url'),
-      request = require('request');
+const url = require('url');
+const request = require('request');
 
 const MIN_MAJOR = 8;
+
+/* eslint-disable no-console */
 
 const nodeVersionCheck = () => {
   try {
@@ -39,9 +41,9 @@ const envVarsCheck = () => {
 };
 
 const couchDbNoAdminPartyModeCheck = () => {
-  const noAuthUrl = url.parse(process.env.COUCH_URL),
-        protocol = noAuthUrl.protocol.replace(':', ''),
-        net = require(protocol);
+  const noAuthUrl = url.parse(process.env.COUCH_URL);
+  const protocol = noAuthUrl.protocol.replace(':', '');
+  const net = require(protocol);
   delete noAuthUrl.auth;
 
   return new Promise((resolve, reject) => {

@@ -1,6 +1,6 @@
-const db = require('../../db'),
-      search = require('@medic/search')(Promise, db.medic),
-      lineage = require('@medic/lineage')(Promise, db.medic);
+const db = require('../../db');
+const search = require('@medic/search')(Promise, db.medic);
+const lineage = require('@medic/lineage')(Promise, db.medic);
 
 module.exports = {
   getDocs: ids => {

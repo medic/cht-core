@@ -7,11 +7,11 @@ angular.module('inboxServices').service('Snackbar',
     'ngInject';
     'use strict';
 
-    var SHOW_DURATION = 5000;
-    var ANIMATION_DURATION = 250;
-    var hideTimer;
+    const SHOW_DURATION = 5000;
+    const ANIMATION_DURATION = 250;
+    let hideTimer;
 
-    var show = function(text) {
+    const show = function(text) {
       $('#snackbar')
         .addClass('active')
         .find('.snackbar-content')
@@ -19,7 +19,7 @@ angular.module('inboxServices').service('Snackbar',
       hideTimer = $timeout(hide, SHOW_DURATION);
     };
 
-    var hide = function() {
+    const hide = function() {
       $timeout.cancel(hideTimer);
       hideTimer = null;
       $('#snackbar').removeClass('active');

@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 angular.module('controllers').controller('MessageQueueCtrl',
   function(
@@ -14,12 +14,12 @@ angular.module('controllers').controller('MessageQueueCtrl',
     'use strict';
     'ngInject';
 
-    var delayInterval = 5 * 60 * 1000, // 5 minutes
-        tab = $state.current.data.tab,
-        descending = $state.current.data.descending,
-        transitionalStates = [ 'pending', 'forwarded-to-gateway', 'forwarded-by-gateway', 'received', 'sent' ];
+    const delayInterval = 5 * 60 * 1000; // 5 minutes
+    const tab = $state.current.data.tab;
+    const descending = $state.current.data.descending;
+    const transitionalStates = [ 'pending', 'forwarded-to-gateway', 'forwarded-by-gateway', 'received', 'sent' ];
 
-    var normalizePage = function(page) {
+    const normalizePage = function(page) {
       page = parseInt(page);
       if (isNaN(page) || page <= 0) {
         return 1;
@@ -36,9 +36,9 @@ angular.module('controllers').controller('MessageQueueCtrl',
     $scope.loading = true;
     $scope.basePath = Location.path;
 
-    var formatMessages = function(messages) {
+    const formatMessages = function(messages) {
       if (tab === 'due') {
-        var now = moment();
+        const now = moment();
         messages.forEach(function (message) {
           if (transitionalStates.indexOf(message.state) !== -1 && message.stateHistory) {
             message.delayed = now.diff(message.stateHistory.timestamp) > delayInterval;
@@ -49,13 +49,13 @@ angular.module('controllers').controller('MessageQueueCtrl',
       return messages;
     };
 
-    var query = function() {
+    const query = function() {
       $scope.loading = true;
       $scope.messages = [];
       // change the state without triggering controller reinitialization
       $state.go('.', { page: $scope.pagination.page }, { notify: false });
 
-      var skip = ($scope.pagination.page - 1) * $scope.pagination.perPage;
+      const skip = ($scope.pagination.page - 1) * $scope.pagination.perPage;
       return MessageQueue
         .query(tab, skip, $scope.pagination.perPage, descending)
         .then(function(result) {
@@ -90,9 +90,9 @@ angular.module('controllers').controller('MessageQueueCtrl',
     };
 
     $q.all([
-        Settings(),
-        MessageQueue.loadTranslations()
-      ])
+      Settings(),
+      MessageQueue.loadTranslations()
+    ])
       .then(function(results) {
         $scope.dateFormat = results[0] && results[0].reported_date_format;
         return query();

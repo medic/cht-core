@@ -1,5 +1,5 @@
-const utils = require('../../utils'),
-  helper = require('../../helper');
+const utils = require('../../utils');
+const helper = require('../../helper');
 
 const xml = require('./data/family-survey.po.data').xml;
 

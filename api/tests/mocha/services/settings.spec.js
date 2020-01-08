@@ -2,14 +2,14 @@ const sinon = require('sinon').sandbox.create();
 const path = require('path');
 require('chai').should();
 
-const service = require('../../../src/services/settings'),
-      db = require('../../../src/db'),
-      environment = require('../../../src/environment'),
-      defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
+const service = require('../../../src/services/settings');
+const db = require('../../../src/db');
+const environment = require('../../../src/environment');
+const defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
 
-let settings,
-    replace,
-    overwrite;
+let settings;
+let replace;
+let overwrite;
 
 describe('settings service', () => {
   beforeEach(function() {
@@ -27,7 +27,7 @@ describe('settings service', () => {
   describe('update', () => {
     it('does replace if replace is set and overwrite is not set', () => {
       const update = sinon.stub(db.medic, 'put');
-      let newSettings = Object.assign({}, settings);
+      const newSettings = Object.assign({}, settings);
       delete newSettings['a'];
       replace = 1;
               
@@ -41,7 +41,7 @@ describe('settings service', () => {
            
     it('does overwrite if replace is set and overwrite is set', () => {
       const update = sinon.stub(db.medic, 'put');
-      let newSettings = Object.assign({}, settings);
+      const newSettings = Object.assign({}, settings);
       delete newSettings['a'];
       replace = 1;
       overwrite = 1;
@@ -81,7 +81,7 @@ describe('settings service', () => {
     it('does update if the settings doc has been modified when replacing', () => {
       defaults.permissions = {};
       const update = sinon.stub(db.medic, 'put');
-      let newSettings = Object.assign({}, settings);
+      const newSettings = Object.assign({}, settings);
       newSettings.a = 'b';
       replace = 1;
       
@@ -96,7 +96,7 @@ describe('settings service', () => {
     it('does update if the settings doc has been modified when extending', () => {
       defaults.permissions = {};
       const update = sinon.stub(db.medic, 'put');
-      let newSettings = Object.assign({}, settings);
+      const newSettings = Object.assign({}, settings);
       newSettings.a = 'b';
       replace = 1;
       

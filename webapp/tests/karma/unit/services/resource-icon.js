@@ -2,10 +2,10 @@ describe('ResourceIcons service', function() {
 
   'use strict';
 
-  var get,
-    Changes,
-    injector,
-    attr;
+  let get;
+  let Changes;
+  let injector;
+  let attr;
 
   beforeEach(function() {
     get = sinon.stub();
@@ -31,23 +31,23 @@ describe('ResourceIcons service', function() {
 
     it('returns empty string when given no name', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('ResourceIcons');
-      var actual = service.getImg();
+      const service = injector.get('ResourceIcons');
+      const actual = service.getImg();
       chai.expect(actual).to.equal('');
       done();
     });
 
     it('returns empty string when no doc yet', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('ResourceIcons');
-      var actual = service.getImg('delivery', 'resources');
+      const service = injector.get('ResourceIcons');
+      const actual = service.getImg('delivery', 'resources');
       chai.expect(actual).to.equal('<span class="resource-icon" title="delivery">&nbsp</span>');
       done();
     });
 
 
     it('returns img when resources doc already cached', function(done) {
-      var resources = {
+      const resources = {
         resources: {
           child: 'child.png',
           mother: 'mother.png'
@@ -64,10 +64,10 @@ describe('ResourceIcons service', function() {
         }
       };
       get.returns(Promise.resolve(resources));
-      var service = injector.get('ResourceIcons');
+      const service = injector.get('ResourceIcons');
       setTimeout(function() {
-        var actual = service.getImg('child', 'resources');
-        var expected =
+        const actual = service.getImg('child', 'resources');
+        const expected =
           '<span class="resource-icon" title="child">' +
             '<img src="data:image/png;base64,kiddlywinks" />' +
           '</span>';
@@ -77,10 +77,10 @@ describe('ResourceIcons service', function() {
     });
 
     it('returns inline svg for svg images', function(done) {
-      var data = `<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      const data = `<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"/>
                   </svg>`;
-      var resources = {
+      const resources = {
         resources: {
           mother: 'mother.png'
         },
@@ -92,10 +92,10 @@ describe('ResourceIcons service', function() {
         }
       };
       get.returns(Promise.resolve(resources));
-      var service = injector.get('ResourceIcons');
+      const service = injector.get('ResourceIcons');
       setTimeout(function() {
-        var actual = service.getImg('mother', 'resources');
-        var expected = '<span class="resource-icon" title="mother">' + data + '</span>';
+        const actual = service.getImg('mother', 'resources');
+        const expected = '<span class="resource-icon" title="mother">' + data + '</span>';
         chai.expect(actual).to.equal(expected);
         done();
       });
@@ -105,7 +105,7 @@ describe('ResourceIcons service', function() {
   describe('replacePlaceholders function', function() {
 
     it('sets src for given element', function(done) {
-      var resources = {
+      const resources = {
         resources: {
           child: 'child.png'
         },
@@ -117,11 +117,11 @@ describe('ResourceIcons service', function() {
         }
       };
       get.returns(Promise.resolve(resources));
-      var dom = $('<ul>' +
+      const dom = $('<ul>' +
                     '<li><img class="resource-icon" title="child"/></li>' +
                     '<li><img class="resource-icon" title="adult"/></li>' +
                   '</ul>');
-      var service = injector.get('ResourceIcons');
+      const service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
         chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))
@@ -133,7 +133,7 @@ describe('ResourceIcons service', function() {
     });
 
     it('updates src after db change', function(done) {
-      var resources1 = {
+      const resources1 = {
         resources: {
           child: 'child.png'
         },
@@ -144,7 +144,7 @@ describe('ResourceIcons service', function() {
           }
         }
       };
-      var resources2 = {
+      const resources2 = {
         resources: {
           child: 'child.png',
           adult: 'bigchild.png'
@@ -164,11 +164,11 @@ describe('ResourceIcons service', function() {
         .onCall(1).returns(Promise.resolve())
         .onCall(2).returns(Promise.resolve(resources1))
         .onCall(3).returns(Promise.resolve(resources2));
-      var dom = $('<ul>' +
+      const dom = $('<ul>' +
                   '<li><img class="resource-icon" title="child"/></li>' +
                   '<li><img class="resource-icon" title="adult"/></li>' +
                 '</ul>');
-      var service = injector.get('ResourceIcons');
+      const service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
         chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))

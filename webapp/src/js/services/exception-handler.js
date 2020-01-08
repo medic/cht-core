@@ -1,7 +1,7 @@
 /**
  * Override AngularJS exception handler
  */
- angular.module('inboxServices').factory('$exceptionHandler',
+angular.module('inboxServices').factory('$exceptionHandler',
   function(
     $injector,
     $log

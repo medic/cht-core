@@ -74,7 +74,8 @@ angular.module('inboxServices').factory('ContactsActions',
 
       const getChildTypes = selected => {
         if (!selected.type) {
-          $log.error(`Unknown contact type "${selected.doc.contact_type || selected.doc.type}" for contact "${selected.doc._id}"`);
+          const type = selected.doc.contact_type || selected.doc.type;
+          $log.error(`Unknown contact type "${type}" for contact "${selected.doc._id}"`);
           return [];
         }
         return ContactTypes.getChildren(selected.type.id).then(childTypes => {
@@ -104,7 +105,9 @@ angular.module('inboxServices').factory('ContactsActions',
         return dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedContact(getState());
           return ContactViewModelGenerator.loadChildren(selected, options).then(children => {
-            return dispatch(ActionUtils.createSingleValueAction(actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN, 'children', children));
+            return dispatch(ActionUtils.createSingleValueAction(
+              actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN, 'children', children
+            ));
           });
         });
       }
@@ -113,7 +116,9 @@ angular.module('inboxServices').factory('ContactsActions',
         return dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedContact(getState());
           return ContactViewModelGenerator.loadReports(selected).then(reports => {
-            return dispatch(ActionUtils.createSingleValueAction(actionTypes.RECEIVE_SELECTED_CONTACT_REPORTS, 'reports', reports));
+            return dispatch(ActionUtils.createSingleValueAction(
+              actionTypes.RECEIVE_SELECTED_CONTACT_REPORTS, 'reports', reports
+            ));
           });
         });
       }
@@ -123,7 +128,9 @@ angular.module('inboxServices').factory('ContactsActions',
       }
 
       function setContactsLoadingSummary(value) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_CONTACTS_LOADING_SUMMARY, 'loadingSummary', value));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_CONTACTS_LOADING_SUMMARY, 'loadingSummary', value
+        ));
       }
 
       const setSelectedContact = (id, { getChildPlaces=false, merge=false }={}) => {
@@ -155,7 +162,7 @@ angular.module('inboxServices').factory('ContactsActions',
                 .then(([ title, canEdit, childTypes ]) => {
                   globalActions.setTitle(title);
                   globalActions.setRightActionBar({
-                    relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
+                    relevantForms: [], // this disables the "New Action" button in action bar till full load is complete
                     sendTo: selected.type && selected.type.person ? selected.doc : '',
                     canDelete: false, // this disables the "Delete" button in action bar until full load is complete
                     canEdit: canEdit,

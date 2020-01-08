@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      db = require('../../../src/db'),
-      settingsService = require('../../../src/services/settings'),
-      migration = require('../../../src/migrations/namespace-form-fields');
+const sinon = require('sinon');
+const chai = require('chai');
+const db = require('../../../src/db');
+const settingsService = require('../../../src/services/settings');
+const migration = require('../../../src/migrations/namespace-form-fields');
 
 const makeStubs = (...viewBatches) => {
   const getView = sinon.stub(db.medic, 'query');
@@ -133,20 +133,20 @@ describe('namespace-form-fields migration', () => {
   it('run migrates in batches', done => {
     const BATCH_SIZE = 1;
     const docs = [
-        {
-          _id: 'a',
-          reported_date: '123',
-          form: 'P',
-          last_menstrual_period: 22,
-          patient_name: 'sarah'
-        },
-        {
-          _id: 'b',
-          reported_date: '456',
-          form: 'P',
-          last_menstrual_period: 12,
-          patient_name: 'jane'
-        }
+      {
+        _id: 'a',
+        reported_date: '123',
+        form: 'P',
+        last_menstrual_period: 22,
+        patient_name: 'sarah'
+      },
+      {
+        _id: 'b',
+        reported_date: '456',
+        form: 'P',
+        last_menstrual_period: 12,
+        patient_name: 'jane'
+      }
     ];
     const expected = [
       {
@@ -178,20 +178,20 @@ describe('namespace-form-fields migration', () => {
   it('reports bulk update errors', done => {
     const BATCH_SIZE = 2;
     const docs = [
-        {
-          _id: 'a',
-          reported_date: '123',
-          form: 'P',
-          last_menstrual_period: 22,
-          patient_name: 'sarah'
-        },
-        {
-          _id: 'b',
-          reported_date: '456',
-          form: 'P',
-          last_menstrual_period: 12,
-          patient_name: 'jane'
-        }
+      {
+        _id: 'a',
+        reported_date: '123',
+        form: 'P',
+        last_menstrual_period: 22,
+        patient_name: 'sarah'
+      },
+      {
+        _id: 'b',
+        reported_date: '456',
+        form: 'P',
+        last_menstrual_period: 12,
+        patient_name: 'jane'
+      }
     ];
 
     const stubs = {

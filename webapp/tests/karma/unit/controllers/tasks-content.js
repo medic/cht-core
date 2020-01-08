@@ -1,15 +1,15 @@
 describe('TasksContentCtrl', () => {
   const { expect } = chai;
 
-  let $scope,
-      tasksActions,
-      getEnketoEditedStatus,
-      task,
-      ctrl,
-      createController,
-      render,
-      get,
-      XmlForms;
+  let $scope;
+  let tasksActions;
+  let getEnketoEditedStatus;
+  let task;
+  let ctrl;
+  let createController;
+  let render;
+  let get;
+  let XmlForms;
 
   beforeEach(() => {
     module('inboxApp');

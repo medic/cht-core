@@ -1,8 +1,8 @@
 require('chai').should();
 
-const db = require('../../../src/db'),
-      service = require('../../../src/services/export-data'),
-      sinon = require('sinon');
+const db = require('../../../src/db');
+const service = require('../../../src/services/export-data');
+const sinon = require('sinon');
 
 describe('Export Data Service', () => {
 
@@ -14,16 +14,16 @@ describe('Export Data Service', () => {
     const chunks = [];
     return new Promise((resolve,reject) => {
       service.export(type, filters, options)
-      .on('error', err => {
-        reject(err);
-      })
-      .pipe({
-        write: chunk => chunks.push(chunk.toString()),
-        on: () => {},
-        once: () => {},
-        emit: () => {},
-        end: () => resolve(chunks.join(''))
-      });
+        .on('error', err => {
+          reject(err);
+        })
+        .pipe({
+          write: chunk => chunks.push(chunk.toString()),
+          on: () => {},
+          once: () => {},
+          emit: () => {},
+          end: () => resolve(chunks.join(''))
+        });
     });
   };
 
@@ -32,13 +32,13 @@ describe('Export Data Service', () => {
     it('handles empty db', () => {
       sinon.stub(db.medic, 'query').returns(Promise.resolve({ rows: [] }));
       return mockRequest('messages').then(actual => {
-        actual.should.equal('id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n');
+        actual.should.equal('id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n'); // eslint-disable-line max-len
       });
     });
 
     it('formats responses', () => {
       const type = 'messages';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
       getDocIds.onCall(1).returns(Promise.resolve([]));
@@ -57,9 +57,9 @@ describe('Export Data Service', () => {
           responses: [ { sent_by: '+987654321', message: 'hi' } ]
         }
       ]));
-      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       '"abc","123456",123456789,,"Automated Reply","sent","","","",123456789,"","",,"+123456789",,"hello"\n' +
-                       '"def","654321",987654321,,"Automated Reply","sent","","","",987654321,"","",,"+987654321",,"hi"\n';
+      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' + // eslint-disable-line max-len
+                       '"abc","123456",123456789,,"Automated Reply","sent","","","",123456789,"","",,"+123456789",,"hello"\n' + // eslint-disable-line max-len
+                       '"def","654321",987654321,,"Automated Reply","sent","","","",987654321,"","",,"+987654321",,"hi"\n'; // eslint-disable-line max-len
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
         getDocIds.callCount.should.equal(2);
@@ -69,7 +69,7 @@ describe('Export Data Service', () => {
 
     it('includes tasks and scheduled tasks', () => {
       const type = 'messages';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
       getDocIds.onCall(1).returns(Promise.resolve([]));
@@ -94,7 +94,7 @@ describe('Export Data Service', () => {
           ]
         }
       ]));
-      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
+      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' + // eslint-disable-line max-len
                        '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456789","hello"\n' +
                        '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456788","goodbye"\n' +
                        '"def","654321",987654321,,"Task Message",,"","","","","","",,,"+223456789","hi"\n' +
@@ -106,7 +106,7 @@ describe('Export Data Service', () => {
 
     it('formats incoming messages', () => {
       const type = 'messages';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
       getDocIds.onCall(1).returns(Promise.resolve([]));
@@ -127,9 +127,9 @@ describe('Export Data Service', () => {
           sms_message: { message: 'hi' }
         }
       ]));
-      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       '"abc","123456",123456789,"+123456789","Message","received",123456789,"","","","","",,"+123456789",,"hello"\n' +
-                       '"def","654321",987654321,"+987654321","Message","received",987654321,"","","","","",,"+987654321",,"hi"\n';
+      const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' + // eslint-disable-line max-len
+                       '"abc","123456",123456789,"+123456789","Message","received",123456789,"","","","","",,"+123456789",,"hello"\n' + // eslint-disable-line max-len
+                       '"def","654321",987654321,"+987654321","Message","received",987654321,"","","","","",,"+987654321",,"hi"\n'; // eslint-disable-line max-len
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
       });
@@ -154,7 +154,7 @@ describe('Export Data Service', () => {
         form: 'V'
       };
       const type = 'reports';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
       getDocIds.onCall(1).returns(Promise.resolve([]));
@@ -172,7 +172,7 @@ describe('Export Data Service', () => {
         stockReport,
         visitReport
       ]));
-      const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,name\n' +
+      const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,name\n' + // eslint-disable-line max-len
                        '"abc","STCK","123456",123456789,,,,,,\n' +
                        '"def","V","654321",987654321,,,,,,"Sally"\n';
       return mockRequest(type).then(actual => {
@@ -205,7 +205,7 @@ describe('Export Data Service', () => {
         ]
       };
       const type = 'reports';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
       getDocIds.onCall(1).returns(Promise.resolve([]));
@@ -239,8 +239,8 @@ describe('Export Data Service', () => {
           ]
         }
       ]));
-      const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,patient_name\n' +
-                       '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,1450959150540,"+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n';
+      const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,patient_name\n' + // eslint-disable-line max-len
+                       '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,1450959150540,"+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n'; // eslint-disable-line max-len
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
         getDocIds.callCount.should.equal(2);
@@ -265,7 +265,7 @@ describe('Export Data Service', () => {
       };
 
       const type = 'contacts';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).returns(Promise.resolve([ contact2._id, contact1._id ]));
       getDocIds.onCall(1).returns(Promise.resolve([]));
@@ -294,14 +294,14 @@ describe('Export Data Service', () => {
   describe('Handle error', () => {
     it('emit error', () => {
       const type = 'feedback';
-      var mapper = service._mapper(type);
+      const mapper = service._mapper(type);
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.returns(Promise.reject({some: 'error'}));
       return mockRequest(type)
-      .catch(err => {
-        const expected = {some: 'error'};
-        err.should.deep.equal(expected);
-      });
+        .catch(err => {
+          const expected = {some: 'error'};
+          err.should.deep.equal(expected);
+        });
     });
 
   });

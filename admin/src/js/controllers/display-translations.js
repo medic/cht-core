@@ -1,7 +1,7 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
-var TRANSLATION_KEYS_OPTION = { doc: {code: 'keys', name: 'Translation Keys'} };
-var DEFAULT_LANGUAGE = 'en';
+const TRANSLATION_KEYS_OPTION = { doc: {code: 'keys', name: 'Translation Keys'} };
+const DEFAULT_LANGUAGE = 'en';
 
 angular.module('controllers').controller('DisplayTranslationsCtrl',
   function (
@@ -14,8 +14,8 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
     'use strict';
     'ngInject';
 
-    var updateLocaleModel = function(language) {
-      var rhs = _.find($scope.translations, function(translation) {
+    const updateLocaleModel = function(language) {
+      const rhs = _.find($scope.translations, function(translation) {
         return translation.doc.code !== language;
       });
       $scope.localeModel = {
@@ -24,20 +24,24 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
       };
     };
 
-    var findTranslation = function(locale) {
-      var translation = _.find($scope.translations, function(translation) {
+    const findTranslation = function(locale) {
+      const translation = _.find($scope.translations, function(translation) {
         return translation.doc.code === locale;
       });
       return translation && translation.doc;
     };
 
-    var updateTranslationModels = function() {
-      var showKeys = $scope.localeModel.lhs === TRANSLATION_KEYS_OPTION.doc.code;
-      var lhsOption =  showKeys ? DEFAULT_LANGUAGE : $scope.localeModel.lhs;
-      var lhsTranslation = findTranslation(lhsOption);
-      var rhsTranslation = findTranslation($scope.localeModel.rhs);
-      var lhs = (lhsTranslation && Object.assign(Object.assign({}, lhsTranslation.generic), lhsTranslation.custom || {}));
-      var rhs = (rhsTranslation && Object.assign(Object.assign({}, rhsTranslation.generic), rhsTranslation.custom || {}));
+    const updateTranslationModels = function() {
+      const showKeys = $scope.localeModel.lhs === TRANSLATION_KEYS_OPTION.doc.code;
+      const lhsOption =  showKeys ? DEFAULT_LANGUAGE : $scope.localeModel.lhs;
+      const lhsTranslation = findTranslation(lhsOption);
+      const rhsTranslation = findTranslation($scope.localeModel.rhs);
+      const lhs = (
+        lhsTranslation && Object.assign(Object.assign({}, lhsTranslation.generic), lhsTranslation.custom || {})
+      );
+      const rhs = (
+        rhsTranslation && Object.assign(Object.assign({}, rhsTranslation.generic), rhsTranslation.custom || {})
+      );
       $scope.translationModels = Object.keys(lhs).map(function(key) {
         return {
           key: key,
@@ -47,7 +51,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
       });
     };
 
-    var updateTranslations = function() {
+    const updateTranslations = function() {
       return DB()
         .query('medic-client/doc_by_type', {
           startkey: [ 'translations', false ],
@@ -84,7 +88,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
           locales: _.values($scope.translations)
         }
       }).then(function(){
-          updateTranslations();
+        updateTranslations();
       });
     };
 

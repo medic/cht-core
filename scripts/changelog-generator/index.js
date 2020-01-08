@@ -131,7 +131,9 @@ const output = groups => {
     if (group.issues.length) {
       console.log(`### ${group.title}`);
       console.log('');
-      group.issues.forEach(issue => console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
+      group.issues.forEach(issue => {
+        console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`);
+      });
       console.log('');
     }
   });

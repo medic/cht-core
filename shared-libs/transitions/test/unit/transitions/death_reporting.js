@@ -1,9 +1,9 @@
 require('chai').should();
-const sinon = require('sinon'),
-  db = require('../../../src/db'),
-  transition = require('../../../src/transitions/death_reporting'),
-  utils = require('../../../src/lib/utils'),
-  config = require('../../../src/config');
+const sinon = require('sinon');
+const db = require('../../../src/db');
+const transition = require('../../../src/transitions/death_reporting');
+const utils = require('../../../src/lib/utils');
+const config = require('../../../src/config');
 
 describe('death_reporting', () => {
   afterEach(done => {
@@ -237,7 +237,8 @@ describe('death_reporting', () => {
       sinon.stub(utils, 'isValidSubmission').returns(false);
       transition.filter({ type: 'data_record', form: 'z', fields: { }, patient: {} }).should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
-      utils.isValidSubmission.args[0].should.deep.equal([{ type: 'data_record', form: 'z', fields: { }, patient: { } }]);
+      utils.isValidSubmission.args[0]
+        .should.deep.equal([{ type: 'data_record', form: 'z', fields: { }, patient: { } }]);
     });
 
     it('returns true', () => {
@@ -247,11 +248,17 @@ describe('death_reporting', () => {
       });
 
       sinon.stub(utils, 'isValidSubmission').returns(true);
-      transition.filter({ type: 'data_record', form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } }).should.equal(true);
-      transition.filter({ type: 'data_record', form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } }).should.equal(true);
+      transition.filter({ type: 'data_record', form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } })
+        .should.equal(true);
+      transition.filter({ type: 'data_record', form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } })
+        .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(2);
-      utils.isValidSubmission.args[0].should.deep.equal([{ type: 'data_record', form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } }]);
-      utils.isValidSubmission.args[1].should.deep.equal([{ type: 'data_record', form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } }]);
+      utils.isValidSubmission.args[0].should.deep.equal([
+        { type: 'data_record', form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } }
+      ]);
+      utils.isValidSubmission.args[1].should.deep.equal([
+        { type: 'data_record', form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } }
+      ]);
     });
   });
 });

@@ -297,10 +297,10 @@ describe('Purger', () => {
       localDb.allDocs
         .withArgs({ keys: ['id1', 'id2', 'id3'] })
         .resolves({ rows: [
-            { id: 'id1', key: 'id1', value: { rev: '11-abc' } },
-            { id: 'id2', key: 'id2', value: { rev: '12-abc' } },
-            { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
-          ]});
+          { id: 'id1', key: 'id1', value: { rev: '11-abc' } },
+          { id: 'id2', key: 'id2', value: { rev: '12-abc' } },
+          { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
+        ]});
 
       localDb.bulkDocs.resolves([]);
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
@@ -310,8 +310,10 @@ describe('Purger', () => {
 
       return purger.purge(localDb, userCtx).then(() => {
         chai.expect(purgeChanges.callCount).to.equal(2);
-        chai.expect(purgeChanges.args[0][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers, credentials: 'same-origin' });
-        chai.expect(purgeChanges.args[1][1]).to.deep.equal({ headers: pouchDbOptions.remote_headers, credentials: 'same-origin' });
+        chai.expect(purgeChanges.args[0][1])
+          .to.deep.equal({ headers: pouchDbOptions.remote_headers, credentials: 'same-origin' });
+        chai.expect(purgeChanges.args[1][1])
+          .to.deep.equal({ headers: pouchDbOptions.remote_headers, credentials: 'same-origin' });
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3'] }]);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
@@ -340,7 +342,8 @@ describe('Purger', () => {
 
     it('should keep requesting purged ids until no results are returned', () => {
       const purgeChanges = fetch.withArgs('http://localhost:5988/purging/changes');
-      const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint')).resolves({ json: sinon.stub() });
+      const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint'))
+        .resolves({ json: sinon.stub() });
 
       purgeChanges
         .onCall(0).resolves({ json: sinon.stub().resolves({ purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' })})
@@ -348,7 +351,9 @@ describe('Purger', () => {
         .onCall(2).resolves({ json: sinon.stub().resolves({ purged_ids: ['id7', 'id8', 'id9'], last_seq: '131-222' })})
         .onCall(3).resolves({ json: sinon.stub().resolves({ purged_ids: [], last_seq: '131-222' })});
 
-      const allDocsMock = ({ keys }) => Promise.resolve({ rows: keys.map(id => ({ id, key: id, value: { rev: `${id}-rev` } })) });
+      const allDocsMock = ({ keys }) => Promise.resolve({
+        rows: keys.map(id => ({ id, key: id, value: { rev: `${id}-rev` } }))
+      });
       localDb.allDocs.callsFake(allDocsMock);
       localDb.bulkDocs.resolves([]);
       const rolesABC = JSON.stringify(['a', 'b', 'c']);
@@ -418,20 +423,23 @@ describe('Purger', () => {
 
     it('should skip updating docs that are not found', () => {
       const purgeChanges = fetch.withArgs('http://localhost:5988/purging/changes');
-      const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint')).resolves({ json: sinon.stub() });
+      const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint'))
+        .resolves({ json: sinon.stub() });
 
       purgeChanges
-        .onCall(0).resolves({ json: sinon.stub().resolves({ purged_ids: ['id1', 'id2', 'id3', 'id4'], last_seq: '111-222' })})
-        .onCall(1).resolves({ json: sinon.stub().resolves({ purged_ids: [], last_seq: '111-222' })});
+        .onCall(0)
+        .resolves({ json: sinon.stub().resolves({ purged_ids: ['id1', 'id2', 'id3', 'id4'], last_seq: '111-222' })})
+        .onCall(1)
+        .resolves({ json: sinon.stub().resolves({ purged_ids: [], last_seq: '111-222' })});
 
       localDb.allDocs
         .withArgs({ keys: ['id1', 'id2', 'id3', 'id4'] })
         .resolves({ rows: [
-            { key: 'id1', error: 'whatever' },
-            { key: 'id2', error: 'not_found', reason: 'deleted' },
-            { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
-            { id: 'id4', key: 'id3', value: { rev: '13-abc', deleted: true } },
-          ]});
+          { key: 'id1', error: 'whatever' },
+          { key: 'id2', error: 'not_found', reason: 'deleted' },
+          { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
+          { id: 'id4', key: 'id3', value: { rev: '13-abc', deleted: true } },
+        ]});
 
       localDb.bulkDocs.resolves([]);
 
@@ -467,7 +475,8 @@ describe('Purger', () => {
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3', 'id4'] }]);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
-        chai.expect(localDb.bulkDocs.args[0]).to.deep.equal([[{ _id: 'id3', _rev: '13-abc', _deleted: true, purged: true }]]);
+        chai.expect(localDb.bulkDocs.args[0])
+          .to.deep.equal([[{ _id: 'id3', _rev: '13-abc', _deleted: true, purged: true }]]);
         chai.expect(purgeCheckpoint.callCount).to.equal(1);
         chai.expect(purgeCheckpoint.args[0][0]).to.equal('http://localhost:5988/purging/checkpoint?seq=111-222');
 
@@ -497,17 +506,18 @@ describe('Purger', () => {
 
     it('should throw an error when purge save is not successful', () => {
       const purgeChanges = fetch.withArgs('http://localhost:5988/purging/changes');
-      const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint')).resolves({ json: sinon.stub() });
+      const purgeCheckpoint = fetch.withArgs(sinon.match('http://localhost:5988/purging/checkpoint'))
+        .resolves({ json: sinon.stub() });
 
       purgeChanges.resolves({ json: sinon.stub().resolves({ purged_ids: ['id1', 'id2', 'id3'], last_seq: '111-222' })});
 
       localDb.allDocs
         .withArgs({ keys: ['id1', 'id2', 'id3'] })
         .resolves({ rows: [
-            { id: 'id1', key: 'id1', value: { rev: '11-abc' } },
-            { id: 'id2', key: 'id2', value: { rev: '12-abc' } },
-            { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
-          ]});
+          { id: 'id1', key: 'id1', value: { rev: '11-abc' } },
+          { id: 'id2', key: 'id2', value: { rev: '12-abc' } },
+          { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
+        ]});
 
       localDb.bulkDocs.resolves([
         { id: 'id1', error: 'conflict' },

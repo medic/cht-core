@@ -1,5 +1,5 @@
-const db = require('../db'),
-  logger = require('../lib/logger');
+const db = require('../db');
+const logger = require('../lib/logger');
 
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';

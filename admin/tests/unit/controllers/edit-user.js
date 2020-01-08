@@ -301,7 +301,8 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(userToEdit.facility_id);
         mockContact(null);
-        Translate.fieldIsRequired.withArgs('associated.contact').returns(Promise.resolve('An associated contact is required'));
+        Translate.fieldIsRequired.withArgs('associated.contact')
+          .returns(Promise.resolve('An associated contact is required'));
 
         // when
         scope.editUser();
@@ -321,7 +322,8 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(null);
-        Translate.fieldIsRequired.withArgs('associated.contact').returns(Promise.resolve('An associated contact is required'));
+        Translate.fieldIsRequired.withArgs('associated.contact')
+          .returns(Promise.resolve('An associated contact is required'));
         Translate.fieldIsRequired.withArgs('Facility').returns(Promise.resolve('Facility field is required'));
 
         // when
@@ -415,7 +417,11 @@ describe('EditUserCtrl controller', () => {
           chai.expect(http.get.callCount).to.equal(1);
           chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { params: { role: 'supervisor', facility_id: scope.editUserModel.place, contact_id: scope.editUserModel.contact }}
+            { params: {
+              role: 'supervisor',
+              facility_id: scope.editUserModel.place,
+              contact_id: scope.editUserModel.contact
+            }}
           ]);
           done();
         });

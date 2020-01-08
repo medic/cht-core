@@ -13,7 +13,7 @@ angular.module('inboxServices').factory('TasksForContact',
     'ngInject';
 
     const getIdsForTasks = (model) => {
-      let contactIds = [];
+      const contactIds = [];
       if (!model.type.person && model.children) {
         model.children.forEach(child => {
           if (child.type.person && child.contacts && child.contacts.length) {

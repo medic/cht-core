@@ -44,9 +44,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var taskEndDate,
-        reportStartDate,
-        usersHomePlaceId;
+    let taskEndDate;
+    let reportStartDate;
+    let usersHomePlaceId;
 
     ctrl.filterTasks = function(task) {
       return !taskEndDate || task.dueDate <= taskEndDate;
@@ -68,7 +68,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     ctrl.setTasksTimeWindowWeeks(1);
     ctrl.setReportsTimeWindowMonths(3);
 
-    var getHomePlaceId = function() {
+    const getHomePlaceId = function() {
       return UserSettings()
         .then(function(user) {
           return user && user.facility_id;
@@ -78,7 +78,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
-    var selectContact = function(id, silent) {
+    const selectContact = function(id, silent) {
       if (!silent) {
         ctrl.setLoadingShowContent(id);
       }
@@ -109,9 +109,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       }
     });
 
-    var debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
+    const debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
         return ContactChangeFilter.matchContact(change, ctrl.selectedContact) ||

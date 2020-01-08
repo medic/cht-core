@@ -43,7 +43,9 @@ angular.module('inboxServices').factory('ReportsActions',
       }
 
       function setFirstSelectedReportFormattedProperty(formatted) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY, 'formatted', formatted));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY, 'formatted', formatted
+        ));
       }
 
       function setSelectedReports(selected) {
@@ -51,7 +53,9 @@ angular.module('inboxServices').factory('ReportsActions',
       }
 
       function setVerifyingReport(verifyingReport) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERIFYING_REPORT, 'verifyingReport', verifyingReport));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_VERIFYING_REPORT, 'verifyingReport', verifyingReport
+        ));
       }
 
       function updateSelectedReportItem(id, selected) {
@@ -243,8 +247,8 @@ angular.module('inboxServices').factory('ReportsActions',
                 proposedVerificationState: $translate.instant(verificationTranslationKey),
               },
             })
-            .then(() => true)
-            .catch(() => false);
+              .then(() => true)
+              .catch(() => false);
           };
 
           const shouldReportBeVerified = canUserEdit => {

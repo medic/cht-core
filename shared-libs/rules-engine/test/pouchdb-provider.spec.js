@@ -67,8 +67,10 @@ describe('pouchdb provider', () => {
   afterEach(() => sinon.restore());
 
   describe('allTasks', () => {
-    it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev').to.deep.eq([headlessTask, taskOwnedByChtContact]));
-    it('for requester', async () => expect(await pouchdbProvider(db).allTasks('requester')).excludingEvery('_rev').to.deep.eq([headlessTask, taskRequestedByChtContact]));
+    it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
+      .to.deep.eq([headlessTask, taskOwnedByChtContact]));
+    it('for requester', async () => expect(await pouchdbProvider(db).allTasks('requester')).excludingEvery('_rev')
+      .to.deep.eq([headlessTask, taskRequestedByChtContact]));
   });
 
   it('allTaskData', async () => {
@@ -115,9 +117,14 @@ describe('pouchdb provider', () => {
 
   describe('contactsBySubjectId', () => {
     it('empty yields empty', async () => expect(await pouchdbProvider(db).contactsBySubjectId([])).to.be.empty);
-    it('patient_id yields id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient_id'])).to.deep.eq(['patient']));
-    it('uuid yields uuid', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient'])).to.deep.eq(['patient']));
-    it('uuid and patient_id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient', 'patient_id'])).to.deep.eq(['patient', 'patient'])); // dupes don't matter here
+    it('patient_id yields id', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient_id']))
+      .to.deep.eq(['patient']));
+    it('uuid yields uuid', async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient']))
+      .to.deep.eq(['patient']));
+    it('uuid and patient_id',
+      async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient', 'patient_id']))
+        .to.deep.eq(['patient', 'patient']) // dupes don't matter here
+    );
   });
 
   describe('rulesStateStore', () => {

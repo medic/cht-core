@@ -1,6 +1,6 @@
-const swRegister = require('../../../src/js/bootstrapper/swRegister'),
-      sinon = require('sinon'),
-      { expect } = require('chai');
+const swRegister = require('../../../src/js/bootstrapper/swRegister');
+const sinon = require('sinon');
+const { expect } = require('chai');
 
 let fakeRegisterFunc;
 

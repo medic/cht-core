@@ -46,7 +46,8 @@ const users = [
   },
 ];
 
-let offlineRequestOptions, onlineRequestOptions;
+let offlineRequestOptions; let 
+  onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -319,7 +320,8 @@ describe('db-doc handler', () => {
         utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
         utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic' }, offlineRequestOptions)).catch(err => err),
         utils.requestOnTestDb(_.defaults({ path: '/fixture:online:patient' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic:patient' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic:patient' }, offlineRequestOptions))
+          .catch(err => err),
       ]).then(results => {
         chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
@@ -329,7 +331,8 @@ describe('db-doc handler', () => {
         });
         chai.expect(results[1]).to.deep.include(clinics.find(clinic => clinic._id === 'fixture:offline:clinic'));
         chai.expect(results[2]).to.deep.include(patients.find(patient => patient._id === 'fixture:offline:patient'));
-        chai.expect(results[3]).to.deep.include(patients.find(patient => patient._id === 'fixture:offline:clinic:patient'));
+        chai.expect(results[3])
+          .to.deep.include(patients.find(patient => patient._id === 'fixture:offline:clinic:patient'));
 
         chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
@@ -356,15 +359,18 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: true },
 
         { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
@@ -382,20 +388,25 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: false },
       ];
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
         .saveDocs(docs)
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+        ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -427,7 +438,9 @@ describe('db-doc handler', () => {
       return utils
         .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
         .then(() => utils.saveDocs(docs))
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+        ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -446,14 +459,20 @@ describe('db-doc handler', () => {
           name: 'offline patient',
           patient_id: 'del123456',
           type: 'person',
-          parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {
+            _id: 'fixture:offline:clinic',
+            parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } }
+          },
           reported_date: 1
         },
         {
           _id: 'temp:offline:clinic:patient_to_delete_no_shortcode',
           name: 'offline patient',
           type: 'person',
-          parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {
+            _id: 'fixture:offline:clinic',
+            parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } }
+          },
           reported_date: 1
         },
         {
@@ -461,14 +480,20 @@ describe('db-doc handler', () => {
           name: 'offline patient',
           patient_id: 'del654321',
           type: 'person',
-          parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {
+            _id: 'fixture:online:clinic',
+            parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } }
+          },
           reported_date: 1
         },
         {
           _id: 'temp:online:clinic:patient_to_delete_no_shortcode',
           name: 'online patient',
           type: 'person',
-          parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {
+            _id: 'fixture:online:clinic',
+            parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } }
+          },
           reported_date: 1
         },
       ];
@@ -478,7 +503,10 @@ describe('db-doc handler', () => {
           _id: 'temp:offline:clinic:contact',
           name: 'offline submitter',
           type: 'person',
-          parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {
+            _id: 'fixture:offline:clinic',
+            parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } }
+          },
           reported_date: 1
         },
         {
@@ -500,41 +528,65 @@ describe('db-doc handler', () => {
 
       it('reports about deleted patients and deleted patients', () => {
         const reportScenarios = [
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], false, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', null,
+            ['patient_uuid'], false, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], false, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[0],
+            ['patient_uuid'], false, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], false, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_id'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[1],
+            ['patient_uuid'], false, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], false, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', null,
+            ['patient_uuid'], false, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], false, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[0],
+            ['patient_uuid'], false, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], false, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_id'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid', 'patient_id'], false, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], false, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[1],
+            ['patient_uuid'], false, patientsToDelete), allowed: false },
         ];
 
         const docs = reportScenarios.map(scenario => scenario.doc);
@@ -543,7 +595,9 @@ describe('db-doc handler', () => {
           .then(() => utils.deleteDocs(patientsToDeleteIds)) // delete subjects
           .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
           .then(() => sUtils.waitForSentinel(patientsToDeleteIds))
-          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(_.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
+            _.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read deleted patients
             results.forEach((result, idx) => {
@@ -554,7 +608,9 @@ describe('db-doc handler', () => {
               }
             });
           })
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients
             results.forEach((result, idx) => {
@@ -567,7 +623,9 @@ describe('db-doc handler', () => {
           })
           .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
           .then(() => sUtils.waitForSentinel(submittersToDeleteIds))
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients and submitted by deleted contacts
             results.forEach((result, idx) => {
@@ -581,7 +639,9 @@ describe('db-doc handler', () => {
           .then(() => utils.deleteDocs(docs.map(doc => doc._id))) // delete reports
           .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
           .then(() => sUtils.waitForSentinel(docs.map(doc => doc._id)))
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read deleted reports about deleted patients submitted by deleted contacts
             results.forEach((result, idx) => {
@@ -597,55 +657,83 @@ describe('db-doc handler', () => {
 
       it('reports about deleted patients and deleted patients with needs_signoff', () => {
         const reportScenarios = [
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', null,
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], true, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_id'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[0],
+            ['patient_uuid'], true, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:offline:clinic:patient_to_delete_no_shortcode', submittersToDelete[1],
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_id'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null, ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', null,
+            ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', null, ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', null,
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_id'], true, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_id'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[0],
+            ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[0], ['patient_uuid'], true, patientsToDelete), allowed: true },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[0],
+            ['patient_uuid'], true, patientsToDelete), allowed: true },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_id'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1], ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_id'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_with_shortcode', submittersToDelete[1],
+            ['patient_uuid', 'patient_id'], true, patientsToDelete), allowed: false },
 
-          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[1], ['patient_uuid'], true, patientsToDelete), allowed: false },
+          { doc: reportForPatient('temp:online:clinic:patient_to_delete_no_shortcode', submittersToDelete[1],
+            ['patient_uuid'], true, patientsToDelete), allowed: false },
         ];
 
         const docs = reportScenarios.map(scenario => scenario.doc);
         return utils
           .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
           .then(()=> utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
-          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(_.defaults({ path: `/${patient._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
+            _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // cannot read patients
             results.forEach(result => {
               chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
             });
           })
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients
             results.forEach((result, idx) => {
@@ -659,14 +747,18 @@ describe('db-doc handler', () => {
           .then(() => utils.deleteDocs(patientsToDeleteIds)) // delete subjects
           .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
           .then(() => sUtils.waitForSentinel(patientsToDeleteIds))
-          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(_.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
+            _.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // cannot read deleted patients
             results.forEach(result => {
               chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
             });
           })
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients
             results.forEach((result, idx) => {
@@ -679,7 +771,9 @@ describe('db-doc handler', () => {
           })
           .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
           .then(() => sUtils.waitForSentinel(submittersToDeleteIds))
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients and submitted by deleted contacts
             results.forEach((result, idx) => {
@@ -693,7 +787,9 @@ describe('db-doc handler', () => {
           .then(() => utils.deleteDocs(docs.map(doc => doc._id))) // delete reports
           .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
           .then(() => sUtils.waitForSentinel(docs.map(doc => doc._id)))
-          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)).catch(err => err))))
+          .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+            _.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)
+          ).catch(err => err))))
           .then(results => {
             // can read deleted reports about deleted patients submitted by deleted contacts
             results.forEach((result, idx) => {
@@ -728,10 +824,14 @@ describe('db-doc handler', () => {
 
       return utils
         .saveDocs(docs)
-        .then(result => Promise.all(docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`,}))))
+        .then(result => Promise.all(docs.map((doc, key) => utils.requestOnTestDb(
+          { method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`,}
+        ))))
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
-          return Promise.all(docs.map(doc => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}?rev=${doc._rev}` }, offlineRequestOptions))));
+          return Promise.all(docs.map(doc => utils.requestOnTestDb(
+            _.defaults({ path: `/${doc._id}?rev=${doc._rev}` }, offlineRequestOptions)
+          )));
         })
         .then(results => {
           chai.expect(results.length).to.equal(2);
@@ -828,7 +928,10 @@ describe('db-doc handler', () => {
           chai.expect(results[0][0].ok._rev.startsWith('1')).to.equal(true);
           chai.expect(results[0][1].ok._rev.startsWith('2')).to.equal(true);
           chai.expect(results[0][2].ok._rev.startsWith('4')).to.equal(true);
-          chai.expect(results[0].every(result => result.ok._id === 'a1_revs' && (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))).to.equal(true);
+          chai.expect(
+            results[0].every(result => result.ok._id === 'a1_revs' &&
+              (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
+          ).to.equal(true);
 
           chai.expect(results[1].length).to.equal(1);
           chai.expect(results[1][0].ok._deleted).to.equal(true);
@@ -836,7 +939,10 @@ describe('db-doc handler', () => {
           chai.expect(results[2].length).to.equal(2);
           chai.expect(results[2][0].ok._rev.startsWith('3')).to.equal(true);
           chai.expect(results[2][1].ok._rev.startsWith('4')).to.equal(true);
-          chai.expect(results[2].every(result => result.ok._id === 'd1_revs' && (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))).to.equal(true);
+          chai.expect(
+            results[2].every(result => result.ok._id === 'd1_revs' &&
+              (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
+          ).to.equal(true);
 
           chai.expect(results[3].length).to.equal(1);
           chai.expect(results[3][0].ok._deleted).to.equal(true);
@@ -884,18 +990,37 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: `/allowed_attach?rev=${revs.allowed_attach[0]}&attachments=true&revs=true` }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: `/allowed_attach?rev=${revs.allowed_attach[1]}&attachments=true&revs=false` }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: `/allowed_attach?attachments=false&revs=true&revs_info=true` }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach?rev=${revs.denied_attach[0]}&attachments=true&revs=true` }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach?rev=${revs.denied_attach[1]}&attachments=true&revs=false` }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach?attachments=true&revs=true&revs_info=true` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend(
+              { path: `/allowed_attach?rev=${revs.allowed_attach[0]}&attachments=true&revs=true` },
+              offlineRequestOptions
+            )),
+            utils.requestOnTestDb(_.extend(
+              { path: `/allowed_attach?rev=${revs.allowed_attach[1]}&attachments=true&revs=false` },
+              offlineRequestOptions
+            )),
+            utils.requestOnTestDb(_.extend(
+              { path: `/allowed_attach?attachments=false&revs=true&revs_info=true` },
+              offlineRequestOptions
+            )),
+            utils.requestOnTestDb(_.extend(
+              { path: `/denied_attach?rev=${revs.denied_attach[0]}&attachments=true&revs=true` },
+              offlineRequestOptions
+            )).catch(err => err),
+            utils.requestOnTestDb(_.extend(
+              { path: `/denied_attach?rev=${revs.denied_attach[1]}&attachments=true&revs=false` },
+              offlineRequestOptions
+            )).catch(err => err),
+            utils.requestOnTestDb(_.extend(
+              { path: `/denied_attach?attachments=true&revs=true&revs_info=true` },
+              offlineRequestOptions
+            )).catch(err => err),
           ]);
         })
         .then(results => {
           chai.expect(results[0]._attachments).to.be.undefined;
           chai.expect(results[0]._revisions).to.be.ok;
-          chai.expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`).to.equal(revs.allowed_attach[0]);
+          chai.expect(`${results[0]._revisions.start}-${results[0]._revisions.ids[0]}`)
+            .to.equal(revs.allowed_attach[0]);
 
           chai.expect(results[1]._attachments).to.be.ok;
           chai.expect(results[1]._attachments.att_name).to.be.ok;
@@ -908,7 +1033,8 @@ describe('db-doc handler', () => {
           chai.expect(results[2]._attachments.att_name.data).to.be.undefined;
           chai.expect(results[2]._attachments.att_name.stub).to.deep.equal(true);
           chai.expect(results[2]._revisions).to.be.ok;
-          chai.expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`).to.deep.equal(revs.allowed_attach[1]);
+          chai.expect(`${results[2]._revisions.start}-${results[2]._revisions.ids[0]}`)
+            .to.deep.equal(revs.allowed_attach[1]);
           chai.expect(results[2]._revs_info).to.be.ok;
           chai.expect(results[2]._revs_info.length).to.deep.equal(results[2]._revisions.ids.length);
           chai.expect(results[2]._revs_info[0]).to.deep.equal({ rev: revs.allowed_attach[1], status: 'available' });
@@ -982,15 +1108,18 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, 
+          ['patient_id', 'patient_uuid']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', 
+          ['patient_id', 'patient_uuid']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', 
+          ['patient_id', 'patient_uuid']), allowed: true },
 
         { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
@@ -1008,18 +1137,23 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, 
+          ['patient_id', 'patient_uuid']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', 
+          ['patient_id', 'patient_uuid']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', 
+          ['patient_id', 'patient_uuid']), allowed: false },
       ];
       return Promise
-        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
+        ).catch(err => err)))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1051,7 +1185,9 @@ describe('db-doc handler', () => {
       ];
       return utils
         .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
+        ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1112,9 +1248,9 @@ describe('db-doc handler', () => {
               name: 'n2',
             }, // new denied
             _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
-            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored allowed, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored ok, new denied
             _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
-            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new ok
           ];
 
           const promises = updates.map(doc =>
@@ -1192,9 +1328,9 @@ describe('db-doc handler', () => {
 
           const updates = [
             _.defaults({ name: 'a1 updated' }, docs[0]), // prev allowed, deleted, new allowed
-            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // prev allowed, deleted, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // prev ok, deleted/new no
             _.defaults({ name: 'd1 updated' }, docs[2]), // prev denied, deleted, new denied
-            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // prev denied, deleted, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // prev no, deleted/new ok
           ];
 
           return Promise.all(updates.map(doc =>
@@ -1230,15 +1366,18 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: true },
 
         { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
@@ -1256,18 +1395,23 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: false },
       ];
       return Promise
-        .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
+        .all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
+        ).catch(err => err)))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1299,7 +1443,9 @@ describe('db-doc handler', () => {
       ];
       return utils
         .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)
+        ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1330,12 +1476,15 @@ describe('db-doc handler', () => {
             { doc: setReportPatient(existentReports[0].doc, 'fixture:online:patient', ['patient_id']), allowed: false },
             { doc: setReportContact(existentReports[1].doc, 'offline'), allowed: true },
 
-            { doc: setReportPatient(existentReports[2].doc, 'fixture:offline:patient', ['patient_uuid']), allowed: false },
+            { doc: setReportPatient(existentReports[2].doc, 'fixture:offline:patient', ['patient_uuid']),
+              allowed: false },
             { doc: setReportContact(existentReports[3].doc, 'offline'), allowed: false },
           ];
           results.forEach((result, i) => reportScenarios[i].doc._rev = result.rev);
         })
-        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)).catch(err => err))))
+        .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
+          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
+        ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1368,7 +1517,8 @@ describe('db-doc handler', () => {
         .then(results =>
           Promise.all([
             utils.requestOnTestDb(_.extend({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions))
+              .catch(err => err),
           ])
         )
         .then(results => {
@@ -1381,7 +1531,9 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          chai.expect(results[0]).to.deep.include({ statusCode: 404, responseBody: { error: 'not_found', reason: 'deleted' } });
+          chai.expect(results[0]).to.deep.include({
+            statusCode: 404, responseBody: { error: 'not_found', reason: 'deleted' }
+          });
           chai.expect(results[1]).to.deep.include({
             _id: 'denied_del',
             type: 'clinic',
@@ -1431,14 +1583,22 @@ describe('db-doc handler', () => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
             utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(
+              _.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)
+            ).catch(err => err),
+            utils.requestOnTestDb(
+              _.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)
+            ).catch(err => err),
           ]);
         })
         .then(results => {
           chai.expect(results[0]).to.equal('my attachment content');
-          chai.expect(results[1]).to.deep.include({ statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' }});
-          chai.expect(results[2]).to.deep.include({ statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' }});
+          chai.expect(results[1]).to.deep.include(
+            { statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' }}
+          );
+          chai.expect(results[2]).to.deep.include(
+            { statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' }}
+          );
 
           return Promise.all([
             utils.getDoc('allowed_attach'),
@@ -1488,10 +1648,18 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)),
+            utils.requestOnTestDb(
+              _.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)
+            ).catch(err => err),
+            utils.requestOnTestDb(
+              _.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)
+            ).catch(err => err),
+            utils.requestOnTestDb(
+              _.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)
+            ).catch(err => err),
+            utils.requestOnTestDb(
+              _.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)
+            ),
           ]);
         })
         .then(results => {
@@ -1540,10 +1708,20 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc', json: false }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions)).catch(err => err),
-            utils.requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions)).catch(err => err),
+            utils.requestOnTestDb(_.extend(
+              { path: '/allowed_attach_1/att_name/1/2/3/etc', json: false },
+              offlineRequestOptions
+            )),
+            utils.requestOnTestDb(_.extend(
+              { path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false },
+              offlineRequestOptions)
+            ),
+            utils.requestOnTestDb(_.extend(
+              { path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions
+            )).catch(err => err),
+            utils.requestOnTestDb(_.extend(
+              { path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions
+            )).catch(err => err),
           ]);
         })
         .then(results => {
@@ -1570,7 +1748,9 @@ describe('db-doc handler', () => {
           const promises = [];
           const attachmentRequest = (rev, id) =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false }, offlineRequestOptions))
+              .requestOnTestDb(_.extend(
+                { path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false }, offlineRequestOptions
+              ))
               .catch(err => err);
           Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
           return Promise.all(promises);
@@ -1620,7 +1800,9 @@ describe('db-doc handler', () => {
         .then(results => Promise.all(
           results.map(result =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions))
+              .requestOnTestDb(_.extend(
+                { path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions
+              ))
               .catch(err => err)))
         )
         .then(results => {
@@ -1705,9 +1887,9 @@ describe('db-doc handler', () => {
             { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
             { _id: 'n_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied
             _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
-            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored allowed, new denied
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored ok, new denied
             _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
-            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new allowed
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new ok
           ];
 
           return Promise.all(
@@ -1764,7 +1946,9 @@ describe('db-doc handler', () => {
 
           return utils.requestOnMedicDb(onlineRequestOptions);
         })
-        .then(result => utils.requestOnMedicDb({ path: `/with_attachments/new_attachment?rev=${result.rev}`, json: false }))
+        .then(result => utils.requestOnMedicDb(
+          { path: `/with_attachments/new_attachment?rev=${result.rev}`, json: false }
+        ))
         .then(result => {
           chai.expect(result).to.equal('my new attachment content');
         });
@@ -1788,8 +1972,10 @@ describe('db-doc handler', () => {
           utils
             .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/dsada` }, offlineRequestOptions))
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions))
+            .catch(err => err),
           utils
             .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/something` }, offlineRequestOptions))
             .catch(err => err),
@@ -1798,8 +1984,10 @@ describe('db-doc handler', () => {
           utils
             .request(_.defaults({ path: `//medic//denied_report/dsada` }, offlineRequestOptions))
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions)).catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions))
+            .catch(err => err),
           utils
             .request(_.defaults({ path: `//medic//denied_report/something` }, offlineRequestOptions))
             .catch(err => err),
@@ -1882,10 +2070,14 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+            .catch(err => err),
         ])
         .then(results => {
           chai.expect(results[0]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
@@ -1902,20 +2094,28 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions)).catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+            .catch(err => err),
         ])
         .then(results => {
           results.forEach(result => {
             chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          });
         });
-      });
     });
   });
 });

@@ -1,15 +1,15 @@
-const sinon = require('sinon'),
-      assert = require('chai').assert,
-      db = require('../../src/db'),
-      transition = require('../../src/transitions/update_sent_by');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const db = require('../../src/db');
+const transition = require('../../src/transitions/update_sent_by');
 
 describe('update sent by', () => {
   beforeEach(() => { process.env.TEST_ENV = true; });
   afterEach(() => sinon.restore());
 
   it('updates sent_by to clinic name if contact name', () => {
-    var doc = { from: '+34567890123' };
-    var dbView = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: { name: 'Clinic' } } ] } );
+    const doc = { from: '+34567890123' };
+    const dbView = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: { name: 'Clinic' } } ] } );
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert.equal(doc.sent_by, 'Clinic');
@@ -18,7 +18,7 @@ describe('update sent by', () => {
   });
 
   it('sent_by untouched if nothing available', () => {
-    var doc = { from: 'unknown number' };
+    const doc = { from: 'unknown number' };
     sinon.stub(db.medic, 'query').resolves({});
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);

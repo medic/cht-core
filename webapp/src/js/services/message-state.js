@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-    taskUtils = require('@medic/task-utils');
+const _ = require('underscore');
+const taskUtils = require('@medic/task-utils');
 
 (function () {
 
@@ -29,7 +29,7 @@ var _ = require('underscore'),
           return DB()
             .get(recordId)
             .then(function(doc) {
-              var changed = false;
+              let changed = false;
               _.each(doc.scheduled_tasks, function(task) {
                 if (task.group === group && task.state === fromState) {
                   changed = true;

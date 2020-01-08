@@ -1,8 +1,8 @@
 const request = require('request');
 
-const db = require('./src/db'),
-  logger = require('./src/lib/logger'),
-  serverChecks = require('@medic/server-checks');
+const db = require('./src/db');
+const logger = require('./src/lib/logger');
+const serverChecks = require('@medic/server-checks');
 
 if (process.env.TEST_ENV) {
   logger.info('TEST_ENV is set, server does not run in test mode.');

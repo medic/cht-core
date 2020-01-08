@@ -5,9 +5,9 @@ require('chai').should();
 
 const authorization = require('../../../src/services/authorization');
 
-let userCtx,
-    query,
-    body;
+let userCtx;
+let query;
+let body;
 
 describe('All Docs service', () => {
   beforeEach(function() {
@@ -87,10 +87,9 @@ describe('All Docs service', () => {
     });
 
     it('only takes last `startkey` alias param into consideration', () => {
-      let response;
       const allowedIds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'aa', 'bb', 'cc', 'dd', 'ee'];
 
-      response = service._filterRequestIds(
+      const response = service._filterRequestIds(
         allowedIds,
         null,
         { startkey: 'c', start_key_doc_id: 'a', startkey_docid: 'b', start_key: 'd' });
@@ -363,11 +362,11 @@ describe('All Docs service', () => {
           db.medic.allDocs.callCount.should.equal(1);
           authorization.getAllowedDocIds.callCount.should.equal(1);
           result.should.deep.equal({ rows: [
-              { id: 'a' },
-              { id: 'b', error: 'forbidden' },
-              { id: 'c' },
-              { id: 'd', error: 'forbidden' }
-            ]});
+            { id: 'a' },
+            { id: 'b', error: 'forbidden' },
+            { id: 'c' },
+            { id: 'd', error: 'forbidden' }
+          ]});
         });
     });
 
@@ -404,14 +403,14 @@ describe('All Docs service', () => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
 
           result.should.deep.equal({ rows: [
-              {id: 'a', error: 'forbidden'},
-              {id: 'aa', error: 'forbidden'},
-              {id: 'b'},
-              {id: 'bb', error: 'forbidden'},
-              {id: 'c'}, {id: 'd'},
-              {id: 'f', error: 'forbidden'},
-              {id: 'g', error: 'forbidden'}
-            ]});
+            {id: 'a', error: 'forbidden'},
+            {id: 'aa', error: 'forbidden'},
+            {id: 'b'},
+            {id: 'bb', error: 'forbidden'},
+            {id: 'c'}, {id: 'd'},
+            {id: 'f', error: 'forbidden'},
+            {id: 'g', error: 'forbidden'}
+          ]});
         });
     });
 
@@ -443,12 +442,12 @@ describe('All Docs service', () => {
             authorization.allowedDoc.calledWith('e', sinon.match.any, { view: true, doc: 'e' });
 
             result.should.deep.equal({ rows: [
-                { id: 'a', doc: { _id: 'a' }},
-                { id: 'b', error: 'forbidden' },
-                { id: 'c', error: 'forbidden' },
-                { id: 'd', doc: { _id: 'd' }},
-                { id: 'e', doc: { _id: 'e' }},
-              ]});
+              { id: 'a', doc: { _id: 'a' }},
+              { id: 'b', error: 'forbidden' },
+              { id: 'c', error: 'forbidden' },
+              { id: 'd', doc: { _id: 'd' }},
+              { id: 'e', doc: { _id: 'e' }},
+            ]});
           });
       });
 
@@ -457,12 +456,12 @@ describe('All Docs service', () => {
         db.medic.allDocs
           .withArgs({ keys: ids, include_docs: true })
           .resolves({ rows: [
-              { id: 'a', doc: { _id: 'a' }},
-              { id: 'b', doc: null, value: { deleted: true } },
-              { id: 'c', doc: { _id: 'c' }},
-              { id: 'd', doc: null, value: { deleted: true }},
-              { id: 'e', doc: { _id: 'e' }},
-            ]});
+            { id: 'a', doc: { _id: 'a' }},
+            { id: 'b', doc: null, value: { deleted: true } },
+            { id: 'c', doc: { _id: 'c' }},
+            { id: 'd', doc: null, value: { deleted: true }},
+            { id: 'e', doc: { _id: 'e' }},
+          ]});
 
         body = { keys: ids  };
         query = { include_docs: true };
@@ -482,12 +481,12 @@ describe('All Docs service', () => {
             authorization.allowedDoc.calledWith('e', sinon.match.any, { view: true, doc: 'e' });
 
             result.should.deep.equal({ rows: [
-                { id: 'a', doc: { _id: 'a' }},
-                { id: 'b', error: 'forbidden' },
-                { id: 'c', error: 'forbidden' },
-                { id: 'd', error: 'forbidden' },
-                { id: 'e', doc: { _id: 'e' }},
-              ]});
+              { id: 'a', doc: { _id: 'a' }},
+              { id: 'b', error: 'forbidden' },
+              { id: 'c', error: 'forbidden' },
+              { id: 'd', error: 'forbidden' },
+              { id: 'e', doc: { _id: 'e' }},
+            ]});
           });
       });
     });
@@ -510,11 +509,11 @@ describe('All Docs service', () => {
       const authCtx = { userCtx: { name: 'mia' } };
       const opts = { include_docs: true, keys: [1, 2, 3, 4, 5] };
       db.medic.allDocs.resolves({ rows: [
-          { id: 1, doc: { _id: 1, ok: true } },
-          { id: 2, doc: { _id: 2, ok: false } },
-          { id: 3, doc: null, value: { deleted: true } },
-          { id: 4, doc: { _id: 2, ok: true } },
-          { id: 5, error: 'missing' },
+        { id: 1, doc: { _id: 1, ok: true } },
+        { id: 2, doc: { _id: 2, ok: false } },
+        { id: 3, doc: null, value: { deleted: true } },
+        { id: 4, doc: { _id: 2, ok: true } },
+        { id: 5, error: 'missing' },
       ]});
       sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ allowed: doc.ok, id: doc._id }));
       sinon.stub(authorization, 'allowedDoc').callsFake((id, ctx, views) => views.allowed);
@@ -530,8 +529,8 @@ describe('All Docs service', () => {
         authorization.allowedDoc.calledWith(4, authCtx, { allowed: true, id: 4 });
 
         result.should.deep.equal({ rows: [
-            { id: 1, doc: { _id: 1, ok: true } },
-            { id: 4, doc: { _id: 2, ok: true } }
+          { id: 1, doc: { _id: 1, ok: true } },
+          { id: 4, doc: { _id: 2, ok: true } }
         ]});
       });
     });

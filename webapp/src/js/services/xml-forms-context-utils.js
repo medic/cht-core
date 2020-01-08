@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 /**
  * Util functions available to a form doc's `.context` function for checking if
@@ -7,11 +7,11 @@ var moment = require('moment');
 angular.module('inboxServices').factory('XmlFormsContextUtils', function() {
   'use strict';
 
-  var getDateDiff = function(contact, unit) {
+  const getDateDiff = function(contact, unit) {
     if (!contact.date_of_birth) {
       return;
     }
-    var dob = moment(contact.date_of_birth).startOf('day');
+    const dob = moment(contact.date_of_birth).startOf('day');
     return moment().diff(dob, unit);
   };
 

@@ -7,7 +7,8 @@
  */
 
 /** @summary state
- * Functions in this module all accept a "state" parameter or return a "state" object. This state has the following structure:
+ * Functions in this module all accept a "state" parameter or return a "state" object.
+ * This state has the following structure:
  * 
  * @example 
  * {
@@ -55,13 +56,13 @@ module.exports = {
 
     // Remove all emissions that were previously emitted by the contact ("cancelled emissions")
     if (!contactIds) {
-      for (let targetId of Object.keys(state)) {
+      for (const targetId of Object.keys(state)) {
         state[targetId].emissions = {};
       }
     } else {
-      for (let contactId of contactIds) {
-        for (let targetId of Object.keys(state)) {
-          for (let emissionId of Object.keys(state[targetId].emissions)) {
+      for (const contactId of contactIds) {
+        for (const targetId of Object.keys(state)) {
+          for (const emissionId of Object.keys(state[targetId].emissions)) {
             const emission = state[targetId].emissions[emissionId];
             if (emission[contactId]) {
               delete emission[contactId];
@@ -73,7 +74,7 @@ module.exports = {
     }
 
     // Merge the emission data into state
-    for (let emission of targetEmissions) {
+    for (const emission of targetEmissions) {
       const target = state[emission.type];
       const requestor = emission.contact && emission.contact._id;
       if (target && requestor && !emission.deleted) {
@@ -106,7 +107,9 @@ module.exports = {
         // emissions passing the "targetEmissionFilter"
         .map(emissionId => {
           const requestorIds = Object.keys(target.emissions[emissionId]);
-          const filteredInstanceIds = requestorIds.filter(requestorId => !targetEmissionFilter || targetEmissionFilter(target.emissions[emissionId][requestorId]));
+          const filteredInstanceIds = requestorIds.filter(requestorId => {
+            return !targetEmissionFilter || targetEmissionFilter(target.emissions[emissionId][requestorId]);
+          });
           return pick(target.emissions[emissionId], filteredInstanceIds);
         })
 
@@ -141,11 +144,15 @@ module.exports = {
     };
 
     const aggregateTarget = target => {
-      const aggregated = pick(target, ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key']);
+      const aggregated = pick(
+        target,
+        ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key']
+      );
       aggregated.value = scoreTarget(target);
 
       if (aggregated.type === 'percent') {
-        aggregated.value.percent = aggregated.value.total ? Math.round(aggregated.value.pass * 100 / aggregated.value.total) : 0;
+        aggregated.value.percent = aggregated.value.total ?
+          Math.round(aggregated.value.pass * 100 / aggregated.value.total) : 0;
       }
 
       return aggregated;
@@ -154,7 +161,10 @@ module.exports = {
     const emissionOfLatestRequestor = emissionsByRequestor => {
       return Object.keys(emissionsByRequestor).reduce((previousValue, requestorId) => {
         const current = emissionsByRequestor[requestorId];
-        return (!previousValue || !previousValue.order || current.order > previousValue.order) ? current : previousValue;
+        if (!previousValue || !previousValue.order || current.order > previousValue.order) {
+          return current;
+        }
+        return previousValue;
       }, undefined);
     };
 

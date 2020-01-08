@@ -2,13 +2,13 @@ describe('Contacts Edit controller', () => {
 
   'use strict';
 
-  let globalActions,
-      contactTypes,
-      createController,
-      scope,
-      $rootScope,
-      contactForm,
-      spyState;
+  let globalActions;
+  let contactTypes;
+  let createController;
+  let scope;
+  let $rootScope;
+  let contactForm;
+  let spyState;
 
   beforeEach(() => {
     module('inboxApp');
@@ -24,7 +24,7 @@ describe('Contacts Edit controller', () => {
     scope.clearSelected = sinon.stub();
     contactTypes = { get: sinon.stub().resolves({}) };
     scope.settingSelected = sinon.stub();
-    var $translate = key => Promise.resolve(key + 'translated');
+    const $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
 
     spyState = {

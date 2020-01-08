@@ -1,6 +1,7 @@
-const utils = require('../utils'),
-      auth = require('../auth')();
+const utils = require('../utils');
+const auth = require('../auth')();
 
+/* eslint-disable no-console */
 describe('Integration', () => {
   const message = {
     errors: [],

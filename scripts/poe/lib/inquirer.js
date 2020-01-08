@@ -35,7 +35,10 @@ const questions = {
       name: 'type',
       type: 'list',
       message: 'Select the file format.',
-      choices: ['po', 'pot', 'mo', 'xls', 'csv', 'resw', 'resx', 'android_strings', 'apple_strings', 'xliff', 'properties', 'key_value_json', 'json', 'xmb', 'xtb'],
+      choices: [
+        'po', 'pot', 'mo', 'xls', 'csv', 'resw', 'resx', 'android_strings', 'apple_strings', 'xliff',
+        'properties', 'key_value_json', 'json', 'xmb', 'xtb'
+      ],
       default: 'properties'
     },
     {
@@ -51,13 +54,14 @@ const questions = {
       type: 'list',
       message: 'Filter results by:',
       choices: ['none', 'translated', 'untranslated', 'fuzzy', 'not_fuzzy',
-                'automatic', 'not_automatic', 'proofread', 'not_proofread'],
+        'automatic', 'not_automatic', 'proofread', 'not_proofread'],
       default: 'none'
     },
     {
       name: 'tags',
       type: 'string',
-      message: 'Filter results by tags.\nYou can use either a string for a single tag or a json array for one or multiple tags.',
+      message: 'Filter results by tags.\nYou can use either a string for a single tag or a json array for one ' +
+        'or multiple tags.',
       default: `${mmVersion()}`
     }
   ],
@@ -86,13 +90,15 @@ const questions = {
     },
     {
       name: 'sync_terms', type: 'list',
-      message: 'Do you want to sync terms?\nSet to yes if you want to sync your terms \n(terms that are not found in the uploaded file will be deleted from project and the new ones added). \nIgnored if updating = translations.',
+      message: 'Do you want to sync terms?\nSet to yes if you want to sync your terms \n(terms that are not found in ' +
+        'the uploaded file will be deleted from project and the new ones added). \nIgnored if updating = translations.',
       choices: ['yes', 'no'],
       default: 'yes'
     },
     {
       name: 'tags', type: 'input',
-      message: 'Do you want to add tags?\n\nAvailable when updating terms or terms_translations; you can use the following keys: \
+      message: 'Do you want to add tags?\n\nAvailable when updating terms or terms_translations; you can use the ' +
+        'following keys: \
         \n"all" - for all the imported terms, \
         \n"new" - for the terms which aren\'t already in the project, \
         \n"obsolete" - for the terms which are in the project but not in the imported file and \
@@ -106,7 +112,8 @@ const questions = {
     },
     {
       name: 'fuzzy_trigger', type: 'list',
-      message: 'Fuzzy trigger?\nSet it to yes to mark corresponding translations from the other languages as fuzzy for the updated values',
+      message: 'Fuzzy trigger?\nSet it to yes to mark corresponding translations from the other languages as fuzzy ' +
+        'for the updated values',
       choices: ['yes', 'no'],
       default: 'yes'
     }

@@ -287,7 +287,9 @@ module.exports = {
             return Promise.reject(new Error(`Failed to updateMessageTaskStates: ${JSON.stringify(failures)}`));
           }
 
-          logger.warn(`Problems with updateMessageTaskStates: ${JSON.stringify(failures)}\nRetrying ${retriesLeft} more times.`);
+          logger.warn(
+            `Problems with updateMessageTaskStates: ${JSON.stringify(failures)}\nRetrying ${retriesLeft} more times.`
+          );
 
           const relevantChanges = [];
           failures.forEach(failure => {

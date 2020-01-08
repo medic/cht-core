@@ -79,8 +79,8 @@ describe('ContactsContentCtrl', () => {
   }));
 
   describe('Change feed process', () => {
-    let doc,
-        change;
+    let doc;
+    let change;
 
     beforeEach(() => {
       doc = {

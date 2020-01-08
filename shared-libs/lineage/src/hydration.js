@@ -298,7 +298,8 @@ module.exports = function(Promise, DB) {
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
-    let patientUuids, patientDocs;
+    let patientUuids; let 
+      patientDocs;
     return fetchPatientUuids(hydratedDocs)
       .then(function(uuids) {
         patientUuids = uuids;
@@ -320,7 +321,8 @@ module.exports = function(Promise, DB) {
       })
       .then(function(firstRoundFetched) {
         knownDocs.push(...firstRoundFetched);
-        const secondRoundIdsToFetch = collectLeafContactIds(firstRoundFetched).filter(id => !knownDocs.some(doc => doc._id === id));
+        const secondRoundIdsToFetch = collectLeafContactIds(firstRoundFetched)
+          .filter(id => !knownDocs.some(doc => doc._id === id));
         return fetchDocs(secondRoundIdsToFetch);
       })
       .then(function(secondRoundFetched) {
@@ -359,7 +361,8 @@ module.exports = function(Promise, DB) {
      * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
      * @param {String} id The id of the doc to fetch and hydrate
      * @param {Object} [options] Options for the behavior of the hydration
-     * @param {Boolean} [options.throwWhenMissingLineage=false] When true, throw if the doc has nothing to hydrate. When false, does a best effort to return the document regardless of content.
+     * @param {Boolean} [options.throwWhenMissingLineage=false] When true, throw if the doc has nothing to hydrate.
+     *   When false, does a best effort to return the document regardless of content.
      * @returns {Promise} A promise to return the hydrated doc.
      */
     fetchHydratedDoc: (id, options, callback) => fetchHydratedDoc(id, options, callback),

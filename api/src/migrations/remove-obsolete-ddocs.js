@@ -1,5 +1,5 @@
-const db = require('../db'),
-      DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
+const db = require('../db');
+const DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
 
 const remove = id => {
   return db.medic.get(id)

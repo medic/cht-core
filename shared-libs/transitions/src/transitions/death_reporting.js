@@ -1,14 +1,14 @@
-const _ = require('underscore'),
-  config = require('../config'),
-  utils = require('../lib/utils'),
-  objectPath = require('object-path'),
-  transitionUtils = require('./utils'),
-  db = require('../db'),
-  TRANSITION_NAME = 'death_reporting',
-  CONFIG_NAME = 'death_reporting',
-  MARK_PROPERTY_NAME = 'mark_deceased_forms',
-  UNDO_PROPERTY_NAME = 'undo_deceased_forms',
-  DATE_FIELD_PROPERTY_NAME = 'date_field';
+const _ = require('underscore');
+const config = require('../config');
+const utils = require('../lib/utils');
+const objectPath = require('object-path');
+const transitionUtils = require('./utils');
+const db = require('../db');
+const TRANSITION_NAME = 'death_reporting';
+const CONFIG_NAME = 'death_reporting';
+const MARK_PROPERTY_NAME = 'mark_deceased_forms';
+const UNDO_PROPERTY_NAME = 'undo_deceased_forms';
+const DATE_FIELD_PROPERTY_NAME = 'date_field';
 
 const getConfig = () => config.get(CONFIG_NAME) || {};
 const getConfirmFormCodes = () => getConfig()[MARK_PROPERTY_NAME] || [];
@@ -19,7 +19,8 @@ const isUndoForm = form => getUndoFormCodes().includes(form);
 
 const getDateOfDeath = report => {
   const config = getDateField();
-  return (config && objectPath.get(report, config)) || report.reported_date; // default to the date the death was confirmed
+  // default to the date the death was confirmed
+  return (config && objectPath.get(report, config)) || report.reported_date;
 };
 
 const updatePatient = (patient, doc) => {

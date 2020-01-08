@@ -1,8 +1,8 @@
-var moment = require('moment'),
-    assert = require('chai').assert,
-    schedules = require('../../src/lib/schedules'),
-    config = require('../../src/config'),
-    sinon = require('sinon');
+const moment = require('moment');
+const assert = require('chai').assert;
+const schedules = require('../../src/lib/schedules');
+const config = require('../../src/config');
+const sinon = require('sinon');
 
 describe('schedules', () => {
   afterEach(() => sinon.restore());
@@ -20,37 +20,37 @@ describe('schedules', () => {
 
   it('assignSchedule returns false if already has scheduled_task for that name', () => {
 
-    var doc = {
-        form: 'x',
-        lmp_date: moment().valueOf(),
-        scheduled_tasks: [
-            {
-                name: 'duckland'
-            }
-        ]
+    const doc = {
+      form: 'x',
+      lmp_date: moment().valueOf(),
+      scheduled_tasks: [
+        {
+          name: 'duckland'
+        }
+      ]
     };
 
-    var added = schedules.assignSchedule(doc, {
-        name: 'duckland',
-        start_from: 'lmp_date',
-        messages: [
-            {
-                group: 1,
-                offset: '1 week',
-                message: [{
-                    content: 'This is for serial number {{serial_number}}.',
-                    locale: 'en'
-                }]
-            },
-            {
-                group: 4,
-                offset: '81 days',
-                message: [{
-                    content: 'This is for serial number {{serial_number}}.',
-                    locale: 'en'
-                }]
-            }
-        ]
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'lmp_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 week',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        },
+        {
+          group: 4,
+          offset: '81 days',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        }
+      ]
     });
 
     assert.equal(added, false);
@@ -59,317 +59,312 @@ describe('schedules', () => {
 
   it('schedule generates two messages', () => {
 
-      var doc = {
-          form: 'x',
-          serial_number: 'abc',
-          reported_date: moment().valueOf()
-      };
+    const doc = {
+      form: 'x',
+      serial_number: 'abc',
+      reported_date: moment().valueOf()
+    };
 
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '1 week',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              },
-              {
-                  group: 4,
-                  offset: '81 days',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 week',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        },
+        {
+          group: 4,
+          offset: '81 days',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
 
-      assert.equal(added, true);
-      assert(doc.scheduled_tasks);
-      assert.equal(doc.scheduled_tasks.length, 2);
-      assert.equal(moment(doc.scheduled_tasks[1].due).diff(doc.reported_date, 'days'), 81);
+    assert.equal(added, true);
+    assert(doc.scheduled_tasks);
+    assert.equal(doc.scheduled_tasks.length, 2);
+    assert.equal(moment(doc.scheduled_tasks[1].due).diff(doc.reported_date, 'days'), 81);
   });
 
   it('scheduled due timestamp respects timezone', () => {
-      var doc = {
-          form: 'x',
-          reported_date: '2050-03-13T13:06:22.002Z'
-      };
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '1 day',
-                  send_time: '08:00 +00:00',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-      assert.equal(added, true);
-      assert.equal(doc.scheduled_tasks.length, 1);
-      assert.equal(
-          moment(doc.scheduled_tasks[0].due).toISOString(),
-          '2050-03-14T08:00:00.000Z'
-      );
+    const doc = {
+      form: 'x',
+      reported_date: '2050-03-13T13:06:22.002Z'
+    };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 day',
+          send_time: '08:00 +00:00',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
+    assert.equal(added, true);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(
+      moment(doc.scheduled_tasks[0].due).toISOString(),
+      '2050-03-14T08:00:00.000Z'
+    );
   });
 
   it('scheduled due timestamp respects send_day Monday', () => {
-      var doc = {
-          form: 'x',
-          reported_date: '2050-03-13T13:06:22.002Z'
-      };
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '2 weeks',
-                  send_day: 'Monday',
-                  message: [{
-                      content: 'Woot',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-      assert.equal(added, true);
-      assert.equal(doc.scheduled_tasks.length, 1);
-      assert.equal(
-          moment(doc.scheduled_tasks[0].due).format('dddd'),
-          'Monday'
-      );
+    const doc = {
+      form: 'x',
+      reported_date: '2050-03-13T13:06:22.002Z'
+    };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '2 weeks',
+          send_day: 'Monday',
+          message: [{
+            content: 'Woot',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
+    assert.equal(added, true);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(
+      moment(doc.scheduled_tasks[0].due).format('dddd'),
+      'Monday'
+    );
   });
 
   it('scheduled due timestamp respects send_day Wednesday', () => {
-      var doc = {
-          form: 'x',
-          reported_date: '2050-03-13T13:06:22.002Z'
-      };
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '2 weeks',
-                  send_day: 'Wednesday',
-                  message: [{
-                      content: 'Woot',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-      assert.equal(added, true);
-      assert.equal(doc.scheduled_tasks.length, 1);
-      assert.equal(
-          moment(doc.scheduled_tasks[0].due).format('dddd'),
-          'Wednesday'
-      );
+    const doc = {
+      form: 'x',
+      reported_date: '2050-03-13T13:06:22.002Z'
+    };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '2 weeks',
+          send_day: 'Wednesday',
+          message: [{
+            content: 'Woot',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
+    assert.equal(added, true);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(
+      moment(doc.scheduled_tasks[0].due).format('dddd'),
+      'Wednesday'
+    );
   });
 
   it('scheduled due timestamp respects send_day and send_time', () => {
-      var doc = {
-          form: 'x',
-          reported_date: '2050-03-13T13:06:22.002Z'
-      };
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '2 weeks',
-                  send_day: 'Wednesday',
-                  send_time: '08:00 +0000',
-                  message: [{
-                      content: 'Woot',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-      assert.equal(added, true);
-      assert.equal(doc.scheduled_tasks.length, 1);
-      assert.equal(
-          moment(doc.scheduled_tasks[0].due).toISOString(),
-          '2050-03-30T08:00:00.000Z'
-      );
-      assert.equal(
-          moment(doc.scheduled_tasks[0].due).format('dddd'),
-          'Wednesday'
-      );
+    const doc = {
+      form: 'x',
+      reported_date: '2050-03-13T13:06:22.002Z'
+    };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '2 weeks',
+          send_day: 'Wednesday',
+          send_time: '08:00 +0000',
+          message: [{
+            content: 'Woot',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
+    assert.equal(added, true);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(
+      moment(doc.scheduled_tasks[0].due).toISOString(),
+      '2050-03-30T08:00:00.000Z'
+    );
+    assert.equal(
+      moment(doc.scheduled_tasks[0].due).format('dddd'),
+      'Wednesday'
+    );
   });
 
   it('scheduled item without message is skipped', () => {
-      var doc = {
-          form: 'x',
-          reported_date: '2050-03-13T13:06:22.002Z'
-      };
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '1 day',
-                  send_time: '08:00 +00:00',
-                  message: ''
-              }
-          ]
-      });
-      assert.equal(added, false);
-      assert(!doc.scheduled_tasks);
+    const doc = {
+      form: 'x',
+      reported_date: '2050-03-13T13:06:22.002Z'
+    };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 day',
+          send_time: '08:00 +00:00',
+          message: ''
+        }
+      ]
+    });
+    assert.equal(added, false);
+    assert(!doc.scheduled_tasks);
   });
 
   it('scheduled item with only spaces message is skipped', () => {
-      var doc = {
-          form: 'x',
-          reported_date: '2050-03-13T13:06:22.002Z'
-      };
-      var added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '1 day',
-                  send_time: '08:00 +00:00',
-                  message: [{
-                      content: '  ',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-      assert.equal(added, false);
-      assert(!doc.scheduled_tasks);
+    const doc = {
+      form: 'x',
+      reported_date: '2050-03-13T13:06:22.002Z'
+    };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 day',
+          send_time: '08:00 +00:00',
+          message: [{
+            content: '  ',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
+    assert.equal(added, false);
+    assert(!doc.scheduled_tasks);
   });
 
   it('schedule does not generate messages in past', () => {
-      var added,
-          doc;
+    const doc = {
+      form: 'x',
+      serial_number: 'abc',
+      some_date: moment().subtract(12, 'weeks').toISOString()
+    };
 
-      doc = {
-          form: 'x',
-          serial_number: 'abc',
-          some_date: moment().subtract(12, 'weeks').toISOString()
-      };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'some_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 week',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        },
+        {
+          group: 4,
+          offset: '20 weeks',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
 
-      added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'some_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '1 week',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              },
-              {
-                  group: 4,
-                  offset: '20 weeks',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-
-      assert.equal(added, true);
-      assert(doc.scheduled_tasks);
-      assert.equal(doc.scheduled_tasks.length, 1);
-      assert.equal(moment(doc.scheduled_tasks[0].due).diff(doc.some_date, 'weeks'), 20);
+    assert.equal(added, true);
+    assert(doc.scheduled_tasks);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(moment(doc.scheduled_tasks[0].due).diff(doc.some_date, 'weeks'), 20);
   });
 
   it('when start from is null skip schedule creation', () => {
-      var added;
+    const doc = {
+      form: 'x',
+      reported_date: null
+    };
 
-      var doc = {
-          form: 'x',
-          reported_date: null
-      };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'reported_date',
+      messages: [
+        {
+          group: 1,
+          offset: '1 week',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        },
+        {
+          group: 4,
+          offset: '81 days',
+          message: [{
+            content: 'This is for serial number {{serial_number}}.',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
 
-      added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'reported_date',
-          messages: [
-              {
-                  group: 1,
-                  offset: '1 week',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              },
-              {
-                  group: 4,
-                  offset: '81 days',
-                  message: [{
-                      content: 'This is for serial number {{serial_number}}.',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-
-      assert.equal(added, true);
-      assert(!doc.scheduled_tasks);
+    assert.equal(added, true);
+    assert(!doc.scheduled_tasks);
   });
 
   it('alreadyRun validation', () => {
-      assert.equal(schedules.alreadyRun({}, 'x'), false);
-      assert.equal(schedules.alreadyRun({
-          scheduled_tasks: [
-              {
-                  name: 'y'
-              }
-          ]
-      }, 'x'), false);
-      assert.equal(schedules.alreadyRun({
-          scheduled_tasks: [
-              {
-                  name: 'x'
-              }
-          ]
-      }, 'x'), true);
-      assert.equal(schedules.alreadyRun({
-          tasks: [
-              {
-                  name: 'y'
-              }
-          ],
-          scheduled_tasks: [
-              {
-                  name: 'y'
-              }
-          ]
-      }, 'x'), false);
-      assert.equal(schedules.alreadyRun({
-          tasks: [
-              {
-                  name: 'x'
-              }
-          ],
-          scheduled_tasks: [
-              {
-                  name: 'y'
-              }
-          ]
-      }, 'x'), true);
+    assert.equal(schedules.alreadyRun({}, 'x'), false);
+    assert.equal(schedules.alreadyRun({
+      scheduled_tasks: [
+        {
+          name: 'y'
+        }
+      ]
+    }, 'x'), false);
+    assert.equal(schedules.alreadyRun({
+      scheduled_tasks: [
+        {
+          name: 'x'
+        }
+      ]
+    }, 'x'), true);
+    assert.equal(schedules.alreadyRun({
+      tasks: [
+        {
+          name: 'y'
+        }
+      ],
+      scheduled_tasks: [
+        {
+          name: 'y'
+        }
+      ]
+    }, 'x'), false);
+    assert.equal(schedules.alreadyRun({
+      tasks: [
+        {
+          name: 'x'
+        }
+      ],
+      scheduled_tasks: [
+        {
+          name: 'y'
+        }
+      ]
+    }, 'x'), true);
   });
 
   it('assignSchedule sends correct config to messageUtils', () => {
@@ -411,74 +406,70 @@ describe('schedules', () => {
   });
 
   it('skips a group when starting mid-group by default', () => {
-      var added;
+    const doc = {
+      form: 'x',
+      lmp_date: moment().valueOf()
+    };
 
-      var doc = {
-          form: 'x',
-          lmp_date: moment().valueOf()
-      };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'lmp_date',
+      start_mid_group: false,
+      messages: [
+        {
+          group: 1,
+          offset: '-12 weeks',
+          message: [{
+            content: 'Past message.',
+            locale: 'en'
+          }]
+        },
+        {
+          group: 1,
+          offset: '13 weeks',
+          message: [{
+            content: 'Future message.',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
 
-      added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'lmp_date',
-          start_mid_group: false,
-          messages: [
-              {
-                  group: 1,
-                  offset: '-12 weeks',
-                  message: [{
-                      content: 'Past message.',
-                      locale: 'en'
-                  }]
-              },
-              {
-                  group: 1,
-                  offset: '13 weeks',
-                  message: [{
-                      content: 'Future message.',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-
-      assert.equal(added, false);
-      assert(!doc.scheduled_tasks);
+    assert.equal(added, false);
+    assert(!doc.scheduled_tasks);
   });  
 
   it('does not skip a group when starting mid-group and flag start_mid_group is true', () => {
-      var added;
+    const doc = {
+      form: 'x',
+      lmp_date: moment().valueOf()
+    };
 
-      var doc = {
-          form: 'x',
-          lmp_date: moment().valueOf()
-      };
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      start_from: 'lmp_date',
+      start_mid_group: true,
+      messages: [
+        {
+          group: 1,
+          offset: '-12 weeks',
+          message: [{
+            content: 'Past message.',
+            locale: 'en'
+          }]
+        },
+        {
+          group: 1,
+          offset: '13 weeks',
+          message: [{
+            content: 'Future message.',
+            locale: 'en'
+          }]
+        }
+      ]
+    });
 
-      added = schedules.assignSchedule(doc, {
-          name: 'duckland',
-          start_from: 'lmp_date',
-          start_mid_group: true,
-          messages: [
-              {
-                  group: 1,
-                  offset: '-12 weeks',
-                  message: [{
-                      content: 'Past message.',
-                      locale: 'en'
-                  }]
-              },
-              {
-                  group: 1,
-                  offset: '13 weeks',
-                  message: [{
-                      content: 'Future message.',
-                      locale: 'en'
-                  }]
-              }
-          ]
-      });
-
-      assert.equal(added, true);
-      assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(added, true);
+    assert.equal(doc.scheduled_tasks.length, 1);
   }); 
 });

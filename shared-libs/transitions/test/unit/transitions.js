@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      assert = require('chai').assert,
-      transitions = require('../../src/transitions'),
-      config = require('../../src/config'),
-      _ = require('underscore');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const transitions = require('../../src/transitions');
+const config = require('../../src/config');
+const _ = require('underscore');
 
 const requiredFunctions = {
   onMatch: 1,

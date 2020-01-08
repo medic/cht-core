@@ -1,11 +1,11 @@
-const _ = require('underscore'),
-  vm = require('vm'),
-  db = require('../db'),
-  moment = require('moment'),
-  config = require('../config'),
-  taskUtils = require('@medic/task-utils'),
-  registrationUtils = require('@medic/registration-utils'),
-  logger = require('./logger');
+const _ = require('underscore');
+const vm = require('vm');
+const db = require('../db');
+const moment = require('moment');
+const config = require('../config');
+const taskUtils = require('@medic/task-utils');
+const registrationUtils = require('@medic/registration-utils');
+const logger = require('./logger');
 
 /*
  * Get desired locale

@@ -3,11 +3,10 @@ const { UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
-    logger.error(
-      new Error(
-        `db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`
-      )
-    );
+    logger.error(new Error(
+      `db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}. ` +
+      `Please stub PouchDB functions that will be interacted with in unit tests.`
+    ));
     process.exit(1);
   };
 

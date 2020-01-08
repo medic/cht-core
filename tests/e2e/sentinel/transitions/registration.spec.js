@@ -31,7 +31,9 @@ const contacts = [
     contact_type: 'clinic',
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -117,7 +119,10 @@ describe('registration', () => {
       type: 'data_record',
       form: 'FORM',
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -153,7 +158,10 @@ describe('registration', () => {
       type: 'data_record',
       form: 'NOT_FORM',
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -213,7 +221,10 @@ describe('registration', () => {
         count: 3
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -226,7 +237,10 @@ describe('registration', () => {
         count: 22
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -314,7 +328,10 @@ describe('registration', () => {
         patient_name: 'Minerva',
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -327,7 +344,10 @@ describe('registration', () => {
         patient_name: 'Mike',
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc3 = {
@@ -340,7 +360,10 @@ describe('registration', () => {
         our_patient_id: 'venus'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc4 = {
@@ -353,7 +376,10 @@ describe('registration', () => {
         our_patient_id: 'patient'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     let newPatientId;
@@ -458,7 +484,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a person type "chw" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content:
+              'Cannot create a person type "chw" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -488,7 +515,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a person type "nurse" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a person type "nurse" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -626,11 +654,13 @@ describe('registration', () => {
 
         chai.expect(updated[3].errors[0]).to.deep.equal({
           code: 'parent_invalid',
-          message: 'Cannot create a person type "chw" under parent the_district_hospital(contact type district_hospital)',
+          message:
+            'Cannot create a person type "chw" under parent the_district_hospital(contact type district_hospital)',
         });
         chai.expect(updated[3].tasks[0].messages[0]).to.include({
           to: '+00000000',
-          message: 'Cannot create a person type "chw" under parent the_district_hospital(contact type district_hospital)'
+          message:
+            'Cannot create a person type "chw" under parent the_district_hospital(contact type district_hospital)'
         });
 
         chai.expect(updated[4].errors[0]).to.deep.equal({
@@ -744,7 +774,10 @@ describe('registration', () => {
         the_parent: 'the_district_hospital'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const ids = [createPerson._id, createChw._id, createNurse._id];
@@ -846,7 +879,10 @@ describe('registration', () => {
         weeks_since_lmp: 2,
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -859,7 +895,10 @@ describe('registration', () => {
         last_menstrual_period: 2
       },
       reported_date: moment().subtract(2, 'weeks').valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -875,12 +914,16 @@ describe('registration', () => {
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
         chai.expect(updated[0].lmp_date).to.be.ok;
-        chai.expect(updated[0].lmp_date).to.equal(moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString());
-        chai.expect(updated[0].expected_date).to.equal(moment().utc(false).startOf('day').add(38, 'weeks').toISOString());
+        chai.expect(updated[0].lmp_date)
+          .to.equal(moment().utc(false).startOf('day').subtract(2, 'weeks').toISOString());
+        chai.expect(updated[0].expected_date)
+          .to.equal(moment().utc(false).startOf('day').add(38, 'weeks').toISOString());
 
         chai.expect(updated[1].lmp_date).to.be.ok;
-        chai.expect(updated[1].lmp_date).to.equal(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
-        chai.expect(updated[1].expected_date).to.equal(moment().utc(false).startOf('day').add(36, 'weeks').toISOString());
+        chai.expect(updated[1].lmp_date)
+          .to.equal(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
+        chai.expect(updated[1].expected_date)
+          .to.equal(moment().utc(false).startOf('day').add(36, 'weeks').toISOString());
       });
   });
 
@@ -910,7 +953,10 @@ describe('registration', () => {
         months_since_birth: 2,
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -923,7 +969,10 @@ describe('registration', () => {
         weeks_since_birth: 2
       },
       reported_date: moment().subtract(2, 'weeks').valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc3 = {
@@ -936,7 +985,10 @@ describe('registration', () => {
         age_in_years: 2
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -951,9 +1003,12 @@ describe('registration', () => {
       })
       .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
       .then(updated => {
-        chai.expect(updated[0].birth_date).to.equal(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
-        chai.expect(updated[1].birth_date).to.equal(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
-        chai.expect(updated[2].birth_date).to.equal(moment().utc(false).startOf('day').subtract(2, 'years').toISOString());
+        chai.expect(updated[0].birth_date)
+          .to.equal(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
+        chai.expect(updated[1].birth_date)
+          .to.equal(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
+        chai.expect(updated[2].birth_date)
+          .to.equal(moment().utc(false).startOf('day').subtract(2, 'years').toISOString());
       });
   });
 
@@ -1016,7 +1071,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a place type "clinic" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }],
       }, {
@@ -1032,7 +1088,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a place type "clinic" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -1062,7 +1119,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a place type "health_center" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a place type "health_center" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -1092,7 +1150,10 @@ describe('registration', () => {
         place_name: 'Lunaris',
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const clinicNoParentUnderDistrict = {
@@ -1217,29 +1278,35 @@ describe('registration', () => {
 
         chai.expect(updated[1].errors[0]).to.deep.equal({
           code: 'parent_invalid',
-          message: 'Cannot create a place type "clinic" under parent the_district_hospital(contact type district_hospital)',
+          message: 'Cannot create a place type "clinic" under parent ' +
+              'the_district_hospital(contact type district_hospital)',
         });
         chai.expect(updated[1].tasks[0].messages[0]).to.include({
           to: '+00000000',
-          message: 'Cannot create a place type "clinic" under parent the_district_hospital(contact type district_hospital)',
+          message: 'Cannot create a place type "clinic" under parent ' +
+              'the_district_hospital(contact type district_hospital)',
         });
 
         chai.expect(updated[2].errors[0]).to.deep.equal({
           code: 'parent_invalid',
-          message: 'Cannot create a place type "clinic" under parent the_clinic(contact type clinic)',
+          message: 'Cannot create a place type "clinic" under parent ' +
+              'the_clinic(contact type clinic)',
         });
         chai.expect(updated[2].tasks[0].messages[0]).to.include({
           to: '+11111111',
-          message: 'Cannot create a place type "clinic" under parent the_clinic(contact type clinic)',
+          message: 'Cannot create a place type "clinic" under parent ' +
+              'the_clinic(contact type clinic)',
         });
 
         chai.expect(updated[3].errors[0]).to.deep.equal({
           code: 'parent_invalid',
-          message: 'Cannot create a place type "clinic" under parent the_district_hospital(contact type district_hospital)',
+          message: 'Cannot create a place type "clinic" under parent ' +
+              'the_district_hospital(contact type district_hospital)',
         });
         chai.expect(updated[3].tasks[0].messages[0]).to.include({
           to: '+11111111',
-          message: 'Cannot create a place type "clinic" under parent the_district_hospital(contact type district_hospital)',
+          message: 'Cannot create a place type "clinic" under parent ' +
+              'the_district_hospital(contact type district_hospital)',
         });
 
         chai.expect(updated[4].errors[0]).to.deep.equal({
@@ -1262,11 +1329,13 @@ describe('registration', () => {
 
         chai.expect(updated[6].errors[0]).to.deep.equal({
           code: 'parent_invalid',
-          message: 'Cannot create a place type "health_center" under parent the_clinic(contact type clinic)',
+          message: 'Cannot create a place type "health_center" under parent ' +
+              'the_clinic(contact type clinic)',
         });
         chai.expect(updated[6].tasks[0].messages[0]).to.include({
           to: '+11111111',
-          message: 'Cannot create a place type "health_center" under parent the_clinic(contact type clinic)',
+          message: 'Cannot create a place type "health_center" under parent ' +
+              'the_clinic(contact type clinic)',
         });
 
         return getContactsByReference(updated.map(doc => doc.place_id));
@@ -1300,7 +1369,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a place type "clinic" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }],
       }, {
@@ -1324,7 +1394,8 @@ describe('registration', () => {
           event_type: 'parent_invalid',
           message: [{
             locale: 'en',
-            content: 'Cannot create a place type "nursing_home" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+            content: 'Cannot create a place type "nursing_home" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
           }],
         }, {
           recipient: 'reporting_unit',
@@ -1528,7 +1599,8 @@ describe('registration', () => {
             event_type: 'parent_invalid',
             message: [{
               locale: 'en',
-              content: 'Cannot create a place type "clinic" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+              content: 'Cannot create a place type "clinic" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
             }],
           }],
         },
@@ -1553,7 +1625,8 @@ describe('registration', () => {
             event_type: 'parent_invalid',
             message: [{
               locale: 'en',
-              content: 'Cannot create a person type "person" under parent {{parent.place_id}}(contact type {{parent.contact_type}})'
+              content: 'Cannot create a person type "person" under parent ' +
+              '{{parent.place_id}}(contact type {{parent.contact_type}})'
             }],
           }],
         },
@@ -1727,7 +1800,10 @@ describe('registration', () => {
       },
       some_date_field: moment().subtract(3, 'week').valueOf(),
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -1740,7 +1816,10 @@ describe('registration', () => {
       },
       some_date_field: moment().subtract(2, 'week').valueOf(),
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -1855,7 +1934,10 @@ describe('registration', () => {
       },
       some_date_field: moment().subtract(3, 'week').valueOf(),
       reported_date: moment().valueOf(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils

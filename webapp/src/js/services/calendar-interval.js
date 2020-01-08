@@ -1,11 +1,11 @@
-var moment = require('moment');
+const moment = require('moment');
 
 (function () {
 
   'use strict';
 
   angular.module('inboxServices').factory('CalendarInterval', function() {
-    var normalizeStartDate = function(intervalStartDate) {
+    const normalizeStartDate = function(intervalStartDate) {
       intervalStartDate = parseInt(intervalStartDate);
 
       if (isNaN(intervalStartDate) || intervalStartDate <= 0 || intervalStartDate > 31) {
@@ -15,7 +15,7 @@ var moment = require('moment');
       return intervalStartDate;
     };
 
-    var getMinimumStartDate = function(intervalStartDate, relativeDate) {
+    const getMinimumStartDate = function(intervalStartDate, relativeDate) {
       return moment
         .min(
           moment(relativeDate).subtract(1, 'month').date(intervalStartDate).startOf('day'),
@@ -24,7 +24,7 @@ var moment = require('moment');
         .valueOf();
     };
 
-    var getMinimumEndDate = function(intervalStartDate, nextMonth, relativeDate) {
+    const getMinimumEndDate = function(intervalStartDate, nextMonth, relativeDate) {
       return moment
         .min(
           moment(relativeDate).add(nextMonth ? 1 : 0, 'month').date(intervalStartDate - 1).endOf('day'),

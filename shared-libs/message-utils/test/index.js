@@ -1,16 +1,16 @@
-const sinon = require('sinon'),
-      moment = require('moment'),
-      expect = require('chai').expect,
-      should = require('chai').should(),
-      uuid = require('uuid');
+const sinon = require('sinon');
+const moment = require('moment');
+const expect = require('chai').expect;
+const should = require('chai').should();
+const uuid = require('uuid');
 const utils = require('../src/index');
 
 const MAX_GSM_LENGTH = 160;
 const MAX_UNICODE_LENGTH = 70;
 
-var generateMessage = function(length, unicode) {
-  var result = [];
-  for (var i = 0; i < length; i++) {
+const generateMessage = function(length, unicode) {
+  const result = [];
+  for (let i = 0; i < length; i++) {
     result[i] = unicode ? '☃' : 'o';
   }
   return result.join('');
@@ -32,13 +32,13 @@ describe('messageUtils', () => {
         .should.equal('foo');
     });
     describe('recipient variations', () => {
-      const fromPhone = 'fromPhone',
-            clinicPhone = 'clinicPhone',
-            parentPhone = 'parentPhone',
-            grandparentPhone = 'grandParentPhone',
-            fieldsPhone = 'fieldsPhone',
-            inlinePhone = 'inlinePhone',
-            complexInlinePhone = 'complexInlinePhone';
+      const fromPhone = 'fromPhone';
+      const clinicPhone = 'clinicPhone';
+      const parentPhone = 'parentPhone';
+      const grandparentPhone = 'grandParentPhone';
+      const fieldsPhone = 'fieldsPhone';
+      const inlinePhone = 'inlinePhone';
+      const complexInlinePhone = 'complexInlinePhone';
       const doc = {
         form: 'x',
         from: fromPhone,
@@ -471,12 +471,12 @@ describe('messageUtils', () => {
 
     describe('errors', () => {
       it('should add an error when registrations are provided without a patient', () => {
-        const config = {},
-              translate = null,
-              doc = {},
-              content = { message: 'sms' },
-              recipient = '1234',
-              context = { registrations: [{ _id: 'a' }] };
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { registrations: [{ _id: 'a' }] };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');
@@ -485,12 +485,12 @@ describe('messageUtils', () => {
       });
 
       it('should not add an error when no patient and no registrations are provided', () => {
-        const config = {},
-              translate = null,
-              doc = {},
-              content = { message: 'sms' },
-              recipient = '1234',
-              context = { registrations: false };
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { registrations: false };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');
@@ -499,12 +499,12 @@ describe('messageUtils', () => {
       });
 
       it('should not add an error when patient is provided', () => {
-        const config = {},
-              translate = null,
-              doc = {},
-              content = { message: 'sms' },
-              recipient = '1234',
-              context = { patient: { name: 'a' } };
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { patient: { name: 'a' } };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');

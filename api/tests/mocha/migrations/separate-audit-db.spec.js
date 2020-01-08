@@ -1,9 +1,9 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      db = require('../../../src/db'),
-      environment = require('../../../src/environment'),
-      migration = require('../../../src/migrations/separate-audit-db.js'),
-      ERR_404 = { status: 404 };
+const sinon = require('sinon');
+const chai = require('chai');
+const db = require('../../../src/db');
+const environment = require('../../../src/environment');
+const migration = require('../../../src/migrations/separate-audit-db.js');
+const ERR_404 = { status: 404 };
 
 const FIRST_VIEW_BATCH = {
   rows: [

@@ -2,12 +2,12 @@ describe('Session service', function() {
 
   'use strict';
 
-  var service,
-      ipCookie,
-      ipCookieRemove,
-      location,
-      $httpBackend,
-      Location;
+  let service;
+  let ipCookie;
+  let ipCookieRemove;
+  let location;
+  let $httpBackend;
+  let Location;
 
   beforeEach(function () {
     module('inboxApp');
@@ -39,9 +39,9 @@ describe('Session service', function() {
   });
 
   it('gets the user context', function(done) {
-    var expected = { name: 'bryan' };
+    const expected = { name: 'bryan' };
     ipCookie.returns(expected);
-    var actual = service.userCtx();
+    const actual = service.userCtx();
     chai.expect(actual).to.deep.equal(expected);
     chai.expect(ipCookie.args[0][0]).to.equal('userCtx');
     done();
@@ -131,28 +131,28 @@ describe('Session service', function() {
 
     it('returns false if not logged in', function(done) {
       ipCookie.returns({});
-      var actual = service.isAdmin();
+      const actual = service.isAdmin();
       chai.expect(actual).to.equal(false);
       done();
     });
 
     it('returns true for _admin', function(done) {
       ipCookie.returns({ roles: [ '_admin' ] });
-      var actual = service.isAdmin();
+      const actual = service.isAdmin();
       chai.expect(actual).to.equal(true);
       done();
     });
 
     it('returns true for national_admin', function(done) {
       ipCookie.returns({ roles: [ 'national_admin', 'some_other_role' ] });
-      var actual = service.isAdmin();
+      const actual = service.isAdmin();
       chai.expect(actual).to.equal(true);
       done();
     });
 
     it('returns false for everyone else', function(done) {
       ipCookie.returns({ roles: [ 'district_admin', 'some_other_role' ] });
-      var actual = service.isAdmin();
+      const actual = service.isAdmin();
       chai.expect(actual).to.equal(false);
       done();
     });

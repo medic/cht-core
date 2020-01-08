@@ -2,10 +2,10 @@ describe('GetDataRecords service', () => {
 
   'use strict';
 
-  let service,
-      allDocs,
-      GetSummaries,
-      HydrateContactNames;
+  let service;
+  let allDocs;
+  let GetSummaries;
+  let HydrateContactNames;
 
   beforeEach(() => {
     allDocs = sinon.stub();

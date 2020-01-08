@@ -26,10 +26,10 @@ const replicate = () => {
 
 replicate()
   .then(() => {
-    console.log('initial replication complete');
+    console.log('initial replication complete'); // eslint-disable-line no-console
     process.exit(0);
   })
   .catch(err => {
-    console.error('initial replication failed', err);
+    console.error('initial replication failed', err); // eslint-disable-line no-console
     process.exit(1);
   });

@@ -7,8 +7,8 @@ angular.module('inboxServices').service('MRDT',
     'use strict';
     'ngInject';
 
-    var current;
-    var timeTaken;
+    let current;
+    let timeTaken;
 
     return {
       enabled: function() {

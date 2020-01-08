@@ -3,7 +3,7 @@
  * framework itself is working as expected.
  */
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 describe('migrations integration test framework', function() {
   afterEach(function() {
@@ -30,24 +30,24 @@ describe('migrations integration test framework', function() {
         { name: 'b', _id:'2' },
       ])
 
-      .then(function() {
+        .then(function() {
 
-        // expect
-        return utils.assertDb([
-          { name: 'a', _id:'1' },
-          { name: 'b', _id:'2' },
-        ]);
+          // expect
+          return utils.assertDb([
+            { name: 'a', _id:'1' },
+            { name: 'b', _id:'2' },
+          ]);
 
-      });
+        });
     });
   });
 
   it('should be able to match docs without a fixed ID', function() {
-      // given
-      return utils.initDb([
-        { name: 'a', _id:'1' },
-        { name: 'b', _id:'2' },
-      ])
+    // given
+    return utils.initDb([
+      { name: 'a', _id:'1' },
+      { name: 'b', _id:'2' },
+    ])
 
       .then(function() {
 
@@ -61,12 +61,12 @@ describe('migrations integration test framework', function() {
   });
 
   it('should be able to match docs with or without a fixed ID', function() {
-      // given
-      return utils.initDb([
-        { name: 'a', _id:'1' },
-        { name: 'c', _id:'3' },
-        { name: 'b', _id:'2' },
-      ])
+    // given
+    return utils.initDb([
+      { name: 'a', _id:'1' },
+      { name: 'c', _id:'3' },
+      { name: 'b', _id:'2' },
+    ])
 
       .then(function() {
 
@@ -88,21 +88,21 @@ describe('migrations integration test framework', function() {
       { _id:'3', name: 'caz' },
     ])
 
-    .then(function() {
+      .then(function() {
 
-      // when
-      return utils.runMigration('../../tests/integration/res/migrations/reverse-names');
+        // when
+        return utils.runMigration('../../tests/integration/res/migrations/reverse-names');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        { name: 'ecila', _id:'1' },
-        { name: 'bob', _id:'2' },
-        { name: 'zac', _id:'3' },
-      ]);
+        // expect
+        return utils.assertDb([
+          { name: 'ecila', _id:'1' },
+          { name: 'bob', _id:'2' },
+          { name: 'zac', _id:'3' },
+        ]);
 
-    });
+      });
   });
 });
