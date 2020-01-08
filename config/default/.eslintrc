@@ -1,19 +1,19 @@
 {
+  "extends": "@medic",
   "env": {
     "es6": true,
     "node": true
   },
-  "extends": "eslint:recommended",
-  "parserOptions": {
-    "ecmaVersion": 6,
-    "sourceType": "module"
-  },
   "rules": {
-    "no-undef": 1,
-    "no-unused-vars": 1,
+    "max-len": "off",
     "no-console": "off",
     "no-debugger": "off",
     "quotes": ["error", "single", { "avoidEscape": true }]
+  },
+  "globals": {
+    "contact": true,
+    "lineage": true,
+    "reports": true
   },
   "overrides": [
     {

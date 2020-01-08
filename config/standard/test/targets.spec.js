@@ -2458,7 +2458,7 @@ describe('Standard Configuration Targets', () => {
 
   function contactWithReports(contact, ...reports) {
     harness.state.contacts.push(contact);
-    for (let report of reports) {
+    for (const report of reports) {
       report.patient_id = contact._id;
     }
     harness.pushMockedReport(...reports);

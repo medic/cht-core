@@ -678,9 +678,10 @@ function resetDate(object, key, keyToChange, offset) {
 }
 
 function traverse(object, func, key, offset) {
+    // eslint-disable-next-line guard-for-in
     for (var i in object) {
         func.apply(this, [object, i, key, offset]);
-        if (object[i] !== null && typeof(object[i])=="object") {
+        if (object[i] !== null && typeof(object[i]) === "object") {
             //going one step down in the object tree!!
             traverse(object[i], func, key, offset);
         }
