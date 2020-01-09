@@ -753,7 +753,11 @@ describe('Authorization service', () => {
       return service
         .getScopedAuthorizationContext(userCtx, [])
         .then(result => {
-          result.should.deep.equal({ userCtx, subjectIds: ['_all', 'org.couchdb.user:user'], contactsByDepthKeys: [ ['facility_id'] ] });
+          result.should.deep.equal({
+            userCtx,
+            subjectIds: ['_all', 'org.couchdb.user:user'],
+            contactsByDepthKeys: [ ['facility_id'] ]
+          });
         });
     });
 
@@ -763,7 +767,11 @@ describe('Authorization service', () => {
           userCtx, [{ doc: false }, { doc: undefined }, { viewResults: {} }, false, undefined ]
         )
         .then(result => {
-          result.should.deep.equal({ userCtx, subjectIds: ['_all', 'org.couchdb.user:user'], contactsByDepthKeys: [ ['facility_id'] ] });
+          result.should.deep.equal({
+            userCtx,
+            subjectIds: ['_all', 'org.couchdb.user:user'],
+            contactsByDepthKeys: [ ['facility_id'] ]
+          });
         });
     });
 
@@ -903,7 +911,9 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(5);
           docsByReplicationKey.args.should.deep.equal([ [c1], [c2], [c3], [c4], [c5]]);
 
-          result.subjectIds.should.have.members(['c1', '123456', 'c3', 'c5', 'place5', '_all', 'org.couchdb.user:user']);
+          result.subjectIds.should.have.members([
+            'c1', '123456', 'c3', 'c5', 'place5', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1051,7 +1061,9 @@ describe('Authorization service', () => {
           contactsByDepth.callCount.should.equal(7);
           docsByReplicationKey.callCount.should.equal(7);
 
-          result.subjectIds.should.have.members(['c1', 'patient1doc', 'patient1', 'patient3doc', '_all', 'org.couchdb.user:user']);
+          result.subjectIds.should.have.members([
+            'c1', 'patient1doc', 'patient1', 'patient3doc', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1181,7 +1193,9 @@ describe('Authorization service', () => {
           contactsByDepth.callCount.should.equal(8);
           docsByReplicationKey.callCount.should.equal(8);
 
-          result.subjectIds.should.have.members(['c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', 'org.couchdb.user:user']);
+          result.subjectIds.should.have.members([
+            'c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1294,7 +1308,9 @@ describe('Authorization service', () => {
           contactsByDepth.callCount.should.equal(4);
           docsByReplicationKey.callCount.should.equal(4);
 
-          result.subjectIds.should.have.members(['c1', 'contact1', 'patient1doc', 'patient1', '_all', 'org.couchdb.user:user']);
+          result.subjectIds.should.have.members([
+            'c1', 'contact1', 'patient1doc', 'patient1', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1697,7 +1713,9 @@ describe('Authorization service', () => {
             contactsByDepth.callCount.should.equal(10);
             docsByReplicationKey.callCount.should.equal(10);
 
-            result.subjectIds.should.have.members(['patient1doc', 'patient1', 'patient5doc', 'c1', 'patient3doc', '_all', 'org.couchdb.user:user']);
+            result.subjectIds.should.have.members([
+              'patient1doc', 'patient1', 'patient5doc', 'c1', 'patient3doc', '_all', 'org.couchdb.user:user'
+            ]);
           });
       });
 
@@ -1860,7 +1878,9 @@ describe('Authorization service', () => {
             contactsByDepth.callCount.should.equal(9);
             docsByReplicationKey.callCount.should.equal(9);
 
-            result.subjectIds.should.have.members(['patient1doc', 'patient1', 'p1', 'facility_id', 'c1', '_all', 'org.couchdb.user:user']);
+            result.subjectIds.should.have.members([
+              'patient1doc', 'patient1', 'p1', 'facility_id', 'c1', '_all', 'org.couchdb.user:user'
+            ]);
           });
       });
     });

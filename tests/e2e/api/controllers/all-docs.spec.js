@@ -127,12 +127,12 @@ describe('all_docs handler', () => {
       auth: { username: 'supervisor', password },
       method: 'GET'
     };
-
+    const lineage = { _id: 'PARENT_PLACE' };
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' }}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' }}, type: 'data_record', form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' }}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' }}, type: 'data_record', form: 'a' },
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: lineage }, type: 'clinic' },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: lineage }, type: 'data_record', form: 'a' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: lineage }, type: 'clinic' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online', parent: lineage }, type: 'data_record', form: 'a' },
       { _id: 'allowed_task', user: 'org.couchdb.user:offline', type: 'task', owner: 'fixture:user:offline' },
       { _id: 'denied_task', user: 'org.couchdb.user:online', type: 'task', owner: 'fixture:user:offline' },
       { _id: 'allowed_target', user: 'org.couchdb.user:offline', type: 'target', owner: 'fixture:user:offline' },

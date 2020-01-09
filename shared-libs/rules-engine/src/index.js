@@ -24,7 +24,8 @@ module.exports = db => {
      * @param {Boolean} settings.enableTargets Flag to enable targets
      * @param {Object} userDoc User's hydrated contact document
      */
-    initialize: (settings, userContactDoc, userSettingsDoc) => wireupToProvider.initialize(provider, settings, userContactDoc, userSettingsDoc),
+    initialize: (settings, userContactDoc, userSettingsDoc) =>
+      wireupToProvider.initialize(provider, settings, userContactDoc, userSettingsDoc),
 
     /**
      * @returns {Boolean} True if the rules engine is enabled and ready for use

@@ -1107,8 +1107,12 @@ describe('db-doc handler', () => {
         })
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, supervisorRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ path: '/org.couchdb.user:offline' }, supervisorRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, supervisorRequestOptions)).catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/org.couchdb.user:offline' }, supervisorRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, supervisorRequestOptions))
+            .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/task1' }, supervisorRequestOptions)).catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/task2' }, supervisorRequestOptions)).catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/target1' }, supervisorRequestOptions)),

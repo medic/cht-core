@@ -299,6 +299,67 @@ describe('bulk-docs handler', () => {
       });
   });
 
+  it('filters offline tasks and targets', () => {
+    const supervisorRequestOptions = {
+      path: '/_bulk_docs',
+      auth: { username: 'supervisor', password },
+      method: 'POST',
+    };
+
+    const docs = [
+      {
+        _id: 'allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:online',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:online',
+      },
+    ];
+
+    offlineRequestOptions.body = { docs };
+
+    return utils
+      .requestOnTestDb(offlineRequestOptions)
+      .then(result => {
+        expect(result.length).toEqual(4);
+        expect(_.pick(result[0], 'id', 'ok')).toEqual({ id: 'allowed_task', ok: true });
+        expect(_.pick(result[2], 'id', 'ok')).toEqual({ id: 'allowed_target', ok: true });
+        expect(_.pick(result[1], 'id', 'error')).toEqual({ id: 'denied_task', error: 'forbidden' });
+        expect(_.pick(result[3], 'id', 'error')).toEqual({ id: 'denied_target', error: 'forbidden' });
+
+        docs[0]._rev = result[0].rev;
+        docs[2]._rev = result[2].rev;
+
+        supervisorRequestOptions.body = { docs };
+        return utils.requestOnTestDb(supervisorRequestOptions);
+      })
+      .then(result => {
+        expect(result.length).toEqual(4);
+        expect(_.pick(result[0], 'id', 'error')).toEqual({ id: 'allowed_task', error: 'forbidden' });
+        expect(_.pick(result[1], 'id', 'error')).toEqual({ id: 'denied_task', error: 'forbidden' });
+        expect(_.pick(result[2], 'id', 'ok')).toEqual({ id: 'allowed_target', ok: true });
+        expect(_.pick(result[3], 'id', 'ok')).toEqual({ id: 'denied_target', ok: true });
+      });
+
+  });
+
   it('reiterates over docs', () => {
     const docs = [
       {

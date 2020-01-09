@@ -45,7 +45,13 @@ module.exports = {
           existingStateDoc,
           { rulesStateStore: updatedState }
         );
-        rulesStateStore.load(existingStateDoc.rulesStateStore, settings, userContactDoc, userSettingsDoc, contactClosure);
+        rulesStateStore.load(
+          existingStateDoc.rulesStateStore,
+          settings,
+          userContactDoc,
+          userSettingsDoc,
+          contactClosure
+        );
       });
   },
 
@@ -182,5 +188,10 @@ const storeTargetsDoc = (provider, targets, filterInterval) => {
     updated_date: Date.now(),
     targets: targets.map(minifyTarget),
   };
-  return provider.commitTargetDoc(content, rulesStateStore.currentUserContact(), rulesStateStore.currentUserSettings(), targetDocTag);
+  return provider.commitTargetDoc(
+    content,
+    rulesStateStore.currentUserContact(),
+    rulesStateStore.currentUserSettings(),
+    targetDocTag
+  );
 };
