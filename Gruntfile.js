@@ -583,7 +583,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const sharedLibs = getSharedLibDirs();
           return [
-            //...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
+            ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
             ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
           ].join(' && ');
         },
@@ -1070,8 +1070,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    //'karma:unit',
-    //'karma:admin',
+    'karma:unit',
+    'karma:admin',
     'env:unit-test',
     'exec:shared-lib-unit',
     'mochaTest:unit',

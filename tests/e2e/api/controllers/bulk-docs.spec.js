@@ -42,10 +42,20 @@ const users = [
     },
     roles: ['national_admin'],
   },
+  {
+    username: 'supervisor',
+    password: password,
+    place: 'PARENT_PLACE',
+    contact: {
+      _id: 'fixture:user:supervisor',
+      name: 'Supervisor',
+    },
+    roles: ['district_admin'],
+  },
 ];
 
-let offlineRequestOptions; let 
-  onlineRequestOptions;
+let offlineRequestOptions;
+let onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',

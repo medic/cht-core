@@ -40,7 +40,17 @@ const users = [
       name: 'OnlineUser'
     },
     roles: ['national_admin']
-  }
+  },
+  {
+    username: 'supervisor',
+    password: password,
+    place: 'PARENT_PLACE',
+    contact: {
+      _id: 'fixture:user:supervisor',
+      name: 'Supervisor',
+    },
+    roles: ['district_admin'],
+  },
 ];
 
 let offlineRequestOptions;
@@ -112,23 +122,50 @@ describe('all_docs handler', () => {
   });
 
   it('filters offline users results', () => {
+    const supervisorRequestOptions = {
+      path: '/_all_docs',
+      auth: { username: 'supervisor', password },
+      method: 'GET'
+    };
+
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' }}, type: 'clinic' },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' }}, type: 'data_record', form: 'a' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' }}, type: 'clinic' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' }}, type: 'data_record', form: 'a' },
+      { _id: 'allowed_task', user: 'org.couchdb.user:offline', type: 'task', owner: 'fixture:user:offline' },
+      { _id: 'denied_task', user: 'org.couchdb.user:online', type: 'task', owner: 'fixture:user:offline' },
+      { _id: 'allowed_target', user: 'org.couchdb.user:offline', type: 'target', owner: 'fixture:user:offline' },
+      { _id: 'denied_target', user: 'org.couchdb.user:online', type: 'target', owner: 'fixture:user:online' },
     ];
 
     return utils
       .saveDocs(docs)
-      .then(() => utils.requestOnTestDb(offlineRequestOptions)).then(result => {
+      .then(() => utils.requestOnTestDb(offlineRequestOptions))
+      .then(result => {
         expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
         expect(restrictedKeys.some(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(false);
 
         expect(result.rows.findIndex(row => row.id === 'allowed_contact')).not.toEqual(-1);
         expect(result.rows.findIndex(row => row.id === 'allowed_report')).not.toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'allowed_task')).not.toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'allowed_target')).not.toEqual(-1);
         expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'denied_report')).toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'denied_task')).toEqual(-1);
+        expect(result.rows.findIndex(row => row.id === 'denied_target')).toEqual(-1);
+      })
+      .then(() => utils.requestOnTestDb(supervisorRequestOptions))
+      .then(result => {
+        const resultIds = result.rows.map(row => row.id);
+        expect(resultIds).toContain('allowed_contact');
+        expect(resultIds).toContain('allowed_report');
+        expect(resultIds).not.toContain('allowed_task');
+        expect(resultIds).toContain('allowed_target');
+        expect(resultIds).toContain('denied_contact');
+        expect(resultIds).toContain('denied_report');
+        expect(resultIds).not.toContain('denied_task');
+        expect(resultIds).toContain('denied_target');
       });
   });
 
