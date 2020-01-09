@@ -6,13 +6,13 @@
     "test": "test"
   },
   "scripts": {
-    "eslint": "../../node_modules/eslint/bin/eslint.js *.json test/**/*.js",
+    "eslint": "node ../../node_modules/eslint/bin/eslint.js *.json test/**/*.js",
     "test": "npm run eslint && npm run test-unit",
     "test-forms": "npm run eslint && mocha --reporter spec test/forms/**/*.spec.js --timeout 10000",
     "test-tasks": "npm run eslint && mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
     "test-targets": "npm run eslint && mocha --reporter progress test/targets/*.spec.js --timeout 10000",
     "test-contact-summary": "npm run eslint && mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
-    "test-unit": "mocha --reporter spec test/**/*.spec.js --timeout 20000",
+    "test-unit": "mocha --recursive --reporter spec test --timeout 20000",
     "travis": "npm run test-unit"
   },
   "devDependencies": {

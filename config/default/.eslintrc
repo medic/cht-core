@@ -1,5 +1,6 @@
 {
-  "extends": "@medic",
+  "extends": ["@medic"],
+  "plugins": ["json"],
   "env": {
     "es6": true,
     "node": true
@@ -14,15 +15,5 @@
     "contact": true,
     "lineage": true,
     "reports": true
-  },
-  "overrides": [
-    {
-      "files": [
-        "**/*.json"
-      ],
-      "plugins": [
-        "json"
-      ]
-    }
-  ]
+  }
 }

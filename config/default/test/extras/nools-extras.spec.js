@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const extras = require('../../nools-extras');
 let clock = sinon.useFakeTimers(new Date());
 describe('Date related tests', () => {
-  //before(() => { sinon.restore(); });
   beforeEach(() => {
     clock = sinon.useFakeTimers(new Date());
   });
