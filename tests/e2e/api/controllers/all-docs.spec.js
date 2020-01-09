@@ -327,7 +327,7 @@ describe('all_docs handler', () => {
     ];
 
     // skip all "default" docs
-    // this includes does that emit _all or the user settings doc id,
+    // this includes those that emit _all or the user settings doc id,
     // along with medic-client ddoc and the user-settings doc itself
     const getSkip = () => {
       const ddocAndUserSettings = 2;

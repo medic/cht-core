@@ -98,8 +98,8 @@ describe('Rules Engine Integration Tests', () => {
     // the library uses the fake date at the time the library is created. In this case, that is the time of
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
     sinon.useFakeTimers(THE_FUTURE);
-    db = await memdownMedic('../..');
 
+    db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
 
     configHashSalt++;

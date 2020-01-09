@@ -114,7 +114,6 @@ describe('bulk-get handler', () => {
         return utils.requestOnTestDb(onlineRequestOptions);
       })
       .then(result => {
-        console.log(JSON.stringify(result, null, 2));
         expect(result.results.length).toEqual(4);
         expect(result.results[0].id).toEqual('ICanBeAnything');
         expect(result.results[0].docs.length).toEqual(1);

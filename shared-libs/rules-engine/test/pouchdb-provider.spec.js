@@ -9,7 +9,7 @@ const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
 
-const mockUserSettingsDoc = { _id: 'org.couchdb.user:username'};
+const mockUserSettingsDoc = { _id: 'org.couchdb.user:username' };
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
   type: 'data_record',
