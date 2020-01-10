@@ -13,7 +13,7 @@
     "reports": true,
     "lineage": true,
     "Utils": true,
-    "no-global-assign": true,
+    "no-global-assign": true
   },
   "overrides": [
     {

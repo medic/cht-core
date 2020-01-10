@@ -306,7 +306,7 @@ describe('Standard Configuration Tasks', () => {
     var deliveryTaskDays = getRangeFromTask(deliveryTasks, weekdayOffset);
 
 
-    it(`should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy`, () => {
+    it("should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy", () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(6);
@@ -316,7 +316,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedReport(pregnancyReport, flagReport);
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -330,7 +330,7 @@ describe('Standard Configuration Tasks', () => {
         });
     });
 
-    it(`should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy`, () => {
+    it("should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy", () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(2);
@@ -348,7 +348,7 @@ describe('Standard Configuration Tasks', () => {
         });
     });
 
-    it(`should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy`, () => {
+    it("should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy", () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(8);
@@ -387,7 +387,7 @@ describe('Standard Configuration Tasks', () => {
       describe(`Pregnancy without LMP: day ${day}:`, () => {
 
         if (pregnancyTaskDays.includes(day)) {
-          it(`should have 'pregnancy-missing-visit' visit task`, () => {
+          it("should have 'pregnancy-missing-visit' visit task", () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -406,7 +406,7 @@ describe('Standard Configuration Tasks', () => {
               });
           });
         } else {
-          it(`should not have 'pregnancy-missing-visit' visit task`, () => {
+          it("should not have 'pregnancy-missing-visit' visit task", () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -419,7 +419,7 @@ describe('Standard Configuration Tasks', () => {
           });
         }
         if (deliveryTaskDays.includes(day)) {
-          it(`should have 'pregnancy-missing-birth' visit task`, () => {
+          it("should have 'pregnancy-missing-birth' visit task", () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -438,7 +438,7 @@ describe('Standard Configuration Tasks', () => {
               });
           });
         } else {
-          it(`should not have 'pregnancy-missing-birth' visit task`, () => {
+          it("should not have 'pregnancy-missing-birth' visit task", () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -485,7 +485,7 @@ describe('Standard Configuration Tasks', () => {
       describe(`Immunization: day ${day}:`, () => {
 
         if (immunizationTaskDays.includes(day)) {
-          it(`should have 'immunization-missing-visit' visit task`, () => {
+          it("should have 'immunization-missing-visit' visit task", () => {
             // given
             harness.pushMockedReport(backdatedReport('cw', day - ageInDaysWhenRegistered));
 
@@ -504,7 +504,7 @@ describe('Standard Configuration Tasks', () => {
                 assertNotResolved(task);
               });
           });
-          it(`should have a cleared visit task if received a visit`, async () => {
+          it("should have a cleared visit task if received a visit", async () => {
             // given
             // FIXME understand what this is and then give it a descriptive name
             const dayOffset = day - ageInDaysWhenRegistered;
@@ -533,7 +533,7 @@ describe('Standard Configuration Tasks', () => {
           });
 
         } else {
-          it(`should not have 'immunization-missing-visit' visit task`, () => {
+          it("should not have 'immunization-missing-visit' visit task", () => {
             // given
             harness.pushMockedReport(
                 backdatedReport('cw', day - ageInDaysWhenRegistered));
