@@ -22,10 +22,10 @@ module.exports = db => {
      * @param {Object[]} settings.targets Target definitions from settings doc
      * @param {Boolean} settings.enableTasks Flag to enable tasks
      * @param {Boolean} settings.enableTargets Flag to enable targets
-     * @param {Object} userDoc User's hydrated contact document
+     * @param {Object} settings.contact User's hydrated contact document
+     * @param {Object} settings.user User's settings document
      */
-    initialize: (settings, userContactDoc, userSettingsDoc) =>
-      wireupToProvider.initialize(provider, settings, userContactDoc, userSettingsDoc),
+    initialize: (settings) => wireupToProvider.initialize(provider, settings),
 
     /**
      * @returns {Boolean} True if the rules engine is enabled and ready for use
@@ -71,13 +71,14 @@ module.exports = db => {
      * @param {Object[]} settings.targets Target definitions from settings doc
      * @param {Boolean} settings.enableTasks Flag to enable tasks
      * @param {Boolean} settings.enableTargets Flag to enable targets
-     * @param {Object} userDoc User's hydrated contact document
+     * @param {Object} settings.contact User's hydrated contact document
+     * @param {Object} settings.user User's user-settings document
      */
-    rulesConfigChange: (settings, userDoc) => {
-      const cacheIsReset = rulesStateStore.rulesConfigChange(settings, userDoc);
+    rulesConfigChange: (settings) => {
+      const cacheIsReset = rulesStateStore.rulesConfigChange(settings);
       if (cacheIsReset) {
         rulesEmitter.shutdown();
-        rulesEmitter.initialize(settings, userDoc);
+        rulesEmitter.initialize(settings);
       }
     },
   };

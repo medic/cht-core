@@ -6,7 +6,7 @@ const rulesStateStore = RestorableRulesStateStore();
 const hashRulesConfig = rulesStateStore.__get__('hashRulesConfig');
 
 const mockState = contactState => ({
-  rulesConfigHash: hashRulesConfig({}, {}),
+  rulesConfigHash: hashRulesConfig({}),
   contactState,
 });
 
@@ -18,10 +18,10 @@ describe('rules-state-store', () => {
 
   it('throw on build twice', async () => {
     const state = mockState({ 'a': { calculatedAt: 1 } });
-    await rulesStateStore.load(state, {}, {}, {});
-    expect(() => rulesStateStore.load(state, {}, {}, {})).to.throw('multiple times');
-    expect(rulesStateStore.currentUserContact()).to.deep.eq({});
-    expect(rulesStateStore.currentUserSettings()).to.deep.eq({});
+    await rulesStateStore.load(state, {});
+    expect(() => rulesStateStore.load(state, {})).to.throw('multiple times');
+    expect(rulesStateStore.currentUserContact()).to.deep.eq(undefined);
+    expect(rulesStateStore.currentUserSettings()).to.deep.eq(undefined);
   });
 
   it('throw if not initialized', async () => {
@@ -30,17 +30,20 @@ describe('rules-state-store', () => {
 
   it('load a dirty contact', async () => {
     const state = mockState({ 'a': { calculatedAt: 1 } });
-    const userDoc = { _id: 'foo' };
-    await rulesStateStore.load(state, {}, userDoc);
+    const contactDoc = { _id: 'foo' };
+    const userDoc = { _id: 'org.couchdb.user.foo' };
+
+    await rulesStateStore.load(state, { user: userDoc, contact: contactDoc });
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.true;
-    expect(rulesStateStore.currentUserContact()).to.eq(userDoc);
+    expect(rulesStateStore.currentUserContact()).to.eq(contactDoc);
+    expect(rulesStateStore.currentUserSettings()).to.eq(userDoc);
   });
 
   it('load a fresh contact', async () => {
     const state = mockState({ 'a': { calculatedAt: Date.now() } });
-    await rulesStateStore.load(state, {}, {});
+    await rulesStateStore.load(state, {});
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.false;
@@ -49,7 +52,7 @@ describe('rules-state-store', () => {
   it('fresh contact but dirty hash', async () => {
     const state = mockState({ 'a': { calculatedAt: Date.now() } });
     state.rulesConfigHash = 'hash';
-    await rulesStateStore.load(state, {}, {});
+    await rulesStateStore.load(state, {});
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.true;
@@ -58,7 +61,7 @@ describe('rules-state-store', () => {
   it('scenario after loading state', async () => {
     const onStateChange = sinon.stub().resolves();
     const state = mockState({ 'a': { calculatedAt: Date.now() } });
-    await rulesStateStore.load(state, {}, {}, {}, onStateChange);
+    await rulesStateStore.load(state, {}, onStateChange);
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.false;
@@ -67,7 +70,7 @@ describe('rules-state-store', () => {
     expect(onStateChange.callCount).to.eq(1);
     expect(rulesStateStore.isDirty('b')).to.be.true;
 
-    rulesStateStore.rulesConfigChange({ });
+    rulesStateStore.rulesConfigChange({ updated: true }); // force hash to be different!
     expect(onStateChange.callCount).to.eq(2);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -75,7 +78,7 @@ describe('rules-state-store', () => {
 
   it('scenario after building state', async () => {
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build({}, {}, {}, onStateChange);
+    await rulesStateStore.build({}, onStateChange);
     expect(onStateChange.callCount).to.eq(1);
     expect(rulesStateStore.getContactIds()).to.deep.eq([]);
     expect(rulesStateStore.isDirty('a')).to.be.true;
@@ -93,7 +96,7 @@ describe('rules-state-store', () => {
     expect(onStateChange.callCount).to.eq(3);
     expect(rulesStateStore.isDirty('b')).to.be.true;
 
-    rulesStateStore.rulesConfigChange({ });
+    rulesStateStore.rulesConfigChange({ updated: true }); // force hash to be different!
     expect(onStateChange.callCount).to.eq(4);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -103,7 +106,7 @@ describe('rules-state-store', () => {
 
   it('hasAllContacts:true scenario', async () => {
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build({}, {}, {}, onStateChange);
+    await rulesStateStore.build({}, onStateChange);
     expect(onStateChange.callCount).to.eq(1);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -121,7 +124,7 @@ describe('rules-state-store', () => {
     expect(rulesStateStore.isDirty('b')).to.be.true;
     expect(rulesStateStore.hasAllContacts()).to.be.true;
 
-    rulesStateStore.rulesConfigChange({});
+    rulesStateStore.rulesConfigChange({ updated: true }); // force hash to be different!
     expect(onStateChange.callCount).to.eq(4);
     expect(rulesStateStore.isDirty('a')).to.be.true;
     expect(rulesStateStore.isDirty('b')).to.be.true;
@@ -129,13 +132,13 @@ describe('rules-state-store', () => {
   });
 
   it('rewinding clock makes contacts dirty', async () => {
-    await rulesStateStore.build({}, {}, {});
+    await rulesStateStore.build({});
     await rulesStateStore.markFresh(Date.now() + 1000, 'a');
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
 
   it('contact marked fresh a month ago is not fresh', async () => {
-    await rulesStateStore.build(['a'], {});
+    await rulesStateStore.build({});
     await rulesStateStore.markFresh(Date.now(), 'a');
     expect(rulesStateStore.isDirty('a')).to.be.false;
     sinon.useFakeTimers(Date.now() + 7004800000);
@@ -144,7 +147,7 @@ describe('rules-state-store', () => {
 
   it('empty targets', async () => {
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build({}, {}, {}, onStateChange);
+    await rulesStateStore.build({}, onStateChange);
     rulesStateStore.storeTargetEmissions([], [{ id: 'abc', type: 'dne', contact: { _id: 'a', reported_date: 1000 } }]);
     const initialTargets = rulesStateStore.aggregateStoredTargetEmissions();
     expect(initialTargets).to.be.empty;
@@ -157,7 +160,7 @@ describe('rules-state-store', () => {
       }],
     };
     const onStateChange = sinon.stub().resolves();
-    await rulesStateStore.build(mockSettings, {}, onStateChange);
+    await rulesStateStore.build(mockSettings, onStateChange);
     rulesStateStore.storeTargetEmissions([], [{
       id: 'abc', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1000 }
     }]);
@@ -173,13 +176,13 @@ describe('rules-state-store', () => {
 
   describe('hashRulesConfig', () => {
     it('empty objects', () => {
-      const actual = hashRulesConfig({}, {});
+      const actual = hashRulesConfig({});
       expect(actual).to.not.be.empty;
     });
 
     it('cht config', () => {
       const settings = require('../../../config/default/app_settings.json');
-      const actual = hashRulesConfig(settings, { _id: 'user' });
+      const actual = hashRulesConfig(settings);
       expect(actual).to.not.be.empty;
     });
   });

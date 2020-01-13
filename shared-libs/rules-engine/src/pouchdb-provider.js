@@ -47,12 +47,13 @@ const medicPouchProvider = db => {
     commitTargetDoc: (assign, userContactDoc, userSettingsDoc, docTag) => {
       const userContactId = userContactDoc && userContactDoc._id;
       const userSettingsId = userSettingsDoc && userSettingsDoc._id;
-      const _id = `target-${docTag}-${userContactId}-${userSettingsId}`;
+      const _id = `target~${docTag}~${userContactId}~${userSettingsId}`;
       const createNew = () => ({
         _id,
         type: 'target',
         user: userSettingsId,
         owner: userContactId,
+        reporting_period: docTag,
       });
 
       const today = moment().startOf('day').valueOf();

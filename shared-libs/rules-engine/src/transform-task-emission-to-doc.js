@@ -81,8 +81,8 @@ const minifyEmission = (taskDoc, emission) => {
   return taskDoc;
 };
 
-const newTaskDoc = (emission, userContactId, calculatedAt) => ({
-  _id: `task~${userContactId}~${emission._id}~${calculatedAt}`,
+const newTaskDoc = (emission, userSettingsId, calculatedAt) => ({
+  _id: `task~${userSettingsId}~${emission._id}~${calculatedAt}`,
   type: 'task',
   authoredOn: calculatedAt,
   stateHistory: [],

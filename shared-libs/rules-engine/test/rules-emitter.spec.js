@@ -12,35 +12,35 @@ describe('rules-emitter', () => {
     rulesEmitter.shutdown();
   });
 
-  const settingsWithRules = rules => ({ rules });
+  const settingsWithRules = (rules, contact = {}, user= {}) => ({ rules, contact, user });
 
   describe('initialize', () => {
     it('throw on initialized twice', () => {
       const settingsDoc = settingsWithRules(' ');
-      rulesEmitter.initialize(settingsDoc, {});
-      expect(() => rulesEmitter.initialize(settingsDoc, {})).to.throw('multiple times');
+      rulesEmitter.initialize(settingsDoc);
+      expect(() => rulesEmitter.initialize(settingsDoc)).to.throw('multiple times');
     });
 
     it('return false on no rules', () => {
-      const actual = rulesEmitter.initialize({}, {});
+      const actual = rulesEmitter.initialize({});
       expect(actual).to.eq(false);
     });
 
     it('throw on invalid rules', async () => {
       const settingsDoc = settingsWithRules(`if (blah) {`);
-      expect(() => rulesEmitter.initialize(settingsDoc, {})).to.throw();
+      expect(() => rulesEmitter.initialize(settingsDoc)).to.throw();
       expect(rulesEmitter.isEnabled()).to.be.false;
     });
 
     it('can initialize twice if shutdown', () => {
       const rules = noolsPartnerTemplate('');
       const settingsDoc = settingsWithRules(rules);
-      const actual = rulesEmitter.initialize(settingsDoc, {});
+      const actual = rulesEmitter.initialize(settingsDoc);
       expect(actual).to.eq(true);
 
       rulesEmitter.shutdown();
 
-      const second = rulesEmitter.initialize(settingsDoc, {});
+      const second = rulesEmitter.initialize(settingsDoc);
       expect(second).to.eq(true);
     });
   });
@@ -49,9 +49,9 @@ describe('rules-emitter', () => {
     const rules = noolsPartnerTemplate(
       `emit('task', new Task({ data: c.contact })); emit('target', new Target({ data: c.contact }));`
     );
-    const settingsDoc = settingsWithRules(rules);
     const contact = { _id: 'foo' };
-    const initialized = rulesEmitter.initialize(settingsDoc, {});
+    const settingsDoc = settingsWithRules(rules, contact);
+    const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;
 
     expect(rulesEmitter.isLatestNoolsSchema()).to.be.false;
@@ -71,7 +71,7 @@ describe('rules-emitter', () => {
       requester: contact._id,
       emission: {},
     };
-    const initialized = rulesEmitter.initialize(settingsDoc, {});
+    const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;
 
     const actual = await rulesEmitter.getEmissionsFor([contact], [], [taskDoc]);
@@ -88,9 +88,9 @@ describe('rules-emitter', () => {
       requester: contact._id,
       emission: {},
     };
-    const initialized = rulesEmitter.initialize(settingsDoc, {});
+    const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;
- 
+
     const actual = await rulesEmitter.getEmissionsFor([contact], [], [taskDoc]);
     expect(actual.tasks).to.have.property('length', 1);
     expect(actual.tasks[0].data).to.deep.eq([taskDoc]);
@@ -101,7 +101,7 @@ describe('rules-emitter', () => {
     const settingsDoc = settingsWithRules(rules);
     const reportDoc = { patient_id: 'foo' };
     const taskDoc = { requester: 'foo' };
-    const initialized = rulesEmitter.initialize(settingsDoc, {});
+    const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;
 
     const actual = await rulesEmitter.getEmissionsFor([], [reportDoc], [taskDoc]);
@@ -120,7 +120,7 @@ describe('rules-emitter', () => {
     const byPatientId = { _id: 'report', patient_id: 'foo' };
     const byPatientUuid = { _id: 'report', fields: { patient_uuid: 'contact' } };
 
-    const initialized = rulesEmitter.initialize(settingsDoc, {});
+    const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;
 
     const actual = await rulesEmitter.getEmissionsFor([contactDoc], [byPatientId, byPatientUuid], []);
@@ -136,21 +136,22 @@ describe('rules-emitter', () => {
     const rules = noolsPartnerTemplate(
       `emit('task', new Task({ data: user })); emit('target', new Target({ data: Utils }));`
     );
-    const settingsDoc = settingsWithRules(rules);
-    const userDoc = { user: true };
-    const initialized = rulesEmitter.initialize(settingsDoc, userDoc);
+    const contactDoc = { _id: 'contact' };
+    const settingsDoc = settingsWithRules(rules, contactDoc);
+
+    const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;
 
     const actual = await rulesEmitter.getEmissionsFor([{}], []);
     expect(actual.tasks).to.have.property('length', 1);
-    expect(actual.tasks[0].data).to.deep.eq(userDoc);
+    expect(actual.tasks[0].data).to.deep.eq(contactDoc);
     expect(actual.targets).to.have.property('length', 1);
     expect(actual.targets[0].data).to.have.property('isTimely');
   });
 
   it('session is disposed when marshalDocsIntoNoolsFacts throws', async () => {
     const settingsDoc = settingsWithRules(' ');
-    rulesEmitter.initialize(settingsDoc, {});
+    rulesEmitter.initialize(settingsDoc);
     rulesEmitter.__with__({ marshalDocsIntoNoolsFacts: () => { throw 'fake'; }})(() => {
       expect(() => rulesEmitter.getEmissionsFor([], [])).to.throw('fake');
       // unsure how to assert that the memory is freed in this scenario
@@ -158,16 +159,14 @@ describe('rules-emitter', () => {
   });
 
   describe('integration', () => {
-    const user = {};
-
     it('isLatestNoolsSchema as true', () => {
-      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings());
       expect(initialized).to.be.true;
       expect(rulesEmitter.isLatestNoolsSchema()).to.be.true;
     });
 
     it('no reports yields no tasks', async () => {
-      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings());
       expect(initialized).to.be.true;
 
       const { tasks, targets } = await rulesEmitter.getEmissionsFor([], []);
@@ -179,7 +178,7 @@ describe('rules-emitter', () => {
       const time = moment('2000-01-01');
       sinon.useFakeTimers(time.valueOf());
 
-      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
+      const initialized = rulesEmitter.initialize(chtRulesSettings());
       expect(initialized).to.be.true;
 
       const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);

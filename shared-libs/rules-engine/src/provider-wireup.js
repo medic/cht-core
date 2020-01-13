@@ -26,8 +26,8 @@ module.exports = {
    * @param {Boolean} settings.enableTargets Flag to enable targets
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (provider, settings, userContactDoc, userSettingsDoc) => {
-    const isEnabled = rulesEmitter.initialize(settings, userContactDoc);
+  initialize: (provider, settings) => {
+    const isEnabled = rulesEmitter.initialize(settings);
     if (!isEnabled) {
       return Promise.resolve();
     }
@@ -48,8 +48,6 @@ module.exports = {
         rulesStateStore.load(
           existingStateDoc.rulesStateStore,
           settings,
-          userContactDoc,
-          userSettingsDoc,
           contactClosure
         );
       });

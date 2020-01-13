@@ -91,29 +91,31 @@ describe('pouchdb provider', () => {
       const docTag = '2019-07';
       await pouchdbProvider(db).commitTargetDoc({ targets }, userContactDoc, userSettingsDoc, docTag);
 
-      expect(await db.get('target-2019-07-user-org.couchdb.user:username')).excluding('_rev').to.deep.eq({
-        _id: 'target-2019-07-user-org.couchdb.user:username',
+      expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
+        _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
         owner: 'user',
         user: 'org.couchdb.user:username',
         targets,
+        reporting_period: '2019-07',
       });
 
       const nextTargets = [{ id: 'target', score: 1 }];
       await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userContactDoc, userSettingsDoc, docTag);
-      const ignoredUpdate = await db.get('target-2019-07-user-org.couchdb.user:username');
+      const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
       expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
 
       sinon.useFakeTimers(Date.now() + MS_IN_DAY);
       await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userContactDoc, userSettingsDoc, docTag);
-      expect(await db.get('target-2019-07-user-org.couchdb.user:username')).excluding('_rev').to.deep.eq({
-        _id: 'target-2019-07-user-org.couchdb.user:username',
+      expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
+        _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
         owner: 'user',
         user: 'org.couchdb.user:username',
         targets: nextTargets,
+        reporting_period: '2019-07',
       });
     });
   });

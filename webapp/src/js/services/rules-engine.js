@@ -39,13 +39,19 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
         return Promise.all([ Settings(), UserContact(), UserSettings() ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
-            const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
-            return RulesEngineCore.initialize(rulesSettings, userContactDoc, userSettingsDoc)
+            const rulesSettings = getRulesSettings(
+              settingsDoc,
+              userContactDoc,
+              userSettingsDoc,
+              canViewTasks,
+              canViewTargets
+            );
+            return RulesEngineCore.initialize(rulesSettings)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
                 if (isEnabled) {
                   assignMonthStartDate(settingsDoc);
-                  monitorChanges(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
+                  monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
 
                   ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTaskFreshness();
@@ -65,7 +71,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
     }
   };
 
-  const getRulesSettings = (settingsDoc, userContactDoc, enableTasks, enableTargets) => {
+  const getRulesSettings = (settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) => {
     const settingsTasks = settingsDoc && settingsDoc.tasks || {};
     const filterTargetByContext = target => target.context ? !!$parse(target.context)({ user: userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
@@ -76,10 +82,12 @@ angular.module('inboxServices').factory('RulesEngine', function(
       targets: targets.filter(filterTargetByContext),
       enableTasks,
       enableTargets,
+      contact: userContactDoc,
+      user: userSettingsDoc,
     };
   };
 
-  const monitorChanges = (settingsDoc, userContactDoc, canViewTasks, canViewTargets) => {
+  const monitorChanges = (settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) => {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     Changes({
       key: 'mark-contacts-dirty',
@@ -96,8 +104,14 @@ angular.module('inboxServices').factory('RulesEngine', function(
     }
 
     const rulesConfigChange = () => {
-      const rulesSettings = getRulesSettings(settingsDoc, userContactDoc, canViewTasks, canViewTargets);
-      RulesEngineCore.rulesConfigChange(rulesSettings, userContactDoc);
+      const rulesSettings = getRulesSettings(
+        settingsDoc,
+        userContactDoc,
+        userSettingsDoc,
+        canViewTasks,
+        canViewTargets
+      );
+      RulesEngineCore.rulesConfigChange(rulesSettings);
       assignMonthStartDate(settingsDoc);
     };
 

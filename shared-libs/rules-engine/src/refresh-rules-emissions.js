@@ -15,7 +15,7 @@ const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
  * @param {Object[]} freshData.contactDocs A set of contact documents
  * @param {Object[]} freshData.reportDocs All of the contacts' reports
  * @param {Object[]} freshData.taskDocs All of the contacts' task documents (must be linked by requester to a contact)
- * @param {Object[]} freshData.userContactId The id of the user's contact document
+ * @param {Object[]} freshData.userSettingsId The id of the user's settings document
  *
  * @param {int} calculationTimestamp Timestamp for the round of rules calculations
  *

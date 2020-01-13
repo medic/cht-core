@@ -28,13 +28,6 @@ describe(`RulesEngine service`, () => {
       },
     },
   };
-  const expectedRulesConfig = {
-    rules: 'rules',
-    taskSchedules: ['schedules'],
-    targets: [{ id: 'target' }],
-    enableTasks: true,
-    enableTargets: true,
-  };
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
     _id: 'user',
@@ -57,6 +50,15 @@ describe(`RulesEngine service`, () => {
     _id: 'org.couchdb.user:username',
     type: 'user-settings',
     roles: [],
+  };
+  const expectedRulesConfig = {
+    rules: 'rules',
+    taskSchedules: ['schedules'],
+    targets: [{ id: 'target' }],
+    enableTasks: true,
+    enableTargets: true,
+    contact: userContactDoc,
+    user: userSettingsDoc,
   };
 
   beforeEach(async () => {
@@ -126,9 +128,12 @@ describe(`RulesEngine service`, () => {
         Auth.withArgs('can_view_tasks').rejects();
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({ enableTasks: false, enableTargets: true });
-        expect(RulesEngineCore.initialize.args[0][1]).to.equal(userContactDoc);
-        expect(RulesEngineCore.initialize.args[0][2]).to.equal(userSettingsDoc);
+        expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({
+          enableTasks: false,
+          enableTargets: true,
+          user: userSettingsDoc,
+          contact: userContactDoc,
+        });
       });
 
       it('targets disabled', async () => {
@@ -173,7 +178,6 @@ describe(`RulesEngine service`, () => {
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
         expect(RulesEngineCore.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
-        expect(RulesEngineCore.initialize.args[0][1]).to.eq(userContactDoc);
       });
     });
 
@@ -230,7 +234,7 @@ describe(`RulesEngine service`, () => {
           expect(changeFeed.filter(change)).to.be.true;
           await changeFeed.callback(change);
           expect(RulesEngineCore.rulesConfigChange.callCount).to.eq(1);
-          expect(RulesEngineCore.rulesConfigChange.args[0]).to.deep.eq([expectedRulesConfig, userContactDoc]);
+          expect(RulesEngineCore.rulesConfigChange.args[0]).to.deep.eq([expectedRulesConfig]);
         });
       }
 

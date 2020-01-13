@@ -15,8 +15,6 @@ chai.use(chaiExclude);
 
 let db;
 let rulesEngine;
-const userContactDoc = { _id: 'user' };
-const userSettingsDoc = { _id: 'org.couchdb.user:username' };
 
 
 const THE_FUTURE = 1500000000000;
@@ -85,7 +83,7 @@ describe('Rules Engine Integration Tests', () => {
     sinon.useFakeTimers(THE_FUTURE);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
-    await rulesEngine.initialize(chtRulesSettings(), userContactDoc, userSettingsDoc);
+    await rulesEngine.initialize(chtRulesSettings());
   });
 
   after(() => {
@@ -104,7 +102,7 @@ describe('Rules Engine Integration Tests', () => {
 
     configHashSalt++;
     const rulesSettings = chtRulesSettings({ configHashSalt });
-    await rulesEngine.rulesConfigChange(rulesSettings, userContactDoc);
+    await rulesEngine.rulesConfigChange(rulesSettings);
     sinon.useFakeTimers(1);
   });
 
@@ -298,7 +296,7 @@ describe('Rules Engine Integration Tests', () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
     const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('const nothing = [];') });
-    await rulesEngine.rulesConfigChange(updatedSettings, userContactDoc);
+    await rulesEngine.rulesConfigChange(updatedSettings);
     expect(db.bulkDocs.callCount).to.eq(1);
 
     const completedTask = await rulesEngine.fetchTasksFor(['patient']);
@@ -311,7 +309,7 @@ describe('Rules Engine Integration Tests', () => {
 
     try {
       const updatedSettings = chtRulesSettings({ rules: noolsPartnerTemplate('not javascript') });
-      await rulesEngine.rulesConfigChange(updatedSettings, userContactDoc);
+      await rulesEngine.rulesConfigChange(updatedSettings);
       expect('throw').to.throw;
     } catch (err) {
       expect(err.message).to.include('not javascript');
@@ -328,7 +326,7 @@ describe('Rules Engine Integration Tests', () => {
   it('reloading same config does not bust cache', async () => {
     await triggerFacilityReminderInReadyState(['patient']);
 
-    await rulesEngine.rulesConfigChange(chtRulesSettings({ configHashSalt }), userContactDoc);
+    await rulesEngine.rulesConfigChange(chtRulesSettings({ configHashSalt }));
     const successfulRecompile = rulesEmitter.isEnabled();
     expect(successfulRecompile).to.be.true;
     expect(rulesEngine.isEnabled()).to.be.true;

@@ -20,25 +20,25 @@ const self = {
    *
    * @param {Object} existingState State object previously passed to the stateChangeCallback
    * @param {Object} settings Settings for the behavior of the rules store
-   * @param {Object} userContactDoc User's hydrated contact document
-   * @param {Object} userSettingsDoc User's user-settings document
+   * @param {Object} settings.contact User's hydrated contact document
+   * @param {Object} settings.user User's user-settings document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
    */
-  load: (existingState, settings, userContactDoc, userSettingsDoc, stateChangeCallback) => {
+  load: (existingState, settings, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
-    const rulesConfigHash = hashRulesConfig(settings, userContactDoc);
+    const rulesConfigHash = hashRulesConfig(settings);
     const useState = existingState && existingState.rulesConfigHash === rulesConfigHash;
     if (!useState) {
-      return self.build(settings, userContactDoc, userSettingsDoc, stateChangeCallback);
+      return self.build(settings, stateChangeCallback);
     }
 
     state = existingState;
-    currentUserContact = userContactDoc;
-    currentUserSettings = userSettingsDoc;
+    currentUserContact = settings.contact;
+    currentUserSettings = settings.user;
     onStateChange = safeCallback(stateChangeCallback);
   },
 
@@ -46,23 +46,23 @@ const self = {
    * Initializes an empty rules-state-store.
    *
    * @param {Object} settings Settings for the behavior of the rules store
-   * @param {Object} userContactDoc User's hydrated contact document
-   * @param {Object} userSettingsDoc User's user-settings document
+   * @param {Object} settings.contact User's hydrated contact document
+   * @param {Object} settings.user User's user-settings document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
    */
-  build: (settings, userContactDoc, userSettingsDoc, stateChangeCallback) => {
+  build: (settings, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
     state = {
-      rulesConfigHash: hashRulesConfig(settings, userContactDoc),
+      rulesConfigHash: hashRulesConfig(settings),
       contactState: {},
       targetState: targetState.createEmptyState(settings.targets),
     };
-    currentUserContact = userContactDoc;
-    currentUserSettings = userSettingsDoc;
+    currentUserContact = settings.contact;
+    currentUserSettings = settings.user;
 
     onStateChange = safeCallback(stateChangeCallback);
     return onStateChange(state);
@@ -99,18 +99,18 @@ const self = {
    * If they have changed in a meaningful way, the calculation state of all contacts is reset
    *
    * @param {Object} settings Settings for the behavior of the rules store
-   * @param {Object} userContactDoc User's hydrated contact document
    * @returns {Boolean} True if the state of all contacts has been reset
    */
-  rulesConfigChange: (settings, userContactDoc) => {
-    const rulesConfigHash = hashRulesConfig(settings, userContactDoc);
+  rulesConfigChange: (settings) => {
+    const rulesConfigHash = hashRulesConfig(settings);
     if (state.rulesConfigHash !== rulesConfigHash) {
       state = {
         rulesConfigHash,
         contactState: {},
         targetState: targetState.createEmptyState(settings.targets),
       };
-      currentUserContact = userContactDoc;
+      currentUserContact = settings.contact;
+      currentUserSettings = settings.user;
 
       onStateChange(state);
       return true;
@@ -236,13 +236,8 @@ const self = {
   ),
 };
 
-const hashRulesConfig = (settings, userContactDoc) => {
-  const rulesConfig = {
-    settings,
-    userContactDoc,
-  };
-
-  const asString = JSON.stringify(rulesConfig);
+const hashRulesConfig = (settings) => {
+  const asString = JSON.stringify(settings);
   return md5(asString);
 };
 

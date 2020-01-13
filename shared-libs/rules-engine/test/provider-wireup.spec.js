@@ -371,13 +371,14 @@ describe('provider-wireup integration tests', () => {
       expect(provider.commitTargetDoc.callCount).to.eq(1);
       await provider.commitTargetDoc.returnValues[0];
 
-      const writtenDoc = await db.get('target-latest-mock_user_id-org.couchdb.user:username');
+      const writtenDoc = await db.get('target~latest~mock_user_id~org.couchdb.user:username');
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
-        _id: 'target-latest-mock_user_id-org.couchdb.user:username',
+        _id: 'target~latest~mock_user_id~org.couchdb.user:username',
         type: 'target',
         updated_date: moment(NOW).startOf('day').valueOf(),
         owner: 'mock_user_id',
         user: 'org.couchdb.user:username',
+        reporting_period: 'latest',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
         id: 'deaths-this-month',
@@ -398,7 +399,7 @@ describe('provider-wireup integration tests', () => {
       expect(provider.commitTargetDoc.callCount).to.eq(1);
       await provider.commitTargetDoc.returnValues[0];
 
-      const expectedId = `target-${moment(1000).format('YYYY-MM')}-mock_user_id-org.couchdb.user:username`;
+      const expectedId = `target~${moment(1000).format('YYYY-MM')}~mock_user_id~org.couchdb.user:username`;
       const writtenDoc = await db.get(expectedId);
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
         _id: expectedId,
@@ -406,6 +407,7 @@ describe('provider-wireup integration tests', () => {
         updated_date: moment(NOW).startOf('day').valueOf(),
         owner: 'mock_user_id',
         user: 'org.couchdb.user:username',
+        reporting_period: moment(1000).format('YYYY-MM'),
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
         id: 'deaths-this-month',
