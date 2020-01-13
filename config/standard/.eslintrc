@@ -16,7 +16,7 @@
     "one-var": "off",
     "curly": "off",
     "no-prototype-builtins": "off",
-    "quotes": ["error", "single", { "avoidEscape": true } ]
+    "quotes": ["error", "single", { "allowTemplateLiterals": true, "avoidEscape": true } ]
   },
   "globals": {
     "contact": true,
