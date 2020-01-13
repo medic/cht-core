@@ -6,6 +6,7 @@ const metadata = require('../../../src/lib/metadata');
 const tombstoneUtils = require('@medic/tombstone-utils');
 
 let clock;
+let handler;
 
 describe('feed', () => {
 
@@ -70,7 +71,6 @@ describe('feed', () => {
     });
 
     it('ignores ddocs', done => {
-      const ddoc = { id: '_design/medic' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
       feed
@@ -81,7 +81,6 @@ describe('feed', () => {
     });
 
     it('ignores info docs', done => {
-      const infodoc = { id: 'some-uuid-info' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
       feed
@@ -125,7 +124,6 @@ describe('feed', () => {
     });
 
     it('restarts listener after db error', done => {
-      const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq')
         .onCall(0).resolves('007')
         .onCall(1).resolves('007')
@@ -172,7 +170,7 @@ describe('feed', () => {
         .then(async () => {
           await feed.initListen;
 
-          feed.cancel()
+          feed.cancel();
         })
         .then(() => {
           chai.expect(feed.initListen).to.equal(undefined);

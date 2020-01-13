@@ -58,8 +58,8 @@ const changeQueue = async.queue((change, callback) => {
 });
 
 changeQueue.drain(() => {
-    logger.info(`transitions: queue drained, fetch next changes from changes feed`);
-    feed.fetch(change => changeQueue.push(change));
+  logger.info(`transitions: queue drained, fetch next changes from changes feed`);
+  feed.fetch(change => changeQueue.push(change));
 });
 
 const updateMetadata = (change, callback) => {

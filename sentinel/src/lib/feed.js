@@ -28,6 +28,7 @@ const registerFeed = seq => {
   request =  db.medic
     .changes({ live: true, since: seq })
     .on('change', function listener(change) {
+      logger.info(`transitions: new incoming changes startimng with change with id ${change.id}`);
       request.cancel();
       request.removeListener('change', listener);
 
@@ -38,7 +39,7 @@ const registerFeed = seq => {
       initListen = null;
       setTimeout(() => listen(), RETRY_TIMEOUT);
     });
-}
+};
 
 const fetchFeed = seq => {
   logger.info(`transitions: fetching ${CHANGES_LIMIT} changes from changes feed, starting from ${seq}`);
