@@ -4,7 +4,7 @@ const path = require('path');
 const moment = require('moment');
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
-const { babyDeceasedAtAge1Day, babyDeceasedAtAgeJustUnder5Years, babyDeceasedAtAge5Years } = require('../contacts');
+const { babyDeceasedAtAge1Day } = require('../contacts');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });

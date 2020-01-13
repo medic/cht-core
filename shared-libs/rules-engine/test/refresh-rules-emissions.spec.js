@@ -196,7 +196,7 @@ describe('refresh-rules-emissions', () => {
       expect(firstResult.updatedTaskDocs[0]).to.nested.include({
         type: 'task',
         state: 'Ready',
-        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~2',
+        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
 
       // one second later, it gets cancelled because the pregnancy report is gone
@@ -212,7 +212,7 @@ describe('refresh-rules-emissions', () => {
       expect(secondResult.updatedTaskDocs[0]).to.nested.include({
         type: 'task',
         state: 'Cancelled',
-        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~2',
+        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
         'stateHistory[0].state': 'Ready',
         'stateHistory[1].state': 'Cancelled',
       });
@@ -235,7 +235,7 @@ describe('refresh-rules-emissions', () => {
       expect(thirdResult.updatedTaskDocs[0]).to.nested.include({
         type: 'task',
         state: 'Ready',
-        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~2',
+        'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
     });
   });
