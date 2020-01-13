@@ -8,8 +8,11 @@ const IDS_TO_IGNORE = /^_design\/|-info$/;
 
 const RETRY_TIMEOUT = 60000; // 1 minute
 
-let listener;
-let init;
+const CHANGES_LIMIT = 100; // 100 documents of size 10K => 1MB 
+
+let handler;
+let initFetch;
+let initListen;
 let request;
 
 const getProcessedSeq = () => {
@@ -22,26 +25,52 @@ const getProcessedSeq = () => {
 };
 
 const registerFeed = seq => {
-  logger.info(`transitions: fetching changes feed, starting from ${seq}`);
-  request = db.medic
+  request =  db.medic
     .changes({ live: true, since: seq })
-    .on('change', change => {
-      if (!change.id.match(IDS_TO_IGNORE) &&
-          !tombstoneUtils.isTombstoneId(change.id)) {
-        listener(change);
-      }
+    .on('change', function listener(change) {
+      request.cancel();
+      request.removeListener('change', listener);
+
+      fetch();
     })
     .on('error', err => {
-      logger.error('transitions: error from changes feed: %o', err);
-      init = null;
+      logger.error('transitions: error listening to changes feed: %o', err);
+      initListen = null;
       setTimeout(() => listen(), RETRY_TIMEOUT);
+    });
+}
+
+const fetchFeed = seq => {
+  logger.info(`transitions: fetching ${CHANGES_LIMIT} changes from changes feed, starting from ${seq}`);
+  return db.medic
+    .changes({ limit: CHANGES_LIMIT, since: seq })
+    .then(changes => {
+      changes.results.forEach(change => {
+        if (!change.id.match(IDS_TO_IGNORE) &&
+            !tombstoneUtils.isTombstoneId(change.id)) {
+          handler(change);
+        }
+      });
+
+      if (changes.results.length === 0) {
+        logger.info(`transitions: no more changes, fetching changes feed, starting from ${seq}`);
+        listen();
+      }
+    })
+    .catch(err => {
+      logger.error('transitions: error fetching from changes feed: %o', err);
+      setTimeout(() => fetch(), RETRY_TIMEOUT);
     });
 };
 
 const listen = () => {
-  if (!init) {
-    init = getProcessedSeq().then(seq => registerFeed(seq));
+  if (!initListen) {
+    initListen = getProcessedSeq().then(seq => registerFeed(seq));
   }
+};
+
+const fetch = () => {
+  initFetch = getProcessedSeq().then(seq => fetchFeed(seq));
 };
 
 module.exports = {
@@ -51,11 +80,11 @@ module.exports = {
    * automatically on error.
    * @param {Function} callback Called with a change Object.
    */
-  listen: callback => {
+  fetch: callback => {
     logger.info('transitions: processing enabled');
-    listener = callback;
-    listen();
-    return init;
+    handler = callback;
+    fetch();
+    return initFetch;
   },
 
   /**
@@ -64,15 +93,21 @@ module.exports = {
    */
   cancel: () => {
     // let initialisation finish but check for null init
-    const p = init || Promise.resolve();
-    return p.then(() => {
+    const fetch = initFetch || Promise.resolve();
+    const listen = initListen || Promise.resolve();
+    return Promise.all([fetch, listen]).then(() => {
       if (request) {
         request.cancel();
       }
-      init = null;
+      initFetch = null;
+      initListen = null;
       request = null;
-      listener = null;
+      handler = null;
     });
-  }
+  },
+
+  initListen: initListen,
+
+  initFetch: initFetch
 
 };

@@ -15,7 +15,7 @@ let processed = 0;
 const loadTransitions = () => {
   try {
     transitionsLib.loadTransitions();
-    feed.listen(change => changeQueue.push(change));
+    feed.fetch(change => changeQueue.push(change));
   } catch (e) {
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
     feed.cancel();
@@ -54,6 +54,12 @@ const changeQueue = async.queue((change, callback) => {
 
     updateMetadata(change, callback);
   });
+
+});
+
+changeQueue.drain(() => {
+    logger.info(`transitions: queue drained, fetch next changes from changes feed`);
+    feed.fetch(change => changeQueue.push(change));
 });
 
 const updateMetadata = (change, callback) => {
