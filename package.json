@@ -29,6 +29,7 @@
     "eslint-plugin-compat": "^3.3.0",
     "eslint-plugin-couchdb": "^0.2.0",
     "eslint-plugin-jasmine": "^2.10.1",
+    "eslint-plugin-json": "^2.0.1",
     "eslint-plugin-no-only-tests": "^2.3.1",
     "express": "^4.17.1",
     "grunt": "^1.0.4",

@@ -46,9 +46,8 @@ describe('contact-summary-extras', function() {
         csu.IMMUNIZATION_LIST.forEach(imm => {
           const singleDoseCount = csu.IMMUNIZATION_DOSES.filter(d => d[0] === imm).length;
           const multiDoseCount  = csu.IMMUNIZATION_DOSES.filter(d => d[0].startsWith(`${imm}_`)).length;
-          assert.isOk((singleDoseCount === 1) ^
-                      (multiDoseCount > 1),
-              `Incorrect number of doses listed for ${imm}`);
+          // eslint-disable-next-line no-bitwise
+          assert.isOk((singleDoseCount === 1) ^ (multiDoseCount > 1), `Incorrect number of doses listed for ${imm}`);
         });
       });
     });

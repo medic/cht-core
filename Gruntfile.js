@@ -381,6 +381,7 @@ module.exports = function(grunt) {
             'tests/**/*.js',
             'webapp/src/**/*.js',
             'webapp/tests/**/*.js',
+            'config/**/*.js',
             'scripts/**/*.js',
           ];
           const ignore = [
@@ -389,7 +390,6 @@ module.exports = function(grunt) {
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
-            'config/**',
             'shared-libs/transitions/src/lib/pupil/**',
           ];
 
@@ -572,9 +572,16 @@ module.exports = function(grunt) {
           }).join(' && ');
         },
       },
-      'test-standard': {
+      'test-config-standard': {
         cmd: [
           'cd config/standard',
+          'npm ci',
+          'npm run travis'
+        ].join(' && ')
+      },
+      'test-config-default': {
+        cmd: [
+          'cd config/default',
           'npm ci',
           'npm run travis'
         ].join(' && ')
@@ -1099,7 +1106,8 @@ module.exports = function(grunt) {
     'build',
     'mochaTest:api-integration',
     'unit',
-    'exec:test-standard'
+    'exec:test-config-default',
+    'exec:test-config-standard'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
