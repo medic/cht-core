@@ -31,7 +31,7 @@ const registerFeed = seq => {
       logger.info(`transitions: new incoming changes startimng with change with id ${change.id}`);
       request.cancel();
       request.removeListener('change', listener);
-
+      initListen = null;
       fetch();
     })
     .on('error', err => {
