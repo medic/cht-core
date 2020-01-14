@@ -105,7 +105,7 @@ var cards = [
     label: 'contact.profile.postnatal',
     appliesToType: 'person',
     appliesIf: function() {
-      if(!context.use_cases.pnc) return;
+      if(!context.use_cases.pnc) { return; }
 
       var newestPNCperiod = getNewestPncPeriod();
 
@@ -314,7 +314,7 @@ var cards = [
         value: screening_report.fields.measurements.gender
       });
 
-      if (screening_report.fields.measurements.hasOwnProperty('muac')){
+      if (Object.hasOwnProperty.call(screening_report.fields.measurements, 'muac')){
         fields.push({
           label: 'contact.profile.muac',
           translate: true,
@@ -380,7 +380,7 @@ var cards = [
           value: enrollment_report.fields.measurements.height
         });
 
-        if (enrollment_report.fields.measurements.hasOwnProperty('muac')){
+        if (Object.hasOwnProperty.call(enrollment_report.fields.measurements, 'muac')){
           fields.push({
             label: 'contact.profile.muac',
             translate: true,
@@ -403,9 +403,9 @@ var cards = [
           translate: true,
           width: 6,
           value: function(){
-            if (enrollment_report.fields.treatment.program === 'OTP') return 'contact.profile.nutrition_program.otp';
-            else if (enrollment_report.fields.treatment.program === 'SFP') return 'contact.profile.nutrition_program.sfp';
-            else if (enrollment_report.fields.treatment.program === 'SC') return 'contact.profile.nutrition_program.sc';
+            if (enrollment_report.fields.treatment.program === 'OTP') { return 'contact.profile.nutrition_program.otp'; }
+            else if (enrollment_report.fields.treatment.program === 'SFP') { return 'contact.profile.nutrition_program.sfp'; }
+            else if (enrollment_report.fields.treatment.program === 'SC') { return 'contact.profile.nutrition_program.sc'; }
           }()
         });
 

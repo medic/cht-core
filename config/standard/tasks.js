@@ -17,6 +17,7 @@ const {
 
 module.exports = [
   {
+    name: 'pregnancy_danger_sign',
     icon: 'mother-child',
     title: 'task.pregnancy_danger_sign.title',
     appliesTo: 'reports',
@@ -37,17 +38,11 @@ module.exports = [
     events: [
       {
         id: 'pregnancy-danger-sign',
-        days: 0,
         start: 0,
         end: 6,
         dueDate: function(event, c) {
           return new Date(
-            Utils.addDate(
-              new Date(
-                Utils.getMostRecentTimestamp(c.reports, 'F')
-              ),
-              event.days
-            )
+              Utils.getMostRecentTimestamp(c.reports, 'F')
           );
         },
       },
@@ -72,6 +67,7 @@ module.exports = [
 
   // Attach the missing birth schedule to the last scheduled SMS
   {
+    name: 'pregnancy_missing_birth',
     icon: 'mother-child',
     title: 'task.pregnancy_missing_birth.title',
     appliesTo: 'reports',
@@ -123,6 +119,7 @@ module.exports = [
   // The group needing Birth Report task is now in a separate schedule, which could have the same group number... so check the type as well.
   // Be mindful of overflow when peaking ahead!
   {
+    name: 'pregnancy_missing_visit',
     icon: 'pregnancy-1',
     title: 'task.pregnancy_missing_visit.title',
     appliesTo: 'scheduled_tasks',
@@ -167,6 +164,7 @@ module.exports = [
 
   // PNC TASK 1: If a home delivery, needs clinic tasks
   {
+    name: 'postnatal_home_birth',
     icon: 'mother-child',
     title: 'task.postnatal_home_birth.title',
     appliesTo: 'reports',
@@ -209,6 +207,7 @@ module.exports = [
 
   // PNC TASK 2: if a F flag sent in 42 days since delivery needs clinic task
   {
+    name: 'postnatal_danger_sign',
     icon: 'mother-child',
     title: 'task.postnatal_danger_sign.title',
     appliesTo: 'reports',
@@ -257,6 +256,7 @@ module.exports = [
   // PNC TASK 3: Assign a missing visit schedule to last SMS of each group
   // Associate tasks to the last message of each group. Be mindful of overflow when peaking ahead!
   {
+    name: 'postnatal_missing_visit',
     icon: 'mother-child',
     title: 'task.postnatal_missing_visit.title',
     appliesTo: 'scheduled_tasks',
@@ -305,6 +305,7 @@ module.exports = [
   // IMM Task based on Child Health monthly SMS
   // Assign task to specific age in months corresponding to the group number
   {
+    name: 'immunization_missing_visit',
     icon: 'immunization',
     title: 'task.immunization_missing_visit.title',
     appliesTo: 'scheduled_tasks',
@@ -341,6 +342,7 @@ module.exports = [
 
   // followup tasks as per nutrition program schedule (OTP, SFP, or SC)
   {
+    name: 'nutrition_followup',
     icon: 'child',
     title: 'task.nutrition_followup.title',
     appliesTo: 'scheduled_tasks',
@@ -377,13 +379,14 @@ module.exports = [
 
   // create nutrition screening task if degree of severity is moderate or severe
   {
+    name: 'nutrition_screening',
     icon: 'child',
     title: 'task.nutrition_screening.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
     appliesIf: function(c, r){
       var severity = r.fields.severity.toString();
-      return severity === "3" || severity === "2";
+      return severity === '3' || severity === '2';
     },
     actions: [{form: 'nutrition_screening'}],
     events: [
@@ -402,12 +405,13 @@ module.exports = [
 
   // create nutrition screening task if degree of severity is severe (3)
   {
+    name: 'nutrition_screening_missing.severe',
     icon: 'child',
     title: 'task.nutrition_screening_missing.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
     appliesIf: function(c, r){
-      return r.fields.severity.toString() === "3";
+      return r.fields.severity.toString() === '3';
     },
     actions: [{form: 'nutrition_screening'}],
     events: [
@@ -426,12 +430,13 @@ module.exports = [
 
   // create nutrition screening task if degree of severity is moderate
   {
+    name: 'nutrition_screening_missing.moderate',
     icon: 'child',
     title: 'task.nutrition_screening_missing.title',
     appliesTo: 'reports',
     appliesToType: ['G'],
     appliesIf: function(c, r){
-      return r.fields.severity.toString() === "2";
+      return r.fields.severity.toString() === '2';
     },
     actions: [{form: 'nutrition_screening'}],
     events: [{
@@ -449,6 +454,7 @@ module.exports = [
 
   // Create death confirmation task
   {
+    name: 'death_confirmation',
     icon: 'icon-death-general',
     title: 'task.death_confirmation.title',
     appliesTo: 'reports',
@@ -475,6 +481,7 @@ module.exports = [
 
   // Exit child from nutrition program
   {
+    name: 'nutrition_exit',
     icon: 'child',
     title: 'task.nutrition_exit.title',
     appliesTo: 'reports',

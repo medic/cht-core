@@ -126,7 +126,9 @@ function getMostRecentReport(reports, form) {
 }
 
 function isFormFromArraySubmittedInWindow(reports, formsArray, startTime, endTime) {
-  if(typeof formsArray === 'string') formsArray = [ formsArray ];
+  if(typeof formsArray === 'string') { 
+    formsArray = [ formsArray ];
+  }
   return formsArray.some(function(f) {
     return Utils.isFormSubmittedInWindow(reports, f, startTime, endTime);
   });
@@ -253,7 +255,10 @@ function isFormCodeSame(formCode, test) {
 }
 
 function isFacilityDelivery(c, r) {
-  if(arguments.length === 1) r = c;
+  if(arguments.length === 1) {
+    r = c;
+  }
+  
   return r.fields &&
          r.fields.delivery_code &&
          r.fields.delivery_code.toUpperCase() === 'F';
