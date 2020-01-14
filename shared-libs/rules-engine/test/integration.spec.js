@@ -149,7 +149,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[1][0][0]).to.deep.include({
-      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~${NOW}`,
+      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${NOW}`,
       requester: 'patient',
       owner: 'patient',
       state: 'Failed',
@@ -184,7 +184,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[1][0][0]).to.deep.include({
-      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~1',
+      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~1',
       state: 'Failed',
       stateHistory: [
         {
@@ -225,7 +225,7 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(3);
     expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[2][0][0]).to.deep.include({
-      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~1',
+      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~1',
       state: 'Completed',
       stateHistory: [
         {
@@ -268,7 +268,7 @@ describe('Rules Engine Integration Tests', () => {
 
     const [taskDoc] = db.bulkDocs.args[2][0];
     expect(taskDoc).to.deep.include({
-      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~1',
+      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~1',
       state: 'Cancelled',
       stateHistory: [
         {
@@ -493,7 +493,7 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   );
   expect(db.bulkDocs.callCount).to.eq(1);
   expect(tasks[0]).to.deep.include({
-    _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~2~${Date.now()}`,
+    _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
     state: 'Ready',
     requester: 'patient',
     owner: 'patient',

@@ -143,8 +143,8 @@ describe('Standard Configuration Tasks', () => {
       assertTitle(task, 'task.postnatal_home_birth.title');
       assertNotResolved(task);
       assert.deepInclude(task.actions[0].content, {
-        "source": "task",
-        "source_id": "report-1",
+        'source': 'task',
+        'source_id': 'report-1',
         contact: patient,
       });
     });
@@ -152,10 +152,10 @@ describe('Standard Configuration Tasks', () => {
     it('should have first visit task completed when PNC app form is submitted', () => {
       // given
       const pncVisitAppReport = {
-        "_id": "report-2",
-        "fields": {},
-        "form": "postnatal_visit",
-        "reported_date": tomorrow,
+        '_id': 'report-2',
+        'fields': {},
+        'form': 'postnatal_visit',
+        'reported_date': tomorrow,
       };
       harness.pushMockedReport(fixtures.reports.delivery(), pncVisitAppReport);
 
@@ -176,10 +176,10 @@ describe('Standard Configuration Tasks', () => {
     it('should have first visit task completed when PNC SMS form is submitted', () => {
       // given
       const pncVisitSMSReport = {
-        "_id": "report-3",
-        "fields": {},
-        "form": "M",
-        "reported_date": tomorrow,
+        '_id': 'report-3',
+        'fields': {},
+        'form': 'M',
+        'reported_date': tomorrow,
       };
       harness.pushMockedReport(fixtures.reports.delivery(), pncVisitSMSReport);
 
@@ -306,7 +306,7 @@ describe('Standard Configuration Tasks', () => {
     var deliveryTaskDays = getRangeFromTask(deliveryTasks, weekdayOffset);
 
 
-    it(`should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy`, () => {
+    it('should have a "pregnancy-danger-sign" task if a flag is sent during active pregnancy', () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(6);
@@ -316,7 +316,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedReport(pregnancyReport, flagReport);
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -330,7 +330,7 @@ describe('Standard Configuration Tasks', () => {
         });
     });
 
-    it(`should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy`, () => {
+    it('should not have a "pregnancy-danger-sign" task if a flag is sent before pregnancy', () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(2);
@@ -348,7 +348,7 @@ describe('Standard Configuration Tasks', () => {
         });
     });
 
-    it(`should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy`, () => {
+    it('should not have a "pregnancy-danger-sign" task if a flag is sent after pregnancy', () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(8);
@@ -387,7 +387,7 @@ describe('Standard Configuration Tasks', () => {
       describe(`Pregnancy without LMP: day ${day}:`, () => {
 
         if (pregnancyTaskDays.includes(day)) {
-          it(`should have 'pregnancy-missing-visit' visit task`, () => {
+          it('should have "pregnancy-missing-visit" visit task', () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -406,7 +406,7 @@ describe('Standard Configuration Tasks', () => {
               });
           });
         } else {
-          it(`should not have 'pregnancy-missing-visit' visit task`, () => {
+          it('should not have "pregnancy-missing-visit" visit task', () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -419,7 +419,7 @@ describe('Standard Configuration Tasks', () => {
           });
         }
         if (deliveryTaskDays.includes(day)) {
-          it(`should have 'pregnancy-missing-birth' visit task`, () => {
+          it('should have "pregnancy-missing-birth" visit task', () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -438,7 +438,7 @@ describe('Standard Configuration Tasks', () => {
               });
           });
         } else {
-          it(`should not have 'pregnancy-missing-birth' visit task`, () => {
+          it('should not have "pregnancy-missing-birth" visit task', () => {
             // given
             harness.pushMockedReport(backdatedReport('p', day));
 
@@ -485,7 +485,7 @@ describe('Standard Configuration Tasks', () => {
       describe(`Immunization: day ${day}:`, () => {
 
         if (immunizationTaskDays.includes(day)) {
-          it(`should have 'immunization-missing-visit' visit task`, () => {
+          it('should have "immunization-missing-visit" visit task', () => {
             // given
             harness.pushMockedReport(backdatedReport('cw', day - ageInDaysWhenRegistered));
 
@@ -504,7 +504,7 @@ describe('Standard Configuration Tasks', () => {
                 assertNotResolved(task);
               });
           });
-          it(`should have a cleared visit task if received a visit`, async () => {
+          it('should have a cleared visit task if received a visit', async () => {
             // given
             // FIXME understand what this is and then give it a descriptive name
             const dayOffset = day - ageInDaysWhenRegistered;
@@ -533,7 +533,7 @@ describe('Standard Configuration Tasks', () => {
           });
 
         } else {
-          it(`should not have 'immunization-missing-visit' visit task`, () => {
+          it('should not have "immunization-missing-visit" visit task', () => {
             // given
             harness.pushMockedReport(
                 backdatedReport('cw', day - ageInDaysWhenRegistered));
@@ -665,8 +665,8 @@ function setDate(form, newDate) {
   var diff = originalDate - newDate;
   diff = (Math.round(diff/MS_IN_DAY))*MS_IN_DAY; // to avoid changing the number of days between event get diff in days, not ms
   form.reported_date = newDate;
-  traverse(form, resetDate, "birth_date", diff);
-  traverse(form, resetDate, "due", diff);
+  traverse(form, resetDate, 'birth_date', diff);
+  traverse(form, resetDate, 'due', diff);
 }
 
 function resetDate(object, key, keyToChange, offset) {
@@ -678,9 +678,10 @@ function resetDate(object, key, keyToChange, offset) {
 }
 
 function traverse(object, func, key, offset) {
+    // eslint-disable-next-line guard-for-in
     for (var i in object) {
         func.apply(this, [object, i, key, offset]);
-        if (object[i] !== null && typeof(object[i])=="object") {
+        if (object[i] !== null && typeof(object[i]) === 'object') {
             //going one step down in the object tree!!
             traverse(object[i], func, key, offset);
         }

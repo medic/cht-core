@@ -4,7 +4,7 @@ const path = require('path');
 const moment = require('moment');
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
-const { babyDeceasedAtAge1Day, babyDeceasedAtAgeJustUnder5Years, babyDeceasedAtAge5Years } = require('../contacts');
+const { babyDeceasedAtAge1Day } = require('../contacts');
 const harness = new TestRunner({
   xformFolderPath: path.join(__dirname, '../../forms/app'),
 });
@@ -30,7 +30,7 @@ describe('Death related targets tests', () => {
     //await harness.setNow('2000-04-30');//DOD: 2000-04-25
     clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
     harness.state.contacts.push(babyDeceasedAtAge1Day);
-    let birthsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
+    const birthsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
     expect(birthsThisMonth).to.have.property('length', 1);
     expect(birthsThisMonth[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
   });
@@ -39,7 +39,7 @@ describe('Death related targets tests', () => {
     //await harness.setNow('2000-04-30');//DOD: 2000-04-25
     clock = sinon.useFakeTimers(moment('2000-05-30').toDate());
     harness.state.contacts.push(babyDeceasedAtAge1Day);
-    let birthsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
+    const birthsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
     expect(birthsThisMonth).to.have.property('length', 1);
     expect(birthsThisMonth[0]).to.nested.not.include({ 'value.pass': 1, 'value.total': 1 });
   });

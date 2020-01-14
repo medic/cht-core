@@ -33,10 +33,11 @@ module.exports = [
 
     appliesTo: 'reports',
     appliesIf: function(c, r) {
-      if (!isNewestPregnancy(c, r)) return false;
+      if (!isNewestPregnancy(c, r)) { return false; }
 
-      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c))
+      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c)) {
         return true;
+      }
 
       var lmp = new Date(r.lmp_date);
       var maxEDD = new Date(now);
@@ -211,14 +212,14 @@ module.exports = [
       "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isWomanInActivePncPeriod,
-    passesIf: function(c) {
-      return !isFormSubmittedInWindow(
-        c.reports,
-        postnatalForms,
-        getNewestDeliveryTimestamp(c),
-        now.getTime()
-      );
+    appliesIf: c => {
+      return isWomanInActivePncPeriod(c) &&
+        !isFormSubmittedInWindow(
+          c.reports,
+          postnatalForms,
+          getNewestDeliveryTimestamp(c),
+          now.getTime()
+        );
     },
   },
 
@@ -386,8 +387,11 @@ module.exports = [
 
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c) {
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       var visits = countReportsSubmittedInWindow(
         c.reports,
         immunizationForms,
@@ -411,10 +415,12 @@ module.exports = [
 
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c) {
-      var i;
-      for (i = 0; i < c.reports.length; ++i) {
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
+      for (let i = 0; i < c.reports.length; ++i) {
         if (immunizationForms.indexOf(c.reports[i].form !== -1)) {
           return false;
         }
@@ -469,8 +475,11 @@ module.exports = [
     goal: -1,
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c){
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening' && r.fields.measurements.wfa < -2;
       });
@@ -489,8 +498,11 @@ module.exports = [
     goal: -1,
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c){
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening' && r.fields.measurements.hfa < -2;
       });
@@ -508,8 +520,11 @@ module.exports = [
     goal: -1,
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c){
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening' && ( (r.fields.measurements.wfh >= -3 && r.fields.measurements.wfh < -2) || (r.fields.measurements.muac >= 11.5 && r.fields.measurements.muac < 12.4) );
       });
@@ -527,8 +542,11 @@ module.exports = [
     goal: -1,
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c){
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       return c.reports.some(function(r){
         return r.form === 'nutrition_screening' && (r.fields.measurements.wfh < -3 || r.fields.measurements.muac < 11.5);
       });
@@ -546,8 +564,11 @@ module.exports = [
     goal: -1,
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c){
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       var otp = false;
       var death = false;
       var off = false;
@@ -575,8 +596,11 @@ module.exports = [
     goal: -1,
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: isChildUnder5,
-    passesIf: function(c){
+    appliesIf: c => {
+      if (!isChildUnder5(c)) {
+        return false;
+      }
+
       var sfp = false;
       var death = false;
       var off = false;

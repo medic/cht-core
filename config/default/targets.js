@@ -1,8 +1,5 @@
 const extras = require('./nools-extras');
-const FIVE_YEARS_IN_DAYS = 1826;
 const {
-  today,
-  addDays,
   isAlive,
   getSubsequentPregnancyFollowUps,
   getMostRecentLMPDateForPregnancy,

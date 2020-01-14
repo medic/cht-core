@@ -150,7 +150,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(homeVisitResult.errors).to.be.empty;
 
     // Verify condition card
-    let contactSummary = harness.getContactSummary();
+    const contactSummary = harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const activePregnancyCard = contactSummary.cards[0];
     expect(activePregnancyCard).to.have.property('label', 'contact.profile.pregnancy.active');

@@ -54,7 +54,7 @@ describe('Pregnancy danger sign tests', () => {
     expect(actionFormResult.errors).to.be.empty;
 
     clock = sinon.useFakeTimers(moment('2000-01-23').toDate());
-    let taskForHomeVisit = await harness.getTasks({ now: '2000-01-23', title: 'task.anc.pregnancy_home_visit.title' });
+    const taskForHomeVisit = await harness.getTasks({ now: '2000-01-23', title: 'task.anc.pregnancy_home_visit.title' });
     //expect(taskForHomeVisit.length).to.be.greaterThan(0);
     expect(taskForHomeVisit.length).to.be.equal(1);
 

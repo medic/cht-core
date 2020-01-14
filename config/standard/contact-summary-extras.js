@@ -153,7 +153,7 @@ function isReportValid(report) {
 function count(arr, fn) {
   var c = 0;
   for(var i=0; i<arr.length; ++i) {
-    if(fn(arr[i])) ++c;
+    if(fn(arr[i])) { ++c; }
   }
   return c;
 }
@@ -432,7 +432,7 @@ function getTreatmentProgram(){
   var treatment_program = '';
   var enrollment_report = getMostRecentNutritionEnrollment().enrollment;
   var exit_report = getMostRecentNutritionEnrollment().exit;
-  if (enrollment_report && !exit_report) treatment_program = enrollment_report.fields.treatment.program;
+  if (enrollment_report && !exit_report) { treatment_program = enrollment_report.fields.treatment.program; }
   return treatment_program;
 }
 
