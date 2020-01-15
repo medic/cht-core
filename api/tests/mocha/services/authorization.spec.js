@@ -114,16 +114,17 @@ describe('Authorization service', () => {
       });
 
       return service
-        .getAuthorizationContext({facility_id: 'facilityId' })
+        .getAuthorizationContext({ facility_id: 'facilityId', name: 'username' })
         .then(result => {
           tombstoneUtils.extractStub.callCount.should.equal(3);
           tombstoneUtils.extractStub.args.should.deep.equal([
             ['tombstone-1'], ['tombstone-2'], ['tombstone-3']
           ]);
-          result.subjectIds.sort().should.deep.equal([
+          result.subjectIds.should.have.members([
             1, 2, 'deleted-1', 'deleted-2', 'deleted-3', '_all',
-            's1', 's2', 's3', 's4', 's5'
-          ].sort());
+            's1', 's2', 's3', 's4', 's5',
+            'org.couchdb.user:username',
+          ]);
         });
     });
 
@@ -132,9 +133,9 @@ describe('Authorization service', () => {
       config.get.returns(true);
 
       return service
-        .getAuthorizationContext({ userCtx: { facility_id: 'aaa' }})
+        .getAuthorizationContext({ facility_id: 'aaa', name: 'agatha' })
         .then(result => {
-          result.subjectIds.should.deep.equal(['_all', '_unassigned']);
+          result.subjectIds.should.have.members(['_all', '_unassigned', 'org.couchdb.user:agatha']);
         });
     });
 
@@ -146,9 +147,9 @@ describe('Authorization service', () => {
       auth.hasAllPermissions.returns(false);
       config.get.returns(false);
       return service
-        .getAuthorizationContext({ facility_id: 'aaa' })
+        .getAuthorizationContext({ facility_id: 'aaa', name: 'peter' })
         .then(result => {
-          result.subjectIds.sort().should.deep.equal([1, 2, '_all', 's1', 's2']);
+          result.subjectIds.should.have.members([1, 2, '_all', 's1', 's2', 'org.couchdb.user:peter']);
           result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2]]);
         });
     });
@@ -748,21 +749,29 @@ describe('Authorization service', () => {
   });
 
   describe('getScopedAuthorizationContext', () => {
-    it('should return no subject ids if no docs provided', () => {
+    it('should return default subject ids if no docs provided', () => {
       return service
         .getScopedAuthorizationContext(userCtx, [])
         .then(result => {
-          result.should.deep.equal({ userCtx, subjectIds: [], contactsByDepthKeys: [ ['facility_id'] ] });
+          result.should.deep.equal({
+            userCtx,
+            subjectIds: ['_all', 'org.couchdb.user:user'],
+            contactsByDepthKeys: [ ['facility_id'] ]
+          });
         });
     });
 
-    it('should return no subject ids if only falsy docs are provided', () => {
+    it('should return default subject ids if only falsy docs are provided', () => {
       return service
         .getScopedAuthorizationContext(
           userCtx, [{ doc: false }, { doc: undefined }, { viewResults: {} }, false, undefined ]
         )
         .then(result => {
-          result.should.deep.equal({ userCtx, subjectIds: [], contactsByDepthKeys: [ ['facility_id'] ] });
+          result.should.deep.equal({
+            userCtx,
+            subjectIds: ['_all', 'org.couchdb.user:user'],
+            contactsByDepthKeys: [ ['facility_id'] ]
+          });
         });
     });
 
@@ -777,7 +786,7 @@ describe('Authorization service', () => {
       return service
         .getScopedAuthorizationContext(userCtx, [{ doc: docs[0] }, { doc: docs[1], viewResults: {} }, { doc: docs[2] }])
         .then(result => {
-          result.subjectIds.should.deep.equal([]);
+          result.subjectIds.should.deep.equal(['_all', 'org.couchdb.user:user']);
           contactsByDepth.callCount.should.equal(2);
           contactsByDepth.args.should.deep.equal([[docs[0]], [docs[2]]]);
           docsByReplicationKey.callCount.should.equal(2);
@@ -902,7 +911,9 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(5);
           docsByReplicationKey.args.should.deep.equal([ [c1], [c2], [c3], [c4], [c5]]);
 
-          result.subjectIds.should.deep.equal(['c1', '123456', 'c3', 'c5', 'place5']);
+          result.subjectIds.should.have.members([
+            'c1', '123456', 'c3', 'c5', 'place5', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1050,7 +1061,9 @@ describe('Authorization service', () => {
           contactsByDepth.callCount.should.equal(7);
           docsByReplicationKey.callCount.should.equal(7);
 
-          result.subjectIds.should.deep.equal(['c1', 'patient1doc', 'patient1', 'patient3doc']);
+          result.subjectIds.should.have.members([
+            'c1', 'patient1doc', 'patient1', 'patient3doc', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1180,7 +1193,9 @@ describe('Authorization service', () => {
           contactsByDepth.callCount.should.equal(8);
           docsByReplicationKey.callCount.should.equal(8);
 
-          result.subjectIds.should.deep.equal(['c1', 'patient1doc', 'patient1', 'p1', 'facility_id']);
+          result.subjectIds.should.have.members([
+            'c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1293,7 +1308,9 @@ describe('Authorization service', () => {
           contactsByDepth.callCount.should.equal(4);
           docsByReplicationKey.callCount.should.equal(4);
 
-          result.subjectIds.should.deep.equal(['c1', 'contact1', 'patient1doc', 'patient1']);
+          result.subjectIds.should.have.members([
+            'c1', 'contact1', 'patient1doc', 'patient1', '_all', 'org.couchdb.user:user'
+          ]);
         });
     });
 
@@ -1461,7 +1478,7 @@ describe('Authorization service', () => {
             contactsByDepth.callCount.should.equal(7);
             docsByReplicationKey.callCount.should.equal(7);
 
-            result.subjectIds.should.deep.equal(['c5', 'c1', 'contact1', 'c2']);
+            result.subjectIds.should.have.members(['c5', 'c1', 'contact1', 'c2', '_all', 'org.couchdb.user:user']);
           });
       });
 
@@ -1696,7 +1713,9 @@ describe('Authorization service', () => {
             contactsByDepth.callCount.should.equal(10);
             docsByReplicationKey.callCount.should.equal(10);
 
-            result.subjectIds.should.deep.equal(['patient1doc', 'patient1', 'patient5doc', 'c1', 'patient3doc']);
+            result.subjectIds.should.have.members([
+              'patient1doc', 'patient1', 'patient5doc', 'c1', 'patient3doc', '_all', 'org.couchdb.user:user'
+            ]);
           });
       });
 
@@ -1859,7 +1878,9 @@ describe('Authorization service', () => {
             contactsByDepth.callCount.should.equal(9);
             docsByReplicationKey.callCount.should.equal(9);
 
-            result.subjectIds.should.deep.equal(['patient1doc', 'patient1', 'p1', 'facility_id', 'c1']);
+            result.subjectIds.should.have.members([
+              'patient1doc', 'patient1', 'p1', 'facility_id', 'c1', '_all', 'org.couchdb.user:user'
+            ]);
           });
       });
     });

@@ -33,6 +33,9 @@ const chtDocs = {
   },
 };
 
+const userContactDoc = { _id: 'user' };
+const userSettingsDoc = { _id: 'org.couchdb.user:username' };
+
 module.exports = {
   MS_IN_DAY,
 
@@ -65,6 +68,8 @@ rule GenerateEvents {
       taskScedules: chtSettingsDoc.tasks.schedules,
       enableTasks: true,
       enableTargets: true,
+      user: userSettingsDoc,
+      contact: userContactDoc,
     }, assign);
   },
 

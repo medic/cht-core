@@ -67,8 +67,9 @@ function (doc) {
       }
       return;
     case 'task':
-    case 'target':
       return emit(doc.user, {});
+    case 'target':
+      return emit(doc.owner, {});
     case 'contact':
     case 'clinic':
     case 'district_hospital':

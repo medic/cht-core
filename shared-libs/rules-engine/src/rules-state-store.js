@@ -1,6 +1,6 @@
 /**
  * @module rules-state-store
- * In-memory datastore containing 
+ * In-memory datastore containing
  * 1. Details on the state of each contact's rules calculations
  * 2. Target emissions @see target-state
  */
@@ -10,7 +10,8 @@ const targetState = require('./target-state');
 
 const EXPIRE_CALCULATION_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 let state;
-let currentUser;
+let currentUserContact;
+let currentUserSettings;
 let onStateChange;
 
 const self = {
@@ -19,23 +20,25 @@ const self = {
    *
    * @param {Object} existingState State object previously passed to the stateChangeCallback
    * @param {Object} settings Settings for the behavior of the rules store
-   * @param {Object} userDoc User's hydrated contact document
+   * @param {Object} settings.contact User's hydrated contact document
+   * @param {Object} settings.user User's user-settings document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
    */
-  load: (existingState, settings, userDoc, stateChangeCallback) => {
+  load: (existingState, settings, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
-    const rulesConfigHash = hashRulesConfig(settings, userDoc);
+    const rulesConfigHash = hashRulesConfig(settings);
     const useState = existingState && existingState.rulesConfigHash === rulesConfigHash;
     if (!useState) {
-      return self.build(settings, userDoc, stateChangeCallback);
+      return self.build(settings, stateChangeCallback);
     }
 
     state = existingState;
-    currentUser = userDoc;
+    currentUserContact = settings.contact;
+    currentUserSettings = settings.user;
     onStateChange = safeCallback(stateChangeCallback);
   },
 
@@ -43,21 +46,23 @@ const self = {
    * Initializes an empty rules-state-store.
    *
    * @param {Object} settings Settings for the behavior of the rules store
-   * @param {Object} userDoc User's hydrated contact document
+   * @param {Object} settings.contact User's hydrated contact document
+   * @param {Object} settings.user User's user-settings document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
    */
-  build: (settings, userDoc, stateChangeCallback) => {
+  build: (settings, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
     state = {
-      rulesConfigHash: hashRulesConfig(settings, userDoc),
+      rulesConfigHash: hashRulesConfig(settings),
       contactState: {},
       targetState: targetState.createEmptyState(settings.targets),
     };
-    currentUser = userDoc;
+    currentUserContact = settings.contact;
+    currentUserSettings = settings.user;
 
     onStateChange = safeCallback(stateChangeCallback);
     return onStateChange(state);
@@ -94,18 +99,18 @@ const self = {
    * If they have changed in a meaningful way, the calculation state of all contacts is reset
    *
    * @param {Object} settings Settings for the behavior of the rules store
-   * @param {Object} userDoc User's hydrated contact document
    * @returns {Boolean} True if the state of all contacts has been reset
    */
-  rulesConfigChange: (settings, userDoc) => {
-    const rulesConfigHash = hashRulesConfig(settings, userDoc);
+  rulesConfigChange: (settings) => {
+    const rulesConfigHash = hashRulesConfig(settings);
     if (state.rulesConfigHash !== rulesConfigHash) {
       state = {
         rulesConfigHash,
         contactState: {},
         targetState: targetState.createEmptyState(settings.targets),
       };
-      currentUser = userDoc;
+      currentUserContact = settings.contact;
+      currentUserSettings = settings.user;
 
       onStateChange(state);
       return true;
@@ -190,7 +195,12 @@ const self = {
   /**
    * @returns {string} User contact document
    */
-  currentUser: () => currentUser,
+  currentUserContact: () => currentUserContact,
+
+  /**
+   * @returns {string} User settings document
+   */
+  currentUserSettings: () => currentUserSettings,
 
   /**
    * Store a set of target emissions which were emitted by refreshing a set of contacts
@@ -226,13 +236,8 @@ const self = {
   ),
 };
 
-const hashRulesConfig = (settings, userDoc) => {
-  const rulesConfig = {
-    settings,
-    userDoc,
-  };
-
-  const asString = JSON.stringify(rulesConfig);
+const hashRulesConfig = (settings) => {
+  const asString = JSON.stringify(settings);
   return md5(asString);
 };
 

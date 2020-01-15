@@ -15,10 +15,10 @@ const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
  * @param {Object[]} freshData.contactDocs A set of contact documents
  * @param {Object[]} freshData.reportDocs All of the contacts' reports
  * @param {Object[]} freshData.taskDocs All of the contacts' task documents (must be linked by requester to a contact)
- * @param {Object[]} freshData.userContactId The id of the user's contact document
- * 
+ * @param {Object[]} freshData.userSettingsId The id of the user's settings document
+ *
  * @param {int} calculationTimestamp Timestamp for the round of rules calculations
- * 
+ *
  * @param {Object=} [options] Options for the behavior when refreshing rules
  * @param {Boolean} [options.enableTasks=true] Flag to enable tasks
  * @param {Boolean} [options.enableTargets=true] Flag to enable targets
@@ -38,14 +38,14 @@ module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTas
 };
 
 const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
-  const { taskDocs = [], userContactId } = freshData;
+  const { taskDocs = [], userSettingsId } = freshData;
   const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs, calculationTimestamp);
 
   const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
   const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
     .map(taskEmission => {
       const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
-      return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userContactId, existingDoc);
+      return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userSettingsId, existingDoc);
     });
 
   const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
@@ -91,7 +91,7 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
 const mapEmissionIdToLatestTaskDoc = (taskDocs, maxTimestamp) => taskDocs
   // mitigate the fallout of a user who rewinds their system-clock after creating task docs
   .filter(doc => doc.authoredOn <= maxTimestamp)
-  
+
   .reduce((agg, doc) => {
     const emissionId = doc.emission._id;
     if (!agg[emissionId] || agg[emissionId].authoredOn < doc.authoredOn) {
