@@ -112,13 +112,13 @@ describe('feed', () => {
       });
     });
 
-    it('does not register listener twice', done => {
+    it('does not initiate fetching twice', done => {
       sinon.stub(metadata, 'getProcessedSeq').resolves('007');
       feed
         .fetch(c => c)
         .then(() => feed.fetch(c => c))
         .then(() => {
-          chai.expect(db.medic.changes.callCount).to.equal(3);
+          chai.expect(db.medic.changes.callCount).to.equal(2);
           done();
         });
     });
