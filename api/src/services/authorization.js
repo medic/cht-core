@@ -5,11 +5,14 @@ const db = require('../db'),
       viewMapUtils = require('@medic/view-map-utils'),
       tombstoneUtils = require('@medic/tombstone-utils');
 
-const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
-      UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
+const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
+const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
+const MEDIC_CLIENT_DDOC = '_design/medic-client';
 
 // fake view map, to store whether doc is a medic.user-settings doc
 const couchDbUser = doc => doc.type === 'user-settings';
+
+const getUserSettingsId = username => `org.couchdb.user:${username}`;
 
 const getDepth = (userCtx) => {
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -77,7 +80,7 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
 // @param   {Array}    viewResults.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {Boolean}
 const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDepth }) => {
-  if (['_design/medic-client', 'org.couchdb.user:' + authorizationContext.userCtx.name].indexOf(docId) !== -1) {
+  if ([MEDIC_CLIENT_DDOC, getUserSettingsId(authorizationContext.userCtx.name)].indexOf(docId) !== -1) {
     return true;
   }
 
@@ -94,7 +97,7 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
     return allowedContact(contactsByDepth, authorizationContext.contactsByDepthKeys);
   }
 
-  //it's a report
+  //it's a report, task or target
   return replicationKeys.some(replicationKey => {
     const [ subjectId, { submitter: submitterId } ] = replicationKey;
     const allowedSubmitter = submitterId && authorizationContext.subjectIds.indexOf(submitterId) !== -1;
@@ -166,7 +169,7 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
 const getContextObject = (userCtx) => ({
   userCtx,
   contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
-  subjectIds: []
+  subjectIds: [ ALL_KEY, getUserSettingsId(userCtx.name) ]
 });
 
 const getAuthorizationContext = (userCtx) => {
@@ -185,7 +188,6 @@ const getAuthorizationContext = (userCtx) => {
     });
 
     authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
-    authorizationCtx.subjectIds.push(ALL_KEY);
     if (hasAccessToUnassignedDocs(userCtx)) {
       authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
     }
@@ -339,8 +341,8 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
 
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
-    const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name],
-          tombstoneIds = [];
+    const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(feed.userCtx.name)];
+    const tombstoneIds = [];
 
     results.rows.forEach(row => {
       if (isSensitive(feed.userCtx, row.key, row.value.submitter, feed.subjectIds.indexOf(row.value.submitter) !== -1)) {

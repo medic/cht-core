@@ -44,9 +44,20 @@ const users = [
     },
     roles: ['national_admin'],
   },
+  {
+    username: 'supervisor',
+    password: password,
+    place: 'PARENT_PLACE',
+    contact: {
+      _id: 'fixture:user:supervisor',
+      name: 'Supervisor',
+    },
+    roles: ['district_admin'],
+  },
 ];
 
-let offlineRequestOptions, onlineRequestOptions;
+let offlineRequestOptions;
+let onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -919,6 +930,87 @@ describe('db-doc handler', () => {
         });
     });
 
+    it('GET tasks and targets', () => {
+      const supervisorRequestOptions = { auth: { username: 'supervisor', password }, };
+      const allowedTask = {
+        _id: 'task1',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:offline:clinic',
+        requester: 'fixture:offline:clinic',
+        emission: {},
+      };
+      const deniedTask = {
+        _id: 'task2',
+        type: 'task',
+        user: 'any_other_user',
+        owner: 'fixture:offline:clinic',
+        requester: 'fixture:offline:clinic',
+        emission: {},
+      };
+
+      const allowedTarget = {
+        _id: 'target1',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:offline:clinic',
+        targets: [],
+      };
+
+      const deniedTarget = {
+        _id: 'target2',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:online:clinic',
+        targets: [],
+      };
+
+      return utils
+        .updateSettings({ replication_depth: [{ role:'district_admin', depth: 2 }]})
+        .then(() => utils.saveDocs([ allowedTask, deniedTask, allowedTarget, deniedTarget ]))
+        .then(() => Promise.all([
+          utils.requestOnTestDb(_.defaults({ path: '/task1' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: '/task2' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/target1' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: '/target2' }, offlineRequestOptions)).catch(err => err),
+        ]))
+        .then(results => {
+          chai.expect(results[0]).to.deep.include(allowedTask);
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.include(allowedTarget);
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        })
+        .then(() => Promise.all([
+          utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, supervisorRequestOptions)),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/org.couchdb.user:offline' }, supervisorRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, supervisorRequestOptions))
+            .catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/task1' }, supervisorRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/task2' }, supervisorRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/target1' }, supervisorRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: '/target2' }, supervisorRequestOptions)),
+        ]))
+        .then(results => {
+          // supervisor can see the user's contact
+          chai.expect(results[0]._id).to.equal('fixture:user:offline');
+          // supervisor can't see the user's user-settings document
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          // supervisor has replication depth of 2
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+
+          // supervisor can't see the any user's tasks
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+
+          // supervisor can see both targets
+          chai.expect(results[5]).to.deep.include(allowedTarget);
+          chai.expect(results[6]).to.deep.include(deniedTarget);
+        });
+    });
+
     it('POST', () => {
       offlineRequestOptions.method = 'POST';
 
@@ -982,15 +1074,18 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null,
+          ['patient_id', 'patient_uuid']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline',
+          ['patient_id', 'patient_uuid']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'online',
+          ['patient_id', 'patient_uuid']), allowed: true },
 
         { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
@@ -1008,15 +1103,18 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null,
+          ['patient_id', 'patient_uuid']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'offline',
+          ['patient_id', 'patient_uuid']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online',
+          ['patient_id', 'patient_uuid']), allowed: false },
       ];
       return Promise
         .all(reportScenarios.map(scenario => utils.requestOnTestDb(_.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)).catch(err => err)))
@@ -1060,6 +1158,56 @@ describe('db-doc handler', () => {
               chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
             }
           });
+        });
+    });
+
+    it('POST tasks and targets', () => {
+      offlineRequestOptions.method = 'POST';
+
+      const allowedTask = {
+        _id: 'task1',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:offline:clinic',
+        requester: 'fixture:offline:clinic',
+        emission: {},
+      };
+      const deniedTask = {
+        _id: 'task2',
+        type: 'task',
+        user: 'any_other_user',
+        owner: 'fixture:offline:clinic',
+        requester: 'fixture:offline:clinic',
+        emission: {},
+      };
+
+      const allowedTarget = {
+        _id: 'target1',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:offline:clinic',
+        targets: [],
+      };
+      const deniedTarget = {
+        _id: 'target2',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:online:clinic',
+        targets: [],
+      };
+
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ body: allowedTask, path: '/' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ body: deniedTask, path: '/' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ body: allowedTarget, path: '/' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ body: deniedTarget, path: '/' }, offlineRequestOptions)).catch(err => err),
+        ])
+        .then(results => {
+          chai.expect(results[0]).to.deep.include({ ok: true, id: 'task1' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.include({ ok: true, id: 'target1' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 
@@ -1344,6 +1492,62 @@ describe('db-doc handler', () => {
               chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
             }
           });
+        });
+    });
+
+    it('PUT tasks and targets', () => {
+      offlineRequestOptions.method = 'PUT';
+
+      const allowedTask = {
+        _id: 'task1',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:offline:clinic',
+        requester: 'fixture:offline:clinic',
+        emission: {},
+      };
+      const deniedTask = {
+        _id: 'task2',
+        type: 'task',
+        user: 'any_other_user',
+        owner: 'fixture:offline:clinic',
+        requester: 'fixture:offline:clinic',
+        emission: {},
+      };
+
+      const allowedTarget = {
+        _id: 'target1',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:offline:clinic',
+        targets: [],
+      };
+      const deniedTarget = {
+        _id: 'target2',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:online:clinic',
+        targets: [],
+      };
+
+      const docs = [ allowedTask, deniedTask, allowedTarget, deniedTarget ];
+
+      return utils
+        .saveDocs(docs)
+        .then(results => {
+          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
+          const updates = docs.map(doc => Object.assign({ updated: true }, doc));
+          const promises = updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .catch(err => err));
+          return Promise.all(promises);
+        })
+        .then(results => {
+          chai.expect(results[0]).to.deep.include({ ok: true, id: 'task1' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.include({ ok: true, id: 'target1' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 

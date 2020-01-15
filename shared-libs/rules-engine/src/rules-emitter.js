@@ -26,10 +26,10 @@ module.exports = {
    * @param {Object} settings Settings for the behavior of the rules emitter
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
-   * @param {Object} userDoc The logged in user's contact document
+   * @param {Object} settings.contact The logged in user's contact document
    * @returns {Boolean} Success
    */
-  initialize: (settings, userDoc) => {
+  initialize: (settings) => {
     if (flow) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
@@ -47,7 +47,7 @@ module.exports = {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,
-          user: userDoc,
+          user: settings.contact,
         },
       });
     } catch (err) {

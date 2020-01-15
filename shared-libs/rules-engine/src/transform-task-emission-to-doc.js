@@ -16,14 +16,16 @@ const TaskStates = require('./task-states');
  * @returns {Object} result.taskDoc The result of the transformation
  * @returns {Boolean} result.isUpdated True if the document is new or has been altered
  */
-module.exports = (taskEmission, calculatedAt, userContactId, existingDoc) => {
+module.exports = (taskEmission, calculatedAt, userSettingsId, existingDoc) => {
   const emittedState = TaskStates.calculateState(taskEmission, calculatedAt);
   const baseFromExistingDoc = !!existingDoc && (!TaskStates.isTerminal(existingDoc.state) || existingDoc.state === emittedState);
 
   // reduce document churn - don't tweak data on existing docs in terminal states
-  const baselineStateOfExistingDoc = baseFromExistingDoc && !TaskStates.isTerminal(existingDoc.state) && JSON.stringify(existingDoc);
-  const taskDoc = baseFromExistingDoc ? existingDoc : newTaskDoc(taskEmission, userContactId, calculatedAt);
-  taskDoc.user = userContactId;
+  const baselineStateOfExistingDoc = baseFromExistingDoc &&
+                                     !TaskStates.isTerminal(existingDoc.state) &&
+                                     JSON.stringify(existingDoc);
+  const taskDoc = baseFromExistingDoc ? existingDoc : newTaskDoc(taskEmission, userSettingsId, calculatedAt);
+  taskDoc.user = userSettingsId;
   taskDoc.requester = taskEmission.doc && taskEmission.doc.contact && taskEmission.doc.contact._id;
   taskDoc.owner = taskEmission.contact && taskEmission.contact._id;
   minifyEmission(taskDoc, taskEmission);
@@ -78,8 +80,8 @@ const minifyEmission = (taskDoc, emission) => {
   return taskDoc;
 };
 
-const newTaskDoc = (emission, userContactId, calculatedAt) => ({
-  _id: `task~${userContactId}~${emission._id}~${calculatedAt}`,
+const newTaskDoc = (emission, userSettingsId, calculatedAt) => ({
+  _id: `task~${userSettingsId}~${emission._id}~${calculatedAt}`,
   type: 'task',
   authoredOn: calculatedAt,
   stateHistory: [],

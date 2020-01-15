@@ -4,16 +4,16 @@ describe(`RulesEngine service`, () => {
 
   'use strict';
 
-  let
-    $timeout,
-    getService,
-    Auth,
-    Changes,
-    RulesEngineCore,
-    Session,
-    Settings,
-    TranslateFrom,
-    UserContact;
+  let $timeout;
+  let getService;
+  let Auth;
+  let Changes;
+  let RulesEngineCore;
+  let Session;
+  let Settings;
+  let TranslateFrom;
+  let UserContact;
+  let UserSettings;
 
   const settingsDoc = {
     _id: 'settings',
@@ -26,13 +26,6 @@ describe(`RulesEngine service`, () => {
         ]
       },
     },
-  };
-  const expectedRulesConfig = {
-    rules: 'rules',
-    taskSchedules: ['schedules'],
-    targets: [{ id: 'target' }],
-    enableTasks: true,
-    enableTargets: true,
   };
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -52,7 +45,21 @@ describe(`RulesEngine service`, () => {
       other: true,
     },
   };
-      
+  const userSettingsDoc = {
+    _id: 'org.couchdb.user:username',
+    type: 'user-settings',
+    roles: [],
+  };
+  const expectedRulesConfig = {
+    rules: 'rules',
+    taskSchedules: ['schedules'],
+    targets: [{ id: 'target' }],
+    enableTasks: true,
+    enableTargets: true,
+    contact: userContactDoc,
+    user: userSettingsDoc,
+  };
+
   beforeEach(async () => {
     Auth = sinon.stub().resolves(true);
     Changes = sinon.stub();
@@ -60,6 +67,7 @@ describe(`RulesEngine service`, () => {
     Settings = sinon.stub().resolves(settingsDoc);
     TranslateFrom = sinon.stub().returns('translated');
     UserContact = sinon.stub().resolves(userContactDoc);
+    UserSettings = sinon.stub().resolves(userSettingsDoc);
 
     RulesEngineCore = {
       initialize: sinon.stub().resolves(true),
@@ -84,6 +92,7 @@ describe(`RulesEngine service`, () => {
       $provide.value('Settings', Settings);
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('UserContact', UserContact);
+      $provide.value('UserSettings', UserSettings);
     });
 
     inject(($injector, _$timeout_, _$translate_) => {
@@ -118,7 +127,12 @@ describe(`RulesEngine service`, () => {
         Auth.withArgs('can_view_tasks').rejects();
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
-        expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({ enableTasks: false, enableTargets: true });
+        expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({
+          enableTasks: false,
+          enableTargets: true,
+          user: userSettingsDoc,
+          contact: userContactDoc,
+        });
       });
 
       it('targets disabled', async () => {
@@ -154,7 +168,7 @@ describe(`RulesEngine service`, () => {
 
         Settings.resolves(settingsDoc);
         expect(await getService().isEnabled()).to.be.true;
-        
+
         const { targets } = RulesEngineCore.initialize.args[0][0];
         expect(targets.map(target => target.id)).to.deep.eq([allContexts.id, emptyContext.id, matchingContext.id]);
       });
@@ -163,7 +177,6 @@ describe(`RulesEngine service`, () => {
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
         expect(RulesEngineCore.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
-        expect(RulesEngineCore.initialize.args[0][1]).to.eq(userContactDoc);
       });
     });
 
@@ -220,7 +233,7 @@ describe(`RulesEngine service`, () => {
           expect(changeFeed.filter(change)).to.be.true;
           await changeFeed.callback(change);
           expect(RulesEngineCore.rulesConfigChange.callCount).to.eq(1);
-          expect(RulesEngineCore.rulesConfigChange.args[0]).to.deep.eq([expectedRulesConfig, userContactDoc]);
+          expect(RulesEngineCore.rulesConfigChange.args[0]).to.deep.eq([expectedRulesConfig]);
         });
       }
 
@@ -284,10 +297,10 @@ describe(`RulesEngine service`, () => {
     it('ensure freshness of tasks only', async () => {
       const service = getService();
       await service.isEnabled();
-      
+
       await service.fetchTargets();
       $timeout.flush(500 * 1000);
-      
+
       await service.isEnabled(); // to resolve promises
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
       expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
@@ -296,7 +309,7 @@ describe(`RulesEngine service`, () => {
     it('cancel all ensure freshness threads', async () => {
       const service = getService();
       await service.isEnabled();
-      
+
       await service.fetchTargets();
       await service.fetchTaskDocsForAllContacts();
       $timeout.flush(500 * 1000);

@@ -9,7 +9,7 @@ const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
 
-const mockUserDoc = { _id: 'mock_user_id' };
+const mockUserSettingsDoc = { _id: 'org.couchdb.user:username' };
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
   type: 'data_record',
@@ -72,43 +72,48 @@ describe('pouchdb provider', () => {
   });
 
   it('allTaskData', async () => {
-    expect(await pouchdbProvider(db).allTaskData(mockUserDoc)).excludingEvery('_rev').to.deep.eq({
+    expect(await pouchdbProvider(db).allTaskData(mockUserSettingsDoc)).excludingEvery('_rev').to.deep.eq({
       contactDocs: [chtDocs.contact],
       reportDocs: [headlessReport, reportConnectedByPlace, chtDocs.pregnancyReport],
       taskDocs: [headlessTask, taskRequestedByChtContact], // not owner
-      userContactId: mockUserDoc._id,
+      userSettingsId: mockUserSettingsDoc._id,
     });
   });
 
   describe('commitTargetDoc', () => {
     const targets = [{ id: 'target' }];
-    const userDoc = { _id: 'user' };
+    const userContactDoc = { _id: 'user' };
+    const userSettingsDoc = { _id: 'org.couchdb.user:username' };
 
     it('create and update a doc', async () => {
       const docTag = '2019-07';
-      await pouchdbProvider(db).commitTargetDoc({ targets }, userDoc, docTag);
+      await pouchdbProvider(db).commitTargetDoc({ targets }, userContactDoc, userSettingsDoc, docTag);
 
-      expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
-        _id: 'target-2019-07-user',
+      expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
+        _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
-        user: 'user',
+        owner: 'user',
+        user: 'org.couchdb.user:username',
         targets,
+        reporting_period: '2019-07',
       });
 
       const nextTargets = [{ id: 'target', score: 1 }];
-      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
-      const ignoredUpdate = await db.get('target-2019-07-user');
+      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userContactDoc, userSettingsDoc, docTag);
+      const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
       expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
 
       sinon.useFakeTimers(Date.now() + MS_IN_DAY);
-      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userDoc, docTag);
-      expect(await db.get('target-2019-07-user')).excluding('_rev').to.deep.eq({
-        _id: 'target-2019-07-user',
+      await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userContactDoc, userSettingsDoc, docTag);
+      expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
+        _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
-        user: 'user',
+        owner: 'user',
+        user: 'org.couchdb.user:username',
         targets: nextTargets,
+        reporting_period: '2019-07',
       });
     });
   });
@@ -157,20 +162,20 @@ describe('pouchdb provider', () => {
     it('no contacts yields empty', async() => expect(await pouchdbProvider(db).taskDataFor([])).to.be.empty);
     it('empty contacts yields empty', async() => expect(await pouchdbProvider(db).taskDataFor([])).to.be.empty);
     it('unrecognized contact id yields empty', async () => {
-      expect(await pouchdbProvider(db).taskDataFor(['abc'], mockUserDoc)).to.deep.eq({
+      expect(await pouchdbProvider(db).taskDataFor(['abc'], mockUserSettingsDoc)).to.deep.eq({
         contactDocs: [],
         reportDocs: [],
         taskDocs: [],
-        userContactId: 'mock_user_id',
+        userSettingsId: 'org.couchdb.user:username',
       });
     });
     it('cht contact yields', async() => {
-      const actual = await pouchdbProvider(db).taskDataFor([chtDocs.contact._id, 'abc'], mockUserDoc);
+      const actual = await pouchdbProvider(db).taskDataFor([chtDocs.contact._id, 'abc'], mockUserSettingsDoc);
       expect(actual).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
         reportDocs: [reportConnectedByPlace, chtDocs.pregnancyReport],
         taskDocs: [taskRequestedByChtContact],
-        userContactId: 'mock_user_id',
+        userSettingsId: 'org.couchdb.user:username',
       });
     });
   });
