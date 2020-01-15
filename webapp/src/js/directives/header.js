@@ -1,3 +1,4 @@
+const responsive = require('../modules/responsive');
 angular.module('inboxDirectives').directive('mmHeader', function() {
   return {
     restrict: 'E',
@@ -49,6 +50,14 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         DBSync.sync(true);
       };
 
+      $scope.tabs = [{name:'messages',state:'messages.detail',icon:'fa-envelope',translate:'Messages'},
+        {name:'tasks',state:'tasks.detail',icon:'fa-flag',translate:'Tasks'},
+        {name:'reports',state:'reports.detail',icon:'fa-list-alt',translate:'Reports'},
+        {name:'contacts',state:'contacts.detail',icon:'fa-user',translate:'Contacts'},
+        {name:'analytics',state:'analytics',icon:'fa-bar-chart-o',translate:'Analytics'}];
+        
+      $scope.isMobile = responsive.isMobile();
+      
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'headerCtrl',
