@@ -105,7 +105,7 @@ describe('feed', () => {
 
     it('starts listener if results is empty', done => {
       sinon.stub(metadata, 'getProcessedSeq').resolves('007');
-      feed.fetch().then(() => {
+      feed.fetch(c => c).then(() => {
         chai.expect(db.medic.changes.callCount).to.equal(2);
         chai.expect(handler.on.args[0][0]).to.equal('change');
         done();
@@ -115,8 +115,8 @@ describe('feed', () => {
     it('does not register listener twice', done => {
       sinon.stub(metadata, 'getProcessedSeq').resolves('007');
       feed
-        .fetch()
-        .then(() => feed.fetch())
+        .fetch(c => c)
+        .then(() => feed.fetch(c => c))
         .then(() => {
           chai.expect(db.medic.changes.callCount).to.equal(3);
           done();
@@ -129,7 +129,7 @@ describe('feed', () => {
         .onCall(1).resolves('007')
         .onCall(2).resolves('456');
       feed
-        .fetch()
+        .fetch(c => c)
         .then(() => {
           chai.expect(db.medic.changes.callCount).to.equal(2);
           chai.expect(db.medic.changes.args[1][0]).to.deep.equal({ live: true, since: '007' });
