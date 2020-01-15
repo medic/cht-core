@@ -40,7 +40,17 @@ const users = [
       name: 'OnlineUser'
     },
     roles: ['national_admin']
-  }
+  },
+  {
+    username: 'supervisor',
+    password: password,
+    place: 'PARENT_PLACE',
+    contact: {
+      _id: 'fixture:user:supervisor',
+      name: 'Supervisor',
+    },
+    roles: ['district_admin'],
+  },
 ];
 
 let offlineRequestOptions,
@@ -115,7 +125,7 @@ describe('bulk-get handler', () => {
 
         expect(result.results[2].id).toEqual('PARENT_PLACE');
         expect(result.results[2].docs.length).toEqual(1);
-        expect(_.omit(result.results[2].docs[0].ok, '_rev')).toEqual(parentPlace);
+        expect(_.omit(result.results[2].docs[0].ok, '_rev', 'contact')).toEqual(parentPlace);
 
         expect(result.results[3].id).toEqual('org.couchdb.user:offline');
         expect(result.results[3].docs.length).toEqual(1);
@@ -158,6 +168,62 @@ describe('bulk-get handler', () => {
         expect(result.results[1].id).toEqual('allowed_contact_2');
         expect(result.results[1].docs.length).toEqual(1);
         expect(result.results[1].docs[0].ok).toEqual(docs[1]);
+      });
+  });
+
+  it('fitlers offline users tasks and targets', () => {
+    const docs = [
+      {
+        _id: 'allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:online',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:online',
+      },
+    ];
+    const requestRevs = [];
+
+    return utils
+      .saveDocs(docs)
+      .then(results => {
+        results.forEach(result => requestRevs.push({ id: result.id, rev: result.rev }));
+        offlineRequestOptions.body = { docs: requestRevs };
+        return utils.requestOnTestDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result.results.length).toEqual(2);
+        expect(result.results[0].id).toEqual('allowed_task');
+        expect(result.results[1].id).toEqual('allowed_target');
+
+        const supervisorRequestOptions = {
+          path: '/_bulk_get',
+          auth: { username: 'supervisor', password },
+          method: 'POST',
+          body: offlineRequestOptions.body
+        };
+        return utils.requestOnTestDb(supervisorRequestOptions);
+      })
+      .then(result => {
+        expect(result.results.length).toEqual(2);
+        expect(result.results[0].id).toEqual('allowed_target');
+        expect(result.results[1].id).toEqual('denied_target');
       });
   });
 
