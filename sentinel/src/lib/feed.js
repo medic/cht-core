@@ -90,7 +90,7 @@ const fetch = () => {
 module.exports = {
 
   /**
-   * Start listening from the last processed seq. Will restart
+   * Start fetching from the last processed seq. Will refetch
    * automatically on error.
    * @param {Function} callback Called with a change Object.
    */
