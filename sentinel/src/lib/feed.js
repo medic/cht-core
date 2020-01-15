@@ -33,7 +33,8 @@ const registerFeed = seq => {
         logger.info(`transitions: new incoming changes starting with change with id ${change.id}`);
         request.cancel();
         request.removeListener('change', listener);
-        initListen = null;
+        
+        initFetch = null;
         fetch();
       } else {
         metadata.update(change.seq);        
@@ -60,11 +61,16 @@ const fetchFeed = seq => {
 
       if (changes.results.length === 0) {
         logger.info(`transitions: no more changes, fetching changes feed, starting from ${seq}`);
+        initListen = null;
         listen();
+      } else {
+        logger.info('transitions: changes added to queue, waiting for queue to be drained');
+        initFetch = null;
       }
     })
     .catch(err => {
       logger.error('transitions: error fetching from changes feed: %o', err);
+      initFetch = null;
       setTimeout(() => fetch(), RETRY_TIMEOUT);
     });
 };
@@ -76,7 +82,9 @@ const listen = () => {
 };
 
 const fetch = () => {
-  initFetch = getProcessedSeq().then(seq => fetchFeed(seq));
+  if (!initFetch) {
+    initFetch = getProcessedSeq().then(seq => fetchFeed(seq));
+  }
 };
 
 module.exports = {
