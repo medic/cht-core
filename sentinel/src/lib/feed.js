@@ -28,11 +28,16 @@ const registerFeed = seq => {
   request =  db.medic
     .changes({ live: true, since: seq })
     .on('change', function listener(change) {
-      logger.info(`transitions: new incoming changes startimng with change with id ${change.id}`);
-      request.cancel();
-      request.removeListener('change', listener);
-      initListen = null;
-      fetch();
+      if (!change.id.match(IDS_TO_IGNORE) &&
+          !tombstoneUtils.isTombstoneId(change.id)) {
+        logger.info(`transitions: new incoming changes starting with change with id ${change.id}`);
+        request.cancel();
+        request.removeListener('change', listener);
+        initListen = null;
+        fetch();
+      } else {
+        metadata.update(change.seq);        
+      }
     })
     .on('error', err => {
       logger.error('transitions: error listening to changes feed: %o', err);
@@ -46,12 +51,12 @@ const fetchFeed = seq => {
   return db.medic
     .changes({ limit: CHANGES_LIMIT, since: seq })
     .then(changes => {
-      changes.results.forEach(change => {
-        if (!change.id.match(IDS_TO_IGNORE) &&
-            !tombstoneUtils.isTombstoneId(change.id)) {
-          handler(change);
-        }
-      });
+      changes.results = changes.results.filter(change =>
+        !change.id.match(IDS_TO_IGNORE) && 
+        !tombstoneUtils.isTombstoneId(change.id)
+      );
+
+      changes.results.forEach(handler);
 
       if (changes.results.length === 0) {
         logger.info(`transitions: no more changes, fetching changes feed, starting from ${seq}`);
