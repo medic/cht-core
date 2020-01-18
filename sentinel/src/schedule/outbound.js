@@ -159,6 +159,15 @@ const send = (payload, config) => {
         });
     }
 
+    if (authConf.type.toLowerCase() === 'rapidpro') {
+      return fetchPassword(authConf['password_key'])
+        .then(password => {
+          sendOptions.headers = {
+            'Authorization': 'Token ' + password
+          };
+        });
+    }
+
     if (authConf.type.toLowerCase() === 'muso-sih') {
       return fetchPassword(authConf['password_key'])
         .then(password => {
