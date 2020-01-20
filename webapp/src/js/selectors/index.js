@@ -69,6 +69,12 @@ const getLastChangedDoc = state => getServicesState(state).lastChangedDoc;
 const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
 
+// Target Aggregates
+const getTargetAggregatesState = state => state.targetAggregates;
+const getTargetAggregates = state => getTargetAggregatesState(state).targetAggregates;
+const getSelectedTarget = state => getTargetAggregatesState(state).selected;
+
+
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
@@ -116,5 +122,8 @@ angular.module('inboxServices').constant('Selectors', {
   getLastChangedDoc,
 
   getTasksState,
-  getSelectedTask
+  getSelectedTask,
+
+  getTargetAggregates,
+  getSelectedTarget,
 });

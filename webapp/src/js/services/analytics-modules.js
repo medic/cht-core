@@ -1,5 +1,3 @@
-const _ = require('underscore');
-
 (function () {
 
   'use strict';
@@ -8,6 +6,7 @@ const _ = require('underscore');
     function(
       $log,
       $q,
+      Auth,
       ScheduledForms,
       Settings
     ) {
@@ -26,23 +25,35 @@ const _ = require('underscore');
         };
       };
 
-      const getReportingRatesModule = function(settings, scheduledForms) {
+      const getTargetAggregatesModule = (settings, caAggregateTargets) => {
+        return {
+          label: 'analytics.target.aggregates',
+          state: 'analytics.target-aggregates.detail',
+          available: () => {
+            return settings.tasks &&
+                   settings.tasks.targets &&
+                   settings.tasks.targets.enabled &&
+                   caAggregateTargets; // check if there are targets to aggregate!!
+          }
+        };
+      };
+
+      const getReportingRatesModule = (settings, scheduledForms) => {
         return {
           label: 'Reporting Rates',
           state: 'analytics.reporting',
-          available: function() {
+          available: () => {
             return scheduledForms.length;
           }
         };
       };
 
-      const getModules = function(settings, scheduledForms) {
-        return _.filter([
+      const getModules = (settings, scheduledForms, caAggregateTargets) => {
+        return [
           getReportingRatesModule(settings, scheduledForms),
-          getTargetsModule(settings)
-        ], function(module) {
-          return module.available();
-        });
+          getTargetsModule(settings),
+          getTargetAggregatesModule(settings, caAggregateTargets),
+        ].filter(module => module.available());
       };
 
       /**
@@ -53,10 +64,15 @@ const _ = require('underscore');
        * @returns {Promise} A Promise to return an array of object.
        */
       return function() {
-        return $q.all([ Settings(), ScheduledForms() ])
-          .then(function(results) {
-            const modules = getModules(results[0], results[1]);
-            $log.debug('AnalyticsMobules. Enabled modules: ', _.pluck(modules, 'label'));
+        return $q
+          .all([
+            Settings(),
+            ScheduledForms(),
+            Auth('can_aggregate_targets').then(() => true).catch(() => false)
+          ])
+          .then(([settings, scheduledForms, caAggregateTargets]) => {
+            const modules = getModules(settings, scheduledForms, caAggregateTargets);
+            $log.debug('AnalyticsMobules. Enabled modules: ', modules.map(module => module.label));
             return modules;
           });
       };

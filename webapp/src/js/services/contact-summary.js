@@ -27,7 +27,7 @@ angular.module('inboxServices').service('ContactSummary',
             if (!script) {
               return function() {};
             }
-            return new Function('contact', 'reports', 'lineage', script); // jshint ignore:line
+            return new Function('contact', 'reports', 'lineage', 'targets', script); // jshint ignore:line
           });
       }
       return generatorFunction;
@@ -59,11 +59,11 @@ angular.module('inboxServices').service('ContactSummary',
       return summary;
     };
 
-    return function(contact, reports, lineage) {
+    return function(contact, reports, lineage, targets) {
       return getGeneratorFunction()
         .then(function(fn) {
           try {
-            return fn(contact, reports || [], lineage || []);
+            return fn(contact, reports || [], lineage || [], targets);
           } catch (e) {
             $log.error('Configuration error in contact-summary function: ' + e.message);
             throw new Error('Configuration error');

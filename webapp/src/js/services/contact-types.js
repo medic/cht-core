@@ -53,5 +53,12 @@ angular.module('inboxServices').service('ContactTypes', function(
      * Returns a Promise to resolve all the configured person contact types
      */
     getPersonTypes: () => Settings().then(config => contactTypesUtils.getPersonTypes(config)),
+
+    /**
+     * @returns {string} returns the contact type id of a given contact document
+     */
+    getTypeId: contact => contactTypesUtils.getTypeId(contact),
+
+    isPersonType: type => contactTypesUtils.isPersonType(type),
   };
 });

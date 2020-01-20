@@ -1,0 +1,75 @@
+<div class="content-pane right-pane">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!analyticsTargetAggregatesDetailCtrl.selected">
+    <div translate>no.target.selected</div>
+  </div>
+  <div class="col-sm-8 item-content empty-selection" ng-show="analyticsTargetAggregatesDetailCtrl.selected && analyticsTargetAggregatesDetailCtrl.selected.error">
+    <div translate>target.select.error</div>
+  </div>
+  <div class="col-sm-8 item-content" ng-show="analyticsTargetAggregatesDetailCtrl.selected && !analyticsTargetAggregatesDetailCtrl.selected.error">
+    <div class="material">
+      <div class="body meta">
+        <div class="target-detail card" ng-class="{ 'has-goal': analyticsTargetAggregatesDetailCtrl.selected.goal >= 0, 'goal-met': (analyticsTargetAggregatesDetailCtrl.selected.value.pass >= target.goal) || (analyticsTargetAggregatesDetailCtrl.selected.value.percent >= analyticsTargetAggregatesDetailCtrl.selected.goal) }">
+          <div class="row heading">
+            <div class="icon" ng-bind-html="analyticsTargetAggregatesDetailCtrl.selected.icon | resourceIcon"></div>
+            <div class="heading-content">
+              <h2 ng-if="analyticsTargetAggregatesDetailCtrl.selected.translation_key" translate>{{analyticsTargetAggregatesDetailCtrl.selected.translation_key}}</h2>
+              <h2 ng-if="!analyticsTargetAggregatesDetailCtrl.selected.translation_key">{{analyticsTargetAggregatesDetailCtrl.selected.name | translateFrom}}</h2>
+            </div>
+          </div>
+
+          <div class="cell" ng-if="analyticsTargetAggregatesDetailCtrl.selected.hasGoal">
+            <label translate>analytics.target.aggregates.chws.meeting.goal</label>
+            <p translate translate-values="analyticsTargetAggregatesDetailCtrl.selected.aggregateValue">analytics.target.aggreagates.ratio</p>
+          </div>
+          <div class="cell" ng-if="!analyticsTargetAggregatesDetailCtrl.selected.hasGoal">
+            <label translate>analytics.target.aggregates.total</label>
+            <p ng-if="analyticsTargetAggregatesDetailCtrl.selected.isPercent">{{analyticsTargetAggregatesDetailCtrl.selected.aggregateValue.percent}}%</p>
+            <p ng-if="!analyticsTargetAggregatesDetailCtrl.selected.isPercent">{{analyticsTargetAggregatesDetailCtrl.selected.aggregateValue.pass}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="aggregate-detail card">
+        <div class="action-header cell row">
+          <div class="col-xs-6 col-md-4">
+            <h3 translate>Contacts</h3>
+          </div>
+          <div class="col-xs-6 col-md-8 text-right">
+            <h3 ng-if="analyticsTargetAggregatesDetailCtrl.selected.subtitle_translation_key" translate>
+              {{analyticsTargetAggregatesDetailCtrl.selected.subtitle_translation_key}}
+            </h3>
+          </div>
+        </div>
+        <ul>
+          <li ng-repeat="item in analyticsTargetAggregatesDetailCtrl.selected.values" data-record-id="item.contact._id"
+              class="content-row target" ng-class="{ 'has-goal': analyticsTargetAggregatesDetailCtrl.selected.hasGoal, 'goal-met': item.value.goalMet }">
+            <a href="#contacts/{{item.contact._id}}">
+              <div class="col-xs-6 col-md-4">
+                <div class="content">
+                  <div class="heading">
+                    <h4>{{item.contact.name}}</h4>
+                  </div>
+                  <div ng-if="analyticsTargetAggregatesDetailCtrl.selected.progressBar" class="detail">
+                    <mm-analytics-targets-details target="analyticsTargetAggregatesDetailCtrl.selected" value="item.value"></mm-analytics-targets-details>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-6 col-md-8 text-right">
+                <div ng-if="!analyticsTargetAggregatesDetailCtrl.selected.progressBar" class="detail" >
+                  <mm-analytics-targets-details target="analyticsTargetAggregatesDetailCtrl.selected" value="item.value"></mm-analytics-targets-details>
+                </div>
+                <div ng-if="analyticsTargetAggregatesDetailCtrl.selected.progressBar">
+                  <mm-analytics-targets-progress
+                    target="analyticsTargetAggregatesDetailCtrl.selected"
+                    value="item.value"
+                    aggregate="true"
+                  ></mm-analytics-targets-progress>
+                </div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

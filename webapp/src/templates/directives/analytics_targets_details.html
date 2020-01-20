@@ -1,0 +1,10 @@
+<span class="target-summary" ng-if="!$ctrl.value.placeholder">
+  <span ng-if="!$ctrl.target.isPercent">{{$ctrl.value.pass}}</span>
+  <span ng-if="$ctrl.target.isPercent">
+    <span class="value">{{$ctrl.value.percent}}%</span>
+    <span translate translate-values="$ctrl.value">{{$ctrl.target.percentage_count_translation_key || 'targets.count.default'}}</span>
+  </span>
+</span>
+<span ng-if="$ctrl.value.placeholder">
+  <span translate>analytics.target.aggreagates.no.data</span>
+</span>

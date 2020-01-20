@@ -16,6 +16,7 @@ angular.module('inboxServices').factory('ContactsActions',
     Selectors,
     Session,
     Settings,
+    TargetAggregates,
     TasksForContact,
     TranslateFrom,
     UserSettings,
@@ -127,6 +128,17 @@ angular.module('inboxServices').factory('ContactsActions',
         });
       }
 
+      function loadSelectedContactTargets() {
+        return dispatch(function(dispatch, getState) {
+          const selected = Selectors.getSelectedContact(getState());
+          return TargetAggregates.getTargets(selected).then(targets => {
+            return dispatch(ActionUtils.createSingleValueAction(
+              actionTypes.RECEIVE_SELECTED_CONTACT_TARGETS, 'targets', targets
+            ));
+          });
+        });
+      }
+
       function setLoadingSelectedContact() {
         dispatch({ type: actionTypes.SET_LOADING_SELECTED_CONTACT });
       }
@@ -156,7 +168,8 @@ angular.module('inboxServices').factory('ContactsActions',
               globalActions.clearCancelCallback();
               setContactsLoadingSummary(true);
               const lazyLoadedContactData = loadSelectedContactChildren({ getChildPlaces })
-                .then(loadSelectedContactReports);
+                .then(loadSelectedContactReports)
+                .then(loadSelectedContactTargets);
               return $q
                 .all([
                   getTitle(selected),
@@ -177,7 +190,7 @@ angular.module('inboxServices').factory('ContactsActions',
                       selected = Selectors.getSelectedContact(getState());
                       registerTasksListener(selected);
                       return $q.all([
-                        ContactSummary(selected.doc, selected.reports, selected.lineage),
+                        ContactSummary(selected.doc, selected.reports, selected.lineage, selected.targets),
                         Settings()
                       ]);
                     })

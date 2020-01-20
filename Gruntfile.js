@@ -660,7 +660,8 @@ module.exports = function(grunt) {
     },
     watch: {
       options: {
-        interval: 1000,
+        interrupt: true,
+        debounceDelay: 1000,
       },
       'config-files': {
         files: ['Gruntfile.js', 'package.json'],

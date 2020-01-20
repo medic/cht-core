@@ -18,7 +18,8 @@
         </div>
       </div>
       <div class="body">
-        <div class="percent" ng-if="target.type === 'percent'">
+        <mm-analytics-targets-progress ng-if="target.type === 'percent'" target="target" value="target.value" aggregate="false"></mm-analytics-targets-progress>
+        <div class="target-progress ng-hide" ng-if="target.type === 'percent'">
           <div class="progress">
             <div class="progress-bar" style="width:{{target.value.percent}}%" ng-class="{'ng-hide': target.value.percent === 0}"></div>
           </div>

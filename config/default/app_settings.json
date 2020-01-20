@@ -245,7 +245,10 @@
     "can_view_users": [
       "program_officer"
     ],
-    "can_write_wealth_quintiles": []
+    "can_write_wealth_quintiles": [],
+    "can_aggregate_targets": [
+      "chw_supervisor"
+    ]
   },
   "changes_controller": {
     "reiterate_changes": true,
