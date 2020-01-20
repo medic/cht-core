@@ -140,12 +140,13 @@ const createReduxLoggerConfig = Selectors => ({
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('TranslationMessageFormatInterpolation');
     $translateProvider.addInterpolation('TranslationNullInterpolation');
-    $translateProvider.useMissingTranslationHandlerLog();
+    //$translateProvider.useMissingTranslationHandlerLogs();
     $compileProvider.aHrefSanitizationWhitelist(
       /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
     );
 
-    const isDevelopment = window.location.hostname === 'localhost' && window.location.port !== KARMA_UNIT_TEST_PORT;
+    const isDevelopment = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                          && window.location.port !== KARMA_UNIT_TEST_PORT;
     $compileProvider.debugInfoEnabled(isDevelopment);
 
     const middlewares = [reduxThunk];

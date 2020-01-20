@@ -7,6 +7,7 @@
   const messages = require('./messages');
   const reports = require('./reports');
   const services = require('./services');
+  const targetAggregates = require('./target-aggregates');
   const tasks = require('./tasks');
 
   const rootReducer = redux.combineReducers({
@@ -16,7 +17,8 @@
     messages,
     reports,
     services,
-    tasks
+    targetAggregates,
+    tasks,
   });
 
   angular.module('inboxServices').constant('RootReducer', rootReducer);

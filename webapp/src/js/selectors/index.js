@@ -70,6 +70,12 @@ const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
 const getLoadTasks = state => getTasksState(state).loaded;
 
+// Target Aggregates
+const getTargetAggregatesState = state => state.targetAggregates;
+const getTargetAggregates = state => getTargetAggregatesState(state).targetAggregates;
+const getSelectedTarget = state => getTargetAggregatesState(state).selected;
+
+
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
@@ -119,4 +125,7 @@ angular.module('inboxServices').constant('Selectors', {
   getTasksState,
   getSelectedTask,
   getLoadTasks,
+
+  getTargetAggregates,
+  getSelectedTarget,
 });
