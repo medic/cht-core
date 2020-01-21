@@ -13,7 +13,6 @@ const _ = require('underscore'),
   date = require('../date'),
   NAME = 'registration';
 
-const registrationUtils = require('@medic/registration-utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 
 const PARENT_NOT_FOUND = 'parent_not_found';
@@ -596,16 +595,16 @@ module.exports = {
           return true;
         }
 
-        const subjectId = registrationUtils.getSubjectId(doc);
+        const patientId = doc.fields && doc.fields.patient_id;
 
-        if (!subjectId) {
+        if (!patientId) {
           return fireConfiguredTriggers(registrationConfig, doc);
         }
 
         // We're attaching this registration to an existing contact, let's
         // make sure it's valid
-        return utils.getContactUuid(subjectId).then(contactId => {
-          if (!contactId) {
+        return utils.getContactUuid(patientId).then(patientContactId => {
+          if (!patientContactId) {
             transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
             return true;
           }
