@@ -96,7 +96,6 @@ Want to talk about Documentation generally? Join our [Community Forum](https://c
 ### Code of Conduct
 
 All maintainers and contributors are required to act according to our [Code of Conduct](https://github.com/medic/medic/blob/master/CODE_OF_CONDUCT.md). Thank you for your help building a positive community and a safe environment for everyone.
-=======
 
 #### License
 The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.
