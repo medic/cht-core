@@ -1,16 +1,32 @@
+const async = require('async');
 const logger = require('./logger');
 const db = require('../db');
 const metadata = require('./metadata');
 const tombstoneUtils = require('@medic/tombstone-utils');
+const transitionsLib = require('../config').getTransitionsLib();
 
 // we don't run transitions on ddocs or info docs
 const IDS_TO_IGNORE = /^_design\/|-info$/;
 
 const RETRY_TIMEOUT = 60000; // 1 minute
+const PROGRESS_REPORT_INTERVAL = 500; // items
+const MAX_MEMORY_USED = 50 * 1024 * 1024; // 50 MB
 
-let listener;
 let init;
 let request;
+let processed = 0;
+let lastSeq;
+let lastInQueue = false;
+
+const listener = change => changeQueue.push(change);
+
+const updateMetadata = (change, callback) => {
+  processed++;
+  metadata
+    .update(change.seq)
+    .then(() => callback())
+    .catch(callback);
+};
 
 const getProcessedSeq = () => {
   return metadata
@@ -28,6 +44,15 @@ const registerFeed = seq => {
     .on('change', change => {
       if (!change.id.match(IDS_TO_IGNORE) &&
           !tombstoneUtils.isTombstoneId(change.id)) {
+
+        const heapUsed = process.memoryUsage().heapUsed;
+        if (heapUsed >= MAX_MEMORY_USED) {
+          logger.info(`transitions: memory used ${parseInt(heapUsed / 1024 / 1024)} MB greater than ${parseInt(MAX_MEMORY_USED / 1024 / 1024)} MB, we stop listening`);
+          request.cancel();
+          init = null;
+          lastSeq = change.seq;
+        }
+
         listener(change);
       }
     })
@@ -37,6 +62,94 @@ const registerFeed = seq => {
       setTimeout(() => listen(), RETRY_TIMEOUT);
     });
 };
+
+const deleteReadDocs = change => {
+  // we don't know if the deleted doc was a report or a message so
+  // attempt to delete both
+  const possibleReadDocIds = ['report', 'message'].map(
+    type => `read:${type}:${change.id}`
+  );
+
+  return db.allDbs().then(dbs => {
+    const userDbs = dbs.filter(dbName => dbName.indexOf(`${db.medicDbName}-user-`) === 0);
+    return userDbs.reduce((p, userDb) => {
+      return p.then(() => {
+        const metaDb = db.get(userDb);
+        return metaDb
+          .allDocs({ keys: possibleReadDocIds })
+          .then(results => {
+            const row = results.rows.find(row => !row.error);
+            if (!row) {
+              return;
+            }
+
+            return metaDb.remove(row.id, row.value.rev).catch(err => {
+              // ignore 404s or 409s - the doc was probably deleted client side already
+              if (err && err.status !== 404 && err.status !== 409) {
+                throw err;
+              }
+            });
+          })
+          .then(() => {
+            db.close(metaDb);
+          })
+          .catch(err => {
+            db.close(metaDb);
+            throw err;
+          });
+      });
+    }, Promise.resolve());
+
+  });
+};
+
+
+const changeQueue = async.queue((change, callback) => {
+  if (lastSeq && change.seq === lastSeq) {
+    lastSeq = undefined;
+    lastInQueue = true;
+  }
+
+  if (!change) {
+    return callback();
+  }
+  logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
+  if (processed > 0 && processed % PROGRESS_REPORT_INTERVAL === 0) {
+    logger.info(
+      `transitions: ${processed} items processed (since sentinel started)`
+    );
+  }
+  if (change.deleted) {
+    // don't run transitions on deleted docs, but do clean up
+    return Promise
+      .all([
+        transitionsLib.infodoc.delete(change),
+        deleteReadDocs(change)
+      ])
+      .catch(err => {
+        logger.error('Error cleaning up deleted doc: %o', err);
+      })
+      .then(() => tombstoneUtils.processChange(Promise, db.medic, change, logger))
+      .then(() => updateMetadata(change, callback))
+      .catch(callback);
+  }
+
+  transitionsLib.processChange(change, err => {
+    if (err) {
+      return callback(err);
+    }
+
+    updateMetadata(change, callback);
+  });
+});
+
+changeQueue.drain(() => {
+  if (lastInQueue) {
+    lastInQueue = false;
+    logger.info(`transitions: queue drained, we restart the listener`);
+    listen();
+  }
+});
 
 const listen = () => {
   if (!init) {
@@ -51,9 +164,8 @@ module.exports = {
    * automatically on error.
    * @param {Function} callback Called with a change Object.
    */
-  listen: callback => {
+  listen: () => {
     logger.info('transitions: processing enabled');
-    listener = callback;
     listen();
     return init;
   },
@@ -71,8 +183,10 @@ module.exports = {
       }
       init = null;
       request = null;
-      listener = null;
     });
-  }
+  },
 
+  // exposed for testing
+  _changeQueue: changeQueue,
+  _deleteReadDocs: deleteReadDocs,
 };
