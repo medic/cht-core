@@ -20,21 +20,21 @@ describe('transitions', () => {
 
     it('cancel is called when load throws', () => {
       const load = sinon.stub(transitions._transitionsLib, 'loadTransitions').throws();
-      const fetch = sinon.stub(feed, 'fetch');
+      const listen = sinon.stub(feed, 'listen');
       const cancel = sinon.stub(feed, 'cancel');
       transitions.loadTransitions();
       assert.equal(load.callCount, 1);
-      assert.equal(fetch.callCount, 0);
+      assert.equal(listen.callCount, 0);
       assert.equal(cancel.callCount, 1);
     });
 
     it('handles an empty change', done => {
       sinon.stub(metadata, 'update').resolves();
-      const fetch = sinon.stub(feed, 'fetch');
+      const listen = sinon.stub(feed, 'listen');
       sinon.stub(transitions._transitionsLib, 'processChange').callsArgWith(1);
 
       transitions.loadTransitions();
-      fetch.args[0][0]();
+      listen.args[0][0]();
 
       transitions._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
@@ -53,12 +53,12 @@ describe('transitions', () => {
       sinon.stub(metadata, 'update').resolves();
       sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
-      const fetch = sinon.stub(feed, 'fetch');
+      const listen = sinon.stub(feed, 'listen');
 
       transitions.loadTransitions();
 
-      assert.equal(fetch.callCount, 1);
-      fetch.args[0][0]({ id: 'somechange', seq: 55, deleted: true });
+      assert.equal(listen.callCount, 1);
+      listen.args[0][0]({ id: 'somechange', seq: 55, deleted: true });
 
       transitions._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
@@ -82,10 +82,10 @@ describe('transitions', () => {
       sinon.stub(metadata, 'update').resolves();
       sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
-      const fetch = sinon.stub(feed, 'fetch');
+      const listen = sinon.stub(feed, 'listen');
 
       transitions.loadTransitions();
-      fetch.args[0][0]({ id: 'somechange', seq: 55, deleted: true });
+      listen.args[0][0]({ id: 'somechange', seq: 55, deleted: true });
 
       transitions._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
@@ -105,11 +105,11 @@ describe('transitions', () => {
 
     it('runs transitions lib over changes', done => {
       sinon.stub(metadata, 'update').resolves();
-      const fetch = sinon.stub(feed, 'fetch');
+      const listen = sinon.stub(feed, 'listen');
       sinon.stub(transitions._transitionsLib, 'processChange').callsArgWith(1);
 
       transitions.loadTransitions();
-      fetch.args[0][0]({ id: 'somechange', seq: 55 });
+      listen.args[0][0]({ id: 'somechange', seq: 55 });
 
       transitions._changeQueue.drain(() => {
         return Promise.resolve().then(() => {

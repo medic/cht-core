@@ -8,11 +8,8 @@ const IDS_TO_IGNORE = /^_design\/|-info$/;
 
 const RETRY_TIMEOUT = 60000; // 1 minute
 
-const CHANGES_LIMIT = 100; // 100 documents of size 10K => 1MB 
-
-let handler;
-let initFetch;
-let initListen;
+let listener;
+let init;
 let request;
 
 const getProcessedSeq = () => {
@@ -25,80 +22,40 @@ const getProcessedSeq = () => {
 };
 
 const registerFeed = seq => {
-  request =  db.medic
+  logger.info(`transitions: fetching changes feed, starting from ${seq}`);
+  request = db.medic
     .changes({ live: true, since: seq })
-    .on('change', function listener(change) {
+    .on('change', change => {
       if (!change.id.match(IDS_TO_IGNORE) &&
           !tombstoneUtils.isTombstoneId(change.id)) {
-        logger.info(`transitions: new incoming changes starting with change with id ${change.id}`);
-        request.cancel();
-        request.removeListener('change', listener);
-        
-        initFetch = null;
-        fetch();
-      } else {
-        metadata.update(change.seq);        
+        listener(change);
       }
     })
     .on('error', err => {
-      logger.error('transitions: error listening to changes feed: %o', err);
-      initListen = null;
+      logger.error('transitions: error from changes feed: %o', err);
+      init = null;
       setTimeout(() => listen(), RETRY_TIMEOUT);
     });
 };
 
-const fetchFeed = seq => {
-  logger.info(`transitions: fetching ${CHANGES_LIMIT} changes from changes feed, starting from ${seq}`);
-  return db.medic
-    .changes({ limit: CHANGES_LIMIT, since: seq })
-    .then(changes => {
-      changes.results = changes.results.filter(change =>
-        !change.id.match(IDS_TO_IGNORE) && 
-        !tombstoneUtils.isTombstoneId(change.id)
-      );
-
-      changes.results.forEach(handler);
-
-      if (changes.results.length === 0) {
-        logger.info(`transitions: no more changes, fetching changes feed, starting from ${seq}`);
-        initListen = null;
-        listen();
-      } else {
-        logger.info('transitions: changes added to queue, waiting for queue to be drained');
-        initFetch = null;
-      }
-    })
-    .catch(err => {
-      logger.error('transitions: error fetching from changes feed: %o', err);
-      initFetch = null;
-      setTimeout(() => fetch(), RETRY_TIMEOUT);
-    });
-};
-
 const listen = () => {
-  if (!initListen) {
-    initListen = getProcessedSeq().then(seq => registerFeed(seq));
-  }
-};
-
-const fetch = () => {
-  if (!initFetch) {
-    initFetch = getProcessedSeq().then(seq => fetchFeed(seq));
+  if (!init) {
+    init = getProcessedSeq().then(seq => registerFeed(seq));
   }
 };
 
 module.exports = {
 
   /**
-   * Start fetching from the last processed seq. Will refetch
+   * Start listening from the last processed seq. Will restart
    * automatically on error.
    * @param {Function} callback Called with a change Object.
    */
-  fetch: callback => {
+  listen: callback => {
     logger.info('transitions: processing enabled');
-    handler = callback;
-    fetch();
-    return initFetch;
+    listener = callback;
+    listen();
+    return init;
   },
 
   /**
@@ -107,21 +64,15 @@ module.exports = {
    */
   cancel: () => {
     // let initialisation finish but check for null init
-    const fetch = initFetch || Promise.resolve();
-    const listen = initListen || Promise.resolve();
-    return Promise.all([fetch, listen]).then(() => {
+    const p = init || Promise.resolve();
+    return p.then(() => {
       if (request) {
         request.cancel();
       }
-      initFetch = null;
-      initListen = null;
+      init = null;
       request = null;
-      handler = null;
+      listener = null;
     });
-  },
-
-  initListen: initListen,
-
-  initFetch: initFetch
+  }
 
 };
