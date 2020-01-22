@@ -55,7 +55,10 @@ module.exports = [
     appliesIf: function (contact) {
       return !!contact;
     },
-    date: (contact) => contact.contact.date_of_birth
+    date: (contact) => contact.contact.date_of_birth,
+    dhis: {
+      dataElement: 'elBTM'
+    }
   },
 
 
@@ -111,7 +114,10 @@ module.exports = [
       return getField(report, 'delivery_outcome.delivery_place') === 'health_facility';
     },
     date: 'now',
-    idType: 'contact'
+    idType: 'contact',
+    dhis: {
+      dataElement: 'elFD'
+    }
   },
 
   {
