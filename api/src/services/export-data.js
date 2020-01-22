@@ -3,6 +3,7 @@ const { Readable } = require('stream');
 const BATCH = 100;
 
 const MAPPERS = {
+  dhis: require('./export/dhis'),
   reports: require('./export/report-mapper'),
   contacts: require('./export/contact-mapper'),
   messages: require('./export/message-mapper'),
@@ -80,8 +81,27 @@ class SearchResultReader extends Readable {
   }
 }
 
+const format = type => type === 'dhis' ? 'json' : 'csv';
+
 module.exports = {
-  export: (type, filters, options) => new SearchResultReader(type, filters, options),
+  exportStream: (type, filters, options) => new SearchResultReader(type, filters, options),
+  exportObject: (type, filters, options) => MAPPERS[type](filters, options),
   isSupported: type => !!MAPPERS[type],
+  permission: type => {
+    const typeToPermissionMap = {
+      contacts: 'can_export_contacts',
+      dhis2: 'can_export_dhis',
+      feedback: 'can_export_feedback',
+      messages: 'can_export_messages',
+      reports: 'can_export_messages',
+    };
+
+    const permission = typeToPermissionMap[type];
+    if (!permission) {
+      throw Error('invalid program exception: missing permission for type');
+    }
+    return permission;
+  },
+  format,
   _mapper: type => MAPPERS[type]
 };

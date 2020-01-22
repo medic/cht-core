@@ -11,9 +11,9 @@ describe('Export Data Service', () => {
   });
 
   const mockRequest = (type, filters={}, options={}) => {
-    const chunks = [];
+    const chunks = []; 
     return new Promise((resolve,reject) => {
-      service.export(type, filters, options)
+      service.exportStream(type, filters, options)
         .on('error', err => {
           reject(err);
         })

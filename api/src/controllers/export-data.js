@@ -6,36 +6,27 @@ const serverUtils = require('../server-utils');
 
 const service = require('../services/export-data');
 
-const formats = {
-  xml: {
-    extension: 'xml',
-    contentType: 'application/vnd.ms-excel'
-  },
-  csv: {
-    extension: 'csv',
-    contentType: 'text/csv'
-  },
-  json: {
-    extension: 'json',
-    contentType: 'application/json'
-  }
-};
-
 const writeExportHeaders = (res, type, format) => {
-  const filename = `${type}-${moment().format('YYYYMMDDHHmm')}.${format.extension}`;
-  res
-    .set('Content-Type', format.contentType)
-    .set('Content-Disposition', 'attachment; filename=' + filename);
-};
+  const formats = {
+    xml: {
+      extension: 'xml',
+      contentType: 'application/vnd.ms-excel'
+    },
+    csv: {
+      extension: 'csv',
+      contentType: 'text/csv'
+    },
+    json: {
+      extension: 'json',
+      contentType: 'application/json'
+    }
+  };
 
-const getExportPermission = type => {
-  if (type === 'feedback') {
-    return 'can_export_feedback';
-  }
-  if (type === 'contacts') {
-    return 'can_export_contacts';
-  }
-  return 'can_export_messages';
+  const formatData = formats[format];
+  const filename = `${type}-${moment().format('YYYYMMDDHHmm')}.${formatData.extension}`;
+  res
+    .set('Content-Type', formatData.contentType)
+    .set('Content-Disposition', 'attachment; filename=' + filename);
 };
 
 module.exports = {
@@ -59,11 +50,7 @@ module.exports = {
     };
 
     const correctOptionsTypes = options => {
-      if (options.humanReadable) {
-        options.humanReadable = (options.humanReadable === 'true');
-      } else {
-        options.humanReadable = false;
-      }
+      options.humanReadable = (options.humanReadable === 'true');
     };
 
     const type = req.params.type;
@@ -83,7 +70,7 @@ module.exports = {
     }
 
     logger.info(`Export requested for "${type}"`);
-    logger.info(`  params: ${JSON.stringify(filters, null, 2)}`);
+    logger.info(`  filters: ${JSON.stringify(filters, null, 2)}`);
     logger.info(`  options: ${JSON.stringify(options, null, 2)}`);
 
     // We currently only support online users (CouchDB admins and National Admins)
@@ -101,17 +88,25 @@ module.exports = {
       })
       .then((userCtx) => {
         if (!auth.hasAllPermissions(userCtx, 'can_export_all')) {
-          return auth.check(req, getExportPermission(req.params.type));
+          return auth.check(req, service.permission(type));
         }
       })
       .then(() => {
-        writeExportHeaders(res, req.params.type, formats.csv);
+        const format = service.format(type);
+        writeExportHeaders(res, type, format);
 
+        const writeAsStream = format === 'csv';
+        if (!writeAsStream) {
+          return service.exportObject(type, filters, options)
+            .then(obj => res.json(obj));
+        }
+
+        
         // To respond as quickly to the request as possible
         res.flushHeaders();
 
         service
-          .export(type, filters, options)
+          .exportStream(type, filters, options)
           .on('error', err => {
             // Because we've already flushed the headers above we can't use
             // serverUtils anymore, we just have to close the connection

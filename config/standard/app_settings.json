@@ -115,6 +115,9 @@
     "can_update_users": [
       "national_admin"
     ],
+    "can_export_dhis": [
+      "national_admin"
+    ],
     "can_update_people": [
       "national_admin",
       "district_admin"

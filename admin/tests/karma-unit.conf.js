@@ -35,6 +35,7 @@ module.exports = function(config) {
       // test-specific code
       '../node_modules/chai/chai.js',
       '../node_modules/sinon/pkg/sinon.js',
+      'node_modules/moment/moment.js',
       '../node_modules/angular-mocks/angular-mocks.js',
       'tests/utils.js',
 
