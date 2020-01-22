@@ -6,7 +6,7 @@ describe('dhis2 export controller', () => {
     { guid: dataSet, label: 'dataset label' },
   ];
 
-  const NOW = moment('2000-01-01').valueOf();
+  const NOW = moment('2000-01-15').valueOf();
 
   let scope;
   let getService;
@@ -50,31 +50,13 @@ describe('dhis2 export controller', () => {
   it('load scope for valid config', async () => {
     await getService();
     expect(scope.dataSets).to.deep.eq(dhisDataSets);
-    expect(scope.periods).to.deep.eq([
-      {
-        timestamp: '946713600000',
-        description: 'January, 2000'
-      },
-      {
-        timestamp: '944035200000',
-        description: 'December, 1999'
-      },
-      {
-        timestamp: '941443200000',
-        description: 'November, 1999'
-      },
-      {
-        timestamp: '938761200000',
-        description: 'October, 1999'
-      },
-      {
-        timestamp: '936169200000',
-        description: 'September, 1999'
-      },
-      {
-        timestamp: '933490800000',
-        description: 'August, 1999'
-      }
+    expect(scope.periods.map(period => period.description)).to.deep.eq([
+      'January, 2000',
+      'December, 1999',
+      'November, 1999',
+      'October, 1999',
+      'September, 1999',
+      'August, 1999',
     ]);
     
     expect(scope.places).to.deep.eq({ 
