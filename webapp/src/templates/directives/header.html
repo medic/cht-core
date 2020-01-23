@@ -115,7 +115,7 @@
     </div>
 
     <div class="tabs small-font">
-      <a ng-repeat="tab in tabs" ui-sref="{{tab.state}}" ng-attr-class="{'analytics-tab' : tab.name === 'analytics'}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" ng-class="{'selected': headerCtrl.currentTab === {{tab.name}}}" mm-auth="can_view_{{tab.name}},can_view_{{tab.name}}_tab">
+      <a ng-repeat="tab in headerCtrl.filteredTabs() track by tab.name" ui-sref="{{tab.state}}" ng-attr-class="{'analytics-tab' : tab.name === 'analytics'}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" ng-class="{'selected': headerCtrl.currentTab === {{tab.name}}}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== {{tab.name}}}">
           <span class="fa {{tab.icon}}"></span>
           <span ng-if="tab.name === 'messages'" class="mm-badge-overlay mm-badge-overlay-top" ng-hide="headerCtrl.unreadCount.message <= 0">
@@ -127,7 +127,7 @@
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount.report >= 100">100+</span>
           </span>
         </div>
-        <div ng-if="!isMobile && tabs.length <= 3" translate>{{tab.translate}}</div>
+        <div ng-if="headerCtrl.isMobile() && headerCtrl.filteredTabs().length <= 3 || !headerCtrl.isMobile()" translate>{{tab.translation}}</div>
       </a>
     </div>
   </div>
