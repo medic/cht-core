@@ -7,6 +7,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       $ngRedux,
       $q,
       $scope,
+      $log,
       Auth,
       DBSync,
       GlobalActions,
@@ -52,13 +53,40 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         DBSync.sync(true);
       };
 
-      $scope.tabs = [{name:'messages',state:'messages.detail',icon:'fa-envelope',translate:'Messages'},
-        {name:'tasks',state:'tasks.detail',icon:'fa-flag',translate:'Tasks'},
-        {name:'reports',state:'reports.detail',icon:'fa-list-alt',translate:'Reports'},
-        {name:'contacts',state:'contacts.detail',icon:'fa-user',translate:'Contacts'},
-        {name:'analytics',state:'analytics',icon:'fa-bar-chart-o',translate:'Analytics'}];
-        
-      $scope.isMobile = responsive.isMobile();
+      ctrl.isMobile = () => {
+        return responsive.isMobile();
+      }; 
+
+      const tabs = [{name:'messages',state:'messages.detail',icon:'fa-envelope',translation:'Messages',
+        permissions:[['can_view_messages'],['can_view_messages_tab']]},
+      {name:'tasks',state:'tasks.detail',icon:'fa-flag',translation:'Tasks',
+        permissions:[['can_view_tasks'],['can_view_tasks_tab']]},
+      {name:'reports',state:'reports.detail',icon:'fa-list-alt',translation:'Reports',
+        permissions:[['can_view_reports'],['can_view_reports_tab']]},
+      {name:'contacts',state:'contacts.detail',icon:'fa-user',translation:'Contacts',
+        permissions:[['can_view_contacts'],['can_view_contacts_tab']]},
+      {name:'analytics',state:'analytics',icon:'fa-bar-chart-o',translation:'Analytics',
+        permissions:[['can_view_analytics'],['can_view_analytics_tab']]}];
+
+      const permitedTabs = () => {
+        const result = [];
+        tabs.forEach(tab => {
+          Auth.any(tab.permissions)
+            .then(() =>  {
+              result.push(tab);
+            })
+            .catch(err => {
+              $log.error('Error determining tab permissions', err);
+            });
+        });
+        return result;
+      };
+
+      const result = permitedTabs();
+
+      ctrl.filteredTabs = () => {
+        return result;
+      }; 
       
       $scope.$on('$destroy', unsubscribe);
     },
