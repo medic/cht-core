@@ -57,7 +57,7 @@ module.exports = [
     },
     date: (contact) => contact.contact.date_of_birth,
     dhis: {
-      dataElement: 'elBTM'
+      dataElement: 'kB0ZBFisE0e',
     }
   },
 
@@ -116,7 +116,9 @@ module.exports = [
     date: 'now',
     idType: 'contact',
     dhis: {
-      dataElement: 'elFD'
+      dataElement: 'e22tIwy1nKR',
+      categoryOptionCombo: 'HllvX50cXC0',
+      attributeOptionCombo: 'HllvX50cXC0',
     }
   },
 

@@ -22,11 +22,6 @@ module.exports = async (filters, options = {}) => {
     throw { code: 422, message: 'filter "from" is required' };
   }
 
-  const allTargetDocsAtInterval = await fetch.targetDocsAtInterval(from);
-  const contactsUnderPlace = await fetch.contactsUnderPlace(placeId);
-  const targetDocsInHierarchy = allTargetDocsAtInterval.filter(target => !placeId || contactsUnderPlace[target.owner]);
-  const mapContactIdToOrgUnit = mapContactIdToOrgUnits(contactsUnderPlace, dataSet);
-
   const settingsDoc = await settings.get();
   const dataSetConfig = settingsDoc.dhisDataSets &&
     Array.isArray(settingsDoc.dhisDataSets) &&
@@ -39,6 +34,11 @@ module.exports = async (filters, options = {}) => {
   if (dhisTargetDefinitions.length === 0) {
     throw { code: 422, message: `dataSet "${dataSet}" has no dataElements` };
   }
+  
+  const allTargetDocsAtInterval = await fetch.targetDocsAtInterval(from);
+  const contactsUnderPlace = await fetch.contactsUnderPlace(placeId);
+  const targetDocsInHierarchy = allTargetDocsAtInterval.filter(target => !placeId || contactsUnderPlace[target.owner]);
+  const mapContactIdToOrgUnit = mapContactIdToOrgUnits(contactsUnderPlace, dataSet);
   const dataValues = buildDataValues(dhisTargetDefinitions, targetDocsInHierarchy, mapContactIdToOrgUnit);
 
   const result = {
@@ -62,17 +62,14 @@ module.exports = async (filters, options = {}) => {
 
 const fetch = {
   contactsUnderPlace: async placeId => {
-    let result;
+    let fetched;
     if (placeId) {
-      result = await db.medic.query('medic/contacts_by_depth', { key: [placeId], include_docs: true });
+      fetched = await db.medic.query('medic/contacts_by_depth', { key: [placeId], include_docs: true });
     } else {
-      result = await db.medic.query('medic-client/contacts_by_type', { include_docs: true });
+      fetched = await db.medic.query('medic-client/contacts_by_type', { include_docs: true });
     }
 
-    return result.rows.reduce((agg, curr) => {
-      agg[curr.id] = curr.doc;
-      return agg;
-    }, {});
+    return fromEntries(fetched.rows.map(row => [row.id, row.doc]));
   },
 
   targetDocsAtInterval: async timestamp => {
@@ -106,47 +103,59 @@ const getDhisTargetDefinitions = (dataSet, settingsDoc) => {
  * @returns {Object} The same contact id keys from @param contacts mapped to an array of orgUnits above them
  * in the hierarchy
  */
-const mapContactIdToOrgUnits = (contacts, dataSet) => (
-  Object.values(contacts).reduce((agg, curr) => {
-    let contact = curr;
-    while (contact) {
-      if (contact.dhis) {
-        const dhisConfigs = Array.isArray(contact.dhis) ? contact.dhis : [contact.dhis];
+const mapContactIdToOrgUnits = (contacts, dataSet) => {
+  const result = {};
+  for (const contact of Object.values(contacts)) {
+    let traverse = contact;
+    while (traverse) {
+      if (traverse.dhis) {
+        const dhisConfigs = Array.isArray(traverse.dhis) ? traverse.dhis : [traverse.dhis];
         for (const dhisConfig of dhisConfigs) {
           const dataSetMatch = !dhisConfig.dataSet || dhisConfig.dataSet === dataSet;
           if (dhisConfig.orgUnit && dataSetMatch) {
-            if (!agg[curr._id]) {
-              agg[curr._id] = [];
+            if (!result[contact._id]) {
+              result[contact._id] = [];
             }
 
-            agg[curr._id].push(dhisConfig.orgUnit);
+            result[contact._id].push(dhisConfig.orgUnit);
           }
         }
       }
 
-      contact = contact.parent && contacts[contact.parent._id];
+      traverse = traverse.parent && contacts[traverse.parent._id];
     }
+  }
 
-    return agg;
-  }, {})
-);
+  return result;
+};
 
 const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
-  const mapTargetIdToDataElement = targetDefinitions.reduce((agg, curr) => {
-    agg[curr.id] = curr.dhis.dataElement;
-    return agg;
-  }, {});
+  const mapTargetIdToDhis = fromEntries(targetDefinitions.map(target => ([target.id, target.dhis])));
+  const createEmptyValueSetFor = orgUnit => {
+    const result = {};
+    for (const target of targetDefinitions) {
+      const { dataElement } = mapTargetIdToDhis[target.id];
+      result[dataElement] = Object.assign(
+        {},
 
-  const dataValueSet = {};
+        /*
+        Copies any attribute defined in dhis config onto the dataValue
+        Primary usecase is `categoryOptionCombo` and `attributeOptionCombo` but there are many others
+        */
+        mapTargetIdToDhis[target.id],
+        { orgUnit, value: 0 },
+      );
+      delete result[dataElement].dataSet;
+    }
+    return result;
+  };
+
   // all results start with 0s
-  for (const contactId of Object.keys(orgUnits)) {
-    for (const orgUnit of orgUnits[contactId]) {
+  const dataValueSet = {};
+  for (const contactOrgUnits of Object.values(orgUnits)) {
+    for (const orgUnit of contactOrgUnits) {
       if (!dataValueSet[orgUnit]) {
-        dataValueSet[orgUnit] = targetDefinitions.reduce((agg, target) => {
-          const dataElement = mapTargetIdToDataElement[target.id];
-          agg[dataElement] = { dataElement, orgUnit, value: 0 };
-          return agg;
-        }, {});
+        dataValueSet[orgUnit] = createEmptyValueSetFor(orgUnit);
       }
     }
   }
@@ -160,10 +169,12 @@ const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
 
     for (const orgUnit of unitsOfOwner) {
       for (const target of targetDoc.targets) {
-        const dataElement = mapTargetIdToDataElement[target.id];
-        const dataValueObj = dataValueSet[orgUnit][dataElement];
-        if (dataValueObj) {
-          dataValueObj.value += target.value.total;
+        const dataElement = mapTargetIdToDhis[target.id] && mapTargetIdToDhis[target.id].dataElement;
+        if (dataElement) {
+          const dataValueObj = dataValueSet[orgUnit][dataElement];
+          if (dataValueObj) {
+            dataValueObj.value += target.value.total;
+          }
         }
       }
     }
@@ -176,20 +187,24 @@ const makeHumanReadable = (response, dataSetConfig, dhisTargetDefinitions, conta
   const { dataValues } = response;
   response.dataSet = dataSetConfig.label;
 
-  const mapOrgUnitsToContact = contacts.reduce((agg, contact) => {
+  const mapOrgUnitsToContact = {};
+  for (const contact of contacts) {
     const dhisConfigs = Array.isArray(contact.dhis) ? contact.dhis : [contact.dhis];
     for (const dhisConfig of dhisConfigs) {
-      agg[dhisConfig.orgUnit] = contact;
+      mapOrgUnitsToContact[dhisConfig.orgUnit] = contact;
     }
-    return agg;
-  }, {});
-  const mapDataElementToTarget = dhisTargetDefinitions.reduce((agg, target) => {
-    agg[target.dhis.dataElement] = target;
-    return agg;
-  }, {});
+  }
+
+  const mapDataElementToTarget = fromEntries(dhisTargetDefinitions.map(target => ([target.dhis.dataElement, target])));
 
   for (const dataValue of dataValues) {
     dataValue.orgUnit = mapOrgUnitsToContact[dataValue.orgUnit].name;
     dataValue.dataElement = mapDataElementToTarget[dataValue.dataElement].id;
   }
 };
+
+// Object.fromEntries requires node 12
+const fromEntries = entries => entries.reduce((agg, [index, val]) => {
+  agg[index] = val;
+  return agg;
+}, {});

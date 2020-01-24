@@ -12,7 +12,7 @@ const defaultConfigSettings = {
 };
 
 const NOW = moment('2000-02-21');
-const dataSet = 'abc123';
+const dataSet = 'VMuFODsyWaO';
 const filterNow = { from: Date.now() };
 
 describe('dhis export service', () => {
@@ -54,22 +54,26 @@ describe('dhis export service', () => {
       dataSet,
       dataValues: [
         {
-          dataElement: 'elBTM',
+          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'ou-chu1',
           value: 24,
         },
         {
-          dataElement: 'elFD',
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',  
           orgUnit: 'ou-chu1',
           value: 8,
         },
         {
-          dataElement: 'elBTM',
+          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'ou-chu2',
           value: 12,
         },
         {
-          dataElement: 'elFD',
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'ou-chu2',
           value: 4,
         },
@@ -93,12 +97,14 @@ describe('dhis export service', () => {
       dataSet,
       dataValues: [
         {
-          dataElement: 'elBTM',
+          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'ou-chu',
           value: 0,
         },
         {
-          dataElement: 'elFD',
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'ou-chu',
           value: 0,
         },
@@ -130,6 +136,8 @@ describe('dhis export service', () => {
         },
         {
           dataElement: 'facility-deliveries',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'chu',
           value: 4,
         },
@@ -157,6 +165,7 @@ describe('dhis export service', () => {
         dataValues: [
           {
             dataElement: 'data element 1',
+            arbitrary: 'yes',
             orgUnit: 'chu',
             value: 0
           },
@@ -198,12 +207,14 @@ describe('dhis export service', () => {
       dataSet,
       dataValues: [
         {
-          dataElement: 'elBTM',
+          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'ou-chu1',
           value: 24,
         },
         {
-          dataElement: 'elFD',
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'ou-chu1',
           value: 8,
         },
@@ -279,6 +290,7 @@ describe('dhis export service', () => {
       dataValues: [
         {
           dataElement: 'de-1',
+          arbitrary: 'yes',
           orgUnit: 'ou-1',
           value: 1
         },
@@ -340,22 +352,26 @@ describe('dhis export service', () => {
       period: '200002',
       dataValues: [
         {
-          dataElement: 'elBTM',
+          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'ou-chu',
           value: 12,
         },
         {
-          dataElement: 'elFD',
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'ou-chu',
           value: 4,
         },
         {
-          dataElement: 'elBTM',
+          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'alt',
           value: 24,
         },
         {
-          dataElement: 'elFD',
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'alt',
           value: 8,
         },
@@ -506,6 +522,7 @@ const settingsWithMultipleDatasets = mockSettingsDoc(
       dhis: {
         dataSet: 'ds-1',
         dataElement: 'de-1',
+        arbitrary: 'yes',
       }
     },
     {
