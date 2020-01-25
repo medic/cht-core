@@ -1,39 +1,35 @@
-<div class="row">  
-  <p class="col-sm-12" translate>export.dhis.description</p>
-  <p ng-show="!dataSets" class="col-sm-12 text-warning" translate>export.dhis.unconfigured</p>
-</div>
+<div class="col-sm-12">
+  <p translate>export.dhis.description</p>
+  <p ng-show="!dataSets" class="text-warning" translate>export.export.dhis.unconfigured</p>
 
-<div ng-show="dataSets">
-  <div class="row">
-    <span class="col-sm-2 col-sm-offset-1" translate>DataSet</span>
-    <div class="col-sm-4">
-      <select class="form-control" ng-model="selected.dataSet">
+
+  <div ng-show="dataSets">
+    <div class="form-group">
+      <label for="dataset" translate>export.dhis.dataset.label</label>
+      <select id="dataset" class="form-control small" ng-model="selected.dataSet">
         <option ng-repeat="option in dataSets" value="{{option.guid}}">{{option.label}}</option>
       </select>
+      <p class="help-block" translate>export.dhis.dataset.description</p>
     </div>
-  </div>
-    
-  <div class="row">
-    <span class="col-sm-2 col-sm-offset-1" translate>Place</span>
-    <div class="col-sm-4">
-      <select class="form-control" ng-init="selected.place = 'all'" ng-model="selected.place">
-        <option value="all">All Places</option>
+
+    <div class="form-group">
+      <label for="place" translate>export.dhis.place.label</label>
+      <select id="place" class="form-control" ng-init="selected.place = 'all'" ng-model="selected.place">
+        <option value="all" translate>export.dhis.place.all</option>
         <option ng-repeat="option in places[null]" value="{{option.id}}">{{option.name}}</option>
         <option ng-repeat="option in places[selected.dataSet]" value="{{option.id}}">{{option.name}}</option>
       </select>
+      <p class="help-block" translate>export.dhis.place.description</p>
     </div>
-  </div>
 
-  <div class="row">
-    <span class="col-sm-2 col-sm-offset-1" translate>Period</span>
-    <div class="col-sm-4">
-      <select class="form-control" ng-init="selected.period = periods[1].timestamp" ng-model="selected.period">
+    <div class="form-group">
+      <label for="period" translate>export.dhis.period.label</label>
+      <select id="period" class="form-control" ng-init="selected.period = periods[1].timestamp" ng-model="selected.period">
         <option ng-repeat="option in periods" value="{{option.timestamp}}">{{option.description}}</option>
       </select>
+      <p class="help-block" translate>export.dhis.period.description</p>
     </div>
-  </div>
 
-  <div class="row">
     <a class="btn btn-default" ng-click="export()" ng-disabled="exporting || !selected.dataSet">
       <i class="fa fa-arrow-down"></i>
       <span translate>Download</span>
