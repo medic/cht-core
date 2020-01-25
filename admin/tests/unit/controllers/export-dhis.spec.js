@@ -19,10 +19,10 @@ describe('dhis2 export controller', () => {
     Settings = sinon.stub().resolves({ dhisDataSets });
     query = sinon.stub().resolves({ rows: [
       mockContact('p1'),
-      mockContact('p2', { dhis: { dataElement: 'p2-de '}}),
+      mockContact('p2', { dhis: { orgUnit: 'ou-p2'}}),
       mockContact('p3', { dhis: [
-        { dataElement: 'p3-de', dataSet },
-        { dataElement: 'p3-other', dataSet: 'other' }
+        { orgUnit: 'ou-p3', dataSet },
+        { orgUnit: 'ou-p3-other', dataSet: 'other' }
       ]}),
     ] });
 
@@ -60,12 +60,12 @@ describe('dhis2 export controller', () => {
     ]);
     
     expect(scope.places).to.deep.eq({ 
-      null: [{ id: 'contact-p2', name: 'p2' }],
+      null: [{ id: 'ou-p2', name: 'p2' }],
       [dataSet]: [
-        { id: 'contact-p1', name: 'p1' },
-        { id: 'contact-p3', name: 'p3' }
+        { id: 'ou-p1', name: 'p1' },
+        { id: 'ou-p3', name: 'p3' }
       ],
-      other: [{ id: 'contact-p3', name: 'p3' }],
+      other: [{ id: 'ou-p3-other', name: 'p3' }],
     });
 
     expect(scope.selected).to.deep.eq({ dataSet });
@@ -86,7 +86,7 @@ describe('dhis2 export controller', () => {
       name,
       dhis: {
         dataSet,
-        dataElement: 'dataElementGuid',
+        orgUnit: `ou-${name}`,
       },
     }, assign),
   });
