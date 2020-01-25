@@ -7,12 +7,12 @@ const settings = require('../settings');
 /**
  * @param {string} filters.dataSet
  * @param {integer} filters.from
- * @param {string=} filters.placeId
+ * @param {string=} filters.orgUnit
  *
  * @param options.humanReadable
  */
 module.exports = async (filters, options = {}) => {
-  const { dataSet, placeId } = filters;
+  const { dataSet, orgUnit } = filters;
   const { from } = filters.date || {};
   if (!dataSet) {
     throw { code: 422, message: 'filter "dataSet" is required' };
@@ -35,17 +35,18 @@ module.exports = async (filters, options = {}) => {
     throw { code: 422, message: `dataSet "${dataSet}" has no dataElements` };
   }
   
-  const allTargetDocsAtInterval = await fetch.targetDocsAtInterval(from);
-  const contactsUnderPlace = await fetch.contactsUnderPlace(placeId);
-  const targetDocsInHierarchy = allTargetDocsAtInterval.filter(target => !placeId || contactsUnderPlace[target.owner]);
-  const mapContactIdToOrgUnit = mapContactIdToOrgUnits(contactsUnderPlace, dataSet);
-  const dataValues = buildDataValues(dhisTargetDefinitions, targetDocsInHierarchy, mapContactIdToOrgUnit);
+  const targetDocsAtInterval = await fetch.targetDocsAtInterval(from);
+  const contactsWithOrgUnits = await fetch.contactsWithOrgUnits(orgUnit);
+  const targetOwnerIds = _.uniq(targetDocsAtInterval.map(target => target.owner));
+  const targetOwners = await fetch.docsWithId(targetOwnerIds);
+  const mapContactIdToOrgUnit = mapContactIdToOrgUnits(dataSet, targetOwners, contactsWithOrgUnits);
+  const targetDocsInHierarchy = targetDocsAtInterval.filter(target => !orgUnit || mapContactIdToOrgUnit[target.owner]);
 
   const result = {
     dataSet,
     completeDate: moment().format('YYYY-MM-DD'),
     period: moment(from).format('YYYYMM'),
-    dataValues,
+    dataValues: buildDataValues(dhisTargetDefinitions, targetDocsInHierarchy, mapContactIdToOrgUnit),
   };
 
   if (options.humanReadable) {
@@ -53,7 +54,7 @@ module.exports = async (filters, options = {}) => {
       result,
       dataSetConfig,
       Object.values(dhisTargetDefinitions),
-      Object.values(contactsUnderPlace)
+      Object.values(contactsWithOrgUnits)
     );
   }
 
@@ -61,15 +62,14 @@ module.exports = async (filters, options = {}) => {
 };
 
 const fetch = {
-  contactsUnderPlace: async placeId => {
-    let fetched;
-    if (placeId) {
-      fetched = await db.medic.query('medic/contacts_by_depth', { key: [placeId], include_docs: true });
-    } else {
-      fetched = await db.medic.query('medic-client/contacts_by_type', { include_docs: true });
-    }
+  docsWithId: async ids => {
+    const fetched = await db.medic.allDocs({ keys: ids, include_docs: true });
+    return fetched.rows.map(row => row.doc);
+  },
 
-    return fromEntries(fetched.rows.map(row => [row.id, row.doc]));
+  contactsWithOrgUnits: async orgUnit => {
+    const fetched = await db.medic.query('medic-admin/contacts_by_orgunit', { key: orgUnit, include_docs: true });
+    return _.uniqBy(fetched.rows.map(row => row.doc), '_id');
   },
 
   targetDocsAtInterval: async timestamp => {
@@ -98,31 +98,35 @@ const getDhisTargetDefinitions = (dataSet, settingsDoc) => {
 };
 
 /**
- * @param {Object} contacts A set of contacts stored as map from _id to contact document
- * @param {string} dataSet Dataset being exported
- * @returns {Object} The same contact id keys from @param contacts mapped to an array of orgUnits above them
- * in the hierarchy
+ * @param {string} dataSet The dataset being exported. It acts as a filter for relevant orgUnits
+ * @param {Object[]} contacts The set of contact documents relevant to the calculation
+ * @returns {Object} The @param contacts _id values mapped to an array of orgUnits above them in the hierarchy
  */
-const mapContactIdToOrgUnits = (contacts, dataSet) => {
+const mapContactIdToOrgUnits = (dataSet, contacts, contactsWithOrgUnits) => {
   const result = {};
-  for (const contact of Object.values(contacts)) {
+  for (const contact of contactsWithOrgUnits) {
+    const dhisConfigs = Array.isArray(contact.dhis) ? contact.dhis : [contact.dhis];
+    for (const dhisConfig of dhisConfigs) {
+      const dataSetMatch = !dhisConfig.dataSet || dhisConfig.dataSet === dataSet;
+      if (dhisConfig.orgUnit && dataSetMatch) {
+        if (!result[contact._id]) {
+          result[contact._id] = [];
+        }
+
+        result[contact._id].push(dhisConfig.orgUnit);
+      }
+    }
+  }
+  
+  for (const contact of contacts) {
     let traverse = contact;
     while (traverse) {
-      if (traverse.dhis) {
-        const dhisConfigs = Array.isArray(traverse.dhis) ? traverse.dhis : [traverse.dhis];
-        for (const dhisConfig of dhisConfigs) {
-          const dataSetMatch = !dhisConfig.dataSet || dhisConfig.dataSet === dataSet;
-          if (dhisConfig.orgUnit && dataSetMatch) {
-            if (!result[contact._id]) {
-              result[contact._id] = [];
-            }
-
-            result[contact._id].push(dhisConfig.orgUnit);
-          }
-        }
+      if (result[traverse._id]) {
+        const existing = result[contact._id] || [];
+        result[contact._id] = _.uniq([...existing, ...result[traverse._id]]);
       }
 
-      traverse = traverse.parent && contacts[traverse.parent._id];
+      traverse = traverse.parent;
     }
   }
 
@@ -130,11 +134,11 @@ const mapContactIdToOrgUnits = (contacts, dataSet) => {
 };
 
 const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
-  const mapTargetIdToDhis = fromEntries(targetDefinitions.map(target => ([target.id, target.dhis])));
+  const mapTargetIdToDhis = ObjectFromEntries(targetDefinitions.map(target => ([target.id, target.dhis])));
   const createEmptyValueSetFor = orgUnit => {
     const result = {};
     for (const target of targetDefinitions) {
-      const { dataElement } = mapTargetIdToDhis[target.id];
+      const { dataElement } = target.dhis;
       result[dataElement] = Object.assign(
         {},
 
@@ -142,7 +146,7 @@ const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
         Copies any attribute defined in dhis config onto the dataValue
         Primary usecase is `categoryOptionCombo` and `attributeOptionCombo` but there are many others
         */
-        mapTargetIdToDhis[target.id],
+        target.dhis,
         { orgUnit, value: 0 },
       );
       delete result[dataElement].dataSet;
@@ -195,7 +199,8 @@ const makeHumanReadable = (response, dataSetConfig, dhisTargetDefinitions, conta
     }
   }
 
-  const mapDataElementToTarget = fromEntries(dhisTargetDefinitions.map(target => ([target.dhis.dataElement, target])));
+  const entries = dhisTargetDefinitions.map(target => ([target.dhis.dataElement, target]));
+  const mapDataElementToTarget = ObjectFromEntries(entries);
 
   for (const dataValue of dataValues) {
     dataValue.orgUnit = mapOrgUnitsToContact[dataValue.orgUnit].name;
@@ -204,7 +209,7 @@ const makeHumanReadable = (response, dataSetConfig, dhisTargetDefinitions, conta
 };
 
 // Object.fromEntries requires node 12
-const fromEntries = entries => entries.reduce((agg, [index, val]) => {
+const ObjectFromEntries = entries => entries.reduce((agg, [index, val]) => {
   agg[index] = val;
   return agg;
 }, {});

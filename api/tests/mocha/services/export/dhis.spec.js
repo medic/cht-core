@@ -179,7 +179,7 @@ describe('dhis export service', () => {
     });
   });
 
-  it('placeId filter', async () => {
+  it('orgUnit filter', async () => {
     const chu1 = mockContact('chu1');
     const chu2 = mockContact('chu2');
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
@@ -199,7 +199,7 @@ describe('dhis export service', () => {
         from: moment(NOW).valueOf(),
       },
       dataSet,
-      placeId: chu1._id,
+      orgUnit: chu1.dhis.orgUnit,
     });
 
     expect(actual).to.deep.eq({
@@ -325,7 +325,7 @@ describe('dhis export service', () => {
     });
   });
 
-  it('targetdoc has owner with two org units in hierarchy', async () => {
+  it('single target doc has owner with two org units in hierarchy', async () => {
     const hc = mockContact('hc', { dhis: { orgUnit: 'alt' } });
     const chu = mockContact('chu', { parent: { _id: hc._id }});
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu._id, parent: chu.parent } });
@@ -353,18 +353,6 @@ describe('dhis export service', () => {
       dataValues: [
         {
           dataElement: 'kB0ZBFisE0e',
-          orgUnit: 'ou-chu',
-          value: 12,
-        },
-        {
-          dataElement: 'e22tIwy1nKR',
-          attributeOptionCombo: 'HllvX50cXC0',
-          categoryOptionCombo: 'HllvX50cXC0',
-          orgUnit: 'ou-chu',
-          value: 4,
-        },
-        {
-          dataElement: 'kB0ZBFisE0e',
           orgUnit: 'alt',
           value: 24,
         },
@@ -374,6 +362,18 @@ describe('dhis export service', () => {
           categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'alt',
           value: 8,
+        },
+        {
+          dataElement: 'kB0ZBFisE0e',
+          orgUnit: 'ou-chu',
+          value: 12,
+        },
+        {
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
+          orgUnit: 'ou-chu',
+          value: 4,
         },
       ],
     });

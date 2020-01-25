@@ -202,7 +202,7 @@ Parameter | Description
 -- | --
 dataSet | A DHIS2 dataSet GUID. Targets associated with this dataSet will have their data aggregated. (required)
 date.from | Filter the target data to be aggregated to be within the month of this timestamp. (required)
-placeId | Filter the target data to only that associated with contacts under the place with `{ _id: placeId }`. (optional)
+orgUnit | Filter the target data to only that associated with contacts with attribute `{ dhis: { orgUnit } }`. (optional)
 
 ```json
 {
@@ -211,7 +211,7 @@ placeId | Filter the target data to only that associated with contacts under the
     "date": {
       "from": 949392000000,
     },
-    "placeId": "00495e1f-c6d0-4f91-8029-cef6ce177d03"
+    "orgUnit": "KbY9DJ8mBkx"
   }
 }
 ```

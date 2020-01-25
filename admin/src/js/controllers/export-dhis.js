@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const moment = require('moment');
 
 angular.module('controllers').controller('ExportDhisCtrl',
@@ -18,27 +19,31 @@ angular.module('controllers').controller('ExportDhisCtrl',
     });
 
     DB()
-      .query('medic-client/contacts_by_type', { include_docs: true })
-      .then(result => {
-        $scope.places = result.rows
-          .map(row => row.doc)
-          .filter(contact => contact.dhis)
-          .reduce((agg, curr) => {
-            const orgUnitConfigs = Array.isArray(curr.dhis) ? curr.dhis : [curr.dhis];
-            for (const orgUnitConfig of orgUnitConfigs) {
-              const dataSet = orgUnitConfig.dataSet || null;
-              if (!agg[dataSet]) {
-                agg[dataSet] = [];
-              }
-
-              agg[dataSet].push({
-                id: curr._id,
-                name: curr.name,
-              });
+      .query('medic-admin/contacts_by_orgunit', { include_docs: true })
+      .then(function(result) {
+        const places = _.uniqBy(result.rows.map(row => row.doc), '_id');
+        
+        const mapDataSetToPlaces = {};
+        for (const place of places) {
+          const orgUnitConfigs = Array.isArray(place.dhis) ? place.dhis : [place.dhis];
+          for (const orgUnitConfig of orgUnitConfigs) {
+            const dataSet = orgUnitConfig.dataSet || null;
+            if (!mapDataSetToPlaces[dataSet]) {
+              mapDataSetToPlaces[dataSet] = [];
             }
 
-            return agg;
-          }, {});
+            mapDataSetToPlaces[dataSet].push({
+              id: orgUnitConfig.orgUnit,
+              name: place.name,
+            });
+          }
+        }
+
+        for (const place of Object.keys(mapDataSetToPlaces)) {
+          _.sortBy(mapDataSetToPlaces[place], ['name']);
+        }
+
+        $scope.places = mapDataSetToPlaces;
       });
 
     $scope.periods = [...Array(MONTHS_TO_SHOW).keys()].map(val => {
@@ -60,7 +65,7 @@ angular.module('controllers').controller('ExportDhisCtrl',
       };
 
       if (place !== 'all') {
-        filters.placeId = place;
+        filters.orgUnit = place;
       }
 
       Export('dhis', filters, {});
