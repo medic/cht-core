@@ -376,7 +376,7 @@ describe('login controller', () => {
     });
 
     it('redirect user to original URL requested after successful login', () => {
-      req.headers.referer = "http://xx.app.medicmobile.org/medic/login?redirect=http%3A%2F%2Fxx.app.medicmobile.org%2F%23%2Freports%2F";
+      req.headers.referer = 'http://xx.app.medicmobile.org/medic/login?redirect=http%3A%2F%2Fxx.app.medicmobile.org%2F%23%2Freports%2F';
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
         statusCode: 200,
@@ -389,6 +389,9 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(send.args[0][0]).to.equal('http://xx.app.medicmobile.org/#/reports/');
       });
