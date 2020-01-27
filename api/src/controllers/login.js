@@ -115,7 +115,12 @@ const setLocaleCookie = (res, locale) => {
   res.cookie('locale', locale, options);
 };
 
-const getRedirectUrl = userCtx => {
+const getRedirectUrl = (userCtx, req) => {
+  if (req.headers.referer){
+    const url = new URL(req.headers.referer);
+    const params = new URLSearchParams(url.search);
+    return params.get('redirect');
+  }
   // https://github.com/medic/medic/issues/5035
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
   if (auth.isOnlineOnly(userCtx) &&
@@ -144,7 +149,7 @@ const setCookies = (req, res, sessionRes) => {
         if (language) {
           setLocaleCookie(res, language);
         }
-        res.status(302).send(getRedirectUrl(userCtx));
+        res.status(302).send(getRedirectUrl(userCtx, req));
       });
     })
     .catch(err => {
