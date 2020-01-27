@@ -374,6 +374,26 @@ describe('login controller', () => {
         chai.expect(send.args[0][0]).to.equal('/admin/');
       });
     });
+
+    it('redirect user to original URL requested after successful login', () => {
+      req.headers.referer = "http://xx.app.medicmobile.org/medic/login?redirect=http%3A%2F%2Fxx.app.medicmobile.org%2F%23%2Freports%2F";
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const send = sinon.stub(res, 'send');
+      const status = sinon.stub(res, 'status').returns(res);
+      const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      return controller.post(req, res).then(() => {
+        chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(send.args[0][0]).to.equal('http://xx.app.medicmobile.org/#/reports/');
+      });
+    });
+
   });
 
   describe('getIdentity', () => {
