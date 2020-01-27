@@ -159,13 +159,18 @@ const send = (payload, config) => {
         });
     }
 
-    if (authConf.type.toLowerCase() === 'rapidpro') {
-      return fetchPassword(authConf['password_key'])
-        .then(password => {
-          sendOptions.headers = {
-            'Authorization': 'Token ' + password
-          };
-        });
+    if (authConf.type.toLowerCase() === 'header') {
+      if (authConf.name.toLowerCase() === 'authorization') {
+        return fetchPassword(authConf['values_key'])
+          .then(value => {
+            sendOptions.headers = {
+              Authorization: value
+            };
+          });
+      } else {
+        logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
+        throw new Error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
+      }
     }
 
     if (authConf.type.toLowerCase() === 'muso-sih') {
