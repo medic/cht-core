@@ -161,7 +161,7 @@ const send = (payload, config) => {
 
     if (authConf.type.toLowerCase() === 'header') {
       if (authConf.name.toLowerCase() === 'authorization') {
-        return fetchPassword(authConf['values_key'])
+        return fetchPassword(authConf['value_key'])
           .then(value => {
             sendOptions.headers = {
               Authorization: value
