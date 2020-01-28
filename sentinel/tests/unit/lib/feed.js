@@ -380,7 +380,6 @@ describe('feed', () => {
 
     it('runs transitions lib over changes', done => {
       sinon.stub(metadata, 'update').resolves();
-      const listen = sinon.stub(feed, 'listen');
       sinon.stub(feed._transitionsLib, 'processChange').callsArgWith(1);
 
       feed._listener({ id: 'somechange', seq: 55 });

@@ -3,11 +3,8 @@ config.initTransitionLib();
 
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const db = require('../../src/db');
 const transitions = require('../../src/transitions');
-const metadata = require('../../src/lib/metadata');
 const feed = require('../../src/lib/feed');
-const tombstoneUtils = require('@medic/tombstone-utils');
 
 describe('transitions', () => {
   afterEach(() => {
