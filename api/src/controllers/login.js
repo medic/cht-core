@@ -119,7 +119,10 @@ const getRedirectUrl = (userCtx, req) => {
   if (req.headers.referer){
     const url = new URL(req.headers.referer);
     const params = new URLSearchParams(url.search);
-    return params.get('redirect');
+    const redirect = new URL(params.get('redirect'));
+    if (url.origin === redirect.origin){
+      return redirect.toString();
+    }
   }
   // https://github.com/medic/medic/issues/5035
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
