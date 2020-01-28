@@ -1111,7 +1111,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'start-webdriver',
+    'e2e-deploy',
     'protractor:e2e-tests',
   ]);
 
@@ -1166,5 +1166,3 @@ module.exports = function(grunt) {
     'jsdoc'
   ]);
 };
-
-
