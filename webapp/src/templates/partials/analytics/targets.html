@@ -19,22 +19,6 @@
       </div>
       <div class="body">
         <mm-analytics-targets-progress ng-if="target.type === 'percent'" target="target" value="target.value" aggregate="false"></mm-analytics-targets-progress>
-        <div class="target-progress ng-hide" ng-if="target.type === 'percent'">
-          <div class="progress">
-            <div class="progress-bar" style="width:{{target.value.percent}}%" ng-class="{'ng-hide': target.value.percent === 0}"></div>
-          </div>
-          <div class="goal" style="left:{{target.goal}}%">
-            <label ng-class="{ 'pin-left': target.goal < 15, 'pin-right': target.goal > 85 }">
-              <span translate>analytics.target.monthly_goal</span>
-              {{target.goal}}%
-            </label>
-            <div class="bar"></div>
-          </div>
-          <div class="number">
-            <span class="value">{{target.value.percent}}%</span>
-            <span translate translate-values="target.value">{{target.percentage_count_translation_key || 'targets.count.default'}}</span>
-          </div>
-        </div>
         <div class="count" ng-if="target.type !== 'percent'">
           <div class="goal" ng-if="target.goal >= 0">
             <label translate>analytics.target.monthly_goal</label>
