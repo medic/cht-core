@@ -6,7 +6,7 @@ const settings = require('../settings');
 
 /**
  * @param {string} filters.dataSet
- * @param {integer} filters.from
+ * @param {integer} filters.date.from
  * @param {string=} filters.orgUnit
  *
  * @param options.humanReadable
@@ -15,32 +15,31 @@ module.exports = async (filters, options = {}) => {
   const { dataSet, orgUnit } = filters;
   const { from } = filters.date || {};
   if (!dataSet) {
-    throw { code: 422, message: 'filter "dataSet" is required' };
+    throw { code: 400, message: 'filter "dataSet" is required' };
   }
 
   if (!from) {
-    throw { code: 422, message: 'filter "from" is required' };
+    throw { code: 400, message: 'filter "from" is required' };
   }
 
   const settingsDoc = await settings.get();
-  const dataSetConfig = settingsDoc.dhisDataSets &&
-    Array.isArray(settingsDoc.dhisDataSets) &&
+  const dataSetConfig = Array.isArray(settingsDoc.dhisDataSets) &&
     settingsDoc.dhisDataSets.find(dhisDataSet => dhisDataSet.guid === dataSet);
   if (!dataSetConfig) {
-    throw { code: 422, message: `dataSet "${dataSet}" is not defined` };
+    throw { code: 400, message: `dataSet "${dataSet}" is not defined` };
   }
-  
+
   const dhisTargetDefinitions = getDhisTargetDefinitions(dataSet, settingsDoc);
   if (dhisTargetDefinitions.length === 0) {
-    throw { code: 422, message: `dataSet "${dataSet}" has no dataElements` };
+    throw { code: 400, message: `dataSet "${dataSet}" has no dataElements` };
   }
-  
-  const targetDocsAtInterval = await fetch.targetDocsAtInterval(from);
+
+  const targetDocsInMonth = await fetch.targetDocsInMonth(from);
   const contactsWithOrgUnits = await fetch.contactsWithOrgUnits(orgUnit);
-  const targetOwnerIds = _.uniq(targetDocsAtInterval.map(target => target.owner));
+  const targetOwnerIds = _.uniq(targetDocsInMonth.map(target => target.owner));
   const targetOwners = await fetch.docsWithId(targetOwnerIds);
   const mapContactIdToOrgUnit = mapContactIdToOrgUnits(dataSet, targetOwners, contactsWithOrgUnits);
-  const targetDocsInHierarchy = targetDocsAtInterval.filter(target => !orgUnit || mapContactIdToOrgUnit[target.owner]);
+  const targetDocsInHierarchy = targetDocsInMonth.filter(target => !orgUnit || mapContactIdToOrgUnit[target.owner]);
 
   const result = {
     dataSet,
@@ -68,11 +67,11 @@ const fetch = {
   },
 
   contactsWithOrgUnits: async orgUnit => {
-    const fetched = await db.medic.query('medic-admin/contacts_by_orgunit', { key: orgUnit, include_docs: true });
+    const fetched = await db.medic.query('medic-admin/contacts_by_dhis_orgunit', { key: orgUnit, include_docs: true });
     return _.uniqBy(fetched.rows.map(row => row.doc), '_id');
   },
 
-  targetDocsAtInterval: async timestamp => {
+  targetDocsInMonth: async timestamp => {
     const interval = moment(timestamp).format('YYYY-MM');
     const result = await db.medic.allDocs({
       startkey: `target~${interval}~`,
@@ -91,7 +90,7 @@ const getDhisTargetDefinitions = (dataSet, settingsDoc) => {
     settingsDoc.tasks.targets.items.filter(target =>
       target.dhis &&
       target.dhis.dataElement &&
-      (!target.dhis.dataSet || target.dhis.dataSet === dataSet)
+      (!target.dhis.dataSet || target.dhis.dataSet === dataSet) // optional
     ) || [];
 
   return dhisTargets;
@@ -107,7 +106,7 @@ const mapContactIdToOrgUnits = (dataSet, contacts, contactsWithOrgUnits) => {
   for (const contact of contactsWithOrgUnits) {
     const dhisConfigs = Array.isArray(contact.dhis) ? contact.dhis : [contact.dhis];
     for (const dhisConfig of dhisConfigs) {
-      const dataSetMatch = !dhisConfig.dataSet || dhisConfig.dataSet === dataSet;
+      const dataSetMatch = !dhisConfig.dataSet || dhisConfig.dataSet === dataSet; // optional
       if (dhisConfig.orgUnit && dataSetMatch) {
         if (!result[contact._id]) {
           result[contact._id] = [];
@@ -117,7 +116,7 @@ const mapContactIdToOrgUnits = (dataSet, contacts, contactsWithOrgUnits) => {
       }
     }
   }
-  
+
   for (const contact of contacts) {
     let traverse = contact;
     while (traverse) {
@@ -166,15 +165,15 @@ const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
 
   // add relevant values onto the result
   for (const targetDoc of targetDocs) {
-    const unitsOfOwner = orgUnits[targetDoc.owner];
-    if (!unitsOfOwner) {
+    const orgUnitsOfOwner = orgUnits[targetDoc.owner];
+    if (!orgUnitsOfOwner) {
       continue;
     }
 
-    for (const orgUnit of unitsOfOwner) {
-      for (const target of targetDoc.targets) {
-        const dataElement = mapTargetIdToDhis[target.id] && mapTargetIdToDhis[target.id].dataElement;
-        if (dataElement) {
+    for (const target of targetDoc.targets) {
+      const dataElement = mapTargetIdToDhis[target.id] && mapTargetIdToDhis[target.id].dataElement;
+      if (dataElement) {
+        for (const orgUnit of orgUnitsOfOwner) {
           const dataValueObj = dataValueSet[orgUnit][dataElement];
           if (dataValueObj) {
             dataValueObj.value += target.value.total;
@@ -187,9 +186,13 @@ const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
   return _.flatten(Object.values(dataValueSet).map(dataValueGroup => Object.values(dataValueGroup)));
 };
 
-const makeHumanReadable = (response, dataSetConfig, dhisTargetDefinitions, contacts) => {
-  const { dataValues } = response;
-  response.dataSet = dataSetConfig.label;
+/**
+ * Adjusts the data in @param dhisResult to replace hashes with human readable descriptions.
+ * The dataSet hash, orgUnit hashes, and dataElement hashes are updated.
+ */
+const makeHumanReadable = (dhisResult, dataSetConfig, dhisTargetDefinitions, contacts) => {
+  const { dataValues } = dhisResult;
+  dhisResult.dataSet = dataSetConfig.label;
 
   const mapOrgUnitsToContact = {};
   for (const contact of contacts) {

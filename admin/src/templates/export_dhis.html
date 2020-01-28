@@ -1,12 +1,12 @@
 <div class="col-sm-12">
   <p translate>export.dhis.description</p>
-  <p ng-show="!dataSets" class="text-warning" translate>export.export.dhis.unconfigured</p>
+  <p ng-show="!dataSets" class="text-warning" translate>export.dhis.unconfigured</p>
 
 
   <div ng-show="dataSets">
     <div class="form-group">
       <label for="dataset" translate>export.dhis.dataset.label</label>
-      <select id="dataset" class="form-control small" ng-model="selected.dataSet">
+      <select id="dataset" class="form-control" ng-model="selected.dataSet">
         <option ng-repeat="option in dataSets" value="{{option.guid}}">{{option.label}}</option>
       </select>
       <p class="help-block" translate>export.dhis.dataset.description</p>
@@ -16,7 +16,7 @@
       <label for="place" translate>export.dhis.place.label</label>
       <select id="place" class="form-control" ng-init="selected.place = 'all'" ng-model="selected.place">
         <option value="all" translate>export.dhis.place.all</option>
-        <option ng-repeat="option in places[null]" value="{{option.id}}">{{option.name}}</option>
+        <option ng-repeat="option in places['_all_']" value="{{option.id}}">{{option.name}}</option>
         <option ng-repeat="option in places[selected.dataSet]" value="{{option.id}}">{{option.name}}</option>
       </select>
       <p class="help-block" translate>export.dhis.place.description</p>

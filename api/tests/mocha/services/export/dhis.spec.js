@@ -25,7 +25,7 @@ describe('dhis export service', () => {
   });
   afterEach(() => sinon.restore());
 
-  it('sum all dataElements for interval (nominal)', async () => {
+  it('sums all dataElements for given interval', async () => {
     const chu1 = mockContact('chu1');
     const chu2 = mockContact('chu2');
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
@@ -61,7 +61,7 @@ describe('dhis export service', () => {
         {
           dataElement: 'e22tIwy1nKR',
           attributeOptionCombo: 'HllvX50cXC0',
-          categoryOptionCombo: 'HllvX50cXC0',  
+          categoryOptionCombo: 'HllvX50cXC0',
           orgUnit: 'ou-chu1',
           value: 8,
         },
@@ -82,7 +82,7 @@ describe('dhis export service', () => {
     });
   });
 
-  it('orgunit without target docs gets 0s', async () => {
+  it('yields 0s for an orgunit without any target docs', async () => {
     const chu = mockContact('chu');
     await medic.bulkDocs([defaultConfigSettings, chu]);
     const actual = await service({
@@ -112,9 +112,9 @@ describe('dhis export service', () => {
       period: '200002',
     });
   });
-  
-  describe('humanReadable', () => {
-    it('single dataSet, single', async () => {
+
+  describe('human readable', () => {
+    it('single dataSet, single orgUnit', async () => {
       const chu = mockContact('chu');
       await medic.bulkDocs([
         defaultConfigSettings,
@@ -153,7 +153,7 @@ describe('dhis export service', () => {
         settingsWithMultipleDatasets,
         mockContact('chu', { dhis: dhisConfig }),
       ]);
-  
+
       const ds1 = await service({
         date: { from: moment(NOW).valueOf() },
         dataSet: 'ds-1',
@@ -179,7 +179,7 @@ describe('dhis export service', () => {
     });
   });
 
-  it('orgUnit filter', async () => {
+  it('filters data by orgUnit', async () => {
     const chu1 = mockContact('chu1');
     const chu2 = mockContact('chu2');
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
@@ -223,7 +223,7 @@ describe('dhis export service', () => {
     });
   });
 
-  it('placeid without contacts is empty', async () => {
+  it('filtered data is empty when placeid has no contacts', async () => {
     await medic.bulkDocs([
       defaultConfigSettings,
       mockContact('chu', { dhis: { orgUnit: 'ou', dataSet: 'other' }}),
@@ -239,7 +239,7 @@ describe('dhis export service', () => {
     expect(actual.dataValues).to.deep.eq([]);
   });
 
-  it('contact without matching dataSet is not included', async () => {
+  it('filtered data does not include contact when matching dataSet is not included', async () => {
     await medic.bulkDocs([
       defaultConfigSettings,
       mockContact('chu', { dhis: { orgUnit: 'ou', dataSet: 'other' }}),
@@ -255,7 +255,7 @@ describe('dhis export service', () => {
     expect(actual.dataValues).to.deep.eq([]);
   });
 
-  it('contact with multiple orgUnits', async () => {
+  it('filter data for contact with multiple orgUnits', async () => {
     const dhisConfig = [
       { orgUnit: 'ou-1', dataSet: 'ds-1' },
       { orgUnit: 'ou-2', dataSet: 'ds-2' },
@@ -325,7 +325,7 @@ describe('dhis export service', () => {
     });
   });
 
-  it('single target doc has owner with two org units in hierarchy', async () => {
+  it('filters data for single target doc with two org units in hierarchy', async () => {
     const hc = mockContact('hc', { dhis: { orgUnit: 'alt' } });
     const chu = mockContact('chu', { parent: { _id: hc._id }});
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu._id, parent: chu.parent } });

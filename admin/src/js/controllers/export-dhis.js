@@ -12,48 +12,52 @@ angular.module('controllers').controller('ExportDhisCtrl',
     'ngInject';
 
     const MONTHS_TO_SHOW = 6;
+    const ALL_DATASETS = '_all_';
 
+    $scope.selected = {};
     Settings().then(settingsDoc => {
-      $scope.dataSets = settingsDoc.dhisDataSets && Array.isArray(settingsDoc.dhisDataSets) && settingsDoc.dhisDataSets;
+      $scope.dataSets = Array.isArray(settingsDoc.dhisDataSets) && settingsDoc.dhisDataSets;
       $scope.selected.dataSet = $scope.dataSets[0] && $scope.dataSets[0].guid;
     });
 
-    DB()
-      .query('medic-admin/contacts_by_orgunit', { include_docs: true })
-      .then(function(result) {
-        const places = _.uniqBy(result.rows.map(row => row.doc), '_id');
-        
-        const mapDataSetToPlaces = {};
-        for (const place of places) {
-          const orgUnitConfigs = Array.isArray(place.dhis) ? place.dhis : [place.dhis];
-          for (const orgUnitConfig of orgUnitConfigs) {
-            const dataSet = orgUnitConfig.dataSet || null;
-            if (!mapDataSetToPlaces[dataSet]) {
-              mapDataSetToPlaces[dataSet] = [];
+    const loadPlaces = () => (
+      DB()
+        .query('medic-admin/contacts_by_dhis_orgunit', { include_docs: true })
+        .then(function(result) {
+          const places = _.uniqBy(result.rows.map(row => row.doc), '_id');
+
+          const mapDataSetToPlaces = {};
+          for (const place of places) {
+            const orgUnitConfigs = Array.isArray(place.dhis) ? place.dhis : [place.dhis];
+            for (const orgUnitConfig of orgUnitConfigs) {
+              const dataSet = orgUnitConfig.dataSet || ALL_DATASETS;
+              if (!mapDataSetToPlaces[dataSet]) {
+                mapDataSetToPlaces[dataSet] = [];
+              }
+
+              mapDataSetToPlaces[dataSet].push({
+                id: orgUnitConfig.orgUnit,
+                name: place.name,
+              });
             }
-
-            mapDataSetToPlaces[dataSet].push({
-              id: orgUnitConfig.orgUnit,
-              name: place.name,
-            });
           }
-        }
 
-        for (const place of Object.keys(mapDataSetToPlaces)) {
-          _.sortBy(mapDataSetToPlaces[place], ['name']);
-        }
+          for (const place of Object.keys(mapDataSetToPlaces)) {
+            mapDataSetToPlaces[place] = _.sortBy(mapDataSetToPlaces[place], ['name']);
+          }
 
-        $scope.places = mapDataSetToPlaces;
-      });
+          $scope.places = mapDataSetToPlaces;
+        })
+    );
+    loadPlaces();
 
-    $scope.periods = [...Array(MONTHS_TO_SHOW).keys()].map(val => {
-      const period = moment().subtract(val, 'months');
+    $scope.periods = [...Array(MONTHS_TO_SHOW).keys()].map(monthCount => {
+      const period = moment().subtract(monthCount, 'months');
       return {
         timestamp: period.valueOf().toString(),
         description: period.format('MMMM, YYYY'),
       };
     });
-    $scope.selected = {};
 
     $scope.export = () => {
       const { dataSet, period, place } = $scope.selected;

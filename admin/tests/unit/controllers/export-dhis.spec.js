@@ -30,7 +30,7 @@ describe('dhis2 export controller', () => {
       $provide.value('Settings', Settings);
       $provide.value('$scope', scope);
     });
-    
+
     inject(($controller, _$rootScope_) => {
       scope = _$rootScope_.$new();
       getService = async () => {
@@ -40,14 +40,14 @@ describe('dhis2 export controller', () => {
         });
         await Settings.returnValues[0];
         await query.returnValues[0];
-        
+
         return result;
       };
     });
   });
   afterEach(() => { sinon.restore(); });
 
-  it('load scope for valid config', async () => {
+  it('loads scope for valid config', async () => {
     await getService();
     expect(scope.dataSets).to.deep.eq(dhisDataSets);
     expect(scope.periods.map(period => period.description)).to.deep.eq([
@@ -58,8 +58,8 @@ describe('dhis2 export controller', () => {
       'September, 1999',
       'August, 1999',
     ]);
-    
-    expect(scope.places).to.deep.eq({ 
+
+    expect(scope.places).to.deep.eq({
       null: [{ id: 'ou-p2', name: 'p2' }],
       [dataSet]: [
         { id: 'ou-p1', name: 'p1' },
@@ -71,7 +71,7 @@ describe('dhis2 export controller', () => {
     expect(scope.selected).to.deep.eq({ dataSet });
   });
 
-  it('no dhis configuration', async () => {
+  it('loads defaults when there is no dhis configuration', async () => {
     Settings.resolves({});
     await getService();
     expect(!!scope.dataSets).to.be.false;
@@ -90,5 +90,5 @@ describe('dhis2 export controller', () => {
       },
     }, assign),
   });
-  
+
 });
