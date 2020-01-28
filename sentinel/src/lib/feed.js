@@ -10,7 +10,7 @@ const IDS_TO_IGNORE = /^_design\/|-info$/;
 
 const RETRY_TIMEOUT = 60000; // 1 minute
 const PROGRESS_REPORT_INTERVAL = 500; // items
-const MAX_MEMORY_USED = 50 * 1024 * 1024; // 50 MB
+const MAX_QUEUE_SIZE = 100;
 
 let init;
 let request;
@@ -45,14 +45,14 @@ const registerFeed = seq => {
       if (!change.id.match(IDS_TO_IGNORE) &&
           !tombstoneUtils.isTombstoneId(change.id)) {
 
-        const heapUsed = process.memoryUsage().heapUsed;
-        if (heapUsed >= MAX_MEMORY_USED) {
-          logger.info(`transitions: memory used ${parseInt(heapUsed / 1024 / 1024)} MB greater than ${parseInt(MAX_MEMORY_USED / 1024 / 1024)} MB, we stop listening`);
+        const queueSize = changeQueue.length();
+        if (queueSize >= MAX_QUEUE_SIZE) {
+          logger.info(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
           request.cancel();
           init = null;
           lastSeq = change.seq;
         }
-
+        
         listener(change);
       }
     })
@@ -189,4 +189,6 @@ module.exports = {
   // exposed for testing
   _changeQueue: changeQueue,
   _deleteReadDocs: deleteReadDocs,
+  _transitionsLib: transitionsLib,
+  _listener: listener,
 };
