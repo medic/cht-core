@@ -271,21 +271,25 @@ const singlePush = (taskDoc, medicDoc, config, key) => Promise.resolve()
   });
 
 const removeInvalidTasks = invalidTasks => {
-  logger.warn(`Found ${invalidTasks.length} tasks that could not have their associated records loaded:`);
+  if (invalidTasks.length) {
+    logger.warn(`Found ${invalidTasks.length} tasks that could not have their associated records loaded:`);
 
-  const toDelete = [];
+    const toDelete = [];
 
-  invalidTasks.forEach(({task, row}) => {
-    logger.warn(`Task ${task._id} failed to load ${task.doc_id} because:`);
-    logger.warn(JSON.stringify(row, null, 2));
+    invalidTasks.forEach(({task, row}) => {
+      logger.warn(`Task ${task._id} failed to load ${task.doc_id} because:`);
+      logger.warn(JSON.stringify(row, null, 2));
 
-    task._deleted = true;
-    toDelete.push(task);
-  });
+      task._deleted = true;
+      toDelete.push(task);
+    });
 
-  logger.warn('Deleting invalid tasks');
+    logger.warn('Deleting invalid tasks');
 
-  return db.sentinel.bulkDocs(toDelete);
+    return db.sentinel.bulkDocs(toDelete);
+  } else {
+    return Promise.resolve();
+  }
 };
 
 // Coordinates the attempted pushing of documents that need it
