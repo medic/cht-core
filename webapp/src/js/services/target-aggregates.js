@@ -93,9 +93,8 @@ angular.module('inboxServices').factory('TargetAggregates',
     const hydrateAggregatesValues = (aggregates, targetDocs) => {
       targetDocs.forEach(targetDoc => {
         aggregates.forEach(aggregate => {
-          const placeholderValue = { total: 0, pass: 0, placeholder: true };
           const targetValue = targetDoc.targets.find(target => target.id === aggregate.id);
-          const value = targetValue && targetValue.value || placeholderValue;
+          const value = targetValue && targetValue.value || { total: 0, pass: 0, placeholder: true };
 
           value.percent = aggregate.isPercent ?
             calculatePercent(value) : calculatePercent({ total: aggregate.goal, pass: value.pass });
