@@ -1,4 +1,5 @@
 const moment = require('moment');
+const _ = require('underscore');
 
 angular.module('inboxServices').factory('TargetAggregates',
   function(
@@ -24,22 +25,26 @@ angular.module('inboxServices').factory('TargetAggregates',
       return moment(targetInterval.end).format('Y-MM');
     };
 
-    const fetchTargetDocs = (settings) => {
+    const fetchLatestTargetDocs = (settings) => {
       const tag = getCurrentIntervalTag(settings);
       const opts = {
-        start_key: `target~${tag}`,
-        end_key: `target~${tag}\ufff0`,
+        start_key: `target~${tag}~`,
+        end_key: `target~${tag}~\ufff0`,
         include_docs: true,
       };
 
-      return DB().allDocs(opts).then(result => result && result.rows && result.rows.map(row => row.doc));
+      return DB()
+        .allDocs(opts)
+        .then(result => result &&
+                        result.rows &&
+                        result.rows.map(row => row.doc).filter(doc => doc));
     };
 
-    const fetchTargetDoc = (settings, contactUuid) => {
+    const fetchLatestTargetDoc = (settings, contactUuid) => {
       const tag = getCurrentIntervalTag(settings);
       const opts = {
-        start_key: `target~${tag}~${contactUuid}`,
-        end_key: `target~${tag}~${contactUuid}\ufff0`,
+        start_key: `target~${tag}~${contactUuid}~`,
+        end_key: `target~${tag}~${contactUuid}~\ufff0`,
         include_docs: true
       };
 
@@ -49,47 +54,48 @@ angular.module('inboxServices').factory('TargetAggregates',
     };
 
     const getTargetsConfig = (settings, aggregatesOnly = false) => {
-      return settings.tasks.targets.items.filter(target => aggregatesOnly ? target.aggregate : true);  // test here
+      return settings &&
+             settings.tasks &&
+             settings.tasks.targets &&
+             settings.tasks.targets.items.filter(target => aggregatesOnly ? target.aggregate : true) ||
+             [];
     };
 
     const calculatePercent = (value) => (value && value.total) ? Math.round(value.pass * 100 / value.total) : 0;
 
-    const aggregateTargets = (targetDocs, supervisees, settings) => {
-      const targetsConfig = getTargetsConfig(settings);
+    const getAggregate = targetConfig => {
+      const aggregate = targetConfig;
 
-      const aggregates = [];
-      const validTargetDocs = [];
+      aggregate.aggregateValue = { pass: 0, total: 0 };
+      aggregate.values = [];
+      aggregate.hasGoal = targetConfig.goal > 0;
+      aggregate.isPercent = targetConfig.type === 'percent';
+      aggregate.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
 
-      targetsConfig.forEach(targetConfig => {
-        targetConfig.aggregateValue = { pass: 0, total: 0 };
-        targetConfig.values = [];
+      return aggregate;
+    };
 
-        targetConfig.hasGoal = targetConfig.goal > 0;
-        targetConfig.isPercent = targetConfig.type === 'percent';
-        targetConfig.goalText = targetConfig.goal + (targetConfig.isPercent ? '%': '');
-        targetConfig.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
-
-        aggregates.push(targetConfig);
-      });
-
-      supervisees.forEach(supervisee => {
-        let targetDoc = targetDocs.find(doc => doc.owner === supervisee._id);
+    const getRelevantTargetDocs = (targetDocs, contacts) => {
+      return contacts.map(contact => {
+        let targetDoc = targetDocs.find(doc => doc.owner === contact._id);
         if (!targetDoc) {
           targetDoc = {
             placeholder: true,
-            owner: supervisee._id,
+            owner: contact._id,
             targets: []
           };
         }
-
-        validTargetDocs.push(targetDoc);
+        targetDoc.contact = contact;
+        return targetDoc;
       });
+    };
 
-      validTargetDocs.forEach(targetDoc => {
+    const hydrateAggregatesValues = (aggregates, targetDocs) => {
+      targetDocs.forEach(targetDoc => {
         aggregates.forEach(aggregate => {
           const placeholderValue = { total: 0, pass: 0, placeholder: true };
-          const targetDocValue = targetDoc.targets.find(target => target.id === aggregate.id);
-          const value = targetDocValue && targetDocValue.value || placeholderValue;
+          const targetValue = targetDoc.targets.find(target => target.id === aggregate.id);
+          const value = targetValue && targetValue.value || placeholderValue;
 
           value.percent = aggregate.isPercent ?
             calculatePercent(value) : calculatePercent({ total: aggregate.goal, pass: value.pass });
@@ -105,24 +111,34 @@ angular.module('inboxServices').factory('TargetAggregates',
           }
 
           aggregate.values.push({
-            contact: supervisees.find(contact => contact._id === targetDoc.owner),
+            contact: targetDoc.contact,
             value: value
           });
         });
       });
+    };
 
-      return aggregates.map(aggregate => {
+    const calculatePercentages = (aggregates, relevantTargetDocs) => {
+      aggregates.forEach(aggregate => {
         if (!aggregate.hasGoal && aggregate.isPercent) {
           aggregate.aggregateValue.percent = calculatePercent(aggregate.aggregateValue);
         }
 
         if (aggregate.hasGoal) {
-          aggregate.aggregateValue.total = validTargetDocs.length;
+          aggregate.aggregateValue.total = relevantTargetDocs.length;
           aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass === aggregate.aggregateValue.total;
         }
-
-        return aggregate;
       });
+    };
+
+    const aggregateTargets = (latestTargetDocs, contacts, targetsConfig) => {
+      const relevantTargetDocs = getRelevantTargetDocs(latestTargetDocs, contacts);
+      const aggregates = targetsConfig.map(getAggregate);
+
+      hydrateAggregatesValues(aggregates, relevantTargetDocs);
+      calculatePercentages(aggregates, relevantTargetDocs);
+
+      return aggregates;
     };
 
     const getTargetDetails = (targetDoc, settings) => {
@@ -139,47 +155,61 @@ angular.module('inboxServices').factory('TargetAggregates',
       return targetDoc;
     };
 
-    const searchForContacts = (filters, skip = 0, contacts = []) => {
+    const searchForContacts = (userSettings, filters, skip = 0, contacts = []) => {
       const limit = 100;
-      return Search('contacts', filters, { limit, skip }).then(results => {
-        contacts = contacts.concat(...results);
-        if (results.length < limit) {
-          return contacts;
-        }
 
-        return searchForContacts(filters, skip + limit, contacts);
-      });
+      return Search('contacts', filters, { limit, skip })
+        .then(results => {
+          const contactIds = results
+            .filter(place => place.lineage && place.lineage[0] === userSettings.facility_id && place.contact)
+            .map(place => place.contact);
+
+          return GetDataRecords(contactIds).then(newContacts => {
+            contacts.push(...newContacts);
+
+            if (results.length < limit) {
+              return contacts;
+            }
+
+            return searchForContacts(userSettings, filters, skip + limit, contacts);
+          });
+        });
     };
 
-    const getSupervisees = () => {
+    const getSupervisedContacts = () => {
       const alphabeticalSort = (a, b) => String(a.name).localeCompare(String(b.name));
+      const facilityError = () => {
+        const err =  new Error('Your user does not have an associated contact, or does not have access to the ' +
+                               'associated contact.');
+        err.translationKey = 'analytics.target.aggreagates.error.no.contact';
+        return err;
+      };
 
       return UserSettings()
         .then(userSettings => {
           if (!userSettings.facility_id) {
-            return;
+            throw facilityError();
           }
 
           return GetDataRecords(userSettings.facility_id)
             .then(homePlaceSummary => {
               if (!homePlaceSummary) {
-                throw new Error('Unable to load target aggregates: facility not found');
+                throw facilityError();
               }
               const homePlaceType = ContactTypes.getTypeId(homePlaceSummary);
               return ContactTypes.getChildren(homePlaceType);
             })
             .then(childTypes => {
               childTypes = childTypes.filter(type => !ContactTypes.isPersonType(type));
+
+              if (!childTypes.length) {
+                return [];
+              }
+
               const filters = {  types: { selected: childTypes.map(type => type.id) } };
-              return searchForContacts(filters);
+              return searchForContacts(userSettings, filters);
             })
-            .then(childPlacesSummaries => {
-              return childPlacesSummaries
-                .filter(place => place.lineage && place.lineage[0] === userSettings.facility_id && place.contact)
-                .map(place => place.contact);
-            })
-            .then(contactIds => GetDataRecords(contactIds))
-            .then(supervisees => supervisees.sort(alphabeticalSort));
+            .then(contacts => contacts.sort(alphabeticalSort));
         });
     };
 
@@ -197,25 +227,37 @@ angular.module('inboxServices').factory('TargetAggregates',
     };
 
     service.getAggregates = () => {
-      return $q
-        .all([getSupervisees(), Settings()])
-        .then(([ supervisees, settings ]) => {
-          return fetchTargetDocs(settings).then(targetDocs => aggregateTargets(targetDocs, supervisees, settings));
-        });
+      return Settings().then(settings => {
+        const targetsConfig = getTargetsConfig(settings, true);
+        if (!targetsConfig.length) {
+          return [];
+        }
+
+        return $q
+          .all([ getSupervisedContacts(), fetchLatestTargetDocs(settings) ])
+          .then(([ contacts, latestTargetDocs ]) => aggregateTargets(latestTargetDocs, contacts, targetsConfig));
+      });
     };
 
     service.getAggregateDetails = (targetId, aggregates) => {
-      if (!targetId) {
+      if (!targetId || !aggregates) {
         return;
       }
-      const aggregate = aggregates.find(aggregate => aggregate.id === targetId);
-      return aggregate;
+      return aggregates.find(aggregate => aggregate.id === targetId);
     };
 
     service.getTargets = (contact) => {
-      const contactUuid = contact._id || contact;
+      if (!contact) {
+        return;
+      }
+
+      const contactUuid = _.isString(contact) ? contact : contact._id;
+      if (!contactUuid) {
+        return;
+      }
+
       return Settings().then(settings => {
-        return fetchTargetDoc(settings, contactUuid).then(targetDoc => getTargetDetails(targetDoc, settings));
+        return fetchLatestTargetDoc(settings, contactUuid).then(targetDoc => getTargetDetails(targetDoc, settings));
       });
     };
 

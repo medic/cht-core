@@ -10,11 +10,7 @@ angular.module('inboxServices').factory('TargetAggregatesActions',
     return (dispatch) => {
 
       const setSelectedTarget = (selected) => {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_TARGET, 'selected', selected));
-      };
-
-      const setSupervisees = (supervisees) => {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SUPERVISEES, 'supervisees', supervisees));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_TARGET_AGGREGATE, 'selected', selected));
       };
 
       const setTargetAggregates = (aggregates) => {
@@ -23,10 +19,14 @@ angular.module('inboxServices').factory('TargetAggregatesActions',
         );
       };
 
+      const setError = (error) => {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_TARGET_AGGREGATES_ERROR, 'error', error));
+      };
+
       return {
         setTargetAggregates,
-        setSupervisees,
         setSelectedTarget,
+        setError,
       };
     };
   }

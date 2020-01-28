@@ -33,7 +33,7 @@
             return settings.tasks &&
                    settings.tasks.targets &&
                    settings.tasks.targets.enabled &&
-                   caAggregateTargets; // check if there are targets to aggregate!!
+                   caAggregateTargets;
           }
         };
       };

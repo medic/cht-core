@@ -27,20 +27,12 @@ angular.module('controllers').controller('UsersCtrl',
         .then(function(settings) {
           $scope.users = _.pluck(settings.rows, 'doc');
           $scope.loading = false;
-          prepareUsers();
         })
         .catch(function(err) {
           $scope.error = true;
           $scope.loading = false;
           $log.error('Error fetching users', err);
         });
-    };
-
-    const prepareUsers = () => {
-      const placesIds = $scope.users.map(user => user.facility_id);
-      return DB().allDocs({ keys: placesIds, include_docs: true }).then(result => {
-        result.rows.forEach((row, idx) => $scope.users[idx].facility = row.doc);
-      });
     };
 
     $scope.deleteUserPrepare = function(user, $event) {
