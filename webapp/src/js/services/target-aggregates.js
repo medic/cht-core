@@ -115,27 +115,30 @@ angular.module('inboxServices').factory('TargetAggregates',
           });
         });
       });
+
+      return aggregates;
     };
 
-    const calculatePercentages = (aggregates, relevantTargetDocs) => {
+    const calculatePercentages = (aggregates, total) => {
       aggregates.forEach(aggregate => {
         if (!aggregate.hasGoal && aggregate.isPercent) {
           aggregate.aggregateValue.percent = calculatePercent(aggregate.aggregateValue);
         }
 
         if (aggregate.hasGoal) {
-          aggregate.aggregateValue.total = relevantTargetDocs.length;
+          aggregate.aggregateValue.total = total;
           aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass === aggregate.aggregateValue.total;
         }
       });
+      return aggregates;
     };
 
     const aggregateTargets = (latestTargetDocs, contacts, targetsConfig) => {
       const relevantTargetDocs = getRelevantTargetDocs(latestTargetDocs, contacts);
-      const aggregates = targetsConfig.map(getAggregate);
+      let aggregates = targetsConfig.map(getAggregate);
 
-      hydrateAggregatesValues(aggregates, relevantTargetDocs);
-      calculatePercentages(aggregates, relevantTargetDocs);
+      aggregates = hydrateAggregatesValues(aggregates, relevantTargetDocs);
+      aggregates = calculatePercentages(aggregates, relevantTargetDocs.length);
 
       return aggregates;
     };
