@@ -60,7 +60,7 @@ describe('dhis2 export controller', () => {
     ]);
 
     expect(scope.places).to.deep.eq({
-      null: [{ id: 'ou-p2', name: 'p2' }],
+      '_all_': [{ id: 'ou-p2', name: 'p2' }],
       [dataSet]: [
         { id: 'ou-p1', name: 'p1' },
         { id: 'ou-p3', name: 'p3' }
