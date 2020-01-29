@@ -150,7 +150,7 @@ describe('Contacts store', () => {
       });
     });
 
-    it('should get and store targets', () => {
+    it('should get and store targets and use in ContactSummary call', () => {
       const targetDoc = {
         _id: 'targets~2020-01~contact~user',
         values: [
@@ -166,6 +166,13 @@ describe('Contacts store', () => {
         const state = getState();
         const contactsState = selectors.getContactsState(state);
         assert.deepEqual(contactsState.selected.targets, targetDoc);
+        assert.equal(contactSummary.callCount, 1);
+        assert.deepEqual(contactSummary.args[0], [
+          { _id: '123' },
+          [],
+          undefined,
+          targetDoc,
+        ]);
       });
     });
 
