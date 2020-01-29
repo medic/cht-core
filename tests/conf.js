@@ -119,7 +119,7 @@ const login = browser => {
     element(by.css('body.bootstrapped')).isPresent();
   return browser.driver.wait(
     bootstrappedCheck,
-    20 * 1000,
+    40 * 1000,
     'Login should be complete within 20 seconds'
   );
 };
