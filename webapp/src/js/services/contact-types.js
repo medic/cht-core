@@ -59,6 +59,9 @@ angular.module('inboxServices').service('ContactTypes', function(
      */
     getTypeId: contact => contactTypesUtils.getTypeId(contact),
 
+    /**
+     *  @returns {boolean} returns whether the provided type is a person type
+     */
     isPersonType: type => contactTypesUtils.isPersonType(type),
   };
 });

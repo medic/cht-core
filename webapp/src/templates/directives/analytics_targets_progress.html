@@ -1,5 +1,5 @@
 <div class="target-progress">
-  <div class="progress">
+  <div class="progress" ng-class="{'placeholder': $ctrl.value.placeholder}">
     <div class="progress-bar" ng-if="!$ctrl.aggregate" style="width:{{$ctrl.value.percent}}%" ng-class="{'ng-hide': $ctrl.value.percent === 0}"></div>
     <div class="progress-bar" ng-if="$ctrl.aggregate" style="width:{{$ctrl.value.percent}}%" ng-class="{'no-border': $ctrl.value.percent === 0, 'ng-hide': $ctrl.value.placeholder}">
       <span ng-if="$ctrl.target.type === 'percent'">{{$ctrl.value.percent}}%</span>

@@ -1,5 +1,5 @@
 const moment = require('moment');
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('inboxServices').factory('TargetAggregates',
   function(
@@ -90,55 +90,51 @@ angular.module('inboxServices').factory('TargetAggregates',
       });
     };
 
-    const hydrateAggregatesValues = (aggregates, targetDocs) => {
-      targetDocs.forEach(targetDoc => {
-        aggregates.forEach(aggregate => {
-          const targetValue = targetDoc.targets.find(target => target.id === aggregate.id);
-          const value = targetValue && targetValue.value || { total: 0, pass: 0, placeholder: true };
+    const addAggregatesValues = (aggregate, targetDoc) => {
+      const targetValue = targetDoc.targets.find(target => target.id === aggregate.id);
+      const value = targetValue && targetValue.value || { total: 0, pass: 0, placeholder: true };
 
-          value.percent = aggregate.isPercent ?
-            calculatePercent(value) : calculatePercent({ total: aggregate.goal, pass: value.pass });
+      value.percent = aggregate.isPercent ?
+        calculatePercent(value) : calculatePercent({ total: aggregate.goal, pass: value.pass });
 
-          if (!aggregate.hasGoal) {
-            aggregate.aggregateValue.pass += value.pass;
-            aggregate.aggregateValue.total += value.total;
-          } else {
-            value.goalMet = (aggregate.isPercent ? value.percent : value.pass) >= aggregate.goal;
-            if (value.goalMet) {
-              aggregate.aggregateValue.pass += 1;
-            }
-          }
+      if (!aggregate.hasGoal) {
+        aggregate.aggregateValue.pass += value.pass;
+        aggregate.aggregateValue.total += value.total;
+      } else {
+        value.goalMet = (aggregate.isPercent ? value.percent : value.pass) >= aggregate.goal;
+        if (value.goalMet) {
+          aggregate.aggregateValue.pass += 1;
+        }
+      }
 
-          aggregate.values.push({
-            contact: targetDoc.contact,
-            value: value
-          });
-        });
+      aggregate.values.push({
+        contact: targetDoc.contact,
+        value: value
       });
-
-      return aggregates;
     };
 
-    const calculatePercentages = (aggregates, total) => {
-      aggregates.forEach(aggregate => {
-        if (!aggregate.hasGoal && aggregate.isPercent) {
-          aggregate.aggregateValue.percent = calculatePercent(aggregate.aggregateValue);
-        }
+    const calculatePercentages = (aggregate, total) => {
+      if (!aggregate.hasGoal && aggregate.isPercent) {
+        aggregate.aggregateValue.percent = calculatePercent(aggregate.aggregateValue);
+      }
 
-        if (aggregate.hasGoal) {
-          aggregate.aggregateValue.total = total;
-          aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass === aggregate.aggregateValue.total;
-        }
-      });
-      return aggregates;
+      if (aggregate.hasGoal) {
+        aggregate.aggregateValue.total = total;
+        aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass === aggregate.aggregateValue.total;
+      }
     };
 
     const aggregateTargets = (latestTargetDocs, contacts, targetsConfig) => {
       const relevantTargetDocs = getRelevantTargetDocs(latestTargetDocs, contacts);
-      let aggregates = targetsConfig.map(getAggregate);
+      const aggregates = targetsConfig.map(getAggregate);
 
-      aggregates = hydrateAggregatesValues(aggregates, relevantTargetDocs);
-      aggregates = calculatePercentages(aggregates, relevantTargetDocs.length);
+      relevantTargetDocs.forEach(targetDoc => {
+        aggregates.forEach(aggregate => {
+          addAggregatesValues(aggregate, targetDoc);
+        });
+      });
+
+      aggregates.forEach(aggregate => calculatePercentages(aggregate, relevantTargetDocs.length));
 
       return aggregates;
     };

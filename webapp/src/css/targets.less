@@ -158,6 +158,11 @@
     .target-progress {
       .progress {
         margin: 20px 0 0 0;
+
+        &.placeholder {
+          background: @gray-ultra-light;
+        }
+
         .progress-bar {
           font-weight: bold;
           text-align: left;
@@ -183,7 +188,6 @@
       background-color: @targets-above-goal;
     }
   }
-
 }
 
 @media (max-width: 400px) {
