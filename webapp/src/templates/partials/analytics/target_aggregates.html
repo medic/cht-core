@@ -31,7 +31,7 @@
         </a>
       </li>
     </ul>
-    <p ng-show="analyticsTargetAggregatesCtrl.error" class="alert alert-danger" role="alert" translate>analytics.target.aggreagates.error</p>
+    <p ng-show="analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggreagates.error</p>
     <p class="loading-status" ng-show="!analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.loading && !analyticsTargetAggregatesCtrl.aggregates.length" translate>analytics.target.aggreagates.no.targets</p>
     <div class="loader" ng-show="analyticsTargetAggregatesCtrl.loading"></div>
     <div class="padding"></div>

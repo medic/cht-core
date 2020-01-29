@@ -42,11 +42,13 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
         $translate.instant(aggregateDetails.translation_key) : TranslateFrom(aggregateDetails.title);
       ctrl.setTitle(title);
       ctrl.setSelectedTarget(aggregateDetails);
+      ctrl.setError(null);
     } else {
       $log.error(`Error selecting target: target with id ${$stateParams.id} not found`);
       const err = new Error('Error selecting target: no target found');
       err.translationKey = 'analytics.target.aggreagates.error.not.found';
       ctrl.setError(err);
+      ctrl.setSelectedTarget(null);
     }
   } else {
     ctrl.setShowContent(false);
