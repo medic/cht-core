@@ -367,7 +367,7 @@ describe('Target aggregates', () => {
       });
     });
 
-    it('should redirect to contacts detail when clicking list item', () => {
+    it('should redirect to contacts detail when clicking list item and display contact summary target card', () => {
       const targetsConfig = [
         { id: 'a_target', type: 'count', title: genTitle('what a target!'), aggregate: true },
         { id: 'b_target', type: 'percent', title: genTitle('the most target'), aggregate: true },
