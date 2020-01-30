@@ -123,7 +123,7 @@ const getRedirectUrl = (userCtx, req) => {
     try {
       redirect = new URL(params.get('redirect'));
     } catch (e) {
-      redirect = { origin: ''}
+      redirect = { origin: ''};
     }
     if (url.origin === redirect.origin){
       return redirect.toString();
