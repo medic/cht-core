@@ -118,9 +118,9 @@ const setLocaleCookie = (res, locale) => {
 const getRedirectUrl = (userCtx, req) => {
   if (req.headers.referer){
     try {
-      const url = new url.URL(req.headers.referer);
-      const redirect = new url.URL(url.searchParams.get('redirect'));
-      if (url.origin === redirect.origin){
+      const referer = new url.URL(req.headers.referer);
+      const redirect = new url.URL(referer.searchParams.get('redirect'));
+      if (referer.origin === redirect.origin){
         return redirect.toString();
       }
     } catch (e) {
