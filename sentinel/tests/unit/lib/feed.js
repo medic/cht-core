@@ -316,7 +316,7 @@ describe('feed', () => {
       sinon.stub(metadata, 'update').resolves();
       sinon.stub(feed._transitionsLib, 'processChange').callsArgWith(1);
 
-      feed._listener();
+      feed._enqueue();
 
       feed._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
@@ -335,7 +335,7 @@ describe('feed', () => {
       sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
       
-      feed._listener({ id: 'somechange', seq: 55, deleted: true });
+      feed._enqueue({ id: 'somechange', seq: 55, deleted: true });
 
       feed._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
@@ -360,7 +360,7 @@ describe('feed', () => {
       sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
 
-      feed._listener({ id: 'somechange', seq: 55, deleted: true });
+      feed._enqueue({ id: 'somechange', seq: 55, deleted: true });
 
       feed._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
@@ -382,7 +382,7 @@ describe('feed', () => {
       sinon.stub(metadata, 'update').resolves();
       sinon.stub(feed._transitionsLib, 'processChange').callsArgWith(1);
 
-      feed._listener({ id: 'somechange', seq: 55 });
+      feed._enqueue({ id: 'somechange', seq: 55 });
 
       feed._changeQueue.drain(() => {
         return Promise.resolve().then(() => {

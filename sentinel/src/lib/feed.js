@@ -12,13 +12,11 @@ const RETRY_TIMEOUT = 60000; // 1 minute
 const PROGRESS_REPORT_INTERVAL = 500; // items
 const MAX_QUEUE_SIZE = 100;
 
-let init;
 let request;
 let processed = 0;
 let lastSeq;
-let lastInQueue = false;
 
-const listener = change => changeQueue.push(change);
+const enqueue = change => changeQueue.push(change);
 
 const updateMetadata = (change, callback) => {
   processed++;
@@ -47,20 +45,21 @@ const registerFeed = seq => {
 
         const queueSize = changeQueue.length();
         if (queueSize >= MAX_QUEUE_SIZE) {
-          logger.info(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
-          request.cancel();
-          init = null;
+          logger.debug(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
           lastSeq = change.seq;
+          request.cancel();
+          request = null;
         }
         
-        listener(change);
+        enqueue(change);
       }
     })
     .on('error', err => {
       logger.error('transitions: error from changes feed: %o', err);
-      init = null;
+      request = null;
       setTimeout(() => listen(), RETRY_TIMEOUT);
     });
+  return request;
 };
 
 const deleteReadDocs = change => {
@@ -105,11 +104,6 @@ const deleteReadDocs = change => {
 
 
 const changeQueue = async.queue((change, callback) => {
-  if (lastSeq && change.seq === lastSeq) {
-    lastSeq = undefined;
-    lastInQueue = true;
-  }
-
   if (!change) {
     return callback();
   }
@@ -144,16 +138,17 @@ const changeQueue = async.queue((change, callback) => {
 });
 
 changeQueue.drain(() => {
-  if (lastInQueue) {
-    lastInQueue = false;
-    logger.info(`transitions: queue drained, we restart the listener`);
-    listen();
-  }
+  logger.info(`transitions: queue drained, we restart the listener`);
+  listen();
 });
 
 const listen = () => {
-  if (!init) {
-    init = getProcessedSeq().then(seq => registerFeed(seq));
+  if (!request) {
+    if (lastSeq) {
+      return registerFeed(lastSeq);
+    } else {
+      return getProcessedSeq().then(seq => registerFeed(seq));
+    }
   }
 };
 
@@ -166,8 +161,7 @@ module.exports = {
    */
   listen: () => {
     logger.info('transitions: processing enabled');
-    listen();
-    return init;
+    return listen();
   },
 
   /**
@@ -175,20 +169,15 @@ module.exports = {
    * by calling listen.
    */
   cancel: () => {
-    // let initialisation finish but check for null init
-    const p = init || Promise.resolve();
-    return p.then(() => {
-      if (request) {
-        request.cancel();
-      }
-      init = null;
+    if (request) {
+      request.cancel();
       request = null;
-    });
+    }
   },
 
   // exposed for testing
   _changeQueue: changeQueue,
   _deleteReadDocs: deleteReadDocs,
   _transitionsLib: transitionsLib,
-  _listener: listener,
+  _enqueue: enqueue,
 };
