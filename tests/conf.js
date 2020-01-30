@@ -104,7 +104,7 @@ const listenForApi = () => {
 
 const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(
-    `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
   );
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
@@ -119,7 +119,7 @@ const login = browser => {
     element(by.css('body.bootstrapped')).isPresent();
   return browser.driver.wait(
     bootstrappedCheck,
-    40 * 1000,
+    20 * 1000,
     'Login should be complete within 20 seconds'
   );
 };
