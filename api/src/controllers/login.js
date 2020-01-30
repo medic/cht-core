@@ -117,16 +117,14 @@ const setLocaleCookie = (res, locale) => {
 
 const getRedirectUrl = (userCtx, req) => {
   if (req.headers.referer){
-    const url = new URL(req.headers.referer);
-    const params = new URLSearchParams(url.search);
-    let redirect;
     try {
-      redirect = new URL(params.get('redirect'));
+      const url = new url.URL(req.headers.referer);
+      const redirect = new url.URL(url.searchParams.get('redirect'));
+      if (url.origin === redirect.origin){
+        return redirect.toString();
+      }
     } catch (e) {
-      redirect = { origin: ''};
-    }
-    if (url.origin === redirect.origin){
-      return redirect.toString();
+      logger.error(`Referrer error: ${e}`);
     }
   }
   // https://github.com/medic/medic/issues/5035
