@@ -6,6 +6,7 @@ const helper = require('../helper');
 const moment = require('moment');
 const uuid = require('uuid');
 const auth = require('../auth')();
+const _ = require('underscore');
 
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);
@@ -192,10 +193,10 @@ describe('Target aggregates', () => {
       return [place, contact];
     };
 
-    const docs = [
+    const docs = _.flatten([
       Array.from({ length: 5 }).map((e, i) => genPlace(parentPlace, i)),
       Array.from({ length: 5 }).map(() => genPlace(otherParentPlace)),
-    ].flat(2);
+    ]);
 
     const genTitle = (title) => ({ en: title });
 
@@ -318,7 +319,7 @@ describe('Target aggregates', () => {
         }
       };
 
-      const targetDocs = docs
+      const targetDocs = _.flatten(docs
         .filter(doc => doc.type === 'person')
         .map(contact => {
           const genTarget = (target) => {
@@ -335,8 +336,7 @@ describe('Target aggregates', () => {
             owner: contact._id,
             user: 'irrelevant',
           }));
-        })
-        .flat(1);
+        }), true);
 
       browser.wait(() => utils.saveDocs(targetDocs).then(() => true));
 
