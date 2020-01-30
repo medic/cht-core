@@ -54,19 +54,19 @@ describe('TargetAggregates service', () => {
   afterEach(() => sinon.restore());
 
   describe('isEnabled', () => {
+    it('should return false when user does not have permission', () => {
+      auth.rejects();
+      return service.isEnabled().then(result => {
+        chai.expect(result).to.equal(false);
+      });
+    });
+
     it('should return true when user has permission', () => {
       auth.resolves();
       return service.isEnabled().then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(auth.callCount).to.equal(1);
         chai.expect(auth.args[0]).to.deep.equal(['can_aggregate_targets']);
-      });
-    });
-
-    it('should return false when user does not have permission', () => {
-      auth.rejects();
-      return service.isEnabled().then(result => {
-        chai.expect(result).to.equal(false);
       });
     });
   });
@@ -98,7 +98,7 @@ describe('TargetAggregates service', () => {
       return service
         .getAggregates()
         .then(result => chai.expect(result).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err.translationKey).to.equal('analytics.target.aggreagates.error.no.contact'));
+        .catch(err => chai.expect(err.translationKey).to.equal('analytics.target.aggregates.error.no.contact'));
     });
 
     it('should throw when no home place', () => {
@@ -110,7 +110,7 @@ describe('TargetAggregates service', () => {
       return service
         .getAggregates()
         .then(result => chai.expect(result).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err.translationKey).to.equal('analytics.target.aggreagates.error.no.contact'));
+        .catch(err => chai.expect(err.translationKey).to.equal('analytics.target.aggregates.error.no.contact'));
     });
 
     it('should not search when there are no targets to aggregate', () => {

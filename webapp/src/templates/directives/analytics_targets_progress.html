@@ -6,7 +6,7 @@
       <span ng-if="$ctrl.target.type != 'percent'">{{$ctrl.value.pass}}</span>
     </div>
   </div>
-  <div class="goal" style="padding-left:{{$ctrl.target.goal}}%">
+  <div class="goal" ng-if="$ctrl.target.goal > 0" style="padding-left:{{$ctrl.target.goal}}%">
     <label ng-class="{ 'pin-left': !$ctrl.aggregate && $ctrl.target.goal < 15, 'pin-right': $ctrl.aggregate || $ctrl.target.goal > 85 }">
       <span translate>analytics.target.monthly_goal</span>
       {{$ctrl.target.goal}}<span ng-if="$ctrl.target.type === 'percent'">%</span>

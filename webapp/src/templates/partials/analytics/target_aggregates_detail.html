@@ -1,9 +1,9 @@
 <div class="content-pane right-pane">
   <div class="col-sm-8 item-content empty-selection" ng-show="!analyticsTargetAggregatesDetailCtrl.selected && !analyticsTargetAggregatesDetailCtrl.error">
-    <div translate>no.target.selected</div>
+    <div translate>analytics.target.aggregates.no.target.selected</div>
   </div>
-  <div class="col-sm-8 item-content empty-selection" ng-show="analyticsTargetAggregatesDetailCtrl.error">
-    <div translate>{{analyticsTargetAggregatesDetailCtrl.error.translationKey || 'target.select.error'}}</div>
+  <div class="col-sm-8 item-content empty-selection selection-error" ng-show="analyticsTargetAggregatesDetailCtrl.error">
+    <div translate>{{analyticsTargetAggregatesDetailCtrl.error.translationKey || 'analytics.target.aggregates.select.error'}}</div>
   </div>
   <div class="col-sm-8 item-content" ng-show="analyticsTargetAggregatesDetailCtrl.selected && !analyticsTargetAggregatesDetailCtrl.error">
     <div class="material">
@@ -13,13 +13,13 @@
             <div class="icon" ng-bind-html="analyticsTargetAggregatesDetailCtrl.selected.icon | resourceIcon"></div>
             <div class="heading-content">
               <h2 ng-if="analyticsTargetAggregatesDetailCtrl.selected.translation_key" translate>{{analyticsTargetAggregatesDetailCtrl.selected.translation_key}}</h2>
-              <h2 ng-if="!analyticsTargetAggregatesDetailCtrl.selected.translation_key">{{analyticsTargetAggregatesDetailCtrl.selected.name | translateFrom}}</h2>
+              <h2 ng-if="!analyticsTargetAggregatesDetailCtrl.selected.translation_key">{{analyticsTargetAggregatesDetailCtrl.selected.title | translateFrom}}</h2>
             </div>
           </div>
 
           <div class="cell" ng-if="analyticsTargetAggregatesDetailCtrl.selected.hasGoal">
             <label translate>analytics.target.aggregates.chws.meeting.goal</label>
-            <p translate translate-values="analyticsTargetAggregatesDetailCtrl.selected.aggregateValue">analytics.target.aggreagates.ratio</p>
+            <p translate translate-values="analyticsTargetAggregatesDetailCtrl.selected.aggregateValue">analytics.target.aggregates.ratio</p>
           </div>
           <div class="cell" ng-if="!analyticsTargetAggregatesDetailCtrl.selected.hasGoal">
             <label translate>analytics.target.aggregates.total</label>
@@ -32,7 +32,7 @@
       <div class="aggregate-detail card">
         <div class="action-header cell row">
           <div class="col-xs-6 col-md-4">
-            <h3 translate>analytics.target.aggreagates.reported</h3>
+            <h3 translate>analytics.target.aggregates.reported</h3>
           </div>
           <div class="col-xs-6 col-md-8 text-right">
             <h3 ng-if="analyticsTargetAggregatesDetailCtrl.selected.subtitle_translation_key" translate>
@@ -41,7 +41,7 @@
           </div>
         </div>
         <ul>
-          <li ng-repeat="item in analyticsTargetAggregatesDetailCtrl.selected.values" data-record-id="item.contact._id"
+          <li ng-repeat="item in analyticsTargetAggregatesDetailCtrl.selected.values" data-record-id="{{item.contact._id}}"
               class="content-row target" ng-class="{ 'has-goal': analyticsTargetAggregatesDetailCtrl.selected.hasGoal, 'goal-met': item.value.goalMet }">
             <a href="#contacts/{{item.contact._id}}">
               <div class="col-xs-6 col-md-4">
