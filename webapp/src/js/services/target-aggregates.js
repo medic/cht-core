@@ -153,13 +153,13 @@ angular.module('inboxServices').factory('TargetAggregates',
       return targetDoc;
     };
 
-    const searchForContacts = (userSettings, filters, skip = 0, contacts = []) => {
+    const searchForContacts = (homePlaceSummary, filters, skip = 0, contacts = []) => {
       const limit = 100;
 
       return Search('contacts', filters, { limit, skip })
         .then(results => {
           const contactIds = results
-            .filter(place => place.lineage && place.lineage[0] === userSettings.facility_id && place.contact)
+            .filter(place => place.lineage && place.lineage[0] === homePlaceSummary._id && place.contact)
             .map(place => place.contact);
 
           return GetDataRecords(contactIds).then(newContacts => {
@@ -169,34 +169,25 @@ angular.module('inboxServices').factory('TargetAggregates',
               return contacts;
             }
 
-            return searchForContacts(userSettings, filters, skip + limit, contacts);
+            return searchForContacts(homePlaceSummary, filters, skip + limit, contacts);
           });
         });
     };
 
     const getSupervisedContacts = () => {
       const alphabeticalSort = (a, b) => String(a.name).localeCompare(String(b.name));
-      const facilityError = () => {
-        const err =  new Error('Your user does not have an associated contact, or does not have access to the ' +
-                               'associated contact.');
-        err.translationKey = 'analytics.target.aggreagates.error.no.contact';
-        return err;
-      };
 
-      return UserSettings()
-        .then(userSettings => {
-          if (!userSettings.facility_id) {
-            throw facilityError();
+      return getHomePlace()
+        .then(homePlaceSummary => {
+          if (!homePlaceSummary) {
+            const err =  new Error('Your user does not have an associated contact, or does not have access to the ' +
+                                   'associated contact.');
+            err.translationKey = 'analytics.target.aggregates.error.no.contact';
+            throw err;
           }
-
-          return GetDataRecords(userSettings.facility_id)
-            .then(homePlaceSummary => {
-              if (!homePlaceSummary) {
-                throw facilityError();
-              }
-              const homePlaceType = ContactTypes.getTypeId(homePlaceSummary);
-              return ContactTypes.getChildren(homePlaceType);
-            })
+          const homePlaceType = ContactTypes.getTypeId(homePlaceSummary);
+          return ContactTypes
+            .getChildren(homePlaceType)
             .then(childTypes => {
               childTypes = childTypes.filter(type => !ContactTypes.isPersonType(type));
 
@@ -205,23 +196,26 @@ angular.module('inboxServices').factory('TargetAggregates',
               }
 
               const filters = {  types: { selected: childTypes.map(type => type.id) } };
-              return searchForContacts(userSettings, filters);
+              return searchForContacts(homePlaceSummary, filters);
             })
             .then(contacts => contacts.sort(alphabeticalSort));
         });
     };
 
+    const getHomePlace = () => {
+      return UserSettings().then(userSettings => {
+        if (!userSettings.facility_id) {
+          return;
+        }
+
+        return GetDataRecords(userSettings.facility_id);
+      });
+    };
+
     const service = {};
 
     service.isEnabled = () => {
-      // todo decide whether you want to make this offline only!
-      return $q
-        .all([
-          Auth('can_aggregate_targets').then(() => true).catch(() => false),
-        ])
-        .then(([ canAggregateTargets ]) => {
-          return canAggregateTargets;
-        });
+      return Auth('can_aggregate_targets').then(() => true).catch(() => false);
     };
 
     service.getAggregates = () => {

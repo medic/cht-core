@@ -46,7 +46,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
     } else {
       $log.error(`Error selecting target: target with id ${$stateParams.id} not found`);
       const err = new Error('Error selecting target: no target found');
-      err.translationKey = 'analytics.target.aggreagates.error.not.found';
+      err.translationKey = 'analytics.target.aggregates.error.not.found';
       ctrl.setError(err);
       ctrl.setSelectedTarget(null);
     }

@@ -58,7 +58,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
 
     const ctrl = createController();
     chai.expect(getShowContent()).to.equal(true);
-    chai.expect(ctrl.error.translationKey).to.equal('analytics.target.aggreagates.error.not.found');
+    chai.expect(ctrl.error.translationKey).to.equal('analytics.target.aggregates.error.not.found');
     chai.expect(ctrl.selected).to.equal(null);
     chai.expect(TargetAggregates.getAggregateDetails.callCount).to.equal(1);
     chai.expect(TargetAggregates.getAggregateDetails.args[0]).to.deep.equal(['target', ['aggregates'] ]);
