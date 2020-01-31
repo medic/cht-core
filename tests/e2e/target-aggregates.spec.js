@@ -410,8 +410,6 @@ describe('Target aggregates', () => {
         };
       `;
 
-      updateSettings(targetsConfig, user, contactSummaryScript);
-
       const clarissa = docs.find(doc => doc.name === names[0]);
       const prometheus = docs.find(doc => doc.name === names[1]);
       const targets = {
@@ -441,6 +439,7 @@ describe('Target aggregates', () => {
       ];
 
       browser.wait(() => utils.saveDocs(targetDocs).then(() => true));
+      updateSettings(targetsConfig, user, contactSummaryScript);
 
       commonElements.goToAnalytics();
       analytics.goToTargetAggregates(true);
