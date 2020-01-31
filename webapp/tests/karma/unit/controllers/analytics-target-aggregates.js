@@ -50,8 +50,8 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
     TargetAggregates.isEnabled.resolves(false);
     const ctrl = createController();
     chai.expect(ctrl.loading).to.equal(true);
-    chai.expect(ctrl.error).to.equal(undefined);
-    chai.expect(ctrl.aggregates).to.deep.equal([]);
+    chai.expect(ctrl.error).to.equal(null);
+    chai.expect(ctrl.aggregates).to.deep.equal(null);
     chai.expect(ctrl.aggregatesDisabled).to.equal(false);
   });
 
@@ -64,7 +64,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       chai.expect(TargetAggregates.getAggregates.callCount).to.equal(0);
       chai.expect(ctrl.loading).to.equal(false);
       chai.expect(ctrl.error).to.deep.equal({ some: 'err' });
-      chai.expect(ctrl.aggregates).to.deep.equal([]);
+      chai.expect(ctrl.aggregates).to.deep.equal(null);
       chai.expect(ctrl.aggregatesDisabled).to.equal(false);
     });
   });
@@ -77,9 +77,9 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       chai.expect(TargetAggregates.isEnabled.callCount).to.equal(1);
       chai.expect(TargetAggregates.getAggregates.callCount).to.equal(0);
       chai.expect(ctrl.loading).to.equal(false);
-      chai.expect(ctrl.error).to.equal(undefined);
+      chai.expect(ctrl.error).to.equal(null);
       chai.expect(ctrl.aggregatesDisabled).to.equal(true);
-      chai.expect(ctrl.aggregates).to.deep.equal([]);
+      chai.expect(ctrl.aggregates).to.equal(undefined);
     });
   });
 
@@ -92,7 +92,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       chai.expect(TargetAggregates.isEnabled.callCount).to.equal(1);
       chai.expect(TargetAggregates.getAggregates.callCount).to.equal(1);
       chai.expect(ctrl.loading).to.equal(false);
-      chai.expect(ctrl.error).to.equal(undefined);
+      chai.expect(ctrl.error).to.equal(null);
       chai.expect(ctrl.aggregatesDisabled).to.equal(false);
       chai.expect(ctrl.aggregates).to.deep.equal(['some aggregates']);
     });

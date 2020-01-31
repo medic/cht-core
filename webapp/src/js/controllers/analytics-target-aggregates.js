@@ -30,14 +30,15 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesCtrl', f
 
   ctrl.loading = true;
   ctrl.aggregatesDisabled = false;
-  ctrl.setError();
+  ctrl.setError(null);
+  ctrl.setTargetAggregates(null);
 
   TargetAggregates
     .isEnabled()
     .then(enabled => {
       ctrl.aggregatesDisabled = !enabled;
       if (ctrl.aggregatesDisabled) {
-        return [];
+        return;
       }
 
       return TargetAggregates.getAggregates();
