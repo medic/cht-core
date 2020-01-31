@@ -28,7 +28,6 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesCtrl', f
   };
   const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-  ctrl.aggregates = [];
   ctrl.loading = true;
   ctrl.aggregatesDisabled = false;
   ctrl.setError();

@@ -49,6 +49,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
       err.translationKey = 'analytics.target.aggregates.error.not.found';
       ctrl.setError(err);
       ctrl.setSelectedTarget(null);
+      ctrl.setTitle();
     }
   } else {
     ctrl.setShowContent(false);
