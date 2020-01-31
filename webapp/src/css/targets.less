@@ -82,8 +82,7 @@
       background-color: @targets-below-color;
     }
   }
-  &.has-goal.goal-met,
-  .percent {
+  &.goal-met, .percent {
     .number {
       color: @targets-above-goal;
     }
@@ -186,10 +185,6 @@
           right: 0;
         }
       }
-    }
-
-    &:not(.has-goal) .progress-bar {
-      background-color: @targets-above-goal;
     }
   }
 }

@@ -42,7 +42,7 @@
         </div>
         <ul>
           <li ng-repeat="item in analyticsTargetAggregatesDetailCtrl.selected.values" data-record-id="{{item.contact._id}}"
-              class="content-row target" ng-class="{ 'has-goal': analyticsTargetAggregatesDetailCtrl.selected.hasGoal, 'goal-met': item.value.goalMet }">
+              class="content-row target" ng-class="{ 'has-goal': analyticsTargetAggregatesDetailCtrl.selected.hasGoal, 'goal-met': item.value.goalMet || !analyticsTargetAggregatesDetailCtrl.selected.hasGoal}">
             <a href="#contacts/{{item.contact._id}}">
               <div class="col-xs-6 col-md-4">
                 <div class="content">
