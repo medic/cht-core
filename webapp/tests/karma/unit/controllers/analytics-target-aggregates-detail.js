@@ -12,6 +12,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
   let getTitle;
   let getShowContent;
   let setAggregates;
+  let setError;
 
   beforeEach(() => {
     module('inboxApp');
@@ -25,6 +26,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
     getTitle = () => Selectors.getTitle($ngRedux.getState());
     getShowContent = () => Selectors.getShowContent($ngRedux.getState());
     setAggregates = (aggregates) => TargetAggregatesActions($ngRedux.dispatch).setTargetAggregates(aggregates);
+    setError = (error) => TargetAggregatesActions($ngRedux.dispatch).setError(error);
 
     createController = function() {
       return $controller('AnalyticsTargetAggregatesDetailCtrl', {
@@ -50,22 +52,24 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
   });
 
   it('should set error when aggregate is not found', () => {
-    // aggregates are set in the parent "list" controller.
+    // aggregates and error are set in the parent "list" controller.
     // this controller is only loaded after the aggregates are loaded (via template ng-if)
     setAggregates(['aggregates']);
+    setError(null);
     stateParams = { id: 'target' };
     TargetAggregates.getAggregateDetails.returns(false);
 
     const ctrl = createController();
     chai.expect(getShowContent()).to.equal(true);
-    chai.expect(ctrl.error.translationKey).to.equal('analytics.target.aggregates.error.not.found');
-    chai.expect(ctrl.selected).to.equal(null);
+    chai.expect(ctrl.error).to.equal(null);
+    chai.expect(ctrl.selected.error.translationKey).to.equal('analytics.target.aggregates.error.not.found');
     chai.expect(TargetAggregates.getAggregateDetails.callCount).to.equal(1);
     chai.expect(TargetAggregates.getAggregateDetails.args[0]).to.deep.equal(['target', ['aggregates'] ]);
   });
 
   it('should set selected with translation key', () => {
     setAggregates(['aggregates']);
+    setError(null);
     stateParams = { id: 'target' };
     TargetAggregates.getAggregateDetails.returns({ an: 'aggregate', translation_key: 'the_title' });
     translate = { instant: sinon.stub().returns('the translated title') };
@@ -81,6 +85,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
 
   it('should set selected with title', () => {
     setAggregates(['aggregates', ['more aggregates']]);
+    setError(null);
     stateParams = { id: 'target' };
     TargetAggregates.getAggregateDetails.returns({ an: 'aggregate', title: 'the_other_title' });
     translateFrom = sinon.stub().returns('the other translated title');

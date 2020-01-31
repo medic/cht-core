@@ -2,10 +2,10 @@
   <div class="col-sm-8 item-content empty-selection" ng-show="!analyticsTargetAggregatesDetailCtrl.selected && !analyticsTargetAggregatesDetailCtrl.error">
     <div translate>analytics.target.aggregates.no.target.selected</div>
   </div>
-  <div class="col-sm-8 item-content empty-selection selection-error" ng-show="analyticsTargetAggregatesDetailCtrl.error">
-    <div translate>{{analyticsTargetAggregatesDetailCtrl.error.translationKey || 'analytics.target.aggregates.select.error'}}</div>
+  <div class="col-sm-8 item-content empty-selection selection-error" ng-show="analyticsTargetAggregatesDetailCtrl.error || analyticsTargetAggregatesDetailCtrl.selected.error">
+    <div translate>{{analyticsTargetAggregatesDetailCtrl.error.translationKey || analyticsTargetAggregatesDetailCtrl.selected.error.translationKey || 'analytics.target.aggregates.select.error'}}</div>
   </div>
-  <div class="col-sm-8 item-content" ng-show="analyticsTargetAggregatesDetailCtrl.selected && !analyticsTargetAggregatesDetailCtrl.error">
+  <div class="col-sm-8 item-content" ng-show="analyticsTargetAggregatesDetailCtrl.selected && !analyticsTargetAggregatesDetailCtrl.selected.error && !analyticsTargetAggregatesDetailCtrl.error">
     <div class="material">
       <div class="body meta">
         <div class="target-detail card" ng-class="{ 'has-goal': analyticsTargetAggregatesDetailCtrl.selected.goal >= 0, 'goal-met': (analyticsTargetAggregatesDetailCtrl.selected.value.pass >= target.goal) || (analyticsTargetAggregatesDetailCtrl.selected.value.percent >= analyticsTargetAggregatesDetailCtrl.selected.goal) }">

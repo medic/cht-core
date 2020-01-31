@@ -80,7 +80,6 @@ angular.module('inboxServices').factory('TargetAggregates',
         let targetDoc = targetDocs.find(doc => doc.owner === contact._id);
         if (!targetDoc) {
           targetDoc = {
-            placeholder: true,
             owner: contact._id,
             targets: []
           };
@@ -120,7 +119,7 @@ angular.module('inboxServices').factory('TargetAggregates',
 
       if (aggregate.hasGoal) {
         aggregate.aggregateValue.total = total;
-        aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass === aggregate.aggregateValue.total;
+        aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass >= aggregate.aggregateValue.total;
       }
     };
 
@@ -174,6 +173,16 @@ angular.module('inboxServices').factory('TargetAggregates',
         });
     };
 
+    const getHomePlace = () => {
+      return UserSettings().then(userSettings => {
+        if (!userSettings.facility_id) {
+          return;
+        }
+
+        return GetDataRecords(userSettings.facility_id);
+      });
+    };
+
     const getSupervisedContacts = () => {
       const alphabeticalSort = (a, b) => String(a.name).localeCompare(String(b.name));
 
@@ -200,16 +209,6 @@ angular.module('inboxServices').factory('TargetAggregates',
             })
             .then(contacts => contacts.sort(alphabeticalSort));
         });
-    };
-
-    const getHomePlace = () => {
-      return UserSettings().then(userSettings => {
-        if (!userSettings.facility_id) {
-          return;
-        }
-
-        return GetDataRecords(userSettings.facility_id);
-      });
     };
 
     const service = {};

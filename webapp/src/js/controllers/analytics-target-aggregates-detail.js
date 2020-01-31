@@ -29,7 +29,6 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
       setShowContent: globalActions.setShowContent,
       setTitle: globalActions.setTitle,
       setSelectedTarget: targetActions.setSelectedTarget,
-      setError: targetActions.setError,
     };
   };
   const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -42,18 +41,17 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
         $translate.instant(aggregateDetails.translation_key) : TranslateFrom(aggregateDetails.title);
       ctrl.setTitle(title);
       ctrl.setSelectedTarget(aggregateDetails);
-      ctrl.setError(null);
     } else {
       $log.error(`Error selecting target: target with id ${$stateParams.id} not found`);
       const err = new Error('Error selecting target: no target found');
       err.translationKey = 'analytics.target.aggregates.error.not.found';
-      ctrl.setError(err);
-      ctrl.setSelectedTarget(null);
+      ctrl.setSelectedTarget({ error: err });
       ctrl.setTitle();
     }
   } else {
     ctrl.setShowContent(false);
     ctrl.setSelectedTarget(null);
+    ctrl.setTitle();
   }
 
   $scope.$on('$destroy', unsubscribe);

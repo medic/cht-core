@@ -32,9 +32,7 @@
       </li>
     </ul>
     <p ng-show="analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggregates.error</p>
-    <p class="loading-status" ng-show="!analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.loading && !analyticsTargetAggregatesCtrl.aggregates.length" translate>analytics.target.aggregates.no.targets</p>
-    <div class="loader" ng-show="analyticsTargetAggregatesCtrl.loading"></div>
-    <div class="padding"></div>
+    <p class="loading-status" ng-show="!analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.aggregates.length" translate>analytics.target.aggregates.no.targets</p>
   </div>
   <ui-view name="detail"/>
 </div>
