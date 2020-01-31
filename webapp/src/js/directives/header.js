@@ -7,7 +7,6 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       $ngRedux,
       $q,
       $scope,
-      $log,
       Auth,
       DBSync,
       GlobalActions,
@@ -53,9 +52,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         DBSync.sync(true);
       };
 
-      ctrl.isMobile = () => {
-        return responsive.isMobile();
-      }; 
+      ctrl.isMobile = responsive.isMobile();
 
       const tabs = [{name:'messages',state:'messages.detail',icon:'fa-envelope',translation:'Messages',
         permissions:[['can_view_messages'],['can_view_messages_tab']]},
@@ -68,26 +65,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       {name:'analytics',state:'analytics',icon:'fa-bar-chart-o',translation:'Analytics',
         permissions:[['can_view_analytics'],['can_view_analytics_tab']]}];
 
-      const permitedTabs = () => {
-        const result = [];
-        tabs.forEach(tab => {
-          Auth.any(tab.permissions)
-            .then(() =>  {
-              result.push(tab);
-            })
-            .catch(err => {
-              $log.error('Error determining tab permissions', err);
-            });
-        });
-        return result;
-      };
+      ctrl.permittedTabs = tabs.filter(tab => Auth.any(tab.permissions));
 
-      const result = permitedTabs();
-
-      ctrl.filteredTabs = () => {
-        return result;
-      }; 
-      
       $scope.$on('$destroy', unsubscribe);
     },
     controllerAs: 'headerCtrl',
