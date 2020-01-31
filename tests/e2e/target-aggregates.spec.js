@@ -365,6 +365,13 @@ describe('Target aggregates', () => {
         }));
         expectContacts(expectedContacts, target);
       });
+
+      // refreshing with an open target works correctly
+      const target = expectedTargets[2];
+      openTargetDetails(target.id);
+      browser.refresh();
+      helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
+      expectTargetDetails(target);
     });
 
     it('should redirect to contacts detail when clicking list item and display contact summary target card', () => {
@@ -405,33 +412,49 @@ describe('Target aggregates', () => {
 
       updateSettings(targetsConfig, user, contactSummaryScript);
 
-      const contact = docs.find(doc => doc.name === names[0]);
-      const targets = [
-        { id: 'a_target', value: { total: 50, pass: 40 } },
-        { id: 'b_target', value: { total: 20, pass: 10 } }
+      const clarissa = docs.find(doc => doc.name === names[0]);
+      const prometheus = docs.find(doc => doc.name === names[1]);
+      const targets = {
+        'Clarissa': [
+          { id: 'a_target', value: { total: 50, pass: 40 }},
+          { id: 'b_target', value: { total: 20, pass: 10 }}
+        ],
+        'Prometheus': [
+          { id: 'a_target', value: { total: 20, pass: 18 }},
+          { id: 'b_target', value: { total: 40, pass: 6 }}
+        ],
+      };
+
+      const targetsForContact = (contact) => {
+        return docTags.map(tag => ({
+          _id: `target~${tag}~${contact._id}~irrelevant`,
+          reporting_period: tag,
+          targets: targets[contact.name],
+          owner: contact._id,
+          user: 'irrelevant',
+          date_updated: `yesterday ${contact.name}`,
+        }));
+      };
+      const targetDocs = [
+        ...targetsForContact(clarissa),
+        ...targetsForContact(prometheus),
       ];
-      const targetDocs = docTags.map(tag => ({
-        _id: `target~${tag}~${contact._id}~irrelevant`,
-        reporting_period: tag,
-        targets,
-        owner: contact._id,
-        user: 'irrelevant',
-        date_updated: 'yesterday',
-      }));
 
       browser.wait(() => utils.saveDocs(targetDocs).then(() => true));
 
       commonElements.goToAnalytics();
       analytics.goToTargetAggregates(true);
 
-      expectTargets([
-        { id: 'a_target', title: 'what a target!', progressBar: false, counter: '40' },
-        { id: 'b_target', title: 'the most target', progressBar: true, counter: '50%' }
-      ]);
-      openTargetDetails('a_target');
-      clickOnTargetAggregateListItem(contact._id);
+      const expectedTargets = [
+        { id: 'a_target', title: 'what a target!', progressBar: false, counter: '58' },
+        { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
+      ];
 
-      expect(element(by.css('.content-pane .meta h2')).getText()).toEqual(contact.name);
+      expectTargets(expectedTargets);
+      openTargetDetails(expectedTargets[0].id);
+      clickOnTargetAggregateListItem(clarissa._id);
+
+      expect(element(by.css('.content-pane .meta h2')).getText()).toEqual('Clarissa');
       helper.waitUntilReady(element(by.css('.content-pane .meta > div > .card .action-header h3')));
       // assert that the activity card exists and has the right fields.
       expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
@@ -439,7 +462,28 @@ describe('Target aggregates', () => {
       expect(element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
         .toEqual(['Last updated', 'what a target!', 'the most target']);
       expect(element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
-        .toEqual(['yesterday', '40', '50%']);
+        .toEqual(['yesterday Clarissa', '40', '50%']);
+
+      browser.navigate().back();
+      helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
+      expectTargetDetails(expectedTargets[0]);
+
+      openTargetDetails(expectedTargets[1].id);
+      clickOnTargetAggregateListItem(prometheus._id);
+
+      expect(element(by.css('.content-pane .meta h2')).getText()).toEqual('Prometheus');
+      helper.waitUntilReady(element(by.css('.content-pane .meta > div > .card .action-header h3')));
+      // assert that the activity card exists and has the right fields.
+      expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
+        .toBe('Activity this month');
+      expect(element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
+        .toEqual(['Last updated', 'what a target!', 'the most target']);
+      expect(element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
+        .toEqual(['yesterday Prometheus', '18', '15%']);
+
+      browser.navigate().back();
+      helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
+      expectTargetDetails(expectedTargets[1]);
     });
   });
 });
