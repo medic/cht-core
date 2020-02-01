@@ -350,6 +350,40 @@ describe('outbound schedule', () => {
         });
     });
 
+    it('should support pushing via header auth', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          auth: {
+            type: 'Header',
+            name: 'Authorization',
+            value_key: 'test-config'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('Bearer credentials');
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('send')(payload, conf)
+        .then(() => {
+          assert.equal(secureSettings.getCredentials.callCount, 1);
+          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.equal(request.post.callCount, 1);
+          assert.equal(request.post.args[0][0].url, 'http://test/foo');
+          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
+          assert.equal(request.post.args[0][0].json, true);
+          assert.deepEqual(request.post.args[0][0].headers, {
+            Authorization: 'Bearer credentials'
+          });
+        });
+    });
+    
     it('should support Muso SIH custom auth', () => {
       const payload = {
         some: 'data'
@@ -395,7 +429,7 @@ describe('outbound schedule', () => {
         });
     });
 
-    it('should error is Muso SIH custom auth fails to return a 200', () => {
+    it('should error if Muso SIH custom auth fails to return a 200', () => {
       const payload = {
         some: 'data'
       };
