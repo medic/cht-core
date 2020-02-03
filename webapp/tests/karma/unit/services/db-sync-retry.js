@@ -1,8 +1,6 @@
 describe('DBSyncRetry service', () => {
   'use strict';
 
-  chai.config.truncateThreshold = 0;
-
   let service;
   let db;
   let medicLocalDb;

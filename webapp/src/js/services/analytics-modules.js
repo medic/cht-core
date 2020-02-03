@@ -25,7 +25,7 @@
         };
       };
 
-      const getTargetAggregatesModule = (settings, caAggregateTargets) => {
+      const getTargetAggregatesModule = (settings, canAggregateTargets) => {
         return {
           label: 'analytics.target.aggregates',
           state: 'analytics.target-aggregates.detail',
@@ -33,7 +33,7 @@
             return settings.tasks &&
                    settings.tasks.targets &&
                    settings.tasks.targets.enabled &&
-                   caAggregateTargets;
+                   canAggregateTargets;
           }
         };
       };
@@ -48,11 +48,11 @@
         };
       };
 
-      const getModules = (settings, scheduledForms, caAggregateTargets) => {
+      const getModules = (settings, scheduledForms, canAggregateTargets) => {
         return [
           getReportingRatesModule(settings, scheduledForms),
           getTargetsModule(settings),
-          getTargetAggregatesModule(settings, caAggregateTargets),
+          getTargetAggregatesModule(settings, canAggregateTargets),
         ].filter(module => module.available());
       };
 
@@ -70,8 +70,8 @@
             ScheduledForms(),
             Auth('can_aggregate_targets').then(() => true).catch(() => false)
           ])
-          .then(([settings, scheduledForms, caAggregateTargets]) => {
-            const modules = getModules(settings, scheduledForms, caAggregateTargets);
+          .then(([settings, scheduledForms, canAggregateTargets]) => {
+            const modules = getModules(settings, scheduledForms, canAggregateTargets);
             $log.debug('AnalyticsMobules. Enabled modules: ', modules.map(module => module.label));
             return modules;
           });

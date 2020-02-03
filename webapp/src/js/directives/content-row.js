@@ -69,7 +69,15 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       muted: '=isMuted',
 
       // boolean: (optional) whether to display the "muted" text along with contact name
-      displayMuted: '='
+      displayMuted: '=',
+
+      // object: (optional) aggregate status information
+      aggregate: '=',
+
+      // boolean: (optional) whether the line item is selected
+      // html-minifier considers `selected` to be a boolean attribute, so it will strip its value
+      selected: '=isSelected',
+
     }
   };
 });

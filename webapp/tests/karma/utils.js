@@ -1,16 +1,5 @@
-// Override chai.assert.equal to pretty print.
-const equal = chai.assert.equal;
-chai.assert.equal = function() {
-  try {
-    equal.apply(this, arguments);
-  } catch(e) {
-    throw new Error(e +
-        '\nA: ' + JSON.stringify(arguments[0], null, 2) +
-        '\nB: ' + JSON.stringify(arguments[1], null, 2));
-  }
-};
-
 chai.assert.checkDeepProperties = chai.assert.shallowDeepEqual;
+chai.config.truncateThreshold = 0;
 
 window.KarmaUtils = {
   restore: function() {
@@ -68,40 +57,5 @@ window.KarmaUtils = {
         userCtx: () => { return {}; }
       });
     });
-  }
-};
-
-const sortedJson = function(o) {
-  let s;
-  if(typeof o !== 'object') {
-    return JSON.stringify(o);
-  }
-  if(_.isArray(o)) {
-    s = '[ ';
-    o.forEach(function(e) {
-      s += sortedJson(e) + ', ';
-    });
-    return s + ']';
-  }
-  const keys = Object.keys(o).sort();
-  s = '{ ';
-  for(let i=0; i<keys.length; ++i) {
-    const k = keys[i];
-    s += '"' + k + '":' + sortedJson(o[k]) + ', ';
-  }
-  // N.B. not valid JSON, as an extra comma will appear
-  return s + '}';
-};
-
-const _originalDeepEqual = chai.assert.deepEqual;
-chai.assert.deepEqual = function() {
-  try {
-    _originalDeepEqual.apply(this, arguments);
-  } catch(e) {
-    throw new Error(e +
-        '\n\nactual:\n' + sortedJson(arguments[0]) +
-        '\n\nexpected:\n' + sortedJson(arguments[1]) +
-        '\n'
-    );
   }
 };

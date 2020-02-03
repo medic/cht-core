@@ -1,35 +1,25 @@
-<div class="page" ng-show="analyticsTargetAggregatesCtrl.aggregatesDisabled || analyticsTargetAggregatesCtrl.loading">
-  <div class="item-content empty-selection disabled" ng-show="analyticsTargetAggregatesCtrl.aggregatesDisabled">
+<div class="page" ng-show="!analyticsTargetAggregatesCtrl.enabled || analyticsTargetAggregatesCtrl.loading">
+  <div class="item-content empty-selection disabled" ng-show="!analyticsTargetAggregatesCtrl.loading">
     <div translate>analytics.target.aggregates.disabled</div>
   </div>
-  <div class="item-content empty-selection" ng-show="!analyticsTargetAggregatesCtrl.aggregatesDisabled">
+  <div class="item-content empty-selection" ng-show="analyticsTargetAggregatesCtrl.loading">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 </div>
-<div class="page" ng-if="!analyticsTargetAggregatesCtrl.aggregatesDisabled && !analyticsTargetAggregatesCtrl.loading">
+<div class="page target-aggregates" ng-if="analyticsTargetAggregatesCtrl.enabled && !analyticsTargetAggregatesCtrl.loading">
   <div id="target-aggregates-list" class="col-sm-4 inbox-items left-pane">
-    <ul ng-show="!analyticsTargetAggregatesCtrl.loading">
-      <li ng-repeat="aggregate in analyticsTargetAggregatesCtrl.aggregates" data-record-id="{{aggregate.id}}" class="content-row" ng-class="{ 'selected': analyticsTargetAggregatesCtrl.selected && analyticsTargetAggregatesCtrl.selected.id === aggregate.id }">
-        <a href="#analytics/target-aggregates/{{aggregate.id}}">
-          <div class="icon" ng-bind-html="aggregate.icon | resourceIcon"></div>
-          <div class="content">
-            <div class="heading">
-              <h4 ng-if="aggregate.translation_key" translate>{{aggregate.translation_key}}</h4>
-              <h4 ng-if="!aggregate.translation_key">{{aggregate.title | translateFrom}}</h4>
-              <div class="status" ng-class="{'error': aggregate.hasGoal && !aggregate.aggregateValue.goalMet, 'success':  aggregate.hasGoal && aggregate.aggregateValue.goalMet}">
-                <span ng-if="aggregate.hasGoal" translate translate-values="aggregate.aggregateValue">analytics.target.aggregates.ratio</span>
-                <span ng-if="!aggregate.hasGoal && aggregate.isPercent">{{aggregate.aggregateValue.percent}}%</span>
-                <span ng-if="!aggregate.hasGoal && !aggregate.isPercent">{{aggregate.aggregateValue.pass}}</span>
-              </div>
-            </div>
-            <div class="summary">
-              <p ng-if="aggregate.subtitle_translation_key" translate>{{aggregate.subtitle_translation_key}}</p>
-            </div>
-          </div>
-        </a>
-      </li>
+    <ul>
+      <mm-content-row
+        ng-repeat="aggregate in analyticsTargetAggregatesCtrl.aggregates"
+        id="aggregate.id"
+        route="'analytics/target-aggregates'"
+        is-selected="analyticsTargetAggregatesCtrl.selected && analyticsTargetAggregatesCtrl.selected.id === aggregate.id"
+        icon="aggregate.icon"
+        heading="aggregate.heading"
+        aggregate="aggregate.aggregateValue"
+      ></mm-content-row>
     </ul>
     <p ng-show="analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggregates.error</p>
     <p class="loading-status" ng-show="!analyticsTargetAggregatesCtrl.error && !analyticsTargetAggregatesCtrl.aggregates.length" translate>analytics.target.aggregates.no.targets</p>

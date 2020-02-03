@@ -1212,18 +1212,27 @@ a.fa:hover {
 }
 
 .about,
+.analytics,
 .theme {
   .content {
-    .inner {
+    > .inner {
       /* allow the scrollable content to grow to full width */
       max-width: inherit;
-      .page {
+      .page:not(.target-aggregates) {
         max-width: inherit;
         /* set the max with and center all the children again */
         > div {
           max-width: @content-width;
           margin: 0 auto;
         }
+      }
+
+      .target-aggregates {
+        /* position this absolute div in the horizontal center */
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
       }
     }
   }

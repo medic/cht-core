@@ -5,7 +5,6 @@
 
   require('./add-attachment');
   require('./add-read-status');
-  require('./target-aggregates');
   require('./analytics-modules');
   require('./android-api');
   require('./auth');
@@ -80,6 +79,7 @@
   require('./simprints');
   require('./snackbar');
   require('./submit-form-by-sms');
+  require('./target-aggregates');
   require('./tasks-for-contact');
   require('./telemetry');
   require('./tour');
