@@ -279,7 +279,6 @@ describe('Target aggregates', () => {
         { id: 'percent_with_goal', type: 'percent', title: genTitle('percent with goal'), aggregate: true, goal: 80 },
         { id: 'percent_achieved', type: 'percent', title: genTitle('percent achieved'), aggregate: true, goal: 10 },
       ];
-      updateSettings(targetsConfig, user);
 
       const targetValuesByContact = {
         'Clarissa': {
@@ -339,6 +338,7 @@ describe('Target aggregates', () => {
         }), true);
 
       browser.wait(() => utils.saveDocs(targetDocs).then(() => true));
+      updateSettings(targetsConfig, user);
 
       commonElements.goToAnalytics();
       analytics.goToTargetAggregates(true);
