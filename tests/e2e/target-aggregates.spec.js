@@ -24,7 +24,7 @@ const expectTargets = (targets) => {
     const lineItem = element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
     expect(lineItem.isPresent()).toBe(true);
     expect(lineItem.element(by.css('h4')).getText()).toEqual(target.title);
-    expect(lineItem.element(by.css('.status span')).getText()).toEqual(target.counter);
+    expect(lineItem.element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
   });
 };
 

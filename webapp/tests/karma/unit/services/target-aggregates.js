@@ -2,8 +2,6 @@ describe('TargetAggregates service', () => {
 
   'use strict';
 
-  chai.config.truncateThreshold = 0;
-
   let service;
   let auth;
   let calendarInterval;
@@ -14,8 +12,11 @@ describe('TargetAggregates service', () => {
   let settings;
   let uhcSettings;
   let userSettings;
+  let translateInstant;
+  let translateFrom;
 
   const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
+  const ratioTranslationKey = 'analytics.target.aggregates.ratio';
 
   beforeEach(() => {
     module('inboxApp');
@@ -33,6 +34,7 @@ describe('TargetAggregates service', () => {
     db = { allDocs: sinon.stub() };
     uhcSettings = { getMonthStartDate: sinon.stub() };
     calendarInterval = { getCurrent: sinon.stub().returns({ end: 100 }) };
+    translateFrom = sinon.stub();
 
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
@@ -43,11 +45,13 @@ describe('TargetAggregates service', () => {
       $provide.value('GetDataRecords', getDataRecords);
       $provide.value('Search', search);
       $provide.value('Settings', settings);
+      $provide.value('TranslateFrom', translateFrom);
       $provide.value('UHCSettings', uhcSettings);
       $provide.value('UserSettings', userSettings);
     });
-    inject(_TargetAggregates_ => {
+    inject((_TargetAggregates_, _$translate_) => {
       service = _TargetAggregates_;
+      translateInstant = sinon.stub(_$translate_, 'instant');
     });
   });
 
@@ -439,11 +443,11 @@ describe('TargetAggregates service', () => {
 
     it('should exclude non-aggregable targets and hydrate aggregates', () => {
       const config = { tasks: { targets: { items: [
-        { id: 'target1', aggregate: true, type: 'count' },
-        { id: 'target2', aggregate: false, type: 'count' },
-        { id: 'target3', aggregate: true, type: 'count', goal: 20 },
-        { id: 'target4', aggregate: true, type: 'percent', goal: -1 },
-        { id: 'target5', aggregate: true, type: 'percent', goal: 80 },
+        { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
+        { id: 'target2', aggregate: false, type: 'count', translation_key: 'target2' },
+        { id: 'target3', aggregate: true, type: 'count', goal: 20, title: 'target3' },
+        { id: 'target4', aggregate: true, type: 'percent', goal: -1, translation_key: 'target4' },
+        { id: 'target5', aggregate: true, type: 'percent', goal: 80, title: 'target5' },
       ] } }};
 
       settings.resolves(config);
@@ -453,6 +457,8 @@ describe('TargetAggregates service', () => {
       contactTypes.getChildren.resolves([{ id: 'type1' }]);
       getDataRecords.withArgs(sinon.match.array).resolves([]);
       search.resolves([]);
+      translateInstant.callsFake(e => e);
+      translateFrom.callsFake(e => e);
 
       db.allDocs.resolves({ rows: [] });
 
@@ -462,36 +468,42 @@ describe('TargetAggregates service', () => {
           id: 'target1',
           aggregate: true,
           type: 'count',
-          aggregateValue: { pass:0, total: 0 },
+          title: 'target1',
           values: [],
           hasGoal: false,
           isPercent: false,
           progressBar: false,
+          heading: 'target1',
+          aggregateValue: { pass:0, total: 0, hasGoal: false, summary: 0 },
         });
 
         chai.expect(result[1]).to.deep.equal({
           id: 'target3',
           aggregate: true,
           type: 'count',
+          title: 'target3',
           goal: 20,
-          // goalMet is true because 0 out of 0 chws have achieved the goal
-          aggregateValue: { pass:0, total: 0, goalMet: true },
           values: [],
           hasGoal: true,
           isPercent: false,
           progressBar: true,
+          heading: 'target3',
+          // goalMet is true because 0 out of 0 chws have achieved the goal
+          aggregateValue: { pass:0, total: 0, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
         });
 
         chai.expect(result[2]).to.deep.equal({
           id: 'target4',
           aggregate: true,
           type: 'percent',
+          translation_key: 'target4',
           goal: -1,
-          aggregateValue: { pass:0, total: 0, percent: 0 },
           values: [],
           hasGoal: false,
           isPercent: true,
           progressBar: true,
+          heading: 'target4',
+          aggregateValue: { pass:0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
         });
 
         chai.expect(result[3]).to.deep.equal({
@@ -499,22 +511,24 @@ describe('TargetAggregates service', () => {
           aggregate: true,
           type: 'percent',
           goal: 80,
-          aggregateValue: { pass:0, total: 0, goalMet: true },
+          title: 'target5',
           values: [],
           hasGoal: true,
           isPercent: true,
           progressBar: true,
+          heading: 'target5',
+          aggregateValue: { pass:0, total: 0, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
         });
       });
     });
 
     it('should calculate every type of target aggregate correctly', () => {
       const config = { tasks: { targets: { items: [
-        { id: 'target1', aggregate: true, type: 'count' },
-        { id: 'target2', aggregate: true, type: 'count', goal: 20 },
-        { id: 'target3', aggregate: true, type: 'percent', goal: -1 },
-        { id: 'target4', aggregate: true, type: 'percent', goal: 80 },
-        { id: 'target5', aggregate: true, type: 'count', goal: 2 },
+        { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
+        { id: 'target2', aggregate: true, type: 'count', goal: 20, translation_key: 'target2' },
+        { id: 'target3', aggregate: true, type: 'percent', goal: -1, title: 'target3' },
+        { id: 'target4', aggregate: true, type: 'percent', goal: 80, translation_key: 'target4' },
+        { id: 'target5', aggregate: true, type: 'count', goal: 2, translation_key: 'target5' },
       ] } }};
 
       const targetDocs = [
@@ -569,13 +583,30 @@ describe('TargetAggregates service', () => {
 
       db.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
+      translateInstant.callsFake(echo => echo);
+      translateFrom.callsFake(echo => echo);
+
       return service.getAggregates().then(result => {
         chai.expect(result.length).to.equal(5);
+
+        chai.expect(translateInstant.callCount).to.equal(6);
+        chai.expect(translateInstant.withArgs('target2').callCount).to.equal(1);
+        chai.expect(translateInstant.withArgs('target4').callCount).to.equal(1);
+        chai.expect(translateInstant.withArgs('target5').callCount).to.equal(1);
+        chai.expect(translateInstant.withArgs(ratioTranslationKey).callCount).to.equal(3);
+        chai.expect(translateInstant.withArgs(ratioTranslationKey).args[0][1]).to.deep.include({ pass: 1, total: 3 });
+        chai.expect(translateInstant.withArgs(ratioTranslationKey).args[1][1]).to.deep.include({ pass: 1, total: 3 });
+
+        chai.expect(translateFrom.callCount).to.equal(2);
+        chai.expect(translateFrom.args).to.deep.equal([['target1'], ['target3']]);
+
         chai.expect(result[0]).to.deep.equal({
           id: 'target1',
           aggregate: true,
           type: 'count',
-          aggregateValue: { pass: 26, total: 26 },
+          title: 'target1',
+          aggregateValue: { pass: 26, total: 26, hasGoal: false, summary: 26 },
+          heading: 'target1',
           hasGoal: false,
           isPercent: false,
           progressBar: false,
@@ -590,7 +621,9 @@ describe('TargetAggregates service', () => {
           aggregate: true,
           type: 'count',
           goal: 20,
-          aggregateValue: { pass: 1, total: 3, goalMet: false },
+          translation_key: 'target2',
+          aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
+          heading: 'target2',
           hasGoal: true,
           isPercent: false,
           progressBar: true,
@@ -605,7 +638,9 @@ describe('TargetAggregates service', () => {
           aggregate: true,
           type: 'percent',
           goal: -1,
-          aggregateValue: { pass: 20, total: 51, percent: 39 },
+          title: 'target3',
+          aggregateValue: { pass: 20, total: 51, percent: 39, hasGoal: false, summary: '39%' },
+          heading: 'target3',
           hasGoal: false,
           isPercent: true,
           progressBar: true,
@@ -619,8 +654,10 @@ describe('TargetAggregates service', () => {
           id: 'target4',
           aggregate: true,
           type: 'percent',
+          translation_key: 'target4',
           goal: 80,
-          aggregateValue: { pass: 1, total: 3, goalMet: false },
+          aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
+          heading: 'target4',
           hasGoal: true,
           isPercent: true,
           progressBar: true,
@@ -635,7 +672,9 @@ describe('TargetAggregates service', () => {
           aggregate: true,
           type: 'count',
           goal: 2,
-          aggregateValue: { pass: 3, total: 3, goalMet: true },
+          translation_key: 'target5',
+          aggregateValue: { pass: 3, total: 3, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
+          heading: 'target5',
           hasGoal: true,
           isPercent: false,
           progressBar: true,
@@ -690,7 +729,8 @@ describe('TargetAggregates service', () => {
           id: 'target1',
           aggregate: true,
           type: 'count',
-          aggregateValue: { pass: 19, total: 19 },
+          aggregateValue: { pass: 19, total: 19, hasGoal: false, summary: 19 },
+          heading: undefined,
           hasGoal: false,
           isPercent: false,
           progressBar: false,
@@ -748,7 +788,8 @@ describe('TargetAggregates service', () => {
           id: 'target1',
           aggregate: true,
           type: 'count',
-          aggregateValue: { pass: 27, total: 27 },
+          aggregateValue: { pass: 27, total: 27, hasGoal: false, summary: 27 },
+          heading: undefined,
           hasGoal: false,
           isPercent: false,
           progressBar: false,
@@ -763,7 +804,8 @@ describe('TargetAggregates service', () => {
           id: 'target2',
           aggregate: true,
           type: 'percent',
-          aggregateValue: { pass: 10, total: 15, percent: 67 },
+          aggregateValue: { pass: 10, total: 15, percent: 67, hasGoal: false, summary: '67%' },
+          heading: undefined,
           hasGoal: false,
           isPercent: true,
           progressBar: true,
@@ -828,7 +870,8 @@ describe('TargetAggregates service', () => {
           id: 'target1',
           aggregate: true,
           type: 'count',
-          aggregateValue: { pass: 10, total: 10 },
+          aggregateValue: { pass: 10, total: 10, hasGoal: false, summary: 10 },
+          heading: undefined,
           hasGoal: false,
           isPercent: false,
           progressBar: false,
@@ -841,7 +884,8 @@ describe('TargetAggregates service', () => {
           id: 'target2',
           aggregate: true,
           type: 'percent',
-          aggregateValue: { pass: 0, total: 0, percent: 0 },
+          aggregateValue: { pass: 0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
+          heading: undefined,
           hasGoal: false,
           isPercent: true,
           progressBar: true,
@@ -902,7 +946,8 @@ describe('TargetAggregates service', () => {
           id: 'target1',
           aggregate: true,
           type: 'count',
-          aggregateValue: { pass: 25, total: 25 },
+          aggregateValue: { pass: 25, total: 25, hasGoal: false, summary: 25 },
+          heading: undefined,
           hasGoal: false,
           isPercent: false,
           progressBar: false,
@@ -916,13 +961,14 @@ describe('TargetAggregates service', () => {
           id: 'target2',
           aggregate: true,
           type: 'percent',
-          aggregateValue: { pass: 17, total: 17, percent: 100 },
+          aggregateValue: { pass: 17, total: 17, percent: 100, hasGoal: false, summary: '100%' },
+          heading: undefined,
           hasGoal: false,
           isPercent: true,
           progressBar: true,
           values: [
-            { contact: contacts[0], value: { pass: 10, total: 10, percent: 100} },
-            { contact: contacts[1], value: { pass: 7, total: 7, percent: 100} },
+            { contact: contacts[0], value: { pass: 10, total: 10, percent: 100 } },
+            { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
           ]
         });
       });

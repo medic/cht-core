@@ -131,14 +131,11 @@ angular.module('inboxServices').factory('ContactsActions',
         });
       }
 
-      function loadSelectedContactTargets() {
-        return dispatch(function(dispatch, getState) {
-          const selected = Selectors.getSelectedContact(getState());
-          return TargetAggregates.getTargets(selected).then(targets => {
-            return dispatch(ActionUtils.createSingleValueAction(
-              actionTypes.RECEIVE_SELECTED_CONTACT_TARGETS, 'targets', targets
-            ));
-          });
+      function loadSelectedContactTargets(selected) {
+        return TargetAggregates.getTargets(selected).then(targets => {
+          return dispatch(ActionUtils.createSingleValueAction(
+            actionTypes.RECEIVE_SELECTED_CONTACT_TARGETS, 'targets', targets
+          ));
         });
       }
 
@@ -172,7 +169,7 @@ angular.module('inboxServices').factory('ContactsActions',
               setContactsLoadingSummary(true);
               const lazyLoadedContactData = loadSelectedContactChildren({ getChildPlaces })
                 .then(loadSelectedContactReports)
-                .then(loadSelectedContactTargets);
+                .then(() => loadSelectedContactTargets(selected));
               return $q
                 .all([
                   getTitle(selected),

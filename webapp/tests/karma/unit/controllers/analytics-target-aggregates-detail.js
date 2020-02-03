@@ -6,8 +6,6 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
   let $rootScope;
   let scope;
   let stateParams;
-  let translate;
-  let translateFrom;
 
   let getTitle;
   let getShowContent;
@@ -32,9 +30,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       return $controller('AnalyticsTargetAggregatesDetailCtrl', {
         '$scope': scope,
         '$stateParams': stateParams,
-        '$translate': translate,
         'TargetAggregates': TargetAggregates,
-        'TranslateFrom': translateFrom,
       });
     };
   }));
@@ -67,37 +63,24 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
     chai.expect(TargetAggregates.getAggregateDetails.args[0]).to.deep.equal(['target', ['aggregates'] ]);
   });
 
-  it('should set selected with translation key', () => {
+  it('should set title', () => {
     setAggregates(['aggregates']);
     setError(null);
     stateParams = { id: 'target' };
-    TargetAggregates.getAggregateDetails.returns({ an: 'aggregate', translation_key: 'the_title' });
-    translate = { instant: sinon.stub().returns('the translated title') };
+    TargetAggregates.getAggregateDetails.returns({
+      an: 'aggregate',
+      translation_key: 'the_title',
+      heading: 'the translated title'
+    });
 
     const ctrl = createController();
     chai.expect(getShowContent()).to.equal(true);
     chai.expect(ctrl.error).to.equal(null);
     chai.expect(getTitle()).to.equal('the translated title');
-    chai.expect(ctrl.selected).to.deep.equal({ an: 'aggregate', translation_key: 'the_title' });
-    chai.expect(translate.instant.callCount).to.equal(1);
-    chai.expect(translate.instant.args[0]).to.deep.equal(['the_title']);
-  });
-
-  it('should set selected with title', () => {
-    setAggregates(['aggregates', ['more aggregates']]);
-    setError(null);
-    stateParams = { id: 'target' };
-    TargetAggregates.getAggregateDetails.returns({ an: 'aggregate', title: 'the_other_title' });
-    translateFrom = sinon.stub().returns('the other translated title');
-
-    const ctrl = createController();
-    chai.expect(getShowContent()).to.equal(true);
-    chai.expect(ctrl.error).to.equal(null);
-    chai.expect(getTitle()).to.equal('the other translated title');
-    chai.expect(ctrl.selected).to.deep.equal({ an: 'aggregate', title: 'the_other_title' });
-    chai.expect(translateFrom.callCount).to.equal(1);
-    chai.expect(translateFrom.args[0]).to.deep.equal(['the_other_title']);
-    chai.expect(TargetAggregates.getAggregateDetails.args[0])
-      .to.deep.equal(['target', ['aggregates', ['more aggregates']] ]);
+    chai.expect(ctrl.selected).to.deep.equal({
+      an: 'aggregate',
+      translation_key: 'the_title',
+      heading: 'the translated title',
+    });
   });
 });

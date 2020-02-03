@@ -131,13 +131,19 @@
   }
 }
 
+.target-aggregates {
+  max-width: @content-width;
+  left: 0;
+  right: 0;
+}
+
 #target-aggregates-list {
   .content-row {
     &.selected {
       background-color: @teal-highlight;
     }
 
-    .status {
+    .aggregate-status {
       color: @text-secondary-color;
       white-space: nowrap;
       &.error {

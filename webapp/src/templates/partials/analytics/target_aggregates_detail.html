@@ -17,14 +17,10 @@
             </div>
           </div>
 
-          <div class="cell" ng-if="analyticsTargetAggregatesDetailCtrl.selected.hasGoal">
-            <label translate>analytics.target.aggregates.chws.meeting.goal</label>
-            <p translate translate-values="analyticsTargetAggregatesDetailCtrl.selected.aggregateValue">analytics.target.aggregates.ratio</p>
-          </div>
-          <div class="cell" ng-if="!analyticsTargetAggregatesDetailCtrl.selected.hasGoal">
-            <label translate>analytics.target.aggregates.total</label>
-            <p ng-if="analyticsTargetAggregatesDetailCtrl.selected.isPercent">{{analyticsTargetAggregatesDetailCtrl.selected.aggregateValue.percent}}%</p>
-            <p ng-if="!analyticsTargetAggregatesDetailCtrl.selected.isPercent">{{analyticsTargetAggregatesDetailCtrl.selected.aggregateValue.pass}}</p>
+          <div class="cell">
+            <label ng-if="analyticsTargetAggregatesDetailCtrl.selected.hasGoal" translate>analytics.target.aggregates.supervisees.meeting.goal</label>
+            <label ng-if="!analyticsTargetAggregatesDetailCtrl.selected.hasGoal" translate>analytics.target.aggregates.total</label>
+            <p>{{analyticsTargetAggregatesDetailCtrl.selected.aggregateValue.summary}}</p>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ const _ = require('lodash');
 angular.module('inboxServices').factory('TargetAggregates',
   function(
     $q,
+    $translate,
     Auth,
     CalendarInterval,
     ContactTypes,
@@ -11,6 +12,7 @@ angular.module('inboxServices').factory('TargetAggregates',
     GetDataRecords,
     Search,
     Settings,
+    TranslateFrom,
     UHCSettings,
     UserSettings
   ) {
@@ -18,6 +20,10 @@ angular.module('inboxServices').factory('TargetAggregates',
     'use strict';
     'ngInject';
 
+    // Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
+    // Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
+    // ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
+    // ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
     const getCurrentIntervalTag = (settings) => {
       const uhcMonthStartDate = UHCSettings.getMonthStartDate(settings);
       const targetInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
@@ -25,6 +31,8 @@ angular.module('inboxServices').factory('TargetAggregates',
       return moment(targetInterval.end).format('Y-MM');
     };
 
+    // Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
+    // In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
     const fetchLatestTargetDocs = (settings) => {
       const tag = getCurrentIntervalTag(settings);
       const opts = {
@@ -62,15 +70,19 @@ angular.module('inboxServices').factory('TargetAggregates',
     };
 
     const calculatePercent = (value) => (value && value.total) ? Math.round(value.pass * 100 / value.total) : 0;
+    const getTranslatedTitle = (target) => {
+      return target.translation_key ? $translate.instant(target.translation_key) : TranslateFrom(target.title);
+    };
 
     const getAggregate = targetConfig => {
       const aggregate = targetConfig;
 
-      aggregate.aggregateValue = { pass: 0, total: 0 };
       aggregate.values = [];
       aggregate.hasGoal = targetConfig.goal > 0;
       aggregate.isPercent = targetConfig.type === 'percent';
       aggregate.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
+      aggregate.heading = getTranslatedTitle(targetConfig);
+      aggregate.aggregateValue = { pass: 0, total: 0 };
 
       return aggregate;
     };
@@ -120,6 +132,16 @@ angular.module('inboxServices').factory('TargetAggregates',
       if (aggregate.hasGoal) {
         aggregate.aggregateValue.total = total;
         aggregate.aggregateValue.goalMet = aggregate.aggregateValue.pass >= aggregate.aggregateValue.total;
+      }
+
+      aggregate.aggregateValue.hasGoal = aggregate.hasGoal;
+
+      if (aggregate.hasGoal) {
+        aggregate.aggregateValue.summary =
+          $translate.instant('analytics.target.aggregates.ratio', aggregate.aggregateValue);
+      } else {
+        aggregate.aggregateValue.summary = aggregate.isPercent ?
+          `${aggregate.aggregateValue.percent}%` : aggregate.aggregateValue.pass;
       }
     };
 

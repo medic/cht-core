@@ -2,7 +2,6 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesCtrl', f
   $log,
   $ngRedux,
   $scope,
-  $state,
   Selectors,
   TargetAggregates,
   TargetAggregatesActions
@@ -29,15 +28,15 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesCtrl', f
   const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
   ctrl.loading = true;
-  ctrl.aggregatesDisabled = false;
+  ctrl.enabled = false;
   ctrl.setError(null);
   ctrl.setTargetAggregates(null);
 
   TargetAggregates
     .isEnabled()
     .then(enabled => {
-      ctrl.aggregatesDisabled = !enabled;
-      if (ctrl.aggregatesDisabled) {
+      ctrl.enabled = enabled;
+      if (!ctrl.enabled) {
         return;
       }
 
@@ -53,10 +52,6 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesCtrl', f
     .then(() => {
       ctrl.loading = false;
     });
-
-  ctrl.targetDetails = (targetId) => {
-    $state.go('analytics.target-aggregates.detail', { id: targetId });
-  };
 
   $scope.$on('$destroy', unsubscribe);
 });

@@ -52,7 +52,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
     chai.expect(ctrl.loading).to.equal(true);
     chai.expect(ctrl.error).to.equal(null);
     chai.expect(ctrl.aggregates).to.deep.equal(null);
-    chai.expect(ctrl.aggregatesDisabled).to.equal(false);
+    chai.expect(ctrl.enabled).to.equal(false);
   });
 
   it('should set correct loading and error when TargetAggregates fails', done => {
@@ -65,7 +65,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       chai.expect(ctrl.loading).to.equal(false);
       chai.expect(ctrl.error).to.deep.equal({ some: 'err' });
       chai.expect(ctrl.aggregates).to.deep.equal(null);
-      chai.expect(ctrl.aggregatesDisabled).to.equal(false);
+      chai.expect(ctrl.enabled).to.equal(false);
     });
   });
 
@@ -78,7 +78,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       chai.expect(TargetAggregates.getAggregates.callCount).to.equal(0);
       chai.expect(ctrl.loading).to.equal(false);
       chai.expect(ctrl.error).to.equal(null);
-      chai.expect(ctrl.aggregatesDisabled).to.equal(true);
+      chai.expect(ctrl.enabled).to.equal(false);
       chai.expect(ctrl.aggregates).to.equal(undefined);
     });
   });
@@ -93,19 +93,8 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       chai.expect(TargetAggregates.getAggregates.callCount).to.equal(1);
       chai.expect(ctrl.loading).to.equal(false);
       chai.expect(ctrl.error).to.equal(null);
-      chai.expect(ctrl.aggregatesDisabled).to.equal(false);
+      chai.expect(ctrl.enabled).to.equal(true);
       chai.expect(ctrl.aggregates).to.deep.equal(['some aggregates']);
     });
-  });
-
-  it('should redirect to correct state', () => {
-    TargetAggregates.isEnabled.resolves(true);
-    TargetAggregates.getAggregates.resolves(['some aggregates']);
-    stateGo = sinon.stub();
-
-    const ctrl = createController();
-    ctrl.targetDetails('targetId');
-    chai.expect(stateGo.callCount).to.equal(1);
-    chai.expect(stateGo.args[0]).to.deep.equal(['analytics.target-aggregates.detail', { id: 'targetId' }]);
   });
 });

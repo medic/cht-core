@@ -27,7 +27,7 @@ angular.module('inboxServices').service('ContactSummary',
             if (!script) {
               return function() {};
             }
-            return new Function('contact', 'reports', 'lineage', 'targets', script); // jshint ignore:line
+            return new Function('contact', 'reports', 'lineage', 'targets', script);
           });
       }
       return generatorFunction;
