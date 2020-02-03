@@ -36,7 +36,7 @@ const getProcessedSeq = () => {
 };
 
 const registerFeed = seq => {
-  logger.info(`transitions: fetching changes feed, starting from ${seq}`);
+  logger.debug(`transitions: fetching changes feed, starting from ${seq}`);
   request = db.medic
     .changes({ live: true, since: seq })
     .on('change', change => {
@@ -138,7 +138,7 @@ const changeQueue = async.queue((change, callback) => {
 });
 
 changeQueue.drain(() => {
-  logger.info(`transitions: queue drained, we restart the listener`);
+  logger.debug(`transitions: queue drained, we restart the listener`);
   listen();
 });
 
