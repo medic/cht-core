@@ -133,7 +133,11 @@ const _ = require('underscore');
         },
         callback: function(change) {
           if (change.deleted) {
-            ctrl.removeSelectedReport(change.id);
+            if (ctrl.selectMode) {
+              ctrl.removeSelectedReport(change.id);
+            } else {
+              ctrl.unsetSelected();
+            }
           } else {
             const selectedReports = ctrl.selectedReports;
             ctrl.selectReport(change.id, { silent: true })
