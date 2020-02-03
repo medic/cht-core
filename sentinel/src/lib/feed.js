@@ -169,6 +169,7 @@ module.exports = {
    * by calling listen.
    */
   cancel: () => {
+    changeQueue.kill();
     if (request) {
       request.cancel();
       request = null;
