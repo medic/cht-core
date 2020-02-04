@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const async = require('async');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 /**
  * Gets data records by the given array of ids.
@@ -32,7 +32,7 @@ angular.module('inboxServices').factory('GetDataRecords',
       return DB()
         .allDocs({ keys: ids, include_docs: true })
         .then(function(response) {
-          return _.pluck(response.rows, 'doc');
+          return _.map(response.rows, 'doc');
         });
     };
 
@@ -46,8 +46,8 @@ angular.module('inboxServices').factory('GetDataRecords',
     };
 
     return function(ids, options) {
-      const opts = _.extend({ hydrateContactNames: false, include_docs: false }, options);
-      
+      const opts = Object.assign({ hydrateContactNames: false, include_docs: false }, options);
+
       if (!ids) {
         return $q.resolve([]);
       }

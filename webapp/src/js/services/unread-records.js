@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const readDocs = require('../modules/read-docs');
 const TYPES = [ 'report', 'message' ];
 
@@ -21,7 +21,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
   };
 
   const getRowValueForType = function(response, type) {
-    const result = _.findWhere(response.rows, { key: type });
+    const result = _.find(response.rows, { key: type });
     return (result && result.value) || 0;
   };
 

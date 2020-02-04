@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 (function () {
 
@@ -21,7 +21,7 @@ const _ = require('underscore');
       return function() {
         return Settings().then(function(settings) {
           const results = [];
-          _.each(_.pairs(settings.forms), function(pair) {
+          _.forEach(_.toPairs(settings.forms), function(pair) {
             if (_.some(settings['kujua-reporting'], function(report) {
               return report.code === pair[0];
             })) {

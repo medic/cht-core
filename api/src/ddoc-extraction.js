@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('./db');
 const logger = require('./logger');
 const DDOC_ATTACHMENT_ID = 'ddocs/compiled.json';
@@ -136,7 +136,7 @@ module.exports = {
     .then(extractFromDdoc)
     .then(docs => {
       if (docs.length) {
-        logger.info(`Updating docs: ${_.pluck(docs, '_id').join(', ')}`);
+        logger.info(`Updating docs: ${_.map(docs, '_id').join(', ')}`);
         return db.medic.bulkDocs({ docs: docs });
       }
     }),

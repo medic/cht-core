@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const messages = require('@medic/message-utils');
 const lineageFactory = require('@medic/lineage');
 const registrationUtils = require('@medic/registration-utils');
@@ -74,13 +74,13 @@ angular
         data: [],
       };
 
-      const data = _.extend({}, data_record, data_record.fields);
+      const data = Object.assign({}, data_record, data_record.fields);
 
-      _.each(keys, function(key) {
+      _.forEach(keys, function(key) {
         if (_.isArray(key)) {
           fields.headers.push({ head: titleize(key[0]) });
           fields.data.push(
-            _.extend(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
+            Object.assign(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
               isArray: true,
             })
           );
@@ -128,7 +128,7 @@ angular
       const hashToArray = function(hash) {
         const array = [];
 
-        _.each(hash, function(value, key) {
+        _.forEach(hash, function(value, key) {
           if (typeof value === 'string') {
             array.push(key);
           } else {
@@ -206,7 +206,7 @@ angular
       }
       let formatted;
       let relative;
-      if (_.contains(['child_birth_date', 'birth_date'], field)) {
+      if (_.includes(['child_birth_date', 'birth_date'], field)) {
         formatted = FormatDate.date(date);
         relative = FormatDate.relative(date, { withoutTime: true });
       } else {
@@ -295,7 +295,7 @@ angular
 
       const dateFields = ['child_birth_date', 'expected_date', 'birth_date'];
 
-      _.each(fields, function(field) {
+      _.forEach(fields, function(field) {
         const label = translate(settings, field, locale);
         let value = doc[field];
 
@@ -305,7 +305,7 @@ angular
           return;
         }
 
-        if (_.contains(dateFields, field)) {
+        if (_.includes(dateFields, field)) {
           value = formatDateField(value, field);
         }
 
@@ -363,7 +363,7 @@ angular
           if (_.isString(key)) {
             memo.push(translateKey(settings, key, field, locale));
           } else if (_.isArray(key)) {
-            _.each(unrollKey(key), function(key) {
+            _.forEach(unrollKey(key), function(key) {
               const field = fields && fields[key];
               memo.push(translateKey(settings, key, field, locale));
             });
@@ -382,7 +382,7 @@ angular
     const getMessage = function(settings, value, locale) {
       function _findTranslation(value, locale) {
         if (value.translations) {
-          const translation = _.findWhere(value.translations, { locale: locale });
+          const translation = _.find(value.translations, { locale: locale });
           return translation && translation.content;
         } else {
           // fallback to old translation definition to support

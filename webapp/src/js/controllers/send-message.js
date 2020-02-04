@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const phoneNumber = require('@medic/phone-number');
 const format = require('../modules/format');
 
@@ -145,7 +145,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
                     }
                   ];
                 })
-                .flatten()
+                .flattenDeep()
                 .filter(function(result) {
                   return validatePhoneNumber(settings, result);
                 })

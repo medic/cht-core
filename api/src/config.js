@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 const db = require('./db');
 const ddocExtraction = require('./ddoc-extraction');
@@ -17,7 +17,7 @@ let transitionsLib;
 const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
     if (value.translations) {
-      const translation = _.findWhere(value.translations, { locale: locale });
+      const translation = _.find(value.translations, { locale: locale });
       return translation && translation.content;
     } else {
       // fallback to old translation definition to support

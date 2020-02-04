@@ -1,5 +1,5 @@
 let zscoreUtil;
-const _ = require('underscore');
+const _ = require('lodash');
 
 const getValue = function(resultObject) {
   if (!_.isObject(resultObject) || !resultObject.t) {
@@ -75,6 +75,6 @@ module.exports = {
           stringValue: module.exports.toISOLocalString(r.v),
         };
       }
-    }  
+    }
   }
 };

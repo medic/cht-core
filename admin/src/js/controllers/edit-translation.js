@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('controllers').controller('EditTranslationCtrl',
   function (
@@ -12,7 +12,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
     'ngInject';
 
     $scope.editing = !!$scope.model.key;
-    $scope.model.locales = _.pluck($scope.model.locales, 'doc');
+    $scope.model.locales = _.map($scope.model.locales, 'doc');
     $scope.model.values = {};
     $scope.errors = {};
     $scope.isCustom = false;

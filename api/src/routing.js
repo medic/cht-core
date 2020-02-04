@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const moment = require('moment');
 
 (function () {
@@ -192,12 +192,12 @@ const moment = require('moment');
       startweek = q.startweek || dateToWeekStr(date);
       range = _.range(weeks);
 
-      _.each(range, function() {
+      _.forEach(range, function() {
         list.push(moment(date));
         date.subtract(1, step);
       });
 
-      _.extend(dates, {
+      Object.assign(dates, {
         startweek: startweek,
         quantity: weeks
       });
@@ -227,7 +227,7 @@ const moment = require('moment');
         date.subtract(1, step);
       });
 
-      _.extend(dates, {
+      Object.assign(dates, {
         startmonth: startmonth,
         quantity: months
       });
@@ -251,12 +251,12 @@ const moment = require('moment');
         range = _.range(Math.round(quarters * 3 * 4.348));
       }
 
-      _.each(range, function() {
+      _.forEach(range, function() {
         list.push(moment(date));
         date.subtract(1, step);
       });
 
-      _.extend(dates, {
+      Object.assign(dates, {
         startquarter: startquarter,
         quantity: quarters
       });
@@ -279,12 +279,12 @@ const moment = require('moment');
         range = _.range(Math.round(years * 12 * 4.348));
       }
 
-      _.each(range, function() {
+      _.forEach(range, function() {
         list.push(moment(date));
         date.subtract(1, step);
       });
 
-      _.extend(dates, {
+      Object.assign(dates, {
         startyear: startyear,
         quantity: years
       });
@@ -292,7 +292,7 @@ const moment = require('moment');
       break;
     }
 
-    _.extend(dates, {
+    Object.assign(dates, {
       form: q.form,
       now: now,
       list: list,
@@ -442,8 +442,8 @@ const moment = require('moment');
 
     processNotSubmitted(rows, dates);
 
-    return _.sortBy(rows, function (r) { 
-      return r.valid_percent; 
+    return _.sortBy(rows, function (r) {
+      return r.valid_percent;
     });
   };
 
@@ -465,7 +465,7 @@ const moment = require('moment');
       if (!saved[id]) {
         const name = f.key[2+3]; //name is three elements over
         const phone = f.key[6];
-        saved[id] = 1; 
+        saved[id] = 1;
 
         rows.unshift({
           id: id,
@@ -558,8 +558,8 @@ const moment = require('moment');
           not_submitted: true
         };
 
-        if (!_.contains(recorded_time_frames, year + '' + pat(val))) {
-          _.extend(empty_report, extra);
+        if (!_.includes(recorded_time_frames, year + '' + pat(val))) {
+          Object.assign(empty_report, extra);
           empty_report.name = getName(empty_report);
           row.records.push(empty_report);
         }

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
 const constants = require('../../../constants');

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 const TRANSLATION_KEYS_OPTION = { doc: {code: 'keys', name: 'Translation Keys'} };
 const DEFAULT_LANGUAGE = 'en';

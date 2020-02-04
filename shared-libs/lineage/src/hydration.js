@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
@@ -298,8 +298,9 @@ module.exports = function(Promise, DB) {
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
-    let patientUuids; let 
-      patientDocs;
+    let patientUuids;
+    let patientDocs;
+
     return fetchPatientUuids(hydratedDocs)
       .then(function(uuids) {
         patientUuids = uuids;

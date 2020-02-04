@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('inboxServices').factory('MessageContacts',
   function(
@@ -34,9 +34,9 @@ angular.module('inboxServices').factory('MessageContacts',
           //include_docs on reduce views (listParams)
           if(params.reduce === undefined || params.reduce === true) {
             const valueId = function(value) { return value.id; };
-            const ids = _.map(_.pluck(response.rows, 'value'), valueId);
+            const ids = _.map(_.map(response.rows, 'value'), valueId);
             return GetDataRecords(ids, {include_docs: true}).then(function(docs) {
-              _.each(response.rows, function(row, idx) { row.doc = docs[idx]; });
+              _.forEach(response.rows, function(row, idx) { row.doc = docs[idx]; });
               return response.rows;
             });
           } else {

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('../db');
 const batch = require('../db-batch');
 

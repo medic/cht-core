@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('controllers').controller('IconsCtrl',
   function(
@@ -22,7 +22,7 @@ angular.module('controllers').controller('IconsCtrl',
     $scope.loading = true;
 
     const renderResources = function() {
-      $scope.icons = _.map(_.pairs($scope.doc.resources), function(pair) {
+      $scope.icons = _.map(_.toPairs($scope.doc.resources), function(pair) {
         const icon = $scope.doc._attachments[pair[1]];
         return {
           name: pair[0],

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const chai = require('chai');
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
@@ -178,7 +178,7 @@ describe('db-doc handler', () => {
 
   describe('does not restrict online users', () => {
     it('GET', () => {
-      _.extend(onlineRequestOptions, {
+      Object.assign(onlineRequestOptions, {
         method: 'GET',
         path: '/fixture:user:offline',
       });
@@ -194,7 +194,7 @@ describe('db-doc handler', () => {
     });
 
     it('POST', () => {
-      _.extend(onlineRequestOptions, {
+      Object.assign(onlineRequestOptions, {
         path: '/',
         method: 'POST',
         body: {
@@ -226,7 +226,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDoc({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' })
         .then(result => {
-          _.extend(onlineRequestOptions, {
+          Object.assign(onlineRequestOptions, {
             method: 'PUT',
             path: '/db_doc_put',
             body: {
@@ -256,7 +256,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDoc({ _id: 'db_doc_delete', type: 'clinic', name: 'my clinic' })
         .then(result => {
-          _.extend(onlineRequestOptions, {
+          Object.assign(onlineRequestOptions, {
             method: 'DELETE',
             path: `/db_doc_delete?rev=${result.rev}`,
           });
@@ -301,7 +301,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDoc({ _id: 'with_attachments' })
         .then(result => {
-          _.extend(onlineRequestOptions, {
+          Object.assign(onlineRequestOptions, {
             path: `/with_attachments/new_attachment?rev=${result.rev}`,
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
@@ -920,7 +920,7 @@ describe('db-doc handler', () => {
         })
         .then(results =>
           Promise.all(
-            _.flatten(
+            _.flattenDeep(
               results.map(result => {
                 const open_revs = result._revisions.ids.map((rev, key) => `${result._revisions.start - key}-${rev}`);
                 const path = `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}`;
@@ -1000,27 +1000,27 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/allowed_attach?rev=${revs.allowed_attach[0]}&attachments=true&revs=true` },
               offlineRequestOptions
             )),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/allowed_attach?rev=${revs.allowed_attach[1]}&attachments=true&revs=false` },
               offlineRequestOptions
             )),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/allowed_attach?attachments=false&revs=true&revs_info=true` },
               offlineRequestOptions
             )),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/denied_attach?rev=${revs.denied_attach[0]}&attachments=true&revs=true` },
               offlineRequestOptions
             )).catch(err => err),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/denied_attach?rev=${revs.denied_attach[1]}&attachments=true&revs=false` },
               offlineRequestOptions
             )).catch(err => err),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/denied_attach?attachments=true&revs=true&revs_info=true` },
               offlineRequestOptions
             )).catch(err => err),
@@ -1396,7 +1396,7 @@ describe('db-doc handler', () => {
 
           const promises = updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
               .catch(err => err));
           return Promise.all(promises);
         })
@@ -1476,7 +1476,7 @@ describe('db-doc handler', () => {
 
           return Promise.all(updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
               .catch(err => err)));
         })
         .then(results => {
@@ -1681,7 +1681,7 @@ describe('db-doc handler', () => {
           const updates = docs.map(doc => Object.assign({ updated: true }, doc));
           const promises = updates.map(doc =>
             utils
-              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
               .catch(err => err));
           return Promise.all(promises);
         })
@@ -1713,8 +1713,8 @@ describe('db-doc handler', () => {
         ])
         .then(results =>
           Promise.all([
-            utils.requestOnTestDb(_.extend({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
-            utils.requestOnTestDb(_.extend({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions))
+            utils.requestOnTestDb(Object.assign({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
+            utils.requestOnTestDb(Object.assign({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions))
               .catch(err => err),
           ])
         )
@@ -1779,12 +1779,12 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
+            utils.requestOnTestDb(Object.assign({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
             utils.requestOnTestDb(
-              _.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)
+              Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions)
             ).catch(err => err),
             utils.requestOnTestDb(
-              _.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)
+              Object.assign({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)
             ).catch(err => err),
           ]);
         })
@@ -1804,15 +1804,15 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return utils.saveDocs([
-            _.extend(results[0], { parent: { _id: 'fixture:online' } }),
-            _.extend(results[1], { parent: { _id: 'fixture:offline' } }),
+            Object.assign(results[0], { parent: { _id: 'fixture:online' } }),
+            Object.assign(results[1], { parent: { _id: 'fixture:offline' } }),
           ]);
         })
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
           const getRequestForIdRev = (id, rev) => utils
-            .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
+            .requestOnTestDb(Object.assign({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
             .catch(err => err);
 
           const promises = [];
@@ -1846,16 +1846,16 @@ describe('db-doc handler', () => {
         .then(results => {
           return Promise.all([
             utils.requestOnTestDb(
-              _.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions)
+              Object.assign({ path: '/allowed_attach/att_name' }, offlineRequestOptions)
             ).catch(err => err),
             utils.requestOnTestDb(
-              _.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)
+              Object.assign({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)
             ).catch(err => err),
             utils.requestOnTestDb(
-              _.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions)
+              Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions)
             ).catch(err => err),
             utils.requestOnTestDb(
-              _.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)
+              Object.assign({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)
             ),
           ]);
         })
@@ -1905,18 +1905,18 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: '/allowed_attach_1/att_name/1/2/3/etc', json: false },
               offlineRequestOptions
             )),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false },
               offlineRequestOptions)
             ),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions
             )).catch(err => err),
-            utils.requestOnTestDb(_.extend(
+            utils.requestOnTestDb(Object.assign(
               { path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions
             )).catch(err => err),
           ]);
@@ -1935,8 +1935,8 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return utils.saveDocs([
-            _.extend(results[0], { parent: { _id: 'fixture:online' } }),
-            _.extend(results[1], { parent: { _id: 'fixture:offline' } }),
+            Object.assign(results[0], { parent: { _id: 'fixture:online' } }),
+            Object.assign(results[1], { parent: { _id: 'fixture:offline' } }),
           ]);
         })
         .then(results => {
@@ -1945,7 +1945,7 @@ describe('db-doc handler', () => {
           const promises = [];
           const attachmentRequest = (rev, id) =>
             utils
-              .requestOnTestDb(_.extend(
+              .requestOnTestDb(Object.assign(
                 { path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false }, offlineRequestOptions
               ))
               .catch(err => err);
@@ -1972,7 +1972,7 @@ describe('db-doc handler', () => {
     });
 
     it('PUT attachment', () => {
-      _.extend(offlineRequestOptions, {
+      Object.assign(offlineRequestOptions, {
         method: 'PUT',
         headers: { 'Content-Type': 'text/plain' },
         body: 'my new attachment content',
@@ -1997,7 +1997,7 @@ describe('db-doc handler', () => {
         .then(results => Promise.all(
           results.map(result =>
             utils
-              .requestOnTestDb(_.extend(
+              .requestOnTestDb(Object.assign(
                 { path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions
               ))
               .catch(err => err)))
@@ -2092,7 +2092,7 @@ describe('db-doc handler', () => {
           return Promise.all(
             updates.map(doc =>
               utils
-                .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+                .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
                 .catch(err => err)
             )
           );
@@ -2133,7 +2133,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDoc({ _id: 'with_attachments' })
         .then(result => {
-          _.extend(onlineRequestOptions, {
+          Object.assign(onlineRequestOptions, {
             path: `/with_attachments/new_attachment?rev=${result.rev}`,
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
@@ -2198,7 +2198,7 @@ describe('db-doc handler', () => {
   it('allows creation of feedback docs', () => {
     const doc = { _id: 'fb1', type: 'feedback', content: 'content' };
 
-    _.extend(offlineRequestOptions, {
+    Object.assign(offlineRequestOptions, {
       path: '/',
       method: 'POST',
       body: doc,
@@ -2224,7 +2224,7 @@ describe('db-doc handler', () => {
         doc._rev = result.rev;
         doc.content = 'new content';
 
-        _.extend(offlineRequestOptions, {
+        Object.assign(offlineRequestOptions, {
           method: 'PUT',
           path: '/fb1',
           body: doc,

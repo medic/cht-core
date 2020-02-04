@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
@@ -50,7 +50,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const countTotalTranslations = (rows) => {
       let keys = rows.map(row => getTranslationKeys(row.doc));
-      keys = _.uniq(_.flatten(keys));
+      keys = _.uniq(_.flattenDeep(keys));
       return keys.length;
     };
 

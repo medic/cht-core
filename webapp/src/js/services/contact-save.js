@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const uuidV4 = require('uuid/v4');
 
 angular.module('inboxServices').service('ContactSave',

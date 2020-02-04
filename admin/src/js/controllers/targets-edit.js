@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('controllers').controller('TargetsEditCtrl',
   function (
@@ -29,7 +29,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
       .then(function(settings) {
         $scope.locales = _.map(settings.locales, _.clone);
         if ($stateParams.id) {
-          $scope.target = _.findWhere(settings.tasks.targets.items, { id: $stateParams.id });
+          $scope.target = _.find(settings.tasks.targets.items, { id: $stateParams.id });
           if (typeof $scope.target.name === 'undefined') {
             $scope.names = $scope.locales.map(locale => {
               const translation = $translate.instant(

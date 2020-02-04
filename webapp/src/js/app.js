@@ -55,7 +55,7 @@ require('./enketo/main');
 
 const bootstrapper = require('./bootstrapper');
 const router = require('./router');
-const _ = require('underscore');
+const _ = require('lodash');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g,
 };

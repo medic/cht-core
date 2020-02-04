@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('inboxDirectives').directive('mmAuth', function(
   $log,
@@ -57,7 +57,7 @@ angular.module('inboxDirectives').directive('mmAuth', function(
 
           const permissionsGroups = mmAuthAny
             .filter(element => Array.isArray(element) || _.isString(element))
-            .map(element => (Array.isArray(element) && _.flatten(element)) || [ element ]);
+            .map(element => (Array.isArray(element) && _.flattenDeep(element)) || [ element ]);
 
           if (!permissionsGroups.length) {
             element.addClass('hidden');

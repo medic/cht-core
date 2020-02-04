@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const path = require('path');
 
 const db = require('../db');
@@ -46,10 +46,10 @@ module.exports = {
       });
   },
   /**
-   * Process a request to either replace, overwrite or extend existing settings. 
-   * If both replace and overwite are set, then it is assumed that only overwite 
+   * Process a request to either replace, overwrite or extend existing settings.
+   * If both replace and overwite are set, then it is assumed that only overwite
    * is set.
-   * @param replace If true, recursively merges the properties leaving existing 
+   * @param replace If true, recursively merges the properties leaving existing
    *                properties not in the input document intact.
    * @param overwrite If true, replace the settings document with input document.
    */
@@ -88,8 +88,8 @@ module.exports = {
         if (JSON.stringify(doc.settings) !== original) {
           info('Updating settings with new defaults');
           return db.medic.put(doc);
-        } 
-        
+        }
+
         return Promise.resolve();
       });
   }

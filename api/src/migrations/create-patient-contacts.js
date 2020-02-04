@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const { promisify } = require('util');
 const db = require('../db');
 const logger = require('../logger');
@@ -22,7 +22,7 @@ const registrationIdsWithNoPatientContacts = function(batch, settings, callback)
       const existingContactShortcodes = results.rows.map(row => row.key[1]);
 
       const potentialRegistrationIdsToConsider = batch.filter(
-        row => !_.contains(existingContactShortcodes, row[0])
+        row => !_.includes(existingContactShortcodes, row[0])
       );
 
       db.medic.allDocs(
@@ -189,7 +189,7 @@ module.exports = {
           return callback();
         }
 
-        const registrationsForPatientShortcode = _.pairs(
+        const registrationsForPatientShortcode = _.toPairs(
           _.reduce(
             results.rows,
             function(memo, row) {

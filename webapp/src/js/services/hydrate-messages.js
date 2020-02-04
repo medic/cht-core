@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('inboxServices').factory('HydrateMessages',
   function(
@@ -10,7 +10,7 @@ angular.module('inboxServices').factory('HydrateMessages',
     'ngInject';
 
     const buildMessageModel = function(doc, key, date, report) {
-      let contact = null; let phone = null; let message = null; let 
+      let contact = null; let phone = null; let message = null; let
         outgoing = false;
       if(doc.kujua_message) {
         outgoing = true;
@@ -32,7 +32,7 @@ angular.module('inboxServices').factory('HydrateMessages',
         phone = doc.from;
       }
 
-      let type = 'unknown'; let 
+      let type = 'unknown'; let
         from = doc._id;
       if(contact) {
         type = 'contact';
@@ -42,7 +42,7 @@ angular.module('inboxServices').factory('HydrateMessages',
         from = phone;
       }
 
-      const lineage = report && _.map(_.pluck(report.lineage, 'name'));
+      const lineage = report && _.map(report.lineage, 'name');
       return {
         doc: doc,
         id: doc._id,
@@ -61,7 +61,7 @@ angular.module('inboxServices').factory('HydrateMessages',
       if(!rows || rows.length <= 0) {
         return $q.resolve([]);
       }
-      const rowsObject = {}; const 
+      const rowsObject = {}; const
         contactIds = [];
       rows.forEach(function(row) {
         rowsObject[row.key[0]] = row;

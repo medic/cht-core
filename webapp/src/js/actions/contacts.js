@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('ContactsActions',

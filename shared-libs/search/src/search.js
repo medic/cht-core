@@ -2,7 +2,7 @@
 // Skip and Limit are not considered fast:
 //    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
 //    https://github.com/medic/medic/issues/4206
-const _ = require('underscore');
+const _ = require('lodash');
 const GenerateSearchRequests = require('./generate-search-requests');
 
 module.exports = function(Promise, DB) {
@@ -37,10 +37,10 @@ module.exports = function(Promise, DB) {
   // responses = [searchResults1, searchResult2, ...]
   const getIntersection = function(responses) {
     let intersection = responses.pop();
-    intersection = _.uniq(intersection, 'id');
-    _.each(responses, function(response) {
+    intersection = _.uniqBy(intersection, 'id');
+    _.forEach(responses, function(response) {
       intersection = intersection.filter(row => {
-        const existent = _.findWhere(response, { id: row.id });
+        const existent = _.find(response, { id: row.id });
         if (existent && 'sort' in existent) {
           row.sort = existent.sort + ' ' + (row.sort || row.value);
         }
@@ -115,11 +115,11 @@ module.exports = function(Promise, DB) {
         if (cacheQueryResults) {
           return {
             queryResultsCache: results.queryResultsCache,
-            docIds: _.pluck(results.docIds, 'id')
+            docIds: _.map(results.docIds, 'id')
           };
         } else {
           return {
-            docIds: _.pluck(results, 'id')
+            docIds: _.map(results, 'id')
           };
         }
       });

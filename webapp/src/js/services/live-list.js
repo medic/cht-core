@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const moment = require('moment');
 
 // medic specific config for LiveList.
@@ -171,7 +171,7 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: function(report, contactTypes, removedDomElement) {
           const scope = {};
           scope.id = report._id;
-          const form = _.findWhere(ctrl.forms, { code: report.form });
+          const form = _.find(ctrl.forms, { code: report.form });
           scope.route = 'reports';
           scope.icon = form && form.icon;
           scope.heading = getHeading(report);

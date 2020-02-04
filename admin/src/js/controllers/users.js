@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('controllers').controller('UsersCtrl',
   function (
@@ -25,7 +25,7 @@ angular.module('controllers').controller('UsersCtrl',
       const params = { include_docs: true, key: ['user-settings'] };
       DB().query('medic-client/doc_by_type', params)
         .then(function(settings) {
-          $scope.users = _.pluck(settings.rows, 'doc');
+          $scope.users = _.map(settings.rows, 'doc');
           $scope.loading = false;
         })
         .catch(function(err) {

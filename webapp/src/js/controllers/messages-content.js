@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 // In this context $stateParams.id (the id in the url) can be:
 //  - the _id of the contact who is sending these messages
@@ -125,13 +125,13 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           let contactModel = results[0];
           const conversation = results[1];
           if (!contactModel) {
-            const firstTaskWithContact = conversation[0].doc.tasks.find( 
+            const firstTaskWithContact = conversation[0].doc.tasks.find(
               function(task) {
                 const message = task.messages && task.messages[0];
                 return message && message.contact && message.contact._id === id;
               }
             );
-            const firstMessageWithContact = firstTaskWithContact.messages.find( 
+            const firstMessageWithContact = firstTaskWithContact.messages.find(
               function(message) {
                 return message.contact._id === id;
               }
@@ -151,7 +151,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           ctrl.setLoadingShowContent(false);
           ctrl.setMessagesError(false);
           const unread = conversation.filter(message => !message.read);
-          ctrl.firstUnread = _.min(unread, message => message.doc.reported_date);
+          ctrl.firstUnread = _.minBy(unread, message => message.doc.reported_date);
           ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
           ctrl.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markConversationReadIfNeeded();
@@ -181,7 +181,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
             let scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             const first = $('.item-content .body > ul > li').filter(':first');
             conversation.forEach(function(updated) {
-              const match = _.findWhere(ctrl.selectedMessage.messages, { id: updated.id });
+              const match = _.find(ctrl.selectedMessage.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
               } else {

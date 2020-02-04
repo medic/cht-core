@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('inboxServices').factory('HydrateContactNames',
   function(
@@ -10,12 +10,12 @@ angular.module('inboxServices').factory('HydrateContactNames',
     'ngInject';
 
     const findContactName = function(contactSummaries, id) {
-      const cs = _.findWhere(contactSummaries, { _id: id });
+      const cs = _.find(contactSummaries, { _id: id });
       return (cs && cs.name) || null;
     };
 
     const findMutedState = function(contactSummaries, id) {
-      const cs = _.findWhere(contactSummaries, { _id: id });
+      const cs = _.find(contactSummaries, { _id: id });
       return (cs && cs.muted) || false;
     };
 
@@ -58,7 +58,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
     return function(summaries) {
       const ids =  _.chain(summaries)
         .map(relevantIdsFromSummary)
-        .flatten()
+        .flattenDeep()
         .compact()
         .uniq()
         .value();

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 const IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//;
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
@@ -73,7 +73,7 @@ angular.module('controllers').controller('UpgradeCtrl',
                 }
               });
 
-              return _.pluck(results.rows, 'value');
+              return _.map(results.rows, 'value');
             });
         };
 

@@ -176,7 +176,6 @@ module.exports = function(grunt) {
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'bikram-sambat': './webapp/node_modules/bikram-sambat',
             'moment': './webapp/node_modules/moment',
-            'underscore': './webapp/node_modules/underscore'
           },
         },
       },

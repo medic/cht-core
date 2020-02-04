@@ -1,7 +1,7 @@
 /**
  * @module mp-parser
  */
-const _ = require('underscore');
+const _ = require('lodash');
 
 const zip = (a, b) => {
   const zipped = [];

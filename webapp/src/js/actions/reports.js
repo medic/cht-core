@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const actionTypes = require('./actionTypes');
 const lineageFactory = require('@medic/lineage');
 
@@ -69,7 +69,7 @@ angular.module('inboxServices').factory('ReportsActions',
         dispatch(function(dispatch, getState) {
           const formInternalId = model.formInternalId || model.form;
           const forms = Selectors.getForms(getState());
-          const form = _.findWhere(forms, { code: formInternalId });
+          const form = _.find(forms, { code: formInternalId });
           const name = (form && form.name) || (form && form.title) || model.form;
           globalActions.setTitle(name);
         });
@@ -116,9 +116,9 @@ angular.module('inboxServices').factory('ReportsActions',
           const selectedReports = Selectors.getSelectedReports(getState());
           let refreshing = true;
           if (selectMode) {
-            const existing = _.findWhere(selectedReports, { _id: model.doc._id });
+            const existing = _.find(selectedReports, { _id: model.doc._id });
             if (existing) {
-              _.extend(existing, model);
+              Object.assign(existing, model);
             } else {
               model.expanded = false;
               addSelectedReport(model);

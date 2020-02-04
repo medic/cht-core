@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
-const _ = require('underscore');
+const _ = require('lodash');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -16,7 +16,7 @@ const production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
 
-_.templateSettings = {
+const templateSettings = {
   escape: /\{\{(.+?)\}\}/g,
 };
 
@@ -42,7 +42,7 @@ const getLoginTemplate = () => {
   }
   const filepath = path.join(__dirname, '..', 'templates', 'login', 'index.html');
   return promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
-    .then(data => _.template(data));
+    .then(data => _.template(data, templateSettings));
 };
 
 const renderLogin = (req, redirect, branding) => {

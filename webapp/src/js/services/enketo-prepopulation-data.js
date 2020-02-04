@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 angular.module('inboxServices').service('EnketoPrepopulationData',
   function(

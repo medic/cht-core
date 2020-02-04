@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const d3 = require('d3');
 const reportingUtils = require('../modules/reporting-rates-utils');
 
@@ -44,7 +44,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     Settings()
       .then(function(settings) {
-        const newSettings = _.findWhere(settings['kujua-reporting'], { code: ctrl.filters.form });
+        const newSettings = _.find(settings['kujua-reporting'], { code: ctrl.filters.form });
         ctrl.setFilter({ reporting_freq: newSettings && newSettings.reporting_freq });
       })
       .catch(function(err) {
