@@ -1,3 +1,6 @@
+/*
+Integrating with DHIS2 -- https://github.com/medic/medic-docs/blob/master/configuration/dhis-integration.md
+*/
 const _ = require('lodash');
 const moment = require('moment');
 
