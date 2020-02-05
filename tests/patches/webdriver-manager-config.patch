@@ -1,5 +1,5 @@
-*** config.json	Wed Apr 8 08:48:30 2020
---- config-patched.json	Wed Apr 8 08:48:30 2020
+*** config.json	Wed Feb 5 11:08:30 2020
+--- config-patched.json	Wed Feb 5 11:08:30 2020
 ***************
 *** 2,8 ****
     "webdriverVersions": {
@@ -13,7 +13,7 @@
     "webdriverVersions": {
       "selenium": "2.53.1",
       "chromedriver": "2.27",
-!     "maxChromedriver": "81",
+!     "maxChromedriver": "79",
       "geckodriver": "v0.13.0",
       "iedriver": "2.53.1",
       "androidsdk": "24.4.1",
