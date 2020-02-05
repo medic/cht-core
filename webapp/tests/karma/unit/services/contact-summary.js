@@ -123,7 +123,7 @@ describe('ContactSummary service', () => {
       fields: [contact.name, lineage[0].name],
       cards: [
         { fields: reports[0].type },
-        { fields: targets.date_updated }
+        { fields: targetDoc.date_updated }
       ],
     }
     `;
@@ -132,9 +132,9 @@ describe('ContactSummary service', () => {
     const contact = { name: 'boa' };
     const reports = [{ type: 'data' }, { type: 'record' }];
     const lineage = [{ name: 'parent' }, { name: 'grandparent' }];
-    const targets = { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] };
+    const targetDoc = { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] };
 
-    return service(contact, reports, lineage, targets).then(contactSummmary => {
+    return service(contact, reports, lineage, targetDoc).then(contactSummmary => {
       chai.expect(contactSummmary).to.deep.equal({
         fields: ['boa', 'parent'],
         cards: [

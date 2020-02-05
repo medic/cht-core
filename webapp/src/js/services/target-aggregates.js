@@ -259,7 +259,7 @@ angular.module('inboxServices').factory('TargetAggregates',
       return aggregates.find(aggregate => aggregate.id === targetId);
     };
 
-    service.getTargets = (contact) => {
+    service.getCurrentTargetDoc = (contact) => {
       if (!contact) {
         return;
       }
