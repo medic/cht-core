@@ -16,10 +16,6 @@ const production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
 
-const templateSettings = {
-  escape: /\{\{(.+?)\}\}/g,
-};
-
 const safePath = requested => {
   const root = '/';
 
@@ -42,7 +38,7 @@ const getLoginTemplate = () => {
   }
   const filepath = path.join(__dirname, '..', 'templates', 'login', 'index.html');
   return promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
-    .then(data => _.template(data, templateSettings));
+    .then(data => _.template(data));
 };
 
 const renderLogin = (req, redirect, branding) => {
