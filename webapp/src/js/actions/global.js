@@ -171,6 +171,9 @@ angular.module('inboxServices').factory('GlobalActions',
         LiveList['reports'].clearSelected();
         LiveList['report-search'].clearSelected();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
+        if ($state.includes('contacts') || $state.includes('reports')) {
+          $state.go($state.current.name, { id: null });
+        }
       }
 
       // User wants to cancel current flow, or pressed back button, etc.
