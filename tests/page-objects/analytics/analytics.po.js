@@ -9,6 +9,7 @@ module.exports = {
   },
 
   goToTargetAggregates: (enabled) => {
+    helper.waitUntilReady(element(by.css('.mm-navigation-menu')));
     element(by.css(`.mm-navigation-menu li a[ui-sref="analytics.target-aggregates.detail"]`)).click();
     if (enabled) {
       helper.waitUntilReady(element(by.css('#target-aggregates-list')));
