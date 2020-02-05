@@ -43,7 +43,7 @@ describe('Contacts store', () => {
     setTitle = sinon.stub();
     setRightActionBar = sinon.stub();
     translateFrom = sinon.stub();
-    targetAggregates = { getTargets: sinon.stub() };
+    targetAggregates = { getCurrentTargetDoc: sinon.stub() };
   });
 
   const setupStore = initialState => {
@@ -94,7 +94,7 @@ describe('Contacts store', () => {
       settings.resolves({});
       hasAuth.resolves(true);
       tasksForContact.resolves();
-      targetAggregates.getTargets.resolves({});
+      targetAggregates.getCurrentTargetDoc.resolves({});
     });
 
     it('sets selected contact', () => {
@@ -108,7 +108,7 @@ describe('Contacts store', () => {
             summary: { alive: true },
             children: [],
             reports: [],
-            targets: {},
+            targetDoc: {},
           },
           loadingSelectedChildren: false,
           loadingSelectedReports: false,
@@ -159,13 +159,13 @@ describe('Contacts store', () => {
           { id: 'target3', value: { total: 7, pass: 7 } },
         ],
       };
-      targetAggregates.getTargets.resolves(targetDoc);
+      targetAggregates.getCurrentTargetDoc.resolves(targetDoc);
 
       return contactsActions.setSelectedContact('123').then(() => {
-        chai.expect(targetAggregates.getTargets.callCount).to.equal(1);
+        chai.expect(targetAggregates.getCurrentTargetDoc.callCount).to.equal(1);
         const state = getState();
         const contactsState = selectors.getContactsState(state);
-        assert.deepEqual(contactsState.selected.targets, targetDoc);
+        assert.deepEqual(contactsState.selected.targetDoc, targetDoc);
         assert.equal(contactSummary.callCount, 1);
         assert.deepEqual(contactSummary.args[0], [
           { _id: '123' },

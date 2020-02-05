@@ -131,10 +131,10 @@ angular.module('inboxServices').factory('ContactsActions',
         });
       }
 
-      function loadSelectedContactTargets(selected) {
-        return TargetAggregates.getTargets(selected).then(targets => {
+      function loadSelectedContactTargetDoc(selected) {
+        return TargetAggregates.getCurrentTargetDoc(selected).then(targetDoc => {
           return dispatch(ActionUtils.createSingleValueAction(
-            actionTypes.RECEIVE_SELECTED_CONTACT_TARGETS, 'targets', targets
+            actionTypes.RECEIVE_SELECTED_CONTACT_TARGET_DOC, 'targetDoc', targetDoc
           ));
         });
       }
@@ -169,7 +169,7 @@ angular.module('inboxServices').factory('ContactsActions',
               setContactsLoadingSummary(true);
               const lazyLoadedContactData = loadSelectedContactChildren({ getChildPlaces })
                 .then(loadSelectedContactReports)
-                .then(() => loadSelectedContactTargets(selected));
+                .then(() => loadSelectedContactTargetDoc(selected));
               return $q
                 .all([
                   getTitle(selected),
@@ -190,7 +190,7 @@ angular.module('inboxServices').factory('ContactsActions',
                       selected = Selectors.getSelectedContact(getState());
                       registerTasksListener(selected);
                       return $q.all([
-                        ContactSummary(selected.doc, selected.reports, selected.lineage, selected.targets),
+                        ContactSummary(selected.doc, selected.reports, selected.lineage, selected.targetDoc),
                         Settings()
                       ]);
                     })

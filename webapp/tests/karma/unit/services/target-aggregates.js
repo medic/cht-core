@@ -1004,17 +1004,17 @@ describe('TargetAggregates service', () => {
     });
   });
 
-  describe('getTargets', () => {
+  describe('getCurrentTargetDoc', () => {
     it('should do nothing when no contact uuid', () => {
-      chai.expect(service.getTargets()).to.equal(undefined);
-      chai.expect(service.getTargets({})).to.equal(undefined);
-      chai.expect(service.getTargets('')).to.equal(undefined);
+      chai.expect(service.getCurrentTargetDoc()).to.equal(undefined);
+      chai.expect(service.getCurrentTargetDoc({})).to.equal(undefined);
+      chai.expect(service.getCurrentTargetDoc('')).to.equal(undefined);
     });
 
     it('should throw when getting settings fails', () => {
       settings.rejects({ some: 'err' });
       return service
-        .getTargets('uuid')
+        .getCurrentTargetDoc('uuid')
         .then(() => chai.expect().to.equal('Should have thrown'))
         .catch(err => chai.expect(err).to.deep.equal({ some: 'err' }));
     });
@@ -1046,7 +1046,7 @@ describe('TargetAggregates service', () => {
 
       db.allDocs.resolves({ rows: [{ doc: targetDoc }] });
 
-      return service.getTargets('uuid').then(result => {
+      return service.getCurrentTargetDoc('uuid').then(result => {
         chai.expect(result).to.deep.equal({
           _id: 'target~2020-02~uuid~username',
           owner: 'uuid',
@@ -1099,7 +1099,7 @@ describe('TargetAggregates service', () => {
 
       db.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      return service.getTargets('uuid').then(result => {
+      return service.getCurrentTargetDoc('uuid').then(result => {
         chai.expect(result).to.deep.equal({
           _id: 'target~2020-02~uuid~username1',
           owner: 'uuid',
@@ -1130,7 +1130,7 @@ describe('TargetAggregates service', () => {
 
       db.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      return service.getTargets('uuid').then(result => {
+      return service.getCurrentTargetDoc('uuid').then(result => {
         chai.expect(result).to.deep.equal({
           _id: 'target~2020-02~uuid~username1',
           owner: 'uuid',
