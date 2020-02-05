@@ -9,6 +9,7 @@ const _ = require('underscore');
       $log,
       $ngRedux,
       $scope,
+      $state,
       $stateParams,
       $timeout,
       Changes,
@@ -137,6 +138,7 @@ const _ = require('underscore');
               ctrl.removeSelectedReport(change.id);
             } else {
               ctrl.unsetSelected();
+              $state.go($state.current.name, { id: null });
             }
           } else {
             const selectedReports = ctrl.selectedReports;
