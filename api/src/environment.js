@@ -6,7 +6,8 @@ const { UNIT_TEST_ENV, COUCH_URL, MEDIC_API_RESOURCE_PATH, NODE_ENV } = process.
 
 if (UNIT_TEST_ENV) {
   module.exports = {
-    serverUrl: ''
+    serverUrl: 'ftp://myserver',
+    db: 'mydb'
   };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching

@@ -30,6 +30,7 @@ const people = require('./controllers/people');
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
+const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const infodoc = require('./controllers/infodoc');
 const authorization = require('./middleware/authorization');
@@ -317,6 +318,8 @@ app.get('/api/deploy-info', (req, res) => {
   }
   res.json(environment.getDeployInfo());
 });
+
+app.get('/api/v1/monitoring', monitoring.get);
 
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req)
