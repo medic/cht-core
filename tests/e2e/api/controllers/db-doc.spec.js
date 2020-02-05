@@ -1779,13 +1779,16 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(Object.assign({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
-            utils.requestOnTestDb(
-              Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions)
-            ).catch(err => err),
-            utils.requestOnTestDb(
-              Object.assign({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)
-            ).catch(err => err),
+            utils
+              .requestOnTestDb(Object.assign({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
+            utils
+              .requestOnTestDb(Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(
+                Object.assign({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)
+              )
+              .catch(err => err),
           ]);
         })
         .then(results => {
@@ -1845,18 +1848,21 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return Promise.all([
-            utils.requestOnTestDb(
-              Object.assign({ path: '/allowed_attach/att_name' }, offlineRequestOptions)
-            ).catch(err => err),
-            utils.requestOnTestDb(
-              Object.assign({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)
-            ).catch(err => err),
-            utils.requestOnTestDb(
-              Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions)
-            ).catch(err => err),
-            utils.requestOnTestDb(
-              Object.assign({ path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false }, offlineRequestOptions)
-            ),
+            utils
+              .requestOnTestDb(Object.assign({ path: '/allowed_attach/att_name' }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(
+                Object.assign({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)
+              )
+              .catch(err => err),
+            utils
+              .requestOnTestDb(Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions))
+              .catch(err => err),
+            utils.requestOnTestDb(Object.assign(
+              { path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false },
+              offlineRequestOptions
+            )),
           ]);
         })
         .then(results => {

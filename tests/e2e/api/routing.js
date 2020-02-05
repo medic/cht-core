@@ -84,7 +84,9 @@ describe('routing', () => {
     it('API restricts endpoints which need authorization', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions)) // 403
+          .requestOnTestDb(
+            Object.assign({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions)
+          )
           .catch(err => err),
         utils
           .requestOnTestDb(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
@@ -167,7 +169,9 @@ describe('routing', () => {
           .requestOnTestDb(Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions))
+          .requestOnTestDb(
+            Object.assign({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
           .request(Object.assign(
@@ -179,10 +183,14 @@ describe('routing', () => {
           .requestOnMedicDb(Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions))
+          .requestOnMedicDb(
+            Object.assign({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_design//medic//_list//test_list/test_view` }, offlineRequestOptions))
+          .request(
+            Object.assign({ path: `//medic//_design//medic//_list//test_list/test_view` }, offlineRequestOptions)
+          )
           .catch(err => err)
       ]).then(results => {
         results.forEach((result, idx) => {
@@ -211,7 +219,9 @@ describe('routing', () => {
           .requestOnTestDb(Object.assign({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_show//test/` }, offlineRequestOptions))
+          .request(
+            Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_show//test/` }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
           .requestOnMedicDb(Object.assign({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
@@ -250,7 +260,9 @@ describe('routing', () => {
           .requestOnTestDb(Object.assign({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions))
+          .request(
+            Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
           .requestOnMedicDb(Object.assign({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
@@ -259,7 +271,9 @@ describe('routing', () => {
           .requestOnMedicDb(Object.assign({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions))
+          .request(
+            Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions)
+          )
           .catch(err => err),
       ]).then(results => {
         results.forEach((result, idx) => {
@@ -416,7 +430,9 @@ describe('routing', () => {
           .requestOnTestDb(Object.assign({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_ensure_full_commit//` }, offlineRequestOptions, request))
+          .request(
+            Object.assign({ path: `//${constants.DB_NAME}//_ensure_full_commit//` }, offlineRequestOptions, request)
+          )
           .catch(err => err),
         utils
           .requestOnMedicDb(Object.assign({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
