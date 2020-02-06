@@ -1069,39 +1069,11 @@
         </pregnancy_home_visit>
       </instance>
       <instance id="contact-summary"/>
-      <instance id="yes_no">
+      <instance id="translate_woman_start_label">
         <root>
           <item>
-            <itextId>static_instance-yes_no-0</itextId>
-            <name>yes</name>
-          </item>
-          <item>
-            <itextId>static_instance-yes_no-1</itextId>
-            <name>no</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="visit_options">
-        <root>
-          <item>
-            <itextId>static_instance-visit_options-0</itextId>
-            <name>yes</name>
-          </item>
-          <item>
-            <itextId>static_instance-visit_options-1</itextId>
-            <name>miscarriage</name>
-          </item>
-          <item>
-            <itextId>static_instance-visit_options-2</itextId>
-            <name>abortion</name>
-          </item>
-          <item>
-            <itextId>static_instance-visit_options-3</itextId>
-            <name>refused</name>
-          </item>
-          <item>
-            <itextId>static_instance-visit_options-4</itextId>
-            <name>migrated</name>
+            <itextId>static_instance-translate_woman_start_label-0</itextId>
+            <name>woman-start</name>
           </item>
         </root>
       </instance>
@@ -1114,42 +1086,6 @@
           <item>
             <itextId>static_instance-age_correct_yes_no-1</itextId>
             <name>no</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="clear_options">
-        <root>
-          <item>
-            <itextId>static_instance-clear_options-0</itextId>
-            <name>clear_this</name>
-          </item>
-          <item>
-            <itextId>static_instance-clear_options-1</itextId>
-            <name>clear_all</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="g_age_update_methods">
-        <root>
-          <item>
-            <itextId>static_instance-g_age_update_methods-0</itextId>
-            <name>method_weeks</name>
-          </item>
-          <item>
-            <itextId>static_instance-g_age_update_methods-1</itextId>
-            <name>method_edd</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="lmp_approximations">
-        <root>
-          <item>
-            <itextId>static_instance-lmp_approximations-0</itextId>
-            <name>approx_weeks</name>
-          </item>
-          <item>
-            <itextId>static_instance-lmp_approximations-1</itextId>
-            <name>approx_months</name>
           </item>
         </root>
       </instance>
@@ -1181,6 +1117,74 @@
           </item>
         </root>
       </instance>
+      <instance id="translate_woman_label">
+        <root>
+          <item>
+            <itextId>static_instance-translate_woman_label-0</itextId>
+            <name>woman</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="clear_options">
+        <root>
+          <item>
+            <itextId>static_instance-clear_options-0</itextId>
+            <name>clear_this</name>
+          </item>
+          <item>
+            <itextId>static_instance-clear_options-1</itextId>
+            <name>clear_all</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="g_age_update_methods">
+        <root>
+          <item>
+            <itextId>static_instance-g_age_update_methods-0</itextId>
+            <name>method_weeks</name>
+          </item>
+          <item>
+            <itextId>static_instance-g_age_update_methods-1</itextId>
+            <name>method_edd</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="visit_options">
+        <root>
+          <item>
+            <itextId>static_instance-visit_options-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>static_instance-visit_options-1</itextId>
+            <name>miscarriage</name>
+          </item>
+          <item>
+            <itextId>static_instance-visit_options-2</itextId>
+            <name>abortion</name>
+          </item>
+          <item>
+            <itextId>static_instance-visit_options-3</itextId>
+            <name>refused</name>
+          </item>
+          <item>
+            <itextId>static_instance-visit_options-4</itextId>
+            <name>migrated</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="lmp_approximations">
+        <root>
+          <item>
+            <itextId>static_instance-lmp_approximations-0</itextId>
+            <name>approx_weeks</name>
+          </item>
+          <item>
+            <itextId>static_instance-lmp_approximations-1</itextId>
+            <name>approx_months</name>
+          </item>
+        </root>
+      </instance>
       <instance id="risk_conditions">
         <root>
           <item>
@@ -1205,19 +1209,15 @@
           </item>
         </root>
       </instance>
-      <instance id="translate_woman_label">
+      <instance id="yes_no">
         <root>
           <item>
-            <itextId>static_instance-translate_woman_label-0</itextId>
-            <name>woman</name>
+            <itextId>static_instance-yes_no-0</itextId>
+            <name>yes</name>
           </item>
-        </root>
-      </instance>
-      <instance id="translate_woman_start_label">
-        <root>
           <item>
-            <itextId>static_instance-translate_woman_start_label-0</itextId>
-            <name>woman-start</name>
+            <itextId>static_instance-yes_no-1</itextId>
+            <name>no</name>
           </item>
         </root>
       </instance>
