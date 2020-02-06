@@ -1,5 +1,5 @@
 let zscoreUtil;
-const _ = require('lodash');
+const _ = require('lodash/core');
 
 const getValue = function(resultObject) {
   if (!_.isObject(resultObject) || !resultObject.t) {

@@ -1,4 +1,5 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.groupBy = require('lodash/groupBy');
 const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('ContactsActions',

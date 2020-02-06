@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 
 const IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//;
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';

@@ -1,4 +1,5 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.range = require('lodash/range');
 const moment = require('moment');
 
 (function () {
@@ -222,7 +223,7 @@ const moment = require('moment');
         range = _.range(Math.round(months * 4.348));
       }
 
-      _.each(range, function() {
+      _.forEach(range, function() {
         list.push(moment(date));
         date.subtract(1, step);
       });
@@ -352,7 +353,7 @@ const moment = require('moment');
   };
 
   function countValid(rows, dates, forClinics) {
-    _.each(rows, function(row) {
+    _.forEach(rows, function(row) {
       const seen = {};
       let count = totalReportsDue(dates);
 
@@ -362,7 +363,7 @@ const moment = require('moment');
 
       row.valid = 0;
 
-      _.each(row.records, function(record) {
+      _.forEach(row.records, function(record) {
         const clinicId = record.clinicId;
         const key = (record.month || record.week_number) + '-' + record.year;
 
@@ -394,7 +395,7 @@ const moment = require('moment');
     }
 
     const saved = {};
-    _.each(facilities, function(f) {
+    _.forEach(facilities, function(f) {
       const id = f.key[1];
       const name = f.key[1+3]; //name is three elements over
 
@@ -413,14 +414,14 @@ const moment = require('moment');
     });
 
     // push into array
-    _.each(saved, function(r, idx) {
+    _.forEach(saved, function(r, idx) {
       r.id = idx;
       rows.unshift(r);
     });
 
     // find the matching facility and populate row.clinic array
-    _.each(rows, function(row) {
-      _.each(reports, function(report) {
+    _.forEach(rows, function(row) {
+      _.forEach(reports, function(report) {
         if (report.value.healthCenterId === row.id) {
           const is_valid = isValid(report.value);
           const formatted_record = {
@@ -459,7 +460,7 @@ const moment = require('moment');
     if (facilities.rows) { facilities = facilities.rows; }
 
     const saved = {};
-    _.each(facilities, function(f) {
+    _.forEach(facilities, function(f) {
       const id = f.key[2];
 
       if (!saved[id]) {
@@ -479,8 +480,8 @@ const moment = require('moment');
     });
 
     // find the matching facility and populate row.records array.
-    _.each(rows, function(row) {
-      _.each(reports, function(report) {
+    _.forEach(rows, function(row) {
+      _.forEach(reports, function(report) {
         if (report.value.clinicId === row.id) {
           const is_valid = isValid(report.value);
           const formatted_record = {
@@ -512,7 +513,7 @@ const moment = require('moment');
     // assume monthly by default
     const weekly_reports = (dates.reporting_freq === 'week');
 
-    _.each(rows, function(row) {
+    _.forEach(rows, function(row) {
       const pat = function(str) {
         if (!str) {
           return '';
@@ -558,7 +559,7 @@ const moment = require('moment');
           not_submitted: true
         };
 
-        if (!_.includes(recorded_time_frames, year + '' + pat(val))) {
+        if (!recorded_time_frames.includes(year + '' + pat(val))) {
           Object.assign(empty_report, extra);
           empty_report.name = getName(empty_report);
           row.records.push(empty_report);
@@ -595,13 +596,13 @@ const moment = require('moment');
 
     if (facilities.rows) { facilities = facilities.rows; }
 
-    _.each(facilities, function(f) {
+    _.forEach(facilities, function(f) {
       t.district_hospitals[f.key[0]] = f.key[3];
       t.health_centers[f.key[1]] = f.key[4];
       t.clinics[f.key[2]] = f.key[5];
     });
 
-    _.each(reports, function(r) {
+    _.forEach(reports, function(r) {
       if (r.value.isValid) { t.complete++; }
       else { t.incomplete++; }
     });

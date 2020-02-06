@@ -1,4 +1,5 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
 
 angular.module('inboxServices').factory('HydrateContactNames',
   function(
@@ -56,13 +57,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
      * Replace contact ids with their names for ids
      */
     return function(summaries) {
-      const ids =  _.chain(summaries)
-        .map(relevantIdsFromSummary)
-        .flattenDeep()
-        .compact()
-        .uniq()
-        .value();
-
+      const ids = _.uniq(_.compact(_.flattenDeep(summaries.map(relevantIdsFromSummary))));
       if (!ids.length) {
         return $q.resolve(summaries);
       }

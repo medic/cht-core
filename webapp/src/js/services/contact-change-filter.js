@@ -1,7 +1,7 @@
 /**
  * Service to identify relevant changes in relation to a Contact document.
  */
-const _ = require('lodash');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('ContactChangeFilter',
   function(ContactTypes) {

@@ -1,4 +1,6 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.toPairs = require('lodash/toPairs');
+
 
 angular.module('controllers').controller('IconsCtrl',
   function(

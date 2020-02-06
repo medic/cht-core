@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 const moment = require('moment');
 
 (function () {

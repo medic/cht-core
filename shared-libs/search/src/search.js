@@ -2,7 +2,9 @@
 // Skip and Limit are not considered fast:
 //    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
 //    https://github.com/medic/medic/issues/4206
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.uniqBy = require('lodash/uniqBy');
+_.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
 
 module.exports = function(Promise, DB) {

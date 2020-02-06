@@ -1,7 +1,7 @@
 /**
  * @module message-utils
  */
-const _ = require('lodash');
+const _ = require('lodash/core');
 const uuid = require('uuid');
 const gsm = require('gsm');
 const mustache = require('mustache');
@@ -210,7 +210,7 @@ const formatDate = function(config, text, view, formatString, locale) {
 };
 
 const render = function(config, template, view, locale) {
-  return mustache.render(template, _.extend(view, {
+  return mustache.render(template, Object.assign(view, {
     bikram_sambat_date: function() {
       return function(text) {
         return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));

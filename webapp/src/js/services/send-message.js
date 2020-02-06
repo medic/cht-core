@@ -1,4 +1,6 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.uniqBy = require('lodash/uniqBy');
+_.groupBy = require('lodash/groupBy');
 const uuid = require('uuid/v4');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');

@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 const moment = require('moment');
 
 angular.module('controllers').controller('DisplayDateTimeCtrl',
@@ -61,11 +61,11 @@ angular.module('controllers').controller('DisplayDateTimeCtrl',
           reported_date_format: res.reported_date_format,
         };
         $scope.date_formats = standard_date_formats;
-        if (!_.includes($scope.date_formats, res.date_format)) {
+        if (!$scope.date_formats.includes(res.date_format)) {
           $scope.date_formats.push(res.date_format);
         }
         $scope.datetime_formats = standard_datetime_formats;
-        if (!_.includes($scope.datetime_formats, res.reported_date_format)) {
+        if (!$scope.datetime_formats.includes(res.reported_date_format)) {
           $scope.datetime_formats.push(res.reported_date_format);
         }
 

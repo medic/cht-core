@@ -30,7 +30,7 @@ const registrationIdsWithNoPatientContacts = function(batch, settings, callback)
           include_docs: true,
           keys: _.chain(potentialRegistrationIdsToConsider)
             .map(row => row[1])
-            .flatten()
+            .flattenDeep()
             .value(),
         },
         function(err, results) {
@@ -78,7 +78,7 @@ const batchCreatePatientContacts = function(batch, settings, callback) {
         // have a patient contact created for them
         return registration.patient_id;
       })
-      .uniq(false, function(registration) {
+      .uniqBy(function(registration) {
         // And we only need one for each patient.
         return registration.patient_id;
       })
@@ -95,7 +95,7 @@ const batchCreatePatientContacts = function(batch, settings, callback) {
     );
 
     const contactPhoneNumbers = _.chain(uniqueValidRegistrations)
-      .pluck('from')
+      .map('from')
       .uniq()
       .value();
 
@@ -111,7 +111,7 @@ const batchCreatePatientContacts = function(batch, settings, callback) {
         }
 
         const contactForPhoneNumber = _.chain(results.rows)
-          .pluck('doc')
+          .map('doc')
           .uniq()
           .reduce(function(memo, doc) {
             memo[doc.phone] = doc;

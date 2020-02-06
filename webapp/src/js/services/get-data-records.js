@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 
 /**
  * Gets data records by the given array of ids.

@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 const actionTypes = require('./actionTypes');
 const lineageFactory = require('@medic/lineage');
 

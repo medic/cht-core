@@ -1,4 +1,6 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
 const messages = require('@medic/message-utils');
 const lineageFactory = require('@medic/lineage');
 const registrationUtils = require('@medic/registration-utils');
@@ -206,7 +208,7 @@ angular
       }
       let formatted;
       let relative;
-      if (_.includes(['child_birth_date', 'birth_date'], field)) {
+      if (['child_birth_date', 'birth_date'].includes(field)) {
         formatted = FormatDate.date(date);
         relative = FormatDate.relative(date, { withoutTime: true });
       } else {
@@ -269,7 +271,7 @@ angular
         return getMessage(settings, key, locale) || key;
       }
       const interpolation = skipInterpolation ? 'no-interpolation' : null;
-      // NB: The 5th parameter must be explicitely null to disable sanitization.
+      // NB: The 5th parameter must be explicitly null to disable sanitization.
       // The result will be sanitized by angular when it's rendered, so using
       // the default sanitization would result in double encoding.
       // Issue: medic/medic#4618
@@ -305,7 +307,7 @@ angular
           return;
         }
 
-        if (_.includes(dateFields, field)) {
+        if (dateFields.includes(field)) {
           value = formatDateField(value, field);
         }
 
@@ -470,10 +472,10 @@ angular
       const fields = getFields(doc, [], doc.fields, label, 0);
       const hide = doc.hidden_fields || [];
       hide.push('inputs');
-      return _.reject(fields, function(field) {
-        return _.some(hide, function(h) {
+      return _.filter(fields, function(field) {
+        return _.every(hide, function(h) {
           const hiddenLabel = label + '.' + h;
-          return hiddenLabel === field.label || field.label.indexOf(hiddenLabel + '.') === 0;
+          return hiddenLabel !== field.label && field.label.indexOf(hiddenLabel + '.') !== 0;
         });
       });
     };

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const moment = require('moment');
 const responsive = require('../modules/responsive');
 
@@ -146,17 +145,17 @@ const responsive = require('../modules/responsive');
           $('#statusDropdown').on('update', function() {
             const values = $(this).multiDropdown().val();
             const valid = getTernaryValue(
-              _.includes(values, 'valid'),
-              _.includes(values, 'invalid')
+              values.includes('valid'),
+              values.includes('invalid')
             );
             const verified = [];
-            if(_.includes(values, 'verified')) {
+            if(values.includes('verified')) {
               verified.push(true);
             }
-            if(_.includes(values, 'unverified')) {
+            if(values.includes('unverified')) {
               verified.push(undefined);
             }
-            if(_.includes(values, 'verifiedErrors')) {
+            if(values.includes('verifiedErrors')) {
               verified.push(false);
             }
 

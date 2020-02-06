@@ -1,4 +1,5 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 

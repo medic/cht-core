@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('Contacts',
   function(

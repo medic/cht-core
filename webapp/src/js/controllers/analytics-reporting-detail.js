@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 const d3 = require('d3');
 const reportingUtils = require('../modules/reporting-rates-utils');
 

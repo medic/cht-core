@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 const responsive = require('../modules/responsive');
 const scrollLoader = require('../modules/scroll-loader');
 

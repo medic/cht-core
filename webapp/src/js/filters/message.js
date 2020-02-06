@@ -1,5 +1,5 @@
 const format = require('../modules/format');
-const _ = require('lodash');
+const _ = require('lodash/core');
 
 (function () {
 

@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
 const partialParse = require('partial-json-parser');
 const utilsFactory = require('@medic/bulk-docs-utils');
 

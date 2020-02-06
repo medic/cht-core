@@ -1,4 +1,5 @@
-const _ = require('lodash');
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
