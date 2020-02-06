@@ -1,0 +1,5 @@
+# These are used for tracking deployments on actual, production supported 
+# configurations. Real configurations should commit these, but to keep our
+# example pure we're going to opt not to
+._revs
+.hashes
