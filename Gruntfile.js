@@ -96,8 +96,9 @@ module.exports = function(grunt) {
       },
       secondary: {
         files: {
-          'build/ddocs/medic/_attachments/ddocs/compiled.json':
-            'build/ddocs/medic-*/',
+          'build/ddocs/medic/_attachments/ddocs/medic.json': 'build/ddocs/medic-db/*',
+          'build/ddocs/medic/_attachments/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
+          'build/ddocs/medic/_attachments/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
         },
       },
     },
@@ -118,7 +119,9 @@ module.exports = function(grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/compiled.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
         }
       },
       test: {
@@ -186,7 +189,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'build/ddocs/medic-admin/_attachments/js/main.js',
+        dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -214,8 +217,8 @@ module.exports = function(grunt) {
           'build/ddocs/medic/_attachments/js/service-worker.js': 'build/ddocs/medic/_attachments/js/service-worker.js',
 
           // admin files
-          'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
-          'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js'
+          'build/ddocs/medic-db/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
+          'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js'
         },
       },
       api: {
@@ -243,7 +246,7 @@ module.exports = function(grunt) {
       },
       admin: {
         files: {
-          'build/ddocs/medic-admin/_attachments/css/main.css':
+          'build/ddocs/medic-db/medic-admin/_attachments/css/main.css':
             'admin/src/css/main.less',
         },
       },
@@ -255,7 +258,7 @@ module.exports = function(grunt) {
         },
         files: {
           'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
-          'build/ddocs/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-admin/_attachments/css/main.css',
+          'build/ddocs/medic-db/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-db/medic-admin/_attachments/css/main.css',
         },
       },
       api: {
@@ -327,7 +330,7 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/index.html',
-            dest: 'build/ddocs/medic-admin/_attachments/',
+            dest: 'build/ddocs/medic-db/medic-admin/_attachments/',
           },
           {
             expand: true,
@@ -336,7 +339,7 @@ module.exports = function(grunt) {
               'admin/node_modules/font-awesome/fonts/*',
               'webapp/src/fonts/**/*'
             ],
-            dest: 'build/ddocs/medic-admin/_attachments/fonts/',
+            dest: 'build/ddocs/medic-db/medic-admin/_attachments/fonts/',
           },
         ],
       },
@@ -850,7 +853,7 @@ module.exports = function(grunt) {
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'build/ddocs/medic-admin/_attachments/js/templates.js',
+        dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -885,10 +888,10 @@ module.exports = function(grunt) {
         'build/ddocs/medic/_attachments/js/inbox.js',
       'build/ddocs/medic/_attachments/js/templates.js':
         'build/ddocs/medic/_attachments/js/templates.js',
-      'build/ddocs/medic-admin/_attachments/js/main.js':
-        'build/ddocs/medic-admin/_attachments/js/main.js',
-      'build/ddocs/medic-admin/_attachments/js/templates.js':
-        'build/ddocs/medic-admin/_attachments/js/templates.js',
+      'build/ddocs/medic-db/medic-admin/_attachments/js/main.js':
+        'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
+      'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js':
+        'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
     },
     jsdoc: {
       admin: {

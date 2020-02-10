@@ -65,13 +65,13 @@ const setUpMocks = () => {
       { key: [ 'scheduled' ], value: 15 },
       { key: [ 'due' ], value: 3 },
     ] });
-  sinon.stub(db.sentinel, 'allDocs')
-    .resolves({ rows: [ 'a', 'b', 'c' ] });
-  sinon.stub(db.medicUsersMeta, 'allDocs')
-    .resolves({ rows: [ 'a', 'b' ] });
+  sinon.stub(db.sentinel, 'query')
+    .resolves({ rows: [ { value: 3 } ] });
+  sinon.stub(db.medicUsersMeta, 'query')
+    .resolves({ rows: [ { value: 2 } ] });
 };
 
-describe('Monitoring service', () => {
+describe.only('Monitoring service', () => {
 
   beforeEach(() => {
     clock = sinon.useFakeTimers();
@@ -87,7 +87,7 @@ describe('Monitoring service', () => {
     return service.json().then(actual => {
       chai.expect(request.post.callCount).to.equal(1);
       chai.expect(request.post.args[0][0].body.keys)
-        .to.deep.equal([ environment.db, `${environment.db}-sentinel`, `${environment.db}-users-meta`, '_users' ]);
+        .to.deep.equal([ 'mydb', 'mydb-sentinel', 'mydb-users-meta', '_users' ]);
       chai.expect(actual.version).to.deep.equal({
         app: '5.3.2',
         node: process.version,
@@ -136,6 +136,88 @@ describe('Monitoring service', () => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: 3 });
       chai.expect(actual.feedback).to.deep.equal({ count: 2 });
       chai.expect(actual.date.current).to.equal(0);
+    });
+  });
+
+  it('handles errors gracefully', () => {
+    sinon.stub(db.medic, 'get').withArgs('_design/medic').rejects();
+    sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
+    sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
+    sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data').rejects();
+    sinon.stub(db.medic, 'query').rejects();
+    sinon.stub(db.sentinel, 'query').rejects();
+    sinon.stub(db.medicUsersMeta, 'query').rejects();
+    return service.json().then(actual => {
+      chai.expect(actual.version).to.deep.equal({
+        app: '',
+        node: process.version,
+        couchdb: ''
+      });
+      chai.expect(actual.couchdb).to.deep.equal({
+        medic: {
+          doc_count: -1,
+          doc_del_count: -1,
+          fragmentation: -1,
+          name: '',
+          update_sequence: -1
+        },
+        sentinel: {
+          doc_count: -1,
+          doc_del_count: -1,
+          fragmentation: -1,
+          name: '',
+          update_sequence: -1
+        },
+        users: {
+          doc_count: -1,
+          doc_del_count: -1,
+          fragmentation: -1,
+          name: '',
+          update_sequence: -1
+        },
+        usersmeta: {
+          doc_count: -1,
+          doc_del_count: -1,
+          fragmentation: -1,
+          name: '',
+          update_sequence: -1
+        }
+      });
+      chai.expect(actual.messaging).to.deep.equal({
+        outgoing: {
+          state: {
+            due: -1,
+            scheduled: -1,
+            muted: -1
+          }
+        }
+      });
+      chai.expect(actual.sentinel).to.deep.equal({ backlog: -1 });
+      chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
+      chai.expect(actual.feedback).to.deep.equal({ count: -1 });
+    });
+  });
+
+  it('handles empty reduce response correctly', () => {
+    sinon.stub(db.medic, 'get').withArgs('_design/medic')
+      .resolves({ version: '5.3.2' });
+    sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl }))
+      .resolves({ version: 'v3.3.3' });
+    sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
+      .resolves(dbInfos);
+    sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data')
+      .resolves({ processed_seq: '50-xyz' });
+    sinon.stub(db.medic, 'query')
+      .resolves({ rows: [
+        { key: [ 'scheduled' ], value: 15 },
+        { key: [ 'due' ], value: 3 },
+      ] });
+    // empty rows is how couchdb responds to reducing with no rows - this should return 0
+    sinon.stub(db.sentinel, 'query').resolves({ rows: [] });
+    sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
+    return service.json().then(actual => {
+      chai.expect(actual.outbound_push).to.deep.equal({ backlog: 0 });
+      chai.expect(actual.feedback).to.deep.equal({ count: 0 });
     });
   });
 

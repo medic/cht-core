@@ -1,6 +1,6 @@
 const expect = require('chai').expect;
 const utils = require('./utils');
-const map = utils.loadView('medic-client', 'docs_by_id_lineage');
+const map = utils.loadView('medic-db', 'medic-client', 'docs_by_id_lineage');
 
 describe('docs_by_id_lineage view', () => {
   beforeEach(() => {

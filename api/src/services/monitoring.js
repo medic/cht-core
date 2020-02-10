@@ -2,6 +2,7 @@ const request = require('request-promise-native');
 
 const db = require('../db');
 const environment = require('../environment');
+const logger = require('../logger');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -10,17 +11,37 @@ const DBS_TO_MONITOR = {
   'users': '_users'
 };
 
-const getSequenceNumber = seq => parseInt(seq.split('-')[0]);
+const getSequenceNumber = seq => {
+  if (seq) {
+    const parts = seq.split('-');
+    if (parts.length) {
+      return parseInt(parts[0]);
+    }
+  }
+  return -1;
+};
 
 const getAppVersion = () => {
   return db.medic.get('_design/medic')
-    .then(ddoc => ddoc.version);
+    .then(ddoc => ddoc.version)
+    .catch(err => {
+      logger.error('Error fetching app version: %o', err);
+      return '';
+    });
 };
 
 const getSentinelProcessedSeq = () => {
   return db.sentinel.get('_local/sentinel-meta-data')
     .then(metadata => getSequenceNumber(metadata.processed_seq))
-    .catch(() => 0); // may not exist
+    .catch(err => {
+      if (err.status === 404) {
+        // sentinel has not processed anything yet
+        return 0;
+      }
+      // unknown error trying to fetch meta data
+      logger.error('Error fetching sentinel-meta-data: %o', err);
+      return -1;
+    });
 };
 
 const getCouchVersion = () => {
@@ -29,22 +50,27 @@ const getCouchVersion = () => {
       url: `${environment.serverUrl}`,
       json: true
     })
-    .then(info => info.version);
+    .then(info => info.version)
+    .catch(err => {
+      logger.error('Error fetching couch version: %o', err);
+      return '';
+    });
 };
 
 const mapDbInfo = dbInfo => {
   const fragmentation = dbInfo.data_size > 0 ?
-    dbInfo.disk_size / dbInfo.data_size : 0;
+    dbInfo.disk_size / dbInfo.data_size : -1;
   return {
-    name: dbInfo.db_name,
+    name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
-    doc_count: dbInfo.doc_count,
-    doc_del_count: dbInfo.doc_del_count,
+    doc_count: dbInfo.doc_count || -1,
+    doc_del_count: dbInfo.doc_del_count || -1,
     fragmentation
   };
 };
 
 const getDbInfos = () => {
+  const result = {};
   return request
     .post({
       url: `${environment.serverUrl}/_dbs_info`,
@@ -53,21 +79,37 @@ const getDbInfos = () => {
       headers: { 'Content-Type': 'application/json' }
     })
     .then(dbInfos => {
-      const result = {};
       dbInfos.forEach((dbInfo, i) => {
         result[Object.keys(DBS_TO_MONITOR)[i]] = mapDbInfo(dbInfo.info);
       });
-      return result;
+    })
+    .catch(err => {
+      logger.error('Error fetching db info: %o', err);
+      Object.keys(DBS_TO_MONITOR).forEach(key => {
+        result[key] = mapDbInfo({});
+      });
+    })
+    .then(() => result);
+};
+
+const getResultCount = result => result.rows.length ? result.rows[0].value : 0;
+
+const getOutboundPushQueueLength = () => {
+  return db.sentinel.query('sentinel/outbound_push_tasks')
+    .then(result => getResultCount(result))
+    .catch(err => {
+      logger.error('Error fetching outbound push queue length: %o', err);
+      return -1;
     });
 };
 
-const getOutboundPushQueueLength = () => {
-  return db.sentinel
-    .allDocs({
-      startkey: 'task:outbound:',
-      endkey: 'task:outbound:\ufff0'
-    })
-    .then(result => result.rows.length); // TODO use a view
+const getFeedbackCount = () => {
+  return db.medicUsersMeta.query('users-meta/feedback_by_date')
+    .then(result => getResultCount(result))
+    .catch(err => {
+      logger.error('Error fetching feedback count: %o', err);
+      return -1;
+    });
 };
 
 const getOutgoingMessageStatusCounts = () => {
@@ -82,19 +124,23 @@ const getOutgoingMessageStatusCounts = () => {
         result[row.key[0]] = row.value;
       });
       return result;
+    })
+    .catch(err => {
+      logger.error('Error fetching outgoing message status count: %o', err);
+      return {
+        due: -1,
+        scheduled: -1,
+        muted: -1
+      };
     });
 };
 
-const getFeedbackCount = () => {
-  return db.medicUsersMeta.allDocs({
-    startkey: 'feedback-',
-    endkey: 'feedback-\ufff0',
-    limit: 1,
-    descending: true
-  })
-    .then(result => {
-      return result.rows.length;
-    }); // TODO probably need a view to do this better!
+const getSentinelBacklog = (medicInfo, sentinelProcessedSeq) => {
+  const medicUpdateSeq = medicInfo && medicInfo.update_sequence || -1;
+  if (medicUpdateSeq > -1 && sentinelProcessedSeq > -1) {
+    return medicUpdateSeq - sentinelProcessedSeq;
+  }
+  return -1;
 };
 
 const json = () => {
@@ -117,7 +163,7 @@ const json = () => {
       outgoingMessageStatus,
       feedbackCount
     ]) => {
-      return Promise.resolve({
+      return {
         version: {
           app: appVersion,
           node: process.version,
@@ -129,7 +175,7 @@ const json = () => {
           uptime: process.uptime()
         },
         sentinel: {
-          backlog: dbInfos.medic.update_sequence - sentinelProcessedSeq
+          backlog: getSentinelBacklog(dbInfos.medic, sentinelProcessedSeq)
         },
         messaging: {
           outgoing: {
@@ -142,7 +188,7 @@ const json = () => {
         feedback: {
           count: feedbackCount
         }
-      });
+      };
     });
 };
 

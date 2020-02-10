@@ -1,22 +1,29 @@
 const _ = require('lodash');
 const db = require('./db');
+const environment = require('./environment');
 const logger = require('./logger');
-const DDOC_ATTACHMENT_ID = 'ddocs/compiled.json';
+
+const BUNDLED_DDOCS = [
+  { attachmentId: 'ddocs/medic.json', targetDb: db.medic },
+  { attachmentId: 'ddocs/sentinel.json', targetDb: db.sentinel },
+  { attachmentId: 'ddocs/users-meta.json', targetDb: db.medicUsersMeta },
+];
 const SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js';
 const SWMETA_DOC_ID = 'service-worker-meta';
 const SERVER_DDOC_ID = '_design/medic';
 const CLIENT_DDOC_ID = '_design/medic-client';
-const environment = require('./environment');
 
-const getCompiledDdocs = () => db.medic
-  .getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
-  .then(result => JSON.parse(result.toString()).docs)
-  .catch(err => {
-    if (err.status === 404) {
-      return [];
-    }
-    throw err;
-  });
+const getCompiledDdocs = (attachmentId) => {
+  return db.medic
+    .getAttachment(SERVER_DDOC_ID, attachmentId)
+    .then(result => JSON.parse(result.toString()).docs)
+    .catch(err => {
+      if (err.status === 404) {
+        return [];
+      }
+      throw err;
+    });
+};
 
 const areAttachmentsEqual = (oldDdoc, newDdoc) => {
   if (!oldDdoc._attachments && !newDdoc._attachments) {
@@ -43,10 +50,10 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
   });
 };
 
-const extractCompiledDdoc = (newDdoc, deploy_info) => {
+const extractCompiledDdoc = (newDdoc, deployInfo) => {
   // update the deploy info in the medic-client ddoc
-  if (newDdoc._id === CLIENT_DDOC_ID && (deploy_info || newDdoc.deploy_info)) {
-    newDdoc.deploy_info = deploy_info;
+  if (newDdoc._id === CLIENT_DDOC_ID && (deployInfo || newDdoc.deploy_info)) {
+    newDdoc.deploy_info = deployInfo;
   }
 
   return db.medic
@@ -82,15 +89,22 @@ const extractCompiledDdoc = (newDdoc, deploy_info) => {
     });
 };
 
-const extractFromCompiledDocs = deploy_info => {
-  return getCompiledDdocs()
+const extractFromCompiledDocs = (bundle, deployInfo) => {
+  return getCompiledDdocs(bundle.attachmentId)
     .then(ddocs => {
       if (!ddocs.length) {
         return [];
       }
-      return Promise.all(ddocs.map(ddoc => extractCompiledDdoc(ddoc, deploy_info)));
+      return Promise.all(ddocs.map(ddoc => extractCompiledDdoc(ddoc, deployInfo)));
     })
-    .then(updated => _.compact(updated));
+    .then(updated => {
+      updated = _.compact(updated);
+      if (updated.length) {
+        logger.info(`Updating docs: ${_.map(updated, '_id').join(', ')}`);
+        return bundle.targetDb.bulkDocs({ docs: updated });
+      }
+    });
+
 };
 
 // We need client-side logic to trigger a service worker update when a cached resource changes.
@@ -119,25 +133,25 @@ const extractServiceWorkerMetaDoc = ddoc => {
         return { _id: SWMETA_DOC_ID, digest: attachmentDigest };
       }
       throw err;
+    })
+    .then(doc => {
+      if (doc) {
+        logger.info('Updating service worker meta doc');
+        return db.medic.put(doc);
+      }
     });
 };
 
-const extractFromDdoc = ddoc => {
-  environment.setDeployInfo(ddoc.deploy_info);
-  return Promise.all([
-    extractFromCompiledDocs(ddoc.deploy_info),
-    extractServiceWorkerMetaDoc(ddoc),
-  ]).then(results => _.compact(_.flatten(results)));
+const extractDdocs = deployInfo => {
+  return Promise.all(BUNDLED_DDOCS.map(bundle => extractFromCompiledDocs(bundle, deployInfo)));
 };
 
 module.exports = {
-  run: () => db.medic
-    .get(SERVER_DDOC_ID)
-    .then(extractFromDdoc)
-    .then(docs => {
-      if (docs.length) {
-        logger.info(`Updating docs: ${_.map(docs, '_id').join(', ')}`);
-        return db.medic.bulkDocs({ docs: docs });
-      }
-    }),
+  run: () => {
+    return db.medic.get(SERVER_DDOC_ID).then(ddoc => {
+      environment.setDeployInfo(ddoc.deploy_info);
+      return extractDdocs(ddoc.deploy_info)
+        .then(() => extractServiceWorkerMetaDoc(ddoc));
+    });
+  }
 };

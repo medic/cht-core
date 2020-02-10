@@ -29,8 +29,8 @@ module.exports = function(config) {
       '../node_modules/q/q.js',
 
       // application code
-      '../build/ddocs/medic-admin/_attachments/js/main.js',
-      '../build/ddocs/medic-admin/_attachments/js/templates.js',
+      '../build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
+      '../build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
 
       // test-specific code
       '../node_modules/chai/chai.js',
