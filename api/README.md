@@ -50,7 +50,7 @@ Node server to support the medic app.
 - [Bulk Operations](#bulk-operations)
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
 - [Monitoring](#monitoring)
-  - [GET /api/v1/monitoring](#post-apiv1monitoring)
+  - [GET /api/v1/monitoring](#get-apiv1monitoring)
 - [Upgrades](#upgrades)
   - [Example](#example)
 - [Hydrate](#hydrate)
@@ -1193,9 +1193,8 @@ couchdb_medic_doc_del_count 32
 
 ### Errors
 
-A metric of `""` (for string values) or `-1` (for numeric values) indicates an error occurred while querying the metric - check the API logs for details.
-
-If no response or an error response is received the the instance is unreachable. Thus, this API can be used as an uptime monitoring endpoint.
+- A metric of `""` (for string values) or `-1` (for numeric values) indicates an error occurred while querying the metric - check the API logs for details.
+- If no response or an error response is received the the instance is unreachable. Thus, this API can be used as an uptime monitoring endpoint.
 
 # Upgrades
 
