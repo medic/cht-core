@@ -105,7 +105,6 @@ after_failure:
       for log in $(ls *.log); do
         echo "--------- $log ----------"
         tail "$log"
-        curl -T "$log" curldu.mp
         echo "-------------------------"
       done
     )
