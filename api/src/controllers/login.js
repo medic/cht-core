@@ -120,7 +120,7 @@ const getRedirectUrl = (userCtx, req) => {
     try {
       const referer = new url.URL(req.headers.referer);
       const redirect = new url.URL(referer.searchParams.get('redirect'));
-      if (referer.origin === redirect.origin){
+      if (req.headers.origin === redirect.origin){
         return redirect.toString();
       }
     } catch (e) {
