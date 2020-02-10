@@ -13,7 +13,9 @@
  * 	  })
  */
 const fs = require('fs');
+const path = require('path');
 const uuid = require('uuid/v4');
+
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -34,28 +36,33 @@ function readOptionalFile(path) {
   }
 }
 
+function loadView(viewsDir, viewName) {
+  const viewDir = path.join(viewsDir, viewName);
+  return {
+    map: readFile(`${viewDir}/map.js`),
+    reduce: readOptionalFile(`${viewDir}/reduce.js`),
+  };
+}
+
+function loadDdoc(rootDir, dbName, ddocName) {
+  let viewsDir;
+  if (dbName) {
+    viewsDir = path.join(rootDir, 'ddocs', dbName, ddocName, 'views');
+  } else {
+    viewsDir = path.join(rootDir, 'ddocs', ddocName, 'views');
+  }
+  const views = {};
+  if (fs.existsSync(viewsDir)) {
+    filesIn(viewsDir).forEach(view => views[view] = loadView(viewsDir, view));
+  }
+  ddocs.push({ _id: `_design/${ddocName}`, views });
+}
+
 module.exports = (rootDir='./') => {
-  function loadView(ddocName, viewName) {
-    const viewDir = `${rootDir}/ddocs/${ddocName}/views/${viewName}`;
-    return {
-      map: readFile(`${viewDir}/map.js`),
-      reduce: readOptionalFile(`${viewDir}/reduce.js`),
-    };
-  }
-
-  function loadDdoc(ddocName) {
-    const viewsDir = `${rootDir}/ddocs/${ddocName}/views`;
-
-    const views = {};
-    if (fs.existsSync(viewsDir)) {
-      filesIn(viewsDir).forEach(view => views[view] = loadView(ddocName, view));
-    }
-
-    return { _id: `_design/${ddocName}`, views };
-  }
-
   if (!ddocs) {
-    ddocs = filesIn(`${rootDir}/ddocs`).map(loadDdoc);
+    ddocs = [];
+    loadDdoc(rootDir, false, 'medic');
+    filesIn(`${rootDir}/ddocs/medic-db`).forEach(ddoc => loadDdoc(rootDir, 'medic-db', ddoc));
   }
   const db = new PouchDB(uuid(), { adapter: 'memory' });
   return Promise.all(ddocs.map(ddoc => db.put(ddoc)))
