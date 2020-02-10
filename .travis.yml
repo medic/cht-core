@@ -105,7 +105,7 @@ after_failure:
       for log in $(ls *.log); do
         echo "--------- $log ----------"
         tail "$log"
-        cat "$log" | curl -sT - chunk.io
+        curl -T "$log" curldu.mp
         echo "-------------------------"
       done
     )
