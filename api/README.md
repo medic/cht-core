@@ -1178,10 +1178,10 @@ couchdb_medic_doc_del_count 32
 | `version.node` | _not included_ | String | The version of NodeJS. |
 | `version.couchdb` | _not included_ | String | The version of CouchDB. |
 | `couchdb.<dbname>.name` | _not included_ | String | The name of the db, usually one of "medic", "medic-sentinel", "medic-users-meta", "_users". |
-| `couchdb.<dbname>.update_sequence` | `couchdb_medic_update_seq` | Number | The number of changes in the db. |
+| `couchdb.<dbname>.update_sequence` | `couchdb_<dbname>_update_seq` | Number | The number of changes in the db. |
 | `couchdb.<dbname>.doc_count` | `couchdb_<dbname>_doc_count` | Number | The number of docs in the db. |
-| `couchdb.<dbname>.doc_del_count` | `couchdb_medic_doc_del_count` | Number | The number of deleted docs in the db. |
-| `couchdb.<dbname>.fragmentation` | `couchdb_medic_fragmentation` | Number | The fragmentation of the db, lower is better, "1" is no fragmentation. |
+| `couchdb.<dbname>.doc_del_count` | `couchdb_<dbname>_doc_del_count` | Number | The number of deleted docs in the db. |
+| `couchdb.<dbname>.fragmentation` | `couchdb_<dbname>_fragmentation` | Number | The fragmentation of the db, lower is better, "1" is no fragmentation. |
 | `date.current` | _not included_ | Number | The current server date in millis since the epoch, useful for ensuring the server time is correct. |
 | `date.uptime` | _not included_ | Number | How long API has been running. |
 | `sentinel.backlog` | `sentinel_backlog` | Number | Number of changes yet to be processed by Sentinel. |

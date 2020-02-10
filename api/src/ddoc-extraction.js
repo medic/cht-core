@@ -50,13 +50,13 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
   });
 };
 
-const extractCompiledDdoc = (newDdoc, deployInfo) => {
+const extractCompiledDdoc = (bundle, newDdoc, deployInfo) => {
   // update the deploy info in the medic-client ddoc
   if (newDdoc._id === CLIENT_DDOC_ID && (deployInfo || newDdoc.deploy_info)) {
     newDdoc.deploy_info = deployInfo;
   }
 
-  return db.medic
+  return bundle.targetDb
     .get(newDdoc._id, { attachments: true })
     .then(oldDdoc => {
       // set the rev so we can update if necessary
@@ -95,7 +95,7 @@ const extractFromCompiledDocs = (bundle, deployInfo) => {
       if (!ddocs.length) {
         return [];
       }
-      return Promise.all(ddocs.map(ddoc => extractCompiledDdoc(ddoc, deployInfo)));
+      return Promise.all(ddocs.map(ddoc => extractCompiledDdoc(bundle, ddoc, deployInfo)));
     })
     .then(updated => {
       updated = _.compact(updated);

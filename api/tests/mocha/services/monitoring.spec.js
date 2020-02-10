@@ -53,9 +53,10 @@ const dbInfos = [
 
 const setUpMocks = () => {
   sinon.stub(db.medic, 'get').withArgs('_design/medic')
-    .resolves({ version: '5.3.2' });
-  sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl }))
-    .resolves({ version: 'v3.3.3' });
+    .resolves({ deploy_info: { version: '5.3.2' } });
+  sinon.stub(request, 'get')
+    .withArgs(sinon.match({ url: environment.serverUrl })).resolves({ version: 'v3.3.3' })
+    .withArgs(sinon.match({ url: `${environment.couchUrl}/_changes` })).resolves({ pending: 24 });
   sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
     .resolves(dbInfos);
   sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data')
@@ -130,7 +131,7 @@ describe('Monitoring service', () => {
           }
         }
       });
-      chai.expect(actual.sentinel).to.deep.equal({ backlog: 50 });
+      chai.expect(actual.sentinel).to.deep.equal({ backlog: 24 });
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: 3 });
       chai.expect(actual.feedback).to.deep.equal({ count: 2 });
       chai.expect(actual.date.current).to.equal(0);
@@ -305,7 +306,7 @@ messaging_outgoing{state="muted"} 0
 
 # HELP sentinel_backlog Number of changes yet to be processed by Sentinel
 # TYPE sentinel_backlog gauge
-sentinel_backlog 50
+sentinel_backlog 24
 
 # HELP outbound_push_backlog Number of changes yet to be sent by Outbound Push
 # TYPE outbound_push_backlog gauge

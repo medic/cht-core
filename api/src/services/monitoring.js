@@ -15,7 +15,10 @@ const getSequenceNumber = seq => {
   if (seq) {
     const parts = seq.split('-');
     if (parts.length) {
-      return parseInt(parts[0]);
+      const result = parseInt(parts[0]);
+      if (!isNaN(result)) {
+        return result;
+      }
     }
   }
   return -1;
@@ -23,7 +26,7 @@ const getSequenceNumber = seq => {
 
 const getAppVersion = () => {
   return db.medic.get('_design/medic')
-    .then(ddoc => ddoc.version)
+    .then(ddoc => (ddoc.deploy_info && ddoc.deploy_info.version) || ddoc.version)
     .catch(err => {
       logger.error('Error fetching app version: %o', err);
       return '';
@@ -32,14 +35,29 @@ const getAppVersion = () => {
 
 const getSentinelProcessedSeq = () => {
   return db.sentinel.get('_local/sentinel-meta-data')
-    .then(metadata => getSequenceNumber(metadata.processed_seq))
+    .then(metadata => metadata.processed_seq)
     .catch(err => {
       if (err.status === 404) {
         // sentinel has not processed anything yet
         return 0;
       }
-      // unknown error trying to fetch meta data
-      logger.error('Error fetching sentinel-meta-data: %o', err);
+      throw err;
+    });
+};
+
+const getSentinelBacklog = () => {
+  return getSentinelProcessedSeq()
+    .then(processedSeq => {
+      // Use request as the PouchDB changes API doesn't return the "pending" value we need
+      return request.get({
+        url: `${environment.couchUrl}/_changes`,
+        qs: { since: processedSeq, limit: 0 },
+        json: true
+      });
+    })
+    .then(changes => changes.pending)
+    .catch(err => {
+      logger.error('Error fetching sentinel backlog: %o', err);
       return -1;
     });
 };
@@ -47,7 +65,7 @@ const getSentinelProcessedSeq = () => {
 const getCouchVersion = () => {
   return request
     .get({
-      url: `${environment.serverUrl}`,
+      url: environment.serverUrl,
       json: true
     })
     .then(info => info.version)
@@ -57,14 +75,16 @@ const getCouchVersion = () => {
     });
 };
 
+const defaultNumber = x => typeof x === 'number' ? x : -1;
+
 const mapDbInfo = dbInfo => {
   const fragmentation = dbInfo.data_size > 0 ?
     dbInfo.disk_size / dbInfo.data_size : -1;
   return {
     name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
-    doc_count: dbInfo.doc_count || -1,
-    doc_del_count: dbInfo.doc_del_count || -1,
+    doc_count: defaultNumber(dbInfo.doc_count),
+    doc_del_count: defaultNumber(dbInfo.doc_del_count),
     fragmentation
   };
 };
@@ -135,21 +155,13 @@ const getOutgoingMessageStatusCounts = () => {
     });
 };
 
-const getSentinelBacklog = (medicInfo, sentinelProcessedSeq) => {
-  const medicUpdateSeq = medicInfo && medicInfo.update_sequence || -1;
-  if (medicUpdateSeq > -1 && sentinelProcessedSeq > -1) {
-    return medicUpdateSeq - sentinelProcessedSeq;
-  }
-  return -1;
-};
-
 const json = () => {
   return Promise
     .all([
       getAppVersion(),
       getCouchVersion(),
       getDbInfos(),
-      getSentinelProcessedSeq(),
+      getSentinelBacklog(),
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
       getFeedbackCount()
@@ -158,7 +170,7 @@ const json = () => {
       appVersion,
       couchVersion,
       dbInfos,
-      sentinelProcessedSeq,
+      sentinelBacklog,
       outboundPushBacklog,
       outgoingMessageStatus,
       feedbackCount
@@ -175,7 +187,7 @@ const json = () => {
           uptime: process.uptime()
         },
         sentinel: {
-          backlog: getSentinelBacklog(dbInfos.medic, sentinelProcessedSeq)
+          backlog: sentinelBacklog
         },
         messaging: {
           outgoing: {

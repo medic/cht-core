@@ -16,7 +16,9 @@ describe('DDoc extraction', () => {
   });
 
   it('finds all attached ddocs and, if required, updates them', () => {
-    const get = sinon.stub(db.medic, 'get');
+    const medicGet = sinon.stub(db.medic, 'get');
+    const sentinelGet = sinon.stub(db.sentinel, 'get');
+    const usersMetaGet = sinon.stub(db.medicUsersMeta, 'get');
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const medicAttachment = { docs: [
@@ -46,7 +48,7 @@ describe('DDoc extraction', () => {
       }
     };
 
-    const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
+    const getDdoc = medicGet.withArgs('_design/medic').resolves(ddoc);
     const getMedicAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/medic.json')
       .resolves(Buffer.from(JSON.stringify(medicAttachment)));
@@ -57,32 +59,32 @@ describe('DDoc extraction', () => {
       .withArgs('_design/medic', 'ddocs/users-meta.json')
       .resolves(Buffer.from(JSON.stringify(usersMetaAttachment)));
     
-    const getMedicNew = get.withArgs('_design/medic-new').rejects({ status: 404 });
-    const getMedicUpdated = get.withArgs('_design/medic-updated').resolves({
+    const getMedicNew = medicGet.withArgs('_design/medic-new').rejects({ status: 404 });
+    const getMedicUpdated = medicGet.withArgs('_design/medic-updated').resolves({
       _id: '_design/medic-updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
     });
-    const getMedicUnchanged = get.withArgs('_design/medic-unchanged').resolves({
+    const getMedicUnchanged = medicGet.withArgs('_design/medic-unchanged').resolves({
       _id: '_design/medic-unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } }
     });
 
-    const getSentinelNew = get.withArgs('_design/sentinel-new').rejects({ status: 404 });
-    const getSentinelUpdated = get.withArgs('_design/sentinel-updated').resolves({
+    const getSentinelNew = sentinelGet.withArgs('_design/sentinel-new').rejects({ status: 404 });
+    const getSentinelUpdated = sentinelGet.withArgs('_design/sentinel-updated').resolves({
       _id: '_design/sentinel-updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
     });
-    const getSentinelUnchanged = get.withArgs('_design/sentinel-unchanged').resolves({
+    const getSentinelUnchanged = sentinelGet.withArgs('_design/sentinel-unchanged').resolves({
       _id: '_design/sentinel-unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } }
     });
 
-    const getUsersMetaNew = get.withArgs('_design/users-meta-new').rejects({ status: 404 });
-    const getUsersMetaUpdated = get.withArgs('_design/users-meta-updated').resolves({
+    const getUsersMetaNew = usersMetaGet.withArgs('_design/users-meta-new').rejects({ status: 404 });
+    const getUsersMetaUpdated = usersMetaGet.withArgs('_design/users-meta-updated').resolves({
       _id: '_design/users-meta-updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
     });
-    const getUsersMetaUnchanged = get.withArgs('_design/users-meta-unchanged').resolves({
+    const getUsersMetaUnchanged = usersMetaGet.withArgs('_design/users-meta-unchanged').resolves({
       _id: '_design/users-meta-unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } }
     });
 
-    const getSwMeta = get.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
-    const getSettings = get.withArgs('settings').resolves({ });
+    const getSwMeta = medicGet.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSettings = medicGet.withArgs('settings').resolves({ });
     const bulkMedic = sinon.stub(db.medic, 'bulkDocs').resolves();
     const bulkSentinel = sinon.stub(db.sentinel, 'bulkDocs').resolves();
     const bulkUsersMeta = sinon.stub(db.medicUsersMeta, 'bulkDocs').resolves();
