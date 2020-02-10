@@ -71,7 +71,7 @@ const setUpMocks = () => {
     .resolves({ rows: [ { value: 2 } ] });
 };
 
-describe.only('Monitoring service', () => {
+describe('Monitoring service', () => {
 
   beforeEach(() => {
     clock = sinon.useFakeTimers();
@@ -86,8 +86,6 @@ describe.only('Monitoring service', () => {
     setUpMocks();
     return service.json().then(actual => {
       chai.expect(request.post.callCount).to.equal(1);
-      chai.expect(request.post.args[0][0].body.keys)
-        .to.deep.equal([ 'mydb', 'mydb-sentinel', 'mydb-users-meta', '_users' ]);
       chai.expect(actual.version).to.deep.equal({
         app: '5.3.2',
         node: process.version,
