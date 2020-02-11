@@ -71,22 +71,9 @@ angular.module('inboxServices').factory('ContactsActions',
             }
             TasksForContact(selected)
               .then(taskDocs => {
-                const taskCounts = {};
-                taskDocs.forEach(task => {
-                  const childId = task.emission.forId;
-                  if (taskCounts[childId]) {
-                    taskCounts[childId] = taskCounts[childId] + 1;
-                  } else {
-                    taskCounts[childId] = 1;
-                  }
-                });
-                selected.children.forEach(group => {
-                  group.contacts.forEach(child => {
-                    child.taskCount = taskCounts[child.id];
-                  });
-                });
-                updateSelectedContactChildren(selected.children);
-                updateSelectedContact({ tasks: taskDocs.map(doc => doc.emission) });
+                dispatch(
+                  ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_CONTACT_TASKS, 'tasks', taskDocs)
+                );
               })
               .catch(err => $log.error('Failed to load tasks for contact', err))
           });
@@ -125,7 +112,9 @@ angular.module('inboxServices').factory('ContactsActions',
         return dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedContact(getState());
           return ContactViewModelGenerator.loadChildren(selected, options).then(children => {
-            return updateSelectedContactChildren(children);
+            return dispatch(ActionUtils.createSingleValueAction(
+              actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN, 'children', children
+            ));
           });
         });
       }
@@ -232,12 +221,6 @@ angular.module('inboxServices').factory('ContactsActions',
             });
         });
       };
-
-      function updateSelectedContactChildren(children) {
-        dispatch(ActionUtils.createSingleValueAction(
-          actionTypes.RECEIVE_SELECTED_CONTACT_CHILDREN, 'children', children
-        ));
-      }
 
       function updateSelectedContact(selected) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_CONTACT, 'selected', selected));
