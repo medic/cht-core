@@ -122,8 +122,13 @@ angular.module('controllers').controller('UpgradeCtrl',
       }
 
       const currentVersion = Version.parse($scope.currentDeploy.base_version);
-      const releaseVersion = Version.parse(release.base_version || release.version);
+      if (!currentVersion) {
+        // Unable to parse the current version information so all releases are
+        // potentially incompatible
+        return true;
+      }
 
+      const releaseVersion = Version.parse(release.base_version || release.version);
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 
