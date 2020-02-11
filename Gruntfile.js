@@ -984,7 +984,6 @@ module.exports = function(grunt) {
     'copy:ddocs',
     'copy:api-resources',
     'build-common',
-    'minify',
     'couch-compile:primary',
   ]);
 

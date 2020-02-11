@@ -58,17 +58,19 @@ module.exports = function(Promise, DB) {
   // request = {view, params: {...} }
   const queryView = function(request) {
     const paramSets = request.union ? request.paramSets : [ request.params ];
-    return Promise.all(paramSets.map(function(params) {
-      return DB.query(request.view, params);
-    }))
-      .then(function(data) {
-        return _.flatten(data.map(function(datum) {
+    return Promise
+      .all(paramSets.map((params) => DB.query(request.view, params)))
+      .then(resultSets => {
+        const result = [];
+        resultSets.forEach(resultSet => {
           if (request.map) {
-            return datum.rows.map(request.map);
+            result.push(...resultSet.rows.map(request.map));
           } else {
-            return datum.rows;
+            result.push(...resultSet.rows);
           }
-        }), true);
+        });
+
+        return result;
       });
   };
 
