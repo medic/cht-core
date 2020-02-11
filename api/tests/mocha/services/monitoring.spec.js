@@ -15,8 +15,10 @@ const dbInfos = [
       update_seq: '100-abc',
       doc_count: 20,
       doc_del_count: 10,
-      disk_size: 700,
-      data_size: 600
+      sizes: {
+        active: 600,
+        file: 700
+      }
     }
   },
   {
@@ -25,8 +27,10 @@ const dbInfos = [
       update_seq: '200-def',
       doc_count: 30,
       doc_del_count: 20,
-      disk_size: 500,
-      data_size: 500
+      sizes: {
+        active: 500,
+        file: 500
+      }
     }
   },
   {
@@ -35,8 +39,10 @@ const dbInfos = [
       update_seq: '300-hij',
       doc_count: 40,
       doc_del_count: 30,
-      disk_size: 5000,
-      data_size: 500
+      sizes: {
+        active: 500,
+        file: 5000
+      }
     }
   },
   {
@@ -45,8 +51,10 @@ const dbInfos = [
       update_seq: '400-klm',
       doc_count: 50,
       doc_del_count: 40,
-      disk_size: 501,
-      data_size: 500
+      sizes: {
+        active: 500,
+        file: 501
+      }
     }
   }
 ];

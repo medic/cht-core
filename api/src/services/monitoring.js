@@ -77,15 +77,20 @@ const getCouchVersion = () => {
 
 const defaultNumber = x => typeof x === 'number' ? x : -1;
 
+const getFragmentation = sizes => {
+  if (!sizes || sizes.active <= 0) {
+    return -1;
+  }
+  return sizes.file / sizes.active;
+};
+
 const mapDbInfo = dbInfo => {
-  const fragmentation = dbInfo.data_size > 0 ?
-    dbInfo.disk_size / dbInfo.data_size : -1;
   return {
     name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
     doc_count: defaultNumber(dbInfo.doc_count),
     doc_del_count: defaultNumber(dbInfo.doc_del_count),
-    fragmentation
+    fragmentation: getFragmentation(dbInfo.sizes)
   };
 };
 
@@ -225,13 +230,15 @@ couchdb_${dbName}_update_seq ${info.couchdb[dbName].update_sequence}
 };
 
 const getDbOutput = info => {
-  return Object.keys(info.couchdb)
+  return Object
+    .keys(info.couchdb)
     .map(dbName => openMetricsDbBlock(info, dbName))
     .join('');
 };
 
 const getMessagingOutput = info => {
-  return Object.entries(info.messaging.outgoing.state)
+  return Object
+    .entries(info.messaging.outgoing.state)
     .map(([state, value]) => {
       return `
 # HELP messaging_outgoing Messages in each state
