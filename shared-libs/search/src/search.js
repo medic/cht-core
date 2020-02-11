@@ -3,7 +3,7 @@
 //    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
 //    https://github.com/medic/medic/issues/4206
 const _ = require('lodash/core');
-_.uniqBy = require('lodash/uniqBy');
+_.uniq = require('lodash/uniq');
 _.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
 
@@ -37,21 +37,27 @@ module.exports = function(Promise, DB) {
 
   // Get the intersection of the results of multiple search queries.
   // responses = [searchResults1, searchResult2, ...]
-  const getIntersection = function(responses) {
-    let intersection = responses.pop();
-    intersection = _.uniqBy(intersection, 'id');
-    _.forEach(responses, function(response) {
-      intersection = intersection.filter(row => {
-        const existent = _.find(response, { id: row.id });
-        if (existent && 'sort' in existent) {
-          row.sort = existent.sort + ' ' + (row.sort || row.value);
-        }
-        return existent;
-      });
+  const getIntersection = (responses) => {
+    const idMaps = responses.map(response => {
+      const map = {};
+      response.forEach(row => map[row.id] = row);
+      return map;
     });
+    const idsArrays = idMaps.map(Object.keys);
+    const intersection = _.intersection(...idsArrays);
 
-    return intersection;
+    const values = idMaps.pop();
+    return intersection.map(id => {
+      const value = values[id];
+      idMaps.forEach(idMap => {
+        if (idMap[id].sort) {
+          value.sort = idMap[id].sort + ' ' + (value.sort || value.value);
+        }
+      });
+      return value;
+    });
   };
+
   // Queries view as specified by request object coming from GenerateSearchQueries.
   // request = {view, union: true, paramSets: [params1, ...] }
   // or
@@ -60,18 +66,12 @@ module.exports = function(Promise, DB) {
     const paramSets = request.union ? request.paramSets : [ request.params ];
     return Promise
       .all(paramSets.map((params) => DB.query(request.view, params)))
-      .then(resultSets => {
-        const result = [];
-        resultSets.forEach(resultSet => {
-          if (request.map) {
-            result.push(...resultSet.rows.map(request.map));
-          } else {
-            result.push(...resultSet.rows);
-          }
-        });
-
-        return result;
-      });
+      .then(resultSets => resultSets.reduce((result, resultSet) => {
+        if (request.map) {
+          return result.concat(resultSet.rows.map(request.map));
+        }
+        return result.concat(resultSet.rows);
+      }, []));
   };
 
   const queryViewPaginated = function(request, options) {
