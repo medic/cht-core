@@ -747,7 +747,7 @@ module.exports = function(grunt) {
         tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
       },
       'secondary-ddocs': {
-        files: ['ddocs/medic-*/**/*'],
+        files: ['ddocs/*-db/**/*'],
         tasks: [
           'copy:ddocs',
           'couch-compile:secondary',
