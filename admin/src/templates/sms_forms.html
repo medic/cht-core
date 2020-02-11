@@ -19,12 +19,16 @@
 <div class="section">
   <fieldset>
     <legend translate>Installed Forms</legend>
+    <a class="btn btn-primary" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
+      <i class="fa fa-arrow-down"></i>
+      <span translate>Download</span>
+    </a>
     <div class="row selection-heading">
       <div class="col-sm-2" translate>icon</div>
-      <div class="col-sm-2" translate>unique.id</div>
-      <div class="col-sm-8" translate>title</div>
+      <div class="col-sm-5" translate>unique.id</div>
+      <div class="col-sm-5" translate>title</div>
     </div>
-    <div class=" container-fluid">
+    <div>
       <ul>
         <li ng-repeat="form in forms" class="row">
           <div class="col-sm-2" ng-bind-html="form.meta.icon | resourceIcon"></div>
@@ -34,9 +38,5 @@
         </li>
       </ul>
     </div>
-    <a class="btn btn-primary" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
-      <i class="fa fa-arrow-down"></i>
-      <span translate>Download</span>
-    </a>
   </fieldset>
 </div>
