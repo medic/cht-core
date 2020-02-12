@@ -377,6 +377,7 @@ describe('login controller', () => {
 
     it('redirect user to original URL requested after successful login', () => {
       req.headers.referer = 'http://xx.app.medicmobile.org/medic/login?redirect=http%3A%2F%2Fxx.app.medicmobile.org%2F%23%2Freports%2F';
+      req.headers.origin = 'http://xx.app.medicmobile.org';
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
         statusCode: 200,
