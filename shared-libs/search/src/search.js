@@ -38,24 +38,30 @@ module.exports = function(Promise, DB) {
   // Get the intersection of the results of multiple search queries.
   // responses = [searchResults1, searchResult2, ...]
   const getIntersection = (responses) => {
-    const idMaps = responses.map(response => {
+    // map every searchResult by id, so we don't have to search them on the last step
+    // we also remove the need of doing a _.uniq
+    const responsesMapById = responses.map(response => {
       const map = {};
       response.forEach(row => map[row.id] = row);
       return map;
     });
-    const idsArrays = idMaps.map(Object.keys);
-    const intersection = _.intersection(...idsArrays);
 
-    const values = idMaps.pop();
-    return intersection.map(id => {
-      const value = values[id];
-      idMaps.forEach(idMap => {
+    const intersection = _.intersection(...responsesMapById.map(Object.keys));
+
+    // we use the last query response values for sorting by default, but we allow other responses to "pitch in"
+    // used for displaying muted contacts to the bottom when sorting by last visited date
+    const lastResponse = responsesMapById.pop();
+    const result = intersection.map(id => {
+      const row = lastResponse[id];
+      responsesMapById.forEach(idMap => {
         if (idMap[id].sort) {
-          value.sort = idMap[id].sort + ' ' + (value.sort || value.value);
+          row.sort = idMap[id].sort + ' ' + (row.sort || row.value);
         }
       });
-      return value;
+      return row;
     });
+
+    return result;
   };
 
   // Queries view as specified by request object coming from GenerateSearchQueries.
@@ -64,14 +70,20 @@ module.exports = function(Promise, DB) {
   // request = {view, params: {...} }
   const queryView = function(request) {
     const paramSets = request.union ? request.paramSets : [ request.params ];
+
+    // We don't use _.flatten or Array.prototype.push for the same reason:
+    // Chrome throws a `RangeError: Maximum call stack size exceeded` error when you call .push many times in a row.
+    // Array.prototype.push is faster than Array.prototype.concat and _.flatten uses push.
+    const flatten = (resultSets) => resultSets.reduce((result, resultSet) => {
+      if (request.map) {
+        return result.concat(resultSet.rows.map(request.map));
+      }
+      return result.concat(resultSet.rows);
+    }, []);
+
     return Promise
       .all(paramSets.map((params) => DB.query(request.view, params)))
-      .then(resultSets => resultSets.reduce((result, resultSet) => {
-        if (request.map) {
-          return result.concat(resultSet.rows.map(request.map));
-        }
-        return result.concat(resultSet.rows);
-      }, []));
+      .then(resultSets => flatten(resultSets));
   };
 
   const queryViewPaginated = function(request, options) {
