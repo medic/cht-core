@@ -39,6 +39,7 @@ module.exports = function(Promise, DB) {
 
   // Get the intersection of the results of multiple search queries.
   // responses = [searchResults1, searchResult2, ...]
+  // This function runs over arrays with (potentially) hundreds of thousands, if not millions, elements.
   const getIntersection = (responses) => {
     // map every searchResult by id, so we don't have to search them on the last step
     // we also remove the need of doing a _.uniq
