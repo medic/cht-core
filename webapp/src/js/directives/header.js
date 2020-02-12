@@ -1,4 +1,3 @@
-const responsive = require('../modules/responsive');
 angular.module('inboxDirectives').directive('mmHeader', function() {
   return {
     restrict: 'E',
@@ -51,8 +50,6 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       ctrl.replicate = () => {
         DBSync.sync(true);
       };
-
-      ctrl.isMobile = responsive.isMobile();
 
       const tabs = [{name:'messages',state:'messages.detail',icon:'fa-envelope',translation:'Messages',
         permissions:[['can_view_messages'],['can_view_messages_tab']],typeName:'message'},
