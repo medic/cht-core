@@ -2,6 +2,7 @@ const config = require('../config');
 const later = require('later');
 const db = require('../db');
 const logger = require('../lib/logger');
+const rpn = require('request-promise-native');
 
 let timers = [];
 
@@ -37,11 +38,41 @@ function getSchedule(config) {
   }
 }
 
+const purgeDocs = (sourceDb, docs) => {
+  if (!docs || !docs.length) {
+    return Promise.resolve();
+  }
+
+  const docsToPurge = {};
+  docs.forEach(doc => {
+    docsToPurge[doc._id] = [doc._rev];
+  });
+
+  return sourceDb
+    .info()
+    .then(info => {
+      const opts = {
+        uri: `${db.serverUrl}/${info.db_name}/_purge`,
+        json: true,
+        body: docsToPurge,
+      };
+
+      return rpn.post(opts);
+    });
+};
+
 function replicateDb(sourceDb, targetDb) {
   // Replicate only telemetry and feedback docs
-  return  sourceDb.replicate.to(targetDb, {
-    filter: doc => doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-')
-  });
+  return sourceDb.replicate
+    .to(targetDb, {
+      filter: doc => doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-')
+    })
+    .on('change', changes => {
+      return purgeDocs(sourceDb, changes.docs);
+    })
+    .catch(err => {
+      logger.error('Error while replicating: %o', err);
+    });
 }
 
 module.exports = {
