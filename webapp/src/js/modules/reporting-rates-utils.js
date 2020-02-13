@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.range = require('lodash/range');
 const moment = require('moment');
 
 (function () {

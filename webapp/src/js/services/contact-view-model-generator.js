@@ -1,6 +1,4 @@
 const _ = require('lodash/core');
-_.partial = require('lodash/partial');
-_.groupBy = require('lodash/groupBy');
 const registrationUtils = require('@medic/registration-utils');
 
 /**

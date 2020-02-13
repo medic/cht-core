@@ -17,9 +17,6 @@
  * translateFrom([ { locale: 'en', content: 'Go visit {{patient.name}}' }], patient);  // 'Go visit Estelle'
  */
 const _ = require('lodash/core');
-_.template = require('lodash/template');
-_.templateSettings = require('lodash/templateSettings');
-_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 (function () {
 

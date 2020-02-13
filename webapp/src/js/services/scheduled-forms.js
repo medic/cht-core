@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.toPairs = require('lodash/toPairs');
 
 (function () {
 

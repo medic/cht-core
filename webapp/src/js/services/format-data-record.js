@@ -1,6 +1,4 @@
 const _ = require('lodash/core');
-_.partial = require('lodash/partial');
-_.partial.placeholder = _;
 const messages = require('@medic/message-utils');
 const lineageFactory = require('@medic/lineage');
 const registrationUtils = require('@medic/registration-utils');

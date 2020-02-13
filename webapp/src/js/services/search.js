@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.uniq = require('lodash/uniq');
 const moment = require('moment');
 const Search = require('@medic/search');
 

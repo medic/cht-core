@@ -1,6 +1,4 @@
 const _ = require('lodash/core');
-_.uniqBy = require('lodash/uniqBy');
-_.findIndex = require('lodash/findIndex');
 let scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;

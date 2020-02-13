@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.partial = require('lodash/partial');
 const moment = require('moment');
 
 // medic specific config for LiveList.

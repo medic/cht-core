@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.groupBy = require('lodash/groupBy');
 
 angular.module('inboxServices').factory('ChildFacility',
   function(DB) {

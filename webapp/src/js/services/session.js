@@ -1,7 +1,6 @@
 const COOKIE_NAME = 'userCtx';
 const ONLINE_ROLE = 'mm-online';
 const _ = require('lodash/core');
-_.difference = require('lodash/difference');
 
 (function () {
 

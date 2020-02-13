@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.partial = require('lodash/partial');
 const phoneNumber = require('@medic/phone-number');
 const format = require('../modules/format');
 

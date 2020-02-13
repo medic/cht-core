@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.uniq = require('lodash/uniq');
 
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(

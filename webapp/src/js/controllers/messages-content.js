@@ -1,5 +1,4 @@
 const _ = require('lodash/core');
-_.minBy = require('lodash/minBy');
 
 // In this context $stateParams.id (the id in the url) can be:
 //  - the _id of the contact who is sending these messages
