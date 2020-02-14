@@ -44,9 +44,7 @@ const purgeDocs = (sourceDb, docs) => {
   }
 
   const docsToPurge = {};
-  docs.forEach(doc => {
-    docsToPurge[doc._id] = [doc._rev];
-  });
+  docs.forEach(doc => docsToPurge[doc._id] = [doc._rev]);
 
   return sourceDb
     .info()
@@ -65,7 +63,7 @@ function replicateDb(sourceDb, targetDb) {
   // Replicate only telemetry and feedback docs
   return sourceDb.replicate
     .to(targetDb, {
-      filter: doc => doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-')
+      filter: doc => !doc._deleted && (doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-'))
     })
     .on('change', changes => {
       return purgeDocs(sourceDb, changes.docs);

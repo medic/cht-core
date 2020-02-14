@@ -7,11 +7,11 @@ describe('DBSync service', () => {
   let service;
   let to;
   let from;
-  let allDocs;
-  let info;
   let isOnlineOnly;
   let userCtx;
   let sync;
+  let syncResult;
+  let recursiveOnSync;
   let hasAuth;
   let recursiveOnTo;
   let recursiveOnFrom;
@@ -20,6 +20,12 @@ describe('DBSync service', () => {
   let getItem;
   let setItem;
   let dbSyncRetry;
+
+  let localMedicDb;
+  let localMetaDb;
+  let remoteMedicDb;
+  let remoteMetaDb;
+  let db;
 
   beforeEach(() => {
     replicationResult = Q.resolve;
@@ -43,25 +49,42 @@ describe('DBSync service', () => {
       return promise;
     });
     from.returns({ on: recursiveOnFrom });
-    allDocs = sinon.stub();
-    info = sinon.stub();
-    info.returns(Q.resolve({ update_seq: 99 }));
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
+    sync.events = {};
+    syncResult = Q.resolve;
+    recursiveOnSync = sinon.stub().callsFake((event, fn) => {
+      sync.events[event] = fn;
+      const promise = syncResult();
+      promise.on = recursiveOnSync;
+      return promise;
+    });
+    sync.returns({ on: recursiveOnSync });
     hasAuth = sinon.stub();
     setItem = sinon.stub();
     getItem = sinon.stub();
     dbSyncRetry = sinon.stub();
 
+    localMedicDb = {
+      replicate: { to: to, from: from },
+      info: sinon.stub().resolves({ update_seq: 99 }),
+    };
+    localMetaDb = {
+      sync,
+      bulkDocs: sinon.stub().resolves(),
+    };
+    remoteMetaDb = {};
+    remoteMedicDb = {};
+
+    db = sinon.stub().returns(localMedicDb);
+    db.withArgs({ remote: true }).returns(remoteMedicDb);
+    db.withArgs({ meta: true }).returns(localMetaDb);
+    db.withArgs({ remote: true, meta: true }).returns(remoteMetaDb);
+
     module('inboxApp');
     module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({
-        replicate: { to, from },
-        allDocs: allDocs,
-        sync: sync,
-        info: info
-      }));
+      $provide.value('DB', db);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
         isOnlineOnly: isOnlineOnly,
@@ -154,7 +177,7 @@ describe('DBSync service', () => {
       replicationResult = () => Q.reject('error');
       const onUpdate = sinon.stub();
       service.addUpdateListener(onUpdate);
-      info.returns(Q.resolve({ update_seq: 100 }));
+      localMedicDb.info.resolves({ update_seq: 100 });
       getItem.returns('100');
 
       return service.sync().then(() => {
@@ -354,6 +377,90 @@ describe('DBSync service', () => {
         });
       });
     });
+
+    describe('sync meta', () => {
+      beforeEach(() => {
+        hasAuth.resolves(true);
+        isOnlineOnly.returns(false);
+      });
+
+      it('should sync meta dbs with the readOnlyFilter', () => {
+        return service.sync().then(() => {
+          chai.expect(db.withArgs({ meta: true }).callCount).to.equal(1);
+          chai.expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
+          chai.expect(localMetaDb.sync.callCount).to.equal(1);
+          chai.expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
+          chai.expect(localMetaDb.sync.args[0][1]).to.have.all.keys('filter');
+          const filterFn = localMetaDb.sync.args[0][1].filter;
+          chai.expect(filterFn({ _id: 'feedback-', _rev: 'some', _deleted: true, purged: true })).to.equal(false);
+          chai.expect(filterFn({ _id: 'feedback-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
+          chai.expect(filterFn({ _id: 'telemetry-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
+          chai.expect(filterFn({ _id: 'read:report:id', _rev: 'aaaa' })).to.equal(true);
+        });
+      });
+
+      it('should delete feedback and telemetry docs after push batch', () => {
+        return service
+          .sync()
+          .then(() => {
+            const docs = [
+              { _id: 'read:report:something', _rev: 1 },
+              { _id: 'telemetry-2020-01-lalala', _rev: 2, some: 'data' },
+              { _id: 'feedback-2020-01-23-19-23-32-lalala', _rev: 3, other: 'thing' },
+              { _id: 'randomdoc', _rev: '3' },
+              { _id: 'randomdoc2', _rev: '3' },
+              { _id: 'telemetry-2020-02-lalala', _rev: 4, meta: 'info' },
+              { _id: 'feedback-2020-02-23-19-23-32-lalala', _rev: 9 },
+            ];
+
+            const onChange = sync.events['change'];
+            chai.expect(onChange).to.be.a('function');
+
+            return onChange({ direction: 'push', change: { docs } });
+          })
+          .then(() => {
+            chai.expect(localMetaDb.bulkDocs.callCount).to.equal(1);
+            chai.expect(localMetaDb.bulkDocs.args[0]).to.deep.equal([[
+              { _id: 'telemetry-2020-01-lalala', _rev: 2, _deleted: true, purged: true },
+              { _id: 'feedback-2020-01-23-19-23-32-lalala', _rev: 3, _deleted: true, purged: true },
+              { _id: 'telemetry-2020-02-lalala', _rev: 4, _deleted: true, purged: true },
+              { _id: 'feedback-2020-02-23-19-23-32-lalala', _rev: 9, _deleted: true, purged: true },
+            ]]);
+          });
+      });
+
+      it('should not crash when no changes', () => {
+        return service
+          .sync()
+          .then(() => {
+            const onChange = sync.events['change'];
+            return onChange({ direction: 'push', change: { } });
+          })
+          .then(() => {
+            chai.expect(localMetaDb.bulkDocs.callCount).to.equal(0);
+          });
+      });
+
+      it('should do nothing after pull batch', () => {
+        return service
+          .sync()
+          .then(() => {
+            const docs = [
+              { _id: 'read:report:something', _rev: 1 },
+              { _id: 'telemetry-2020-01-lalala', _rev: 2, some: 'data' },
+              { _id: 'feedback-2020-01-23-19-23-32-lalala', _rev: 3, other: 'thing' },
+            ];
+
+            const onChange = sync.events['change'];
+            chai.expect(onChange).to.be.a('function');
+
+            return onChange({ direction: 'pull', change: { docs } });
+          })
+          .then(() => {
+            chai.expect(localMetaDb.bulkDocs.callCount).to.equal(0);
+          });
+      });
+    });
   });
 
   describe('replicateTo filter', () => {
@@ -364,9 +471,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
-      allDocs.returns(Q.resolve({ rows: [] }));
-      info.returns(Q.resolve({update_seq: -99}));
-      to.returns({ on: recursiveOnTo });
+      localMedicDb.info.resolves({ update_seq: -99 });
       from.returns({ on: recursiveOnFrom });
       return service.sync().then(() => {
         expect(to.callCount).to.equal(1);
