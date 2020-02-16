@@ -219,8 +219,10 @@ const createReduxLoggerConfig = Selectors => ({
       if (trans.to().name.indexOf('error') === -1) {
         const permissions = getRequiredPermissions(trans.to().name);
         if (permissions && permissions.length) {
-          return Auth(permissions).catch(function() {
-            return $state.target('error', { code: 403 });
+          return Auth.has(permissions).then(hasPermission => {
+            if (!hasPermission) {
+              $state.target('error', { code: 403 });
+            }
           });
         }
       }

@@ -4,10 +4,9 @@ describe(`RulesEngine service`, () => {
 
   'use strict';
 
-  let
-    $timeout;
+  let $timeout;
   let getService;
-  let Auth;
+  let hasAuth;
   let Changes;
   let RulesEngineCore;
   let Session;
@@ -62,7 +61,7 @@ describe(`RulesEngine service`, () => {
   };
 
   beforeEach(async () => {
-    Auth = sinon.stub().resolves(true);
+    hasAuth = sinon.stub().resolves(true);
     Changes = sinon.stub();
     Session = { isOnlineOnly: sinon.stub().returns(false) };
     Settings = sinon.stub().resolves(settingsDoc);
@@ -82,7 +81,7 @@ describe(`RulesEngine service`, () => {
     module('inboxApp');
     module($provide => {
       $provide.value('$q', Q);
-      $provide.value('Auth', Auth);
+      $provide.value('Auth', { has: hasAuth });
       $provide.value('Changes', Changes);
       $provide.factory('DB', KarmaUtils.mockDB({
         info: () => sinon.stub().resolves(),
@@ -120,12 +119,12 @@ describe(`RulesEngine service`, () => {
       };
 
       it('disabled when user has no permissions', async () => {
-        Auth.rejects();
+        hasAuth.resolves(true);
         expectAsyncToThrow(getService().isEnabled, 'permission');
       });
 
       it('tasks disabled', async () => {
-        Auth.withArgs('can_view_tasks').rejects();
+        hasAuth.withArgs('can_view_tasks').resolves(false);
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
         expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({
@@ -137,7 +136,7 @@ describe(`RulesEngine service`, () => {
       });
 
       it('targets disabled', async () => {
-        Auth.withArgs('can_view_analytics').rejects();
+        hasAuth.withArgs('can_view_analytics').resolves(false);
         expect(await getService().isEnabled()).to.be.true;
         expect(RulesEngineCore.initialize.callCount).to.eq(1);
         expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({ enableTasks: true, enableTargets: false });

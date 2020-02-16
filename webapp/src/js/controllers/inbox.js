@@ -266,11 +266,7 @@ const moment = require('moment');
 
     ctrl.canLogOut = false;
     if (ctrl.androidAppVersion) {
-      Auth('can_log_out_on_android')
-        .then(function() {
-          ctrl.canLogOut = true;
-        })
-        .catch(function() {}); // not permitted to log out
+      Auth.has('can_log_out_on_android').then(canLogout => ctrl.canLogOut = canLogout);
     } else {
       ctrl.canLogOut = true;
     }
@@ -591,10 +587,11 @@ const moment = require('moment');
       },
     });
 
-    Auth('can_write_wealth_quintiles')
-      .then(function() {
-        WealthQuintilesWatcher.start();
-      })
-      .catch(function() {});
+    Auth.has('can_write_wealth_quintiles')
+      .then(canWriteQuintiles => {
+        if (canWriteQuintiles) {
+          WealthQuintilesWatcher.start();
+        }
+      });
   });
 })();

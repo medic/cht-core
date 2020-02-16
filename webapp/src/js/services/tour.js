@@ -485,78 +485,71 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    const getMessagesTour = function() {
-      return Auth('can_view_messages_tab')
-        .then(function() {
-          return {
+    const getMessagesTour = () => {
+      return Auth.has('can_view_messages_tab')
+        .then(canView => {
+          return canView && {
             order: 0,
             id: 'messages',
             icon: 'fa-envelope',
             name: 'Messages'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getTasksTour = function() {
+    const getTasksTour = () => {
       if (Session.isOnlineOnly()) {
         return;
       }
-      return Auth('can_view_tasks_tab')
-        .then(function() {
-          return {
+      return Auth.has('can_view_tasks_tab')
+        .then(canView => {
+          return canView && {
             order: 1,
             id: 'tasks',
             icon: 'fa-flag',
             name: 'Tasks'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getReportsTour = function() {
-      return Auth('can_view_reports_tab')
-        .then(function() {
-          return {
+    const getReportsTour = () => {
+      return Auth.has('can_view_reports_tab')
+        .then(canView => {
+          return canView && {
             order: 2,
             id: 'reports',
             icon: 'fa-list-alt',
             name: 'Reports'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getContactsTour = function() {
-      return Auth('can_view_contacts_tab')
-        .then(function() {
-          return {
+    const getContactsTour = () => {
+      return Auth.has('can_view_contacts_tab')
+        .then(canView => {
+          return canView && {
             order: 3,
             id: 'contacts',
             icon: 'fa-user',
             name: 'Contacts'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getAnalyticsTour = function() {
+    const getAnalyticsTour = () => {
       return $q.all([
-        AnalyticsModules(),
-        Auth('can_view_analytics')
+        Auth.has('can_view_analytics'),
+        AnalyticsModules()
       ])
-        .then(function(results) {
-          if (results.length) {
-            return {
-              order: 4,
-    
-              id: 'analytics',
-              icon: 'fa-bar-chart-o',
-              name: 'Analytics'
-            };
-          }
-        })
-        .catch(function() {});
+        .then(([canView]) => {
+          return canView && {
+            order: 4,
+  
+            id: 'analytics',
+            icon: 'fa-bar-chart-o',
+            name: 'Analytics'
+          };
+        });
     };
 
     const getTours = function() {
@@ -573,8 +566,8 @@ angular.module('inboxServices').service('Tour',
     };
 
     return {
-      getTours: getTours,
-      endCurrent: endCurrent,
+      getTours,
+      endCurrent,
       start: function(name) {
         endCurrent();
         if (!name) {

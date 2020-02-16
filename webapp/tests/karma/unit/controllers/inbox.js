@@ -36,7 +36,9 @@ describe('InboxCtrl controller', () => {
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
-      $provide.value('Auth', () => Promise.resolve({}));
+      $provide.value('Auth', {
+        has: () => Promise.resolve(true),
+      });
       $provide.value('Location', () => {
         return { path: 'localhost' };
       });

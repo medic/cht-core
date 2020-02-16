@@ -5,7 +5,6 @@ describe('Auth service', function() {
   let service;
   let userCtx;
   let Settings;
-  let $rootScope;
   let isOnlineOnly;
 
   beforeEach(function () {
@@ -22,8 +21,7 @@ describe('Auth service', function() {
         return Settings;
       });
     });
-    inject(function($injector, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function($injector) {
       service = $injector.get('Auth');
     });
   });
@@ -32,47 +30,35 @@ describe('Auth service', function() {
     KarmaUtils.restore(userCtx, Settings);
   });
 
-  it('rejects when no session', function(done) {
-    userCtx.returns(null);
-    service()
-      .catch(function(err) {
-        chai.expect(err.message).to.equal('Not logged in');
-        done();
-      });
-    $rootScope.$digest();
-  });
+  describe('has', () => {
+    it('false when no session', async () => {
+      userCtx.returns(null);
+      const result = await service.has();
+      chai.expect(result).to.be.false;
+    });
 
-  it('rejects when user has no role', function(done) {
-    userCtx.returns({});
-    service()
-      .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
-        done();
-      });
-    $rootScope.$digest();
-  });
+    it('false when user has no role', async () => {
+      userCtx.returns({});
+      const result = await service.has();
+      chai.expect(result).to.be.false;
+    });
 
-  it('resolves when user is db admin', function(done) {
-    userCtx.returns({ roles: [ '_admin' ] });
-    service([ 'can_backup_facilities' ]).then(done);
-    $rootScope.$digest();
-  });
+    it('true when user is db admin', async () => {
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.has(['can_backup_facilities']);
+      chai.expect(result).to.be.true;
+    });
 
-  it('rejects when settings errors', function(done) {
-    userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(Promise.reject('boom'));
-    service([ 'can_backup_facilities' ])
-      .catch(function(err) {
-        chai.expect(err).to.equal('boom');
-        done();
-      });
-    $rootScope.$digest();
-  });
+    it('false when settings errors', async () => {
+      userCtx.returns({ roles: ['district_admin'] });
+      Settings.returns(Promise.reject('boom'));
+      const result = await service.has(['can_backup_facilities']);
+      chai.expect(result).to.be.false;
+    });
 
-  it('rejects when perm is empty string', function(done) {
-    userCtx.returns({ roles: ['district_admin'] });
-    Settings.returns(
-      Promise.resolve({
+    it('false when perm is empty string', async () => {
+      userCtx.returns({ roles: ['district_admin'] });
+      Settings.resolves({
         permissions: {
           can_backup_facilities: ['national_admin'],
           can_export_messages: [
@@ -81,26 +67,38 @@ describe('Auth service', function() {
             'analytics',
           ],
         },
-      })
-    );
-    service(['']).catch(function(err) {
-      chai.expect(err).to.equal(undefined);
-      done();
+      });
+
+      const result = await service.has(['']);
+      chai.expect(result).to.be.false;
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
-  });
 
-  describe('unconfigured permissions', function() {
+    describe('unconfigured permissions', function() {
 
-    // Unconfigured permissions should be have the same as having the permission
-    // configured to false
+      // Unconfigured permissions should be have the same as having the permission
+      // configured to false
 
-    it('rejects when unknown permission', function(done) {
-      userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
+      it('false when unknown permission', async () => {
+        userCtx.returns({ roles: ['district_admin'] });
+        Settings.returns(
+          Promise.resolve({
+            permissions: {
+              can_backup_facilities: ['national_admin'],
+              can_export_messages: [
+                'national_admin',
+                'district_admin',
+                'analytics',
+              ],
+            },
+          })
+        );
+        const result = await service.has(['xyz']);
+        chai.expect(result).to.be.false;
+      });
+
+      it('true when !unknown permission', async () => {
+        userCtx.returns({ roles: ['district_admin'] });
+        Settings.resolves({
           permissions: {
             can_backup_facilities: ['national_admin'],
             can_export_messages: [
@@ -109,43 +107,32 @@ describe('Auth service', function() {
               'analytics',
             ],
           },
-        })
-      );
-      service(['xyz']).catch(function(err) {
-        chai.expect(err).to.equal(undefined);
-        done();
+        });
+        const result = await service.has(['!xyz']);
+        chai.expect(result).to.be.true;
       });
-      setTimeout(function() {
-        $rootScope.$digest();
-      });
+
     });
 
-    it('resolves when !unknown permission', function(done) {
+    it('false when user does not have permission', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin'],
-            can_export_messages: [
-              'national_admin',
-              'district_admin',
-              'analytics',
-            ],
-          },
-        })
-      );
-      service(['!xyz']).then(done);
-      setTimeout(function() {
-        $rootScope.$digest();
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin'],
+          can_export_messages: [
+            'national_admin',
+            'district_admin',
+            'analytics',
+          ],
+        },
       });
+      const result = await service.has('can_backup_facilities');
+      chai.expect(result).to.be.false;
     });
 
-  });
-
-  it('rejects when user does not have permission', function(done) {
-    userCtx.returns({ roles: ['district_admin'] });
-    Settings.returns(
-      Promise.resolve({
+    it('false when user does not have all permissions', async () => {
+      userCtx.returns({ roles: ['district_admin'] });
+      Settings.resolves({
         permissions: {
           can_backup_facilities: ['national_admin'],
           can_export_messages: [
@@ -154,78 +141,14 @@ describe('Auth service', function() {
             'analytics',
           ],
         },
-      })
-    );
-    service('can_backup_facilities').catch(function(err) {
-      chai.expect(err).to.equal(undefined);
-      done();
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
-  });
-
-  it('rejects when user does not have all permissions', function(done) {
-    userCtx.returns({ roles: ['district_admin'] });
-    Settings.returns(
-      Promise.resolve({
-        permissions: {
-          can_backup_facilities: ['national_admin'],
-          can_export_messages: [
-            'national_admin',
-            'district_admin',
-            'analytics',
-          ],
-        },
-      })
-    );
-    service(['can_backup_facilities', 'can_export_messages']).catch(function(
-      err
-    ) {
-      chai.expect(err).to.equal(undefined);
-      done();
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
-  });
-
-  it('resolves when user has all permissions', function(done) {
-    userCtx.returns({ roles: ['national_admin'] });
-    Settings.returns(
-      Promise.resolve({
-        permissions: {
-          can_backup_facilities: ['national_admin'],
-          can_export_messages: [
-            'national_admin',
-            'district_admin',
-            'analytics',
-          ],
-        },
-      })
-    );
-    service(['can_backup_facilities', 'can_export_messages']).then(done);
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
-  });
-
-  it('rejects when admin and !permission', function(done) {
-    userCtx.returns({ roles: [ '_admin' ] });
-    service([ '!can_backup_facilities' ])
-      .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
-        done();
       });
-    setTimeout(function() {
-      $rootScope.$digest();
+      const result = await service.has(['can_backup_facilities', 'can_export_messages']);
+      chai.expect(result).to.be.false;
     });
-  });
 
-  it('rejects when user has one of the !permissions', function(done) {
-    userCtx.returns({ roles: ['analytics'] });
-    Settings.returns(
-      Promise.resolve({
+    it('true when user has all permissions', async () => {
+      userCtx.returns({ roles: ['national_admin'] });
+      Settings.resolves({
         permissions: {
           can_backup_facilities: ['national_admin'],
           can_export_messages: [
@@ -234,338 +157,277 @@ describe('Auth service', function() {
             'analytics',
           ],
         },
-      })
-    );
-    service(['!can_backup_facilities', '!can_export_messages']).catch(function(
-      err
-    ) {
-      chai.expect(err).to.equal(undefined);
-      done();
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
-  });
-
-  it('resolves when user has none of the !permissions', function(done) {
-    userCtx.returns({ roles: ['analytics'] });
-    Settings.returns(
-      Promise.resolve({
-        permissions: {
-          can_backup_facilities: ['national_admin'],
-          can_export_messages: [
-            'national_admin',
-            'district_admin',
-            'analytics',
-          ],
-        },
-      })
-    );
-    service(['!can_backup_facilities', 'can_export_messages'])
-      .then(done)
-      .catch(function() {
-        done('Should have passed auth');
       });
-    setTimeout(function() {
-      $rootScope.$digest();
+      const result = await service.has(['can_backup_facilities', 'can_export_messages']);
+      chai.expect(result).to.be.true;
+    });
+
+    it('false when admin and !permission', async () => {
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.has(['!can_backup_facilities']);
+      chai.expect(result).to.be.false;
+    });
+
+    it('rejects when user has one of the !permissions', async () => {
+      userCtx.returns({ roles: ['analytics'] });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin'],
+          can_export_messages: [
+            'national_admin',
+            'district_admin',
+            'analytics',
+          ],
+        },
+      });
+
+      const result = await service.has(['!can_backup_facilities', '!can_export_messages']);
+      chai.expect(result).to.be.false;
+    });
+
+    it('true when user has none of the !permissions', async () => {
+      userCtx.returns({ roles: ['analytics'] });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin'],
+          can_export_messages: [
+            'national_admin',
+            'district_admin',
+            'analytics',
+          ],
+        },
+      });
+      
+      const result = await service.has(['!can_backup_facilities', 'can_export_messages']);
+      chai.expect(result).to.be.true;
     });
   });
 
   describe('Auth.any', () => {
-    it('rejects when no session', () => {
+    it('false when no session', async () => {
       userCtx.returns(null);
-      return service
-        .any()
-        .catch((err) => {
-          chai.expect(err.message).to.equal('Not logged in');
-        });
+      const result = await service.any();
+      chai.expect(result).to.be.false;
     });
 
-    it('rejects when user has no role', () => {
+    it('false when user has no role', async () => {
       userCtx.returns({});
-      return service
-        .any()
-        .catch(function(err) {
-          chai.expect(err).to.equal(undefined);
-        });
+      const result = await service.any();
+      chai.expect(result).to.be.false;
     });
 
-    it('resolves when admin and no disallowed permissions', () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      return service.any([[ 'can_backup_facilities' ], [ 'can_export_messages' ], [ 'somepermission' ]]);
+    it('true when admin and no disallowed permissions', async () => {
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
+      chai.expect(result).to.be.true;
     });
 
-    it('resolves when admin and some disallowed permissions', () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      return service
-        .any([[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ 'somepermission' ]]);
+    it('true when admin and some disallowed permissions', async () => {
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
+      chai.expect(result).to.be.true;
     });
 
-    it('rejects when admin and all disallowed permissions', () => {
-      userCtx.returns({ roles: [ '_admin' ] });
-      return service
-        .any([[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ '!somepermission' ]])
-        .then(() => {
-          throw new Error('Expect error to be thrown');
-        })
-        .catch((err) => {
-          chai.expect(err).to.equal(undefined);
-        });
+    it('false when admin and all disallowed permissions', async () => {
+      userCtx.returns({ roles: ['_admin'] });
+      const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
+      chai.expect(result).to.be.false;
     });
 
-    it('resolves when user has all permissions', () => {
+    it('true when user has all permissions', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin', 'district_admin'],
-            can_export_messages: [
-              'national_admin',
-              'district_admin',
-              'analytics',
-            ],
-            can_add_people: ['national_admin', 'district_admin'],
-            can_add_places: ['national_admin', 'district_admin'],
-            can_roll_over: ['national_admin', 'district_admin'],
-          },
-        })
-      );
-      return service
-        .any([
-          [ 'can_backup_facilities' ],
-          [ 'can_export_messages', 'can_roll_over' ],
-          [ 'can_add_people', 'can_add_places' ]
-        ])
-        .catch(() => {
-          throw new Error('Should have passed auth');
-        });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin', 'district_admin'],
+          can_export_messages: [
+            'national_admin',
+            'district_admin',
+            'analytics',
+          ],
+          can_add_people: ['national_admin', 'district_admin'],
+          can_add_places: ['national_admin', 'district_admin'],
+          can_roll_over: ['national_admin', 'district_admin'],
+        },
+      });
+      const permissions = [
+        ['can_backup_facilities'],
+        ['can_export_messages', 'can_roll_over'],
+        ['can_add_people', 'can_add_places'],
+      ];
+      const result = await service.any(permissions);
+      chai.expect(result).to.be.true;
     });
 
-    it('resolves when user has some permissions', () => {
+    it('true when user has some permissions', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin', 'district_admin'],
-            can_backup_people: ['national_admin', 'district_admin'],
-          },
-        })
-      );
-      return service
-        .any([
-          [ 'can_backup_facilities', 'can_backup_people' ],
-          [ 'can_export_messages', 'can_roll_over' ],
-          [ 'can_add_people', 'can_add_places' ]
-        ])
-        .catch(() => {
-          throw new Error('Should have passed auth');
-        });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin', 'district_admin'],
+          can_backup_people: ['national_admin', 'district_admin'],
+        },
+      });
+
+      const permissions = [
+        ['can_backup_facilities', 'can_backup_people'],
+        ['can_export_messages', 'can_roll_over'],
+        ['can_add_people', 'can_add_places']
+      ];
+      const result = await service.any(permissions);
+      chai.expect(result).to.be.true;
     });
 
-    it('rejects when user has none of the permissions', () => {
+    it('false when user has none of the permissions', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin'],
-            can_backup_people: ['national_admin'],
-          },
-        })
-      );
-      return service
-        .any([
-          [ 'can_backup_facilities', 'can_backup_people' ],
-          [ 'can_export_messages', 'can_roll_over' ],
-          [ 'can_add_people', 'can_add_places' ]
-        ])
-        .then(() => {
-          throw new Error('Should have failed auth');
-        })
-        .catch(err => {
-          chai.expect(err).to.equal(undefined);
-        });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin'],
+          can_backup_people: ['national_admin'],
+        },
+      });
+      const permissions = [
+        ['can_backup_facilities', 'can_backup_people'],
+        ['can_export_messages', 'can_roll_over'],
+        ['can_add_people', 'can_add_places']
+      ];
+      const result = await service.any(permissions);
+      chai.expect(result).to.be.false;
     });
 
-    it('resolves when user has all permissions and no disallowed permissions', () => {
+    it('true when user has all permissions and no disallowed permissions', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin', 'district_admin'],
-            can_export_messages: [
-              'national_admin',
-              'district_admin',
-              'analytics',
-            ],
-            can_add_people: ['national_admin', 'district_admin'],
-            random1: ['national_admin'],
-            random2: ['national_admin'],
-            random3: ['national_admin'],
-          },
-        })
-      );
-      return service
-        .any([
-          [ 'can_backup_facilities', '!random1' ],
-          [ 'can_export_messages', '!random2' ],
-          [ 'can_add_people', '!random3' ]
-        ])
-        .catch(() => {
-          throw new Error('Should have passed auth');
-        });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin', 'district_admin'],
+          can_export_messages: [
+            'national_admin',
+            'district_admin',
+            'analytics',
+          ],
+          can_add_people: ['national_admin', 'district_admin'],
+          random1: ['national_admin'],
+          random2: ['national_admin'],
+          random3: ['national_admin'],
+        },
+      });
+
+      const result = await service.any([
+        ['can_backup_facilities', '!random1'],
+        ['can_export_messages', '!random2'],
+        ['can_add_people', '!random3']
+      ]);
+      chai.expect(result).to.be.true;
     });
 
-    it('resolves when user has some permissions and some disallowed permissions', () => {
+    it('true when user has some permissions and some disallowed permissions', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin', 'district_admin'],
-            can_backup_people: ['national_admin', 'district_admin'],
-            can_add_people: ['national_admin'],
-            can_add_places: ['national_admin'],
-            random1: ['national_admin'],
-            random3: ['national_admin'],
-          },
-        })
-      );
-      service
-        .any([
-          [ 'can_backup_facilities', '!can_add_people' ],
-          [ 'can_export_messages', '!random2' ],
-          [ 'can_backup_people', '!can_add_places' ]
-        ])
-        .catch(() => {
-          throw new Error('Should have passed auth');
-        });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin', 'district_admin'],
+          can_backup_people: ['national_admin', 'district_admin'],
+          can_add_people: ['national_admin'],
+          can_add_places: ['national_admin'],
+          random1: ['national_admin'],
+          random3: ['national_admin'],
+        },
+      });
+      const result = await service.any([
+        ['can_backup_facilities', '!can_add_people'],
+        ['can_export_messages', '!random2'],
+        ['can_backup_people', '!can_add_places']
+      ]);
+      chai.expect(result).to.be.true;
     });
 
-    it('rejects when user has all disallowed permissions', () => {
+    it('false when user has all disallowed permissions', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.returns(
-        Promise.resolve({
-          permissions: {
-            can_backup_facilities: ['national_admin', 'district_admin'],
-            can_backup_people: ['national_admin', 'district_admin'],
-            can_backup_places: ['national_admin', 'district_admin'],
-            random1: ['national_admin', 'district_admin'],
-            random2: ['national_admin', 'district_admin'],
-            random3: ['national_admin', 'district_admin'],
-          },
-        })
-      );
-      return service
-        .any([
-          [ 'can_backup_facilities', '!random1' ],
-          [ 'can_backup_people', '!random2' ],
-          [ 'can_backup_places', '!random3' ]
-        ])
-        .then(() => {
-          throw new Error('Should have failed auth');
-        })
-        .catch(err => {
-          chai.expect(err).to.equal(undefined);
-        });
+      Settings.resolves({
+        permissions: {
+          can_backup_facilities: ['national_admin', 'district_admin'],
+          can_backup_people: ['national_admin', 'district_admin'],
+          can_backup_places: ['national_admin', 'district_admin'],
+          random1: ['national_admin', 'district_admin'],
+          random2: ['national_admin', 'district_admin'],
+          random3: ['national_admin', 'district_admin'],
+        },
+      });
+
+      const result = await service.any([
+        ['can_backup_facilities', '!random1'],
+        ['can_backup_people', '!random2'],
+        ['can_backup_places', '!random3']
+      ]);
+      chai.expect(result).to.be.false;
     });
   });
 
   describe('Auth.online', () => {
     it('rejects when no session', () => {
       userCtx.returns(null);
-      return service
-        .online(true)
-        .catch(err => {
-          chai.expect(err.message).to.equal('Not logged in');
-          chai.expect(isOnlineOnly.callCount).to.equal(0);
-        });
+      const result = service.online(true);
+      chai.expect(result).to.be.false;
+      chai.expect(isOnlineOnly.callCount).to.equal(0);
     });
 
-    it('should resolve when requesting online and user is online', () => {
+    it('true when requesting online and user is online', () => {
       userCtx.returns({ roles: ['a'] });
       isOnlineOnly.returns(true);
 
-      return service
-        .online(true)
-        .then(() => {
-          chai.expect(isOnlineOnly.callCount).to.equal(1);
-          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
-        })
-        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+      const result = service.online(true);
+      chai.expect(result).to.be.true;
+      chai.expect(isOnlineOnly.callCount).to.equal(1);
+      chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
     });
 
-    it('should resolve when requesting offline and user is offline', () => {
+    it('true when requesting offline and user is offline', () => {
       userCtx.returns({ roles: ['a'] });
       isOnlineOnly.returns(false);
 
-      return service
-        .online(false)
-        .then(() => {
-          chai.expect(isOnlineOnly.callCount).to.equal(1);
-          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
-        })
-        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+      const result = service.online(false);
+      chai.expect(result).to.be.true;
+      chai.expect(isOnlineOnly.callCount).to.equal(1);
+      chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
     });
 
-    it('should reject when requesting online and user is offline', () => {
+    it('false when requesting online and user is offline', () => {
       userCtx.returns({ roles: ['a', 'b'] });
       isOnlineOnly.returns(false);
 
-      return service
-        .online(true)
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.equal(undefined);
-          chai.expect(isOnlineOnly.callCount).to.equal(1);
-          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
-        });
+      const result = service.online(true);
+      chai.expect(result).to.be.false;
+      chai.expect(isOnlineOnly.callCount).to.equal(1);
+      chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
     });
 
-    it('should reject when requesting offline and user is online', () => {
+    it('false when requesting offline and user is online', () => {
       userCtx.returns({ roles: ['a', 'b'] });
       isOnlineOnly.returns(true);
 
-      return service
-        .online(false)
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.equal(undefined);
-          chai.expect(isOnlineOnly.callCount).to.equal(1);
-          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
-        });
+      const result = service.online(false);
+      chai.expect(result).to.be.false;
+      chai.expect(isOnlineOnly.callCount).to.equal(1);
+      chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
     });
 
-    it('should accept any kind of input truthy input', () => {
+    it('accept any kind of truthy input', () => {
       userCtx.returns({ roles: ['a'] });
       isOnlineOnly.returns(true);
 
-      return Promise
-        .all([
-          service.online('yes'),
-          service.online('true'),
-          service.online(['something']),
-          service.online({ foo: 'bar' })
-        ])
-        .then(() => {
-          chai.expect(isOnlineOnly.callCount).to.equal(4);
-        })
-        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+      chai.expect(service.online('yes')).to.be.true;
+      chai.expect(service.online('true')).to.be.true;
+      chai.expect(service.online(['something'])).to.be.true;
+      chai.expect(service.online({ foo: 'bar' })).to.be.true;
+      chai.expect(isOnlineOnly.callCount).to.equal(4);
     });
 
-    it('should accept any kind of input falsey input', () => {
+    it('accept any kind of input falsey input', () => {
       userCtx.returns({ roles: ['a'] });
       isOnlineOnly.returns(false);
 
-      return Promise
-        .all([
-          service.online(),
-          service.online(undefined),
-          service.online(null),
-          service.online(0)
-        ])
-        .then(() => {
-          chai.expect(isOnlineOnly.callCount).to.equal(4);
-        })
-        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+      chai.expect(service.online()).to.be.true;
+      chai.expect(service.online(undefined)).to.be.true;
+      chai.expect(service.online(null)).to.be.true;
+      chai.expect(service.online(0)).to.be.true;
+      chai.expect(isOnlineOnly.callCount).to.equal(4);
     });
   });
 });
