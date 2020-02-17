@@ -3,7 +3,7 @@ require('chai').should();
 const controller = require('../../../src/controllers/db-doc');
 const service = require('../../../src/services/db-doc');
 const serverUtils = require('../../../src/server-utils');
-const _ = require('underscore');
+const _ = require('lodash');
 
 let testReq;
 let testRes;

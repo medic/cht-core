@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const async = require('async');
 const config = require('../config');
 const messages = require('../lib/messages');
@@ -86,7 +86,7 @@ const findToClear = (registration, reported_date, config) => {
 
 const getConfig = function(form) {
   const fullConfig = config.get('patient_reports') || [];
-  return _.findWhere(fullConfig, { form: form });
+  return _.find(fullConfig, { form: form });
 };
 
 const _silenceReminders = (registration, report, config, callback) => {
@@ -115,7 +115,7 @@ const _silenceReminders = (registration, report, config, callback) => {
 
 const addRegistrationToDoc = (doc, registrations) => {
   if (registrations.length) {
-    const latest = _.max(registrations, registration =>
+    const latest = _.maxBy(registrations, registration =>
       moment(registration.reported_date)
     );
     doc.registration_id = latest._id;

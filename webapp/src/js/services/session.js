@@ -1,6 +1,6 @@
 const COOKIE_NAME = 'userCtx';
 const ONLINE_ROLE = 'mm-online';
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -79,7 +79,7 @@ const _ = require('underscore');
 
       // TODO Use a shared library for this duplicated code #4021
       const hasRole = function(userCtx, role) {
-        return _.contains(userCtx && userCtx.roles, role);
+        return !!(userCtx && userCtx.roles && userCtx.roles.includes(role));
       };
 
       const isAdmin = function(userCtx) {

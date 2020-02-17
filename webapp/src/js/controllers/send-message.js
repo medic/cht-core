@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const phoneNumber = require('@medic/phone-number');
 const format = require('../modules/format');
 
@@ -131,25 +131,19 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
             templateSelection: templateSelection,
             initialValue: initialValue,
             sendMessageExtras: function(results) {
-              return _.chain(results)
-                .map(function (result) {
-                  if (personTypes.includes(result.doc.contact_type || result.doc.type)) {
-                    return result;
-                  }
-                  return [
-                    result,
-                    {
-                      id: 'everyoneAt:' + result.id,
-                      doc: result.doc,
-                      everyoneAt: true
-                    }
-                  ];
-                })
-                .flatten()
-                .filter(function(result) {
-                  return validatePhoneNumber(settings, result);
-                })
-                .value();
+              const messages = [...results];
+              results.forEach(result => {
+                if (personTypes.includes(result.doc.contact_type || result.doc.type)) {
+                  return;
+                }
+                messages.push({
+                  id: 'everyoneAt:' + result.id,
+                  doc: result.doc,
+                  everyoneAt: true
+                });
+              });
+
+              return messages.filter(message => validatePhoneNumber(settings, message));
             }
           });
         });

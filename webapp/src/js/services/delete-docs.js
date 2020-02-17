@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const partialParse = require('partial-json-parser');
 const utilsFactory = require('@medic/bulk-docs-utils');
 
@@ -72,7 +72,7 @@ const utilsFactory = require('@medic/bulk-docs-utils');
         xhr.onprogress = function() {
           if (xhr.responseText) {
             const currentResponse = partialParse(xhr.responseText);
-            const successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
+            const successfulDeletions = _.flattenDeep(currentResponse).filter(function(doc) {
               return !doc.error;
             });
             const totalDocsDeleted = successfulDeletions.length;
@@ -84,7 +84,7 @@ const utilsFactory = require('@medic/bulk-docs-utils');
         xhr.onload = function() {
           if (this.status >= 200 && this.status < 300) {
             try {
-              deferred.resolve(_.flatten(JSON.parse(xhr.response)));
+              deferred.resolve(_.flattenDeep(JSON.parse(xhr.response)));
             } catch (err) {
               deferred.reject(err);
             }

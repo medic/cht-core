@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('../../db');
 const config = require('../../config');
 const dateFormat = require('./date-format');

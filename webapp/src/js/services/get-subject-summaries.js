@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
@@ -38,7 +38,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     const findSubjectName = function(response, id) {
-      const parent = _.findWhere(response, { _id: id });
+      const parent = _.find(response, { _id: id });
       return (parent && parent.name) || null;
     };
 
@@ -116,15 +116,15 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     const hydrateSubjectLineages = function(summaries, response) {
-      return _.each(summaries, function(summary) {
+      return _.forEach(summaries, function(summary) {
         if (summary.subject && summary.subject._id) {
-          _.extend(summary.subject, _.findWhere(response, {_id: summary.subject._id}));
+          Object.assign(summary.subject, _.find(response, {_id: summary.subject._id}));
         }
       });
     };
 
     const compactSubjectLineage = function(summaries) {
-      return _.each(summaries, function(summary) {
+      return _.forEach(summaries, function(summary) {
         if (summary.subject && summary.subject.lineage) {
           summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
             return parent && parent.name;

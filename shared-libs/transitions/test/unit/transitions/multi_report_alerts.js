@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../../../src/config');
 const messages = require('../../../src/lib/messages');
 const sinon = require('sinon');
@@ -142,7 +142,7 @@ describe('multi report alerts', () => {
   });
 
   it('filters reports by form if forms is present in config', () => {
-    sinon.stub(config, 'get').returns([_.extend({forms: ['A']} , alertConfig)]);
+    sinon.stub(config, 'get').returns([Object.assign({ forms: ['A'] }, alertConfig)]);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve([hydratedReports[0], hydratedReports[2]]));
     return transition.onMatch({ doc: doc }).then(() => {

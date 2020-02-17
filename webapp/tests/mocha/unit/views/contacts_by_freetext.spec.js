@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const assert = require('chai').assert;
 const utils = require('./utils');
 
@@ -47,7 +47,7 @@ describe('contacts_by_freetext view', () => {
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
-    const flattened = _.flatten(emitted);
+    const flattened = _.flattenDeep(emitted);
     assert.include(flattened, 'test');
     assert.include(flattened, 'clinic');
     assert.include(flattened, 'contact');
@@ -62,7 +62,7 @@ describe('contacts_by_freetext view', () => {
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
-    const flattened = _.flatten(emitted);
+    const flattened = _.flattenDeep(emitted);
     assert.include(flattened, 'बुद्ध');
     assert.include(flattened, 'élève');
   });
@@ -76,7 +76,7 @@ describe('contacts_by_freetext view', () => {
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
-    const flattened = _.flatten(emitted);
+    const flattened = _.flattenDeep(emitted);
     assert.notInclude(flattened, 'of');
   });
 

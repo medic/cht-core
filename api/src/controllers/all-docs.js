@@ -1,6 +1,6 @@
 const allDocs = require('../services/all-docs');
 const serverUtils = require('../server-utils');
-const _ = require('underscore');
+const _ = require('lodash');
 
 const requestError = reason => ({
   error: 'bad_request',
@@ -39,7 +39,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _invalidRequest: invalidRequest
   });
 }

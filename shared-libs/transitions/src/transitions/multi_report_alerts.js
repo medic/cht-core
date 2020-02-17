@@ -1,5 +1,5 @@
 const vm = require('vm');
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../config');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
@@ -118,7 +118,7 @@ const getPhonesOneReport = (recipients, report) => {
 
   let phones;
   if (_.isArray(recipients)) {
-    phones = _.flatten(
+    phones = _.flattenDeep(
       recipients.map(
         _.partial(getPhonesOneReportOneRecipientWithDuplicates, _, report)
       )
@@ -294,7 +294,7 @@ const getCountedReportsBatch = (script, latestReport, alert, skip) => {
     options
   ).then(fetched => {
     const countedReports = countReports(fetched, latestReport, script);
-    const oldReportIds = _.flatten(
+    const oldReportIds = _.flattenDeep(
       countedReports.map(report => {
         if (report.tasks) {
           const tasks = report.tasks.filter(

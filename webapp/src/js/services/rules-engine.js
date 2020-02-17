@@ -28,9 +28,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
   let ensureTaskFreshness;
   let ensureTargetFreshness;
 
-  const hasRole = role => Auth(role).then(() => true).catch(() => false);
   const initialize = () => (
-    Promise.all([hasRole('can_view_tasks'), hasRole('can_view_analytics')])
+    Promise.all([Auth.has('can_view_tasks'), Auth.has('can_view_analytics')])
       .then(([canViewTasks, canViewTargets]) => {
         const hasPermission = canViewTargets || canViewTasks;
         if (!hasPermission || Session.isOnlineOnly()) {

@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
-const _ = require('underscore');
+const _ = require('lodash');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -15,10 +15,6 @@ const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
-
-_.templateSettings = {
-  escape: /\{\{(.+?)\}\}/g,
-};
 
 const safePath = requested => {
   const root = '/';

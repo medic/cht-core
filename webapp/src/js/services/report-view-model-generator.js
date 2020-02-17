@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 /**
  * Hydrates the given contact by uuid and creates a model which

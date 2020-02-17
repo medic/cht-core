@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const transitions = require('../../src/transitions');
 const config = require('../../src/config');
-const _ = require('underscore');
+const _ = require('lodash');
 
 const requiredFunctions = {
   onMatch: 1,

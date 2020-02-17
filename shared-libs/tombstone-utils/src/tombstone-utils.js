@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 const TOMBSTONE_TYPE = 'tombstone';
 const TOMBSTONE_ID_SEPARATOR = '____';

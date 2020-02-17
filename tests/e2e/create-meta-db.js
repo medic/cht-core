@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const auth = require('../auth')();
 const helper = require('../helper');
 const utils = require('../utils');
@@ -67,7 +67,7 @@ describe('Create user meta db : ', () => {
         path: '/_changes'
       }, options)).then(response => {
         const changes = response.results;
-        const ids = _.pluck(changes, 'id').sort();
+        const ids = _.map(changes, 'id').sort();
         expect(ids[1]).toEqual(doc._id);
         return true;
       });

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const logger = require('./logger');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length';

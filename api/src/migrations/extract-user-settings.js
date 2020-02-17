@@ -1,6 +1,6 @@
 const async = require('async');
 const {promisify} = require('util');
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('../db');
 
 const fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id', 'roles' ];
