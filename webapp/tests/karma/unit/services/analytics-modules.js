@@ -57,8 +57,8 @@ describe('AnalyticsModules service', () => {
 
       chai.expect(settings.callCount).to.equal(1);
       chai.expect(scheduledForms.callCount).to.equal(1);
-      chai.expect(auth.callCount).to.equal(1);
-      chai.expect(auth.args[0]).to.deep.equal(['can_aggregate_targets']);
+      chai.expect(auth.has.callCount).to.equal(1);
+      chai.expect(auth.has.args[0]).to.deep.equal(['can_aggregate_targets']);
     });
   });
 

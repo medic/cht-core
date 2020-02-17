@@ -69,8 +69,8 @@ describe('TargetAggregates service', () => {
       auth.has.resolves(true);
       return service.isEnabled().then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(auth.callCount).to.equal(1);
-        chai.expect(auth.args[0]).to.deep.equal(['can_aggregate_targets']);
+        chai.expect(auth.has.callCount).to.equal(1);
+        chai.expect(auth.has.args[0]).to.deep.equal(['can_aggregate_targets']);
       });
     });
   });
