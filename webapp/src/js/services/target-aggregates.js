@@ -235,9 +235,7 @@ angular.module('inboxServices').factory('TargetAggregates',
 
     const service = {};
 
-    service.isEnabled = () => {
-      return Auth('can_aggregate_targets').then(() => true).catch(() => false);
-    };
+    service.isEnabled = () => Auth.has('can_aggregate_targets');
 
     service.getAggregates = () => {
       return Settings().then(settings => {

@@ -68,7 +68,7 @@
           .all([
             Settings(),
             ScheduledForms(),
-            Auth('can_aggregate_targets').then(() => true).catch(() => false)
+            Auth.has('can_aggregate_targets')
           ])
           .then(([settings, scheduledForms, canAggregateTargets]) => {
             const modules = getModules(settings, scheduledForms, canAggregateTargets);

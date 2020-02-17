@@ -21,7 +21,7 @@ describe('TargetAggregates service', () => {
   beforeEach(() => {
     module('inboxApp');
 
-    auth = sinon.stub();
+    auth = { has: sinon.stub() };
     settings = sinon.stub();
     contactTypes = {
       getTypeId: sinon.stub(),
@@ -59,14 +59,14 @@ describe('TargetAggregates service', () => {
 
   describe('isEnabled', () => {
     it('should return false when user does not have permission', () => {
-      auth.rejects();
+      auth.has.resolves(false);
       return service.isEnabled().then(result => {
         chai.expect(result).to.equal(false);
       });
     });
 
     it('should return true when user has permission', () => {
-      auth.resolves();
+      auth.has.resolves(true);
       return service.isEnabled().then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(auth.callCount).to.equal(1);
