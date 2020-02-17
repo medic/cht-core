@@ -9,7 +9,7 @@ describe('AnalyticsModules service', () => {
 
   beforeEach(() => {
     module('inboxApp');
-    auth = sinon.stub();
+    auth = { has: sinon.stub() };
     settings = sinon.stub();
     scheduledForms = sinon.stub();
     module($provide => {
@@ -26,7 +26,7 @@ describe('AnalyticsModules service', () => {
   it('should throw an error when settings fails', () => {
     settings.rejects({ some: 'err' });
     scheduledForms.resolves();
-    auth.resolves();
+    auth.has.resolves(true);
 
     return service()
       .then(() => chai.expect().to.equal('Should have thrown'))
@@ -36,7 +36,7 @@ describe('AnalyticsModules service', () => {
   it('should throw an error when scheduledForms fails', () => {
     scheduledForms.rejects({ some: 'err' });
     settings.resolves({});
-    auth.resolves();
+    auth.has.resolves(true);
 
     return service()
       .then(() => chai.expect().to.equal('Should have thrown'))
@@ -46,7 +46,7 @@ describe('AnalyticsModules service', () => {
   it('should enable Reporting Rates when scheduled forms', () => {
     scheduledForms.resolves(['a', 'b']);
     settings.resolves({});
-    auth.rejects();
+    auth.has.resolves(false);
 
     return service().then(result => {
       chai.expect(result.length).to.equal(1);
@@ -65,7 +65,7 @@ describe('AnalyticsModules service', () => {
   it('should enable targets when configured', () => {
     scheduledForms.resolves([]);
     settings.resolves({ tasks: { targets: { enabled: true } } });
-    auth.rejects();
+    auth.has.resolves(false);
 
     return service().then(result => {
       chai.expect(result.length).to.equal(1);
@@ -80,7 +80,7 @@ describe('AnalyticsModules service', () => {
   it('should enable target aggregates when configured', () => {
     scheduledForms.resolves([]);
     settings.resolves({ tasks: { targets: { enabled: true } } });
-    auth.resolves();
+    auth.has.resolves(true);
 
     return service().then(result => {
       chai.expect(result.length).to.equal(2);
