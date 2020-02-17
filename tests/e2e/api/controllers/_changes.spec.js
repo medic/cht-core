@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const utils = require('../../../utils');
 const sentinelUtils = require('../../sentinel/utils');
 const uuid = require('uuid');
@@ -294,7 +294,7 @@ describe('changes handler', () => {
         options.port = constants.API_PORT;
         options.auth = options.auth || `${auth.username}:${auth.password}`;
         options.path = options.path || '/';
-        options.query = _.extend({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
+        options.query = Object.assign({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
         options.path += '?' + querystring.stringify(options.query || {});
 
         const heartbeats = [];
@@ -657,7 +657,7 @@ describe('changes handler', () => {
             requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
             utils.saveDocs(allowedBob),
             utils.saveDocs(allowedSteve),
-            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
+            utils.saveDoc(Object.assign(stevesUser, { facility_id: 'fixture:bobville' })),
           ]);
         })
         .then(([ changes ]) => {
@@ -679,11 +679,11 @@ describe('changes handler', () => {
           .request({
             path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
             method: 'PUT',
-            body: _.extend(user, { facility_id: 'fixture:bobville' })
+            body: Object.assign(user, { facility_id: 'fixture:bobville' })
           })
           .then(() => utils.saveDocs([
             // we "move" his medic user to a place that doesn't exist. He should still get bobville docs
-            _.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] }),
+            Object.assign(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] }),
             ...allowedSteve,
             ...allowedBob,
           ]));
@@ -720,7 +720,7 @@ describe('changes handler', () => {
         .then(user => utils.request({
           path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
           method: 'PUT',
-          body: _.extend(user, { facility_id: 'fixture:steveville' })
+          body: Object.assign(user, { facility_id: 'fixture:steveville' })
         }));
     });
 
@@ -740,8 +740,8 @@ describe('changes handler', () => {
         })
         .then(() => Promise.all([
           consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-          utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
+          utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+          utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
@@ -770,8 +770,8 @@ describe('changes handler', () => {
         })
         .then(() => {
           return Promise.all([
-            utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-            utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+            utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
           ]);
         })
         .then(() => sentinelUtils.waitForSentinel())
@@ -813,8 +813,8 @@ describe('changes handler', () => {
           bobsSeq = bobsChanges.last_seq;
           stevesSeq = stevesChanges.last_seq;
           return Promise.all([
-            utils.saveDocs(allowedBob.map(doc => _.extend(doc, { _deleted: true }))),
-            utils.saveDocs(allowedSteve.map(doc => _.extend(doc, { _deleted: true }))),
+            utils.saveDocs(allowedBob.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocs(allowedSteve.map(doc => Object.assign(doc, { _deleted: true }))),
           ]);
         })
         .then(() => Promise.all([

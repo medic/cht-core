@@ -1,5 +1,5 @@
 const dbDoc = require('../services/db-doc');
-const _ = require('underscore');
+const _ = require('lodash');
 const serverUtils = require('../server-utils');
 
 // block this middleware from processing requests to these endpoints
@@ -106,7 +106,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _isValidRequest: isValidRequest,
     _isValidAttachmentRequest: isValidAttachmentRequest
   });

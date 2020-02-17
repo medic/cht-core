@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -56,7 +56,7 @@ const _ = require('underscore');
         return $q.all([ Settings(), ScheduledForms() ])
           .then(function(results) {
             const modules = getModules(results[0], results[1]);
-            $log.debug('AnalyticsMobules. Enabled modules: ', _.pluck(modules, 'label'));
+            $log.debug('AnalyticsMobules. Enabled modules: ', _.map(modules, 'label'));
             return modules;
           });
       };

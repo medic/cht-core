@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const objectPath = require('object-path');
 
 const config = require('../config');
@@ -38,20 +38,20 @@ module.exports = {
     const times = {};
 
     if (due && now) {
-      _.each(['minutes', 'hours', 'days', 'weeks', 'months', 'years'], function(unit) {
+      _.forEach(['minutes', 'hours', 'days', 'weeks', 'months', 'years'], function(unit) {
         times[unit] = moment(due).diff(now, unit);
       });
     }
     return times;
   },
   alreadyRun: function(doc, name) {
-    const scheduled_task = _.findWhere(doc.scheduled_tasks, { name: name });
-    const task = _.findWhere(doc.tasks, { name: name });
+    const scheduled_task = _.find(doc.scheduled_tasks, { name: name });
+    const task = _.find(doc.tasks, { name: name });
     return Boolean(scheduled_task || task);
   },
   getScheduleConfig: function(name) {
     let ret;
-    _.each(config.get('schedules'), function(schedule) {
+    _.forEach(config.get('schedules'), function(schedule) {
       if (schedule.name === name) {
         ret = schedule;
       }
@@ -90,7 +90,7 @@ module.exports = {
 
     const start = moment(docStart);
 
-    _.each(schedule.messages, function(msg) {
+    _.forEach(schedule.messages, function(msg) {
       let due;
       const locale = utils.getLocale(doc);
       const offset = module.exports.getOffset(msg.offset);

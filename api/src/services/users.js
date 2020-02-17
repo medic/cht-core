@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const people  = require('../controllers/people');
 const places = require('../controllers/places');
@@ -62,7 +62,7 @@ const getType = user => {
   return 'unknown';
 };
 
-const getDoc = (id, docs) =>  _.findWhere(docs, { _id: id });
+const getDoc = (id, docs) =>  _.find(docs, { _id: id });
 
 const getDocID = doc => {
   if (_.isString(doc)) {
@@ -417,7 +417,7 @@ const missingFields = data => {
 const getUpdatedUserDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUser(userID).then(doc => {
-    const user = _.extend(doc, module.exports._getUserUpdates(username, data));
+    const user = Object.assign(doc, module.exports._getUserUpdates(username, data));
     user._id = userID;
     return user;
   });
@@ -426,7 +426,7 @@ const getUpdatedUserDoc = (username, data) => {
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUserSettings(userID).then(doc => {
-    const settings = _.extend(doc, module.exports._getSettingsUpdates(username, data));
+    const settings = Object.assign(doc, module.exports._getSettingsUpdates(username, data));
     settings._id = userID;
     return settings;
   });

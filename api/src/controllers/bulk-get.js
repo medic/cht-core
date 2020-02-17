@@ -1,5 +1,5 @@
 const bulkGet = require('../services/bulk-get');
-const _ = require('underscore');
+const _ = require('lodash');
 const serverUtils = require('../server-utils');
 
 const requestError = reason => ({
@@ -41,7 +41,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _invalidRequest: invalidRequest
   });
 }

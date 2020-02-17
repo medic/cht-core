@@ -1,7 +1,7 @@
 /**
  * @module message-utils
  */
-const _ = require('underscore');
+const _ = require('lodash/core');
 const uuid = require('uuid');
 const gsm = require('gsm');
 const mustache = require('mustache');
@@ -210,7 +210,7 @@ const formatDate = function(config, text, view, formatString, locale) {
 };
 
 const render = function(config, template, view, locale) {
-  return mustache.render(template, _.extend(view, {
+  return mustache.render(template, Object.assign(view, {
     bikram_sambat_date: function() {
       return function(text) {
         return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));
@@ -310,7 +310,7 @@ exports.template = function(config, translate, doc, content, extraContext) {
   if (content.translationKey) {
     template = translate(content.translationKey, locale);
   } else if (_.isArray(content.message)) {
-    const message = _.findWhere(content.message, { locale: locale }) ||
+    const message = _.find(content.message, { locale: locale }) ||
                   content.message[0];
     if (message) {
       template = message.content && message.content.trim();

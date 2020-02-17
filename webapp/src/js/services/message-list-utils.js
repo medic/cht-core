@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('MessageListUtils',
   function(

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const objectPath = require('object-path');
 const db = require('../../db');
 const dateFormat = require('./date-format');
@@ -27,7 +27,7 @@ const flatten = (fields, prepend=[]) => {
       // length, so you can't generate a stable header out of them. Instead,
       // when we convert them into CSV we JSON.stringify them and treat them as
       // one cell.
-      _.extend(acc, flatten(fields[k], path));
+      Object.assign(acc, flatten(fields[k], path));
     } else {
       acc[path.join('.')] = fields[k];
     }
@@ -52,7 +52,7 @@ module.exports = {
         filters &&
         filters.forms &&
         filters.forms.selected &&
-        _.pluck(filters.forms.selected, 'code'));
+        _.map(filters.forms.selected, 'code'));
 
       if (forms) {
         return Promise.resolve(forms);
@@ -83,7 +83,7 @@ module.exports = {
           ))
       ).then(allFields => {
         // Filter on identity as you can select forms that have no reports
-        const fieldColumns = uniqueColumns(allFields.filter(_.identity));
+        const fieldColumns = uniqueColumns(allFields.filter(field => field));
 
         const allColumns = [
           '_id',

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const responsive = require('../modules/responsive');
 const Tour = require('bootstrap-tour');
 
@@ -427,7 +427,7 @@ angular.module('inboxServices').service('Tour',
     };
 
     const getTour = function(name) {
-      return _.findWhere(tours, { name: name }) || tours[0];
+      return _.find(tours, { name: name }) || tours[0];
     };
 
     const getSettings = function(name) {
@@ -440,7 +440,7 @@ angular.module('inboxServices').service('Tour',
         settings.template = createTemplate();
 
         const mobile = responsive.isMobile();
-        _.each(settings.steps, function(step) {
+        _.forEach(settings.steps, function(step) {
           step.title = $translate.instant(step.title);
           step.content = $translate.instant(step.content);
           if (mobile) {
@@ -544,7 +544,7 @@ angular.module('inboxServices').service('Tour',
         .then(([canView]) => {
           return canView && {
             order: 4,
-  
+
             id: 'analytics',
             icon: 'fa-bar-chart-o',
             name: 'Analytics'
@@ -586,10 +586,10 @@ angular.module('inboxServices').service('Tour',
             if (route) {
               $state.go(route, { tour: name });
             } else {
-              const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
+              const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
               Feedback.submit(message).catch(err => {
                 $log.error('Error saving feedback', err);
-              }); 
+              });
             }
           }
         });

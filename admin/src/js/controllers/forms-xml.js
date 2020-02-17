@@ -1,5 +1,3 @@
-const _ = require('underscore');
-
 angular.module('controllers').controller('FormsXmlCtrl',
   function (
     $log,
@@ -104,7 +102,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
             })
             .then(function(doc) {
               doc.title = title;
-              _.extend(doc, meta);
+              Object.assign(doc, meta);
               doc.type = 'form';
               doc.internalId = formId;
               AddAttachment(doc, 'xml', xml, 'application/xml');

@@ -1,6 +1,6 @@
 const request = require('request-promise-native');
 const url = require('url');
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
@@ -21,7 +21,7 @@ const get = (path, headers) => {
 
 // TODO Use a shared library for this duplicated code #4021
 const hasRole = (userCtx, role) => {
-  return _.contains(userCtx && userCtx.roles, role);
+  return _.includes(userCtx && userCtx.roles, role);
 };
 
 const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
@@ -31,7 +31,7 @@ const hasPermission = (userCtx, permission) => {
   if (!roles) {
     return false;
   }
-  return _.some(roles, role => _.contains(userCtx.roles, role));
+  return _.some(roles, role => _.includes(userCtx.roles, role));
 };
 
 const checkDistrict = (requested, permitted) => {
@@ -144,8 +144,9 @@ module.exports = {
       return false;
     }
 
-    let username; let 
-      password;
+    let username;
+    let password;
+
     try {
       [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
     } catch (err) {
@@ -187,7 +188,7 @@ module.exports = {
         db.medic.get('org.couchdb.user:' + userCtx.name)
       ])
       .then(([ user, medicUser ]) => {
-        _.extend(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+        Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
         return medicUser;
       });
   }

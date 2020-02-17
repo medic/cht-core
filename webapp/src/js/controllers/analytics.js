@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxControllers').controller('AnalyticsCtrl',
   function (
@@ -43,7 +43,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
           return;
         }
       } else {
-        ctrl.setSelectedAnalytics(_.findWhere(modules, {
+        ctrl.setSelectedAnalytics(_.find(modules, {
           state: $state.current.name
         }));
       }

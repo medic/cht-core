@@ -176,7 +176,11 @@ module.exports = function(grunt) {
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'bikram-sambat': './webapp/node_modules/bikram-sambat',
             'moment': './webapp/node_modules/moment',
-            'underscore': './webapp/node_modules/underscore'
+            'lodash/core': './webapp/node_modules/lodash/core',
+            'lodash/intersection': './webapp/node_modules/lodash/intersection',
+            'lodash/uniq': './webapp/node_modules/lodash/uniq',
+            'lodash/uniqBy': './webapp/node_modules/lodash/uniqBy',
+            'lodash/groupBy': './webapp/node_modules/lodash/groupBy',
           },
         },
       },
@@ -191,7 +195,8 @@ module.exports = function(grunt) {
             'gsm': './admin/node_modules/gsm',
             'object-path': './admin/node_modules/object-path',
             'bikram-sambat': './admin/node_modules/bikram-sambat',
-            '@medic/phone-number': './admin/node_modules/@medic/phone-number'
+            '@medic/phone-number': './admin/node_modules/@medic/phone-number',
+            'lodash/core': './admin/node_modules/lodash/core',
           },
         },
       },
@@ -502,7 +507,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: 'cd api && npm ci',
+        cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
       },
       'npm-ci-shared-libs': {
         cmd: () => {

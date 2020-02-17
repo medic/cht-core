@@ -55,10 +55,6 @@ require('./enketo/main');
 
 const bootstrapper = require('./bootstrapper');
 const router = require('./router');
-const _ = require('underscore');
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g,
-};
 
 const KARMA_UNIT_TEST_PORT = '9876';
 

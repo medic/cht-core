@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../config');
 const people = require('./people');
 const utils = require('./utils');

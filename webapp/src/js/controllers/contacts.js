@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 let scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
@@ -169,7 +169,7 @@ const PAGE_SIZE = 50;
             contacts.length >= options.limit;
 
           const mergedList = options.paginating ?
-            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id'))
+            _.uniqBy(contacts.concat(liveList.getList()), '_id')
             : contacts;
           liveList.set(mergedList, !!options.reuseExistingDom);
 

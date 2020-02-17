@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const uuid = require('uuid/v4');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
@@ -80,7 +80,7 @@ angular
           });
           if (primaryContacts) {
             return hydrate(primaryContacts).then(function(primaries) {
-              return _.flatten([mapDescendants(contacts), primaries]);
+              return _.flattenDeep([mapDescendants(contacts), primaries]);
             });
           } else {
             return mapDescendants(contacts);
@@ -125,7 +125,7 @@ angular
       splitRecipients.hydrate = splitRecipients.hydrate || [];
       splitRecipients.resolve = splitRecipients.resolve || [];
 
-      const promises = _.flatten([
+      const promises = _.flattenDeep([
         splitRecipients.explode.map(descendants),
         hydrate(splitRecipients.hydrate),
         resolvePhoneNumbers(splitRecipients.resolve),
@@ -133,12 +133,12 @@ angular
 
       return $q.all(promises).then(function(recipients) {
         // hydrate() and resolvePhoneNumbers() are promises with multiple values
-        recipients = _.flatten(recipients);
+        recipients = _.flattenDeep(recipients);
 
         // removes any undefined values caused by bad data
         const validRecipients = recipients.filter(identity);
 
-        return _.uniq(validRecipients, false, function(recipient) {
+        return _.uniqBy(validRecipients, function(recipient) {
           return recipient.phone;
         });
       });

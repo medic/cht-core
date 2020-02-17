@@ -1,7 +1,7 @@
 const auth = require('../auth');
 const db = require('../db');
 const authorization = require('../services/authorization');
-const _ = require('underscore');
+const _ = require('lodash');
 const heartbeatFilter = require('../services/heartbeat-filter');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const uuid = require('uuid/v4');
@@ -89,7 +89,7 @@ const generateResponse = feed => {
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
 const appendChange = (results, changeObj, forceSeq = false) => {
-  const result = _.findWhere(results, { id: changeObj.id });
+  const result = _.find(results, { id: changeObj.id });
   if (!result) {
     const change = JSON.parse(JSON.stringify(changeObj.change));
 
@@ -158,7 +158,7 @@ const writeDownstream = (feed, content, end) => {
 const resetFeed = feed => {
   clearTimeout(feed.timeout);
 
-  _.extend(feed, {
+  Object.assign(feed, {
     pendingChanges: [],
     results: [],
     lastSeq: feed.initSeq,
@@ -186,7 +186,7 @@ const restartNormalFeed = feed => {
 
 const getChanges = feed => {
   const options = { return_docs: true };
-  _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
+  Object.assign(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
 
   // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
   // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
@@ -291,7 +291,7 @@ const initFeed = (req, res) => {
   return authorization
     .getAuthorizationContext(feed.req.userCtx)
     .then(authorizationContext => {
-      _.extend(feed, authorizationContext);
+      Object.assign(feed, authorizationContext);
       return authorization.getAllowedDocIds(feed, { includeTombstones: !feed.initialReplication });
     })
     .then(allowedDocIds => {
@@ -454,7 +454,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _init: init,
     _initFeed: initFeed,
     _processChange: processChange,

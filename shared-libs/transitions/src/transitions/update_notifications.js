@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../config');
 const utils = require('../lib/utils');
 const messages = require('../lib/messages');
@@ -35,23 +35,16 @@ module.exports = {
 
   _addErr: function(event_type, config, doc) {
     const locale = utils.getLocale(doc);
-    const evConf = _.findWhere(config.messages, {
-      event_type: event_type,
-    });
+    const evConf = _.find(config.messages, { event_type: event_type });
     const msg = messages.getMessage(evConf, locale);
     if (msg) {
       messages.addError(doc, msg);
     } else {
-      messages.addError(
-        doc,
-        `Failed to complete notification request, event type "${event_type}" misconfigured.`
-      );
+      messages.addError(doc, `Failed to complete notification request, event type "${event_type}" misconfigured.`);
     }
   },
   _addMsg: function(event_type, config, doc, registrations, patient) {
-    const msgConfig = _.findWhere(config.messages, {
-      event_type: event_type,
-    });
+    const msgConfig = _.find(config.messages, { event_type: event_type });
     if (msgConfig) {
       const templateContext = {
         registrations: registrations,
@@ -72,7 +65,7 @@ module.exports = {
     );
   },
   getConfig: function() {
-    return _.extend({}, config.get('notifications'));
+    return Object.assign({}, config.get('notifications'));
   },
   validate: function(config, doc, callback) {
     const validations = config.validations && config.validations.list;
