@@ -60,11 +60,9 @@ const medicPouchProvider = db => {
       return db.get(_id)
         .catch(createNew)
         .then(existingDoc => {
-          if (existingDoc.updated_date !== today) {
-            Object.assign(existingDoc, assign);
-            existingDoc.updated_date = today;
-            return db.put(existingDoc);
-          }
+          Object.assign(existingDoc, assign);
+          existingDoc.updated_date = today;
+          return db.put(existingDoc);
         });
     },
 

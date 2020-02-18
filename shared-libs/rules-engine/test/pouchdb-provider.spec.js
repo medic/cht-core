@@ -104,7 +104,7 @@ describe('pouchdb provider', () => {
       const nextTargets = [{ id: 'target', score: 1 }];
       await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userContactDoc, userSettingsDoc, docTag);
       const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
-      expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
+      expect(ignoredUpdate._rev.startsWith('2-')).to.be.true;
 
       sinon.useFakeTimers(Date.now() + MS_IN_DAY);
       await pouchdbProvider(db).commitTargetDoc({ targets: nextTargets }, userContactDoc, userSettingsDoc, docTag);
