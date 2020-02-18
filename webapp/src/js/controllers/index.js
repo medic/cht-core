@@ -37,6 +37,7 @@
   require('./reports-add');
   require('./reports-content');
   require('./send-message');
+  require('./session-expired-modal');
   require('./tasks');
   require('./tasks-content');
   require('./testing');

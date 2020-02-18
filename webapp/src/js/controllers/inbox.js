@@ -172,7 +172,11 @@ const moment = require('moment');
       return dbFetch.apply(this, arguments)
         .then(function(response) {
           if (response.status === 401) {
-            Session.navigateToLogin();
+            showSessionExpired();
+            $timeout(() => {
+              $log.info('Redirect to login after 1 minute of inactivity');
+              Session.navigateToLogin();
+            }, 60000);
           }
           return response;
         });
@@ -535,6 +539,15 @@ const moment = require('moment');
         }, 2 * 60 * 60 * 1000);
       });
       closeDropdowns();
+    };
+
+    const showSessionExpired = function() {
+      Modal({
+        templateUrl: 'templates/modals/session_expired.html',
+        controller: 'SessionExpiredModalCtrl',
+        controllerAs: 'SessionExpiredModalCtrl',
+        singleton: true,
+      });
     };
 
     Changes({
