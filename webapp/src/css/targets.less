@@ -17,28 +17,6 @@
     flex-direction: column;
     justify-content: space-between;
 
-    &.has-goal,
-    &.has-goal:not(.goal-met) .percent {
-      .number {
-        color: @targets-below-color;
-      }
-      .progress-bar {
-        background-color: @targets-below-color;
-      }
-    }
-    &.has-goal.goal-met,
-    .percent {
-      .number {
-        color: @targets-above-goal;
-      }
-      .progress-bar {
-        background-color: @targets-above-goal;
-      }
-    }
-    &:not(.has-goal) .goal {
-      display: none;
-    }
-
     .heading {
       .title {
         margin-left: 65px;
@@ -63,40 +41,7 @@
       position: relative;
       margin: 0 5px;
       .percent {
-        padding-top: 10px;
         position: relative;
-        .goal {
-          position: absolute;
-          top: 0;
-          label {
-            margin-left: -50%; /* center aligned */
-            white-space: nowrap;
-            font-size: @font-small;
-            color: @label-color;
-            padding-top: 5px;
-            &.pin-left {
-              margin-left: 0; /* left aligned */
-            }
-            &.pin-right {
-              margin-left: -100%; /* right aligned */
-            }
-          }
-          .bar {
-            position: absolute;
-            top: 25px;
-            height: 30px;
-            width: 8px;
-            margin-left: -4px; /* center */
-            background-color: @label-color;
-            border: 2px solid #FFFFFF;
-            border-radius: @radius-size;
-          }
-        }
-        .value {
-          font-size: @font-extra-extra-large;
-          line-height: 1;
-          font-weight: bold;
-        }
       }
       .count {
         text-align: center;
@@ -121,6 +66,130 @@
             line-height: 1;
             margin-bottom: 0;
           }
+        }
+      }
+    }
+  }
+}
+
+.target {
+  &.has-goal,
+  &.has-goal:not(.goal-met), .percent {
+    .number {
+      color: @targets-below-color;
+    }
+    .progress-bar {
+      background-color: @targets-below-color;
+    }
+  }
+  &.goal-met, .percent {
+    .number {
+      color: @targets-above-goal;
+    }
+    .progress-bar {
+      background-color: @targets-above-goal;
+    }
+  }
+  &:not(.has-goal) .goal {
+    display: none;
+  }
+
+  .target-progress {
+    .goal {
+      position: absolute;
+      top: -10px;
+      label {
+        margin-left: -50%; /* center aligned */
+        white-space: nowrap;
+        font-size: @font-small;
+        color: @label-color;
+        padding-top: 5px;
+        &.pin-left {
+          margin-left: 0; /* left aligned */
+        }
+        &.pin-right {
+          margin-left: -100%; /* right aligned */
+        }
+      }
+      .bar {
+        position: absolute;
+        top: 25px;
+        height: 30px;
+        width: 8px;
+        margin-left: -4px; /* center */
+        background-color: @label-color;
+        border: 2px solid #FFFFFF;
+        border-radius: @radius-size;
+      }
+    }
+
+    .value {
+      font-size: @font-extra-extra-large;
+      line-height: 1;
+      font-weight: bold;
+    }
+  }
+}
+
+.target-aggregates {
+  max-width: @content-width;
+  left: 0;
+  right: 0;
+}
+
+#target-aggregates-list {
+  .content-row {
+    &.selected {
+      background-color: @teal-highlight;
+    }
+
+    .aggregate-status {
+      color: @text-secondary-color;
+      white-space: nowrap;
+      &.error {
+        font-weight: bold;
+        color: @targets-below-color;
+      }
+      &.success {
+        font-weight: bold;
+        color: @targets-above-goal;
+      }
+    }
+  }
+}
+
+.aggregate-detail {
+  .target {
+    .target-progress {
+      .progress {
+        margin: 20px 0 0 0;
+
+        &.placeholder {
+          background: @gray-ultra-light;
+        }
+
+        .progress-bar {
+          font-weight: bold;
+          text-align: left;
+          color: @text-normal-color;
+
+          &.no-border {
+            border: none;
+          }
+
+          span {
+            font-size: @font-small;
+            padding: 0 @radius-size-small;
+            color: @white;
+          }
+        }
+      }
+
+      .goal {
+        width: 100%;
+        label {
+          position: absolute;
+          right: 0;
         }
       }
     }

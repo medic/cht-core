@@ -116,4 +116,32 @@ describe('ContactSummary service', () => {
         chai.expect(err.message).to.equal('Configuration error');
       });
   });
+
+  it('should pass targets to the ContactSummary script', () => {
+    const script = `
+    return {
+      fields: [contact.name, lineage[0].name],
+      cards: [
+        { fields: reports[0].type },
+        { fields: targetDoc.date_updated }
+      ],
+    }
+    `;
+
+    Settings.returns(Promise.resolve({ contact_summary: script }));
+    const contact = { name: 'boa' };
+    const reports = [{ type: 'data' }, { type: 'record' }];
+    const lineage = [{ name: 'parent' }, { name: 'grandparent' }];
+    const targetDoc = { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] };
+
+    return service(contact, reports, lineage, targetDoc).then(contactSummmary => {
+      chai.expect(contactSummmary).to.deep.equal({
+        fields: ['boa', 'parent'],
+        cards: [
+          { fields: 'data' },
+          { fields: 'yesterday' },
+        ]
+      });
+    });
+  });
 });

@@ -25,6 +25,10 @@ module.exports = function(state, action) {
       selected: Object.assign({}, state.selected, { reports: action.payload.reports }),
       loadingSelectedReports: false
     });
+  case actionTypes.RECEIVE_SELECTED_CONTACT_TARGET_DOC:
+    return Object.assign({}, state, {
+      selected: Object.assign({}, state.selected, { targetDoc: action.payload.targetDoc }),
+    });
   case actionTypes.SET_LOADING_SELECTED_CONTACT:
     return Object.assign({}, state, {
       loadingSelectedChildren: true,

@@ -8,6 +8,7 @@
   require('./messages');
   require('./reports');
   require('./services');
+  require('./target-aggregates');
   require('./tasks');
 
   angular.module('inboxServices').constant('ActionUtils', {

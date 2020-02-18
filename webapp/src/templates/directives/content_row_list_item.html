@@ -39,6 +39,9 @@ Places of interest
         <div class="visits {{visits ? '' : 'ng-hide'}} {{visits.status === 'pending' ? 'danger': ''}} {{visits.status === 'started' ? 'warning' : ''}} {{visits.status === 'done' ? 'success': ''}}">
           <span>{{visits && visits.count}}</span>
         </div>
+        <div class="aggregate-status {{aggregate ? '' : 'ng-hide'}}" ng-if="aggregate" ng-class="{ 'error': aggregate.hasGoal && !aggregate.goalMet, 'success': aggregate.hasGoal && aggregate.goalMet }">
+          <span>{{aggregate.summary}}</span>
+        </div>
       </div>
       <div class="summary">
         <p>{{summary}}</p>

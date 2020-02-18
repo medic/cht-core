@@ -645,4 +645,7 @@ module.exports = {
   waitForDocRev: waitForDocRev,
 
   getDefaultSettings: getDefaultSettings,
+
+  getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
+
 };

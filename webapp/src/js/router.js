@@ -130,6 +130,29 @@
           }
         }
       })
+      .state('analytics.target-aggregates', {
+        url: '/target-aggregates',
+        views: {
+          content: {
+            controller: 'AnalyticsTargetAggregatesCtrl',
+            controllerAs: 'analyticsTargetAggregatesCtrl',
+            templateUrl: 'templates/partials/analytics/target_aggregates.html'
+          }
+        }
+      })
+      .state('analytics.target-aggregates.detail', {
+        url: '/:id',
+        params: {
+          id: null
+        },
+        views: {
+          detail: {
+            controller: 'AnalyticsTargetAggregatesDetailCtrl',
+            controllerAs: 'analyticsTargetAggregatesDetailCtrl',
+            templateUrl: 'templates/partials/analytics/target_aggregates_detail.html'
+          }
+        }
+      })
 
       // contacts
       .state('contacts', {
