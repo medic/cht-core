@@ -501,13 +501,11 @@ module.exports = {
   * Take the userCtx of an admin user and create the _user doc and user-settings doc
   */
   createAdmin: userCtx => {
-    const response = {};
     const data = { username: userCtx.name, roles: ['admin'] };
     return module.exports
       ._validateNewUsername(userCtx.name)
-      .then(() => module.exports._createUser(data, response))
-      .then(() => module.exports._createUserSettings(data, response))
-      .then(() => response);
+      .then(() => module.exports._createUser(data, {}))
+      .then(() => module.exports._createUserSettings(data, {}));
   },
 
   /**

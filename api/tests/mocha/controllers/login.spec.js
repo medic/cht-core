@@ -385,13 +385,15 @@ describe('login controller', () => {
       sinon.stub(request, 'post').resolves(postResponse);
       sinon.stub(res, 'send');
       sinon.stub(res, 'status').returns(res);
-      sinon.stub(users, 'createAdmin').returns({ _id: 'org.couchdb.user:shazza' });
+      sinon.stub(users, 'createAdmin').resolves();
       const userCtx = { name: 'shazza', roles: [ '_admin' ] };
       sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       sinon.stub(auth, 'isOnlineOnly').returns(true);
       sinon.stub(auth, 'isDbAdmin').returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
-      sinon.stub(auth, 'getUserSettings').rejects({ status: 404 });
+      sinon.stub(auth, 'getUserSettings')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({ });
       return controller.post(req, res).then(() => {
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.callCount).to.equal(1);
@@ -402,6 +404,8 @@ describe('login controller', () => {
         chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(users.createAdmin.callCount).to.equal(1);
         chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(auth.getUserSettings.callCount).to.equal(2);
+        chai.expect(auth.getUserSettings.args).to.deep.equal([[userCtx], [userCtx]]);
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0][0]).to.equal(302);
         chai.expect(res.send.args[0][0]).to.equal('/admin/');

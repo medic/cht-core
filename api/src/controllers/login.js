@@ -141,7 +141,7 @@ const setCookies = (req, res, sessionRes) => {
         .getUserSettings(userCtx)
         .catch(err => {
           if (err.status === 404 && auth.isDbAdmin(userCtx)) {
-            return users.createAdmin(userCtx);
+            return users.createAdmin(userCtx).then(() => auth.getUserSettings(userCtx));
           }
           throw err;
         })

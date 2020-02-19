@@ -1222,7 +1222,7 @@ describe('Users service', () => {
         });
     });
 
-    it('should throw if medic user creation fails', () => {
+    it('should throw if _users doc creation fails', () => {
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.users, 'get').rejects({ status: 404 });
 
@@ -1237,7 +1237,46 @@ describe('Users service', () => {
             { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
           ]);
         });
+    });
 
+    it('should throw if user-settings doc creation fails', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+
+      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:agatha', rev: 1 });
+      sinon.stub(db.medic, 'put').rejects({ some: 'err' });
+      return service
+        .createAdmin({ name: 'agatha' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(db.users.put.callCount).to.equal(1);
+          chai.expect(db.users.put.args[0]).to.deep.equal([
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+          ]);
+          chai.expect(db.medic.put.callCount).to.equal(1);
+          chai.expect(db.medic.put.args[0]).to.deep.equal([
+            { name: 'agatha', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+          ]);
+        });
+    });
+
+    it('should return new user-settings when successfull', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+
+      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      sinon.stub(db.medic, 'put').resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      return service.createAdmin({ name: 'perseus' }).then(() => {
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0]).to.deep.equal([
+          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+        ]);
+        chai.expect(db.medic.put.callCount).to.equal(1);
+        chai.expect(db.medic.put.args[0]).to.deep.equal([
+          { name: 'perseus', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+        ]);
+      });
     });
   });
 
