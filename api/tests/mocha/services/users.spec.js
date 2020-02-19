@@ -1206,5 +1206,40 @@ describe('Users service', () => {
 
   });
 
+  describe('createAdmin', () => {
+    it('should throw if username already exists', () => {
+      sinon.stub(db.medic, 'get').resolves({});
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      return service
+        .createAdmin({ name: 'my_user' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.include({ code: 400 });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
+        });
+    });
+
+    it('should throw if medic user creation fails', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+
+      sinon.stub(db.users, 'put').rejects({ some: 'err' });
+      return service
+        .createAdmin({ name: 'agatha' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(db.users.put.callCount).to.equal(1);
+          chai.expect(db.users.put.args[0]).to.deep.equal([
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+          ]);
+        });
+
+    });
+  });
+
 });
 

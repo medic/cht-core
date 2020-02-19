@@ -8,6 +8,7 @@ const sinon = require('sinon');
 const config = require('../../../src/config');
 const request = require('request-promise-native');
 const fs = require('fs');
+const users = require('../../../src/services/users');
 const DB_NAME = 'lg';
 const DDOC_NAME = 'medic';
 
@@ -384,6 +385,7 @@ describe('login controller', () => {
       sinon.stub(request, 'post').resolves(postResponse);
       sinon.stub(res, 'send');
       sinon.stub(res, 'status').returns(res);
+      sinon.stub(users, 'createAdmin').returns({ _id: 'org.couchdb.user:shazza' });
       const userCtx = { name: 'shazza', roles: [ '_admin' ] };
       sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       sinon.stub(auth, 'isOnlineOnly').returns(true);
@@ -397,6 +399,9 @@ describe('login controller', () => {
         chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
         chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
         chai.expect(auth.isDbAdmin.callCount).to.equal(1);
+        chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(users.createAdmin.callCount).to.equal(1);
+        chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0][0]).to.equal(302);
         chai.expect(res.send.args[0][0]).to.equal('/admin/');

@@ -13,6 +13,7 @@ const ONE_YEAR = 31536000000;
 const logger = require('../logger');
 const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
+const users = require('../services/users');
 
 let loginTemplate;
 
@@ -139,9 +140,10 @@ const setCookies = (req, res, sessionRes) => {
       return auth
         .getUserSettings(userCtx)
         .catch(err => {
-          if (err.status !== 404 || !auth.isDbAdmin(userCtx)) {
-            throw err;
+          if (err.status === 404 && auth.isDbAdmin(userCtx)) {
+            return users.createAdmin(userCtx);
           }
+          throw err;
         })
         .then(({ language }={}) => {
           if (language) {
