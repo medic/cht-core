@@ -71,7 +71,7 @@ const docs = [
   {
     _id: 'for_two',
     fields: { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 },
-    pushes: ['two'],
+    pushes: ['two', 'missing'],
   }
 ];
 
@@ -97,12 +97,21 @@ destinationApp.post('/two', (req, res) => inboxes['two'].push(req.body) && res.s
 let server;
 
 const waitForPushes = () => {
-  return new Promise(resolve => {
-    if (inboxes.one.length > 2) {
-      return resolve();
+  return getTasks().then(result => {
+    if (result.rows.length === 2) {
+      return;
     }
 
     return utils.delayPromise(waitForPushes, 100);
+  });
+};
+
+const getTasks = () => utils.sentinelDb.allDocs({ start_key: 'task:outbound:', end_key: 'task:outbound:\ufff0'});
+
+const wipeTasks = () => {
+  return getTasks().then(result => {
+    const docsToDelete = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+    return utils.sentinelDb.bulkDocs(docsToDelete);
   });
 };
 
@@ -115,7 +124,7 @@ describe('Outbound', () => {
     server.close();
   });
 
-  afterEach(() => utils.revertDb());
+  afterEach(() => utils.revertDb().then(() => wipeTasks()));
 
   it('should send outbound tasks correctly', () => {
     return utils
