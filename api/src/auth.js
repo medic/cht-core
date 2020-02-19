@@ -191,5 +191,7 @@ module.exports = {
         Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
         return medicUser;
       });
-  }
+  },
+
+  isDbAdmin: isDbAdmin,
 };
