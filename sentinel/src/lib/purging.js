@@ -6,6 +6,9 @@ const serverSidePurgeUtils = require('@medic/purging-utils');
 const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
+const moment = require('moment');
+
+const TASK_EXPIRATION_PERIOD = 60; // days
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -399,6 +402,56 @@ const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
     .then(() => nextKeyDocId && batchedUnallocatedPurge(roles, purgeFn, nextKeyDocId));
 };
 
+const batchedTasksPurge = (roles, startKeyDocId = '') => {
+  let nextKeyDocId;
+  const rows = [];
+  const docIds = [];
+  const rolesHashes = Object.keys(roles);
+  const now = moment();
+
+  logger.debug(`Starting tasks purge batch with id ${startKeyDocId}`);
+
+  const terminalStates = ['Cancelled', 'Completed', 'Failed'];
+
+  const queryString = {
+    limit: BATCH_SIZE,
+    keys: JSON.stringify(terminalStates),
+    startkey_docid: startKeyDocId,
+  };
+
+  return request
+    .get(`${db.couchUrl}/_design/medic/_view/targets_by_state`, { qs: queryString, json: true })
+    .then(result => {
+      result.rows.forEach(row => {
+        if (row.id === startKeyDocId) {
+          return;
+        }
+
+        nextKeyDocId = row.id;
+        docIds.push(row.id);
+        rows.push(row);
+      });
+
+      return getAlreadyPurgedDocs(rolesHashes, docIds);
+    })
+    .then(alreadyPurged => {
+      const toPurge = {};
+      rows.forEach(row => {
+        rolesHashes.forEach(hash => {
+          toPurge[hash] = toPurge[hash] || {};
+          const daysSinceTaskEndDate = now.diff(row.value.endDate, 'days');
+          if (daysSinceTaskEndDate >= TASK_EXPIRATION_PERIOD) {
+            toPurge[hash][row.id] = row.id;
+          }
+        });
+      });
+
+      return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
+    })
+    .then(() => nextKeyDocId && batchedTasksPurge(roles, nextKeyDocId));
+};
+
+
 const writePurgeLog = (roles, duration) => {
   const date = new Date();
   return db.sentinel.put({
@@ -456,6 +509,7 @@ const purge = () => {
       return initPurgeDbs(roles)
         .then(() => batchedContactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
+        .then(() => batchedTasksPurge(roles))
         .then(() => {
           const duration = (performance.now() - start);
           logger.info(`Server Side Purge completed successfully in ${duration / 1000 / 60} minutes`);
