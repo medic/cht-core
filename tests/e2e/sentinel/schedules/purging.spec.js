@@ -2,6 +2,7 @@ const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const querystring = require('querystring');
 const chai = require('chai');
+const moment = require('moment');
 
 const password = 'SuperS3creT';
 const docs = [
@@ -119,6 +120,107 @@ const docs = [
   },
 ];
 
+const daysAgo = days => moment().subtract(days, 'days').format('Y-MM-DD');
+
+const tasks = [
+  {
+    _id: 'task1~user1',
+    type: 'task',
+    user: 'org.couchdb.user:user1',
+    owner: 'contact1',
+    state: 'Draft',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(30),
+    }
+  },
+  {
+    _id: 'task2~user1',
+    type: 'task',
+    user: 'org.couchdb.user:user1',
+    owner: 'contact1',
+    state: 'Draft',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(98),
+    }
+  },
+  {
+    _id: 'task3~user1',
+    type: 'task',
+    user: 'org.couchdb.user:user1',
+    owner: 'contact1',
+    state: 'Completed',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(50),
+    }
+  },
+  {
+    _id: 'task4~user1',
+    type: 'task',
+    user: 'org.couchdb.user:user1',
+    owner: 'contact1',
+    state: 'Completed',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(100),
+    }
+  },
+  {
+    _id: 'task1~user2',
+    type: 'task',
+    user: 'org.couchdb.user:user2',
+    owner: 'contact1',
+    state: 'Ready',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(10),
+    }
+  },
+  {
+    _id: 'task2~user2',
+    type: 'task',
+    user: 'org.couchdb.user:user2',
+    owner: 'contact1',
+    state: 'Ready',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(150),
+    }
+  },
+  {
+    _id: 'task3~user2',
+    type: 'task',
+    user: 'org.couchdb.user:user2',
+    owner: 'contact1',
+    state: 'Failed',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(58),
+    }
+  },
+  {
+    _id: 'task4~user2',
+    type: 'task',
+    user: 'org.couchdb.user:user2',
+    owner: 'contact1',
+    state: 'Failed',
+    emission: {
+      startDate: daysAgo(200),
+      dueDate: daysAgo(100),
+      endDate: daysAgo(62),
+    }
+  },
+];
+
 const users = [
   {
     username: 'user1',
@@ -224,7 +326,7 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 describe('server side purge', () => {
   beforeAll(done => {
     return utils
-      .saveDocs(docs)
+      .saveDocs([...docs, ...tasks])
       .then(() => utils.createUsers(users))
       .then(() => done());
   });
@@ -255,29 +357,41 @@ describe('server side purge', () => {
         const user2ChangeIds = getChangeIds(user2Changes.results);
 
         chai.expect(user1ChangeIds)
-          .to.include.members(['clinic1', 'contact1', 'report2', 'report5', 'report6', 'message2', 'message4']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report2', 'report5', 'report6',
+            'message2', 'message4',
+            'task1~user1', 'task2~user1', 'task3~user1',
+          ]);
         chai.expect(user1ChangeIds)
           .to.not.include('report1')
           .and.not.include('report3')
           .and.not.include('report4')
           .and.not.include('message1')
-          .and.not.include('message3');
+          .and.not.include('message3')
+          .and.not.include('task4~user1');
 
         chai.expect(user2ChangeIds)
-          .to.include.members(['clinic1', 'contact1', 'report1', 'report3', 'report4', 'message1', 'message3']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report1', 'report3', 'report4',
+            'message1', 'message3',
+            'task1~user2', 'task2~user2', 'task3~user2',
+          ]);
         chai.expect(user2ChangeIds)
           .to.not.include('report2')
           .and.not.include('report5')
           .and.not.include('report6')
           .and.not.include('message2')
-          .and.not.include('message4');
+          .and.not.include('message4')
+          .and.not.include('task4~user2');
       })
       .then(() => Promise.all([ requestPurges('user1'), requestPurges('user2') ]))
       .then(([ purgedIdsUser1, purgedIdsUser2 ]) => {
         chai.expect(purgedIdsUser1.purged_ids)
-          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1']);
         chai.expect(purgedIdsUser2.purged_ids)
-          .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
+          .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2']);
       })
       .then(() => utils.revertSettings())
       .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }))
@@ -319,22 +433,34 @@ describe('server side purge', () => {
         const user2ChangeIds = getChangeIds(user2Changes.results);
 
         chai.expect(user1ChangeIds)
-          .to.include.members(['clinic1', 'contact1', 'report2', 'report5', 'report6', 'message2', 'message4']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report2', 'report5', 'report6',
+            'message2', 'message4',
+            'task1~user1', 'task2~user1', 'task3~user1',
+          ]);
         chai.expect(user1ChangeIds)
           .to.not.include('report1')
           .and.not.include('report3')
           .and.not.include('report4')
           .and.not.include('message1')
-          .and.not.include('message3');
+          .and.not.include('message3')
+          .and.not.include('task4~user1');
 
         chai.expect(user2ChangeIds)
-          .to.include.members(['clinic1', 'contact1', 'report1', 'report3', 'report4', 'message1', 'message3']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report1', 'report3', 'report4',
+            'message1', 'message3',
+            'task1~user2', 'task2~user2', 'task3~user2',
+          ]);
         chai.expect(user2ChangeIds)
           .to.not.include('report2')
           .and.not.include('report5')
           .and.not.include('report6')
           .and.not.include('message2')
-          .and.not.include('message4');
+          .and.not.include('message4')
+          .and.not.include('task4~user2');
       })
       .then(() => Promise.all([requestPurges('user1'), requestPurges('user2')]))
       .then(([purgedDocsUser1, purgedDocsUser2]) => {
@@ -371,22 +497,34 @@ describe('server side purge', () => {
         const user2ChangeIds = getChangeIds(user2Changes.results);
 
         chai.expect(user1ChangeIds)
-          .to.include.members(['clinic1', 'contact1', 'report1', 'report3', 'report4', 'message1', 'message3']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report1', 'report3', 'report4',
+            'message1', 'message3',
+            'task1~user1', 'task2~user1', 'task3~user1',
+          ]);
         chai.expect(user1ChangeIds)
           .to.not.include('report2')
           .and.not.include('report5')
           .and.not.include('report6')
           .and.not.include('message2')
-          .and.not.include('message4');
+          .and.not.include('message4')
+          .and.not.include('task4~user1');
 
         chai.expect(user2ChangeIds)
-          .to.include.members(['clinic1', 'contact1', 'report2', 'report5', 'report6', 'message2', 'message4']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report2', 'report5', 'report6',
+            'message2', 'message4',
+            'task1~user2', 'task2~user2', 'task3~user2',
+          ]);
         chai.expect(user2ChangeIds)
           .to.not.include('report1')
           .and.not.include('report3')
           .and.not.include('report4')
           .and.not.include('message1')
-          .and.not.include('message3');
+          .and.not.include('message3')
+          .and.not.include('task4~user2');
       });
   });
 
@@ -444,17 +582,25 @@ describe('server side purge', () => {
       .then(result => {
         const changeIds = getChangeIds(result.results);
         chai.expect(changeIds)
-          .to.include.members(['clinic1', 'contact1', 'report2', 'report5', 'report6', 'message2', 'message4']);
+          .to.include.members([
+            'clinic1', 'contact1',
+            'report2', 'report5', 'report6',
+            'message2', 'message4',
+            'task1~user1', 'task2~user1', 'task3~user1',
+          ]);
         chai.expect(changeIds)
           .to.not.include('report1')
           .and.not.include('report3')
           .and.not.include('report4')
           .and.not.include('message1')
-          .and.not.include('message3');
+          .and.not.include('message3')
+          .and.not.include('task4~user1');
       })
       .then(() => requestPurges('user1'))
       .then(purgedDocs => {
-        chai.expect(purgedDocs.purged_ids).to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+        chai.expect(purgedDocs.purged_ids).to.have.members([
+          'report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1'
+        ]);
       })
       .then(() => writePurgeCheckpoint('user1'))
       .then(() => requestPurges('user1'))
