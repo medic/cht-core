@@ -15,6 +15,8 @@ const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
+const MAX_CONFLICT_RETRY = 3;
+
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
   'known'
@@ -204,14 +206,28 @@ const createPlace = data => {
   });
 };
 
-const storeUpdatedPlace = data => {
+const storeUpdatedPlace = (data, retry = 0) => {
   if (!data.place) {
     return;
   }
 
   data.place.contact = lineage.minifyLineage(data.contact);
   data.place.parent = lineage.minifyLineage(data.place.parent);
-  return db.medic.put(data.place);
+
+  return db.medic
+    .get(data.place._id)
+    .then(place => {
+      place.contact = data.place.contact;
+      place.parent = data.place.parent;
+
+      return db.medic.put(place);
+    })
+    .catch(err => {
+      if (err.status === 409 && retry < MAX_CONFLICT_RETRY) {
+        return storeUpdatedPlace(data, retry + 1);
+      }
+      throw err;
+    });
 };
 
 const setContactParent = data => {
